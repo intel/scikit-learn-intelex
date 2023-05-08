@@ -26,7 +26,8 @@ from ..datatypes._data_conversion import (
     from_table,
     to_table,
     _convert_to_supported,
-    _convert_to_dataframe)
+    _convert_to_dataframe,
+)
 from onedal import _backend
 
 
@@ -53,32 +54,24 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
         return options
 
     def _get_onedal_params(
-            self,
-            options,
-            L1=0.0,
-            L2=0.0,
-            intercept=True,
-            dtype=np.float32):
+        self, options, L1=0.0, L2=0.0, intercept=True, dtype=np.float32
+    ):
         options = self._get_result_options(options)
         return {
-            'fptype': 'float' if dtype == np.float32 else 'double',
-            'method': self.algorithm, 'result_option': options,
-            'l1_coef': L1, 'l2_coef': L2, 'intercept': intercept
+            "fptype": "float" if dtype == np.float32 else "double",
+            "method": self.algorithm,
+            "result_option": options,
+            "l1_coef": L1,
+            "l2_coef": L2,
+            "intercept": intercept,
         }
 
-    def _compute(
-            self,
-            X,
-            y,
-            coef,
-            options,
-            l2_reg_strength=0.0,
-            fit_intercept=True):
-
+    def _compute(self, X, y, coef, options, l2_reg_strength=0.0, fit_intercept=True):
         policy = self._get_policy(self.queue, X, y, coef)
         ftype = X.dtype
         params = self._get_onedal_params(
-            options, L2=l2_reg_strength, intercept=fit_intercept, dtype=ftype)
+            options, L2=l2_reg_strength, intercept=fit_intercept, dtype=ftype
+        )
 
         y = y.astype(np.int32)
 
@@ -88,15 +81,14 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
         # fit_intercept=False
 
         coef = coef.reshape(-1)
-        if (fit_intercept):
+        if fit_intercept:
             coef = np.hstack([coef[-1], coef[:-1]])
         else:
             coef = np.hstack([0.0, coef])
         coef = coef.astype(X.dtype)
 
         X_loc, y_loc, coef_loc = _convert_to_dataframe(policy, X, y, coef)
-        X_loc, y_loc, coef_loc = _convert_to_supported(
-            policy, X_loc, y_loc, coef_loc)
+        X_loc, y_loc, coef_loc = _convert_to_supported(policy, X_loc, y_loc, coef_loc)
 
         X_table, coef_table = to_table(X_loc, coef_loc)
         y_table = to_table(y_loc)
@@ -115,17 +107,13 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
 
 class LogisticLoss(BaseObjectiveFunction):
     def __init__(
-            self,
-            *,
-            algorithm="by_default",
-            queue=None,
-            fit_intercept=True,
-            **kwargs):
+        self, *, algorithm="by_default", queue=None, fit_intercept=True, **kwargs
+    ):
         self.fit_intercept = fit_intercept
         super().__init__(algorithm, queue, _backend.objective_function.compute.logloss)
 
     def __fix_gradient(self, grad, coef, l2_reg_strength):
-        if (self.fit_intercept):
+        if self.fit_intercept:
             grad = np.hstack([grad[1:] + coef[:-1] * l2_reg_strength, grad[0]])
         else:
             grad = grad[1:] + coef * l2_reg_strength
@@ -133,117 +121,132 @@ class LogisticLoss(BaseObjectiveFunction):
 
     def __fix_hessian(self, hess, coef, l2_reg_strength):
         num_params = coef.shape[0]
-        if (not self.fit_intercept):
+        if not self.fit_intercept:
             num_params += 1
         hess = hess.reshape(num_params, num_params)
-        if (self.fit_intercept):
-            hess = np.hstack((
-                np.vstack([hess[1:, 1:] +
-                           np.diag([l2_reg_strength] * (num_params - 1)), hess[0, 1:]]),
-                np.hstack([hess[0, 1:], hess[0][0]]).reshape(-1, 1)))
+        if self.fit_intercept:
+            hess = np.hstack(
+                (
+                    np.vstack(
+                        [
+                            hess[1:, 1:]
+                            + np.diag([l2_reg_strength] * (num_params - 1)),
+                            hess[0, 1:],
+                        ]
+                    ),
+                    np.hstack([hess[0, 1:], hess[0][0]]).reshape(-1, 1),
+                )
+            )
         else:
             hess = hess[1:, 1:] + np.diag([l2_reg_strength] * (num_params - 1))
         return hess
 
     def __calculate_regularization(self, coef, l2_reg_strength):
-        if (self.fit_intercept):
+        if self.fit_intercept:
             return 0.5 * (coef[:-1] ** 2).sum() * l2_reg_strength
         else:
-            return 0.5 * (coef ** 2).sum() * l2_reg_strength
+            return 0.5 * (coef**2).sum() * l2_reg_strength
 
     def loss(
-            self,
-            coef,
-            X,
-            y,
-            sample_weight=None,
-            l2_reg_strength=0.0,
-            n_threads=1,
-            raw_prediction=None):
-        assert (sample_weight is None)
-        assert (n_threads == 1)
-        assert (raw_prediction is None)
+        self,
+        coef,
+        X,
+        y,
+        sample_weight=None,
+        l2_reg_strength=0.0,
+        n_threads=1,
+        raw_prediction=None,
+    ):
+        assert sample_weight is None
+        assert n_threads == 1
+        assert raw_prediction is None
 
-        value = super()._compute(X, y, coef, "value",
-                                 0.0, self.fit_intercept)["value"]
-        if (l2_reg_strength > 0):
+        value = super()._compute(X, y, coef, "value", 0.0, self.fit_intercept)["value"]
+        if l2_reg_strength > 0:
             value += self.__calculate_regularization(coef, l2_reg_strength)
         return value
 
     def loss_gradient(
-            self,
-            coef,
-            X,
-            y,
-            sample_weight=None,
-            l2_reg_strength=0.0,
-            n_threads=1,
-            raw_prediction=None):
-        assert (sample_weight is None)
-        assert (n_threads == 1)
-        assert (raw_prediction is None)
+        self,
+        coef,
+        X,
+        y,
+        sample_weight=None,
+        l2_reg_strength=0.0,
+        n_threads=1,
+        raw_prediction=None,
+    ):
+        assert sample_weight is None
+        assert n_threads == 1
+        assert raw_prediction is None
 
         res = super()._compute(
-            X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept)
+            X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept
+        )
         value = res["value"]
         grad = res["gradient"]
-        if (l2_reg_strength > 0):
+        if l2_reg_strength > 0:
             value += self.__calculate_regularization(coef, l2_reg_strength)
         return (value, self.__fix_gradient(grad, coef, l2_reg_strength))
 
     def gradient(
-            self,
-            coef,
-            X,
-            y,
-            sample_weight=None,
-            l2_reg_strength=0.0,
-            n_threads=1,
-            raw_prediction=None):
-        assert (sample_weight is None)
-        assert (n_threads == 1)
-        assert (raw_prediction is None)
+        self,
+        coef,
+        X,
+        y,
+        sample_weight=None,
+        l2_reg_strength=0.0,
+        n_threads=1,
+        raw_prediction=None,
+    ):
+        assert sample_weight is None
+        assert n_threads == 1
+        assert raw_prediction is None
 
-        grad = super()._compute(X, y, coef, "gradient",
-                                0.0, self.fit_intercept)["gradient"]
+        grad = super()._compute(X, y, coef, "gradient", 0.0, self.fit_intercept)[
+            "gradient"
+        ]
         return self.__fix_gradient(grad, coef, l2_reg_strength)
 
     def gradient_hessian(
-            self,
-            coef,
-            X,
-            y,
-            sample_weight=None,
-            l2_reg_strength=0.0,
-            n_threads=1,
-            raw_prediction=None):
-        assert (sample_weight is None)
-        assert (n_threads == 1)
-        assert (raw_prediction is None)
+        self,
+        coef,
+        X,
+        y,
+        sample_weight=None,
+        l2_reg_strength=0.0,
+        n_threads=1,
+        raw_prediction=None,
+    ):
+        assert sample_weight is None
+        assert n_threads == 1
+        assert raw_prediction is None
 
         res = super()._compute(
-            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept)
+            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept
+        )
         grad = self.__fix_gradient(res["gradient"], coef, l2_reg_strength)
         hess = self.__fix_hessian(res["hessian"], coef, l2_reg_strength)
         flag = (res["hessian"] <= 0.0).sum() * 2 >= res["hessian"].shape[0]
         return (grad, hess, flag)
 
     def gradient_hessian_product(
-            self,
-            coef,
-            X,
-            y,
-            sample_weight=None,
-            l2_reg_strength=0.0,
-            n_threads=1,
-            raw_prediction=None):
-
-        assert (sample_weight is None)
-        assert (n_threads == 1)
-        assert (raw_prediction is None)
+        self,
+        coef,
+        X,
+        y,
+        sample_weight=None,
+        l2_reg_strength=0.0,
+        n_threads=1,
+        raw_prediction=None,
+    ):
+        assert sample_weight is None
+        assert n_threads == 1
+        assert raw_prediction is None
 
         res = super()._compute(
-            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept)
+            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept
+        )
         grad = self.__fix_gradient(res["gradient"], coef, l2_reg_strength)
         hess = self.__fix_hessian(res["hessian"], coef, l2_reg_strength)
 

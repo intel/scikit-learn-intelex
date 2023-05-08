@@ -16,4 +16,4 @@
 
 from .objective_function import LogisticLoss
 
-__all__ = ['LogisticLoss']
+__all__ = ["LogisticLoss"]
