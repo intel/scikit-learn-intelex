@@ -54,7 +54,7 @@ class KNeighborsDispatchingBase:
         p_less_than_one = "p" in self.effective_metric_params_.keys() and \
             self.effective_metric_params_["p"] < 1
         if not patching_status.and_condition(
-            not p_less_than_one, f'"p" metric parameter is less than 1'
+            not p_less_than_one, '"p" metric parameter is less than 1'
         ):
             return patching_status.get_status(logs=True)
 
@@ -77,21 +77,30 @@ class KNeighborsDispatchingBase:
                 if hasattr(self, '_onedal_estimator'):
                     y = self._onedal_estimator._y
                 is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
+        # TODO: add native support for these metric names
+        metrics_map = {
+            'manhattan': ['l1', 'cityblock'],
+            'euclidean': ['l2']
+        }
+        for origin, aliases in metrics_map.items():
+            if self.effective_metric_ in aliases:
+                self.effective_metric_ = origin
+                break
         onedal_brute_metrics = [
             'manhattan', 'minkowski', 'euclidean', 'chebyshev', 'cosine']
         onedal_kdtree_metrics = ['euclidean']
-        is_valid_for_brute = result_method in ['brute'] and \
+        is_valid_for_brute = result_method == 'brute' and \
             self.effective_metric_ in onedal_brute_metrics
         is_valid_for_kd_tree = result_method == 'kd_tree' and \
             self.effective_metric_ in onedal_kdtree_metrics
         if result_method == 'kd_tree':
-            if patching_status.and_condition(
+            if not patching_status.and_condition(
                 device != 'gpu', '"kd_tree" method is not supported on GPU.'
             ):
                 return patching_status.get_status(logs=True)
 
         if not patching_status.and_condition(
-            (is_valid_for_kd_tree or is_valid_for_brute),
+            is_valid_for_kd_tree or is_valid_for_brute,
             f'{result_method} with {self.effective_metric_} metric is not supported.'
         ):
             return patching_status.get_status(logs=True)

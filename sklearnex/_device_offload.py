@@ -48,7 +48,6 @@ class DummySyclQueue:
             self.has_aspect_fp64 = self.is_cpu
 
             if not (self.is_cpu):
-                import logging
                 logging.warning("Device support is limited. "
                                 "Please install dpctl for full experience")
 
