@@ -196,6 +196,9 @@ class PatchingConditionsChain:
             self._iter_conditions(conditions_and_messages))
         return self.patching_is_enabled
 
+    def and_condition(self, condition, message):
+        return self.and_conditions([(condition, message)])
+
     def or_conditions(self, conditions_and_messages, conditions_merging=all):
         self.patching_is_enabled |= conditions_merging(
             self._iter_conditions(conditions_and_messages))
