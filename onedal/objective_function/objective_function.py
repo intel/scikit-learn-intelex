@@ -105,44 +105,94 @@ class LogisticLoss(BaseObjectiveFunction):
             *,
             algorithm="by_default",
             queue=None,
-            l2_reg_strength=0.0, 
             fit_intercept=True,
             **kwargs):
         self.fit_intercept = fit_intercept
-        self.l2_reg_strength = l2_reg_strength
         super().__init__(algorithm, queue, _backend.objective_function.compute.logloss)
 
-    def __fix_gradient(self, grad, fit_intercept):
-        if (fit_intercept):
-            return np.hstack([grad[1:], grad[0]])
+    def __fix_gradient(self, grad, coef, l2_reg_strength):
+        if (self.fit_intercept):
+            grad = np.hstack([grad[1:] + coef[:-1] * l2_reg_strength, grad[0]])
         else:
-            return grad[1:]
+            grad =  grad[1:] + coef * l2_reg_strength
+        return grad
 
-    def __fix_hessian(self, hess, num_params, fit_intercept):
-        hess = hess.reshape(num_params + 1, num_params + 1)
-        if (fit_intercept):
-            return np.hstack((np.vstack([hess[1:,1:], hess[0,1:]]), np.hstack([hess[0,1:], hess[0][0]]).reshape(-1, 1)))
+    def __fix_hessian(self, hess, coef, l2_reg_strength):
+        num_params = coef.shape[0]
+        if (not self.fit_intercept):
+            num_params += 1
+        hess = hess.reshape(num_params, num_params)
+        if (self.fit_intercept):
+            hess = np.hstack((np.vstack([hess[1:,1:] + np.diag([l2_reg_strength] * (num_params - 1)), hess[0,1:]]), np.hstack([hess[0,1:], hess[0][0]]).reshape(-1, 1)))
         else:
-            return hess[1:,1:]
+            hess =  hess[1:,1:] + np.diag([l2_reg_strength] * (num_params - 1))
+        return hess
 
-    def loss(self, coef, X, y):
-        return super()._compute(X, y, coef, "value", self.l2_reg_strength, self.fit_intercept)["value"]
+    def __calculate_regularization(self, coef, l2_reg_strength):
+        if (self.fit_intercept):
+            return 0.5 * (coef[:-1] ** 2).sum() * l2_reg_strength
+        else:
+            return 0.5 * (coef ** 2).sum() * l2_reg_strength
+    
 
-    def loss_gradient(self, coef, X, y):
+    def loss(self, coef, X, y, sample_weight = None, l2_reg_strength = 0.0, n_threads = 1, raw_prediction = None):
+        assert(sample_weight == None)
+        assert(n_threads == 1)
+        assert(raw_prediction == None)
+        
+        value =  super()._compute(X, y, coef, "value", 0.0, self.fit_intercept)["value"]
+        if (l2_reg_strength > 0):
+            value += self.__calculate_regularization(coef, l2_reg_strength)
+        return value
+
+
+    def loss_gradient(self, coef, X, y, sample_weight = None, l2_reg_strength = 0.0, n_threads = 1, raw_prediction = None):
+        assert(sample_weight == None)
+        assert(n_threads == 1)
+        assert(raw_prediction == None)
+        
         res = super()._compute(
-            X, y, coef, ["value", "gradient"], self.l2_reg_strength, self.fit_intercept)
-        return (res["value"], self.__fix_gradient(res["gradient"], self.fit_intercept))
+            X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept)
+        value = res["value"]
+        grad = res["gradient"]
+        if (l2_reg_strength > 0):
+            value += self.__calculate_regularization(coef, l2_reg_strength)
+        return (value, self.__fix_gradient(grad, coef, l2_reg_strength))
 
-    def gradient(self, coef, X, y):
-        grad = super()._compute(X, y, coef, "gradient", self.l2_reg_strength, self.fit_intercept)["gradient"]
-        return self.__fix_gradient(grad, self.fit_intercept)
+    def gradient(self, coef, X, y, sample_weight = None, l2_reg_strength = 0.0, n_threads = 1, raw_prediction = None):
+        assert(sample_weight == None)
+        assert(n_threads == 1)
+        assert(raw_prediction == None)
+        
+        grad = super()._compute(X, y, coef, "gradient", 0.0, self.fit_intercept)["gradient"]
+        return self.__fix_gradient(grad, coef, l2_reg_strength)
 
-    def gradient_hessian(self, coef, X, y):
+    def gradient_hessian(self, coef, X, y, sample_weight = None, l2_reg_strength = 0.0, n_threads = 1, raw_prediction = None):
+        assert(sample_weight == None)
+        assert(n_threads == 1)
+        assert(raw_prediction == None)
+        
         res = super()._compute(
-            X, y, coef, ["gradient", "hessian"], self.l2_reg_strength, self.fit_intercept)
-        grad = self.__fix_gradient(res["gradient"], self.fit_intercept)
-        hess = self.__fix_hessian(res["hessian"], X.shape[1], self.fit_intercept)
+            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept)
+        grad = self.__fix_gradient(res["gradient"], coef, l2_reg_strength)
+        hess = self.__fix_hessian(res["hessian"], coef, l2_reg_strength)
         flag = (res["hessian"] <= 0.0).sum() * 2 >= res["hessian"].shape[0]
         return (grad, hess, flag)
     
+
+    def gradient_hessian_product(self, coef, X, y, sample_weight = None, l2_reg_strength = 0.0, n_threads = 1, raw_prediction = None):
+
+        assert(sample_weight == None)
+        assert(n_threads == 1)
+        assert(raw_prediction == None)
+        
+        res = super()._compute(
+            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept)
+        grad = self.__fix_gradient(res["gradient"], coef, l2_reg_strength)
+        hess = self.__fix_hessian(res["hessian"], coef, l2_reg_strength)
+
+        def hessp(s):
+            return hess @ s
+
+        return grad, hessp
 
