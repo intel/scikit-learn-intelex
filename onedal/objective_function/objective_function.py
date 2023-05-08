@@ -128,11 +128,8 @@ class LogisticLoss(BaseObjectiveFunction):
             hess = np.hstack(
                 (
                     np.vstack(
-                        [
-                            hess[1:, 1:]
-                            + np.diag([l2_reg_strength] * (num_params - 1)),
-                            hess[0, 1:],
-                        ]
+                        [hess[1:, 1:] + np.diag([l2_reg_strength] * (num_params - 1)),
+                        hess[0, 1:],]
                     ),
                     np.hstack([hess[0, 1:], hess[0][0]]).reshape(-1, 1),
                 )
