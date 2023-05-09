@@ -19,7 +19,7 @@ import sys
 import os
 import warnings
 
-from daal4py import _get__daal_link_version__ as dv
+from daal4py._daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
 try:
     from packaging.version import Version

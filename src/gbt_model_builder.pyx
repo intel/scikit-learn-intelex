@@ -18,6 +18,9 @@
 # The model builder object is retrieved through calling model_builder.
 # We will extend this once we know how other model builders will work in DAAL
 
+from daal4py.sklearn._utils import daal_check_version
+missing_values_are_supported = daal_check_version((2023, 'P', 200))
+
 cdef extern from "gbt_model_builder.h":
     ctypedef size_t c_gbt_clf_node_id
     ctypedef size_t c_gbt_clf_tree_id
@@ -31,13 +34,15 @@ cdef extern from "gbt_model_builder.h":
         c_gbt_classification_model_builder(size_t nFeatures, size_t nIterations, size_t nClasses) except +
         c_gbt_clf_tree_id createTree(size_t nNodes, size_t classLabel)
         c_gbt_clf_node_id addLeafNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, double response)
-        c_gbt_clf_node_id addSplitNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int yes_if_missing)
+        c_gbt_clf_node_id addSplitNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue)
+        c_gbt_clf_node_id addSplitNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int default_left)
 
     cdef cppclass c_gbt_regression_model_builder:
         c_gbt_regression_model_builder(size_t nFeatures, size_t nIterations) except +
         c_gbt_reg_tree_id createTree(size_t nNodes)
         c_gbt_reg_node_id addLeafNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, double response)
-        c_gbt_reg_node_id addSplitNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, int yes_if_missing)
+        c_gbt_reg_node_id addSplitNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue)
+        c_gbt_reg_node_id addSplitNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, int default_left)
 
     cdef gbt_classification_ModelPtr * get_gbt_classification_model_builder_model(c_gbt_classification_model_builder *)
     cdef gbt_regression_ModelPtr * get_gbt_regression_model_builder_model(c_gbt_regression_model_builder *)
@@ -77,7 +82,7 @@ cdef class gbt_classification_model_builder:
         '''
         return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
 
-    def add_split(self, c_gbt_clf_tree_id tree_id, size_t feature_index, double feature_value, int yes_if_missing, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
+    def add_split(self, c_gbt_clf_tree_id tree_id, size_t feature_index, double feature_value, int default_left, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
@@ -88,7 +93,10 @@ cdef class gbt_classification_model_builder:
         :param double feature_value: feature value for spliting
         :rtype: node identifier
         '''
-        return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value, yes_if_missing)
+        if missing_values_are_supported:
+            return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value, default_left)
+        else:
+            return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value)
 
     def model(self):
         '''
@@ -134,7 +142,7 @@ cdef class gbt_regression_model_builder:
         '''
         return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
 
-    def add_split(self, c_gbt_reg_tree_id tree_id, size_t feature_index, double feature_value, int yes_if_missing, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
+    def add_split(self, c_gbt_reg_tree_id tree_id, size_t feature_index, double feature_value, int default_left, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
@@ -145,7 +153,10 @@ cdef class gbt_regression_model_builder:
         :param double feature_value: feature value for spliting
         :rtype: node identifier
         '''
-        return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value, yes_if_missing)
+        if missing_values_are_supported:
+            return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value, default_left)
+        else:
+            return self.c_ptr.addSplitNode(tree_id, parent_id, position, feature_index, feature_value)
 
     def model(self):
         '''
