@@ -32,7 +32,7 @@ Patching
 
       .. seealso:: :ref:`get_started`
 
-   global pathcing
+   global patching
       One of the patching options available in |intelex|.
       With global patching, you can patch all scikit-learn applications at once::
 
