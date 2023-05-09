@@ -35,14 +35,20 @@ To enable verbose mode, set the ``SKLEARNEX_VERBOSE`` environment variable as sh
 
      set SKLEARNEX_VERBOSE=INFO
 
+Alternatively, get |intelex| logger and set its logging level in Python code::
+
+     import logging
+     logger = logging.getLogger('sklearnex')
+     logger.setLevel(logging.INFO)
+
 During the calls that use Intel-optimized scikit-learn, you will receive additional print statements
 that indicate which implementation is being called.
 These print statements are only available for :ref:`supported algorithms <sklearn_algorithms>`.
 
 For example, for DBSCAN you get one of these print statements depending on which implementation is used::
 
-    SKLEARNEX INFO: sklearn.cluster.DBSCAN.fit: running accelerated version on CPU
+    INFO:sklearnex: sklearn.cluster.DBSCAN.fit: running accelerated version on CPU
 
 ::
 
-    SKLEARNEX INFO: sklearn.cluster.DBSCAN.fit: fallback to original Scikit-learn
+    INFO:sklearnex: sklearn.cluster.DBSCAN.fit: fallback to original Scikit-learn
