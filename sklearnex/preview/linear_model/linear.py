@@ -201,10 +201,11 @@ if daal_check_version((2023, 'P', 100)):
             patching_status = PatchingConditionsChain(
                 f'sklearn.linear_model.{class_name}.predict')
 
+            n_samples = _num_samples(*data)
             model_is_sparse = issparse(self.coef_) or \
                 (self.fit_intercept and issparse(self.intercept_))
             dal_ready = patching_status.and_conditions([
-                (len(data[0]) <= 0, 'Number of samples is less than 1.'),
+                (n_samples > 0, 'Number of samples is less than 1.'),
                 (issparse(*data), 'Sparse input is not supported.'),
                 (not model_is_sparse, 'Sparse coefficients are not supported.'),
                 (hasattr(self, '_onedal_estimator'), 'oneDAL model was not trained.')
