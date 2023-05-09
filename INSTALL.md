@@ -72,11 +72,11 @@ Next steps after installation:
 
 #### 📦 Supported configurations for PyPI <!-- omit in toc -->
 
-| OS / Python version | **Python 3.6** | **Python 3.7** | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
-| :------------------ | :------------: | :------------: | :------------: | :------------: |  :------------: |  :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    | 
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
-| **OsX**             |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
+| OS / Python version | **Python 3.7** | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
+| :------------------ | :------------: | :------------: | :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    | 
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
+| **MacOS**           |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
 
 
 ### Install from Anaconda Cloud
@@ -101,11 +101,11 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
 
 ##### 📦 Supported configurations for Anaconda Cloud from Conda-Forge channel <!-- omit in toc -->
 
-| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**| **Python 3.10**| **Python 3.11**|
-| :-----------------------| :------------: | :------------: | :------------:| :------------:| :------------: |:------------:  |
-|    **Linux**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |     [CPU]      |     [CPU]      |
-|    **Windows**          |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |     [CPU]      |     [CPU]      |
-|    **MacOS**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |     [CPU]      |     [CPU]      |
+| OS / Python version     | **Python 3.8** | **Python 3.9** | **Python 3.10**|  **Python 3.11** |
+| :-----------------------| :------------: | :------------: | :------------: | :------------:   |
+|    **Linux**            |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
+|    **Windows**          |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
+|    **MacOS**            |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
 
 #### Install via Anaconda Cloud from Intel channel
 
@@ -114,8 +114,10 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda create -n env -c intel python scikit-learn-intelex
+  conda create -n env -c intel python=3.10 scikit-learn-intelex
   ```
+
+..note:  If you do not specify the version of Python, the latest one is downloaded. 
 
 - Install into your current environment:
 
@@ -125,11 +127,11 @@ We recommend this installation for the users of Intel® Distribution for Python.
 
 ##### 📦 Supported configurations for Anaconda Cloud from Intel channel <!-- omit in toc -->
 
-| OS / Python version | **Python 3.6** | **Python 3.7** | **Python 3.8** | **Python 3.9** | **Python 3.10** |
-| :------------------ | :------------: | :------------: | :------------: | :------------: | :------------:  |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |
-| **MacOS**           |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]       |
+| OS / Python version | **Python 3.7** | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
+| :------------------ | :------------: | :------------: | :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    | 
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
+| **MacOS**           |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
 
 
 #### Install via Anaconda Cloud from Main channel
@@ -150,11 +152,11 @@ We recommend this installation for the users of Intel® Distribution for Python.
 
 ##### 📦 Supported configurations for Anaconda Cloud from Main channel <!-- omit in toc -->
 
-| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
-| :-----------------------| :------------: | :------------: | :------------: | :------------: | :------------:  | :------------:  |
-| **Linux**               |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
-| **Windows**             |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
-| **MacOS**               |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
+| OS / Python version     | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
+| :-----------------------| :------------: | :------------: | :------------:  | :------------:  |
+| **Linux**               |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
+| **Windows**             |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
+| **MacOS**               |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
 
 
 
