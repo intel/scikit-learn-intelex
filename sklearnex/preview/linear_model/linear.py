@@ -173,7 +173,7 @@ if daal_check_version((2023, 'P', 100)):
 
             dal_ready = patching_status.and_conditions([
                 (sample_weight is None, 'Sample weight is not supported.'),
-                (issparse(X) or issparse(y), 'Sparse input is not supported.'),
+                (not issparse(X) and not issparse(y), 'Sparse input is not supported.'),
                 (not normalize_is_set, 'Normalization is not supported.'),
                 (not positive_is_set, 'Forced positive coefficients are not supported.'),
                 (is_good_for_onedal,
@@ -206,7 +206,7 @@ if daal_check_version((2023, 'P', 100)):
                 (self.fit_intercept and issparse(self.intercept_))
             dal_ready = patching_status.and_conditions([
                 (n_samples > 0, 'Number of samples is less than 1.'),
-                (issparse(*data), 'Sparse input is not supported.'),
+                (not issparse(*data), 'Sparse input is not supported.'),
                 (not model_is_sparse, 'Sparse coefficients are not supported.'),
                 (hasattr(self, '_onedal_estimator'), 'oneDAL model was not trained.')
             ])
