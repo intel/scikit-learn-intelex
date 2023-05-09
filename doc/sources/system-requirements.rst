@@ -37,7 +37,7 @@ PyPI channel
 =============
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8 8
    :header-rows: 1
    :align: left
 
@@ -46,7 +46,11 @@ PyPI channel
      - Python 3.7
      - Python 3.8
      - Python 3.9
+     - Python 3.10
+     - Python 3.11
    * - Linux
+     - [CPU, GPU]
+     - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
@@ -56,7 +60,11 @@ PyPI channel
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
    * - macOS
+     - [CPU]
+     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
@@ -68,7 +76,7 @@ Anaconda Cloud: Conda-Forge channel
 ===================================
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8 8
    :header-rows: 1
    :align: left
 
@@ -77,7 +85,11 @@ Anaconda Cloud: Conda-Forge channel
      - Python 3.7
      - Python 3.8
      - Python 3.9
+     - Python 3.10
+     - Python 3.11
    * - Linux
+     - [CPU]
+     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
@@ -87,7 +99,11 @@ Anaconda Cloud: Conda-Forge channel
      - [CPU]
      - [CPU]
      - [CPU]
+     - [CPU]
+     - [CPU]
    * - macOS
+     - [CPU]
+     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
@@ -99,7 +115,7 @@ Anaconda Cloud: Intel channel
 ==============================
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8
    :header-rows: 1
    :align: left
 
@@ -108,7 +124,9 @@ Anaconda Cloud: Intel channel
      - Python 3.7
      - Python 3.8
      - Python 3.9
+     - Python 3.10
    * - Linux
+     - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
@@ -118,7 +136,9 @@ Anaconda Cloud: Intel channel
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
+     - [CPU, GPU]
    * - macOS
+     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
@@ -130,7 +150,7 @@ Anaconda Cloud: Main channel
 ==============================
 
 .. list-table::
-   :widths: 25 8 8 8 8
+   :widths: 25 8 8 8 8 8 8
    :header-rows: 1
    :align: left
 
@@ -139,7 +159,11 @@ Anaconda Cloud: Main channel
      - Python 3.7
      - Python 3.8
      - Python 3.9
+     - Python 3.10
+     - Python 3.11
    * - Linux
+     - [CPU, GPU]
+     - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
@@ -149,7 +173,11 @@ Anaconda Cloud: Main channel
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
+     - [CPU, GPU]
+     - [CPU, GPU]
    * - macOS
+     - [CPU]
+     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
