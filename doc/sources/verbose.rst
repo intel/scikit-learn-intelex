@@ -35,7 +35,7 @@ To enable verbose mode, set the ``SKLEARNEX_VERBOSE`` environment variable as sh
 
      set SKLEARNEX_VERBOSE=INFO
 
-Alternatively, get |intelex| logger and set its logging level in Python code::
+Alternatively, get |intelex| logger and set its logging level in the Python code::
 
      import logging
      logger = logging.getLogger('sklearnex')
