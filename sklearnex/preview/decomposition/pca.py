@@ -166,7 +166,7 @@ class PCA(sklearn_PCA):
 
         # Call different fits for either full or truncated SVD
         if shape_good_for_daal and self._fit_svd_solver == "full":
-            return dispatch(self, 'decomposition.PCA.fit', {
+            return dispatch(self, 'fit', {
                 'onedal': self.__class__._onedal_fit,
                 'sklearn': sklearn_PCA._fit_full,
             }, X)
@@ -182,18 +182,18 @@ class PCA(sklearn_PCA):
             )
 
     def _onedal_gpu_supported(self, method_name, *data):
-        if method_name == 'decomposition.PCA.fit':
+        if method_name == 'fit':
             return self._fit_svd_solver == 'full'
-        elif method_name == 'decomposition.PCA.transform':
+        elif method_name == 'transform':
             return hasattr(self, '_onedal_estimator')
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}'
         )
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'decomposition.PCA.fit':
+        if method_name == 'fit':
             return self._fit_svd_solver == 'full'
-        elif method_name == 'decomposition.PCA.transform':
+        elif method_name == 'transform':
             return hasattr(self, '_onedal_estimator')
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}'
@@ -251,7 +251,7 @@ class PCA(sklearn_PCA):
 
         # Mean center
         X_centered = X - self.mean_
-        return dispatch(self, 'decomposition.PCA.transform', {
+        return dispatch(self, 'transform', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_PCA.transform,
         }, X_centered)

@@ -16,16 +16,15 @@
 
 # sklearnex can help you debug your aplications by printing messages on it's invocation
 # to allow you to see if stock of accelerated version was used.
-# By setting SKLEARNEX_VERBOSE=INFO you would enable this verbose mode
-import os
-os.environ["SKLEARNEX_VERBOSE"] = "INFO"
+# By setting sklearnex logger level to "INFO" you would enable this verbose mode
+import logging
+logging.getLogger('sklearnex').setLevel(logging.INFO)
 
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn
 patch_sklearn()
 
 # Remaining non modified scikit-learn code
-import numpy as np
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
@@ -37,7 +36,7 @@ X, labels_true = make_blobs(
 X = StandardScaler().fit_transform(X)
 
 from sklearn.cluster import DBSCAN
-from sklearn import metrics
+from sklearn.metrics import v_measure_score
 
 db = DBSCAN(eps=0.3, min_samples=10).fit(X)
 labels = db.labels_
@@ -45,6 +44,8 @@ labels = db.labels_
 # Number of clusters in labels, ignoring noise if present.
 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 n_noise_ = list(labels).count(-1)
+v_measure = v_measure_score(labels_true, labels)
 
 print("Estimated number of clusters: %d" % n_clusters_)
 print("Estimated number of noise points: %d" % n_noise_)
+print("Estimated V-measure score: %f" % v_measure)

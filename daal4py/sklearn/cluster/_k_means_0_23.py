@@ -180,7 +180,7 @@ def _daal4py_k_means_fit(X, nClusters, numIterations,
 
     default_n_init = 10
     if n_init in ['auto', 'warn']:
-        if n_init == "warn":
+        if n_init == "warn" and not sklearn_check_version('1.2'):
             warnings.warn(
                 "The default value of `n_init` will change from "
                 f"{default_n_init} to 'auto' in 1.4. Set the value of `n_init`"
