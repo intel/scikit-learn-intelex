@@ -112,14 +112,44 @@ class LogisticLoss(BaseObjectiveFunction):
         self.fit_intercept = fit_intercept
         super().__init__(algorithm, queue, _backend.objective_function.compute.logloss)
 
-    def __fix_gradient(self, grad, coef, l2_reg_strength):
+    '''
+    onedal compute_gradient function returns:
+    [dL / dw_0, dL / dw_1, ...., dL / dw_p] if fit_intercept=True
+    [0.0, dL / dw_1, ...., dL / dw_p] if fit_intercept=False
+    gradient function from sklearn.linear_model._linear_loss returns:
+    [dL / dw_1, ...., dL / dw_p, dL / dw_0] if fit_intercept=True
+    [dL / dw_1, ...., dL / dw_p] if fit_intercept=False
+
+    so to align with python interface format should be changed
+    '''
+
+    def __change_gradient_format(self, grad, coef, l2_reg_strength):
         if self.fit_intercept:
             grad = np.hstack([grad[1:] + coef[:-1] * l2_reg_strength, grad[0]])
         else:
             grad = grad[1:] + coef * l2_reg_strength
         return grad
 
-    def __fix_hessian(self, hess, coef, l2_reg_strength):
+    '''
+    onedal compute_hessian function returns matrix H of size (p+1)*(p+1)
+    H_i,j = dL / (dw_i * d_w_j)
+    if fit_intercept=False: H_0,i = H_0,i = 0.0
+
+    hessian function from sklearn.linear_model._linear_loss returns:
+
+    if fit_intercept=True
+    matrix of size (p + 1) * (p + 1)
+    H_i,j = dL / (dw_(i+1) * dw_(j+1)) for 0 <= i,j < p
+    H_i,p = H_p,i = dL / (dw_(i+1) dw_0)
+
+    if fit_intercept=False
+    matrix of size p * p
+    H_i,j = dL / (dw_(i+1) * dw_(j+1))
+
+    so to align with python interface format should be changed
+    '''
+
+    def __change_hessian_format(self, hess, coef, l2_reg_strength):
         num_params = coef.shape[0]
         if not self.fit_intercept:
             num_params += 1
@@ -184,7 +214,7 @@ class LogisticLoss(BaseObjectiveFunction):
         grad = res["gradient"]
         if l2_reg_strength > 0:
             value += self.__calculate_regularization(coef, l2_reg_strength)
-        return (value, self.__fix_gradient(grad, coef, l2_reg_strength))
+        return (value, self.__change_gradient_format(grad, coef, l2_reg_strength))
 
     def gradient(
         self,
@@ -203,7 +233,7 @@ class LogisticLoss(BaseObjectiveFunction):
         grad = super()._compute(X, y, coef, "gradient", 0.0, self.fit_intercept)[
             "gradient"
         ]
-        return self.__fix_gradient(grad, coef, l2_reg_strength)
+        return self.__change_gradient_format(grad, coef, l2_reg_strength)
 
     def gradient_hessian(
         self,
@@ -222,8 +252,8 @@ class LogisticLoss(BaseObjectiveFunction):
         res = super()._compute(
             X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept
         )
-        grad = self.__fix_gradient(res["gradient"], coef, l2_reg_strength)
-        hess = self.__fix_hessian(res["hessian"], coef, l2_reg_strength)
+        grad = self.__change_gradient_format(res["gradient"], coef, l2_reg_strength)
+        hess = self.__change_hessian_format(res["hessian"], coef, l2_reg_strength)
         flag = (res["hessian"] <= 0.0).sum() * 2 >= res["hessian"].shape[0]
         return (grad, hess, flag)
 
@@ -244,8 +274,8 @@ class LogisticLoss(BaseObjectiveFunction):
         res = super()._compute(
             X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept
         )
-        grad = self.__fix_gradient(res["gradient"], coef, l2_reg_strength)
-        hess = self.__fix_hessian(res["hessian"], coef, l2_reg_strength)
+        grad = self.__change_gradient_format(res["gradient"], coef, l2_reg_strength)
+        hess = self.__change_hessian_format(res["hessian"], coef, l2_reg_strength)
 
         def hessp(s):
             return hess @ s
