@@ -77,6 +77,7 @@ class KNeighborsDispatchingBase:
                 if hasattr(self, '_onedal_estimator'):
                     y = self._onedal_estimator._y
                 is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
+
         # TODO: add native support for these metric names
         metrics_map = {
             'manhattan': ['l1', 'cityblock'],
@@ -87,9 +88,12 @@ class KNeighborsDispatchingBase:
                 self.effective_metric_ = origin
                 break
         if self.effective_metric_ == 'manhattan':
+            self.p = 1
             self.effective_metric_params_['p'] = 1
         elif self.effective_metric_ == 'euclidean':
+            self.p = 2
             self.effective_metric_params_['p'] = 2
+
         onedal_brute_metrics = [
             'manhattan', 'minkowski', 'euclidean', 'chebyshev', 'cosine']
         onedal_kdtree_metrics = ['euclidean']
