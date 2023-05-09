@@ -72,8 +72,11 @@ PYBIND11_MODULE(_onedal_py_host, m) {
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     init_basic_statistics(m);
     init_linear_model(m);
-    init_objective_function(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    init_objective_function(m);
+#endif
+
     init_neighbors(m);
     init_svm(m);
 }

@@ -49,13 +49,11 @@ struct method2t {
     Ops ops;
 };
 
-
-const std::map<std::string, dal::objective_function::result_option_id> result_option_registry {
-    {"value", dal::objective_function::detail::get_value_id()}, 
-    {"gradient", dal::objective_function::detail::get_gradient_id()},
-    {"hessian", dal::objective_function::detail::get_hessian_id()}
+const std::map<std::string, dal::objective_function::result_option_id> result_option_registry{
+    { "value", dal::objective_function::detail::get_value_id() },
+    { "gradient", dal::objective_function::detail::get_gradient_id() },
+    { "hessian", dal::objective_function::detail::get_hessian_id() }
 };
-
 
 auto get_onedal_result_options(const py::dict& params) {
     using namespace dal::objective_function;
@@ -75,7 +73,8 @@ auto get_onedal_result_options(const py::dict& params) {
             const auto match = result_option_registry.find(str);
             if (match == result_option_registry.cend()) {
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
-            } else {
+            }
+            else {
                 onedal_options = onedal_options | match->second;
             }
         }
@@ -97,8 +96,9 @@ struct descriptor_creator<Float,
     static auto get(double L1, double L2, bool intercept) {
         auto logloss_desc = dal::logloss_objective::descriptor<Float>(L1, L2, intercept);
         return dal::objective_function::descriptor<Float,
-                                             dal::objective_function::method::dense_batch,
-                                             dal::objective_function::task::compute>(logloss_desc);
+                                                   dal::objective_function::method::dense_batch,
+                                                   dal::objective_function::task::compute>(
+            logloss_desc);
     }
 };
 
@@ -111,8 +111,12 @@ struct logloss_params2desc {
         const double L1 = params["l1_coef"].cast<double>();
         const double L2 = params["l2_coef"].cast<double>();
 
-        auto desc = descriptor_creator<Float, dal::logloss_objective::descriptor<Float>, Method, Task>::get(L1, L2, intercept).set_result_options(
-            get_onedal_result_options(params));
+        auto desc =
+            descriptor_creator<Float, dal::logloss_objective::descriptor<Float>, Method, Task>::get(
+                L1,
+                L2,
+                intercept)
+                .set_result_options(get_onedal_result_options(params));
         return desc;
     }
 };
