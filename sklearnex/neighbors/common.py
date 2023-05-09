@@ -30,7 +30,7 @@ class KNeighborsDispatchingBase:
         is_regressor = 'Regressor' in class_name
         is_unsupervised = not (is_classifier or is_regressor)
         patching_status = PatchingConditionsChain(
-            f'sklearn.{method_name}')
+            f'sklearn.neighbors.{class_name}.{method_name}')
 
         if not patching_status.and_condition(
             not isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase)),
@@ -119,15 +119,13 @@ class KNeighborsDispatchingBase:
                  f'"{type(self.weights)}" weights type is not supported.')
             ]):
                 return patching_status.get_status(logs=True)
-        if method_name == f'neighbors.{class_name}.fit':
+        if method_name == 'fit':
             if is_classifier:
                 patching_status.and_condition(
                     class_count >= 2, 'One-class case is not supported.'
                 )
             return patching_status.get_status(logs=True)
-        if method_name in [f'neighbors.{class_name}.predict',
-                           f'neighbors.{class_name}.predict_proba',
-                           f'neighbors.{class_name}.kneighbors']:
+        if method_name in ['predict', 'predict_proba', 'kneighbors']:
             patching_status.and_condition(
                 hasattr(self, '_onedal_estimator'), 'oneDAL model was not trained.'
             )

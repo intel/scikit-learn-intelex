@@ -230,7 +230,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
             self.n_samples_fit_ = X.data.shape[0]
             self.n_features_in_ = X.data.shape[1]
 
-        dispatch(self, 'neighbors.KNeighborsRegressor.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_KNeighborsRegressor.fit,
         }, X, y)
@@ -241,7 +241,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'neighbors.KNeighborsRegressor.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_KNeighborsRegressor.predict,
         }, X)
@@ -251,7 +251,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'neighbors.KNeighborsRegressor.kneighbors', {
+        return dispatch(self, 'kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
             'sklearn': sklearn_KNeighborsRegressor.kneighbors,
         }, X, n_neighbors, return_distance)

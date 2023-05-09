@@ -76,7 +76,7 @@ class SVR(sklearn_SVR, BaseSVR):
             self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
-        dispatch(self, 'svm.SVR.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_SVR.fit,
         }, X, y, sample_weight)
@@ -103,7 +103,7 @@ class SVR(sklearn_SVR, BaseSVR):
         """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'svm.SVR.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_SVR.predict,
         }, X)

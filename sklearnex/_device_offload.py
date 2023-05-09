@@ -161,7 +161,8 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == 'sklearn':
         return branches[backend](obj, *hostargs, **hostkwargs)
-    raise RuntimeError(f'Undefined backend {backend} in {method_name}')
+    raise RuntimeError(f'Undefined backend {backend} in '
+                       f'{obj.__class__.__name__}.{method_name}')
 
 
 def _copy_to_usm(queue, array):

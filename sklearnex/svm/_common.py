@@ -59,21 +59,18 @@ class BaseSVM(ABC):
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
-        if method_name == f'svm.{class_name}.fit':
-            patching_status = PatchingConditionsChain(f'sklearn.{method_name}')
+        patching_status = PatchingConditionsChain(
+            f'sklearn.svm.{class_name}.{method_name}')
+        if method_name == 'fit':
             patching_status.and_conditions([
                 (self.kernel in ['linear', 'rbf', 'poly', 'sigmoid'],
                  f'Kernel is "{self.kernel}" while '
                  '"linear", "rbf", "poly" and "sigmoid" are only supported.')
             ])
             return patching_status.get_status(logs=True)
-        inference_methods = [f'svm.{class_name}.predict'] if class_name.endswith('R') \
-            else [
-                f'svm.{class_name}.predict',
-                f'svm.{class_name}.predict_proba',
-                f'svm.{class_name}.decision_function']
+        inference_methods = ['predict'] if class_name.endswith('R') \
+            else ['predict', 'predict_proba', 'decision_function']
         if method_name in inference_methods:
-            patching_status = PatchingConditionsChain(f'sklearn.{method_name}')
             patching_status.and_conditions([
                 (hasattr(self, '_onedal_estimator'), 'oneDAL model was not trained.')
             ])

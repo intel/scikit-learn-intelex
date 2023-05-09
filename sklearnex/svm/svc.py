@@ -85,7 +85,7 @@ class SVC(sklearn_SVC, BaseSVC):
             self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
-        dispatch(self, 'svm.SVC.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_SVC.fit,
         }, X, y, sample_weight)
@@ -111,7 +111,7 @@ class SVC(sklearn_SVC, BaseSVC):
         """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'svm.SVC.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_SVC.predict,
         }, X)
@@ -153,7 +153,7 @@ class SVC(sklearn_SVC, BaseSVC):
                               if sklearn_check_version("1.0")
                               else sklearn_SVC._predict_proba)
 
-        return dispatch(self, 'svm.SVC.predict_proba', {
+        return dispatch(self, 'predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_pred_proba,
         }, X)
@@ -162,17 +162,19 @@ class SVC(sklearn_SVC, BaseSVC):
     def decision_function(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'svm.SVC.decision_function', {
+        return dispatch(self, 'decision_function', {
             'onedal': self.__class__._onedal_decision_function,
             'sklearn': sklearn_SVC.decision_function,
         }, X)
 
     def _onedal_gpu_supported(self, method_name, *data):
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f'sklearn.svm.{class_name}.{method_name}')
         if method_name == 'svm.SVC.fit':
             if len(data) > 1:
                 self._class_count = len(np.unique(data[1]))
             self._is_sparse = sp.isspmatrix(data[0])
-            patching_status = PatchingConditionsChain('sklearn.svm.SVC.fit')
             patching_status.and_conditions([
                 (self.kernel in ['linear', 'rbf'],
                  f'Kernel is "{self.kernel}" while '
@@ -182,17 +184,14 @@ class SVC(sklearn_SVC, BaseSVC):
                 (not self._is_sparse, 'Sparse input is not supported on GPU.')
             ])
             return patching_status.get_status(logs=True)
-        if method_name in ['svm.SVC.predict',
-                           'svm.SVC.predict_proba',
-                           'svm.SVC.decision_function']:
-            patching_status = PatchingConditionsChain(f'sklearn.{method_name}')
+        if method_name in ['predict', 'predict_proba', 'decision_function']:
             patching_status.and_conditions([
                 (hasattr(self, '_onedal_estimator') and self._onedal_gpu_supported(
                     'svm.SVC.fit', *data),
                  'oneDAL model was not trained on GPU.')
             ])
             return patching_status.get_status(logs=True)
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
+        raise RuntimeError(f'Unknown method {method_name} in {class_name}')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {

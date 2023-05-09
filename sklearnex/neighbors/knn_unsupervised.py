@@ -190,7 +190,7 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
             self.n_samples_fit_ = X.data.shape[0]
             self.n_features_in_ = X.data.shape[1]
 
-        dispatch(self, 'neighbors.NearestNeighbors.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NearestNeighbors.fit,
         }, X, None)
@@ -201,7 +201,7 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'neighbors.NearestNeighbors.kneighbors', {
+        return dispatch(self, 'kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
             'sklearn': sklearn_NearestNeighbors.kneighbors,
         }, X, n_neighbors, return_distance)
