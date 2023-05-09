@@ -26,7 +26,7 @@ Supported configurations
 ------------------------
 
 |intelex| supports optimizations for the last four versions of scikit-learn.
-The latest release of scikit-learn-intelex-2021.3.X supports scikit-learn 0.22.X, 0.23.X, 0.24.X and 1.0.X.
+The latest release of scikit-learn-intelex-2023.1.X supports scikit-learn 0.24.X, 1.0.X, 1.1.X and 1.2.X.
 
 |intelex| is available for installation from different channels. 
 There is a difference in supported configurations for each distribution channel.
@@ -37,12 +37,11 @@ PyPI channel
 =============
 
 .. list-table::
-   :widths: 25 8 8 8 8 8 8
+   :widths: 25 8 8 8 8 8
    :header-rows: 1
    :align: left
 
    * - OS / Python version
-     - Python 3.6
      - Python 3.7
      - Python 3.8
      - Python 3.9
@@ -54,16 +53,13 @@ PyPI channel
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
-     - [CPU, GPU]
    * - Windows
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
-     - [CPU, GPU]
    * - macOS
-     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
@@ -76,13 +72,11 @@ Anaconda Cloud: Conda-Forge channel
 ===================================
 
 .. list-table::
-   :widths: 25 8 8 8 8 8 8
+   :widths: 25 8 8 8 8
    :header-rows: 1
    :align: left
 
    * - OS / Python version
-     - Python 3.6
-     - Python 3.7
      - Python 3.8
      - Python 3.9
      - Python 3.10
@@ -92,18 +86,12 @@ Anaconda Cloud: Conda-Forge channel
      - [CPU]
      - [CPU]
      - [CPU]
-     - [CPU]
-     - [CPU]
    * - Windows
      - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
-     - [CPU]
-     - [CPU]
    * - macOS
-     - [CPU]
-     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
@@ -120,11 +108,11 @@ Anaconda Cloud: Intel channel
    :align: left
 
    * - OS / Python version
-     - Python 3.6
      - Python 3.7
      - Python 3.8
      - Python 3.9
      - Python 3.10
+     - Python 3.11
    * - Linux
      - [CPU, GPU]
      - [CPU, GPU]
@@ -150,34 +138,26 @@ Anaconda Cloud: Main channel
 ==============================
 
 .. list-table::
-   :widths: 25 8 8 8 8 8 8
+   :widths: 25 8 8 8 8
    :header-rows: 1
    :align: left
 
    * - OS / Python version
-     - Python 3.6
-     - Python 3.7
      - Python 3.8
      - Python 3.9
      - Python 3.10
      - Python 3.11
    * - Linux
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
    * - Windows
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
-     - [CPU, GPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
+     - [CPU]
    * - macOS
-     - [CPU]
-     - [CPU]
      - [CPU]
      - [CPU]
      - [CPU]
@@ -202,7 +182,7 @@ The last two versions of the following operating systems:
 - All processors with x86 architecture
 
 .. note::
-    Your processor must support at least one of SSE2, AVX, AVX2, AVX512 instruction sets.
+    Your processor must support at least one of SSE2, SSE4.2, AVX2, AVX512 instruction sets.
 
 .. note::
     ARM* architecture is not supported.
@@ -216,7 +196,7 @@ For GPU
 
 .. important::
     If you are using accelerators, please refer to the DPC++ compiler system
-    requirements `here <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_
+    requirements `here <https://www.intel.com/content/www/us/en/developer/articles/system-requirements/intel-oneapi-dpcpp-system-requirements.html>`_
 
 .. rubric:: Operating systems
 
