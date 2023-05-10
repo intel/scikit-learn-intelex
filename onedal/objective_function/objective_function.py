@@ -184,9 +184,12 @@ class LogisticLoss(BaseObjectiveFunction):
         n_threads=1,
         raw_prediction=None,
     ):
-        assert sample_weight is None
-        assert n_threads == 1
-        assert raw_prediction is None
+        if (sample_weight is not None):
+            raise Exception("sample_weigth parameter is not supported")
+        if (n_threads != 1):
+            raise Exception("multithreading is not supported")
+        if (raw_prediction is not None):
+            raise Exception("raw_prediction parameter is not supported")
 
         value = super()._compute(X, y, coef, "value", 0.0, self.fit_intercept)["value"]
         if l2_reg_strength > 0:
@@ -203,9 +206,12 @@ class LogisticLoss(BaseObjectiveFunction):
         n_threads=1,
         raw_prediction=None,
     ):
-        assert sample_weight is None
-        assert n_threads == 1
-        assert raw_prediction is None
+        if (sample_weight is not None):
+            raise Exception("sample_weigth parameter is not supported")
+        if (n_threads != 1):
+            raise Exception("multithreading is not supported")
+        if (raw_prediction is not None):
+            raise Exception("raw_prediction parameter is not supported")
 
         res = super()._compute(
             X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept
@@ -226,9 +232,12 @@ class LogisticLoss(BaseObjectiveFunction):
         n_threads=1,
         raw_prediction=None,
     ):
-        assert sample_weight is None
-        assert n_threads == 1
-        assert raw_prediction is None
+        if (sample_weight is not None):
+            raise Exception("sample_weigth parameter is not supported")
+        if (n_threads != 1):
+            raise Exception("multithreading is not supported")
+        if (raw_prediction is not None):
+            raise Exception("raw_prediction parameter is not supported")
 
         grad = super()._compute(X, y, coef, "gradient", 0.0, self.fit_intercept)[
             "gradient"
@@ -245,9 +254,12 @@ class LogisticLoss(BaseObjectiveFunction):
         n_threads=1,
         raw_prediction=None,
     ):
-        assert sample_weight is None
-        assert n_threads == 1
-        assert raw_prediction is None
+        if (sample_weight is not None):
+            raise Exception("sample_weigth parameter is not supported")
+        if (n_threads != 1):
+            raise Exception("multithreading is not supported")
+        if (raw_prediction is not None):
+            raise Exception("raw_prediction parameter is not supported")
 
         res = super()._compute(
             X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept
@@ -267,9 +279,12 @@ class LogisticLoss(BaseObjectiveFunction):
         n_threads=1,
         raw_prediction=None,
     ):
-        assert sample_weight is None
-        assert n_threads == 1
-        assert raw_prediction is None
+        if (sample_weight is not None):
+            raise Exception("sample_weigth parameter is not supported")
+        if (n_threads != 1):
+            raise Exception("multithreading is not supported")
+        if (raw_prediction is not None):
+            raise Exception("raw_prediction parameter is not supported")
 
         res = super()._compute(
             X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept

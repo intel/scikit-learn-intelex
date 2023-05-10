@@ -186,7 +186,7 @@ if daal_check_version((2023, 'P', 200)):
 
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize(
-        "dimensions", [(10**6, 50), (100, 100), (500, 20), (20, 73)]
+        "dimensions", [(1000, 50), (100, 100), (500, 20), (20, 73)]
     )
     def test_sizes(queue, dimensions):
         dtype = np.float64

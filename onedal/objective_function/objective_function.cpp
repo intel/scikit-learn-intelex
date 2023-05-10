@@ -14,21 +14,19 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "oneapi/dal/algo/objective_function.hpp"
-
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+
+#include "oneapi/dal/algo/objective_function.hpp"
 #include <string>
 #include <regex>
 #include <map>
-#include <iostream>
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
-
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 
 namespace objective_function {
 
@@ -178,6 +176,6 @@ ONEDAL_PY_INIT_MODULE(objective_function) {
 
 ONEDAL_PY_TYPE2STR(dal::objective_function::task::compute, "compute");
 
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-
 } // namespace oneapi::dal::python
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
