@@ -46,8 +46,11 @@ if _is_dpc_backend:
     __all__.append('spmd')
 
 if daal_check_version((2023, 'P', 100)):
-    __all__ += ['basic_statistics', 'linear_model', 'objective_function']
+    __all__ += ['basic_statistics', 'linear_model']
 
     if _is_dpc_backend:
         __all__ += ['spmd.basic_statistics', 'spmd.decomposition',
                     'spmd.linear_model', 'spmd.neighbors']
+
+if daal_check_version((2023, 'P', 200)):
+    __all__ += ['objective_function']

@@ -44,8 +44,10 @@ ONEDAL_PY_INIT_MODULE(decomposition);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 ONEDAL_PY_INIT_MODULE(basic_statistics);
 ONEDAL_PY_INIT_MODULE(linear_model);
-ONEDAL_PY_INIT_MODULE(objective_function);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+ONEDAL_PY_INIT_MODULE(objective_function);
+#endif
 ONEDAL_PY_INIT_MODULE(neighbors);
 ONEDAL_PY_INIT_MODULE(svm);
 
