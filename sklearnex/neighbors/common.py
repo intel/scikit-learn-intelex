@@ -68,14 +68,15 @@ class KNeighborsDispatchingBase:
             if is_classifier:
                 class_count = 1
             is_single_output = False
-            if len(data) > 1 or hasattr(self, '_onedal_estimator'):
-                # To check multioutput, might be overhead
-                if len(data) > 1:
-                    y = np.asarray(data[1])
-                    if is_classifier:
-                        class_count = len(np.unique(y))
-                if hasattr(self, '_onedal_estimator'):
-                    y = self._onedal_estimator._y
+            y = None
+            # To check multioutput, might be overhead
+            if len(data) > 1:
+                y = np.asarray(data[1])
+                if is_classifier:
+                    class_count = len(np.unique(y))
+            if hasattr(self, '_onedal_estimator'):
+                y = self._onedal_estimator._y
+            if y is not None and hasattr(y, 'ndim') and hasattr(y, 'shape'):
                 is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
 
         # TODO: add native support for these metric names
