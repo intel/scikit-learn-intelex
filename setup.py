@@ -430,7 +430,7 @@ if ONEDAL_VERSION >= 20230100:
         'onedal.basic_statistics',
         'onedal.linear_model']
 
-if ONEDAL_VERSION >= 20230100:
+if ONEDAL_VERSION >= 20230200:
     packages_with_tests += [
         'onedal.objective_function']
 

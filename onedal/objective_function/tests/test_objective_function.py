@@ -16,18 +16,17 @@
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from sklearn.metrics import log_loss
-from sklearn._loss.loss import HalfBinomialLoss
-from sklearn.linear_model import _linear_loss
 
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
-
-from onedal.objective_function import LogisticLoss
 from onedal.tests.utils._device_selection import get_queues
 
 
-if daal_check_version((2023, 'P', 200)):
+if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
+    from sklearn._loss.loss import HalfBinomialLoss
+    from sklearn.linear_model import _linear_loss
+    from onedal.objective_function import LogisticLoss
 
     def gen_test(
         row_count=10000, col_count=49, seed=42, dtype=np.float32, fit_intercept=True
