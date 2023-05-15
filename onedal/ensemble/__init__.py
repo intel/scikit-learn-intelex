@@ -19,5 +19,5 @@ from .forest import ExtraTreesClassifier, ExtraTreesRegressor
 
 __all__ = ['RandomForestClassifier',
            'RandomForestRegressor',
-           'ExtraTreesClassifier', 
+           'ExtraTreesClassifier',
            'ExtraTreesRegressor']
