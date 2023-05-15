@@ -248,7 +248,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
             self.splitter_mode = splitter_mode
-            # self._estimator = ExtraTreeClassifier()
+
     else:
         def __init__(self,
                      n_estimators=100,
@@ -300,8 +300,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = splitter_mode
-            # self._estimator = ExtraTreeClassifier()
+            self.splitter_mode = splitter_mode\
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -537,9 +536,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
         if method_name == 'ensemble.ExtraTreesClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
-                    not daal_check_version((2023, 'P', 101)):
-                warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
-                              "Using 'best' mode instead.", RuntimeWarning)
+                    not daal_check_version((2023, 'P', 200)):
                 return False
             if not ready:
                 return False
@@ -925,7 +922,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
         if method_name == 'ensemble.ExtraTreesRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
-                    not daal_check_version((2023, 'P', 101)):
+                    not daal_check_version((2023, 'P', 200)):
                 return False
             if not ready:
                 return False
