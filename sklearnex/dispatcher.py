@@ -62,7 +62,6 @@ def get_patch_map():
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
-        from .objective_function import LinearModelLoss as LinearModelLoss_sklearnex
 
         # Preview classes for patching
         from .preview.decomposition import PCA as PCA_sklearnex
@@ -73,9 +72,18 @@ def get_patch_map():
             RandomForestRegressor as RandomForestRegressor_sklearnex,
         )
         from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
+        from .preview.objective_function import LinearModelLoss as LinearModelLoss_sklearnex
 
         # Patch for mapping
         if _is_preview_enabled():
+
+            # LinearModelLoss
+            mapping.pop("logisticregression")
+            mapping.pop("logistic")
+            mapping.pop("log_reg")
+            mapping["logreg_logloss"] = [
+                [(logistic_regression_module, "LinearModelLoss", LinearModelLoss_sklearnex), None]]
+
             # Ensemble
             mapping.pop("random_forest_classifier")
             mapping.pop("random_forest_regressor")
@@ -120,12 +128,6 @@ def get_patch_map():
                     None,
                 ]
             ]
-
-        #LinearModelLoss
-        mapping.pop("logisticregression")
-        mapping.pop("logistic")
-        mapping.pop("log_reg")
-        mapping["logreg_logloss"] = [[(logistic_regression_module, "LinearModelLoss", LinearModelLoss_sklearnex), None]]
 
         # SVM
         mapping.pop("svm")

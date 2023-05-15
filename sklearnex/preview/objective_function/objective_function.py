@@ -14,7 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
-from .._device_offload import dispatch, wrap_output_data
+from ..._device_offload import dispatch, wrap_output_data
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 import logging
