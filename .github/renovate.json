@@ -7,5 +7,15 @@
     "fileMatch": [
       "(^|/)requirements.*\\.txt$"
     ]
-  }
+  },
+  "packageRules": [
+    {
+      "fileMatch": [
+        "(^|/)requirements-doc.txt$"
+      ],
+      "groupName": "Doc packages",
+      "matchUpdateTypes": ["patch", "minor"],
+      "schedule": ["before 2am on monday"]
+    }
+  ]
 }

@@ -28,7 +28,7 @@ steps:
     displayName: "System info"
   - script: |
       source activate CB
-      pip install -r requirements-dev.txt
+      pip install -r dependencies-dev
       pip list
     displayName: 'Install develop requirements'
   - script: |

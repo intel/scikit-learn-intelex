@@ -14,7 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version
 import logging
 
 if daal_check_version((2023, 'P', 100)):
@@ -24,7 +24,8 @@ if daal_check_version((2023, 'P', 100)):
     from ..._device_offload import dispatch, wrap_output_data
 
     from ...utils.validation import assert_all_finite
-    from daal4py.sklearn._utils import (get_dtype, make2d)
+    from daal4py.sklearn._utils import (
+        get_dtype, make2d, sklearn_check_version, PatchingConditionsChain)
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
     if sklearn_check_version('1.0') and not sklearn_check_version('1.2'):
@@ -113,7 +114,7 @@ if daal_check_version((2023, 'P', 100)):
             if sklearn_check_version("1.2"):
                 self._validate_params()
 
-            dispatch(self, 'linear_model.LinearRegression.fit', {
+            dispatch(self, 'fit', {
                 'onedal': self.__class__._onedal_fit,
                 'sklearn': sklearn_LinearRegression.fit,
             }, X, y, sample_weight)
@@ -134,7 +135,7 @@ if daal_check_version((2023, 'P', 100)):
             """
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
-            return dispatch(self, 'linear_model.LinearRegression.predict', {
+            return dispatch(self, 'predict', {
                 'onedal': self.__class__._onedal_predict,
                 'sklearn': sklearn_LinearRegression.predict,
             }, X)
@@ -153,67 +154,74 @@ if daal_check_version((2023, 'P', 100)):
             return True
 
         def _onedal_fit_supported(self, method_name, *data):
-            assert method_name == 'linear_model.LinearRegression.fit'
-
+            assert method_name == 'fit'
             assert len(data) == 3
             X, y, sample_weight = data
 
-            if sample_weight is not None:
-                return False
+            class_name = self.__class__.__name__
+            patching_status = PatchingConditionsChain(
+                f'sklearn.linear_model.{class_name}.fit')
 
-            if issparse(X) or issparse(y):
-                return False
-
-            if hasattr(self, 'normalize') and self.normalize \
-                    and self.normalize != 'deprecated':
-                return False
-
-            if hasattr(self, 'positive') and self.positive:
-                return False
+            normalize_is_set = hasattr(self, 'normalize') and self.normalize \
+                and self.normalize != 'deprecated'
+            positive_is_set = hasattr(self, 'positive') and self.positive
 
             n_samples, n_features = _get_2d_shape(X, fallback_1d=True)
-
             # Check if equations are well defined
             is_good_for_onedal = n_samples > \
                 (n_features + int(self.fit_intercept))
-            if not is_good_for_onedal:
-                return False
 
-            if not self._test_type_and_finiteness(X):
-                return False
+            dal_ready = patching_status.and_conditions([
+                (sample_weight is None, 'Sample weight is not supported.'),
+                (not issparse(X) and not issparse(y), 'Sparse input is not supported.'),
+                (not normalize_is_set, 'Normalization is not supported.'),
+                (not positive_is_set, 'Forced positive coefficients are not supported.'),
+                (is_good_for_onedal,
+                 'The shape of X (fitting) does not satisfy oneDAL requirements:.'
+                 'Number of features + 1 >= number of samples.')
+            ])
+            if not dal_ready:
+                return patching_status.get_status(logs=True)
 
-            if not self._test_type_and_finiteness(y):
-                return False
+            if not patching_status.and_condition(
+                self._test_type_and_finiteness(X), 'Input X is not supported.'
+            ):
+                return patching_status.get_status(logs=True)
 
-            return True
+            patching_status.and_condition(
+                self._test_type_and_finiteness(y), 'Input y is not supported.')
+
+            return patching_status.get_status(logs=True)
 
         def _onedal_predict_supported(self, method_name, *data):
-            assert method_name == 'linear_model.LinearRegression.predict'
-
+            assert method_name == 'predict'
             assert len(data) == 1
 
+            class_name = self.__class__.__name__
+            patching_status = PatchingConditionsChain(
+                f'sklearn.linear_model.{class_name}.predict')
+
             n_samples = _num_samples(*data)
-            if not (n_samples > 0):
-                return False
+            model_is_sparse = issparse(self.coef_) or \
+                (self.fit_intercept and issparse(self.intercept_))
+            dal_ready = patching_status.and_conditions([
+                (n_samples > 0, 'Number of samples is less than 1.'),
+                (not issparse(*data), 'Sparse input is not supported.'),
+                (not model_is_sparse, 'Sparse coefficients are not supported.'),
+                (hasattr(self, '_onedal_estimator'), 'oneDAL model was not trained.')
+            ])
+            if not dal_ready:
+                return patching_status.get_status(logs=True)
 
-            if issparse(*data) or issparse(self.coef_):
-                return False
+            patching_status.and_condition(
+                self._test_type_and_finiteness(*data), 'Input X is not supported.')
 
-            if self.fit_intercept and issparse(self.intercept_):
-                return False
-
-            if not hasattr(self, '_onedal_estimator'):
-                return False
-
-            if not self._test_type_and_finiteness(*data):
-                return False
-
-            return True
+            return patching_status.get_status(logs=True)
 
         def _onedal_supported(self, method_name, *data):
-            if method_name == 'linear_model.LinearRegression.fit':
+            if method_name == 'fit':
                 return self._onedal_fit_supported(method_name, *data)
-            if method_name == 'linear_model.LinearRegression.predict':
+            if method_name == 'predict':
                 return self._onedal_predict_supported(method_name, *data)
             raise RuntimeError(
                 f'Unknown method {method_name} in {self.__class__.__name__}')

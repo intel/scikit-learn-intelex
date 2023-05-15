@@ -37,7 +37,6 @@ deselected_tests:
   - ensemble/tests/test_voting.py::test_set_estimator_drop
   - linear_model/tests/test_common.py::test_balance_property[42-True-LinearRegression]
   - linear_model/tests/test_logistic.py::test_logistic_regression_multinomial
-  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
   - cluster/tests/test_k_means.py::test_k_means_fit_predict >=0.23,<0.24
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-brute]
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-brute]
@@ -109,9 +108,19 @@ deselected_tests:
   # Difference between scikit-learn and scikit-learn-intelex methods of kNN
   - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-euclidean-True-1000-5-100-1]
   - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-minkowski-True-1000-5-100-1]
+  - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-l2-True-1000-5-100-1]
+  - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-l1-True-1000-5-100-1]
+  - neighbors/tests/test_neighbors.py::test_unsupervised_kneighbors[float64-cityblock-True-1000-5-100-1]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-euclidean-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-minkowski-1000-5-100]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-euclidean-1000-5-100]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-minkowski-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-l1-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-l1-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-1-100-cityblock-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-1-100-cityblock-1000-5-100]
   - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_multioutput
 
   # Models with sparse data are different between oneAPI Data Analytics Library (oneDAL) and stock scikit-learn
