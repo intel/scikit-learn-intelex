@@ -255,7 +255,9 @@ deselected_tests:
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-ExtraTreesRegressor]
   - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_distribution
 
   # Need a warning from scikit-learn if some samples do not have OOB scores that can not be raised from oneDAL
   - ensemble/tests/test_forest.py::test_forest_oob_warning
