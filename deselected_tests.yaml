@@ -258,8 +258,7 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
 
   # Need a warning from scikit-learn if some samples do not have OOB scores that can not be raised from oneDAL
-  - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_forest_oob_warning[RandomForestRegressor]
+  - ensemble/tests/test_forest.py::test_forest_oob_warning
   - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_oob_score_regressors[RandomForestRegressor]
 
