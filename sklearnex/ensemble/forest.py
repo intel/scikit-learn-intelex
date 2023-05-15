@@ -300,7 +300,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = splitter_mode\
+            self.splitter_mode = splitter_mode
 
     def fit(self, X, y, sample_weight=None):
         """
