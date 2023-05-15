@@ -536,7 +536,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.ExtraTreesClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
-            if self.splitter_mode == 'random' and not daal_check_version((2023, 'P', 101)):
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
                 warnings.warn("'random' splitter mode requires OneDAL >= 2023.1.1. "
                               "Using 'best' mode instead.", RuntimeWarning)
                 return False
@@ -923,7 +924,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.ExtraTreesRegressor.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
-            if self.splitter_mode == 'random' and not daal_check_version((2023, 'P', 101)):
+            if self.splitter_mode == 'random' and \
+                    not daal_check_version((2023, 'P', 101)):
                 return False
             if not ready:
                 return False

@@ -121,7 +121,7 @@ def get_patch_map():
                 ]
             ]
 
-        #ExtraTrees
+        # Ensemble
         mapping["extra_trees_classifier"] = [[(ensemble_module,
                                                "ExtraTreesClassifier",
                                                ExtraTreesClassifier_sklearnex),
@@ -129,7 +129,7 @@ def get_patch_map():
         mapping["extra_trees_regressor"] = [[(ensemble_module,
                                               "ExtraTreesRegressor",
                                               ExtraTreesRegressor_sklearnex),
-                                              None]]    
+                                             None]]
 
         # SVM
         mapping.pop("svm")
