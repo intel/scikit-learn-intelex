@@ -48,7 +48,6 @@ class DummySyclQueue:
             self.has_aspect_fp64 = self.is_cpu
 
             if not (self.is_cpu):
-                import logging
                 logging.warning("Device support is limited. "
                                 "Please install dpctl for full experience")
 
@@ -158,12 +157,12 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
 
     backend, q, cpu_fallback = _get_backend(obj, q, method_name, *hostargs)
 
-    logging.info(f"sklearn.{method_name}: {get_patch_message(backend, q, cpu_fallback)}")
     if backend == 'onedal':
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == 'sklearn':
         return branches[backend](obj, *hostargs, **hostkwargs)
-    raise RuntimeError(f'Undefined backend {backend} in {method_name}')
+    raise RuntimeError(f'Undefined backend {backend} in '
+                       f'{obj.__class__.__name__}.{method_name}')
 
 
 def _copy_to_usm(queue, array):

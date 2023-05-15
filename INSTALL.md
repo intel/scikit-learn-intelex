@@ -72,11 +72,11 @@ Next steps after installation:
 
 #### 📦 Supported configurations for PyPI <!-- omit in toc -->
 
-| OS / Python version | **Python 3.6** | **Python 3.7** | **Python 3.8** | **Python 3.9** |
-| :------------------ | :------------: | :------------: | :------------: | :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |
-| **OsX**             |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]      |
+| OS / Python version | **Python 3.7** | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
+| :------------------ | :------------: | :------------: | :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    | 
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
+| **MacOS**           |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
 
 
 ### Install from Anaconda Cloud
@@ -88,10 +88,10 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda create -n env -c conda-forge python=3.9 scikit-learn-intelex
+  conda create -n env -c conda-forge python=3.10 scikit-learn-intelex
   ```
 
-  If you do not specify the version of Python (`python=3.9` in the example above), then Python 3.10 is downloaded by default, which is not supported.
+..note:  If you do not specify the version of Python, the latest one is downloaded. 
 
 - Install into your current environment:
 
@@ -101,11 +101,11 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
 
 ##### 📦 Supported configurations for Anaconda Cloud from Conda-Forge channel <!-- omit in toc -->
 
-| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
-| :-----------------------| :------------: | :------------: | :------------:| :------------:|
-|    **Linux**            |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
-|    **Windows**          |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
-|    **MacOS**              |   [CPU]        |   [CPU]        |     [CPU]     |     [CPU]     |
+| OS / Python version     | **Python 3.8** | **Python 3.9** | **Python 3.10**|  **Python 3.11** |
+| :-----------------------| :------------: | :------------: | :------------: | :------------:   |
+|    **Linux**            |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
+|    **Windows**          |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
+|    **MacOS**            |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
 
 #### Install via Anaconda Cloud from Intel channel
 
@@ -114,8 +114,10 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda create -n env -c intel python scikit-learn-intelex
+  conda create -n env -c intel python=3.10 scikit-learn-intelex
   ```
+
+..note:  If you do not specify the version of Python, the latest one is downloaded. 
 
 - Install into your current environment:
 
@@ -125,11 +127,11 @@ We recommend this installation for the users of Intel® Distribution for Python.
 
 ##### 📦 Supported configurations for Anaconda Cloud from Intel channel <!-- omit in toc -->
 
-| OS / Python version | **Python 3.6** | **Python 3.7** | **Python 3.8** | **Python 3.9** |
-| :------------------ | :------------: | :------------: | :------------: | :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |
-| **MacOS**             |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]      |
+| OS / Python version | **Python 3.7** | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
+| :------------------ | :------------: | :------------: | :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    | 
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
+| **MacOS**           |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
 
 
 #### Install via Anaconda Cloud from Main channel
@@ -137,10 +139,10 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda create -n env python=3.9 scikit-learn-intelex
+  conda create -n env python=3.10 scikit-learn-intelex
   ```
 
-  If you do not specify the version of Python (`python=3.9` in the example above), then Python 3.10 is downloaded by default, which is not supported.
+..note:  If you do not specify the version of Python, the latest one is downloaded. 
 
 - Install into your current environment:
 
@@ -150,11 +152,11 @@ We recommend this installation for the users of Intel® Distribution for Python.
 
 ##### 📦 Supported configurations for Anaconda Cloud from Main channel <!-- omit in toc -->
 
-| OS / Python version     | **Python 3.6** | **Python 3.7** | **Python 3.8**| **Python 3.9**|
-| :-----------------------| :------------: | :------------: | :------------:| :------------:|
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]   |
-| **MacOS**             |     [CPU]      |     [CPU]      |     [CPU]      |     [CPU]      |
+| OS / Python version     | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
+| :-----------------------| :------------: | :------------: | :------------:  | :------------:  |
+| **Linux**               |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
+| **Windows**             |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
+| **MacOS**               |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
 
 
 
@@ -162,13 +164,14 @@ We recommend this installation for the users of Intel® Distribution for Python.
 Intel(R) Extension for Scikit-learn is easily built from sources with the majority of the necessary prerequisites available on conda or pip. The instructions below detail how to gather the prerequisites and build and install the completed package. The package can be built for all three major platforms (Windows, Linux, macOS).
 
 ### Prerequisites
-* Python version >= 3.6, < 3.10
+* Python version >= 3.6, <= 3.11
 * daal4py >= 2021.4
 
 **NOTE:** You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md) or get it from [distribution channels](https://intelpython.github.io/daal4py/#getting-daal4py).
 
 ### Configure the build with environment variables
 * SKLEARNEX_VERSION: sets package version
+* DALROOT: sets the oneAPI Data Analytics Library path
 
 ### Build Intel(R) Extension for Scikit-learn
 - To install the package:

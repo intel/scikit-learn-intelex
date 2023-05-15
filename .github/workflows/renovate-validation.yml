@@ -1,0 +1,27 @@
+name: renovate-validation
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github/workflows/renovate-validation.yml
+      - .github/renovate.json
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/renovate-validation.yml
+      - .github/renovate.json
+
+jobs:
+  validate:
+    name: Renovate validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Validate
+        uses: rinchsan/renovate-config-validator@v0.0.12
+        with:
+          pattern: '*.json' # Regular expression for filename to validate, default to *.json

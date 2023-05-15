@@ -22,7 +22,7 @@ steps:
       call activate CB
       pip install --upgrade setuptools
       pip install cpufeature
-      pip install -r requirements-dev.txt
+      pip install -r dependencies-dev
       pip list
     displayName: 'Install develop requirements'
   - script: |
