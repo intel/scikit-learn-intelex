@@ -536,11 +536,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == 'ensemble.ExtraTreesClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
-            if self.splitter_mode == 'random':
-                warnings.warn("'random' splitter mode supports GPU devices only "
-                              "and requires oneDAL version >= 2023.1.1. "
-                              "Using 'best' mode instead.", RuntimeWarning)
-                self.splitter_mode = 'best'
+            
             if not ready:
                 return False
             elif sp.issparse(X):
