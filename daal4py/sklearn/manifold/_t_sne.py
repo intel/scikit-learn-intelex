@@ -21,7 +21,8 @@ from time import time
 import numpy as np
 from scipy.sparse import issparse
 import daal4py
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import (
+    daal_check_version, sklearn_check_version, PatchingConditionsChain)
 
 from sklearn.manifold import TSNE as BaseTSNE
 from sklearn.decomposition import PCA
@@ -377,11 +378,19 @@ class TSNE(BaseTSNE):
         # Laurens van der Maaten, 2009.
         degrees_of_freedom = max(self.n_components - 1, 1)
 
-        daal_ready = self.method == 'barnes_hut' and \
-            self.n_components == 2 and self.verbose == 0 and \
-            daal_check_version((2021, 'P', 600))
+        _patching_status = PatchingConditionsChain(
+            "sklearn.manifold.TSNE._tsne")
+        _patching_status.and_conditions([
+            (self.method == 'barnes_hut',
+             'Used t-SNE method is not "barnes_hut" which is the only supported.'),
+            (self.n_components == 2, 'Number of components != 2.'),
+            (self.verbose == 0, 'Verbose mode is set.'),
+            (daal_check_version((2021, 'P', 600)),
+             'oneDAL version is lower than 2021.6.')
+        ])
+        _dal_ready = _patching_status.get_status(logs=True)
 
-        if daal_ready:
+        if _dal_ready:
             X_embedded = check_array(
                 X_embedded, dtype=[np.float32, np.float64])
             return self._daal_tsne(

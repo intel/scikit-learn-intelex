@@ -82,7 +82,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
-        dispatch(self, 'svm.NuSVC.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NuSVC.fit,
         }, X, y, sample_weight)
@@ -109,7 +109,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'svm.NuSVC.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_NuSVC.predict,
         }, X)
@@ -153,7 +153,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
                               if sklearn_check_version("1.0")
                               else sklearn_NuSVC._predict_proba)
 
-        return dispatch(self, 'svm.NuSVC.predict_proba', {
+        return dispatch(self, 'predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_pred_proba,
         }, X)
@@ -162,21 +162,10 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     def decision_function(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'svm.NuSVC.decision_function', {
+        return dispatch(self, 'decision_function', {
             'onedal': self.__class__._onedal_decision_function,
             'sklearn': sklearn_NuSVC.decision_function,
         }, X)
-
-    def _onedal_gpu_supported(self, method_name, *data):
-        return False
-
-    def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'svm.NuSVC.fit':
-            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
-        if method_name in ['svm.NuSVC.predict',
-                           'svm.NuSVC.predict_proba',
-                           'svm.NuSVC.decision_function']:
-            return hasattr(self, '_onedal_estimator')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
