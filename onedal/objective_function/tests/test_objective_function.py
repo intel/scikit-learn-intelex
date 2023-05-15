@@ -55,12 +55,12 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
 
         coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
 
-        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        alg = LogisticLoss(fit_intercept=fit_intercept)
         logloss_onedal = alg.loss(
-            coef, data, y_true, l2_reg_strength=l2_reg_strength)
+            coef, data, y_true, l2_reg_strength=l2_reg_strength, queue=queue)
 
         alg_internal = _linear_loss.LinearModelLoss(
-            base_loss=HalfBinomialLoss(), fit_intercept=fit_intercept
+            base_loss=HalfBinomialLoss(), fit_intercept=fit_intercept,
         )
 
         logloss_gth = alg_internal.loss(
@@ -80,9 +80,9 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
 
         coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
 
-        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        alg = LogisticLoss(fit_intercept=fit_intercept)
         gradient_onedal = alg.gradient(
-            coef, data, y_true, l2_reg_strength=l2_reg_strength
+            coef, data, y_true, l2_reg_strength=l2_reg_strength, queue=queue
         )
 
         alg_internal = _linear_loss.LinearModelLoss(
@@ -106,9 +106,9 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
 
         coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
 
-        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        alg = LogisticLoss(fit_intercept=fit_intercept)
         logloss_onedal, gradient_onedal = alg.loss_gradient(
-            coef, data, y_true, l2_reg_strength=l2_reg_strength
+            coef, data, y_true, l2_reg_strength=l2_reg_strength, queue=queue
         )
 
         alg_internal = _linear_loss.LinearModelLoss(
@@ -131,9 +131,9 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
 
         coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
 
-        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        alg = LogisticLoss(fit_intercept=fit_intercept)
         gradient_onedal, hessian_onedal, status_onedal = alg.gradient_hessian(
-            coef, data, y_true, l2_reg_strength=l2_reg_strength
+            coef, data, y_true, l2_reg_strength=l2_reg_strength, queue=queue
         )
 
         alg_internal = _linear_loss.LinearModelLoss(
@@ -157,9 +157,9 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
 
         coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
 
-        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        alg = LogisticLoss(fit_intercept=fit_intercept)
         gradient_onedal, hessp_onedal = alg.gradient_hessian_product(
-            coef, data, y_true, l2_reg_strength=l2_reg_strength
+            coef, data, y_true, l2_reg_strength=l2_reg_strength, queue=queue
         )
 
         alg_internal = _linear_loss.LinearModelLoss(
@@ -200,9 +200,9 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
             dtype=dtype,
             fit_intercept=fit_intercept,
         )
-        alg = LogisticLoss(queue=queue, fit_intercept=fit_intercept)
+        alg = LogisticLoss(fit_intercept=fit_intercept)
         logloss_onedal, gradient_onedal = alg.loss_gradient(
-            coef, data, y_true, l2_reg_strength=l2_reg_strength
+            coef, data, y_true, l2_reg_strength=l2_reg_strength, queue=queue
         )
 
         alg_internal = _linear_loss.LinearModelLoss(

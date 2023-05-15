@@ -48,6 +48,7 @@ def get_patch_map():
         import sklearn.linear_model as linear_model_module
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
+        import sklearn.linear_model._logistic as logistic_regression_module
 
         # Classes and functions for patching
         from ._config import config_context as config_context_sklearnex
@@ -61,6 +62,7 @@ def get_patch_map():
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
+        from .objective_function import LinearModelLoss as LinearModelLoss_sklearnex
 
         # Preview classes for patching
         from .preview.decomposition import PCA as PCA_sklearnex
@@ -118,6 +120,12 @@ def get_patch_map():
                     None,
                 ]
             ]
+
+        #LinearModelLoss
+        mapping.pop("logisticregression")
+        mapping.pop("logistic")
+        mapping.pop("log_reg")
+        mapping["logreg_logloss"] = [[(logistic_regression_module, "LinearModelLoss", LinearModelLoss_sklearnex), None]]
 
         # SVM
         mapping.pop("svm")

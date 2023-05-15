@@ -85,6 +85,10 @@ packages_with_tests = [
     'sklearnex.preview.linear_model',
     'sklearnex.svm',
     'sklearnex.utils']
+    
+if ONEDAL_VERSION >= 20230200:
+    packages_with_tests += [
+        'sklearnex.objective_function']
 
 if build_distribute:
     packages_with_tests += [

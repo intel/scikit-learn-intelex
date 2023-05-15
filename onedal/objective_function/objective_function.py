@@ -33,9 +33,8 @@ from onedal import _backend
 
 class BaseObjectiveFunction(metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, algorithm, queue, objective_function_method):
+    def __init__(self, algorithm, objective_function_method):
         self.algorithm = algorithm
-        self.queue = queue
         self.func = objective_function_method
 
     @staticmethod
@@ -66,8 +65,8 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
             "intercept": intercept,
         }
 
-    def _compute(self, X, y, coef, options, l2_reg_strength=0.0, fit_intercept=True):
-        policy = self._get_policy(self.queue, X, y, coef)
+    def _compute(self, X, y, coef, options, l2_reg_strength=0.0, fit_intercept=True, queue=None):
+        policy = self._get_policy(queue, X, y, coef)
         ftype = X.dtype
         params = self._get_onedal_params(
             options, L2=l2_reg_strength, intercept=fit_intercept, dtype=ftype
@@ -107,10 +106,10 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
 
 class LogisticLoss(BaseObjectiveFunction):
     def __init__(
-        self, *, algorithm="by_default", queue=None, fit_intercept=True, **kwargs
+        self, *, algorithm="by_default", fit_intercept=True, **kwargs
     ):
         self.fit_intercept = fit_intercept
-        super().__init__(algorithm, queue, _backend.objective_function.compute.logloss)
+        super().__init__(algorithm, _backend.objective_function.compute.logloss)
 
     def change_gradient_format(self, grad, coef, l2_reg_strength):
         """Change the gradient layout
@@ -183,15 +182,17 @@ class LogisticLoss(BaseObjectiveFunction):
         l2_reg_strength=0.0,
         n_threads=1,
         raw_prediction=None,
+        queue=None
     ):
         if (sample_weight is not None):
-            raise Exception("sample_weigth parameter is not supported")
+            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+                raise Exception("sample_weigth parameter is not supported")
         if (n_threads != 1):
             raise Exception("multithreading is not supported")
         if (raw_prediction is not None):
             raise Exception("raw_prediction parameter is not supported")
 
-        value = super()._compute(X, y, coef, "value", 0.0, self.fit_intercept)["value"]
+        value = super()._compute(X, y, coef, "value", 0.0, self.fit_intercept, queue)["value"]
         if l2_reg_strength > 0:
             value += self.__calculate_regularization(coef, l2_reg_strength)
         return value
@@ -205,16 +206,18 @@ class LogisticLoss(BaseObjectiveFunction):
         l2_reg_strength=0.0,
         n_threads=1,
         raw_prediction=None,
-    ):
+        queue=None
+    ):  
         if (sample_weight is not None):
-            raise Exception("sample_weigth parameter is not supported")
+            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+                raise Exception("sample_weigth parameter is not supported")
         if (n_threads != 1):
             raise Exception("multithreading is not supported")
         if (raw_prediction is not None):
             raise Exception("raw_prediction parameter is not supported")
 
         res = super()._compute(
-            X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept
+            X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept, queue
         )
         value = res["value"]
         grad = res["gradient"]
@@ -231,15 +234,17 @@ class LogisticLoss(BaseObjectiveFunction):
         l2_reg_strength=0.0,
         n_threads=1,
         raw_prediction=None,
+        queue=None
     ):
         if (sample_weight is not None):
-            raise Exception("sample_weigth parameter is not supported")
+            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+                raise Exception("sample_weigth parameter is not supported")
         if (n_threads != 1):
             raise Exception("multithreading is not supported")
         if (raw_prediction is not None):
             raise Exception("raw_prediction parameter is not supported")
 
-        grad = super()._compute(X, y, coef, "gradient", 0.0, self.fit_intercept)[
+        grad = super()._compute(X, y, coef, "gradient", 0.0, self.fit_intercept, queue)[
             "gradient"
         ]
         return self.change_gradient_format(grad, coef, l2_reg_strength)
@@ -253,16 +258,18 @@ class LogisticLoss(BaseObjectiveFunction):
         l2_reg_strength=0.0,
         n_threads=1,
         raw_prediction=None,
+        queue=None
     ):
         if (sample_weight is not None):
-            raise Exception("sample_weigth parameter is not supported")
+            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+                raise Exception("sample_weigth parameter is not supported")
         if (n_threads != 1):
             raise Exception("multithreading is not supported")
         if (raw_prediction is not None):
             raise Exception("raw_prediction parameter is not supported")
 
         res = super()._compute(
-            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept
+            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept, queue
         )
         grad = self.change_gradient_format(res["gradient"], coef, l2_reg_strength)
         hess = self.change_hessian_format(res["hessian"], coef, l2_reg_strength)
@@ -278,16 +285,18 @@ class LogisticLoss(BaseObjectiveFunction):
         l2_reg_strength=0.0,
         n_threads=1,
         raw_prediction=None,
+        queue=None
     ):
         if (sample_weight is not None):
-            raise Exception("sample_weigth parameter is not supported")
+            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+                raise Exception("sample_weigth parameter is not supported")
         if (n_threads != 1):
             raise Exception("multithreading is not supported")
         if (raw_prediction is not None):
             raise Exception("raw_prediction parameter is not supported")
 
         res = super()._compute(
-            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept
+            X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept, queue
         )
         grad = self.change_gradient_format(res["gradient"], coef, l2_reg_strength)
         hess = self.change_hessian_format(res["hessian"], coef, l2_reg_strength)
