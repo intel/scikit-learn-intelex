@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 #===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -63,7 +63,7 @@ if sklearn_check_version('1.2'):
     from sklearn.utils._param_validation import Interval, StrOptions
 
 
-class BaseETForest(ABC):
+class BaseTree(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
         params = self.get_params()
         self.__class__(**params)
@@ -188,7 +188,7 @@ class BaseETForest(ABC):
         return sample_weight
 
 
-class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseETForest):
+class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
 
     if sklearn_check_version('1.2'):
@@ -736,7 +736,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseETForest):
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
 
-class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseETForest):
+class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
 
     if sklearn_check_version('1.2'):
