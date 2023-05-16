@@ -51,8 +51,8 @@ def test_sklearnex_import_et_classifier():
     X, y = make_classification(n_samples=1000, n_features=4,
                                n_informative=2, n_redundant=0,
                                random_state=0, shuffle=False)
-    #For release 2023.2, random_state isn't implemented
-    #defaults to seed=777 although it is set to 0
+    # For the 2023.2 release, random_state is not supported
+    # defaults to seed=777, although it is set to 0
     rf = ExtraTreesClassifier(max_depth=2, random_state=0).fit(X, y)
     assert 'sklearnex' in rf.__module__
     assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
@@ -62,8 +62,8 @@ def test_sklearnex_import_et_regression():
     from sklearnex.ensemble import ExtraTreesRegressor
     X, y = make_regression(n_features=4, n_informative=2,
                            random_state=0, shuffle=False)
-    #For release 2023.2, random_state isn't implemented
-    #defaults to seed=777 although it is set to 0
+    # For the 2023.2 release, random_state is not supported
+    # defaults to seed=777, although it is set to 0
     rf = ExtraTreesRegressor(max_depth=2, random_state=0).fit(X, y)
     assert 'sklearnex' in rf.__module__
     pred = rf.predict([[0, 0, 0, 0]])
