@@ -63,7 +63,7 @@ if sklearn_check_version('1.2'):
     from sklearn.utils._param_validation import Interval, StrOptions
 
 
-class BaseForest(ABC):
+class BaseETForest(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
         params = self.get_params()
         self.__class__(**params)
@@ -188,7 +188,7 @@ class BaseForest(ABC):
         return sample_weight
 
 
-class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
+class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseETForest):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
 
     if sklearn_check_version('1.2'):
@@ -736,7 +736,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseForest):
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
 
-class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseForest):
+class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseETForest):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
 
     if sklearn_check_version('1.2'):
