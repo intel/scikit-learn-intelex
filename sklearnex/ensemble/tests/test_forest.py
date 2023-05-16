@@ -45,6 +45,7 @@ def test_sklearnex_import_rf_regression():
     else:
         assert_allclose([-6.66], pred, atol=1e-2)
 
+
 def test_sklearnex_import_et_classifier():
     from sklearnex.ensemble import ExtraTreesClassifier
     X, y = make_classification(n_samples=1000, n_features=4,
@@ -55,6 +56,7 @@ def test_sklearnex_import_et_classifier():
     rf = ExtraTreesClassifier(max_depth=2, random_state=0).fit(X, y)
     assert 'sklearnex' in rf.__module__
     assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
+
 
 def test_sklearnex_import_et_regression():
     from sklearnex.ensemble import ExtraTreesRegressor
