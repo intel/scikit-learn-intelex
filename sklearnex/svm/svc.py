@@ -171,7 +171,7 @@ class SVC(sklearn_SVC, BaseSVC):
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f'sklearn.svm.{class_name}.{method_name}')
-        if method_name == 'svm.SVC.fit':
+        if method_name == 'fit':
             if len(data) > 1:
                 self._class_count = len(np.unique(data[1]))
             self._is_sparse = sp.isspmatrix(data[0])
@@ -187,7 +187,7 @@ class SVC(sklearn_SVC, BaseSVC):
         if method_name in ['predict', 'predict_proba', 'decision_function']:
             patching_status.and_conditions([
                 (hasattr(self, '_onedal_estimator') and self._onedal_gpu_supported(
-                    'svm.SVC.fit', *data),
+                    'fit', *data),
                  'oneDAL model was not trained on GPU.')
             ])
             return patching_status.get_status(logs=True)
