@@ -36,7 +36,7 @@ RNG = np.random.RandomState(0)
 IRIS = load_iris()
 
 
-def _compare_with_sklearn_classifier_iris(n_estimators=100, class_weight=None, sample_weight=None, description=""):
+def _compare_with_sklearn_classifier_iris(n_estimators=99, class_weight=None, sample_weight=None, description=""):
     x_train, x_test, y_train, y_test = train_test_split(IRIS.data, IRIS.target, test_size=0.33, random_state=31)
     # models
     scikit_model = ScikitRandomForestClassifier(
@@ -138,7 +138,7 @@ def test_classifier_big_estimators_iris(n_estimators):
     )
 
 
-def _compare_with_sklearn_mse_regressor_iris(n_estimators=100, sample_weight=None, description=""):
+def _compare_with_sklearn_mse_regressor_iris(n_estimators=99, sample_weight=None, description=""):
     x_train, x_test, y_train, y_test = train_test_split(IRIS.data, IRIS.target, test_size=0.33, random_state=31)
 
     scikit_model = ScikitRandomForestRegressor(n_estimators=n_estimators, max_depth=None, random_state=777)
