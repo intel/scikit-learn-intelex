@@ -36,14 +36,24 @@ RNG = np.random.RandomState(0)
 IRIS = load_iris()
 
 
-def _compare_with_sklearn_classifier_iris(n_estimators=99, class_weight=None, sample_weight=None, description=""):
-    x_train, x_test, y_train, y_test = train_test_split(IRIS.data, IRIS.target, test_size=0.33, random_state=31)
+def _compare_with_sklearn_classifier_iris(
+    n_estimators=99, class_weight=None, sample_weight=None, description=""
+):
+    x_train, x_test, y_train, y_test = train_test_split(
+        IRIS.data, IRIS.target, test_size=0.33, random_state=31
+    )
     # models
     scikit_model = ScikitRandomForestClassifier(
-        n_estimators=n_estimators, class_weight=class_weight, max_depth=None, random_state=777
+        n_estimators=n_estimators,
+        class_weight=class_weight,
+        max_depth=None,
+        random_state=777,
     )
     daal4py_model = DaalRandomForestClassifier(
-        n_estimators=n_estimators, class_weight=class_weight, max_depth=None, random_state=777
+        n_estimators=n_estimators,
+        class_weight=class_weight,
+        max_depth=None,
+        random_state=777,
     )
     # training
     scikit_model.fit(x_train, y_train, sample_weight=sample_weight)
@@ -55,7 +65,10 @@ def _compare_with_sklearn_classifier_iris(n_estimators=99, class_weight=None, sa
     scikit_accuracy = accuracy_score(scikit_predict, y_test)
     daal4py_accuracy = accuracy_score(daal4py_predict, y_test)
     ratio = daal4py_accuracy / scikit_accuracy
-    reason = description + f"scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}"
+    reason = (
+        description
+        + f"scikit_accuracy={scikit_accuracy}, daal4py_accuracy={daal4py_accuracy}"
+    )
     assert ratio >= ACCURACY_RATIO, reason
 
     # predict_proba
@@ -66,7 +79,10 @@ def _compare_with_sklearn_classifier_iris(n_estimators=99, class_weight=None, sa
     daal4py_log_loss = log_loss(y_test, daal4py_predict_proba)
     ratio = daal4py_log_loss / scikit_log_loss
 
-    reason = description + f"scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}"
+    reason = (
+        description
+        + f"scikit_log_loss={scikit_log_loss}, daal4py_log_loss={daal4py_log_loss}"
+    )
     assert ratio <= LOG_LOSS_RATIO, reason
 
     # ROC AUC
@@ -74,7 +90,10 @@ def _compare_with_sklearn_classifier_iris(n_estimators=99, class_weight=None, sa
     daal4py_roc_auc = roc_auc_score(y_test, daal4py_predict_proba, multi_class="ovr")
     ratio = daal4py_roc_auc / scikit_roc_auc
 
-    reason = description + f"scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}"
+    reason = (
+        description
+        + f"scikit_roc_auc={scikit_roc_auc}, daal4py_roc_auc={daal4py_roc_auc}"
+    )
     assert ratio >= ROC_AUC_RATIO, reason
 
 
@@ -104,7 +123,9 @@ CLASS_WEIGHTS_IRIS = [
 
 @pytest.mark.parametrize("class_weight", CLASS_WEIGHTS_IRIS)
 def test_classifier_class_weight_iris(class_weight):
-    _compare_with_sklearn_classifier_iris(class_weight=class_weight, description="Classifier class weight: ")
+    _compare_with_sklearn_classifier_iris(
+        class_weight=class_weight, description="Classifier class weight: "
+    )
 
 
 SAMPLE_WEIGHTS_IRIS = [
@@ -121,7 +142,8 @@ SAMPLE_WEIGHTS_IRIS = [
 def test_classifier_sample_weight_iris(sample_weight):
     sample_weight, description = sample_weight
     _compare_with_sklearn_classifier_iris(
-        sample_weight=sample_weight, description=f"Classifier sample_weight_type={description}: "
+        sample_weight=sample_weight,
+        description=f"Classifier sample_weight_type={description}: ",
     )
 
 
@@ -138,14 +160,26 @@ def test_classifier_big_estimators_iris(n_estimators):
     )
 
 
-def _compare_with_sklearn_mse_regressor_iris(n_estimators=99, sample_weight=None, description=""):
-    x_train, x_test, y_train, y_test = train_test_split(IRIS.data, IRIS.target, test_size=0.33, random_state=31)
+def _compare_with_sklearn_mse_regressor_iris(
+    n_estimators=99, sample_weight=None, description=""
+):
+    x_train, x_test, y_train, y_test = train_test_split(
+        IRIS.data, IRIS.target, test_size=0.33, random_state=31
+    )
 
-    scikit_model = ScikitRandomForestRegressor(n_estimators=n_estimators, max_depth=None, random_state=777)
-    daal4py_model = DaalRandomForestRegressor(n_estimators=n_estimators, max_depth=None, random_state=777)
+    scikit_model = ScikitRandomForestRegressor(
+        n_estimators=n_estimators, max_depth=None, random_state=777
+    )
+    daal4py_model = DaalRandomForestRegressor(
+        n_estimators=n_estimators, max_depth=None, random_state=777
+    )
 
-    scikit_predict = scikit_model.fit(x_train, y_train, sample_weight=sample_weight).predict(x_test)
-    daal4py_predict = daal4py_model.fit(x_train, y_train, sample_weight=sample_weight).predict(x_test)
+    scikit_predict = scikit_model.fit(
+        x_train, y_train, sample_weight=sample_weight
+    ).predict(x_test)
+    daal4py_predict = daal4py_model.fit(
+        x_train, y_train, sample_weight=sample_weight
+    ).predict(x_test)
 
     scikit_mse = mean_squared_error(scikit_predict, y_test)
     daal4py_mse = mean_squared_error(daal4py_predict, y_test)
@@ -159,12 +193,14 @@ def _compare_with_sklearn_mse_regressor_iris(n_estimators=99, sample_weight=None
 def test_mse_regressor_sample_weight_iris(weight):
     sample_weight, description = weight
     _compare_with_sklearn_mse_regressor_iris(
-        sample_weight=sample_weight, description=f"Regression sample weights: sample_weight_type={description}: "
+        sample_weight=sample_weight,
+        description=f"Regression sample weights: sample_weight_type={description}: ",
     )
 
 
 @pytest.mark.parametrize("n_estimators", N_ESTIMATORS_IRIS)
 def test_mse_regressor_big_estimators_iris(n_estimators):
     _compare_with_sklearn_mse_regressor_iris(
-        n_estimators=n_estimators, description=f"Regression: n_estimators={n_estimators}: "
+        n_estimators=n_estimators,
+        description=f"Regression: n_estimators={n_estimators}: ",
     )

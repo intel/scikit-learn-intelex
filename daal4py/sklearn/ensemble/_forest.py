@@ -28,10 +28,18 @@ from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_array, check_random_state, deprecated
-from sklearn.utils.validation import _num_samples, check_consistent_length, check_is_fitted
+from sklearn.utils.validation import (
+    _num_samples,
+    check_consistent_length,
+    check_is_fitted,
+)
 
 import daal4py
-from daal4py.sklearn._utils import PatchingConditionsChain, daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import (
+    PatchingConditionsChain,
+    daal_check_version,
+    sklearn_check_version,
+)
 
 from .._device_offload import support_usm_ndarray
 from .._utils import getFPType
@@ -56,13 +64,22 @@ def _to_absolute_max_features(max_features, n_features, is_classification=False)
                         "RandomForestRegressors and ExtraTreesRegressors.",
                         FutureWarning,
                     )
-                return max(1, int(np.sqrt(n_features))) if is_classification else n_features
+                return (
+                    max(1, int(np.sqrt(n_features))) if is_classification else n_features
+                )
         if max_features == "sqrt":
             return max(1, int(np.sqrt(n_features)))
         if max_features == "log2":
             return max(1, int(np.log2(n_features)))
-        allowed_string_values = '"sqrt" or "log2"' if sklearn_check_version("1.3") else '"auto", "sqrt" or "log2"'
-        raise ValueError("Invalid value for max_features. Allowed string " f"values are {allowed_string_values}.")
+        allowed_string_values = (
+            '"sqrt" or "log2"'
+            if sklearn_check_version("1.3")
+            else '"auto", "sqrt" or "log2"'
+        )
+        raise ValueError(
+            "Invalid value for max_features. Allowed string "
+            f"values are {allowed_string_values}."
+        )
     if isinstance(max_features, (numbers.Integral, np.integer)):
         return max_features
     if max_features > 0.0:
@@ -115,12 +132,18 @@ def check_sample_weight(sample_weight, X, dtype=None):
     else:
         if dtype is None:
             dtype = [np.float64, np.float32]
-        sample_weight = check_array(sample_weight, accept_sparse=False, ensure_2d=False, dtype=dtype, order="C")
+        sample_weight = check_array(
+            sample_weight, accept_sparse=False, ensure_2d=False, dtype=dtype, order="C"
+        )
         if sample_weight.ndim != 1:
             raise ValueError("Sample weights must be 1D array or scalar")
 
         if sample_weight.shape != (n_samples,):
-            raise ValueError("sample_weight.shape == {}, expected {}!".format(sample_weight.shape, (n_samples,)))
+            raise ValueError(
+                "sample_weight.shape == {}, expected {}!".format(
+                    sample_weight.shape, (n_samples,)
+                )
+            )
     return sample_weight
 
 
@@ -141,26 +164,28 @@ class RandomForestBase:
         if isinstance(self.min_samples_leaf, numbers.Integral):
             if not 1 <= self.min_samples_leaf:
                 raise ValueError(
-                    "min_samples_leaf must be at least 1 " "or in (0, 0.5], got %s" % self.min_samples_leaf
+                    "min_samples_leaf must be at least 1 "
+                    f"or in (0, 0.5], got {self.min_samples_leaf}"
                 )
         else:  # float
             if not 0.0 < self.min_samples_leaf <= 0.5:
                 raise ValueError(
-                    "min_samples_leaf must be at least 1 " "or in (0, 0.5], got %s" % self.min_samples_leaf
+                    "min_samples_leaf must be at least 1 "
+                    f"or in (0, 0.5], got {self.min_samples_leaf}"
                 )
         if isinstance(self.min_samples_split, numbers.Integral):
             if not 2 <= self.min_samples_split:
                 raise ValueError(
                     "min_samples_split must be an integer "
                     "greater than 1 or a float in (0.0, 1.0]; "
-                    "got the integer %s" % self.min_samples_split
+                    f"got the integer {self.min_samples_split}"
                 )
         else:  # float
             if not 0.0 < self.min_samples_split <= 1.0:
                 raise ValueError(
                     "min_samples_split must be an integer "
                     "greater than 1 or a float in (0.0, 1.0]; "
-                    "got the float %s" % self.min_samples_split
+                    "got the float {self.min_samples_split}"
                 )
         if not 0 <= self.min_weight_fraction_leaf <= 0.5:
             raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
@@ -174,26 +199,30 @@ class RandomForestBase:
             )
 
             if self.min_impurity_split < 0.0:
-                raise ValueError("min_impurity_split must be greater than " "or equal to 0")
+                raise ValueError("min_impurity_split must be greater than or equal to 0")
         if self.min_impurity_decrease < 0.0:
-            raise ValueError("min_impurity_decrease must be greater than " "or equal to 0")
+            raise ValueError("min_impurity_decrease must be greater than or equal to 0")
         if self.max_leaf_nodes is not None:
             if not isinstance(self.max_leaf_nodes, numbers.Integral):
-                raise ValueError("max_leaf_nodes must be integral number but was " "%r" % self.max_leaf_nodes)
+                raise ValueError(
+                    f"max_leaf_nodes must be integral number but was {self.max_leaf_nodes}"
+                )
             if self.max_leaf_nodes < 2:
                 raise ValueError(
-                    ("max_leaf_nodes {0} must be either None " "or larger than 1").format(self.max_leaf_nodes)
+                    f"max_leaf_nodes {self.max_leaf_nodes} must be either None or larger than 1"
                 )
         if isinstance(self.maxBins, numbers.Integral):
             if not 2 <= self.maxBins:
-                raise ValueError("maxBins must be at least 2, got %s" % self.maxBins)
+                raise ValueError(f"maxBins must be at least 2, got {self.maxBins}")
         else:
-            raise ValueError("maxBins must be integral number but was " "%r" % self.maxBins)
+            raise ValueError(f"maxBins must be integral number but was {self.maxBins}")
         if isinstance(self.minBinSize, numbers.Integral):
             if not 1 <= self.minBinSize:
-                raise ValueError("minBinSize must be at least 1, got %s" % self.minBinSize)
+                raise ValueError(f"minBinSize must be at least 1, got {self.minBinSize}")
         else:
-            raise ValueError("minBinSize must be integral number but was " "%r" % self.minBinSize)
+            raise ValueError(
+                f"minBinSize must be integral number but was {self.minBinSize}"
+            )
 
 
 class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
@@ -345,17 +374,22 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if sample_weight is not None:
             sample_weight = check_sample_weight(sample_weight, X)
 
-        _patching_status = PatchingConditionsChain("sklearn.ensemble.RandomForestClassifier.fit")
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestClassifier.fit"
+        )
         _dal_ready = _patching_status.and_conditions(
             [
                 (
-                    self.oob_score and daal_check_version((2021, "P", 500)) or not self.oob_score,
+                    self.oob_score
+                    and daal_check_version((2021, "P", 500))
+                    or not self.oob_score,
                     "OOB score is only supported starting from 2021.5 version of oneDAL.",
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
                 (
                     self.criterion == "gini",
-                    f"'{self.criterion}' criterion is not supported. " "Only 'gini' criterion is supported.",
+                    f"'{self.criterion}' criterion is not supported. "
+                    "Only 'gini' criterion is supported.",
                 ),
                 (
                     self.ccp_alpha == 0.0,
@@ -390,7 +424,12 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
             self.n_outputs_ = y.shape[1]
             _dal_ready = _patching_status.and_conditions(
-                [(self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1.")]
+                [
+                    (
+                        self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                    )
+                ]
             )
 
         _patching_status.write_log()
@@ -429,7 +468,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        _patching_status = PatchingConditionsChain("sklearn.ensemble.RandomForestClassifier.predict")
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestClassifier.predict"
+        )
         _dal_ready = _patching_status.and_conditions(
             [
                 (hasattr(self, "daal_model_"), "oneDAL model was not trained."),
@@ -452,7 +493,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32])
+        X = check_array(
+            X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
+        )
         return self._daal_predict_classifier(X)
 
     @support_usm_ndarray()
@@ -495,7 +538,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
                     )
                 )
 
-        _patching_status = PatchingConditionsChain("sklearn.ensemble.RandomForestClassifier.predict_proba")
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestClassifier.predict_proba"
+        )
         _dal_ready = _patching_status.and_conditions(
             [
                 (hasattr(self, "daal_model_"), "oneDAL model was not trained."),
@@ -568,7 +613,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         random_state_checked = check_random_state(self.random_state)
         for i in range(self.n_estimators):
             est_i = clone(est)
-            est_i.set_params(random_state=random_state_checked.randint(np.iinfo(np.int32).max))
+            est_i.set_params(
+                random_state=random_state_checked.randint(np.iinfo(np.int32).max)
+            )
             if sklearn_check_version("1.0"):
                 est_i.n_features_in_ = self.n_features_in_
             else:
@@ -641,9 +688,13 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
         daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=getFPType(X))
 
-        features_per_node = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
+        features_per_node = _to_absolute_max_features(
+            self.max_features, X.shape[1], is_classification=True
+        )
 
-        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+        n_samples_bootstrap = _get_n_samples_bootstrap(
+            n_samples=X.shape[0], max_samples=self.max_samples
+        )
 
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
@@ -653,7 +704,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             )
 
         if not self.bootstrap and self.oob_score:
-            raise ValueError("Out of bag estimation only available" " if bootstrap=True")
+            raise ValueError("Out of bag estimation only available if bootstrap=True")
 
         parameters = {
             "bootstrap": bool(self.bootstrap),
@@ -679,7 +730,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if isinstance(self.min_samples_split, numbers.Integral):
             parameters["minObservationsInSplitNode"] = self.min_samples_split
         else:
-            parameters["minObservationsInSplitNode"] = int(ceil(self.min_samples_split * X.shape[0]))
+            parameters["minObservationsInSplitNode"] = int(
+                ceil(self.min_samples_split * X.shape[0])
+            )
 
         if isinstance(self.min_samples_leaf, numbers.Integral):
             parameters["minObservationsInLeafNode"] = self.min_samples_leaf
@@ -689,7 +742,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
         if self.oob_score:
-            parameters["resultsToCompute"] = "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+            parameters[
+                "resultsToCompute"
+            ] = "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
 
         if daal_check_version((2023, "P", 200)):
             parameters["binningStrategy"] = self.binningStrategy
@@ -889,11 +944,15 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                 FutureWarning,
             )
 
-        _patching_status = PatchingConditionsChain("sklearn.ensemble.RandomForestRegressor.fit")
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestRegressor.fit"
+        )
         _dal_ready = _patching_status.and_conditions(
             [
                 (
-                    self.oob_score and daal_check_version((2021, "P", 500)) or not self.oob_score,
+                    self.oob_score
+                    and daal_check_version((2021, "P", 500))
+                    or not self.oob_score,
                     "OOB score is only supported starting from 2021.5 version of oneDAL.",
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
@@ -936,7 +995,12 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
             self.n_outputs_ = y.shape[1]
             _dal_ready = _patching_status.and_conditions(
-                [(self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1.")]
+                [
+                    (
+                        self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                    )
+                ]
             )
 
         _patching_status.write_log()
@@ -971,7 +1035,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        _patching_status = PatchingConditionsChain("sklearn.ensemble.RandomForestRegressor.predict")
+        _patching_status = PatchingConditionsChain(
+            "sklearn.ensemble.RandomForestRegressor.predict"
+        )
         _dal_ready = _patching_status.and_conditions(
             [
                 (hasattr(self, "daal_model_"), "oneDAL model was not trained."),
@@ -994,7 +1060,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = check_array(X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32])
+        X = check_array(
+            X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
+        )
         return self._daal_predict_regressor(X)
 
     if sklearn_check_version("1.0"):
@@ -1038,7 +1106,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         random_state_checked = check_random_state(self.random_state)
         for i in range(self.n_estimators):
             est_i = clone(est)
-            est_i.set_params(random_state=random_state_checked.randint(np.iinfo(np.int32).max))
+            est_i.set_params(
+                random_state=random_state_checked.randint(np.iinfo(np.int32).max)
+            )
             if sklearn_check_version("1.0"):
                 est_i.n_features_in_ = self.n_features_in_
             else:
@@ -1053,7 +1123,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                 "values": tree_i_state_class.value_ar,
             }
 
-            est_i.tree_ = Tree(self.n_features_in_, np.array([1], dtype=np.intp), self.n_outputs_)
+            est_i.tree_ = Tree(
+                self.n_features_in_, np.array([1], dtype=np.intp), self.n_outputs_
+            )
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 
@@ -1080,9 +1152,13 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
         daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=getFPType(X))
 
-        features_per_node = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=False)
+        features_per_node = _to_absolute_max_features(
+            self.max_features, X.shape[1], is_classification=False
+        )
 
-        n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+        n_samples_bootstrap = _get_n_samples_bootstrap(
+            n_samples=X.shape[0], max_samples=self.max_samples
+        )
 
         if sample_weight is not None:
             if hasattr(sample_weight, "__array__"):
@@ -1112,7 +1188,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if isinstance(self.min_samples_split, numbers.Integral):
             parameters["minObservationsInSplitNode"] = self.min_samples_split
         else:
-            parameters["minObservationsInSplitNode"] = int(ceil(self.min_samples_split * X.shape[0]))
+            parameters["minObservationsInSplitNode"] = int(
+                ceil(self.min_samples_split * X.shape[0])
+            )
 
         if isinstance(self.min_samples_leaf, numbers.Integral):
             parameters["minObservationsInLeafNode"] = self.min_samples_leaf
@@ -1122,7 +1200,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
         if self.oob_score:
-            parameters["resultsToCompute"] = "computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
+            parameters[
+                "resultsToCompute"
+            ] = "computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
 
         if daal_check_version((2023, "P", 200)):
             parameters["binningStrategy"] = self.binningStrategy
@@ -1140,7 +1220,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
         if self.oob_score:
             self.oob_score_ = dfr_trainingResult.outOfBagErrorR2[0][0]
-            self.oob_prediction_ = dfr_trainingResult.outOfBagErrorPrediction.squeeze(axis=1)
+            self.oob_prediction_ = dfr_trainingResult.outOfBagErrorPrediction.squeeze(
+                axis=1
+            )
             if self.oob_prediction_.shape[-1] == 1:
                 self.oob_prediction_ = self.oob_prediction_.squeeze(axis=-1)
 
