@@ -164,7 +164,7 @@ def _check_parameters(self):
 def _daal_fit_classifier(self, X, y, sample_weight=None):
     y = check_array(y, ensure_2d=False, dtype=None)
     y, expanded_class_weight = self._validate_y_class_weight(y)
-    n_classes_ = self.n_classes_[0]
+    n_classes = self.n_classes_[0]
     self.n_features_in_ = X.shape[1]
     if not sklearn_check_version("1.0"):
         self.n_features_ = self.n_features_in_
@@ -180,17 +180,14 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     rs_ = check_random_state(self.random_state)
     seed_ = rs_.randint(0, np.iinfo("i").max)
 
-    if n_classes_ < 2:
+    if n_classes < 2:
         raise ValueError("Training data only contain information about one class.")
 
-    # create algorithm
-    X_fptype = getFPType(X)
+    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=getFPType(X))
 
-    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
+    features_per_node = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
 
-    features_per_node_ = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=True)
-
-    n_samples_bootstrap_ = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+    n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
     if not self.bootstrap and self.max_samples is not None:
         raise ValueError(
@@ -202,38 +199,47 @@ def _daal_fit_classifier(self, X, y, sample_weight=None):
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available" " if bootstrap=True")
 
-    dfc_algorithm = daal4py.decision_forest_classification_training(
-        nClasses=int(n_classes_),
-        fptype=X_fptype,
-        method="hist",
-        nTrees=int(self.n_estimators),
-        observationsPerTreeFraction=n_samples_bootstrap_ if self.bootstrap is True else 1.0,
-        featuresPerNode=int(features_per_node_),
-        maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
-        minObservationsInLeafNode=(
-            self.min_samples_leaf
-            if isinstance(self.min_samples_leaf, numbers.Integral)
-            else int(ceil(self.min_samples_leaf * X.shape[0]))
-        ),
-        engine=daal_engine,
-        impurityThreshold=float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
-        varImportance="MDI",
-        resultsToCompute=(
-            "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction" if self.oob_score else ""
-        ),
-        memorySavingMode=False,
-        bootstrap=bool(self.bootstrap),
-        minObservationsInSplitNode=(
-            self.min_samples_split
-            if isinstance(self.min_samples_split, numbers.Integral)
-            else int(ceil(self.min_samples_split * X.shape[0]))
-        ),
-        minWeightFractionInLeafNode=self.min_weight_fraction_leaf,
-        minImpurityDecreaseInSplitNode=self.min_impurity_decrease,
-        maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes,
-        maxBins=self.maxBins,
-        minBinSize=self.minBinSize,
-    )
+    parameters = {
+        "bootstrap": bool(self.bootstrap),
+        "engine": daal_engine,
+        "featuresPerNode": features_per_node,
+        "fptype": getFPType(X),
+        "impurityThreshold": self.min_impurity_split or 0.0,
+        "maxBins": self.maxBins,
+        "maxLeafNodes": self.max_leaf_nodes or 0,
+        "maxTreeDepth": self.max_depth or 0,
+        "memorySavingMode": False,
+        "method": "hist",
+        "minBinSize": self.minBinSize,
+        "minImpurityDecreaseInSplitNode": self.min_impurity_decrease,
+        "minWeightFractionInLeafNode": self.min_weight_fraction_leaf,
+        "nClasses": int(n_classes),
+        "nTrees": self.n_estimators,
+        "observationsPerTreeFraction": 1.0,
+        "resultsToCompute": "",
+        "varImportance": "MDI",
+    }
+
+    if isinstance(self.min_samples_split, numbers.Integral):
+        parameters["minObservationsInSplitNode"] = self.min_samples_split
+    else:
+        parameters["minObservationsInSplitNode"] = int(ceil(self.min_samples_split * X.shape[0]))
+
+    if isinstance(self.min_samples_leaf, numbers.Integral):
+        parameters["minObservationsInLeafNode"] = self.min_samples_leaf
+    else:
+        int(ceil(self.min_samples_leaf * X.shape[0]))
+
+    if self.bootstrap:
+        parameters["observationsPerTreeFraction"] = n_samples_bootstrap
+    if self.oob_score:
+        parameters["resultsToCompute"] = "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+
+    if daal_check_version((2023, "P", 200)):
+        parameters["binningStrategy"] = self.binning_strategy
+
+    # create algorithm
+    dfc_algorithm = daal4py.decision_forest_classification_training(**parameters)
     self._cached_estimators_ = None
     # compute
     dfc_trainingResult = dfc_algorithm.compute(X, y, sample_weight)
@@ -377,12 +383,11 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
     if not self.bootstrap and self.oob_score:
         raise ValueError("Out of bag estimation only available" " if bootstrap=True")
 
-    X_fptype = getFPType(X)
     seed_ = rs_.randint(0, np.iinfo("i").max)
 
-    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=X_fptype)
+    daal_engine = daal4py.engines_mt19937(seed=seed_, fptype=getFPType(X))
 
-    _featuresPerNode = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=False)
+    features_per_node = _to_absolute_max_features(self.max_features, X.shape[1], is_classification=False)
 
     n_samples_bootstrap = _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
@@ -391,36 +396,46 @@ def _daal_fit_regressor(self, X, y, sample_weight=None):
             sample_weight[sample_weight == 0.0] = 1.0
         sample_weight = [sample_weight]
 
+    parameters = {
+        "bootstrap": bool(self.bootstrap),
+        "engine": daal_engine,
+        "featuresPerNode": features_per_node,
+        "fptype": getFPType(X),
+        "impurityThreshold": float(self.min_impurity_split or 0.0),
+        "maxBins": self.maxBins,
+        "maxLeafNodes": self.max_leaf_nodes or 0,
+        "maxTreeDepth": self.max_depth or 0,
+        "memorySavingMode": False,
+        "method": "hist",
+        "minBinSize": self.minBinSize,
+        "minImpurityDecreaseInSplitNode": self.min_impurity_decrease,
+        "minWeightFractionInLeafNode": self.min_weight_fraction_leaf,
+        "nTrees": int(self.n_estimators),
+        "observationsPerTreeFraction": 1.0,
+        "resultsToCompute": "",
+        "varImportance": "MDI",
+    }
+
+    if isinstance(self.min_samples_split, numbers.Integral):
+        parameters["minObservationsInSplitNode"] = self.min_samples_split
+    else:
+        parameters["minObservationsInSplitNode"] = int(ceil(self.min_samples_split * X.shape[0]))
+
+    if isinstance(self.min_samples_leaf, numbers.Integral):
+        parameters["minObservationsInLeafNode"] = self.min_samples_leaf
+    else:
+        int(ceil(self.min_samples_leaf * X.shape[0]))
+
+    if self.bootstrap:
+        parameters["observationsPerTreeFraction"] = n_samples_bootstrap
+    if self.oob_score:
+        parameters["resultsToCompute"] = "computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
+
+    if daal_check_version((2023, "P", 200)):
+        parameters["binningStrategy"] = self.binning_strategy
+
     # create algorithm
-    dfr_algorithm = daal4py.decision_forest_regression_training(
-        fptype=getFPType(X),
-        method="hist",
-        nTrees=int(self.n_estimators),
-        observationsPerTreeFraction=n_samples_bootstrap if self.bootstrap is True else 1.0,
-        featuresPerNode=int(_featuresPerNode),
-        maxTreeDepth=int(0 if self.max_depth is None else self.max_depth),
-        minObservationsInLeafNode=(
-            self.min_samples_leaf
-            if isinstance(self.min_samples_leaf, numbers.Integral)
-            else int(ceil(self.min_samples_leaf * X.shape[0]))
-        ),
-        engine=daal_engine,
-        impurityThreshold=float(0.0 if self.min_impurity_split is None else self.min_impurity_split),
-        varImportance="MDI",
-        resultsToCompute=("computeOutOfBagErrorR2|computeOutOfBagErrorPrediction" if self.oob_score else ""),
-        memorySavingMode=False,
-        bootstrap=bool(self.bootstrap),
-        minObservationsInSplitNode=(
-            self.min_samples_split
-            if isinstance(self.min_samples_split, numbers.Integral)
-            else int(ceil(self.min_samples_split * X.shape[0]))
-        ),
-        minWeightFractionInLeafNode=self.min_weight_fraction_leaf,
-        minImpurityDecreaseInSplitNode=self.min_impurity_decrease,
-        maxLeafNodes=0 if self.max_leaf_nodes is None else self.max_leaf_nodes,
-        maxBins=self.maxBins,
-        minBinSize=self.minBinSize,
-    )
+    dfr_algorithm = daal4py.decision_forest_regression_training(**parameters)
 
     self._cached_estimators_ = None
 
@@ -592,6 +607,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             max_samples=None,
             maxBins=256,
             minBinSize=1,
+            binningStrategy="quantiles",
         ):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
@@ -616,6 +632,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
+            self.binning_strategy = binningStrategy
 
     else:
 
@@ -642,6 +659,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             max_samples=None,
             maxBins=256,
             minBinSize=1,
+            binningStrategy="quantiles",
         ):
             super(RandomForestClassifier, self).__init__(
                 n_estimators=n_estimators,
@@ -666,6 +684,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
+            self.binning_strategy = binningStrategy
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
@@ -928,6 +947,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             max_samples=None,
             maxBins=256,
             minBinSize=1,
+            binningStrategy="quantiles",
         ):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
@@ -951,6 +971,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
+            self.binning_strategy = binningStrategy
 
     else:
 
@@ -977,6 +998,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             max_samples=None,
             maxBins=256,
             minBinSize=1,
+            binningStrategy="quantiles",
         ):
             super(RandomForestRegressor, self).__init__(
                 n_estimators=n_estimators,
@@ -1000,6 +1022,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             )
             self.maxBins = maxBins
             self.minBinSize = minBinSize
+            self.binning_strategy = binningStrategy
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
