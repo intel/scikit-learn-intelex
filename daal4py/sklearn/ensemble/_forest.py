@@ -14,33 +14,32 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
-
+import logging
 import numbers
 import warnings
+from math import ceil
 
-import daal4py
-from .._utils import getFPType, check_tree_nodes
-from .._device_offload import support_usm_ndarray
-from daal4py.sklearn._utils import (
-    daal_check_version, sklearn_check_version,
-    PatchingConditionsChain)
-
+import numpy as np
+from scipy import sparse as sp
+from sklearn.base import clone
+from sklearn.ensemble import \
+    RandomForestClassifier as RandomForestClassifier_original
+from sklearn.ensemble import \
+    RandomForestRegressor as RandomForestRegressor_original
+from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree
-from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
-from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
-from sklearn.utils import (check_random_state, check_array, deprecated)
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_consistent_length,
-    _num_samples)
-from ..utils.validation import _daal_num_features
-from sklearn.base import clone
-from sklearn.exceptions import DataConversionWarning
+from sklearn.utils import check_array, check_random_state, deprecated
+from sklearn.utils.validation import (_num_samples, check_consistent_length,
+                                      check_is_fitted)
 
-from math import ceil
-from scipy import sparse as sp
+import daal4py
+from daal4py.sklearn._utils import (PatchingConditionsChain,
+                                    daal_check_version, sklearn_check_version)
+
+from .._device_offload import support_usm_ndarray
+from .._utils import getFPType
+from ..utils.validation import _daal_num_features
 
 if sklearn_check_version('1.2'):
     from sklearn.utils._param_validation import Interval
@@ -883,7 +882,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
+                'nodes': tree_i_state_class.node_ar,
                 'values': tree_i_state_class.value_ar}
             est_i.tree_ = Tree(
                 self.n_features_in_,
@@ -1125,7 +1124,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
+                'nodes': tree_i_state_class.node_ar,
                 'values': tree_i_state_class.value_ar}
 
             est_i.tree_ = Tree(
