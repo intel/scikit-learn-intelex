@@ -22,24 +22,20 @@ from math import ceil
 import numpy as np
 from scipy import sparse as sp
 from sklearn.base import clone
-from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
-from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
+from sklearn.ensemble import \
+    RandomForestClassifier as RandomForestClassifier_original
+from sklearn.ensemble import \
+    RandomForestRegressor as RandomForestRegressor_original
 from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_array, check_random_state, deprecated
-from sklearn.utils.validation import (
-    _num_samples,
-    check_consistent_length,
-    check_is_fitted,
-)
+from sklearn.utils.validation import (_num_samples, check_consistent_length,
+                                      check_is_fitted)
 
 import daal4py
-from daal4py.sklearn._utils import (
-    PatchingConditionsChain,
-    daal_check_version,
-    sklearn_check_version,
-)
+from daal4py.sklearn._utils import (PatchingConditionsChain,
+                                    daal_check_version, sklearn_check_version)
 
 from .._device_offload import support_usm_ndarray
 from .._utils import getFPType
@@ -199,17 +195,21 @@ class RandomForestBase:
             )
 
             if self.min_impurity_split < 0.0:
-                raise ValueError("min_impurity_split must be greater than or equal to 0")
+                raise ValueError(
+                    "min_impurity_split must be greater " "than or equal to 0"
+                )
         if self.min_impurity_decrease < 0.0:
             raise ValueError("min_impurity_decrease must be greater than or equal to 0")
         if self.max_leaf_nodes is not None:
             if not isinstance(self.max_leaf_nodes, numbers.Integral):
                 raise ValueError(
-                    f"max_leaf_nodes must be integral number but was {self.max_leaf_nodes}"
+                    "max_leaf_nodes must be integral number but was "
+                    f"{self.max_leaf_nodes}"
                 )
             if self.max_leaf_nodes < 2:
                 raise ValueError(
-                    f"max_leaf_nodes {self.max_leaf_nodes} must be either None or larger than 1"
+                    f"max_leaf_nodes {self.max_leaf_nodes} must be either None "
+                    "or larger than 1"
                 )
         if isinstance(self.maxBins, numbers.Integral):
             if not 2 <= self.maxBins:
@@ -370,7 +370,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
-            _check_parameters(self)
+            self._check_parameters()
         if sample_weight is not None:
             sample_weight = check_sample_weight(sample_weight, X)
 
@@ -932,7 +932,7 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
-            _check_parameters(self)
+            self._check_parameters()
         if sample_weight is not None:
             sample_weight = check_sample_weight(sample_weight, X)
 
