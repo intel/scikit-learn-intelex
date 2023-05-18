@@ -556,8 +556,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 return False
             elif hasattr(self, 'estimators_'):
                 return False
-            else:
-                return True
+            elif not self.random_state is None:
+                warnings.warn("Setting 'random_state' value is not supported."
+                              " State set by oneDAL to default value (777).",
+                              RuntimeWarning)
+            return True
         if method_name in ['ensemble.ExtraTreesClassifier.predict',
                            'ensemble.ExtraTreesClassifier.predict_proba']:
             X = data[0]
@@ -602,8 +605,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 return False
             elif hasattr(self, 'estimators_'):
                 return False
-            else:
-                return True
+            elif not self.random_state is None:
+                warnings.warn("Setting random_state value is not supported."
+                              " State set by oneDAL to default value (777)",
+                              RuntimeWarning)
+            return True
         if method_name in ['ensemble.ExtraTreesClassifier.predict',
                            'ensemble.ExtraTreesClassifier.predict_proba']:
             X = data[0]
@@ -769,8 +775,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1,
-                splitter_mode='random'):
+                min_bin_size=1):
             super(ExtraTreesRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -794,7 +799,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = splitter_mode
+            self.splitter_mode = 'random'
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -816,8 +821,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1,
-                     splitter_mode='random'):
+                     min_bin_size=1):
             super(ExtraTreesRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -844,7 +848,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = splitter_mode
+            self.splitter_mode = 'random'
 
     @property
     def _estimators_(self):
