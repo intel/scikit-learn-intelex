@@ -574,7 +574,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
     def _onedal_gpu_supported(self, method_name, *data):
         _patching_status = PatchingConditionsChain(method_name)
 
-    if method_name == 'ensemble.ExtraTreesClassifier.fit':
+        if method_name == 'ensemble.ExtraTreesClassifier.fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
