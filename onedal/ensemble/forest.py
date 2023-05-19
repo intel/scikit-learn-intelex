@@ -365,19 +365,26 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if self.oob_score:
             if self.is_classification:
                 self.oob_score_ = from_table(train_result.oob_err_accuracy)[0, 0]
-                self.oob_prediction_ = from_table(
+                self.oob_decision_function_ = from_table(
                     train_result.oob_err_decision_function)
+                if np.any(self.oob_decision_function_ == 0):
+                    warnings.warn(
+                        "Some inputs do not have OOB scores. This probably means "
+                        "too few trees were used to compute any reliable OOB "
+                        "estimates.",
+                        UserWarning,
+                    )
             else:
                 self.oob_score_ = from_table(train_result.oob_err_r2)[0, 0]
                 self.oob_prediction_ = from_table(
                     train_result.oob_err_prediction).reshape(-1)
-            if np.any(self.oob_prediction_ == 0):
-                warnings.warn(
-                    "Some inputs do not have OOB scores. This probably means "
-                    "too few trees were used to compute any reliable OOB "
-                    "estimates.",
-                    UserWarning,
-                )
+                if np.any(self.oob_prediction_ == 0):
+                    warnings.warn(
+                        "Some inputs do not have OOB scores. This probably means "
+                        "too few trees were used to compute any reliable OOB "
+                        "estimates.",
+                        UserWarning,
+                    )
 
         return self
 
