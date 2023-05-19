@@ -538,7 +538,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and
+                (self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2"),
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
@@ -584,7 +584,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and
+                (self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 100)),
                     "ExtraTrees only supported starting from oneDAL version 2023.1"),
                 (sample_weight is not None, "sample_weight is not supported.")
@@ -933,8 +933,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         _patching_status = PatchingConditionsChain(
             "sklearn.ensemble.RandomForestRegressor.fit")
         ready = _patching_status.and_conditions([
-            (self.oob_score and daal_check_version((2021, 'P', 500))
-                or not self.oob_score,
+            (self.oob_score and daal_check_version((2021, 'P', 500)) or \
+                not self.oob_score,
                 "OOB score is only supported starting from 2021.5 version of oneDAL."),
             (self.warm_start is False, "Warm start is not supported."),
             (self.criterion in ["mse", "squared_error"],
@@ -981,7 +981,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and
+                (self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2"),
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
@@ -1027,7 +1027,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and
+                (self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 100)),
                     "ExtraTrees only supported starting from oneDAL version 2023.1"),
                 (sample_weight is not None, "sample_weight is not supported."),
