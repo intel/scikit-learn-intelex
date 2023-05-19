@@ -583,7 +583,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         self._cached_estimators_ = estimators_
         return estimators_
 
-    def _onedal_cpu_supported(self, method_name, *data):
+    def _onedal_cpu_supported2(self, method_name, *data):
         if method_name == 'ensemble.ExtraTreesClassifier.fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
@@ -630,7 +630,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         raise RuntimeError(
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
-    def _onedal_cpu_supported2(self, method_name, *data):
+    def _onedal_cpu_supported(self, method_name, *data):
+        temp = self._onedal_cpu_supported2(method_name, *data)
         _patching_status = PatchingConditionsChain(method_name)
 
         if method_name == 'ensemble.ExtraTreesClassifier.fit':
@@ -676,6 +677,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 f'Unknown method {method_name} in {self.__class__.__name__}')
 
         _patching_status.write_log()
+        assert(temp == dal_ready)
         return dal_ready
 
     def _onedal_gpu_supported(self, method_name, *data):
