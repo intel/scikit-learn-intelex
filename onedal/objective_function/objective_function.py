@@ -65,14 +65,15 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
             "intercept": intercept,
         }
 
-    def _compute(self, X, y, coef, options, l2_reg_strength=0.0, fit_intercept=True, queue=None):
-        policy = self._get_policy(queue, X, y, coef)
-        ftype = X.dtype
-        params = self._get_onedal_params(
-            options, L2=l2_reg_strength, intercept=fit_intercept, dtype=ftype
-        )
-
-        y = y.astype(np.int32)
+    def _compute(
+            self,
+            X,
+            y,
+            coef,
+            options,
+            l2_reg_strength=0.0,
+            fit_intercept=True,
+            queue=None):
 
         # in python interface intercept-coef is at the end of the array
         # in onedal interface coef array always has the size p + 1
@@ -84,13 +85,21 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
             coef = np.hstack([coef[-1], coef[:-1]])
         else:
             coef = np.hstack([0.0, coef])
-        coef = coef.astype(X.dtype)
 
+        y = y.astype(np.int32)
+
+        policy = self._get_policy(queue, X, y, coef)
         X_loc, y_loc, coef_loc = _convert_to_dataframe(policy, X, y, coef)
         X_loc, y_loc, coef_loc = _convert_to_supported(policy, X_loc, y_loc, coef_loc)
 
+        ftype = X_loc.dtype
+
         X_table, coef_table = to_table(X_loc, coef_loc)
         y_table = to_table(y_loc)
+
+        params = self._get_onedal_params(
+            options, L2=l2_reg_strength, intercept=fit_intercept, dtype=ftype
+        )
 
         result = self.func(policy, params, X_table, coef_table, y_table)
 
@@ -192,7 +201,8 @@ class LogisticLoss(BaseObjectiveFunction):
         if (raw_prediction is not None):
             raise Exception("raw_prediction parameter is not supported")
 
-        value = super()._compute(X, y, coef, "value", 0.0, self.fit_intercept, queue)["value"]
+        value = super()._compute(X, y, coef, "value", 0.0,
+                                 self.fit_intercept, queue)["value"]
         if l2_reg_strength > 0:
             value += self.__calculate_regularization(coef, l2_reg_strength)
         return value
@@ -207,7 +217,7 @@ class LogisticLoss(BaseObjectiveFunction):
         n_threads=1,
         raw_prediction=None,
         queue=None
-    ):  
+    ):
         if (sample_weight is not None):
             if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
                 raise Exception("sample_weigth parameter is not supported")

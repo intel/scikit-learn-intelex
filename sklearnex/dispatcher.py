@@ -71,8 +71,10 @@ def get_patch_map():
         from .preview.ensemble import (
             RandomForestRegressor as RandomForestRegressor_sklearnex,
         )
-        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
-        from .preview.objective_function import LinearModelLoss as LinearModelLoss_sklearnex
+        from .preview.linear_model import \
+            LinearRegression as LinearRegression_sklearnex
+        from .preview.objective_function import \
+            LinearModelLoss as LinearModelLoss_sklearnex
 
         # Patch for mapping
         if _is_preview_enabled():
@@ -82,7 +84,13 @@ def get_patch_map():
             mapping.pop("logistic")
             mapping.pop("log_reg")
             mapping["logreg_logloss"] = [
-                [(logistic_regression_module, "LinearModelLoss", LinearModelLoss_sklearnex), None]]
+                [
+                    (logistic_regression_module,
+                     "LinearModelLoss",
+                     LinearModelLoss_sklearnex),
+                    None,
+                ]
+            ]
 
             # Ensemble
             mapping.pop("random_forest_classifier")

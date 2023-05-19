@@ -24,10 +24,14 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
     import numpy as np
 
     from daal4py.sklearn._utils import (get_dtype, make2d)
-    from sklearn.linear_model._linear_loss import LinearModelLoss as sklearn_LinearModelLoss
+    from sklearn.linear_model._linear_loss import \
+        LinearModelLoss as sklearn_LinearModelLoss
     from sklearn._loss.loss import HalfBinomialLoss
 
-    from onedal.objective_function import LogisticLoss as onedal_LogisticLoss
+    from onedal.objective_function import \
+        LogisticLoss as onedal_LogisticLoss
+
+    class_name = 'sklearn.linear_model._linear_loss.LinearModelLoss.'
 
     class LinearModelLoss(sklearn_LinearModelLoss):
 
@@ -97,12 +101,26 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
                 n_threads=1,
                 raw_prediction=None,):
             if isinstance(self.base_loss, HalfBinomialLoss):
-                return dispatch(self, 'sklearn.linear_model._linear_loss.LinearModelLoss.loss', {
-                    'onedal': self.__class__.onedal_loss,
-                    'sklearn': sklearn_LinearModelLoss.loss,
-                }, coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
+                return dispatch(self,
+                                class_name + 'loss',
+                                {'onedal': self.__class__.onedal_loss,
+                                 'sklearn': sklearn_LinearModelLoss.loss,
+                                 },
+                                coef,
+                                X,
+                                y,
+                                sample_weight,
+                                l2_reg_strength,
+                                n_threads,
+                                raw_prediction)
             else:
-                return super().loss(coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
+                return super().loss(coef,
+                                    X,
+                                    y,
+                                    sample_weight,
+                                    l2_reg_strength,
+                                    n_threads,
+                                    raw_prediction)
 
         @wrap_output_data
         def loss_gradient(
@@ -115,13 +133,26 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
                 n_threads=1,
                 raw_prediction=None,):
             if type(self.base_loss == HalfBinomialLoss):
-                return dispatch(self, 'sklearn.linear_model._linear_loss.LinearModelLoss.loss_gradient', {
-                    'onedal': self.__class__.onedal_loss_gradient,
-                    'sklearn': sklearn_LinearModelLoss.loss_gradient,
-                }, coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
+                return dispatch(self,
+                                class_name + 'loss_gradient',
+                                {'onedal': self.__class__.onedal_loss_gradient,
+                                 'sklearn': sklearn_LinearModelLoss.loss_gradient,
+                                 },
+                                coef,
+                                X,
+                                y,
+                                sample_weight,
+                                l2_reg_strength,
+                                n_threads,
+                                raw_prediction)
             else:
-                return super().loss_gradient(coef, X, y, sample_weight,
-                                             l2_reg_strength, n_threads, raw_prediction)
+                return super().loss_gradient(coef,
+                                             X,
+                                             y,
+                                             sample_weight,
+                                             l2_reg_strength,
+                                             n_threads,
+                                             raw_prediction)
 
         @wrap_output_data
         def gradient(
@@ -135,12 +166,26 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
                 raw_prediction=None,):
 
             if isinstance(self.base_loss, HalfBinomialLoss):
-                return dispatch(self, 'sklearn.linear_model._linear_loss.LinearModelLoss.gradient', {
-                    'onedal': self.__class__.onedal_gradient,
-                    'sklearn': sklearn_LinearModelLoss.gradient,
-                }, coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
+                return dispatch(self,
+                                class_name + 'gradient',
+                                {'onedal': self.__class__.onedal_gradient,
+                                 'sklearn': sklearn_LinearModelLoss.gradient,
+                                 },
+                                coef,
+                                X,
+                                y,
+                                sample_weight,
+                                l2_reg_strength,
+                                n_threads,
+                                raw_prediction)
             else:
-                return super().gradient(coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
+                return super().gradient(coef,
+                                        X,
+                                        y,
+                                        sample_weight,
+                                        l2_reg_strength,
+                                        n_threads,
+                                        raw_prediction)
 
         @wrap_output_data
         def gradient_hessian(
@@ -154,13 +199,26 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
                 raw_prediction=None,):
 
             if isinstance(self.base_loss, HalfBinomialLoss):
-                return dispatch(self, 'sklearn.linear_model._linear_loss.LinearModelLoss.gradient_hessian', {
-                    'onedal': self.__class__.onedal_gradient_hessian,
-                    'sklearn': sklearn_LinearModelLoss.gradient_hessian,
-                }, coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
+                return dispatch(self,
+                                class_name + 'gradient_hessian',
+                                {'onedal': self.__class__.onedal_gradient_hessian,
+                                 'sklearn': sklearn_LinearModelLoss.gradient_hessian,
+                                 },
+                                coef,
+                                X,
+                                y,
+                                sample_weight,
+                                l2_reg_strength,
+                                n_threads,
+                                raw_prediction)
             else:
-                return super().gradient_hessian(coef, X, y, sample_weight,
-                                                l2_reg_strength, n_threads, raw_prediction)
+                return super().gradient_hessian(coef,
+                                                X,
+                                                y,
+                                                sample_weight,
+                                                l2_reg_strength,
+                                                n_threads,
+                                                raw_prediction)
 
         @wrap_output_data
         def gradient_hessian_product(
@@ -174,10 +232,20 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
                 raw_prediction=None,):
 
             if isinstance(self.base_loss, HalfBinomialLoss):
-                return dispatch(self, 'sklearn.linear_model._linear_loss.LinearModelLoss.gradient_hessian_product', {
-                    'onedal': self.__class__.onedal_gradient_hessian_product,
-                    'sklearn': sklearn_LinearModelLoss.gradient_hessian_product,
-                }, coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
+                return dispatch(
+                    self,
+                    class_name + 'gradient_hessian_product',
+                    {
+                        'onedal': self.__class__.onedal_gradient_hessian_product,
+                        'sklearn': sklearn_LinearModelLoss.gradient_hessian_product,
+                    },
+                    coef,
+                    X,
+                    y,
+                    sample_weight,
+                    l2_reg_strength,
+                    n_threads,
+                    raw_prediction)
             else:
                 return super().gradient_hessian_product(
                     coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
