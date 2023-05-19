@@ -55,7 +55,7 @@ class PCA():
         # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
         # fails to be converted to oneDAL table
         if isinstance(X, np.ndarray) and not X.flags['OWNDATA']:
-            X = X.copy()
+            X = X.base
         X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
