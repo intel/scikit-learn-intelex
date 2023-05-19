@@ -542,8 +542,10 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
                                                  "Sparse input is not supported."),
             ])
+            
+            dal_ready &= not hasattr(self, 'estimators_')
 
-            if not self.random_state is None:
+            if dal_ready and (not self.random_state is None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
@@ -586,7 +588,9 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 (not sample_weight is None, "sample_weight is not supported.")
             ])
 
-            if not self.random_state is None:
+            dal_ready &= not hasattr(self, 'estimators_')
+
+            if dal_ready and (not self.random_state is None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
@@ -981,12 +985,12 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                                                  "Sparse input is not supported."),
             ])
 
-            if not self.random_state is None:
+            dal_ready &= not hasattr(self, 'estimators_')
+
+            if dal_ready and (not self.random_state is None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
-
-            dal_ready &= not hasattr(self, 'estimators_'):
 
         elif method_name in ['ensemble.ExtraTreesRegressor.predict',
                              'ensemble.ExtraTreesRegressor.predict_proba']:
@@ -1026,12 +1030,12 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 (not sample_weight is None, "sample_weight is not supported."),
             ])
 
-            if not self.random_state is None:
+            dal_ready &= not hasattr(self, 'estimators_'):
+
+            if dal_ready and (not self.random_state is None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
-
-            dal_ready &= not hasattr(self, 'estimators_'):
 
         elif method_name in ['ensemble.ExtraTreesRegressor.predict',
                              'ensemble.ExtraTreesRegressor.predict_proba']:
