@@ -542,8 +542,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and
-                    daal_check_version((2023, 'P', 200)),
+                (self.splitter_mode == 'random' and daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2"),
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
                                                  "Sparse input is not supported."),
