@@ -600,7 +600,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
 
             if dal_ready:
                 dal_ready = _patching_status.and_conditions([
-                    (not  sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
                     (daal_check_version((2023, 'P', 100)),
                         "ExtraTrees only supported starting from oneDAL version 2023.1")
