@@ -382,7 +382,9 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             y = make2d(y)
             self.n_outputs_ = y.shape[1]
             ready = patching_status.and_conditions([
-                (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1.")])
+                (self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.")
+            ])
             # TODO: Fix to support integers as input
             ready &= (y.dtype in [np.float32, np.float64, np.int32, np.int64])
 
@@ -536,42 +538,42 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and \
+                (self.splitter_mode == 'random' and
                     not daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2"),
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
                                                  "Sparse input is not supported."),
             ])
-            
+
             dal_ready &= not hasattr(self, 'estimators_')
 
-            if dal_ready and (not self.random_state is None):
+            if dal_ready and (self.random_state is not None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
         elif method_name in ['ensemble.ExtraTreesClassifier.predict',
                              'ensemble.ExtraTreesClassifier.predict_proba']:
-            
+
             X = data[0]
 
             dal_ready = _patching_status.and_conditions([
                 (hasattr(self, '_onedal_model_'), "oneDAL model was not trained."),
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 (self.warm_start is False, "Warm start is not supported."),
-                
                 (daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2")
             ])
             if hasattr(self, 'n_outputs_'):
                 dal_ready &= _patching_status.and_conditions([
-                    (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1."),
-                ])   
-        
+                    (self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1."),
+                ])
+
         else:
             raise RuntimeError(
                 f'Unknown method {method_name} in {self.__class__.__name__}')
-        
+
         _patching_status.write_log()
         return dal_ready
 
@@ -582,15 +584,15 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and \
+                (self.splitter_mode == 'random' and
                     not daal_check_version((2023, 'P', 100)),
                     "ExtraTrees only supported starting from oneDAL version 2023.1"),
-                (not sample_weight is None, "sample_weight is not supported.")
+                (sample_weight is not None, "sample_weight is not supported.")
             ])
 
             dal_ready &= not hasattr(self, 'estimators_')
 
-            if dal_ready and (not self.random_state is None):
+            if dal_ready and (self.random_state is not None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
@@ -612,16 +614,16 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
 
             if hasattr(self, 'n_outputs_'):
                 dal_ready &= _patching_status.and_conditions([
-                    (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1."),
+                    (self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1."),
                 ])
-        
+
         else:
             raise RuntimeError(
                 f'Unknown method {method_name} in {self.__class__.__name__}')
-        
+
         _patching_status.write_log()
         return dal_ready
-
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sklearn_check_version('1.2'):
@@ -931,7 +933,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         _patching_status = PatchingConditionsChain(
             "sklearn.ensemble.RandomForestRegressor.fit")
         ready = _patching_status.and_conditions([
-            (self.oob_score and daal_check_version((2021, 'P', 500)) or not self.oob_score,
+            (self.oob_score and daal_check_version((2021, 'P', 500))
+                or not self.oob_score,
                 "OOB score is only supported starting from 2021.5 version of oneDAL."),
             (self.warm_start is False, "Warm start is not supported."),
             (self.criterion in ["mse", "squared_error"],
@@ -976,9 +979,9 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
 
         if method_name == 'ensemble.ExtraTreesRegressor.fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
-            
+
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and \
+                (self.splitter_mode == 'random' and
                     not daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2"),
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
@@ -987,27 +990,27 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
 
             dal_ready &= not hasattr(self, 'estimators_')
 
-            if dal_ready and (not self.random_state is None):
+            if dal_ready and (self.random_state is not None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
         elif method_name in ['ensemble.ExtraTreesRegressor.predict',
                              'ensemble.ExtraTreesRegressor.predict_proba']:
-                        
+
             X = data[0]
 
             dal_ready = _patching_status.and_conditions([
                 (hasattr(self, '_onedal_model_'), "oneDAL model was not trained."),
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 (self.warm_start is False, "Warm start is not supported."),
-                
                 (daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2")
             ])
             if hasattr(self, 'n_outputs_'):
                 dal_ready &= _patching_status.and_conditions([
-                    (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1."),
+                    (self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1."),
                 ])
 
         else:
@@ -1018,41 +1021,42 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         return dal_ready
 
     def _onedal_gpu_supported(self, method_name, *data):
-         _patching_status = PatchingConditionsChain(method_name)
+        _patching_status = PatchingConditionsChain(method_name)
 
         if method_name == 'ensemble.ExtraTreesRegressor.fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
-            
+
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and \
+                (self.splitter_mode == 'random' and
                     not daal_check_version((2023, 'P', 100)),
                     "ExtraTrees only supported starting from oneDAL version 2023.1"),
-                (not sample_weight is None, "sample_weight is not supported."),
+                (sample_weight is not None, "sample_weight is not supported."),
             ])
 
-            dal_ready &= not hasattr(self, 'estimators_'):
+            dal_ready &= not hasattr(self, 'estimators_')
 
-            if dal_ready and (not self.random_state is None):
+            if dal_ready and (self.random_state is not None):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
         elif method_name in ['ensemble.ExtraTreesRegressor.predict',
                              'ensemble.ExtraTreesRegressor.predict_proba']:
-                        
+
             X = data[0]
 
             dal_ready = _patching_status.and_conditions([
                 (hasattr(self, '_onedal_model_'), "oneDAL model was not trained."),
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 (self.warm_start is False, "Warm start is not supported."),
-                
+
                 (daal_check_version((2023, 'P', 100)),
                     "ExtraTrees only supported starting from oneDAL version 2023.1")
             ])
             if hasattr(self, 'n_outputs_'):
                 dal_ready &= _patching_status.and_conditions([
-                    (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1."),
+                    (self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1."),
                 ])
 
         else:
