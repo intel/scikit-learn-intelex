@@ -20,8 +20,9 @@
 #define _GBT_MODEL_BUILDER_INCLUDED_
 
 #include <daal.h>
+#include "onedal/version.hpp"
 
-#if __INTEL_DAAL__ >= 2023 && INTEL_DAAL_VERSION >= 20230200
+#if (((MAJOR_VERSION == 2023) && (MINOR_VERSION >= 2)) || (MAJOR_VERSION > 2023))
 #define _gbt_inference_has_missing_values_support 1
 #else
 #define _gbt_inference_has_missing_values_support 0
