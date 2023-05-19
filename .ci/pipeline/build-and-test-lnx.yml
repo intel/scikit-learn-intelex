@@ -30,7 +30,7 @@ steps:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      pip install -r requirements-dev.txt
+      pip install -r dependencies-dev
       pip list
     displayName: 'Install develop requirements'
   - script: |
@@ -60,8 +60,10 @@ steps:
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
+    condition: succeededOrFailed()
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: 'Sklearn testing [device=cpu]'
+    condition: succeededOrFailed()
