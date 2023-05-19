@@ -602,10 +602,14 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 dal_ready = _patching_status.and_conditions([
                     (not  sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
-                    (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1."),
                     (daal_check_version((2023, 'P', 100)),
                         "ExtraTrees only supported starting from oneDAL version 2023.1")
-                ])    
+                ])
+
+            if hasattr(self, 'n_outputs_')
+                dal_ready &= _patching_status.and_conditions([
+                    (self.n_outputs_ == 1, f"Number of outputs ({self.n_outputs_}) is not 1."),
+                ])
         
         else:
             raise RuntimeError(
