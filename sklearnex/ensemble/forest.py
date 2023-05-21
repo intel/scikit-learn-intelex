@@ -331,7 +331,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         -------
         self : object
         """
-        dispatch(self, 'ensemble.ExtraTreesClassifier.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_ExtraTreesClassifier.fit,
         }, X, y, sample_weight)
@@ -366,7 +366,9 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             (self.criterion == "gini",
                 f"'{self.criterion}' criterion is not supported. "
                 "Only 'gini' criterion is supported."),
-            (self.warm_start is False, "Warm start is not supported.")])
+            (self.warm_start is False, "Warm start is not supported."),
+            (self.n_estimators <= 6024, "More than 6024 estimators is not supported.")
+        ])
 
         if ready:
             if sklearn_check_version("1.0"):
@@ -387,10 +389,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.n_outputs_ = y.shape[1]
             ready = patching_status.and_conditions([
                 (self.n_outputs_ == 1,
-                    f"Number of outputs ({self.n_outputs_}) is not 1.")
+                    f"Number of outputs ({self.n_outputs_}) is not 1."),
+                (y.dtype in [np.float32, np.float64, np.int32, np.int64],
+                    f"Datatype ({y.dtype}) is not supported.")
             ])
             # TODO: Fix to support integers as input
-            ready = ready and (y.dtype in [np.float32, np.float64, np.int32, np.int64])
 
         return ready, X, y, sample_weight
 
@@ -416,7 +419,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        return dispatch(self, 'ensemble.ExtraTreesClassifier.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_ExtraTreesClassifier.predict,
         }, X)
@@ -460,7 +463,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                     (f'X has {num_features} features, '
                      f'but ExtraTreesClassifier is expecting '
                      f'{self.n_features_in_} features as input'))
-        return dispatch(self, 'ensemble.ExtraTreesClassifier.predict_proba', {
+        return dispatch(self, 'predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_ExtraTreesClassifier.predict_proba,
         }, X)
@@ -538,7 +541,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
     def _onedal_cpu_supported(self, method_name, *data):
         _patching_status = PatchingConditionsChain(method_name)
 
-        if method_name == 'ensemble.ExtraTreesClassifier.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
@@ -555,8 +558,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
-        elif method_name in ['ensemble.ExtraTreesClassifier.predict',
-                             'ensemble.ExtraTreesClassifier.predict_proba']:
+        elif method_name in ['predict',
+                             'predict_proba']:
 
             X = data[0]
 
@@ -585,7 +588,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
     def _onedal_gpu_supported(self, method_name, *data):
         _patching_status = PatchingConditionsChain(method_name)
 
-        if method_name == 'ensemble.ExtraTreesClassifier.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
@@ -601,8 +604,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
-        if method_name in ['ensemble.ExtraTreesClassifier.predict',
-                           'ensemble.ExtraTreesClassifier.predict_proba']:
+        if method_name in ['predict',
+                           'predict_proba']:
 
             X = data[0]
 
@@ -944,7 +947,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 "Only 'mse' and 'squared_error' criteria are supported."),
             (self.ccp_alpha == 0.0,
                 f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported."),
-            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            (self.n_estimators <= 6024, "More than 6024 estimators is not supported.")
         ])
 
         if ready:
@@ -979,7 +983,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
     def _onedal_cpu_supported(self, method_name, *data):
         _patching_status = PatchingConditionsChain(method_name)
 
-        if method_name == 'ensemble.ExtraTreesRegressor.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
@@ -996,8 +1000,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
-        elif method_name in ['ensemble.ExtraTreesRegressor.predict',
-                             'ensemble.ExtraTreesRegressor.predict_proba']:
+        elif method_name in ['predict',
+                             'predict_proba']:
 
             X = data[0]
 
@@ -1026,7 +1030,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
     def _onedal_gpu_supported(self, method_name, *data):
         _patching_status = PatchingConditionsChain(method_name)
 
-        if method_name == 'ensemble.ExtraTreesRegressor.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
@@ -1042,8 +1046,8 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
-        elif method_name in ['ensemble.ExtraTreesRegressor.predict',
-                             'ensemble.ExtraTreesRegressor.predict_proba']:
+        elif method_name in ['predict',
+                             'predict_proba']:
 
             X = data[0]
 
@@ -1165,7 +1169,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 "Either switch to `bootstrap=True` or set "
                 "`max_sample=None`."
             )
-        dispatch(self, 'ensemble.ExtraTreesRegressor.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_ExtraTreesRegressor.fit,
         }, X, y, sample_weight)
@@ -1193,7 +1197,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        return dispatch(self, 'ensemble.ExtraTreesRegressor.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_ExtraTreesRegressor.predict,
         }, X)
