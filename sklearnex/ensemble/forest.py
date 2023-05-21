@@ -391,7 +391,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 (self.n_outputs_ == 1,
                     f"Number of outputs ({self.n_outputs_}) is not 1."),
                 (y.dtype in [np.float32, np.float64, np.int32, np.int64],
-                    f"Datatype ({y.dtype}) is not supported.")
+                    f"Datatype ({y.dtype}) for y is not supported.")
             ])
             # TODO: Fix to support integers as input
 
