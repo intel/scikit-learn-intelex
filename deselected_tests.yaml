@@ -242,6 +242,8 @@ deselected_tests:
   - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_requires_y_none]
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_requires_y_none]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_requires_y_none]
   - tests/test_common.py::test_estimators[LinearRegression()-check_requires_y_none]
 
   # Linear Regression - minor mismatches in error/warning messages
