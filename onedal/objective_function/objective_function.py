@@ -163,15 +163,10 @@ class LogisticLoss(BaseObjectiveFunction):
             num_params += 1
         hess = hess.reshape(num_params, num_params)
         if self.fit_intercept:
-            hess = np.hstack(
-                (
-                    np.vstack(
-                        [hess[1:, 1:] + np.diag([l2_reg_strength] * (num_params - 1)),
-                         hess[0, 1:],]
-                    ),
-                    np.hstack([hess[0, 1:], hess[0][0]]).reshape(-1, 1),
-                )
-            )
+            hess_w = hess[1:, 1:] + np.diag([l2_reg_strength] * (num_params - 1))
+            hess_with_bias_row = np.vstack([hess_w, hess[0, 1:]])
+            hess_bias_col = np.hstack([hess[0, 1:], hess[0][0]]).reshape(-1, 1)
+            hess = np.hstack([hess_with_bias_row, hess_bias_col])
         else:
             hess = hess[1:, 1:] + np.diag([l2_reg_strength] * (num_params - 1))
         return hess
@@ -229,8 +224,7 @@ class LogisticLoss(BaseObjectiveFunction):
         res = super()._compute(
             X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept, queue
         )
-        value = res["value"]
-        grad = res["gradient"]
+        value, grad = res["value"], res["gradient"]
         if l2_reg_strength > 0:
             value += self.__calculate_regularization(coef, l2_reg_strength)
         return (value, self.change_gradient_format(grad, coef, l2_reg_strength))
@@ -283,7 +277,7 @@ class LogisticLoss(BaseObjectiveFunction):
         )
         grad = self.change_gradient_format(res["gradient"], coef, l2_reg_strength)
         hess = self.change_hessian_format(res["hessian"], coef, l2_reg_strength)
-        flag = (res["hessian"] <= 0.0).sum() * 2 >= res["hessian"].shape[0]
+        flag = np.sum(res["hessian"] <= 0.0) * 2 >= res["hessian"].shape[0]
         return (grad, hess, flag)
 
     def gradient_hessian_product(

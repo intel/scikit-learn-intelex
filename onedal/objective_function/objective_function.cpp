@@ -16,13 +16,13 @@
 
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
+#include <string>
+#include <regex>
+#include <map>
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
 
 #include "oneapi/dal/algo/objective_function.hpp"
-#include <string>
-#include <regex>
-#include <map>
 
 namespace py = pybind11;
 
@@ -66,7 +66,7 @@ auto get_onedal_result_options(const py::dict& params) {
             result_option.begin(),
             result_option.end(),
             re);
-        for (std::sregex_iterator it = first; it != last; ++it) {
+        for (auto it = first; it != last; ++it) {
             const auto str = it->str();
             const auto match = result_option_registry.find(str);
             if (match == result_option_registry.cend()) {

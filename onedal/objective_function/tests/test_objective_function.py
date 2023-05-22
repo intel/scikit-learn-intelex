@@ -29,15 +29,13 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
     from onedal.objective_function import LogisticLoss
 
     def gen_test(
-        row_count=10000, col_count=49, seed=42, dtype=np.float32, fit_intercept=True
+        row_count=5000, col_count=29, seed=42, dtype=np.float32, fit_intercept=True
     ):
         gen = np.random.default_rng(seed)
         data = gen.uniform(low=-0.5, high=+0.6, size=(row_count, col_count))
-        coef = (
-            gen.uniform(low=-0.5, high=+0.6, size=(col_count + 1, 1))
-            .astype(dtype=dtype)
-            .reshape(-1)
-        )
+        coef = gen.uniform(low=-0.5, high=+0.6, size=(col_count + 1, 1)) \
+                  .astype(dtype=dtype) \
+                  .reshape(-1)
         y_true = gen.integers(0, 2, (row_count, 1)).astype(
             dtype=dtype).reshape(-1)
         data = data.astype(dtype=dtype)
@@ -50,10 +48,11 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     @pytest.mark.parametrize("fit_intercept", [True, False])
     @pytest.mark.parametrize("l2_reg_strength", [0.0, 1.7])
-    def test_logloss(queue, dtype, fit_intercept, l2_reg_strength):
+    @pytest.mark.parametrize("seed", [16, 42, 2007])
+    def test_logloss(queue, dtype, fit_intercept, l2_reg_strength, seed):
         tol = 1e-4 if dtype == np.float32 else 1e-7
 
-        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
+        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept, seed=seed)
 
         alg = LogisticLoss(fit_intercept=fit_intercept)
         logloss_onedal = alg.loss(
@@ -67,18 +66,17 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
             coef, data, y_true, l2_reg_strength=l2_reg_strength
         )
 
-        print(logloss_onedal, logloss_gth)
-
         assert_allclose(logloss_onedal, logloss_gth, rtol=tol)
 
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     @pytest.mark.parametrize("fit_intercept", [True, False])
     @pytest.mark.parametrize("l2_reg_strength", [0.0, 1.7])
-    def test_gradient(queue, dtype, fit_intercept, l2_reg_strength):
+    @pytest.mark.parametrize("seed", [16, 42, 2007])
+    def test_gradient(queue, dtype, fit_intercept, l2_reg_strength, seed):
         tol = 1e-4 if dtype == np.float32 else 1e-7
 
-        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
+        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept, seed=seed)
 
         alg = LogisticLoss(fit_intercept=fit_intercept)
         gradient_onedal = alg.gradient(
@@ -92,19 +90,17 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
             coef, data, y_true, l2_reg_strength=l2_reg_strength
         )
 
-        print(gradient_onedal)
-        print(gradient_gth)
-
         assert_allclose(gradient_onedal, gradient_gth, rtol=tol)
 
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     @pytest.mark.parametrize("fit_intercept", [True, False])
     @pytest.mark.parametrize("l2_reg_strength", [0.0, 1.7])
-    def test_loss_gradient(queue, dtype, fit_intercept, l2_reg_strength):
+    @pytest.mark.parametrize("seed", [16, 42, 2007])
+    def test_loss_gradient(queue, dtype, fit_intercept, l2_reg_strength, seed):
         tol = 1e-4 if dtype == np.float32 else 1e-7
 
-        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
+        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept, seed=seed)
 
         alg = LogisticLoss(fit_intercept=fit_intercept)
         logloss_onedal, gradient_onedal = alg.loss_gradient(
@@ -126,10 +122,11 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     @pytest.mark.parametrize("fit_intercept", [True, False])
     @pytest.mark.parametrize("l2_reg_strength", [0.0, 1.7])
-    def test_gradient_hessian(queue, dtype, fit_intercept, l2_reg_strength):
+    @pytest.mark.parametrize("seed", [16, 42, 2007])
+    def test_gradient_hessian(queue, dtype, fit_intercept, l2_reg_strength, seed):
         tol = 1e-3 if dtype == np.float32 else 1e-7
 
-        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
+        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept, seed=seed)
 
         alg = LogisticLoss(fit_intercept=fit_intercept)
         gradient_onedal, hessian_onedal, status_onedal = alg.gradient_hessian(
@@ -152,10 +149,11 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     @pytest.mark.parametrize("fit_intercept", [True, False])
     @pytest.mark.parametrize("l2_reg_strength", [0.0, 1.7])
-    def test_gradient_hessian_product(queue, dtype, fit_intercept, l2_reg_strength):
+    @pytest.mark.parametrize("seed", [16, 42, 2007])
+    def test_gradient_hessian_product(queue, dtype, fit_intercept, l2_reg_strength, seed):
         tol = 1e-3 if dtype == np.float32 else 1e-7
 
-        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept)
+        coef, data, y_true = gen_test(dtype=dtype, fit_intercept=fit_intercept, seed=seed)
 
         alg = LogisticLoss(fit_intercept=fit_intercept)
         gradient_onedal, hessp_onedal = alg.gradient_hessian_product(
@@ -185,7 +183,7 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
 
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize(
-        "dimensions", [(1000, 50), (100, 100), (500, 20), (20, 73)]
+        "dimensions", [(100000, 15), (1000, 50), (100, 100), (500, 20), (20, 73)]
     )
     def test_sizes(queue, dimensions):
         dtype = np.float64
