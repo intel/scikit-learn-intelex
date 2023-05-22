@@ -539,7 +539,9 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
-        _patching_status = PatchingConditionsChain(method_name)
+        class_name = self.__class__.__name__
+        _patching_status = PatchingConditionsChain(
+            f'sklearn.ensemble.{class_name}.{method_name}')
 
         if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
@@ -586,7 +588,9 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         return dal_ready
 
     def _onedal_gpu_supported(self, method_name, *data):
-        _patching_status = PatchingConditionsChain(method_name)
+        class_name = self.__class__.__name__
+        _patching_status = PatchingConditionsChain(
+            f'sklearn.ensemble.{class_name}.{method_name}')
 
         if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
@@ -981,7 +985,9 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
-        _patching_status = PatchingConditionsChain(method_name)
+        class_name = self.__class__.__name__
+        _patching_status = PatchingConditionsChain(
+            f'sklearn.ensemble.{class_name}.{method_name}')
 
         if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
@@ -1028,7 +1034,9 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         return dal_ready
 
     def _onedal_gpu_supported(self, method_name, *data):
-        _patching_status = PatchingConditionsChain(method_name)
+        class_name = self.__class__.__name__
+        _patching_status = PatchingConditionsChain(
+            f'sklearn.ensemble.{class_name}.{method_name}')
 
         if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
