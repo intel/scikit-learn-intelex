@@ -76,7 +76,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
-        dispatch(self, 'svm.NuSVR.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_NuSVR.fit,
         }, X, y, sample_weight)
@@ -102,19 +102,10 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
         """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'svm.NuSVR.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_NuSVR.predict,
         }, X)
-
-    def _onedal_gpu_supported(self, method_name, *data):
-        return False
-
-    def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'svm.NuSVR.fit':
-            return self.kernel in ['linear', 'rbf', 'poly', 'sigmoid']
-        if method_name == 'svm.NuSVR.predict':
-            return hasattr(self, '_onedal_estimator')
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {

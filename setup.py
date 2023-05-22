@@ -20,6 +20,7 @@ import os
 import sys
 import time
 from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext as _build_ext
 import setuptools.command.develop as orig_develop
 import distutils.command.build as orig_build
 from os.path import join as jp
@@ -31,6 +32,7 @@ import numpy as np
 from scripts.version import get_onedal_version
 import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
+from concurrent.futures import ThreadPoolExecutor
 
 try:
     from ctypes.utils import find_library
@@ -343,6 +345,14 @@ def get_onedal_py_libs():
     return libs
 
 
+class parallel_build_ext(_build_ext):
+    def build_extensions(self):
+        num_threads = os.cpu_count()
+        with ThreadPoolExecutor(max_workers=num_threads) as executor:
+            for ext in self.extensions:
+                executor.submit(self.build_extension, ext)
+
+
 class custom_build():
     def run(self):
         if is_onedal_iface:
@@ -457,7 +467,7 @@ setup(
     author_email="scripting@intel.com",
     maintainer_email="onedal.maintainers@intel.com",
     project_urls=project_urls,
-    cmdclass={'develop': develop, 'build': build},
+    cmdclass={'develop': develop, 'build': build, 'build_ext': parallel_build_ext},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',

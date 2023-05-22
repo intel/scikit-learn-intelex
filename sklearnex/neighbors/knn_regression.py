@@ -33,9 +33,9 @@ from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 from onedal.datatypes import _check_array, _num_features, _num_samples
 from onedal.neighbors import KNeighborsRegressor as onedal_KNeighborsRegressor
 
+from .common import KNeighborsDispatchingBase
 from .._device_offload import dispatch, wrap_output_data
 import numpy as np
-from scipy import sparse as sp
 
 
 if sklearn_check_version("0.24"):
@@ -96,7 +96,7 @@ else:
             self.weights = _check_weights(weights)
 
 
-class KNeighborsRegressor(KNeighborsRegressor_):
+class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
     if sklearn_check_version('1.2'):
         _parameter_constraints: dict = {
             **KNeighborsRegressor_._parameter_constraints}
@@ -230,7 +230,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
             self.n_samples_fit_ = X.data.shape[0]
             self.n_features_in_ = X.data.shape[1]
 
-        dispatch(self, 'neighbors.KNeighborsRegressor.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_KNeighborsRegressor.fit,
         }, X, y)
@@ -241,7 +241,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'neighbors.KNeighborsRegressor.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_KNeighborsRegressor.predict,
         }, X)
@@ -251,7 +251,7 @@ class KNeighborsRegressor(KNeighborsRegressor_):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'neighbors.KNeighborsRegressor.kneighbors', {
+        return dispatch(self, 'kneighbors', {
             'onedal': self.__class__._onedal_kneighbors,
             'sklearn': sklearn_KNeighborsRegressor.kneighbors,
         }, X, n_neighbors, return_distance)
@@ -275,104 +275,6 @@ class KNeighborsRegressor(KNeighborsRegressor_):
                 self, X, radius, return_distance)
 
         return result
-
-    def _onedal_gpu_supported(self, method_name, *data):
-        X_incorrect_type = isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase))
-
-        if X_incorrect_type:
-            return False
-
-        if self._fit_method in ['auto', 'ball_tree']:
-            condition = self.n_neighbors is not None and \
-                self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 15 or condition:
-                result_method = 'brute'
-            else:
-                if self.effective_metric_ in ['euclidean']:
-                    result_method = 'kd_tree'
-                else:
-                    result_method = 'brute'
-        else:
-            result_method = self._fit_method
-
-        if "p" in self.effective_metric_params_.keys() and \
-                self.effective_metric_params_["p"] < 1:
-            return False
-
-        is_sparse = sp.isspmatrix(data[0])
-        is_single_output = False
-        if len(data) > 1 or hasattr(self, '_onedal_estimator'):
-            # To check multioutput, might be overhead
-            if len(data) > 1:
-                y = np.asarray(data[1])
-            if hasattr(self, '_onedal_estimator'):
-                y = self._onedal_estimator._y
-            is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
-        is_valid_for_brute = result_method in ['brute'] and \
-            self.effective_metric_ in ['manhattan',
-                                       'minkowski',
-                                       'euclidean']
-        is_valid_weights = self.weights in ['uniform', "distance"]
-        main_condition = is_valid_for_brute and not is_sparse and \
-            is_single_output and is_valid_weights
-
-        if method_name == 'neighbors.KNeighborsRegressor.fit':
-            return main_condition
-        if method_name in ['neighbors.KNeighborsRegressor.predict',
-                           'neighbors.KNeighborsRegressor.kneighbors']:
-            return main_condition and hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
-
-    def _onedal_cpu_supported(self, method_name, *data):
-        X_incorrect_type = isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase))
-
-        if X_incorrect_type:
-            return False
-
-        if self._fit_method in ['auto', 'ball_tree']:
-            condition = self.n_neighbors is not None and \
-                self.n_neighbors >= self.n_samples_fit_ // 2
-            if self.n_features_in_ > 15 or condition:
-                result_method = 'brute'
-            else:
-                if self.effective_metric_ in ['euclidean']:
-                    result_method = 'kd_tree'
-                else:
-                    result_method = 'brute'
-        else:
-            result_method = self._fit_method
-
-        if "p" in self.effective_metric_params_.keys() and \
-                self.effective_metric_params_["p"] < 1:
-            return False
-
-        is_sparse = sp.isspmatrix(data[0])
-        is_single_output = False
-        if len(data) > 1 or hasattr(self, '_onedal_estimator'):
-            # To check multioutput, might be overhead
-            if len(data) > 1:
-                y = np.asarray(data[1])
-            if hasattr(self, '_onedal_estimator'):
-                y = self._onedal_estimator._y
-            is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
-        is_valid_for_kd_tree = \
-            result_method in ['kd_tree'] and self.effective_metric_ in ['euclidean']
-        is_valid_for_brute = result_method in ['brute'] and \
-            self.effective_metric_ in ['manhattan',
-                                       'minkowski',
-                                       'euclidean',
-                                       'chebyshev',
-                                       'cosine']
-        is_valid_weights = self.weights in ['uniform', "distance"]
-        main_condition = (is_valid_for_kd_tree or is_valid_for_brute) and \
-            not is_sparse and is_single_output and is_valid_weights
-
-        if method_name == 'neighbors.KNeighborsRegressor.fit':
-            return main_condition
-        if method_name in ['neighbors.KNeighborsRegressor.predict',
-                           'neighbors.KNeighborsRegressor.kneighbors']:
-            return main_condition and hasattr(self, '_onedal_estimator')
-        raise RuntimeError(f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_fit(self, X, y, queue=None):
         onedal_params = {
