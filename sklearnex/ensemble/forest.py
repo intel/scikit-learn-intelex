@@ -609,7 +609,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                               RuntimeWarning)
 
         elif method_name in ['predict',
-                           'predict_proba']:
+                             'predict_proba']:
 
             X = data[0]
 
