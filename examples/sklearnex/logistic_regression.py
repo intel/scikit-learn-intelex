@@ -21,8 +21,3 @@ patch_sklearn(preview=True)
 model_cpu = LogisticRegression(solver='lbfgs', fit_intercept=True)
 y_pred_cpu = model_cpu.fit(X_train, y_train).predict(X_test)
 print("CPU optimized version, accuracy on test:", accuracy_score(y_test, y_pred_cpu))
-
-with sycl_context("gpu"):
-    model_gpu = LogisticRegression(solver='lbfgs', fit_intercept=True)
-    y_pred_gpu = model_gpu.fit(X_train, y_train).predict(X_test)
-    print("GPU optimized version, accuracy on test:", accuracy_score(y_test, y_pred_gpu))
