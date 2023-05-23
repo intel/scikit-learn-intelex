@@ -94,29 +94,29 @@ class BaseTree(ABC):
     # TODO:
     # move to onedal modul.
     def _check_parameters(self):
-        if isinstance(max_samples, numbers.Integral):
+        if isinstance(self.max_samples, numbers.Integral):
             if not sklearn_check_version('1.2'):
-                if not (1 <= max_samples <= n_samples):
+                if not (1 <= self.max_samples <= self.n_samples):
                     msg = "`max_samples` must be in range 1 to {} but got value {}"
-                    raise ValueError(msg.format(n_samples, max_samples))
+                    raise ValueError(msg.format(self.n_samples, self.max_samples))
             else:
-                if max_samples > n_samples:
+                if self.max_samples > self.n_samples:
                     msg = "`max_samples` must be <= n_samples={} but got value {}"
-                    raise ValueError(msg.format(n_samples, max_samples))
-        elif isinstance(max_samples, numbers.Real):
+                    raise ValueError(msg.format(self.n_samples, self.max_samples))
+        elif isinstance(self.max_samples, numbers.Real):
             if sklearn_check_version('1.2'):
                 pass
             elif sklearn_check_version('1.0'):
-                if not (0 < float(max_samples) <= 1):
+                if not (0 < float(self.max_samples) <= 1):
                     msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
-                    raise ValueError(msg.format(max_samples))
+                    raise ValueError(msg.format(self.max_samples))
             else:
-                if not (0 < float(max_samples) < 1):
+                if not (0 < float(self.max_samples) < 1):
                     msg = "`max_samples` must be in range (0, 1) but got value {}"
-                    raise ValueError(msg.format(max_samples))
+                    raise ValueError(msg.format(self.max_samples))
         else:
             msg = "`max_samples` should be int or float, but got type '{}'"
-            raise TypeError(msg.format(type(max_samples)))
+            raise TypeError(msg.format(type(self.max_samples)))
 
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
