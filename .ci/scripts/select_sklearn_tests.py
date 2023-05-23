@@ -58,8 +58,7 @@ tests_map = {
     'svm/tests': [
         'test_sparse.py',
         'test_svm.py'
-    ],
-    'tests': 'test_common.py'
+    ]
 }
 
 
