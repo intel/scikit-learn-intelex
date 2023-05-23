@@ -608,7 +608,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
 
-        if method_name in ['predict',
+        elif method_name in ['predict',
                            'predict_proba']:
 
             X = data[0]
