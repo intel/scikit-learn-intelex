@@ -94,8 +94,7 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
 
         ftype = X_loc.dtype
 
-        X_table, coef_table = to_table(X_loc, coef_loc)
-        y_table = to_table(y_loc)
+        X_table, coef_table, y_table = to_table(X_loc, coef_loc, y_loc)
 
         params = self._get_onedal_params(
             options, L2=l2_reg_strength, intercept=fit_intercept, dtype=ftype
@@ -108,8 +107,12 @@ class BaseObjectiveFunction(metaclass=ABCMeta):
 
         res = {opt: getattr(result, opt) for opt in options}
 
+        """To align with LinearModelClass we need to return
+        the sum of losses over the data, while primitives from oneDAL
+        return the mean value of loss.
+        That is why we multiply the outputs by the size of the dataset
+        """
         n = X.shape[0]
-
         return {k: from_table(v).ravel() * n for k, v in res.items()}
 
 
@@ -124,11 +127,11 @@ class LogisticLoss(BaseObjectiveFunction):
         """Change the gradient layout
 
         onedal compute_gradient function returns:
-        [dL / dw_0, dL / dw_1, ...., dL / dw_p] if fit_intercept=True
-        [0.0, dL / dw_1, ...., dL / dw_p] if fit_intercept=False
+        [dL / dw_0, dL / dw_1, ..., dL / dw_p] if fit_intercept=True
+        [0.0, dL / dw_1, ..., dL / dw_p] if fit_intercept=False
         gradient function from sklearn.linear_model._linear_loss returns:
-        [dL / dw_1, ...., dL / dw_p, dL / dw_0] if fit_intercept=True
-        [dL / dw_1, ...., dL / dw_p] if fit_intercept=False
+        [dL / dw_1, ..., dL / dw_p, dL / dw_0] if fit_intercept=True
+        [dL / dw_1, ..., dL / dw_p] if fit_intercept=False
 
         so to align with python interface format should be changed
         """
@@ -177,6 +180,15 @@ class LogisticLoss(BaseObjectiveFunction):
         else:
             return 0.5 * (coef**2).sum() * l2_reg_strength
 
+    def __validate_hyperparameters(self, sample_weight, n_threads, raw_prediction):
+        if (sample_weight is not None) and \
+                (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+            raise Exception("sample_weigth parameter is not supported")
+        if (n_threads != 1):
+            raise Exception("multithreading is not supported")
+        if (raw_prediction is not None):
+            raise Exception("raw_prediction parameter is not supported")
+
     def loss(
         self,
         coef,
@@ -188,14 +200,7 @@ class LogisticLoss(BaseObjectiveFunction):
         raw_prediction=None,
         queue=None
     ):
-        if (sample_weight is not None):
-            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
-                raise Exception("sample_weigth parameter is not supported")
-        if (n_threads != 1):
-            raise Exception("multithreading is not supported")
-        if (raw_prediction is not None):
-            raise Exception("raw_prediction parameter is not supported")
-
+        self.__validate_hyperparameters(sample_weight, n_threads, raw_prediction)
         value = super()._compute(X, y, coef, "value", 0.0,
                                  self.fit_intercept, queue)["value"]
         if l2_reg_strength > 0:
@@ -213,14 +218,7 @@ class LogisticLoss(BaseObjectiveFunction):
         raw_prediction=None,
         queue=None
     ):
-        if (sample_weight is not None):
-            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
-                raise Exception("sample_weigth parameter is not supported")
-        if (n_threads != 1):
-            raise Exception("multithreading is not supported")
-        if (raw_prediction is not None):
-            raise Exception("raw_prediction parameter is not supported")
-
+        self.__validate_hyperparameters(sample_weight, n_threads, raw_prediction)
         res = super()._compute(
             X, y, coef, ["value", "gradient"], 0.0, self.fit_intercept, queue
         )
@@ -240,14 +238,7 @@ class LogisticLoss(BaseObjectiveFunction):
         raw_prediction=None,
         queue=None
     ):
-        if (sample_weight is not None):
-            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
-                raise Exception("sample_weigth parameter is not supported")
-        if (n_threads != 1):
-            raise Exception("multithreading is not supported")
-        if (raw_prediction is not None):
-            raise Exception("raw_prediction parameter is not supported")
-
+        self.__validate_hyperparameters(sample_weight, n_threads, raw_prediction)
         grad = super()._compute(X, y, coef, "gradient", 0.0, self.fit_intercept, queue)[
             "gradient"
         ]
@@ -264,14 +255,7 @@ class LogisticLoss(BaseObjectiveFunction):
         raw_prediction=None,
         queue=None
     ):
-        if (sample_weight is not None):
-            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
-                raise Exception("sample_weigth parameter is not supported")
-        if (n_threads != 1):
-            raise Exception("multithreading is not supported")
-        if (raw_prediction is not None):
-            raise Exception("raw_prediction parameter is not supported")
-
+        self.__validate_hyperparameters(sample_weight, n_threads, raw_prediction)
         res = super()._compute(
             X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept, queue
         )
@@ -291,14 +275,7 @@ class LogisticLoss(BaseObjectiveFunction):
         raw_prediction=None,
         queue=None
     ):
-        if (sample_weight is not None):
-            if (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
-                raise Exception("sample_weigth parameter is not supported")
-        if (n_threads != 1):
-            raise Exception("multithreading is not supported")
-        if (raw_prediction is not None):
-            raise Exception("raw_prediction parameter is not supported")
-
+        self.__validate_hyperparameters(sample_weight, n_threads, raw_prediction)
         res = super()._compute(
             X, y, coef, ["gradient", "hessian"], 0.0, self.fit_intercept, queue
         )

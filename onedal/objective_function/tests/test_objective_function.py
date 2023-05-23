@@ -185,8 +185,8 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
     @pytest.mark.parametrize(
         "dimensions", [(100000, 15), (1000, 50), (100, 100), (500, 20), (20, 73)]
     )
-    def test_sizes(queue, dimensions):
-        dtype = np.float64
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    def test_sizes(queue, dimensions, dtype):
         fit_intercept = True
         l2_reg_strength = 3.1
 
