@@ -198,8 +198,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         _parameter_constraints: dict = {
             **sklearn_ExtraTreesClassifier._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
-            "splitter_mode": [StrOptions({"best", "random"})]
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
         }
 
     if sklearn_check_version('1.0'):
@@ -224,8 +223,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ccp_alpha=0.0,
                 max_samples=None,
                 max_bins=256,
-                min_bin_size=1,
-                splitter_mode='random'):
+                min_bin_size=1):
             super(ExtraTreesClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -250,7 +248,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = splitter_mode
+            self.splitter_mode = "random"
 
     else:
         def __init__(self,
@@ -274,8 +272,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1,
-                     splitter_mode='random'):
+                     min_bin_size=1):
             super(ExtraTreesClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -303,7 +300,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = splitter_mode
+            self.splitter_mode = "random"
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -757,8 +754,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         _parameter_constraints: dict = {
             **sklearn_ExtraTreesRegressor._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
-            "splitter_mode": [StrOptions({"best", "random"})]
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]
         }
 
     if sklearn_check_version('1.0'):
@@ -807,7 +803,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = 'random'
+            self.splitter_mode = "random"
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -856,7 +852,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = 'random'
+            self.splitter_mode = "random"
 
     @property
     def _estimators_(self):
