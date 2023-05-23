@@ -94,6 +94,30 @@ class BaseTree(ABC):
     # TODO:
     # move to onedal modul.
     def _check_parameters(self):
+        if isinstance(max_samples, numbers.Integral):
+            if not sklearn_check_version('1.2'):
+                if not (1 <= max_samples <= n_samples):
+                    msg = "`max_samples` must be in range 1 to {} but got value {}"
+                    raise ValueError(msg.format(n_samples, max_samples))
+            else:
+                if max_samples > n_samples:
+                    msg = "`max_samples` must be <= n_samples={} but got value {}"
+                    raise ValueError(msg.format(n_samples, max_samples))
+        elif isinstance(max_samples, numbers.Real):
+            if sklearn_check_version('1.2'):
+                pass
+            elif sklearn_check_version('1.0'):
+                if not (0 < float(max_samples) <= 1):
+                    msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
+                    raise ValueError(msg.format(max_samples))
+            else:
+                if not (0 < float(max_samples) < 1):
+                    msg = "`max_samples` must be in range (0, 1) but got value {}"
+                    raise ValueError(msg.format(max_samples))
+        else:
+            msg = "`max_samples` should be int or float, but got type '{}'"
+            raise TypeError(msg.format(type(max_samples)))
+
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
                 "`max_sample` cannot be set if `bootstrap=False`. "
@@ -328,12 +352,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         -------
         self : object
         """
-        if not self.bootstrap and self.max_samples is not None:
-            raise ValueError(
-                "`max_sample` cannot be set if `bootstrap=False`. "
-                "Either switch to `bootstrap=True` or set "
-                "`max_sample=None`."
-            )
         dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_ExtraTreesClassifier.fit,
@@ -345,19 +363,15 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             raise ValueError(
                 "sparse multilabel-indicator for y is not supported."
             )
-        if not self.bootstrap and self.max_samples is not None:
-            raise ValueError(
-                "`max_sample` cannot be set if `bootstrap=False`. "
-                "Either switch to `bootstrap=True` or set "
-                "`max_sample=None`."
-            )
-        if not self.bootstrap and self.oob_score:
-            raise ValueError("Out of bag estimation only available"
-                             " if bootstrap=True")
+
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
             self._check_parameters()
+
+        if not self.bootstrap and self.oob_score:
+            raise ValueError("Out of bag estimation only available"
+                             " if bootstrap=True")
 
         ready = patching_status.and_conditions([
             (self.oob_score and daal_check_version((2021, 'P', 500)) or not
@@ -921,19 +935,15 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             raise ValueError(
                 "sparse multilabel-indicator for y is not supported."
             )
-        if not self.bootstrap and self.max_samples is not None:
-            raise ValueError(
-                "`max_sample` cannot be set if `bootstrap=False`. "
-                "Either switch to `bootstrap=True` or set "
-                "`max_sample=None`."
-            )
-        if not self.bootstrap and self.oob_score:
-            raise ValueError("Out of bag estimation only available"
-                             " if bootstrap=True")
+
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
             self._check_parameters()
+
+        if not self.bootstrap and self.oob_score:
+            raise ValueError("Out of bag estimation only available"
+                             " if bootstrap=True")
 
         if sklearn_check_version('1.0') and self.criterion == "mse":
             warnings.warn(
@@ -1180,12 +1190,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         -------
         self : object
         """
-        if not self.bootstrap and self.max_samples is not None:
-            raise ValueError(
-                "`max_sample` cannot be set if `bootstrap=False`. "
-                "Either switch to `bootstrap=True` or set "
-                "`max_sample=None`."
-            )
         dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_ExtraTreesRegressor.fit,
