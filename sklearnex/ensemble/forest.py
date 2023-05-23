@@ -1095,6 +1095,13 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self._check_feature_names(X, reset=True)
         X = check_array(X, dtype=[np.float64, np.float32])
         y = np.atleast_1d(np.asarray(y))
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples,), for example using ravel().",
+                DataConversionWarning,
+                stacklevel=2)
         y = check_array(y, ensure_2d=False, dtype=X.dtype)
         check_consistent_length(X, y)
         self.n_features_in_ = X.shape[1]
