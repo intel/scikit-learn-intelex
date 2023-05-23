@@ -80,7 +80,7 @@ def get_patch_map():
         # Patch for mapping
         if _is_preview_enabled():
 
-            if (daal_check_version((2023, 'P', 200))):
+            if (sklearn_check_version('1.1')):
                 # LinearModelLoss
                 mapping.pop("logisticregression")
                 mapping.pop("logistic")
