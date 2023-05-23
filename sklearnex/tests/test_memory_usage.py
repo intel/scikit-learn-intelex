@@ -91,7 +91,7 @@ BANNED_ESTIMATORS = (
     'RandomForestClassifier',  # Failed, need to investigate and fix this issue
     'RandomForestRegressor',  # Failed, need to investigate and fix this issue
     'ExtraTreesClassifier',  # Failing due to similar backend as RF algorithms
-    'ExtraTreesRegressor' # Failing due to similar backedn as RF algorithms
+    'ExtraTreesRegressor'  # Failing due to similar backedn as RF algorithms
 )
 estimators = [
     PreviewPCA,
