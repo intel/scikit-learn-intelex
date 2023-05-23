@@ -250,5 +250,6 @@ if daal_check_version((2023, 'P', 200)) and sklearn_check_version('1.1'):
                 return super().gradient_hessian_product(
                     coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction)
 else:
-    logging.warning('LogisticLoss requires oneDAL version >= 2023.2 '
+    from sklearn.linear_model._linear_loss import LinearModelLoss
+    logging.warning('preview LogisticLoss requires oneDAL version >= 2023.2 '
                     'but it was not found')

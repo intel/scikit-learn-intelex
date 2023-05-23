@@ -306,6 +306,9 @@ class LogisticLoss(BaseObjectiveFunction):
         hess = self.change_hessian_format(res["hessian"], coef, l2_reg_strength)
 
         def hessp(s):
-            return hess @ s
+            ret = np.empty_like(s)
+            n_feat = hess.shape[0]
+            ret[:n_feat] = hess @ s[:n_feat]
+            return ret
 
         return grad, hessp
