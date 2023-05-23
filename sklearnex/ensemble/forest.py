@@ -328,6 +328,12 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         -------
         self : object
         """
+        if not self.bootstrap and self.max_samples is not None:
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
         dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_ExtraTreesClassifier.fit,
