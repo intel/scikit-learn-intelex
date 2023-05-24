@@ -94,29 +94,6 @@ class BaseTree(ABC):
     # TODO:
     # move to onedal modul.
     def _check_parameters(self):
-        if isinstance(self.max_samples, numbers.Integral):
-            if not sklearn_check_version('1.2'):
-                if not (1 <= self.max_samples <= self.n_samples):
-                    msg = "`max_samples` must be in range 1 to {} but got value {}"
-                    raise ValueError(msg.format(self.n_samples, self.max_samples))
-            else:
-                if self.max_samples > self.n_samples:
-                    msg = "`max_samples` must be <= n_samples={} but got value {}"
-                    raise ValueError(msg.format(self.n_samples, self.max_samples))
-        elif isinstance(self.max_samples, numbers.Real):
-            if sklearn_check_version('1.2'):
-                pass
-            elif sklearn_check_version('1.0'):
-                if not (0 < float(self.max_samples) <= 1):
-                    msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
-                    raise ValueError(msg.format(self.max_samples))
-            else:
-                if not (0 < float(self.max_samples) < 1):
-                    msg = "`max_samples` must be in range (0, 1) but got value {}"
-                    raise ValueError(msg.format(self.max_samples))
-        elif self.max_samples is not None:
-            msg = "`max_samples` should be int or float, but got type '{}'"
-            raise TypeError(msg.format(type(self.max_samples)))
 
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError(
@@ -367,8 +344,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
-            self._check_parameters()
-
+            self._check_parameters()    
+            
         if not self.bootstrap and self.oob_score:
             raise ValueError("Out of bag estimation only available"
                              " if bootstrap=True")
@@ -411,7 +388,32 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                     f"Datatype ({y.dtype}) for y is not supported.")
             ])
             # TODO: Fix to support integers as input
-
+            
+        n_samples = X.shape[0]
+        if isinstance(self.max_samples, numbers.Integral):
+            if not sklearn_check_version('1.2'):
+                if not (1 <= self.max_samples <= n_samples):
+                    msg = "`max_samples` must be in range 1 to {} but got value {}"
+                    raise ValueError(msg.format(n_samples, self.max_samples))
+            else:
+                if self.max_samples > n_samples:
+                    msg = "`max_samples` must be <= n_samples={} but got value {}"
+                    raise ValueError(msg.format(n_samples, self.max_samples))
+        elif isinstance(self.max_samples, numbers.Real):
+            if sklearn_check_version('1.2'):
+                pass
+            elif sklearn_check_version('1.0'):
+                if not (0 < float(self.max_samples) <= 1):
+                    msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
+                    raise ValueError(msg.format(self.max_samples))
+            else:
+                if not (0 < float(self.max_samples) < 1):
+                    msg = "`max_samples` must be in range (0, 1) but got value {}"
+                    raise ValueError(msg.format(self.max_samples))
+        elif self.max_samples is not None:
+            msg = "`max_samples` should be int or float, but got type '{}'"
+            raise TypeError(msg.format(type(self.max_samples))) 
+            
         return ready, X, y, sample_weight
 
     @wrap_output_data
@@ -993,6 +995,31 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 (self.n_outputs_ == 1,
                     f"Number of outputs ({self.n_outputs_}) is not 1.")
             ])
+            
+        n_samples = X.shape[0]
+        if isinstance(self.max_samples, numbers.Integral):
+            if not sklearn_check_version('1.2'):
+                if not (1 <= self.max_samples <= n_samples):
+                    msg = "`max_samples` must be in range 1 to {} but got value {}"
+                    raise ValueError(msg.format(n_samples, self.max_samples))
+            else:
+                if self.max_samples > n_samples:
+                    msg = "`max_samples` must be <= n_samples={} but got value {}"
+                    raise ValueError(msg.format(n_samples, self.max_samples))
+        elif isinstance(self.max_samples, numbers.Real):
+            if sklearn_check_version('1.2'):
+                pass
+            elif sklearn_check_version('1.0'):
+                if not (0 < float(self.max_samples) <= 1):
+                    msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
+                    raise ValueError(msg.format(self.max_samples))
+            else:
+                if not (0 < float(self.max_samples) < 1):
+                    msg = "`max_samples` must be in range (0, 1) but got value {}"
+                    raise ValueError(msg.format(self.max_samples))
+        elif self.max_samples is not None:
+            msg = "`max_samples` should be int or float, but got type '{}'"
+            raise TypeError(msg.format(type(self.max_samples))) 
 
         return ready, X, y, sample_weight
 
