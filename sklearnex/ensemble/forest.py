@@ -1057,7 +1057,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             X = data[0]
 
             dal_ready = _patching_status.and_conditions([
-                (hasattr(self, '_onedal_model_'), "oneDAL model was not trained."),
+                (hasattr(self, '_onedal_model'), "oneDAL model was not trained."),
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 (self.warm_start is False, "Warm start is not supported."),
                 (daal_check_version((2023, 'P', 200)),
@@ -1105,7 +1105,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             X = data[0]
 
             dal_ready = _patching_status.and_conditions([
-                (hasattr(self, '_onedal_model_'), "oneDAL model was not trained."),
+                (hasattr(self, '_onedal_model'), "oneDAL model was not trained."),
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 (self.warm_start is False, "Warm start is not supported."),
 
