@@ -73,7 +73,7 @@ def get_patch_map():
         )
         from .preview.linear_model import \
             LinearRegression as LinearRegression_sklearnex
-        if (daal_check_version((2023, 'P', 200))):
+        if (sklearn_check_version('1.1')):
             from .preview.objective_function import \
                 LinearModelLoss as LinearModelLoss_sklearnex
 

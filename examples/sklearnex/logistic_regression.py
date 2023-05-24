@@ -1,5 +1,4 @@
 from sklearnex import patch_sklearn, unpatch_sklearn
-from daal4py.oneapi import sycl_context
 
 import numpy as np
 from sklearn.model_selection import train_test_split
