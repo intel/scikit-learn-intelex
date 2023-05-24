@@ -15,6 +15,7 @@
 # ===============================================================================
 
 from ..._device_offload import dispatch, wrap_output_data
+from ...utils.validation import assert_all_finite
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 import logging
@@ -32,8 +33,6 @@ if sklearn_check_version('1.1'):
         from onedal.objective_function import \
             LogisticLoss as onedal_LogisticLoss
 
-        class_name = 'sklearn.linear_model._linear_loss.LinearModelLoss.'
-
         class LinearModelLoss(sklearn_LinearModelLoss):
 
             def __init__(self, base_loss, fit_intercept=True):
@@ -42,35 +41,60 @@ if sklearn_check_version('1.1'):
                     self.onedal_base_loss = onedal_LogisticLoss(
                         fit_intercept=fit_intercept)
 
-            def _onedal_ready(
-                    self,
-                    coef,
-                    X,
-                    y,
-                    sample_weight,
-                    l2_reg_strength,
-                    n_threads,
-                    raw_prediction):
+            def _test_type_and_finiteness(self, X_in):
+                X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
+
+                dtype = X.dtype
+                if 'complex' in str(type(dtype)):
+                    return False
+
+                try:
+                    assert_all_finite(X)
+                except BaseException:
+                    return False
+                return True
+
+            def _onedal_supported(self, method_name, *data):
+                if (method_name not in ['loss',
+                                        'gradient',
+                                        'loss_gradient',
+                                        'gradient_hessian',
+                                        'gradient_hessian_product']):
+                    raise RuntimeError(
+                        f'Unknown method {method_name} in {self.__class__.__name__}')
+
+                assert len(data) == 7
+                coef, X, y, sample_weight, l2_reg_strength, n_threads, raw_prediction \
+                    = data
+
                 if sp.issparse(coef) or sp.issparse(X) or sp.issparse(y):
-                    raise ValueError(
-                        "sparse data is not supported."
-                    )
+                    raise ValueError("sparse data is not supported.")
                 if (l2_reg_strength < 0.0):
                     raise ValueError("l2_reg_strength should be greater than zero")
                 if (n_threads != 1):
                     raise ValueError("multithreading is not supported")
-                if (sample_weight is not None):
-                    raise ValueError("custom sample weigths are not supported")
+                if (sample_weight is not None) and \
+                        (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+                    raise ValueError("sample_weigth parameter is not supported")
                 if (raw_prediction is not None):
                     raise ValueError("raw predictions are not supported")
+
+                if not self._test_type_and_finiteness(coef):
+                    raise ValueError("Input coef is not supported")
+
+                if not self._test_type_and_finiteness(X):
+                    raise ValueError("Input X is not supported")
+
+                if not self._test_type_and_finiteness(y):
+                    raise ValueError("Input y is not supported")
 
                 return True
 
             def _onedal_cpu_supported(self, method_name, *data):
-                return True
+                return self._onedal_supported(method_name, *data)
 
             def _onedal_gpu_supported(self, method_name, *data):
-                return True
+                return self._onedal_supported(method_name, *data)
 
             def onedal_loss(
                     self, *args, **kwargs):
@@ -104,7 +128,7 @@ if sklearn_check_version('1.1'):
                     raw_prediction=None,):
                 if isinstance(self.base_loss, HalfBinomialLoss):
                     return dispatch(self,
-                                    class_name + 'loss',
+                                    'loss',
                                     {'onedal': self.__class__.onedal_loss,
                                      'sklearn': sklearn_LinearModelLoss.loss,
                                      },
@@ -136,7 +160,7 @@ if sklearn_check_version('1.1'):
                     raw_prediction=None,):
                 if type(self.base_loss == HalfBinomialLoss):
                     return dispatch(self,
-                                    class_name + 'loss_gradient',
+                                    'loss_gradient',
                                     {'onedal': self.__class__.onedal_loss_gradient,
                                      'sklearn': sklearn_LinearModelLoss.loss_gradient,
                                      },
@@ -169,7 +193,7 @@ if sklearn_check_version('1.1'):
 
                 if isinstance(self.base_loss, HalfBinomialLoss):
                     return dispatch(self,
-                                    class_name + 'gradient',
+                                    'gradient',
                                     {'onedal': self.__class__.onedal_gradient,
                                      'sklearn': sklearn_LinearModelLoss.gradient,
                                      },
@@ -202,7 +226,7 @@ if sklearn_check_version('1.1'):
 
                 if isinstance(self.base_loss, HalfBinomialLoss):
                     return dispatch(self,
-                                    class_name + 'gradient_hessian',
+                                    'gradient_hessian',
                                     {'onedal': self.__class__.onedal_gradient_hessian,
                                      'sklearn': sklearn_LinearModelLoss.gradient_hessian,
                                      },
@@ -236,7 +260,7 @@ if sklearn_check_version('1.1'):
                 if isinstance(self.base_loss, HalfBinomialLoss):
                     return dispatch(
                         self,
-                        class_name + 'gradient_hessian_product',
+                        'gradient_hessian_product',
                         {
                             'onedal': self.__class__.onedal_gradient_hessian_product,
                             'sklearn': sklearn_LinearModelLoss.gradient_hessian_product,
