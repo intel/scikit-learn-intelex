@@ -114,7 +114,7 @@ class BaseTree(ABC):
                 if not (0 < float(self.max_samples) < 1):
                     msg = "`max_samples` must be in range (0, 1) but got value {}"
                     raise ValueError(msg.format(self.max_samples))
-        else:
+        elif self.max_samples is not None:
             msg = "`max_samples` should be int or float, but got type '{}'"
             raise TypeError(msg.format(type(self.max_samples)))
 
