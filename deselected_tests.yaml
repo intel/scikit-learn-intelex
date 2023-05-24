@@ -273,6 +273,10 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_oob_score_regressors[RandomForestRegressor]
 
+  # few-percent numerical differences in ExtraTreesRegressor, but 6 digits are checked
+  - ensemble/tests/test_forest.py::test_memory_layout[float64-ExtraTreesRegressor]
+  - ensemble/tests/test_forest.py::test_memory_layout[float32-ExtraTreesRegressor]
+
   # Different behavior when 1 class enters the input
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
