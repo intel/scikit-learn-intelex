@@ -75,9 +75,10 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
         if isinstance(feat_val, str):
             raise NotImplementedError(
                 "Categorical features are not supported in daal4py Gradient Boosting Trees")
+        default_left = int(sub_tree["default_left"])
         parent_id = mb.add_split(
             tree_id=tree_id, feature_index=sub_tree["split_feature"],
-            feature_value=feat_val)
+            feature_value=feat_val, default_left=default_left)
 
         # create stack
         node_stack: List[Node] = [Node(sub_tree["left_child"], parent_id, 0),
@@ -102,9 +103,11 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
             if isinstance(feat_val, str):
                 raise NotImplementedError(
                     "Categorical features are not supported in daal4py Gradient Boosting Trees")
+            default_left = int(sub_tree["default_left"])
             parent_id = mb.add_split(
                 tree_id=tree_id, feature_index=sub_tree["split_feature"],
                 feature_value=feat_val,
+                default_left=default_left,
                 parent_id=parent_id, position=position)
 
             # append children
@@ -193,23 +196,11 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
         except ValueError:
             raise TypeError("Feature names must be integers")
         feature_value = np.nextafter(np.single(sub_tree["split_condition"]), np.single(-np.inf))
+        default_left = int(sub_tree["yes"] == sub_tree["missing"])
         parent_id = mb.add_split(tree_id=tree_id, feature_index=feature_index,
-                                 feature_value=feature_value)
+                                 feature_value=feature_value, default_left=default_left)
 
         # create queue
-        yes_idx = sub_tree["yes"]
-        no_idx = sub_tree["no"]
-        mis_idx = sub_tree["missing"]
-        if mis_eq_yes is None:
-            if mis_idx == yes_idx:
-                mis_eq_yes = True
-            elif mis_idx == no_idx:
-                mis_eq_yes = False
-            else:
-                raise TypeError(
-                    "Missing values are not supported in daal4py Gradient Boosting Trees")
-        elif mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
-            raise TypeError("Missing values are not supported in daal4py Gradient Boosting Trees")
         node_queue: Deque[Node] = deque()
         node_queue.append(Node(sub_tree["children"][0], parent_id, 0))
         node_queue.append(Node(sub_tree["children"][1], parent_id, 1))
@@ -234,17 +225,13 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             except ValueError:
                 raise TypeError("Feature names must be integers")
             feature_value = np.nextafter(np.single(sub_tree["split_condition"]), np.single(-np.inf))
+            default_left = int(sub_tree["yes"] == sub_tree["missing"])
+
             parent_id = mb.add_split(
                 tree_id=tree_id, feature_index=feature_index, feature_value=feature_value,
-                parent_id=parent_id, position=position)
+                default_left=default_left, parent_id=parent_id, position=position)
 
             # append to queue
-            yes_idx = sub_tree["yes"]
-            no_idx = sub_tree["no"]
-            mis_idx = sub_tree["missing"]
-            if mis_eq_yes and mis_idx != yes_idx or not mis_eq_yes and mis_idx != no_idx:
-                raise TypeError(
-                    "Missing values are not supported in daal4py Gradient Boosting Trees")
             node_queue.append(Node(sub_tree["children"][0], parent_id, 0))
             node_queue.append(Node(sub_tree["children"][1], parent_id, 1))
 
@@ -310,6 +297,11 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
 
     trees_explicit = []
     tree_symmetric = []
+
+    if model_data['model_info']['params']['data_processing_options']['float_features_binarization']['nan_mode'] == 'Min':
+        default_left = 1
+    else:
+        default_left = 0
 
     for tree_num in range(n_iterations):
         if is_symmetric_tree:
@@ -416,7 +408,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                     cur_level_split = splits[cur_tree_info['splits']
                                              [cur_tree_depth - 1]['split_index']]
                     root_id = mb.add_split(
-                        tree_id=cur_tree_id, feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'])
+                        tree_id=cur_tree_id, feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'],
+                        default_left=default_left)
                     prev_level_nodes = [root_id]
 
                     # Iterate over levels, splits in json are reversed (root split is the last)
@@ -426,9 +419,11 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                             cur_level_split = splits[cur_tree_info['splits']
                                                      [cur_level]['split_index']]
                             cur_left_node = mb.add_split(tree_id=cur_tree_id, parent_id=cur_parent, position=0,
-                                                         feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'])
+                                                         feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'],
+                                                         default_left=default_left)
                             cur_right_node = mb.add_split(tree_id=cur_tree_id, parent_id=cur_parent, position=1,
-                                                          feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'])
+                                                          feature_index=cur_level_split['feature_index'], feature_value=cur_level_split['value'],
+                                                          default_left=default_left)
                             cur_level_nodes.append(cur_left_node)
                             cur_level_nodes.append(cur_right_node)
                         prev_level_nodes = cur_level_nodes
@@ -458,7 +453,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                 # Traverse tree via BFS and build tree with modelbuilder
                 if root_node.value is None:
                     root_id = mb.add_split(
-                        tree_id=cur_tree_id, feature_index=root_node.split['feature_index'], feature_value=root_node.split['value'])
+                        tree_id=cur_tree_id, feature_index=root_node.split['feature_index'], feature_value=root_node.split['value'],
+                        default_left=default_left)
                     nodes_queue = [(root_node, root_id)]
                     while nodes_queue:
                         cur_node, cur_node_id = nodes_queue.pop(0)
@@ -466,7 +462,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                         # Check if node is a leaf
                         if left_node.value is None:
                             left_node_id = mb.add_split(tree_id=cur_tree_id, parent_id=cur_node_id, position=0,
-                                                        feature_index=left_node.split['feature_index'], feature_value=left_node.split['value'])
+                                                        feature_index=left_node.split['feature_index'], feature_value=left_node.split['value'],
+                                                        default_left=default_left)
                             nodes_queue.append((left_node, left_node_id))
                         else:
                             mb.add_leaf(
@@ -475,7 +472,8 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                         # Check if node is a leaf
                         if right_node.value is None:
                             right_node_id = mb.add_split(tree_id=cur_tree_id, parent_id=cur_node_id, position=1,
-                                                         feature_index=right_node.split['feature_index'], feature_value=right_node.split['value'])
+                                                         feature_index=right_node.split['feature_index'], feature_value=right_node.split['value'],
+                                                         default_left=default_left)
                             nodes_queue.append((right_node, right_node_id))
                         else:
                             mb.add_leaf(

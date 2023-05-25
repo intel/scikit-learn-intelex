@@ -20,6 +20,13 @@
 #define _GBT_MODEL_BUILDER_INCLUDED_
 
 #include <daal.h>
+#include "onedal/version.hpp"
+
+#if (((MAJOR_VERSION == 2023) && (MINOR_VERSION >= 2)) || (MAJOR_VERSION > 2023))
+#define _gbt_inference_has_missing_values_support 1
+#else
+#define _gbt_inference_has_missing_values_support 0
+#endif
 
 typedef daal::algorithms::gbt::classification::ModelBuilder c_gbt_classification_model_builder;
 typedef daal::algorithms::gbt::regression::ModelBuilder c_gbt_regression_model_builder;
@@ -40,6 +47,24 @@ static daal::algorithms::gbt::classification::ModelPtr * get_gbt_classification_
 static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_builder_model(daal::algorithms::gbt::regression::ModelBuilder * obj_)
 {
     return RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
+}
+
+c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft)
+{
+#if _gbt_inference_has_missing_values_support
+    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, defaultLeft);
+#else
+    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue);
+#endif
+}
+
+c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft)
+{
+#if _gbt_inference_has_missing_values_support
+    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, defaultLeft);
+#else
+    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue);
+#endif
 }
 
 #endif // _GBT_MODEL_BUILDER_INCLUDED_
