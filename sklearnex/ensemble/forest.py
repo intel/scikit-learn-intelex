@@ -294,7 +294,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.min_impurity_split = None
             self.splitter_mode = "random"
 
     def fit(self, X, y, sample_weight=None):
@@ -873,7 +872,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.min_impurity_split = None
             self.splitter_mode = "random"
 
     @property
