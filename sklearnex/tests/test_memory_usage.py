@@ -23,6 +23,12 @@ from sklearnex.utils import assert_all_finite
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.preview.decomposition import PCA as PreviewPCA
 from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
+from sklearnex.preview.ensemble import (
+    RandomForestClassifier as PreviewRandomForestClassifier,
+    RandomForestRegressor as PreviewRandomForestRegressor,
+    ExtraTreesClassifier as PreviewExtraTreesClassifier,
+    ExtraTreesRegressor as PreviewExtraTreesRegressor
+)
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 from sklearn.datasets import make_classification
@@ -73,7 +79,7 @@ class RocAucEstimator:
         print(roc_auc_score(y, np.zeros(shape=y.shape, dtype=np.int32)))
 
 
-# add all daa4lpy estimators enabled in patching (except banned)
+# add all daal4py estimators enabled in patching (except banned)
 def get_patched_estimators(ban_list, output_list):
     patched_estimators = get_patch_map().values()
     for listing in patched_estimators:
@@ -85,17 +91,25 @@ def get_patched_estimators(ban_list, output_list):
                         output_list.append(estimator)
 
 
+def remove_duplicated_estimators(estimators_list):
+    estimators_map = {}
+    for estimator in estimators_list:
+        full_name = f'{estimator.__module__}.{estimator.__name__}'
+        estimators_map[full_name] = estimator
+    return estimators_map.values()
+
+
 BANNED_ESTIMATORS = (
     'LocalOutlierFactor',  # fails on ndarray_c for sklearn > 1.0
     'TSNE',  # too slow for using in testing on common data size
-    'RandomForestClassifier',  # Failed, need to investigate and fix this issue
-    'RandomForestRegressor',  # Failed, need to investigate and fix this issue
-    'ExtraTreesClassifier',  # Failing due to similar backend as RF algorithms
-    'ExtraTreesRegressor'  # Failing due to similar backedn as RF algorithms
 )
 estimators = [
     PreviewPCA,
     PreviewLinearRegression,
+    PreviewRandomForestClassifier,
+    PreviewRandomForestRegressor,
+    PreviewExtraTreesClassifier,
+    PreviewExtraTreesRegressor,
     TrainTestSplitEstimator,
     FiniteCheckEstimator,
     CosineDistancesEstimator,
@@ -103,6 +117,7 @@ estimators = [
     RocAucEstimator
 ]
 get_patched_estimators(BANNED_ESTIMATORS, estimators)
+estimators = remove_duplicated_estimators(estimators)
 
 
 def ndarray_c(x, y):

@@ -44,30 +44,3 @@ def test_sklearnex_import_rf_regression():
             or np.allclose([-8.36], pred, atol=1e-2)
     else:
         assert_allclose([-6.66], pred, atol=1e-2)
-
-
-def test_sklearnex_import_et_classifier():
-    from sklearnex.ensemble import ExtraTreesClassifier
-    X, y = make_classification(n_samples=1000, n_features=4,
-                               n_informative=2, n_redundant=0,
-                               random_state=0, shuffle=False)
-    # For the 2023.2 release, random_state is not supported
-    # defaults to seed=777, although it is set to 0
-    rf = ExtraTreesClassifier(max_depth=2, random_state=0).fit(X, y)
-    assert 'sklearnex' in rf.__module__
-    assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
-
-
-def test_sklearnex_import_et_regression():
-    from sklearnex.ensemble import ExtraTreesRegressor
-    X, y = make_regression(n_features=4, n_informative=2,
-                           random_state=0, shuffle=False)
-    # For the 2023.2 release, random_state is not supported
-    # defaults to seed=777, although it is set to 0
-    rf = ExtraTreesRegressor(max_depth=2, random_state=0).fit(X, y)
-    assert 'sklearnex' in rf.__module__
-    pred = rf.predict([[0, 0, 0, 0]])
-    if daal_check_version((2023, 'P', 200)):
-        assert_allclose([27.138], pred, atol=1e-2)
-    else:
-        assert_allclose([-2.826], pred, atol=1e-2)

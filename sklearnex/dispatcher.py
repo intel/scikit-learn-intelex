@@ -16,8 +16,6 @@
 # ===============================================================================
 
 import os
-
-# Other imports
 import sys
 from functools import lru_cache
 
@@ -61,22 +59,29 @@ def get_patch_map():
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
-        from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
-        from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
 
         # Preview classes for patching
         from .preview.decomposition import PCA as PCA_sklearnex
+        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
         from .preview.ensemble import (
+            ExtraTreesClassifier as ExtraTreesClassifier_sklearnex,
+            ExtraTreesRegressor as ExtraTreesRegressor_sklearnex,
             RandomForestClassifier as RandomForestClassifier_sklearnex,
-        )
-        from .preview.ensemble import (
             RandomForestRegressor as RandomForestRegressor_sklearnex,
         )
-        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
 
         # Patch for mapping
         if _is_preview_enabled():
             # Ensemble
+            mapping["extra_trees_classifier"] = [[(ensemble_module,
+                                                   "ExtraTreesClassifier",
+                                                   ExtraTreesClassifier_sklearnex),
+                                                  None]]
+            mapping["extra_trees_regressor"] = [[(ensemble_module,
+                                                  "ExtraTreesRegressor",
+                                                  ExtraTreesRegressor_sklearnex),
+                                                 None]]
+
             mapping.pop("random_forest_classifier")
             mapping.pop("random_forest_regressor")
             mapping.pop("randomrorestclassifier")
@@ -120,16 +125,6 @@ def get_patch_map():
                     None,
                 ]
             ]
-
-        # Ensemble
-        mapping["extra_trees_classifier"] = [[(ensemble_module,
-                                               "ExtraTreesClassifier",
-                                               ExtraTreesClassifier_sklearnex),
-                                              None]]
-        mapping["extra_trees_regressor"] = [[(ensemble_module,
-                                              "ExtraTreesRegressor",
-                                              ExtraTreesRegressor_sklearnex),
-                                             None]]
 
         # SVM
         mapping.pop("svm")

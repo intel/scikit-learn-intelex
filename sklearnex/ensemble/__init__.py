@@ -15,10 +15,7 @@
 # limitations under the License.
 #===============================================================================
 
-from .forest import RandomForestClassifier, RandomForestRegressor
-from .forest import ExtraTreesClassifier, ExtraTreesRegressor
+from daal4py.sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 __all__ = ['RandomForestClassifier',
-           'RandomForestRegressor',
-           'ExtraTreesClassifier',
-           'ExtraTreesRegressor']
+           'RandomForestRegressor']
