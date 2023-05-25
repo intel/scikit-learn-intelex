@@ -228,8 +228,6 @@ deselected_tests:
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_no_attributes_set_in_init] >=1.0
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_no_attributes_set_in_init] >=1.0
-  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_no_attributes_set_in_init] >=1.0
-  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_no_attributes_set_in_init] >=1.0
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[NuSVC()-check_sample_weights_invariance(kind=zeros)] <1.0
@@ -273,12 +271,12 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_oob_score_classifiers[RandomForestClassifier]
   - ensemble/tests/test_forest.py::test_oob_score_regressors[RandomForestRegressor]
 
+  # Different behavior when 1 class enters the input
+  - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
+
   # few-percent numerical differences in ExtraTreesRegressor, but 6 digits are checked
   - ensemble/tests/test_forest.py::test_memory_layout[float64-ExtraTreesRegressor]
   - ensemble/tests/test_forest.py::test_memory_layout[float32-ExtraTreesRegressor]
-
-  # Different behavior when 1 class enters the input
-  - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
   # The bugs are fixed in 2021.2 release
   - ensemble/tests/test_forest.py::test_regression >=0.24 # pass for defaultDense method only

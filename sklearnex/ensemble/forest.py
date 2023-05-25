@@ -243,7 +243,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = "random"
 
     else:
         def __init__(self,
@@ -267,8 +266,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1,
-                     splitter_mode="random"):
+                     min_bin_size=1):
             super(ExtraTreesClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -295,7 +293,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.splitter_mode = splitter_mode
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -567,7 +564,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and daal_check_version((2023, 'P', 200)),
+                (daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2"),
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
                                                  "Sparse input is not supported."),
@@ -616,7 +613,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and daal_check_version((2023, 'P', 100)),
+                (daal_check_version((2023, 'P', 100)),
                     "ExtraTrees only supported starting from oneDAL version 2023.1"),
                 (sample_weight is not None, "sample_weight is not supported.")
             ])
@@ -734,7 +731,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             'max_samples': self.max_samples
         }
         if daal_check_version((2023, 'P', 101)):
-            onedal_params['splitter_mode'] = self.splitter_mode
+            onedal_params['splitter_mode'] = "random"
         self._cached_estimators_ = None
 
         # Compute
@@ -826,7 +823,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
-            self.splitter_mode = "random"
     else:
         def __init__(self,
                      n_estimators=100, *,
@@ -848,8 +844,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1,
-                     splitter_mode="random"
+                     min_bin_size=1
                      ):
             super(ExtraTreesRegressor, self).__init__(
                 n_estimators=n_estimators,
@@ -876,7 +871,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.splitter_mode = splitter_mode
 
     @property
     def _estimators_(self):
@@ -1041,7 +1035,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and daal_check_version((2023, 'P', 200)),
+                (daal_check_version((2023, 'P', 200)),
                     "ExtraTrees only supported starting from oneDAL version 2023.2"),
                 (not sp.issparse(sample_weight), "sample_weight is sparse. "
                                                  "Sparse input is not supported."),
@@ -1090,7 +1084,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
 
             dal_ready = ready and _patching_status.and_conditions([
-                (self.splitter_mode == 'random' and daal_check_version((2023, 'P', 100)),
+                (daal_check_version((2023, 'P', 100)),
                     "ExtraTrees only supported starting from oneDAL version 2023.1"),
                 (sample_weight is not None, "sample_weight is not supported."),
             ])
@@ -1183,7 +1177,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             'max_samples': self.max_samples
         }
         if daal_check_version((2023, 'P', 101)):
-            onedal_params['splitter_mode'] = self.splitter_mode
+            onedal_params['splitter_mode'] = "random"
         self._cached_estimators_ = None
         self._onedal_estimator = self._onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
