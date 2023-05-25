@@ -383,13 +383,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             # TODO: Fix to support integers as input
 
             n_samples = X.shape[0]
-            if not self.bootstrap and self.max_samples is not None:
-                raise ValueError(
-                    "`max_sample` cannot be set if `bootstrap=False`. "
-                    "Either switch to `bootstrap=True` or set "
-                    "`max_sample=None`."
-                )
-            elif isinstance(self.max_samples, numbers.Integral):
+            if isinstance(self.max_samples, numbers.Integral):
                 if not sklearn_check_version('1.2'):
                     if not (1 <= self.max_samples <= n_samples):
                         msg = "`max_samples` must be in range 1 to {} but got value {}"
@@ -412,6 +406,13 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             elif self.max_samples is not None:
                 msg = "`max_samples` should be int or float, but got type '{}'"
                 raise TypeError(msg.format(type(self.max_samples)))
+
+            if not self.bootstrap and self.max_samples is not None:
+                raise ValueError(
+                    "`max_sample` cannot be set if `bootstrap=False`. "
+                    "Either switch to `bootstrap=True` or set "
+                    "`max_sample=None`."
+                )
 
         return ready, X, y, sample_weight
 
@@ -995,13 +996,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             ])
 
             n_samples = X.shape[0]
-            if not self.bootstrap and self.max_samples is not None:
-                raise ValueError(
-                    "`max_sample` cannot be set if `bootstrap=False`. "
-                    "Either switch to `bootstrap=True` or set "
-                    "`max_sample=None`."
-                )
-            elif isinstance(self.max_samples, numbers.Integral):
+            if isinstance(self.max_samples, numbers.Integral):
                 if not sklearn_check_version('1.2'):
                     if not (1 <= self.max_samples <= n_samples):
                         msg = "`max_samples` must be in range 1 to {} but got value {}"
@@ -1024,6 +1019,13 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             elif self.max_samples is not None:
                 msg = "`max_samples` should be int or float, but got type '{}'"
                 raise TypeError(msg.format(type(self.max_samples)))
+
+            if not self.bootstrap and self.max_samples is not None:
+                raise ValueError(
+                    "`max_sample` cannot be set if `bootstrap=False`. "
+                    "Either switch to `bootstrap=True` or set "
+                    "`max_sample=None`."
+                )
 
         return ready, X, y, sample_weight
 
