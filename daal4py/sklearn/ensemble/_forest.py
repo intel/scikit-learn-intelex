@@ -22,27 +22,31 @@ from math import ceil
 import numpy as np
 from scipy import sparse as sp
 from sklearn.base import clone
-from sklearn.ensemble import \
-    RandomForestClassifier as RandomForestClassifier_original
-from sklearn.ensemble import \
-    RandomForestRegressor as RandomForestRegressor_original
+from sklearn.ensemble import RandomForestClassifier as RandomForestClassifier_original
+from sklearn.ensemble import RandomForestRegressor as RandomForestRegressor_original
 from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_array, check_random_state, deprecated
-from sklearn.utils.validation import (_num_samples, check_consistent_length,
-                                      check_is_fitted)
+from sklearn.utils.validation import (
+    _num_samples,
+    check_consistent_length,
+    check_is_fitted,
+)
 
 import daal4py
-from daal4py.sklearn._utils import (PatchingConditionsChain,
-                                    daal_check_version, sklearn_check_version)
+from daal4py.sklearn._utils import (
+    PatchingConditionsChain,
+    daal_check_version,
+    sklearn_check_version,
+)
 
 from .._device_offload import support_usm_ndarray
 from .._utils import getFPType
 from ..utils.validation import _daal_num_features
 
 if sklearn_check_version("1.2"):
-    from sklearn.utils._param_validation import Interval
+    from sklearn.utils._param_validation import Interval, StrOptions
 
 
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
@@ -233,6 +237,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             **RandomForestClassifier_original._parameter_constraints,
             "maxBins": [Interval(numbers.Integral, 0, None, closed="left")],
             "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")],
+            "binningStrategy": [StrOptions({"quantiles", "averages"})],
         }
 
     if sklearn_check_version("1.0"):
@@ -797,6 +802,7 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             **RandomForestRegressor_original._parameter_constraints,
             "maxBins": [Interval(numbers.Integral, 0, None, closed="left")],
             "minBinSize": [Interval(numbers.Integral, 1, None, closed="left")],
+            "binningStrategy": [StrOptions({"quantiles", "averages"})],
         }
 
     if sklearn_check_version("1.0"):
