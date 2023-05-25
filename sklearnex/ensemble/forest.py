@@ -267,7 +267,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode="random"):
             super(ExtraTreesClassifier, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -294,7 +295,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.splitter_mode = "random"
+            self.splitter_mode = splitter_mode
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -847,7 +848,9 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                      ccp_alpha=0.0,
                      max_samples=None,
                      max_bins=256,
-                     min_bin_size=1):
+                     min_bin_size=1,
+                     splitter_mode="random"
+                     ):
             super(ExtraTreesRegressor, self).__init__(
                 n_estimators=n_estimators,
                 criterion=criterion,
@@ -873,7 +876,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.splitter_mode = "random"
+            self.splitter_mode = splitter_mode
 
     @property
     def _estimators_(self):
