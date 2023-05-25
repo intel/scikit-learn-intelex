@@ -119,14 +119,14 @@ class BaseTree(ABC):
                                  % self.min_samples_split)
         if not 0 <= self.min_weight_fraction_leaf <= 0.5:
             raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
-        if self.min_impurity_split is not None:
+        if getattr(self, "min_impurity_split", None) is not None:
             warnings.warn("The min_impurity_split parameter is deprecated. "
                           "Its default value has changed from 1e-7 to 0 in "
                           "version 0.23, and it will be removed in 0.25. "
                           "Use the min_impurity_decrease parameter instead.",
                           FutureWarning)
 
-            if self.min_impurity_split < 0.:
+            if getattr(self, "min_impurity_split", None) < 0.:
                 raise ValueError("min_impurity_split must be greater than "
                                  "or equal to 0")
         if self.min_impurity_decrease < 0.:
@@ -242,7 +242,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.min_impurity_split = None
 
     else:
         def __init__(self,
@@ -716,7 +715,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             'max_features': self.max_features,
             'max_leaf_nodes': self.max_leaf_nodes,
             'min_impurity_decrease': self.min_impurity_decrease,
-            'min_impurity_split': self.min_impurity_split,
             'bootstrap': self.bootstrap,
             'oob_score': self.oob_score,
             'n_jobs': self.n_jobs,
@@ -732,6 +730,10 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         }
         if daal_check_version((2023, 'P', 101)):
             onedal_params['splitter_mode'] = "random"
+        if not sklearn_check_version('1.0'):
+            onedal_params['min_impurity_split'] = self.min_impurity_split
+        else:
+            onedal_params['min_impurity_split'] = None
         self._cached_estimators_ = None
 
         # Compute
@@ -822,7 +824,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_samples = max_samples
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
-            self.min_impurity_split = None
     else:
         def __init__(self,
                      n_estimators=100, *,
