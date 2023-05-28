@@ -78,6 +78,8 @@ mpi_root = None if no_dist else os.environ['MPIROOT']
 dpcpp = True if 'DPCPPROOT' in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 
+print("NoDist and Dpcpp and Mpiroot:", no_dist, dpcpp, mpi_root)
+
 try:
     import dpctl
     dpctl_available = dpctl.__version__ >= '0.14'
@@ -85,6 +87,8 @@ except ImportError:
     dpctl_available = False
 
 build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
+
+print("Build distr:", build_distribute)
 
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(
@@ -439,6 +443,10 @@ if ONEDAL_VERSION >= 20230100:
     packages_with_tests += [
         'onedal.basic_statistics',
         'onedal.linear_model']
+
+if ONEDAL_VERSION >= 20230200:
+    packages_with_tests += [
+        'onedal.kmeans_init']
 
 if build_distribute:
     packages_with_tests += [

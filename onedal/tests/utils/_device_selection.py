@@ -29,6 +29,7 @@ def get_queues(filter_='cpu,gpu'):
         if dpctl.has_gpu_devices and 'gpu' in filter_:
             queues.append(dpctl.SyclQueue('gpu'))
     finally:
+        print(queues)
         return queues
 
 

@@ -24,6 +24,7 @@ if oneapi_is_available:
 
 def _get_policy(queue, *data):
     data_queue = _get_queue(*data)
+    print(queue, data_queue, _is_dpc_backend)
     if _is_dpc_backend:
         if queue is None:
             if data_queue is None:
