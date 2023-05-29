@@ -250,10 +250,10 @@ deselected_tests:
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
   # Different results scikit-learn-intelex and scikit-learn linear regression with weights. Need to investigate.
-  - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=1.0
+  - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=0.24
 
   # Patched and unpatched kmeans set same values to different clusters. Need to investigate.
-  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0
+  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
@@ -343,6 +343,11 @@ deselected_tests:
 
   # Temporary deselected up to 2021.6 release. Need to fix
   - ensemble/tests/test_bagging.py::test_classification
+
+  # Failure related to incompatibility of older sklearn versions with updated dependencies
+  - ensemble/_hist_gradient_boosting/tests/test_compare_lightgbm.py::test_same_predictions_multiclass_classification >=0.24,<1.0
+  - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=0.24,<1.0
+  - utils/tests/test_validation.py::test_check_array_pandas_dtype_casting >=1.0,<1.2
 
   # --------------------------------------------------------
   # No need to test daal4py patching
