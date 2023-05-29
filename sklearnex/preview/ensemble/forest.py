@@ -30,7 +30,7 @@ from abc import ABC
 
 from sklearn.exceptions import DataConversionWarning
 
-from ..._config import get_config, config_context
+from ..._config import get_config
 from ..._device_offload import dispatch, wrap_output_data
 
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
@@ -42,7 +42,7 @@ from sklearn.utils.validation import (
     check_array,
     check_X_y)
 
-from onedal.datatypes import _check_array, _num_features, _num_samples
+from onedal.datatypes import _num_features, _num_samples
 
 from sklearn.utils import check_random_state, deprecated
 

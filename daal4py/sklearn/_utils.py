@@ -180,7 +180,7 @@ def get_number_of_types(dataframe):
 
 def check_tree_nodes(tree_nodes):
     def convert_to_old_tree_nodes(tree_nodes):
-        # conversion from new sklearn tree nodes format to old:
+        # conversion from sklearn>=1.3 tree nodes format to previous format:
         # removal of 'missing_go_to_left' field from node dtype
         new_field = 'missing_go_to_left'
         new_dtype = tree_nodes.dtype
