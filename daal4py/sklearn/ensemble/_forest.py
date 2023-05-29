@@ -20,12 +20,11 @@ import numbers
 import warnings
 
 import daal4py
-from .._utils import getFPType
+from .._utils import getFPType, check_tree_nodes
 from .._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version,
     PatchingConditionsChain)
-import logging
 
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree._tree import Tree
@@ -884,7 +883,7 @@ class RandomForestClassifier(RandomForestClassifier_original):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
             est_i.tree_ = Tree(
                 self.n_features_in_,
@@ -1126,7 +1125,7 @@ class RandomForestRegressor(RandomForestRegressor_original):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
 
             est_i.tree_ = Tree(

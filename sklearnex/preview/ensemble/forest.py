@@ -17,7 +17,7 @@
 
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version,
-    make2d, get_dtype
+    make2d, check_tree_nodes
 )
 
 import numpy as np
@@ -517,7 +517,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
             est_i.tree_ = Tree(
                 self.n_features_in_,
@@ -892,7 +892,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
 
             est_i.tree_ = Tree(

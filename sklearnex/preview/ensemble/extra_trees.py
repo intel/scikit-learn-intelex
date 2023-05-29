@@ -15,11 +15,9 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version,
-    make2d, get_dtype, PatchingConditionsChain
+    make2d, PatchingConditionsChain, check_tree_nodes
 )
 
 import numpy as np
@@ -540,7 +538,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
             est_i.tree_ = Tree(
                 self.n_features_in_,
@@ -918,7 +916,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
 
             est_i.tree_ = Tree(
