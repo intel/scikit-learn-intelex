@@ -151,6 +151,7 @@ Logistic Loss
 Stochastic Gradient Descent Algorithm
 
 - `Stochastic Gradient Descent Algorithm Using Logistic Loss <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/sgd_logistic_loss_batch.py>`_
+- `Stochastic Gradient Descent Algorithm Using MSE <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/sgd_mse_batch.py>`_
 
 Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm
 
