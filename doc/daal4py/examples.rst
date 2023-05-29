@@ -20,15 +20,15 @@ Examples
 
 Below are examples on how to utilize daal4py for various usage styles.
 
-Data Science examples
----------------------
-
-Jupyter Notebooks
-
-- `Linear Regression <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/daal4py_data_science.ipynb>`_
-
 General usage
 -------------
+
+Model Builders models conversion
+
+- `XGBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_xgboost_batch.py>`_
+- `LightGBM model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_lightgbm_batch.py>`_
+- `CatBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_catboost_batch.py>`_
+
 
 Principal Component Analysis (PCA) Transform
 
@@ -151,7 +151,6 @@ Logistic Loss
 Stochastic Gradient Descent Algorithm
 
 - `Stochastic Gradient Descent Algorithm Using Logistic Loss <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/sgd_logistic_loss_batch.py>`_
-- `Stochastic Gradient Descent Algorithm Using MSE <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/sgd_mse_batch.py>`_
 
 Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm
 

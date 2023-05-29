@@ -25,8 +25,9 @@ Contents
 
    About daal4py <index>
    Data <data>
+   Model Builders <model-builders>
    Supported Algorithms <algorithms>
-   Distribution <scaling>
-   Streaming <streaming>
+   Distributed Compute <scaling>
+   Streaming Mode <streaming>
    Examples <examples>
    Scikit-Learn API <sklearn>
