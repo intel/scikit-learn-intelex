@@ -70,8 +70,6 @@ def get_patch_map():
             RandomForestClassifier as RandomForestClassifier_sklearnex,
             RandomForestRegressor as RandomForestRegressor_sklearnex,
         )
-        from .preview.linear_model import \
-            LinearRegression as LinearRegression_sklearnex
         if (sklearn_check_version('1.1')):
             from .preview.objective_function import \
                 LinearModelLoss as LinearModelLoss_sklearnex
