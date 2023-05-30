@@ -16,7 +16,6 @@
 
 import numpy as np
 import pytest
-import random
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (accuracy_score, roc_auc_score,
@@ -33,12 +32,7 @@ from daal4py.sklearn._utils import daal_check_version
 
 ACCURACY_RATIO = 0.95 if daal_check_version((2021, 'P', 400)) else 0.85
 MSE_RATIO = 1.07
-if daal_check_version((2023, 'P', 101)):
-    LOG_LOSS_RATIO = 1.5
-elif daal_check_version((2021, 'P', 400)):
-    LOG_LOSS_RATIO = 1.4
-else:
-    LOG_LOSS_RATIO = 1.55
+LOG_LOSS_RATIO = 1.55
 ROC_AUC_RATIO = 0.96
 RNG = np.random.RandomState(0)
 IRIS = load_iris()

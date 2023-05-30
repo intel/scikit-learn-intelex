@@ -25,7 +25,7 @@ sklearn_version=${1:-main}
 
 if [ "$sklearn_version" == "main" ]; then
     # remove sklearn version from test requirements file
-    sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn/" requirements-test.txt
+    sed -i.bak -e "s/scikit-learn==1.2.2/scikit-learn/" requirements-test.txt
     sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn/" requirements-test.txt
     # install sklearn build dependencies
     pip install threadpoolctl joblib scipy
@@ -35,6 +35,6 @@ if [ "$sklearn_version" == "main" ]; then
     git log -n 1
     python setup.py install --single-version-externally-managed --record=record.txt
 else
-    sed -i.bak -e "s/scikit-learn==1.2.0/scikit-learn==${sklearn_version}.*/" requirements-test.txt
+    sed -i.bak -e "s/scikit-learn==1.2.2/scikit-learn==${sklearn_version}.*/" requirements-test.txt
     sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==${sklearn_version}.*/" requirements-test.txt
 fi
