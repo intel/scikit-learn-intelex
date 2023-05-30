@@ -39,10 +39,11 @@ from daal4py.sklearn._utils import (
     PatchingConditionsChain,
     daal_check_version,
     sklearn_check_version,
+    getFPType,
+    check_tree_nodes,
 )
 
 from .._device_offload import support_usm_ndarray
-from .._utils import getFPType
 from ..utils.validation import _daal_num_features
 
 if sklearn_check_version("1.2"):
@@ -642,7 +643,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             tree_i_state_dict = {
                 "max_depth": tree_i_state_class.max_depth,
                 "node_count": tree_i_state_class.node_count,
-                "nodes": tree_i_state_class.node_ar,
+                "nodes": check_tree_nodes(tree_i_state_class.node_ar),
                 "values": tree_i_state_class.value_ar,
             }
             est_i.tree_ = Tree(
@@ -1125,7 +1126,7 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             tree_i_state_dict = {
                 "max_depth": tree_i_state_class.max_depth,
                 "node_count": tree_i_state_class.node_count,
-                "nodes": tree_i_state_class.node_ar,
+                "nodes": check_tree_nodes(tree_i_state_class.node_ar),
                 "values": tree_i_state_class.value_ar,
             }
 
