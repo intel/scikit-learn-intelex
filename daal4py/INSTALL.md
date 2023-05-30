@@ -69,6 +69,7 @@ Without conda-build you have to manually setup your environment before building 
 * cmake and pybind11
   * Needed for oneDAL interfaces. You can disable the support for oneDAL interfaces by setting OFF_ONEDAL_IFACE to '1'.
 * A C++ compiler with C++11 support
+* Clang-Format
 * [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
   * You can use the pre-built conda package from Intel channel on anaconda.org
 * MPI

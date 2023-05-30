@@ -48,7 +48,7 @@ Device offloading
 |intelex| offers two options for running an algorithm on a
 specific device with the help of dpctl:
 
-- Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.
+- Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl/usm_ndarray.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.
 
   The computation will run on the device where the input data is
   located, and the result will be returned as :code:`usm_ndarray` to the same
