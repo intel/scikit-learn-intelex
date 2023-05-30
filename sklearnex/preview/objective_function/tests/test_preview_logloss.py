@@ -23,7 +23,7 @@ from sklearn.datasets import make_classification
 from scipy.special import expit
 
 if (sklearn_check_version('1.1')):
-    def test_sklearnex_import_linear():
+    def test_linear_model_loss():
         from sklearnex.preview.objective_function import LinearModelLoss
         from sklearn._loss.loss import HalfBinomialLoss
 

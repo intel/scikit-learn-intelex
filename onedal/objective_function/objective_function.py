@@ -182,7 +182,8 @@ class LogisticLoss(BaseObjectiveFunction):
 
     def __validate_hyperparameters(self, sample_weight, n_threads, raw_prediction):
         if (sample_weight is not None) and \
-                (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
+                (not np.allclose(sample_weight,
+                                 np.array([1]).astype(dtype=sample_weight.dtype))):
             raise Exception("sample_weigth parameter is not supported")
         if (n_threads != 1):
             raise Exception("multithreading is not supported")
