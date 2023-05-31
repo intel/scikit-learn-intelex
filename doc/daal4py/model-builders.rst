@@ -17,22 +17,22 @@
 .. _model-builders:
 
 ###############################################
-Model Builders for Gradinet Boosting Framewotrks
+Model Builders for the Gradient Boosting Frameworks
 ###############################################
 Introduction
----------
+------------------
 Gradient boosting on decision trees is one of the most accurate and efficient 
-machine learning algorithms for classification and regression. There are many 
-implementations of gradient boosting, but the most popular are the XGBoost, 
-LightGBM and CatBoost frameworks.
-daal4py Model Builders deliver accelerated XGBoost, LightGBM and CatBoost 
-models inference. Inference performed by oneDAL GBT implementation tuned 
-for best performance on Intel Architecture. 
+machine learning algorithms for classification and regression. 
+The most popular implementations of it are the XGBoost*, 
+LightGBM*, and CatBoost* frameworks.
+daal4py Model Builders deliver the accelerated
+models inference of those frameworks. The inference is performed by the oneDAL GBT implementation tuned 
+for the best performance on the Intel(R) Architecture. 
 
 Conversion
 ---------
-First step of process is conversion of already trained model. There is simmilar 
-API for different frameworks
+The first step is to convert already trained model. There are similar 
+APIs for different frameworks. 
 XGBoost::
 
   import daal4py as d4p
@@ -48,13 +48,13 @@ CatBoost::
   import daal4py as d4p
   d4p_model = d4p.get_gbt_model_from_catboost(cb_model)
 
-It's requered to convert model only once and then it will be used for inference
+.. note:: Convert model only once and then use it for the inference.
 
-Classification and Regression inference
+Classification and Regression Inference
 ---------
-GBT implementaiton in daal4py assumes separate APIs for classification and regression.
-Corresponding API should be explicitly specified and should match corresponding problem 
-in initial framework.
+GBT implementation in daal4py assumes separate APIs for the classification and regression.
+Specify the corresponding API and match the corresponding problem 
+in the initial framework.
 
 Classification::
 
@@ -67,15 +67,15 @@ Classification::
 Regression::
     d4p_reg_algo = d4p.gbt_regression_prediction()
 
-As a next step d4py algorithm object need compute method to be called. 
-Both data and previously converted model should be passed with results of predection 
-avaialbe within .prediction parameter.
+Next, daal4py algorithm object needs compute method to be called. 
+Both the data and the previously converted model should be passed with the results of the prediction 
+available within the  ``.prediction`` parameter.
 
 Compute::
 
     d4p_predictions = d4p_reg_algo.compute(X_test, d4p_model).prediction
 
-As alternative here is one line variant of same code::
+The one-line variant of the same code::
     d4p_prediction = d4p.gbt_regression_prediction().compute(X_test, d4p_model).prediction
 
 
@@ -83,8 +83,8 @@ Limitations
 ---------------------------------
 Missing Values (NaN)
 Note that there is temporary limitation on the use of missing values 
-(NaN) during training and prediction. This problem already adressed in 
-master and would be avaialbe as part of 2023.2 release.
+(NaN) during training and prediction. This problem is addressed on 
+the master branch and to be available in the 2023.2 release.
 
 Examples
 ---------------------------------
@@ -94,7 +94,7 @@ Model Builders models conversion
 - `LightGBM model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_lightgbm_batch.py>`_
 - `CatBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_catboost_batch.py>`_
 
-Articles and blog posts
+Articles and Blog Posts
 ---------------------------------
 
 -  `Improving the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>` _

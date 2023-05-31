@@ -99,8 +99,8 @@ Last but not least, daal4py allows :ref:`getting input data from streams <stream
 
 oneAPI and GPU support in daal4py
 ---------------------------------
-daal4py oneAPI and GPU support deprecated - please use scikit-learn-intelex 
-instead -  https://intel.github.io/scikit-learn-intelex/oneapi-gpu.html#
+daal4py oneAPI and GPU support is deprecated. Use `scikit-learn-intelex <https://intel.github.io/scikit-learn-intelex/oneapi-gpu.html#>`_ 
+instead.
 
 
 Daal4py's Design
@@ -145,8 +145,8 @@ and in `Intel channel <https://anaconda.org/intel/daal4py>`_.
 Sources and build instructions are available in
 `daal4py repository <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_.
 
-daal4py package avaialbe on same channels and platforms as scikit-learn-intelex, please 
-refer to 
+The daal4py package is available via same distribution channels and platforms as scikit-learn-intelex. 
+See  
 `scikit-learn-intelex requirements <https://intel.github.io/scikit-learn-intelex/system-requirements.html>` _
 
 - Install from PyPI::
@@ -189,9 +189,9 @@ daal4py will work on the entire file content.
 
 Scikit-Learn API and patching
 -----------------------------
-.. note::
-    Recommended flow for scikit-lear patching is through use of the 
-    'scikit-learn-intelex package patching <https://intel.github.io/scikit-learn-intelex/what-is-patching.html>' _
+.. tip::
+    We recommend using 
+    the 'scikit-learn-intelex package patching <https://intel.github.io/scikit-learn-intelex/what-is-patching.html>' _ for the scikit-learn patching.
 daal4py exposes some oneDAL solvers using a scikit-learn compatible API.
 
 daal4py can furthermore monkey-patch the ``sklearn`` package to use the DAAL

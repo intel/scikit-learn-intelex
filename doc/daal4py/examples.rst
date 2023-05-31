@@ -23,11 +23,11 @@ Below are examples on how to utilize daal4py for various usage styles.
 General usage
 -------------
 
-Model Builders models conversion
+Building models from Gradient Boosting frameworks
 
-- `XGBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_xgboost_batch.py>`_
-- `LightGBM model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_lightgbm_batch.py>`_
-- `CatBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_catboost_batch.py>`_
+- `XGBoost* model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_xgboost_batch.py>`_
+- `LightGBM* model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_lightgbm_batch.py>`_
+- `CatBoost* model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/gbt_cls_model_create_from_catboost_batch.py>`_
 
 
 Principal Component Analysis (PCA) Transform
