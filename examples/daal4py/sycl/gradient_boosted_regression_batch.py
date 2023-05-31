@@ -32,6 +32,12 @@ except ImportError:
     def read_csv(f, c, t=np.float64):
         return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
+try:
+    from daal4py.oneapi import sycl_context
+    with sycl_context('gpu'):
+        gpu_available = True
+except:
+    gpu_available = False
 
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data, maxIterations):
@@ -82,24 +88,14 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_dep_data = to_numpy(train_dep_data)
     test_indep_data = to_numpy(test_indep_data)
 
-    try:
-        from dpctx import device_context, device_type
-
-        def gpu_context():
-            return device_context(device_type.gpu, 0)
-    except:
-        from daal4py.oneapi import sycl_context
-
-        def gpu_context():
-            return sycl_context('gpu')
-
     # It is possible to specify to make the computations on GPU
-    with gpu_context():
-        sycl_train_indep_data = sycl_buffer(train_indep_data)
-        sycl_train_dep_data = sycl_buffer(train_dep_data)
-        sycl_test_indep_data = sycl_buffer(test_indep_data)
-        _ = compute(sycl_train_indep_data, sycl_train_dep_data,
-                    sycl_test_indep_data, maxIterations)
+    if gpu_available:
+        with sycl_context('gpu'):
+            sycl_train_indep_data = sycl_buffer(train_indep_data)
+            sycl_train_dep_data = sycl_buffer(train_dep_data)
+            sycl_test_indep_data = sycl_buffer(test_indep_data)
+            _ = compute(sycl_train_indep_data, sycl_train_dep_data,
+                        sycl_test_indep_data, maxIterations)
 
     test_dep_data = np.loadtxt(testfile, usecols=range(13, 14), delimiter=',',
                                ndmin=2, dtype=np.float32)

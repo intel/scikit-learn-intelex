@@ -33,16 +33,11 @@ except ImportError:
         return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
-    from dpctx import device_context, device_type
-    with device_context(device_type.gpu, 0):
+    from daal4py.oneapi import sycl_context
+    with sycl_context('gpu'):
         gpu_available = True
 except:
-    try:
-        from daal4py.oneapi import sycl_context
-        with sycl_context('gpu'):
-            gpu_available = True
-    except:
-        gpu_available = False
+    gpu_available = False
 
 
 # Commone code for both CPU and GPU computations
@@ -96,26 +91,9 @@ def main(readcsv=read_csv, method='defaultDense'):
     train_labels = to_numpy(train_labels)
     predict_data = to_numpy(predict_data)
 
-    try:
-        from dpctx import device_context, device_type
-
-        def gpu_context():
-            return device_context(device_type.gpu, 0)
-
-        def cpu_context():
-            return device_context(device_type.cpu, 0)
-    except:
-        from daal4py.oneapi import sycl_context
-
-        def gpu_context():
-            return sycl_context('gpu')
-
-        def cpu_context():
-            return sycl_context('cpu')
-
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with gpu_context():
+        with sycl_context('gpu'):
             sycl_train_data = sycl_buffer(train_data)
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
@@ -126,7 +104,7 @@ def main(readcsv=read_csv, method='defaultDense'):
         assert np.mean(result_classic.prediction != result_gpu.prediction) < 0.2
 
     # It is possible to specify to make the computations on GPU
-    with cpu_context():
+    with sycl_context('cpu'):
         sycl_train_data = sycl_buffer(train_data)
         sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
