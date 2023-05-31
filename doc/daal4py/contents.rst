@@ -27,7 +27,7 @@ Contents
    Data <data>
    Model Builders <model-builders>
    Supported Algorithms <algorithms>
-   Distributed Compute <scaling>
+   Distributed Mode <scaling>
    Streaming Mode <streaming>
    Examples <examples>
    Scikit-Learn API <sklearn>
