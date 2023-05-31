@@ -205,7 +205,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 numbers.Integral) else int(
                 ceil(
                     self.min_samples_split * n_samples)))
-        
+
         rs_ = check_random_state(self.random_state)
         seed_ = rs_.randint(0, np.iinfo("i").max)
 
