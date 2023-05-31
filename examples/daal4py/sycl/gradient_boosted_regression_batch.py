@@ -39,6 +39,7 @@ try:
 except:
     gpu_available = False
 
+
 # Commone code for both CPU and GPU computations
 def compute(train_indep_data, train_dep_data, test_indep_data, maxIterations):
     # Configure a training object
