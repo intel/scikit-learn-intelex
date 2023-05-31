@@ -184,6 +184,7 @@ struct params2desc {
                         .set_max_leaf_nodes(params["max_leaf_nodes"].cast<std::int64_t>())
                         .set_max_bins(params["max_bins"].cast<std::int64_t>())
                         .set_min_bin_size(params["min_bin_size"].cast<std::int64_t>())
+                        .set_seed(params["seed"].cast<std::int64_t>())
                         .set_memory_saving_mode(params["memory_saving_mode"].cast<bool>())
                         .set_bootstrap(params["bootstrap"].cast<bool>())
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
