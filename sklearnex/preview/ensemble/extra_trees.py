@@ -570,7 +570,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             dal_ready = dal_ready and not hasattr(self, 'estimators_')
 
             if dal_ready and (self.random_state is not None) and
-               (not daal_check_version((2023, 'P', 300)):
+               (not daal_check_version((2023, 'P', 300))):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
@@ -619,7 +619,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             dal_ready &= not hasattr(self, 'estimators_')
 
             if dal_ready and (self.random_state is not None) and
-               (not daal_check_version((2023, 'P', 300)):
+               (not daal_check_version((2023, 'P', 300))):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
@@ -1045,7 +1045,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             dal_ready &= not hasattr(self, 'estimators_')
 
             if dal_ready and (self.random_state is not None) and
-               (not daal_check_version((2023, 'P', 300)):
+               (not daal_check_version((2023, 'P', 300))):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
@@ -1094,7 +1094,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             dal_ready &= not hasattr(self, 'estimators_')
 
             if dal_ready and (self.random_state is not None) and
-               (not daal_check_version((2023, 'P', 300)):
+               (not daal_check_version((2023, 'P', 300))):
                 warnings.warn("Setting 'random_state' value is not supported. "
                               "State set by oneDAL to default value (777).",
                               RuntimeWarning)
