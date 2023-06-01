@@ -181,6 +181,7 @@ def roc_auc_score(
         sample_weight=sample_weight,
     )
 
+
 if sklearn_check_version('1.3'):
     roc_auc_score = validate_params(
         {

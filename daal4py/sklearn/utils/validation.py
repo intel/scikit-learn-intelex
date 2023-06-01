@@ -32,7 +32,7 @@ from .._utils import (is_DataFrame, get_dtype, get_number_of_types,
 
 
 def _assert_all_finite(X, allow_nan=False, msg_dtype=None,
-                            estimator_name=None, input_name=""):
+                       estimator_name=None, input_name=""):
     if _get_config()['assume_finite']:
         return
 
