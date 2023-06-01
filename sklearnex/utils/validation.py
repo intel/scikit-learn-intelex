@@ -15,4 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.utils.validation import _daal_assert_all_finite as assert_all_finite
+from daal4py.sklearn.utils.validation import _assert_all_finite

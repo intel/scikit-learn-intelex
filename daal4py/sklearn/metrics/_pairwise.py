@@ -54,7 +54,7 @@ def _daal4py_correlation_distance_dense(X):
 
 
 @support_usm_ndarray(freefunc=True)
-def daal_pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
+def pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
                             force_all_finite=True, **kwds):
     """ Compute the distance matrix from a vector array X and optional Y.
 
