@@ -99,39 +99,8 @@ Last but not least, daal4py allows :ref:`getting input data from streams <stream
 
 oneAPI and GPU support in daal4py
 ---------------------------------
-daal4py provides support of oneAPI concepts such as context and queues, which means that
-algorithms can be executed on different devices, GPUs in particular. This is implemented via 'with sycl_context("xpu")'
-blocks that redirect execution to a device of the selected type: GPU, CPU.
-Same approach is implemented for scikit-learn patching, so scikit-learn programs can be
-executed on GPU devices as well.
-
-To patch your code with Intel CPU/GPU optimizations:
-
-.. code-block:: python
-
-   from daal4py.sklearn import patch_sklearn
-   from daal4py.oneapi import sycl_context
-   patch_sklearn()
-
-   from sklearn.cluster import DBSCAN
-
-   X = np.array([[1., 2.], [2., 2.], [2., 3.],
-               [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
-   with sycl_context("gpu"):
-      clustering = DBSCAN(eps=3, min_samples=2).fit(X)
-
-For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
-requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
-
-DPC++ compiler runtime can be installed either from PyPI or Anaconda:
-
-- Install from PyPI::
-
-     pip install dpcpp-cpp-rt
-
-- Install from Anaconda::
-
-     conda install dpcpp_cpp_rt -c intel
+daal4py oneAPI and GPU support is deprecated. Use `scikit-learn-intelex <https://intel.github.io/scikit-learn-intelex/oneapi-gpu.html#>`_ 
+instead.
 
 
 Daal4py's Design
@@ -174,7 +143,11 @@ daal4py is available at the `Python Package Index <https://pypi.org/project/daal
 on Anaconda Cloud in `Conda Forge channel <https://anaconda.org/conda-forge/daal4py>`_
 and in `Intel channel <https://anaconda.org/intel/daal4py>`_.
 Sources and build instructions are available in
-`daal4py repository <https://github.com/IntelPython/daal4py>`_.
+`daal4py repository <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_.
+
+The daal4py package is available via same distribution channels and platforms as scikit-learn-intelex. 
+See  
+`scikit-learn-intelex requirements <https://intel.github.io/scikit-learn-intelex/system-requirements.html>` _
 
 - Install from PyPI::
 
@@ -192,103 +165,6 @@ We recommend to use **PyPi**. If you are using Intel® Distribution for Python,
 we recommend using **Anaconda Cloud: Intel channel**.
 In other cases, use **Anaconda Cloud: conda-forge channel**.
 
-Supported configurations
-------------------------
-
-**PyPi channel**
-
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
-
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - OsX
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-
-.. note::
-    It supports Intel CPU and GPU except on OsX.
-
-**Anaconda Cloud: Conda-Forge channel**
-
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
-
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - Windows
-     - ✔️
-     - ✔️
-     - ✔️
-     - ✔️
-   * - OsX
-     - ❌
-     - ❌
-     - ❌
-     - ❌
-
-.. note::
-    It supports only Intel CPU.
-    Recommended for conda users by default.
-
-**Anaconda Cloud: Intel channel**
-
-.. list-table::
-   :widths: 25 8 8 8 8
-   :header-rows: 1
-   :align: left
-
-   * - OS / Python version
-     - Python 3.6
-     - Python 3.7
-     - Python 3.8
-     - Python 3.9
-   * - Linux
-     - ❌
-     - ✔️
-     - ❌
-     - ❌
-   * - Windows
-     - ❌
-     - ✔️
-     - ❌
-     - ❌
-   * - OsX
-     - ❌
-     - ✔️
-     - ❌
-     - ❌
-
-.. note::
-    It supports Intel CPU and GPU except on OsX.
-    Recommended for conda users who use other components from Intel(R) Distribution for Python.
 
 Overview
 --------
@@ -313,6 +189,9 @@ daal4py will work on the entire file content.
 
 Scikit-Learn API and patching
 -----------------------------
+.. tip::
+    We recommend using 
+    the 'scikit-learn-intelex package patching <https://intel.github.io/scikit-learn-intelex/what-is-patching.html>' _ for the scikit-learn patching.
 daal4py exposes some oneDAL solvers using a scikit-learn compatible API.
 
 daal4py can furthermore monkey-patch the ``sklearn`` package to use the DAAL
