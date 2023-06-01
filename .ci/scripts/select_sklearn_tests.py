@@ -59,7 +59,8 @@ tests_map = {
     'svm/tests': [
         'test_sparse.py',
         'test_svm.py'
-    ]
+    ],
+    'tests': 'test_common.py'
 }
 if sklearn_check_version('1.2'):
     tests_map["tests"] = ["test_public_functions.py"]
