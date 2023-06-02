@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from .validation import _daal_assert_all_finite
+from .validation import _assert_all_finite
 
-__all__ = ['_daal_assert_all_finite', '_daal_check_array', '_daal_check_X_y',
+__all__ = ['_assert_all_finite', '_daal_check_array', '_daal_check_X_y',
            '_daal_validate_data']

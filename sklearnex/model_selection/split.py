@@ -15,4 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.model_selection import _daal_train_test_split as train_test_split
+from daal4py.sklearn.model_selection import train_test_split

@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-from ._ranking import _daal_roc_auc_score
-from ._pairwise import daal_pairwise_distances
+from ._ranking import roc_auc_score
+from ._pairwise import pairwise_distances
 
-__all__ = ['_daal_roc_auc_score', 'daal_pairwise_distances']
+__all__ = ['roc_auc_score', 'pairwise_distances']
