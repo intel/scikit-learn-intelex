@@ -180,7 +180,7 @@ def gbt_reg_model_builder(n_features, n_iterations):
     '''
     return gbt_regression_model_builder(n_features, n_iterations)
 
-class GbtModel():
+class GBTModel():
     '''
     Daal4py GBT Model
     '''
