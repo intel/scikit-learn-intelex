@@ -114,7 +114,7 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
             node_stack.append(Node(sub_tree["left_child"], parent_id, 0))
             node_stack.append(Node(sub_tree["right_child"], parent_id, 1))
 
-    return mb.model()
+    return mb.model(), n_classes
 
 
 def get_gbt_model_from_xgboost(booster: Any) -> Any:
@@ -235,7 +235,7 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
             node_queue.append(Node(sub_tree["children"][0], parent_id, 0))
             node_queue.append(Node(sub_tree["children"][1], parent_id, 1))
 
-    return mb.model()
+    return mb.model(), n_classes
 
 def get_gbt_model_from_catboost(model: Any) -> Any:
     if not model.is_fitted():
@@ -485,4 +485,4 @@ def get_gbt_model_from_catboost(model: Any) -> Any:
                     mb.add_leaf(tree_id=cur_tree_id,
                                 response=root_node.value[class_label])
 
-    return mb.model()
+    return mb.model(), n_classes
