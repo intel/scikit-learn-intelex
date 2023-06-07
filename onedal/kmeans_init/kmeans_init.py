@@ -25,9 +25,15 @@ from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
 
-class BaseKMeansInit:
-    @abstractmethod
-    def __init__(self, cluster_count, seed, local_trials_count, algorithm):
+class KMeansInit:
+    """
+    KMeansInit oneDAL implementation.
+    """
+    def __init__(self,
+                 cluster_count,
+                 seed = 777,
+                 local_trials_count = -1,
+                 algorithm='plus_plus_dense'):
         self.cluster_count = cluster_count
         self.seed = seed
         self.local_trials_count = local_trials_count
@@ -62,35 +68,10 @@ class BaseKMeansInit:
 
         return from_table(result.centroids)
 
-
-class KMeansInit(BaseKMeansInit):
-    """
-    KMeansInit oneDAL implementation.
-    """
-
-    def __init__(
-            self,
-            cluster_count,
-            seed = 777,
-            local_trials_count = -1,
-            algorithm='plus_plus_dense',
-            **kwargs):
-        super().__init__(cluster_count, seed, local_trials_count, algorithm)
-
-    def compute(self, X, queue=None):
-        return super()._fit(X, _backend.kmeans_init.compute, queue)
-
-def _kmeans_plusplus(X, n_clusters, random_state, n_local_trials=None, queue=None):
-    # Set the number of local seeding trials if none is given
-    if n_local_trials is None:
-        # This is what Arthur/Vassilvitskii tried, but did not report
-        # specific results for other than mentioning in the conclusion
-        # that it helped.
-        n_local_trials = 2 + int(np.log(n_clusters))
-
-    return KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue)
+    def compute(self, X, queue = None):
+        return self._compute(X, _backend.kmeans_init.init, queue = queue)
 
 def kmeans_plusplus(X, n_clusters, *, x_squared_norms=None, random_state=None, n_local_trials=None, queue=None):
-    if random_state is None:
-        random_state = 777
-    return _kmeans_plusplus(X, n_clusters, random_state, n_local_trials, queue)
+    random_state = 777 if random_state is None else random_state
+    n_local_trials = (2 + int(np.log(n_clusters))) if n_local_trials is None else n_local_trials
+    return (KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue), [-1] * n_clusters)
