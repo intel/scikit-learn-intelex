@@ -14,16 +14,10 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _quick_start:
+.. _get_started:
 
 ############################################
-Quick Start
+Getting Started Guide
 ############################################
 
-.. include:: usage.rst
-
-.. seealso::
-
-   - :ref:`Supported algorithms and parameters <sklearn_algorithms>`
-   - :ref:`samples`
-   .. - :ref:`global_patching`
+Getting Started Guide: https://www.intel.com/content/www/us/en/developer/articles/guide/intel-extension-for-scikit-learn-getting-started.html

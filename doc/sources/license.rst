@@ -14,16 +14,10 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _quick_start:
+.. _license:
 
 ############################################
-Quick Start
+License
 ############################################
 
-.. include:: usage.rst
-
-.. seealso::
-
-   - :ref:`Supported algorithms and parameters <sklearn_algorithms>`
-   - :ref:`samples`
-   .. - :ref:`global_patching`
+License: https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE

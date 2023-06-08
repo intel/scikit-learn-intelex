@@ -14,16 +14,10 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _quick_start:
+.. _Releases:
 
 ############################################
-Quick Start
+Release Notes
 ############################################
 
-.. include:: usage.rst
-
-.. seealso::
-
-   - :ref:`Supported algorithms and parameters <sklearn_algorithms>`
-   - :ref:`samples`
-   .. - :ref:`global_patching`
+   The updates of Intel® Extension for Scikit-learn for each release can be found in `Release Notes for Intel® oneAPI Data Analytics Library <https://www.intel.com/content/www/us/en/developer/articles/release-notes/oneapi-dal-release-notes.html>`_.
