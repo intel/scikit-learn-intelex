@@ -76,7 +76,7 @@ Configurations:
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex). You can also build the extension from [sources](INSTALL.md#build-from-sources).
 
-The extension is also available as a part of [Intel® AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit). If you already have AI Kit installed, you do not need to install the extension.
+The extension is also available as a part of [Intel® AI Analytics Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html#gs.064twy) (AI Kit). If you already have AI Kit installed, you do not need to install the extension.
 
 Installation via `pip` package manager is recommended by default:
 
@@ -147,7 +147,7 @@ You may reach out to project maintainers privately at onedal.maintainers@intel.c
 
 ## oneAPI
 
-Intel(R) Extension for Scikit-learn is part of [oneAPI](https://oneapi.io) and [Intel® AI Analytics Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/ai-analytics-toolkit.html) (AI Kit).
+Intel(R) Extension for Scikit-learn is part of [oneAPI](https://oneapi.io) and [Intel® AI Analytics Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html#gs.064twy) (AI Kit).
 
 ## daal4py and oneDAL
 
