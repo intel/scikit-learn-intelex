@@ -26,7 +26,7 @@ on Anaconda Cloud in `Conda-Forge channel <https://anaconda.org/conda-forge/scik
 in `Intel channel <https://anaconda.org/intel/scikit-learn-intelex>`_.
 
 |intelex| is also available as a part of `Intel AI Analytics Toolkit
-<https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html#gs.064twy#gs.3lkbv3>`_ (AI Kit).
+<https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html>`_ (AI Kit).
 If you already have AI Kit installed, you do not need to separately install the extension.
 
 You can also build the extension from :ref:`sources <build_from_sources>`.
