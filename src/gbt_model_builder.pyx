@@ -179,33 +179,3 @@ def gbt_reg_model_builder(n_features, n_iterations):
     :param size_t n_iterations: Number of trees in the model
     '''
     return gbt_regression_model_builder(n_features, n_iterations)
-
-class GBTModel():
-    '''
-    Daal4py GBT Model
-    '''
-
-    def __init__(self, model):
-        framework_name = (model.__class__.__module__, model.__class__.__name__)
-        if framework_name == ("lightgbm.basic", "Booster"):
-            self._model, self._n_classes = get_gbt_model_from_lightgbm(model)
-        elif framework_name == ("xgboost.core", "Booster"):
-            self._model, self._n_classes = get_gbt_model_from_xgboost(model)
-        elif framework_name == ("catboost.core", "CatBoost"):
-            self._model, self._n_classes = get_gbt_model_from_catboost(model)
-        else:
-            raise TypeError(f"Unknown model format {framework_name}")
-        
-        self._is_regression = isinstance(self._model, gbt_regression_model)
-
-    def predict(self, x, resultsToEvaluate = 'computeClassLabels'):
-        if self._is_regression:
-            return gbt_regression_prediction().compute(x, self._model).prediction
-        else:
-            output = gbt_classification_prediction(nClasses=self._n_classes, resultsToEvaluate=resultsToEvaluate).compute(x, self._model)
-            if resultsToEvaluate == 'computeClassLabels':
-                return output.prediction
-            elif resultsToEvaluate == 'computeClassProbabilities':
-                return output.probabilities
-            else:
-                raise TypeError(f"Value of resultsToEvaluate = {resultsToEvaluate} is unknown")
