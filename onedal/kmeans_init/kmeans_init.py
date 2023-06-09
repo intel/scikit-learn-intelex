@@ -50,28 +50,40 @@ class KMeansInit:
             'cluster_count': self.cluster_count,
         }
 
-    def _compute(self, X, module, queue):
-        policy = self._get_policy(queue, X)
-
+    def _get_params_and_input(self, X, policy):
         X_loc = np.asarray(X)
-        dtype = get_dtype(X_loc)
-        if dtype not in [np.float32, np.float64]:
-            dtype = np.float64
-            X_loc = X_loc.astype(dtype)
+        types = [np.float32, np.float64]
+        if get_dtype(X_loc) not in types:
+            X_loc = X_loc.astype(np.float64)
 
         X_loc = _convert_to_supported(policy, X_loc)
-        params = self._get_onedal_params(get_dtype(X_loc))
 
-        X_table= to_table(X_loc)
+        dtype = get_dtype(X_loc)
+        params = self._get_onedal_params(dtype)
+        return (params, to_table(X_loc), dtype)
+
+    def _compute_raw(self, X_table, module, policy, dtype = np.float32):
+        params = self._get_onedal_params(dtype)
 
         result = module.compute(policy, params, X_table)
 
-        return from_table(result.centroids)
+        return result.centroids
+
+    def _compute(self, X, module, queue):
+        policy = self._get_policy(queue, X)
+        params, X_table, dtype = self._get_params_and_input(X, policy)
+
+        centroids = self._compute_raw(X_table, module, policy, dtype)
+
+        return from_table(centroids)
+
+    def compute_raw(self, X_table, policy, dtype = np.float32):
+        return self._compute_raw(X_table, _backend.kmeans_init.init, policy, dtype)
 
     def compute(self, X, queue = None):
-        return self._compute(X, _backend.kmeans_init.init, queue = queue)
+        return self._compute(X, _backend.kmeans_init.init, queue)
 
 def kmeans_plusplus(X, n_clusters, *, x_squared_norms=None, random_state=None, n_local_trials=None, queue=None):
     random_state = 777 if random_state is None else random_state
     n_local_trials = (2 + int(np.log(n_clusters))) if n_local_trials is None else n_local_trials
-    return (KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue), [-1] * n_clusters)
+    return (KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue), np.full(n_clusters, -1))

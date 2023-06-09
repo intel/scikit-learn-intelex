@@ -21,6 +21,7 @@
 #endif // ONEDAL_DPCTL_INTEGRATION
 
 #include "onedal/datatypes/data_conversion.hpp"
+#include "onedal/datatypes/numpy_helpers.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "onedal/version.hpp"
 
@@ -50,6 +51,9 @@ ONEDAL_PY_INIT_MODULE(table) {
 
     py::class_<table> table_obj(m, "table");
     table_obj.def(py::init());
+    //table_obj.def_property_readonly("get_column_dtype", [](const table& t) {
+    //    return convert_dal_to_npy_type()
+    //});
     table_obj.def_property_readonly("has_data", &table::has_data);
     table_obj.def_property_readonly("column_count", &table::get_column_count);
     table_obj.def_property_readonly("row_count", &table::get_row_count);
