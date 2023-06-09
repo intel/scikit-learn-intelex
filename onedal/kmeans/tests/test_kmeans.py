@@ -22,8 +22,8 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 if daal_check_version((2023, 'P', 200)):
 
     from onedal.kmeans import KMeans
-    from onedal.kmeans_init import kmeans_init as init_internal
     from onedal.tests.utils._device_selection import get_queues
+    from onedal.kmeans_init import kmeans_plusplus as init_internal
 
     from sklearn.cluster import kmeans_plusplus as init_external
     from sklearn.datasets import load_breast_cancer
@@ -53,16 +53,11 @@ if daal_check_version((2023, 'P', 200)):
 
         return (cs, vs, data)
 
-    #@pytest.mark.parametrize('queue', get_queues())
-    #@pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    #@pytest.mark.parametrize('n_dim', [3, 6, 9, 32, 65])
-    #@pytest.mark.parametrize('n_cluster', [7, 11, 64, 128])
-    #@pytest.mark.parametrize('pipeline', [ 'internal', 'external', 'implicit' ])
     @pytest.mark.parametrize('queue', get_queues())
-    @pytest.mark.parametrize('dtype', [np.float32])
-    @pytest.mark.parametrize('n_dim', [3])
-    @pytest.mark.parametrize('n_cluster', [7])
-    @pytest.mark.parametrize('pipeline', [ 'external' ])
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
+    @pytest.mark.parametrize('n_dim', [3, 6, 9, 32, 65])
+    @pytest.mark.parametrize('n_cluster', [7, 11, 64, 128])
+    @pytest.mark.parametrize('pipeline', [ 'internal', 'external', 'implicit' ])
     def test_generated_dataset(queue, dtype, n_dim, n_cluster, pipeline):
         seed = 777 * n_dim * n_cluster
         cs, vs, X = generate_dataset(n_dim, n_cluster, seed = seed)

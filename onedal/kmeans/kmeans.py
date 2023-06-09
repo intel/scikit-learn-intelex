@@ -135,8 +135,6 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         policy = self._get_policy(queue, X)
         params, X_table, dtype = self._get_params_and_input(X, policy)
 
-        print("!!!!!!!!!!")
-
         best_model, best_n_iter = None, None
         best_inertia, best_labels = None, None
 
@@ -147,8 +145,6 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
                 return inertia < best_inertia
 
         random_state = check_random_state(self.random_state)
-
-        print("Init count: ", self._n_init)
 
         for i in range(self._n_init):
             random_seed = random_state.tomaxint()
@@ -227,7 +223,7 @@ class KMeans(_BaseKMeans):
         n_clusters=8,
         *,
         init="k-means++",
-        n_init="warn",
+        n_init="auto",
         max_iter=300,
         tol=1e-4,
         verbose=0,
