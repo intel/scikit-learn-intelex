@@ -51,9 +51,6 @@ ONEDAL_PY_INIT_MODULE(table) {
 
     py::class_<table> table_obj(m, "table");
     table_obj.def(py::init());
-    //table_obj.def_property_readonly("get_column_dtype", [](const table& t) {
-    //    return convert_dal_to_npy_type()
-    //});
     table_obj.def_property_readonly("has_data", &table::has_data);
     table_obj.def_property_readonly("column_count", &table::get_column_count);
     table_obj.def_property_readonly("row_count", &table::get_row_count);
@@ -79,7 +76,7 @@ ONEDAL_PY_INIT_MODULE(table) {
         return convert_to_table(obj_ptr);
     });
 
-    m.def("from_table", [](dal::table& t) -> py::handle {
+    m.def("from_table", [](const dal::table& t) -> py::handle {
         auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
@@ -90,6 +87,12 @@ ONEDAL_PY_INIT_MODULE(table) {
     });
 
 #endif // ONEDAL_DPCTL_INTEGRATION
+
+    m.def("get_table_column_type", [](const dal::table& t, std::int64_t c) {
+        const auto dal_type = t.get_metadata().get_data_type(c);
+        const auto npy_type = convert_dal_to_npy_type(dal_type);
+        return pybind11::dtype(npy_type);
+    });
 }
 
 } // namespace oneapi::dal::python

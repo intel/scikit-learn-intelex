@@ -19,6 +19,7 @@
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
 
+#include <type_traits>
 #include <regex>
 
 namespace py = pybind11;

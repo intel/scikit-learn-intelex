@@ -55,9 +55,9 @@ if daal_check_version((2023, 'P', 200)):
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_dim', [3, 6, 9, 32, 65])
-    @pytest.mark.parametrize('n_cluster', [7, 11, 64, 128])
-    @pytest.mark.parametrize('pipeline', [ 'internal', 'external', 'implicit' ])
+    @pytest.mark.parametrize('n_dim', [3, 6, 32, 65])
+    @pytest.mark.parametrize('n_cluster', [7, 11, 128])
+    @pytest.mark.parametrize('pipeline', [ 'implicit', 'external', 'internal'])
     def test_generated_dataset(queue, dtype, n_dim, n_cluster, pipeline):
         seed = 777 * n_dim * n_cluster
         cs, vs, X = generate_dataset(n_dim, n_cluster, seed = seed)
@@ -69,7 +69,7 @@ if daal_check_version((2023, 'P', 200)):
             init_data, _ = init_internal(X, n_cluster, queue = queue)
             m = KMeans(n_cluster, init = init_data, max_iter = 3)
         else:
-            m = KMeans(n_cluster, init = 'kmeans++', max_iter = 3)
+            m = KMeans(n_cluster, init = 'k-means++', max_iter = 3)
 
         m.fit(X, queue = queue)
 

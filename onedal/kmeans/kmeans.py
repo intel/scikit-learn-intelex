@@ -1,19 +1,3 @@
-#===============================================================================
-# Copyright 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#===============================================================================
-
 # ===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -55,7 +39,7 @@ from sklearn.base import (BaseEstimator, ClusterMixin, TransformerMixin)
 from sklearn.cluster._k_means_common import _inertia_dense
 
 class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
-    def __init__(self, n_clusters, *, init, n_init, max_iter, tol, verbose, random_state):
+    def __init__(self, n_clusters, *, init, n_init, max_iter, tol, verbose, random_state, n_local_trials = None):
         self.n_clusters = n_clusters
         self.init = init
         self.max_iter = max_iter
@@ -63,6 +47,7 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         self.n_init = n_init
         self.verbose = verbose
         self._cluster_centers_ = None
+        self.n_local_trials = n_local_trials
         self.random_state = check_random_state(random_state)
 
         default_n_init = 10
@@ -109,22 +94,27 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
 
     def _init_centroids_raw(self, X_table, init, random_seed, policy, dtype = np.float32):
         if isinstance(init, str) and init == "k-means++":
-            alg = KMeansInit(self.n_clusters, random_seed, algorithm = "plus_plus_dense")
+            alg = KMeansInit(cluster_count = self.n_clusters, seed = random_seed, algorithm = "plus_plus_dense")
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif isinstance(init, str) and init == "random":
-            alg = KMeansInit(self.n_clusters, random_seed, algorithm = "random_dense")
+            alg = KMeansInit(cluster_count = self.n_clusters, seed = random_seed, algorithm = "random_dense")
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif _is_arraylike_not_scalar(init):
             centers = np.asarray(init)
-            centers = _convert_to_supported(policy, centers)
+            assert centers.shape[0] == self.n_clusters
+            assert centers.shape[1] == X_table.column_count
+            centers = _convert_to_supported(policy, init)
             centers_table = to_table(centers)
         else:
-            raise TypeError("Unsupported type of the `init` argument")
+            raise TypeError("Unsupported type of the `init` value")
 
         return centers_table
 
     def _fit_backend(self, X_table, centroids_table, module, policy, dtype = np.float32):
         params = self._get_onedal_params(dtype)
+
+        # TODO: check all features for having correct type
+        assert _backend.get_table_column_type(centroids_table, 0) == dtype
 
         result = module.train(policy, params, X_table, centroids_table)
 

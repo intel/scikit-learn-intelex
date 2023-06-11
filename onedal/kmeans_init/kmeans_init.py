@@ -32,12 +32,17 @@ class KMeansInit:
     def __init__(self,
                  cluster_count,
                  seed = 777,
-                 local_trials_count = -1,
+                 local_trials_count = None,
                  algorithm='plus_plus_dense'):
         self.cluster_count = cluster_count
         self.seed = seed
         self.local_trials_count = local_trials_count
         self.algorithm = algorithm
+
+        if local_trials_count is None:
+            self.local_trials_count = 2 + int(np.log(cluster_count))
+        else:
+            self.local_trials_count = local_trials_count
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -85,5 +90,4 @@ class KMeansInit:
 
 def kmeans_plusplus(X, n_clusters, *, x_squared_norms=None, random_state=None, n_local_trials=None, queue=None):
     random_state = 777 if random_state is None else random_state
-    n_local_trials = (2 + int(np.log(n_clusters))) if n_local_trials is None else n_local_trials
     return (KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue), np.full(n_clusters, -1))
