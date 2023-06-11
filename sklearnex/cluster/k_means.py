@@ -15,4 +15,13 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.cluster import KMeans
+from daal4py.sklearn._utils import daal_check_version
+
+if daal_check_version((2023, 'P', 200)):
+    from onedal.kmeans import KMeans as onedal_KMeans
+    from sklearn.cluster import KMeans as sklearn_KMeans
+
+
+
+else:
+    from daal4py.sklearn.cluster import KMeans

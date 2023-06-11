@@ -36,12 +36,11 @@ try:
     import onedal._onedal_py_dpc as _backend
     _is_dpc_backend = True
 except ImportError as err:
-    print("Error message:", err)
     import onedal._onedal_py_host as _backend
     _is_dpc_backend = False
 
 
-__all__ = ['decomposition', 'ensemble', 'neighbors', 'primitives', 'svm']
+__all__ = ['decomposition', 'ensemble', 'kmeans', 'neighbors', 'primitives', 'svm']
 
 if _is_dpc_backend:
     __all__.append('spmd')

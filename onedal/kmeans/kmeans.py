@@ -23,9 +23,14 @@ from onedal import _backend
 from abc import ABC, abstractmethod
 
 from daal4py.sklearn._utils import get_dtype
+from daal4py.sklearn._utils import daal_check_version
+
 from ..datatypes import _convert_to_supported
 
-from ..kmeans_init import KMeansInit
+if daal_check_version((2023, 'P', 200)):
+    from ..kmeans_init import KMeansInit
+else:
+    from sklearn.cluster import _kmeans_plusplus
 
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
@@ -92,7 +97,8 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         params = self._get_onedal_params(dtype)
         return (params, to_table(X_loc), dtype)
 
-    def _init_centroids_raw(self, X_table, init, random_seed, policy, dtype = np.float32):
+
+    def _init_centroids_custom(self, X_table, init, random_seed, policy, dtype = np.float32):
         if isinstance(init, str) and init == "k-means++":
             alg = KMeansInit(cluster_count = self.n_clusters, seed = random_seed, algorithm = "plus_plus_dense")
             centers_table = alg.compute_raw(X_table, policy, dtype)
@@ -109,6 +115,33 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
             raise TypeError("Unsupported type of the `init` value")
 
         return centers_table
+
+    def _init_centroids_generic(self, X, init, random_state, policy, dtype = np.float32):
+        n_samples = X.shape[0]
+
+        if isinstance(init, str) and init == "k-means++":
+            centers, _ = _kmeans_plusplus(
+                X,
+                self.n_clusters,
+                random_state=random_state,
+                x_squared_norms=x_squared_norms,
+                sample_weight=sample_weight,
+            )
+        elif isinstance(init, str) and init == "random":
+            seeds = random_state.choice(
+                n_samples,
+                size=self.n_clusters,
+                replace=False,
+                p=sample_weight / sample_weight.sum(),
+            )
+            centers = X[seeds]
+        elif _is_arraylike_not_scalar(init):
+            centers = init
+        else:
+            raise TypeError("Unsupported type of the `init` value")
+
+        centers = _convert_to_supported(policy, centers)
+        return to_table(centers)
 
     def _fit_backend(self, X_table, centroids_table, module, policy, dtype = np.float32):
         params = self._get_onedal_params(dtype)
@@ -136,11 +169,18 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
 
         random_state = check_random_state(self.random_state)
 
+        use_custom_init = daal_check_version((2023, 'P', 200))
+
         for i in range(self._n_init):
-            random_seed = random_state.tomaxint()
-            centroids_table = self._init_centroids_raw(
-                X_table, self.init, random_seed, policy, dtype
-            )
+            if use_custom_init:
+                random_seed = random_state.tomaxint()
+                centroids_table = self._init_centroids_custom(
+                    X_table, self.init, random_seed, policy, dtype
+                )
+            else:
+                centroids_table = self._init_centroids_generic(
+                    X, self.init, random_state, policy, dtype
+                )
 
             if self.verbose:
                 print("Initialization complete")

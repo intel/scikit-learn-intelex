@@ -25,69 +25,73 @@ from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
 
-class KMeansInit:
-    """
-    KMeansInit oneDAL implementation.
-    """
-    def __init__(self,
-                 cluster_count,
-                 seed = 777,
-                 local_trials_count = None,
-                 algorithm='plus_plus_dense'):
-        self.cluster_count = cluster_count
-        self.seed = seed
-        self.local_trials_count = local_trials_count
-        self.algorithm = algorithm
 
-        if local_trials_count is None:
-            self.local_trials_count = 2 + int(np.log(cluster_count))
-        else:
+from daal4py.sklearn._utils import daal_check_version
+
+if daal_check_version((2023, 'P', 200)):
+    class KMeansInit:
+        """
+        KMeansInit oneDAL implementation.
+        """
+        def __init__(self,
+                     cluster_count,
+                     seed = 777,
+                     local_trials_count = None,
+                     algorithm='plus_plus_dense'):
+            self.cluster_count = cluster_count
+            self.seed = seed
             self.local_trials_count = local_trials_count
+            self.algorithm = algorithm
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
+            if local_trials_count is None:
+                self.local_trials_count = 2 + int(np.log(cluster_count))
+            else:
+                self.local_trials_count = local_trials_count
 
-    def _get_onedal_params(self, dtype=np.float32):
-        return {
-            'fptype': 'float' if dtype == np.float32 else 'double',
-            'local_trials_count': self.local_trials_count,
-            'method': self.algorithm, 'seed': self.seed,
-            'cluster_count': self.cluster_count,
-        }
+        def _get_policy(self, queue, *data):
+            return _get_policy(queue, *data)
 
-    def _get_params_and_input(self, X, policy):
-        X_loc = np.asarray(X)
-        types = [np.float32, np.float64]
-        if get_dtype(X_loc) not in types:
-            X_loc = X_loc.astype(np.float64)
+        def _get_onedal_params(self, dtype=np.float32):
+            return {
+                'fptype': 'float' if dtype == np.float32 else 'double',
+                'local_trials_count': self.local_trials_count,
+                'method': self.algorithm, 'seed': self.seed,
+                'cluster_count': self.cluster_count,
+            }
 
-        X_loc = _convert_to_supported(policy, X_loc)
+        def _get_params_and_input(self, X, policy):
+            X_loc = np.asarray(X)
+            types = [np.float32, np.float64]
+            if get_dtype(X_loc) not in types:
+                X_loc = X_loc.astype(np.float64)
 
-        dtype = get_dtype(X_loc)
-        params = self._get_onedal_params(dtype)
-        return (params, to_table(X_loc), dtype)
+            X_loc = _convert_to_supported(policy, X_loc)
 
-    def _compute_raw(self, X_table, module, policy, dtype = np.float32):
-        params = self._get_onedal_params(dtype)
+            dtype = get_dtype(X_loc)
+            params = self._get_onedal_params(dtype)
+            return (params, to_table(X_loc), dtype)
 
-        result = module.compute(policy, params, X_table)
+        def _compute_raw(self, X_table, module, policy, dtype = np.float32):
+            params = self._get_onedal_params(dtype)
 
-        return result.centroids
+            result = module.compute(policy, params, X_table)
 
-    def _compute(self, X, module, queue):
-        policy = self._get_policy(queue, X)
-        params, X_table, dtype = self._get_params_and_input(X, policy)
+            return result.centroids
 
-        centroids = self._compute_raw(X_table, module, policy, dtype)
+        def _compute(self, X, module, queue):
+            policy = self._get_policy(queue, X)
+            params, X_table, dtype = self._get_params_and_input(X, policy)
 
-        return from_table(centroids)
+            centroids = self._compute_raw(X_table, module, policy, dtype)
 
-    def compute_raw(self, X_table, policy, dtype = np.float32):
-        return self._compute_raw(X_table, _backend.kmeans_init.init, policy, dtype)
+            return from_table(centroids)
 
-    def compute(self, X, queue = None):
-        return self._compute(X, _backend.kmeans_init.init, queue)
+        def compute_raw(self, X_table, policy, dtype = np.float32):
+            return self._compute_raw(X_table, _backend.kmeans_init.init, policy, dtype)
 
-def kmeans_plusplus(X, n_clusters, *, x_squared_norms=None, random_state=None, n_local_trials=None, queue=None):
-    random_state = 777 if random_state is None else random_state
-    return (KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue), np.full(n_clusters, -1))
+        def compute(self, X, queue = None):
+            return self._compute(X, _backend.kmeans_init.init, queue)
+
+    def kmeans_plusplus(X, n_clusters, *, x_squared_norms=None, random_state=None, n_local_trials=None, queue=None):
+        random_state = 777 if random_state is None else random_state
+        return (KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue), np.full(n_clusters, -1))
