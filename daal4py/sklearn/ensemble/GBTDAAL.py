@@ -26,8 +26,102 @@ from sklearn.utils import check_random_state
 import daal4py as d4p
 from .._utils import getFPType
 
+class GBTDAALModel:
+    def _get_params_from_lightgbm(self, params):
+        self.n_classes_ = params["num_tree_per_iteration"]
+        self.n_features_in_ = params["max_feature_idx"] + 1
 
-class GBTDAALBase(BaseEstimator):
+    def _get_params_from_xgboost(self, params):
+        self.n_classes_ = int(params["learner"]["learner_model_param"]["num_class"])
+        self.n_features_in_ = int(params["learner"]["learner_model_param"]["num_feature"])
+
+    def _get_params_from_catboost(self, params):
+        if 'class_params' in params['model_info']:
+            self.n_classes_ = len(params['model_info']['class_params']['class_to_label'])
+        self.n_features_in_ = len(params['features_info']['float_features'])
+
+    def build_model(self, model):
+        (submodule_name, class_name) = (model.__class__.__module__, model.__class__.__name__)
+        # Build from LightGBM
+        if (submodule_name, class_name) == ("lightgbm.basic", "Booster"):
+            self.daal_model_, lgbm_params = d4p.get_gbt_model_from_lightgbm(model)
+            self._get_params_from_lightgbm(lgbm_params)
+        # Build from XGBoost
+        elif (submodule_name, class_name) == ("xgboost.core", "Booster"):
+            self.daal_model_, xgb_params = d4p.get_gbt_model_from_xgboost(model)
+            self._get_params_from_xgboost(xgb_params)
+        # Build from CatBoost
+        elif (submodule_name, class_name) == ("catboost.core", "CatBoost"):
+            self.daal_model_, catboost_params = d4p.get_gbt_model_from_catboost(model)
+            self._get_params_from_catboost(catboost_params)
+        else:
+            raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
+
+        return self
+
+    def _predict_classification(self, X, resultsToEvaluate):
+        # Check is fit had been called
+        check_is_fitted(self, ['n_features_in_', 'n_classes_'])
+
+        # Input validation
+        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError('Shape of input is different from what was seen in `fit`')
+
+        if not hasattr(self, 'daal_model_'):
+            raise ValueError((
+                "The class {} instance does not have 'daal_model_' attribute set. "
+                "Call 'fit' with appropriate arguments before using this method.").format(
+                    type(self).__name__))
+
+        # Define type of data
+        fptype = getFPType(X)
+
+        # Prediction
+        predict_algo = d4p.gbt_classification_prediction(
+            fptype=fptype,
+            nClasses=self.n_classes_,
+            resultsToEvaluate=resultsToEvaluate)
+        predict_result = predict_algo.compute(X, self.daal_model_)
+
+        if resultsToEvaluate == "computeClassLabels":
+            return predict_result.prediction.ravel().astype(np.int64, copy=False)
+        else:
+            return predict_result.probabilities
+
+    def _predict_regression(self, X):
+        # Check is fit had been called
+        check_is_fitted(self, ['n_features_in_'])
+
+        # Input validation
+        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError('Shape of input is different from what was seen in `fit`')
+
+        if not hasattr(self, 'daal_model_'):
+            raise ValueError((
+                "The class {} instance does not have 'daal_model_' attribute set. "
+                "Call 'fit' with appropriate arguments before using this method.").format(
+                    type(self).__name__))
+
+        # Define type of data
+        fptype = getFPType(X)
+
+        # Prediction
+        predict_algo = d4p.gbt_regression_prediction(fptype=fptype)
+        predict_result = predict_algo.compute(X, self.daal_model_)
+
+        return predict_result.prediction.ravel()
+
+
+    def predict(self, X, resultsToEvaluate="computeClassLabels"):
+        if isinstance(self.daal_model_, d4p.gbt_regression_model):
+            return self._predict_regression(X)
+        else:
+            return self._predict_classification(X, resultsToEvaluate)
+
+
+class GBTDAALBase(BaseEstimator, GBTDAALModel):
     def __init__(self,
                  split_method='inexact',
                  max_iterations=50,
@@ -101,54 +195,6 @@ class GBTDAALBase(BaseEstimator):
             raise ValueError('Parameter "min_bin_size" must be '
                              'non-zero positive integer value.')
 
-    def _get_params_from_lightgbm(self, params):
-        self.n_classes_ = params["num_tree_per_iteration"]
-        self.n_features_in_ = params["max_feature_idx"] + 1
-
-    def _get_params_from_xgboost(self, params):
-        self.n_classes_ = int(params["learner"]["learner_model_param"]["num_class"])
-        self.n_features_in_ = int(params["learner"]["learner_model_param"]["num_feature"])
-
-    def _get_params_from_catboost(self, params):
-        if 'class_params' in params['model_info']:
-            self.n_classes_ = len(params['model_info']['class_params']['class_to_label'])
-        self.n_features_in_ = len(params['features_info']['float_features'])
-
-    def _build_model(self, model):
-        (submodule_name, class_name) = (model.__class__.__module__, model.__class__.__name__)
-        # Build from LightGBM
-        if (submodule_name, class_name) == ("lightgbm.basic", "Booster"):
-            self.daal_model_, lgbm_params = d4p.get_gbt_model_from_lightgbm(model)
-            self._get_params_from_lightgbm(lgbm_params)
-        elif (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMRegressor"):
-            self.daal_model_, lgbm_params = d4p.get_gbt_model_from_lightgbm(model.booster_)
-            self._get_params_from_lightgbm(lgbm_params)
-        elif (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMClassifier"):
-            self.daal_model_, lgbm_params = d4p.get_gbt_model_from_lightgbm(model.booster_)
-            self._get_params_from_lightgbm(lgbm_params)
-        # Build from XGBoost
-        elif (submodule_name, class_name) == ("xgboost.core", "Booster"):
-            self.daal_model_, xgb_params = d4p.get_gbt_model_from_xgboost(model)
-            self._get_params_from_xgboost(xgb_params)
-        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBRegressor"):
-            self.daal_model_, xgb_params = d4p.get_gbt_model_from_xgboost(model.get_booster())
-            self._get_params_from_xgboost(xgb_params)
-        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBClassifier"):
-            self.daal_model_, xgb_params = d4p.get_gbt_model_from_xgboost(model.get_booster())
-            self._get_params_from_xgboost(xgb_params)
-        # Build from CatBoost
-        elif (submodule_name, class_name) == ("catboost.core", "CatBoost"):
-            self.daal_model_, catboost_params = d4p.get_gbt_model_from_catboost(model)
-            self._get_params_from_catboost(catboost_params)
-        elif (submodule_name, class_name) == ("catboost.core", "CatBoostRegressor"):
-            self.daal_model_, catboost_params = d4p.get_gbt_model_from_catboost(model)
-            self._get_params_from_catboost(catboost_params)
-        elif (submodule_name, class_name) == ("catboost.core", "CatBoostClassifier"):
-            self.daal_model_, catboost_params = d4p.get_gbt_model_from_catboost(model)
-            self._get_params_from_catboost(catboost_params)
-        else:
-            raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
-
 class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def fit(self, X, y):
         # Check the algorithm parameters
@@ -212,41 +258,18 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         return self
 
     def _predict(self, X, resultsToEvaluate):
-        # Check is fit had been called
-        check_is_fitted(self, ['n_features_in_', 'n_classes_'])
-
-        # Input validation
-        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError('Shape of input is different from what was seen in `fit`')
-
         # Trivial case
         if self.n_classes_ == 1:
             return np.full(X.shape[0], self.classes_[0])
 
-        if not hasattr(self, 'daal_model_'):
-            raise ValueError((
-                "The class {} instance does not have 'daal_model_' attribute set. "
-                "Call 'fit' with appropriate arguments before using this method.").format(
-                    type(self).__name__))
-
-        # Define type of data
-        fptype = getFPType(X)
-
-        # Prediction
-        predict_algo = d4p.gbt_classification_prediction(
-            fptype=fptype,
-            nClasses=self.n_classes_,
-            resultsToEvaluate=resultsToEvaluate)
-        predict_result = predict_algo.compute(X, self.daal_model_)
+        predict_result = self._predict_classification(X, resultsToEvaluate)
 
         if resultsToEvaluate == "computeClassLabels":
             # Decode labels
             le = preprocessing.LabelEncoder()
             le.classes_ = self.classes_
-            return le.inverse_transform(
-                predict_result.prediction.ravel().astype(np.int64, copy=False))
-        return predict_result.probabilities
+            return le.inverse_transform(predict_result)
+        return predict_result
 
     def predict(self, X):
         return self._predict(X, "computeClassLabels")
@@ -266,10 +289,23 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         return proba
 
     def build_model(self, model):
-        self._build_model(model)
-        if (isinstance(self.daal_model_, d4p.gbt_regression_model)):
-            raise TypeError(f"Can't create daal4py classification model from regression model")
+        (submodule_name, class_name) = (model.__class__.__module__, model.__class__.__name__)
+        # Build from LightGBM
+        if (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMClassifier"):
+            self.daal_model_, lgbm_params = d4p.get_gbt_model_from_lightgbm(model.booster_)
+            self._get_params_from_lightgbm(lgbm_params)
+        # Build from XGBoost
+        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBClassifier"):
+            self.daal_model_, xgb_params = d4p.get_gbt_model_from_xgboost(model.get_booster())
+            self._get_params_from_xgboost(xgb_params)
+        # Build from CatBoost
+        elif (submodule_name, class_name) == ("catboost.core", "CatBoostClassifier"):
+            self.daal_model_, catboost_params = d4p.get_gbt_model_from_catboost(model)
+            self._get_params_from_catboost(catboost_params)
+        else:
+            raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
 
+        self.classes_ = model.classes_
         return self
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
@@ -317,32 +353,21 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         return self
 
     def predict(self, X):
-        # Check is fit had been called
-        check_is_fitted(self, ['n_features_in_'])
-
-        # Input validation
-        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError('Shape of input is different from what was seen in `fit`')
-
-        if not hasattr(self, 'daal_model_'):
-            raise ValueError((
-                "The class {} instance does not have 'daal_model_' attribute set. "
-                "Call 'fit' with appropriate arguments before using this method.").format(
-                    type(self).__name__))
-
-        # Define type of data
-        fptype = getFPType(X)
-
-        # Prediction
-        predict_algo = d4p.gbt_regression_prediction(fptype=fptype)
-        predict_result = predict_algo.compute(X, self.daal_model_)
-
-        return predict_result.prediction.ravel()
+        return self._predict_regression(X)
 
     def build_model(self, model):
-        self._build_model(model)
-        if (isinstance(self.daal_model_, d4p.gbt_classification_model)):
-            raise TypeError(f"Can't create daal4py regression model from classification model")
+        (submodule_name, class_name) = (model.__class__.__module__, model.__class__.__name__)
+        # Build from LightGBM
+        if (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMRegressor"):
+            self.daal_model_, lgbm_params = d4p.get_gbt_model_from_lightgbm(model.booster_)
+            self._get_params_from_lightgbm(lgbm_params)
+        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBRegressor"):
+            self.daal_model_, xgb_params = d4p.get_gbt_model_from_xgboost(model.get_booster())
+            self._get_params_from_xgboost(xgb_params)
+        elif (submodule_name, class_name) == ("catboost.core", "CatBoostRegressor"):
+            self.daal_model_, catboost_params = d4p.get_gbt_model_from_catboost(model)
+            self._get_params_from_catboost(catboost_params)
+        else:
+            raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
 
         return self
