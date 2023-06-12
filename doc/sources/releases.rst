@@ -20,4 +20,4 @@
 Release Notes
 ############################################
 
-   The updates of Intel® Extension for Scikit-learn for each release can be found in `Release Notes for Intel® oneAPI Data Analytics Library <https://www.intel.com/content/www/us/en/developer/articles/release-notes/oneapi-dal-release-notes.html>`_.
+   The updates of Intel® Extension for Scikit-learn* for each release can be found in `Releases <https://github.com/intel/scikit-learn-intelex/releases>`_.                                                                                                                                    

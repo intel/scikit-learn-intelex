@@ -50,8 +50,9 @@ Important Links
 
 .. toctree::
    :caption: Getting Started
+   :titlesonly: 
    :hidden:
-   :maxdepth: 2
+   :maxdepth: 1
 
    gsg.rst 
    quick-start.rst
