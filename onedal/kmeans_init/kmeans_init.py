@@ -25,6 +25,7 @@ from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
 
+from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version
 
@@ -93,5 +94,5 @@ if daal_check_version((2023, 'P', 200)):
             return self._compute(X, _backend.kmeans_init.init, queue)
 
     def kmeans_plusplus(X, n_clusters, *, x_squared_norms=None, random_state=None, n_local_trials=None, queue=None):
-        random_state = 777 if random_state is None else random_state
-        return (KMeansInit(n_clusters, random_state, n_local_trials).compute(X, queue), np.full(n_clusters, -1))
+        random_seed = check_random_state(random_state).tomaxint()
+        return (KMeansInit(n_clusters, seed = random_seed, local_trials_count = n_local_trials).compute(X, queue), np.full(n_clusters, -1))

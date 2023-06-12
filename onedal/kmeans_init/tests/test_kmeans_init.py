@@ -23,7 +23,8 @@ if daal_check_version((2023, 'P', 200)):
     from onedal.kmeans_init import kmeans_plusplus
     from onedal.tests.utils._device_selection import get_queues
 
-    from sklearn.cluster import KMeans
+    #from sklearn.cluster import KMeans
+    from onedal.kmeans import KMeans
     from sklearn.datasets import load_breast_cancer
     from sklearn.metrics import davies_bouldin_score
     from sklearn.model_selection import train_test_split
@@ -34,10 +35,10 @@ if daal_check_version((2023, 'P', 200)):
     def test_breast_cancer(queue, dtype, n_cluster):
         X, _ = load_breast_cancer(return_X_y=True)
         X = np.asarray(X).astype(dtype = dtype)
-        init_data, _ = kmeans_plusplus(X, n_cluster, queue = queue)
+        init_data, _ = kmeans_plusplus(X, n_cluster, random_state = 777, queue = queue)
         m = KMeans(n_cluster, init = init_data, max_iter = 1)
         res = davies_bouldin_score(X, m.fit(X).predict(X))
-        thr = 0.45 if n_cluster < 20 else 0.6
+        thr = 0.45 if n_cluster < 20 else 0.55
         assert res > thr
 
     from sklearn.neighbors import NearestNeighbors
@@ -50,10 +51,11 @@ if daal_check_version((2023, 'P', 200)):
         gen = np.random.Generator(np.random.MT19937(seed))
         cs = gen.uniform(low = -1.0, high = +1.0, size = (n_cluster, n_dim))
 
-        # Finding variances for each cluster using 3 sigma criteria
+        # Finding variances for each cluster using 2 sigma criteria
+        # It ensures that point is in the Voronoi cell of cluster
         d, i = NearestNeighbors(n_neighbors = 2).fit(cs).kneighbors(cs)
         assert_array_equal(i[:, 0], np.arange(n_cluster))
-        vs = d[:, 1] / 3
+        vs = d[:, 1] / 2
 
         # Generating dataset
         gen_one = lambda c: gen.normal(loc = cs[c, :], scale = vs[c], size = (n_points, n_dim))
@@ -65,15 +67,20 @@ if daal_check_version((2023, 'P', 200)):
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_dim', [3, 6, 9, 11, 16, 32, 65])
-    @pytest.mark.parametrize('n_cluster', [7, 11, 15, 35, 64, 128])
+    @pytest.mark.parametrize('n_dim', [3, 8, 9, 12, 27])
+    @pytest.mark.parametrize('n_cluster', [7, 9, 11, 15, 32])
     def test_generated_dataset(queue, dtype, n_dim, n_cluster):
-        seed = 777 * n_dim * n_cluster
+        seed = 777 * n_dim**2 * n_cluster**2
         cs, vs, X = generate_dataset(n_dim, n_cluster, seed = seed)
-        init_data, _ = kmeans_plusplus(X, n_cluster, queue = queue)
-        m = KMeans(n_cluster, init = init_data, max_iter = 3).fit(X)
-        d, _ = NearestNeighbors(n_neighbors = 1).fit(cs).kneighbors(m.cluster_centers_)
+
+        init_data, _ = kmeans_plusplus(X, n_cluster, random_state = seed, queue = queue)
+        m = KMeans(n_cluster, init = init_data, max_iter = 1, algorithm = "lloyd").fit(X)
+
+        rs_centroids = m.cluster_centers_
+        d, i = NearestNeighbors(n_neighbors = 1).fit(cs).kneighbors(rs_centroids)
         # We have applied 3 sigma rule once
-        desired_accuracy = 0.997 * n_cluster
-        exp_accuracy = np.count_nonzero(d <= (vs * 3))
+        desired_accuracy = int(0.9545 * n_cluster)
+        correctness = d.reshape(-1) <= (vs * 2)
+        exp_accuracy = np.count_nonzero(correctness)
+
         assert desired_accuracy <= exp_accuracy

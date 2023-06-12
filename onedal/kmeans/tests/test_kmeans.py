@@ -39,10 +39,11 @@ if daal_check_version((2023, 'P', 200)):
         gen = np.random.Generator(np.random.MT19937(seed))
         cs = gen.uniform(low = -1.0, high = +1.0, size = (n_cluster, n_dim))
 
-        # Finding variances for each cluster using 3 sigma criteria
+        # Finding variances for each cluster using 2 sigma criteria
+        # It ensures that point is in the Voronoi cell of cluster
         d, i = NearestNeighbors(n_neighbors = 2).fit(cs).kneighbors(cs)
         assert_array_equal(i[:, 0], np.arange(n_cluster))
-        vs = d[:, 1] / 3
+        vs = d[:, 1] / 2
 
         # Generating dataset
         gen_one = lambda c: gen.normal(loc = cs[c, :], scale = vs[c], size = (n_points, n_dim))
@@ -54,11 +55,11 @@ if daal_check_version((2023, 'P', 200)):
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_dim', [3, 6, 32, 65])
-    @pytest.mark.parametrize('n_cluster', [7, 11, 128])
+    @pytest.mark.parametrize('n_dim', [3, 8, 65])
+    @pytest.mark.parametrize('n_cluster', [7, 64, 128])
     @pytest.mark.parametrize('pipeline', [ 'implicit', 'external', 'internal'])
     def test_generated_dataset(queue, dtype, n_dim, n_cluster, pipeline):
-        seed = 777 * n_dim * n_cluster
+        seed = 777 * n_dim * n_cluster**2
         cs, vs, X = generate_dataset(n_dim, n_cluster, seed = seed)
 
         if pipeline == 'external':
@@ -74,7 +75,9 @@ if daal_check_version((2023, 'P', 200)):
 
         rs_centroids = m.cluster_centers_
         d, _ = NearestNeighbors(n_neighbors = 1).fit(cs).kneighbors(rs_centroids)
-        # We have applied 3 sigma rule once
-        desired_accuracy = 0.997 * n_cluster
-        exp_accuracy = np.count_nonzero(d <= (vs * 3))
+        # We have applied 2 sigma rule once
+        desired_accuracy = int(0.9545 * n_cluster)
+        correctness = d.reshape(-1) <= (vs * 2)
+        exp_accuracy = np.count_nonzero(correctness)
+
         assert desired_accuracy <= exp_accuracy

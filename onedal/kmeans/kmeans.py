@@ -37,11 +37,34 @@ from ..common._estimator_checks import _check_is_fitted
 from ..datatypes._data_conversion import from_table, to_table
 
 from sklearn.utils import check_random_state
+from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import _is_arraylike_not_scalar
 
 from sklearn.base import (BaseEstimator, ClusterMixin, TransformerMixin)
 
 from sklearn.cluster._k_means_common import _inertia_dense
+
+def _validate_center_shape(X, n_centers, centers):
+    """Check if centers is compatible with X and n_centers"""
+    if centers.shape[0] != n_centers:
+        raise ValueError(
+            f"The shape of the initial centers {centers.shape} does not "
+            f"match the number of clusters {n_centers}.")
+    if centers.shape[1] != X.shape[1]:
+        raise ValueError(
+            f"The shape of the initial centers {centers.shape} does not "
+            f"match the number of features of the data {X.shape[1]}.")
+
+def _tolerance(X, rtol):
+    """Compute absolute tolerance from the relative tolerance"""
+    if rtol == 0.0:
+        return rtol
+    if sp.issparse(X):
+        variances = mean_variance_axis(X, axis=0)[1]
+        mean_var = np.mean(variances)
+    else:
+        mean_var = np.var(X, axis=0).mean()
+    return mean_var * rtol
 
 class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
     def __init__(self, n_clusters, *, init, n_init, max_iter, tol, verbose, random_state, n_local_trials = None):
@@ -135,10 +158,17 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
                 p=sample_weight / sample_weight.sum(),
             )
             centers = X[seeds]
+        elif callable(init):
+            cc_arr = init(X, self.n_clusters, random_state)
+            cc_arr = np.ascontiguousarray(cc_arr, dtype = dtype)
+            _validate_center_shape(X, self.n_clusters, cc_arr)
+            centers = cc_arr
         elif _is_arraylike_not_scalar(init):
             centers = init
         else:
-            raise TypeError("Unsupported type of the `init` value")
+            raise ValueError(
+                f"init should be either 'k-means++', 'random', a ndarray or a "
+                f"callable, got '{ init }' instead.")
 
         centers = _convert_to_supported(policy, centers)
         return to_table(centers)
@@ -147,7 +177,8 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         params = self._get_onedal_params(dtype)
 
         # TODO: check all features for having correct type
-        assert _backend.get_table_column_type(centroids_table, 0) == dtype
+        meta = _backend.get_table_metadata(X_table)
+        assert meta.get_npy_dtype(0) == dtype
 
         result = module.train(policy, params, X_table, centroids_table)
 
@@ -169,7 +200,7 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
 
         random_state = check_random_state(self.random_state)
 
-        use_custom_init = daal_check_version((2023, 'P', 200))
+        use_custom_init = daal_check_version((2023, 'P', 200)) and not callable(self.init)
 
         for i in range(self._n_init):
             if use_custom_init:
@@ -198,7 +229,9 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
                 best_model, best_n_iter = model, n_iter
                 best_inertia, best_labels = inertia, labels
 
+
         labels = from_table(best_labels)
+        labels = labels.reshape(-1)
         distinct_clusters = len(np.unique(labels))
         if distinct_clusters < self.n_clusters:
             warnings.warn(
@@ -244,7 +277,9 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
 
         params, X_table, dtype = self._get_params_and_input(X, policy)
 
-        return module.infer(policy, params, self.model_, X_table)
+        result = module.infer(policy, params, self.model_, X_table)
+
+        return from_table(result.responses).reshape(-1)
 
 
 class KMeans(_BaseKMeans):

@@ -14,6 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "oneapi/dal/table/common.hpp"
 #include "oneapi/dal/table/homogen.hpp"
 
 #ifdef ONEDAL_DPCTL_INTEGRATION
@@ -85,14 +86,8 @@ ONEDAL_PY_INIT_MODULE(table) {
     m.def("dpctl_to_table", [](py::object obj) {
         return convert_from_dptensor(obj);
     });
-
 #endif // ONEDAL_DPCTL_INTEGRATION
 
-    m.def("get_table_column_type", [](const dal::table& t, std::int64_t c) {
-        const auto dal_type = t.get_metadata().get_data_type(c);
-        const auto npy_type = convert_dal_to_npy_type(dal_type);
-        return pybind11::dtype(npy_type);
-    });
 }
 
 } // namespace oneapi::dal::python
