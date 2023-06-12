@@ -29,10 +29,20 @@ from .._utils import getFPType
 class GBTDAALModel:
     def _get_params_from_lightgbm(self, params):
         self.n_classes_ = params["num_tree_per_iteration"]
+        objective_fun = params["objective"]
+        if self.n_classes_ <= 2:
+            if "binary" in objective_fun:  # nClasses == 1
+                self.n_classes_ = 2
+
         self.n_features_in_ = params["max_feature_idx"] + 1
 
     def _get_params_from_xgboost(self, params):
         self.n_classes_ = int(params["learner"]["learner_model_param"]["num_class"])
+        objective_fun = params["learner"]["learner_train_param"]["objective"]
+        if self.n_classes_ <= 2:
+            if objective_fun in ["binary:logistic", "binary:logitraw"]:
+                self.n_classes_ = 2
+
         self.n_features_in_ = int(params["learner"]["learner_model_param"]["num_feature"])
 
     def _get_params_from_catboost(self, params):
@@ -57,14 +67,11 @@ class GBTDAALModel:
         else:
             raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
 
+        self.is_regression_ = isinstance(self.daal_model_, d4p.gbt_regression_model)
+
         return self
 
     def _predict_classification(self, X, resultsToEvaluate):
-        # Check is fit had been called
-        check_is_fitted(self, ['n_features_in_', 'n_classes_'])
-
-        # Input validation
-        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
         if X.shape[1] != self.n_features_in_:
             raise ValueError('Shape of input is different from what was seen in `fit`')
 
@@ -90,11 +97,6 @@ class GBTDAALModel:
             return predict_result.probabilities
 
     def _predict_regression(self, X):
-        # Check is fit had been called
-        check_is_fitted(self, ['n_features_in_'])
-
-        # Input validation
-        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
         if X.shape[1] != self.n_features_in_:
             raise ValueError('Shape of input is different from what was seen in `fit`')
 
@@ -113,13 +115,11 @@ class GBTDAALModel:
 
         return predict_result.prediction.ravel()
 
-
     def predict(self, X, resultsToEvaluate="computeClassLabels"):
-        if isinstance(self.daal_model_, d4p.gbt_regression_model):
+        if self.is_regression_:
             return self._predict_regression(X)
         else:
             return self._predict_classification(X, resultsToEvaluate)
-
 
 class GBTDAALBase(BaseEstimator, GBTDAALModel):
     def __init__(self,
@@ -258,6 +258,12 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         return self
 
     def _predict(self, X, resultsToEvaluate):
+        # Input validation
+        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+
+        # Check is fit had been called
+        check_is_fitted(self, ['n_features_in_', 'n_classes_'])
+
         # Trivial case
         if self.n_classes_ == 1:
             return np.full(X.shape[0], self.classes_[0])
@@ -353,6 +359,12 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         return self
 
     def predict(self, X):
+        # Input validation
+        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+
+        # Check is fit had been called
+        check_is_fitted(self, ['n_features_in_'])
+
         return self._predict_regression(X)
 
     def build_model(self, model):
