@@ -35,7 +35,8 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
     """
     Decision tree classifier powered by Intel(R) oneAPI Data Analytics Library.
 
-       https://www.intel.com/content/www/us/en/developer/tools/oneapi/onedal-documentation.html
+       https://www.intel.com/content/www/us/en/developer/tools/oneapi/
+       onedal-documentation.html
 
     Parameters
     ----------
@@ -165,7 +166,8 @@ class DecisionTreeClassifier(BaseEstimator, ClassifierMixin):
             Fitted estimator.
 
 
-        [1] https://www.intel.com/content/www/us/en/developer/tools/oneapi/onedal-documentation.html
+        [1] https://www.intel.com/content/www/us/en/developer/tools/oneapi/
+        onedal-documentation.html
         """
 
         if self.split_criterion not in ('gini', 'infoGain'):
