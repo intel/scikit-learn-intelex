@@ -1,11 +1,13 @@
 {
+  "dependencyDashboard": false,
   "extends": [
     "config:base",
     ":preserveSemverRanges"
   ],
   "pip_requirements": {
     "fileMatch": [
-      "(^|/)requirements.*\\.txt$"
+      "(^|/)requirements.*\\.txt$",
+      "(^|/)dependencies-dev$"
     ]
   },
   "packageRules": [
@@ -18,10 +20,7 @@
       "schedule": ["before 2am on monday"]
     },
     {
-      "fileMatch": [
-        "(^|/)requirements.*\\.txt$",
-        "!requirements-doc.txt"
-      ],
+      "ignorePaths": ["(^|/)requirements-doc.txt$"],
       "groupName": null,
       "schedule": "at any time"
     }
