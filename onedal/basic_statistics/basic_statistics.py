@@ -61,6 +61,16 @@ class BaseBasicStatistics(metaclass=ABCMeta):
             'method': self.algorithm, 'result_option': options,
         }
 
+    def _compute_raw(self, data_table, weights_table, module, policy, dtype = np.float32):
+        params = self._get_onedal_params(dtype)
+
+        result = module.train(policy, params, data_table, weights_table)
+
+        options = self._get_result_options(self.options)
+        options = options.split("|")
+
+        return {opt: getattr(result, opt) for opt in options}
+
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
@@ -69,15 +79,11 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         data_loc, weights_loc = _convert_to_supported(
             policy, data_loc, weights_loc)
 
-        params = self._get_onedal_params(data_loc.dtype)
         data_table, weights_table = to_table(data_loc, weights_loc)
 
-        result = module.train(policy, params, data_table, weights_table)
-
-        options = self._get_result_options(self.options)
-        options = options.split("|")
-
-        res = {opt: getattr(result, opt) for opt in options}
+        dtype = data_loc.dtype
+        res = self._compute_raw(data_table, weights_table,
+                                    module, policy, dtype)
 
         return {k: from_table(v).ravel() for k, v in res.items()}
 
@@ -97,3 +103,7 @@ class BasicStatistics(BaseBasicStatistics):
 
     def compute(self, data, weights=None, queue=None):
         return super()._compute(data, weights, _backend.basic_statistics.compute, queue)
+
+    def compute_raw(self, data_table, weights_table, policy, dtype = np.float32):
+        return super()._compute_raw(data_table, weights_table,
+                _backend.basic_statistics.compute, policy, dtype)

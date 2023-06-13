@@ -67,14 +67,14 @@ if daal_check_version((2023, 'P', 200)):
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_dim', [3, 8, 9, 12, 27])
-    @pytest.mark.parametrize('n_cluster', [7, 9, 11, 15, 32])
+    @pytest.mark.parametrize('n_dim', [3, 5, 8, 9, 12, 27, 64])
+    @pytest.mark.parametrize('n_cluster', [2, 7, 9, 11, 15, 32])
     def test_generated_dataset(queue, dtype, n_dim, n_cluster):
         seed = 777 * n_dim**2 * n_cluster**2
         cs, vs, X = generate_dataset(n_dim, n_cluster, seed = seed)
 
         init_data, _ = kmeans_plusplus(X, n_cluster, random_state = seed, queue = queue)
-        m = KMeans(n_cluster, init = init_data, max_iter = 1, algorithm = "lloyd").fit(X)
+        m = KMeans(n_cluster, init = init_data, max_iter = 3, algorithm = "lloyd").fit(X)
 
         rs_centroids = m.cluster_centers_
         d, i = NearestNeighbors(n_neighbors = 1).fit(cs).kneighbors(rs_centroids)

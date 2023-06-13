@@ -67,6 +67,11 @@ ONEDAL_PY_INIT_MODULE(table) {
         }
         return "unknown";
     });
+    table_obj.def_property_readonly("shape", [](const table& t) {
+        const auto row_count = t.get_row_count();
+        const auto column_count = t.get_column_count();
+        return py::make_tuple(row_count, column_count);
+    });
 
 #ifdef ONEDAL_DPCTL_INTEGRATION
     define_sycl_usm_array_property(table_obj);
