@@ -75,6 +75,7 @@ def _check_estimator(estimator, skip_list):
         if check.func.__name__ not in skip_list:
             check(estimator)
 
+
 class Test(unittest.TestCase):
     def test_GBTDAALClassifier(self):
         _check_estimator(GBTDAALClassifier(), skip_list="check_estimators_nan_inf")
