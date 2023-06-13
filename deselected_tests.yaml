@@ -631,3 +631,19 @@ gpu:
   - model_selection/tests/test_validation.py::test_validation_curve_cv_splits_consistency
   - model_selection/tests/test_search.py::test_grid_search_cv_results
   - model_selection/tests/test_search.py::test_random_search_cv_results
+
+  # KMeans based (unsupported for GPU)
+  - cluster/tests/test_k_means.py
+  - tests/test_common.py::test_estimators[KMeans()
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_check_is_fitted]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_check_is_fitted]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[BayesianGaussianMixture()]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[GaussianMixture()]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[KMeans()]
+  - tests/test_common.py::test_set_output_transform[KMeans()]
+  - tests/test_common.py::test_set_output_transform_pandas[KMeans()]
+  - tests/test_common.py::test_global_output_transform_pandas[KMeans()]
+  - mixture/tests/test_gaussian_mixture.py
+  - model_selection/tests/test_validation.py::test_cross_val_predict
+  - metrics/tests/test_score_objects.py::test_supervised_cluster_scorers
+  - tests/test_pipeline.py::test_fit_predict_on_pipeline
