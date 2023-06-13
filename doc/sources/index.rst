@@ -80,9 +80,9 @@ Important Links
    :hidden:
    :maxdepth: 2
 
+   installation.rst
    System Requirements <system-requirements.rst>
    memory-requirements.rst
-   installation.rst  
 
 .. toctree::
    :caption: Examples
