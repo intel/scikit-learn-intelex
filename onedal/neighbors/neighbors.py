@@ -135,7 +135,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             'metric': self.effective_metric_,
             'p': self.p,
             'metric_params': self.effective_metric_params_,
-            'result_option': 'indices|distances|responses',
+            'result_option': 'indices|distances' if y is None else 'responses',
         }
 
     def _get_daal_params(self, data):
