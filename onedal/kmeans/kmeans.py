@@ -40,7 +40,7 @@ from ..datatypes._data_conversion import from_table, to_table
 
 from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils import check_random_state, check_array
-from sklearn.utils.validation import _is_arraylike_not_scalar
+from sklearn.utils.validation import _is_arraylike_not_scalar, check_is_fitted
 
 from sklearn.base import (BaseEstimator, ClusterMixin, TransformerMixin)
 
@@ -54,7 +54,6 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         self.tol = tol
         self.n_init = n_init
         self.verbose = verbose
-        self._cluster_centers_ = None
         self.random_state = random_state
         self.n_local_trials = n_local_trials
 
@@ -221,6 +220,8 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         policy = self._get_policy(queue, X)
         params, X_table, dtype = self._get_params_and_input(X, policy)
 
+        self.n_features_in_ = X_table.column_count
+
         best_model, best_n_iter = None, None
         best_inertia, best_labels = None, None
 
@@ -289,10 +290,9 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
 
     def _get_cluster_centers(self):
         if not hasattr(self, "_cluster_centers_"):
-            return self._cluster_centers_
             if hasattr(self, "model_"):
                 centroids = self.model_.centroids
-                self._cluster_centers_ = to_table(centroids)
+                self._cluster_centers_ = from_table(centroids)
             else:
                 raise NameError("This model have not been trained")
         return self._cluster_centers_
@@ -305,6 +305,7 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
 
         self.model_ = module.model()
         self.model_.centroids = to_table(self._cluster_centers_)
+        self.n_features_in_ = self.model_.centroids.column_count
 
         return self
 
@@ -318,11 +319,16 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         return from_table(result.responses).reshape(-1)
 
     def _predict(self, X, module, queue = None):
+        check_is_fitted(self)
+
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         X_table, dtype = to_table(X), X.dtype
 
         return self._predict_raw(X_table, module, policy, dtype)
+
+    def _transform(self, X):
+        return euclidean_distances(X, self.cluster_centers_)
 
 
 class KMeans(_BaseKMeans):
@@ -356,7 +362,79 @@ class KMeans(_BaseKMeans):
         return super()._fit(X, _backend.kmeans.clustering, queue)
 
     def predict(self, X, queue = None):
+        """Predict the closest cluster each sample in X belongs to.
+
+        In the vector quantization literature, `cluster_centers_` is called
+        the code book and each value returned by `predict` is the index of
+        the closest code in the code book.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            New data to predict.
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
+        """
         return super()._predict(X, _backend.kmeans.clustering, queue)
+
+    def fit_predict(self, X, queue = None):
+        """Compute cluster centers and predict cluster index for each sample.
+
+        Convenience method; equivalent to calling fit(X) followed by
+        predict(X).
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            New data to transform.
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
+        """
+        return self.fit(X, queue).labels_
+
+    def fit_transform(self, X, queue = None):
+        """Compute clustering and transform X to cluster-distance space.
+
+        Equivalent to fit(X).transform(X), but more efficiently implemented.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            New data to transform.
+
+        Returns
+        -------
+        X_new : ndarray of shape (n_samples, n_clusters)
+            X transformed in the new space.
+        """
+        return self.fit(X, queue = queue)._transform(X)
+
+    def transform(self, X):
+        """Transform X to a cluster-distance space.
+
+        In the new space, each dimension is the distance to the cluster
+        centers. Note that even if X is sparse, the array returned by
+        `transform` will typically be dense.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            New data to transform.
+
+        Returns
+        -------
+        X_new : ndarray of shape (n_samples, n_clusters)
+            X transformed in the new space.
+        """
+        check_is_fitted(self)
+
+        return self._transform(X)
 
 
 def k_means(

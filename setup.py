@@ -447,7 +447,8 @@ if ONEDAL_VERSION >= 20230100:
 
 if ONEDAL_VERSION >= 20230200:
     packages_with_tests += [
-        'onedal.kmeans_init']
+        'onedal.kmeans_init',
+        'onedal.kmeans']
 
 if build_distribute:
     packages_with_tests += [
@@ -459,6 +460,9 @@ if build_distribute:
             'onedal.spmd.basic_statistics',
             'onedal.spmd.linear_model',
             'onedal.spmd.neighbors']
+    if ONEDAL_VERSION >= 20230200:
+        packages_with_tests += [
+            'onedal.spmd.cluster']
 
 setup(
     name="daal4py",
