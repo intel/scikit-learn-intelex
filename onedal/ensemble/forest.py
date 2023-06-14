@@ -533,7 +533,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                  voting_mode='weighted',
                  error_metric_mode='none',
                  variable_importance_mode='none',
-                 algorithm='dense',
+                 algorithm='hist',
                  **kwargs):
         super().__init__(
             n_estimators=n_estimators,
