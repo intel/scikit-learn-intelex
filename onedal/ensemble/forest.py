@@ -308,12 +308,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     def _get_sample_weight(self, sample_weight, X):
         n_samples = X.shape[0]
         dtype = X.dtype
-        #if n_samples == 1:
-        #    raise ValueError("n_samples=1")
 
-        #sample_weight = np.asarray([]
-        #                           if sample_weight is None
-        #                           else sample_weight, dtype=dtype)
         sample_weight = np.asarray(sample_weight, dtype=dtype).ravel()
 
         if sample_weight.size != X.shape[0]:
@@ -323,23 +318,11 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                              "boolean masks (use `indices=True` in CV)."
                              % (sample_weight.shape, X.shape))
 
+        sample_weight = _check_array(
+            sample_weight, accept_sparse=False, ensure_2d=False,
+            dtype=dtype, order="C"
+        )
 
-        #if sample_weight_count == 0:
-        #    sample_weight = np.ones(n_samples, dtype=dtype)
-        #elif isinstance(sample_weight, Number):
-        #    sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
-        #else:
-        if True:
-            sample_weight = _check_array(
-                sample_weight, accept_sparse=False, ensure_2d=False,
-                dtype=dtype, order="C"
-            )
-            #if sample_weight.ndim != 1:
-            #    raise ValueError("Sample weights must be 1D array or scalar")
-
-            #if sample_weight.shape != (n_samples,):
-            #    raise ValueError("sample_weight.shape == {}, expected {}!"
-            #                     .format(sample_weight.shape, (n_samples,)))
         return sample_weight
 
     def _get_policy(self, queue, *data):
@@ -357,7 +340,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         data = [X, y]
 
-        if(sample_weight is not None and len(sample_weight > 0)):
+        if(sample_weight is not None and len(sample_weight) > 0):
             sample_weight = self._get_sample_weight(sample_weight, X)
             data.append(sample_weight)
 
