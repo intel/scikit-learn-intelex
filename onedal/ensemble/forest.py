@@ -317,7 +317,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         sample_weight = _check_array(
             sample_weight, accept_sparse=False, ensure_2d=False,
-            dtype=dtype, order="C"
+            dtype=X.dtype, order="C"
         )
 
         return sample_weight
