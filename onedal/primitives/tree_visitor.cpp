@@ -93,7 +93,7 @@ public:
     std::size_t leaf_count;
     std::size_t class_count;
 
-    tree_state_py(tree_state inp){
+    tree_state_py(tree_state<T> inp){
         this->max_depth = inp.max_depth;
         this->node_count = inp.node_count;        
         this->leaf_count = inp.leaf_count;
