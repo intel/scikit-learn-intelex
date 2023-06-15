@@ -705,3 +705,8 @@ gpu:
   - tests/test_pipeline.py::test_feature_union_set_output
   - tests/test_parallel.py::test_dispatch_config_parallel[1]
   - tests/test_parallel.py::test_dispatch_config_parallel[2]
+  # KD Tree (not implemented for GPU)
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-50-500-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-100-1000-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-50-500-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-100-1000-l2-1000-5-100]
