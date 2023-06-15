@@ -305,40 +305,41 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
-    def _get_sample_weight(self, X, y, sample_weight):
+    def _get_sample_weight(self, sample_weight, X):
         n_samples = X.shape[0]
         dtype = X.dtype
-        if n_samples == 1:
-            raise ValueError("n_samples=1")
+        #if n_samples == 1:
+        #    raise ValueError("n_samples=1")
 
-        sample_weight = np.asarray([]
-                                   if sample_weight is None
-                                   else sample_weight, dtype=dtype)
-        sample_weight = sample_weight.ravel()
+        #sample_weight = np.asarray([]
+        #                           if sample_weight is None
+        #                           else sample_weight, dtype=dtype)
+        sample_weight = np.asarray(sample_weight, dtype=dtype).ravel()
 
-        sample_weight_count = sample_weight.shape[0]
-        if sample_weight_count != 0 and sample_weight_count != n_samples:
+        if sample_weight.size != X.shape[0]:
             raise ValueError("sample_weight and X have incompatible shapes: "
                              "%r vs %r\n"
                              "Note: Sparse matrices cannot be indexed w/"
                              "boolean masks (use `indices=True` in CV)."
-                             % (len(sample_weight), X.shape))
+                             % (sample_weight.shape, X.shape))
 
-        if sample_weight_count == 0:
-            sample_weight = np.ones(n_samples, dtype=dtype)
-        elif isinstance(sample_weight, Number):
-            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
-        else:
+
+        #if sample_weight_count == 0:
+        #    sample_weight = np.ones(n_samples, dtype=dtype)
+        #elif isinstance(sample_weight, Number):
+        #    sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
+        #else:
+        if True:
             sample_weight = _check_array(
                 sample_weight, accept_sparse=False, ensure_2d=False,
                 dtype=dtype, order="C"
             )
-            if sample_weight.ndim != 1:
-                raise ValueError("Sample weights must be 1D array or scalar")
+            #if sample_weight.ndim != 1:
+            #    raise ValueError("Sample weights must be 1D array or scalar")
 
-            if sample_weight.shape != (n_samples,):
-                raise ValueError("sample_weight.shape == {}, expected {}!"
-                                 .format(sample_weight.shape, (n_samples,)))
+            #if sample_weight.shape != (n_samples,):
+            #    raise ValueError("sample_weight.shape == {}, expected {}!"
+            #                     .format(sample_weight.shape, (n_samples,)))
         return sample_weight
 
     def _get_policy(self, queue, *data):
@@ -349,17 +350,25 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             X, y, dtype=[np.float64, np.float32],
             force_all_finite=True, accept_sparse='csr')
         y = self._validate_targets(y, X.dtype)
-        sample_weight = self._get_sample_weight(X, y, sample_weight)
 
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version('1.0'):
             self.n_features_ = self.n_features_in_
-        policy = self._get_policy(queue, X, y, sample_weight)
 
-        X, y, sample_weight = _convert_to_supported(policy, X, y, sample_weight)
+        data = [X, y]
+
+        if(sample_weight is not None and len(sample_weight > 0)):
+            sample_weight = self._get_sample_weight(sample_weight, X)
+            data.append(sample_weight)
+
+
+        policy = self._get_policy(queue, *data)
+
+        #pass as *data
+        data = _convert_to_supported(policy, *data)
         params = self._get_onedal_params(X)
         train_result = module.train(
-            policy, params, *to_table(X, y, sample_weight))
+            policy, params, *to_table(*data))
         self._onedal_model = train_result.model
 
         if self.oob_score:
