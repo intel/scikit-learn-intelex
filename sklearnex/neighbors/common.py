@@ -127,7 +127,6 @@ class KNeighborsDispatchingBase:
             self.n_samples_fit_ = X.data.shape[0]
             self.n_features_in_ = X.data.shape[1]
 
-
     def _onedal_supported(self, device, method_name, *data):
         class_name = self.__class__.__name__
         is_classifier = 'Classifier' in class_name
