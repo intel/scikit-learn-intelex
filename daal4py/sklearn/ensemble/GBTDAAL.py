@@ -26,6 +26,7 @@ from sklearn.utils import check_random_state
 import daal4py as d4p
 from .._utils import getFPType
 
+
 class GBTDAALBase(BaseEstimator, d4p.GBTDAALModel):
     def __init__(self,
                  split_method='inexact',
