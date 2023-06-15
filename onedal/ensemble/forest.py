@@ -306,10 +306,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
     def _get_sample_weight(self, sample_weight, X):
-        n_samples = X.shape[0]
-        dtype = X.dtype
-
-        sample_weight = np.asarray(sample_weight, dtype=dtype).ravel()
+        sample_weight = np.asarray(sample_weight, dtype=X.dtype).ravel()
 
         if sample_weight.size != X.shape[0]:
             raise ValueError("sample_weight and X have incompatible shapes: "
@@ -340,10 +337,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         data = [X, y]
 
-        if(sample_weight is not None and len(sample_weight) > 0):
+        if sample_weight is not None and len(sample_weight) > 0:
             sample_weight = self._get_sample_weight(sample_weight, X)
             data.append(sample_weight)
-
 
         policy = self._get_policy(queue, *data)
 
