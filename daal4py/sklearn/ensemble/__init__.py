@@ -16,8 +16,8 @@
 #===============================================================================
 
 from ._forest import (RandomForestClassifier, RandomForestRegressor)
-from .GBTDAAL import (GBTDAALModel, GBTDAALClassifier, GBTDAALRegressor)
+from .GBTDAAL import (GBTDAALClassifier, GBTDAALRegressor)
 from .AdaBoostClassifier import AdaBoostClassifier
 
-__all__ = ['RandomForestClassifier', 'RandomForestRegressor', 'GBTDAALModel',
+__all__ = ['RandomForestClassifier', 'RandomForestRegressor', 
            'GBTDAALClassifier', 'GBTDAALRegressor', 'AdaBoostClassifier']
