@@ -282,7 +282,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
             'weights': self.weights,
             'algorithm': self.algorithm,
             'metric': self.effective_metric_,
-            'p': self.p,
+            'p': self.effective_metric_params_['p'],
         }
 
         try:

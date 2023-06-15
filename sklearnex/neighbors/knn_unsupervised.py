@@ -231,7 +231,7 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
             'n_neighbors': self.n_neighbors,
             'algorithm': self.algorithm,
             'metric': self.effective_metric_,
-            'p': self.p,
+            'p': self.effective_metric_params_['p'],
         }
 
         try:

@@ -89,10 +89,8 @@ class KNeighborsDispatchingBase:
                 self.effective_metric_ = origin
                 break
         if self.effective_metric_ == 'manhattan':
-            self.p = 1
             self.effective_metric_params_['p'] = 1
         elif self.effective_metric_ == 'euclidean':
-            self.p = 2
             self.effective_metric_params_['p'] = 2
 
         onedal_brute_metrics = [
