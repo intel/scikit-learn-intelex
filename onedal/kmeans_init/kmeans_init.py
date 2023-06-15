@@ -81,7 +81,7 @@ if daal_check_version((2023, 'P', 200)):
 
         def _compute(self, X, module, queue):
             policy = self._get_policy(queue, X)
-            params, X_table, dtype = self._get_params_and_input(X, policy)
+            _, X_table, dtype = self._get_params_and_input(X, policy)
 
             centroids = self._compute_raw(X_table, module, policy, dtype)
 

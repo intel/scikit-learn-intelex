@@ -19,8 +19,6 @@ from daal4py.sklearn._utils import daal_check_version
 import logging
 
 if daal_check_version((2023, 'P', 200)):
-
-    logging.warning("!"* 160)
     import numpy as np
     from scipy.sparse import issparse
 
@@ -38,6 +36,8 @@ if daal_check_version((2023, 'P', 200)):
         check_is_fitted,
         _num_samples,
         _deprecate_positional_args)
+
+    from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
 
     class KMeans(sklearn_KMeans, BaseKMeans):
         __doc__ = sklearn_KMeans.__doc__
@@ -140,6 +140,9 @@ if daal_check_version((2023, 'P', 200)):
                 'verbose': self.verbose,
                 'random_state': self.random_state,
             }
+
+            print("!"*16, onedal_params)
+
             self._onedal_estimator = onedal_KMeans(**onedal_params)
 
         def _onedal_fit_supported(self, method_name, *data):
@@ -154,8 +157,6 @@ if daal_check_version((2023, 'P', 200)):
 
             supported_algs = ["auto", "full", "lloyd"]
 
-            print("Is sparse: ", issparse(self.init))
-
             dal_ready = patching_status.and_conditions([
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
                 (not issparse(self.init), 'Sparse init values are not supported'),
@@ -166,6 +167,7 @@ if daal_check_version((2023, 'P', 200)):
             return patching_status.get_status(logs=True)
 
         def fit(self, X, y=None, sample_weight=None):
+            print("!" * 80)
             """Compute k-means clustering.
 
             Parameters
@@ -199,6 +201,8 @@ if daal_check_version((2023, 'P', 200)):
         def _onedal_fit(self, X, y, sample_weight, queue = None):
             assert sample_weight is None
 
+            self._n_threads = _openmp_effective_n_threads()
+
             self._initialize_onedal_estimator()
             self._onedal_estimator.fit(X, queue = queue)
 
@@ -214,7 +218,9 @@ if daal_check_version((2023, 'P', 200)):
             patching_status = PatchingConditionsChain(
                 f'sklearn.cluster.{class_name}.predict')
 
+            supported_algs = ["auto", "full", "lloyd"]
             dal_ready = patching_status.and_conditions([
+                (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
                 (not issparse(X), 'Sparse input is not supported.')
             ])
 

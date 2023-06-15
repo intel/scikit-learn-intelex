@@ -44,7 +44,7 @@ from sklearn.utils.validation import _is_arraylike_not_scalar, check_is_fitted
 
 from sklearn.base import (BaseEstimator, ClusterMixin, TransformerMixin)
 
-from sklearn.cluster._k_means_common import _inertia_dense
+from sklearn.cluster._k_means_common import _is_same_clustering
 
 class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
     def __init__(self, n_clusters, *, init, n_init, max_iter, tol, verbose, random_state, n_local_trials = None):
@@ -143,7 +143,7 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         dtype = get_dtype(X_loc)
         X_table = to_table(X_loc)
 
-        self._check_params_vs_input(X_table, policy, dtype)
+        self._check_params_vs_input(X_table, policy, dtype = dtype)
 
         params = self._get_onedal_params(dtype)
 
@@ -225,11 +225,16 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
         best_model, best_n_iter = None, None
         best_inertia, best_labels = None, None
 
-        def is_best_inertia(inertia, labels):
+        def is_better_iteration(inertia, labels):
+            curr_labels = from_table(labels).ravel()
             if best_inertia is None:
-                return True
+                return (True, curr_labels)
             else:
-                return inertia < best_inertia
+                better_inertia = inertia < best_inertia
+                same_clusters = _is_same_clustering(
+                    curr_labels, best_labels, self.n_clusters)
+                check = better_inertia and not same_clusters
+                return (check, curr_labels)
 
         random_state = check_random_state(self.random_state)
 
@@ -243,7 +248,8 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
 
         for i in range(self._n_init):
             if use_custom_init:
-                random_seed = random_state.tomaxint()
+                #random_seed = random_state.tomaxint()
+                random_seed = random_state.randint(np.iinfo('i').max)
                 centroids_table = self._init_centroids_custom(
                     X_table, init, random_seed, policy, dtype = dtype
                 )
@@ -264,14 +270,13 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
                       "inertia {}.".format(inertia)
                 )
 
-            if is_best_inertia(inertia, labels):
+            check, labels = is_better_iteration(inertia, labels)
+
+            if check:
                 best_model, best_n_iter = model, n_iter
                 best_inertia, best_labels = inertia, labels
 
-
-        labels = from_table(best_labels)
-        labels = labels.reshape(-1)
-        distinct_clusters = len(np.unique(labels))
+        distinct_clusters = len(np.unique(best_labels))
         if distinct_clusters < self.n_clusters:
             warnings.warn(
                 "Number of distinct clusters ({}) found smaller than "
@@ -281,9 +286,10 @@ class _BaseKMeans(ClusterMixin, BaseEstimator, ABC):
                 stacklevel=2,
             )
 
-        self.labels_ = labels
+
         self.model_ = best_model
         self.n_iter_ = best_n_iter
+        self.labels_ = best_labels
         self.inertia_ = best_inertia
 
         return self
