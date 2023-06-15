@@ -18,6 +18,8 @@
 # The model builder object is retrieved through calling model_builder.
 # We will extend this once we know how other model builders will work in DAAL
 
+import json
+
 cdef extern from "gbt_model_builder.h":
     ctypedef size_t c_gbt_clf_node_id
     ctypedef size_t c_gbt_clf_tree_id
@@ -179,3 +181,107 @@ def gbt_reg_model_builder(n_features, n_iterations):
     :param size_t n_iterations: Number of trees in the model
     '''
     return gbt_regression_model_builder(n_features, n_iterations)
+
+
+class GBTDAALModel:
+    def _get_params_from_lightgbm(self, params):
+        self.n_classes_ = params["num_tree_per_iteration"]
+        objective_fun = params["objective"]
+        if self.n_classes_ <= 2:
+            if "binary" in objective_fun:  # nClasses == 1
+                self.n_classes_ = 2
+
+        self.n_features_in_ = params["max_feature_idx"] + 1
+
+    def _get_params_from_xgboost(self, params):
+        self.n_classes_ = int(params["learner"]["learner_model_param"]["num_class"])
+        objective_fun = params["learner"]["learner_train_param"]["objective"]
+        if self.n_classes_ <= 2:
+            if objective_fun in ["binary:logistic", "binary:logitraw"]:
+                self.n_classes_ = 2
+
+        self.n_features_in_ = int(params["learner"]["learner_model_param"]["num_feature"])
+
+    def _get_params_from_catboost(self, params):
+        if 'class_params' in params['model_info']:
+            self.n_classes_ = len(params['model_info']['class_params']['class_to_label'])
+        self.n_features_in_ = len(params['features_info']['float_features'])
+
+    def _build_model_from_lightgbm(self, booster):
+        lgbm_params = get_lightgbm_params(booster)
+        self.daal_model_ = get_gbt_model_from_lightgbm(booster, lgbm_params)
+        self._get_params_from_lightgbm(lgbm_params)
+
+    def _build_model_from_xgboost(self, booster):
+        xgb_params = get_xgboost_params(booster)
+        self.daal_model_ = get_gbt_model_from_xgboost(booster, xgb_params)
+        self._get_params_from_xgboost(xgb_params)
+
+    def _build_model_from_catboost(self, booster):
+        catboost_params = get_catboost_params(booster)
+        self.daal_model_ = get_gbt_model_from_catboost(booster)
+        self._get_params_from_catboost(catboost_params)
+
+
+    def build_model(self, model):
+        (submodule_name, class_name) = (model.__class__.__module__,
+                                        model.__class__.__name__)
+        # Build from LightGBM
+        if (submodule_name, class_name) == ("lightgbm.basic", "Booster"):
+            self._build_model_from_lightgbm(model)
+        # Build from XGBoost
+        elif (submodule_name, class_name) == ("xgboost.core", "Booster"):
+            self._build_model_from_xgboost(model)
+        # Build from CatBoost
+        elif (submodule_name, class_name) == ("catboost.core", "CatBoost"):
+            self._build_model_from_catboost(model)
+        else:
+            raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
+
+        self.is_regression_ = isinstance(self.daal_model_, gbt_regression_model)
+
+        return self
+
+    def _predict_classification(self, X, fptype, resultsToEvaluate):
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError('Shape of input is different from what was seen in `fit`')
+
+        if not hasattr(self, 'daal_model_'):
+            raise ValueError((
+                "The class {} instance does not have 'daal_model_' attribute set. "
+                "Call 'fit' with appropriate arguments before using this method.").format(
+                    type(self).__name__))
+
+        # Prediction
+        predict_algo = gbt_classification_prediction(
+            fptype=fptype,
+            nClasses=self.n_classes_,
+            resultsToEvaluate=resultsToEvaluate)
+        predict_result = predict_algo.compute(X, self.daal_model_)
+
+        if resultsToEvaluate == "computeClassLabels":
+            return predict_result.prediction.ravel().astype(np.int64, copy=False)
+        else:
+            return predict_result.probabilities
+
+    def _predict_regression(self, X, fptype):
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError('Shape of input is different from what was seen in `fit`')
+
+        if not hasattr(self, 'daal_model_'):
+            raise ValueError((
+                "The class {} instance does not have 'daal_model_' attribute set. "
+                "Call 'fit' with appropriate arguments before using this method.").format(
+                    type(self).__name__))
+
+        # Prediction
+        predict_algo = gbt_regression_prediction(fptype=fptype)
+        predict_result = predict_algo.compute(X, self.daal_model_)
+
+        return predict_result.prediction.ravel()
+
+    def predict(self, X, fptype="float", resultsToEvaluate="computeClassLabels"):
+        if self.is_regression_:
+            return self._predict_regression(X, fptype)
+        else:
+            return self._predict_classification(X, fptype, resultsToEvaluate)
