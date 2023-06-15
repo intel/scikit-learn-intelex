@@ -86,8 +86,8 @@ struct tree_state {
 template <typename T>
 class tree_state_py {
 public:
-    py::array<skl_tree_node> node_ar;
-    py::array<double> value_ar;
+    py::array_t<skl_tree_node> node_ar;
+    py::array_t<double> value_ar;
     std::size_t max_depth;
     std::size_t node_count;
     std::size_t leaf_count;
@@ -185,8 +185,8 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t
     this->leaf_count = _n_leafs;
     this->class_count = _max_n_classes;
     OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, this->node_count, this->class_count);
-    this->node_ar = new skl_tree_node[node_count];
-    this->value_ar = new double[node_count*1*class_count](); // oneDAL only supports scalar responses for now
+    this->node_ar = new skl_tree_node[this->node_count];
+    this->value_ar = new double[this->node_count*1*this->class_count](); // oneDAL only supports scalar responses for now
 
 }
 
@@ -195,21 +195,21 @@ bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>&
     if (info.get_level() > 0) {
         // has parents
         Py_ssize_t parent = parents[info.get_level() - 1];
-        if (node_ar_ptr[parent].left_child > 0) {
-            assert(node_ar[node_id].right_child < 0);
-            node_ar[parent].right_child = node_id;
+        if (this->node_ar[parent].left_child > 0) {
+            assert(this->node_ar[node_id].right_child < 0);
+            this->node_ar[parent].right_child = node_id;
         }
         else {
-            node_ar[parent].left_child = node_id;
+            this->node_ar[parent].left_child = node_id;
         }
     }
     parents[info.get_level()] = node_id;
-    node_ar[node_id].feature = info.get_feature_index();
-    node_ar[node_id].threshold = info.get_feature_value();
-    node_ar[node_id].impurity = info.get_impurity();
-    node_ar[node_id].n_node_samples = info.get_sample_count();
-    node_ar[node_id].weighted_n_node_samples = info.get_sample_count();
-    node_ar[node_id].missing_go_to_left = false;
+    this->node_ar[node_id].feature = info.get_feature_index();
+    this->node_ar[node_id].threshold = info.get_feature_value();
+    this->node_ar[node_id].impurity = info.get_impurity();
+    this->node_ar[node_id].n_node_samples = info.get_sample_count();
+    this->node_ar[node_id].weighted_n_node_samples = info.get_sample_count();
+    this->node_ar[node_id].missing_go_to_left = false;
 
     // wrap-up
     ++node_id;
@@ -222,19 +222,19 @@ void to_sklearn_tree_object_visitor<Task>::_onLeafNode(const df::leaf_node_info<
 
     if (info.get_level()) {
         Py_ssize_t parent = parents[info.get_level() - 1];
-        if (node_ar[parent].left_child > 0) {
-            assert(node_ar[node_id].right_child < 0);
-            node_ar[parent].right_child = node_id;
+        if (this->node_ar[parent].left_child > 0) {
+            assert(this->node_ar[node_id].right_child < 0);
+            this->node_ar[parent].right_child = node_id;
         }
         else {
-            node_ar[parent].left_child = node_id;
+            this->node_ar[parent].left_child = node_id;
         }
     }
 
-    node_ar[node_id].impurity = info.get_impurity();
-    node_ar[node_id].n_node_samples = info.get_sample_count();
-    node_ar[node_id].weighted_n_node_samples = info.get_sample_count();
-    node_ar[node_id].missing_go_to_left = false;
+    this->node_ar[node_id].impurity = info.get_impurity();
+    this->node_ar[node_id].n_node_samples = info.get_sample_count();
+    this->node_ar[node_id].weighted_n_node_samples = info.get_sample_count();
+    this->node_ar[node_id].missing_go_to_left = false;
 }
 
 template <>
@@ -243,7 +243,7 @@ bool to_sklearn_tree_object_visitor<df::task::regression>::call(
     _onLeafNode(info);
     OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, node_id, class_count);
 
-    value_ar[node_id * 1 * this->class_count] = info.get_response();
+    this->value_ar[node_id * 1 * this->class_count] = info.get_response();
 
     // wrap-up
     ++node_id;
@@ -261,7 +261,7 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
             OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, id, this->class_count);
             const auto row = id * 1 * this->class_count;
             OVERFLOW_CHECK_BY_ADDING(std::size_t, row, info.get_response());
-            value_ar[row + info.get_response()] += info.get_sample_count();
+            this->value_ar[row + info.get_response()] += info.get_sample_count();
             if (depth == 0) {
                 break;
             }
@@ -270,7 +270,7 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     }
     _onLeafNode(info);
     OVERFLOW_CHECK_BY_ADDING(std::size_t, node_id * 1 * this->class_count, info.get_response());
-    value_ar_ptr[node_id * 1 * this->class_count + info.get_response()] += info.get_sample_count();
+    this->value_ar[node_id * 1 * this->class_count + info.get_response()] += info.get_sample_count();
 
     // wrap-up
     ++node_id;
