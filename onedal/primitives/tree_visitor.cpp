@@ -187,7 +187,6 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t
     OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, this->node_count, this->class_count);
     this->node_ar = new skl_tree_node[this->node_count];
     this->value_ar = new double[this->node_count*1*this->class_count](); // oneDAL only supports scalar responses for now
-
 }
 
 template <typename Task>
@@ -219,7 +218,6 @@ bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>&
 // stuff that is done for all leaf node types
 template <typename Task>
 void to_sklearn_tree_object_visitor<Task>::_onLeafNode(const df::leaf_node_info<Task>& info) {
-
     if (info.get_level()) {
         Py_ssize_t parent = parents[info.get_level() - 1];
         if (this->node_ar[parent].left_child > 0) {
