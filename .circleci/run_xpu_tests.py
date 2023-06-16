@@ -82,7 +82,7 @@ if __name__ == '__main__':
         with config_context(
                 target_offload=args.device, allow_fallback_to_host=True):
             pytest.main(
-                pytest_params + ["--pyargs", "sklearn", "-k", "test_search_cv"] + yml_deselected_tests
+                pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests
             )
     else:
         pytest.main(
