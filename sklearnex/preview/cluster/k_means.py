@@ -154,6 +154,8 @@ if daal_check_version((2023, 'P', 200)):
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd"]
 
+            print(self.n_clusters, sample_count)
+
             dal_ready = patching_status.and_conditions([
                 (self.n_clusters <= sample_count, 'n_clusters is smaller than number of samples'),
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
@@ -260,12 +262,10 @@ if daal_check_version((2023, 'P', 200)):
             if sklearn_check_version("1.2"):
                 self._validate_params()
 
-            dispatch(self, 'fit', {
+            return dispatch(self, 'fit', {
                 'onedal': self.__class__._onedal_predict,
                 'sklearn': sklearn_KMeans.predict,
             }, X)
-
-            return self
 
         def _onedal_predict(self, X, queue=None):
             X = self._validate_data(X, accept_sparse=False, reset=False)
