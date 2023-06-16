@@ -691,13 +691,13 @@ gpu:
   - tests/test_multioutput.py::test_multi_output_delegate_predict_proba
   - tests/test_multioutput.py::test_classifier_chain_vs_independent_models
   - tests/test_multioutput.py::test_base_chain_fit_and_predict
-  - tests/test_multioutput.py::test_base_chain_crossval_fit_and_predict 
+  - tests/test_multioutput.py::test_base_chain_crossval_fit_and_predict
   - tests/test_multioutput.py::test_multi_output_classes_[estimator1]
   - tests/test_multioutput.py::test_multi_output_classes_[estimator2]
   - tests/test_multioutput.py::test_support_missing_values[MultiOutputClassifier-LogisticRegression]
-  - tests/test_multioutput.py::test_classifier_chain_tuple_order[list] 
-  - tests/test_multioutput.py::test_classifier_chain_tuple_order[array] 
-  - tests/test_multioutput.py::test_classifier_chain_tuple_order[tuple] 
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order[list]
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order[array]
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order[tuple]
   - tests/test_pipeline.py::test_pipeline_methods_anova
   - tests/test_pipeline.py::test_pipeline_methods_pca_svm
   - tests/test_pipeline.py::test_pipeline_score_samples_pca_lof
