@@ -67,7 +67,7 @@ if __name__ == '__main__':
     yml_deselected_tests = yml_deselected_tests + deselected_tests
 
     pytest_params = [
-        "-ra", "--disable-warnings", "-s", "--maxfail=10"
+        "-ra", "--disable-warnings", "-s"
     ]
 
     if not args.quiet:

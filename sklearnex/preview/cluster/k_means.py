@@ -33,8 +33,8 @@ if daal_check_version((2023, 'P', 200)):
         PatchingConditionsChain)
 
     from sklearn.utils.validation import (
-        check_is_fitted,
         _num_samples,
+        check_is_fitted,
         _deprecate_positional_args)
 
     from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
@@ -141,33 +141,33 @@ if daal_check_version((2023, 'P', 200)):
                 'random_state': self.random_state,
             }
 
-            print("!"*16, onedal_params)
-
             self._onedal_estimator = onedal_KMeans(**onedal_params)
 
-        def _onedal_fit_supported(self, method_name, *data):
+        def _onedal_fit_supported(self, method_name, X, y = None, sample_weight = None):
             assert method_name == 'fit'
-            assert len(data) == 3
-
-            X, y, sample_weight = data
 
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f'sklearn.cluster.{class_name}.fit')
 
+            sample_count = _num_samples(X)
+            self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd"]
 
             dal_ready = patching_status.and_conditions([
+                (self.n_clusters <= sample_count, 'n_clusters is smaller than number of samples'),
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
                 (not issparse(self.init), 'Sparse init values are not supported'),
                 (sample_weight is None, 'Sample weight is not None.'),
                 (not issparse(X), 'Sparse input is not supported.'),
             ])
 
+            if not dal_ready:
+                return patching_status.get_status(logs=True)
+
             return patching_status.get_status(logs=True)
 
-        def fit(self, X, y=None, sample_weight=None):
-            print("!" * 80)
+        def fit(self, X, y = None, sample_weight = None):
             """Compute k-means clustering.
 
             Parameters
@@ -198,8 +198,16 @@ if daal_check_version((2023, 'P', 200)):
 
             return self
 
-        def _onedal_fit(self, X, y, sample_weight, queue = None):
+        def _onedal_fit(self, X, _, sample_weight, queue = None):
             assert sample_weight is None
+
+            X = self._validate_data(
+                X,
+                accept_sparse=False,
+                dtype=[np.float64, np.float32],
+            )
+
+            self._check_params_vs_input(X)
 
             self._n_threads = _openmp_effective_n_threads()
 
@@ -208,11 +216,8 @@ if daal_check_version((2023, 'P', 200)):
 
             self._save_attributes()
 
-        def _onedal_predict_supported(self, method_name, *data):
+        def _onedal_predict_supported(self, method_name, X):
             assert method_name == 'predict'
-            assert len(data) == 1
-
-            X = data[0]
 
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
@@ -220,9 +225,13 @@ if daal_check_version((2023, 'P', 200)):
 
             supported_algs = ["auto", "full", "lloyd"]
             dal_ready = patching_status.and_conditions([
+                (not issparse(self.cluster_centers_), 'Sparse clusters is not supported.'),
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
                 (not issparse(X), 'Sparse input is not supported.')
             ])
+
+            if not dal_ready:
+                return patching_status.get_status(logs=True)
 
             return patching_status.get_status(logs=True)
 
@@ -303,7 +312,7 @@ if daal_check_version((2023, 'P', 200)):
             X_new : ndarray of shape (n_samples, n_clusters)
                 X transformed in the new space.
             """
-            return self.fit(X, sample_weight=sample_weight).transform(X)
+            return self.fit(X, sample_weight=sample_weight)._transform(X)
 
         @wrap_output_data
         def transform(self, X):
@@ -326,7 +335,7 @@ if daal_check_version((2023, 'P', 200)):
             check_is_fitted(self)
 
             X = self._check_test_data(X)
-            return None
+            return self._transform(X)
 
 else:
     from daal4py.sklearn.cluster import KMeans

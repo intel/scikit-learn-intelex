@@ -40,7 +40,8 @@ struct method2t {
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "dense", ops, Float, method::dense);
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::plus_plus_dense);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "random_dense", ops, Float, method::random_dense);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_dense", ops, Float, method::plus_plus_dense);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
@@ -58,6 +59,17 @@ struct descriptor_creator<Float,
     static auto get() {
         return dal::kmeans_init::descriptor<Float,
                                             dal::kmeans_init::method::dense,
+                                            dal::kmeans_init::task::init>{};
+    }
+};
+
+template <typename Float>
+struct descriptor_creator<Float,
+                          dal::kmeans_init::method::random_dense,
+                          dal::kmeans_init::task::init> {
+    static auto get() {
+        return dal::kmeans_init::descriptor<Float,
+                                            dal::kmeans_init::method::random_dense,
                                             dal::kmeans_init::task::init>{};
     }
 };

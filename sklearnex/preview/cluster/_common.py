@@ -52,11 +52,16 @@ def set_n_iter(self, value):
 
 class BaseKMeans(ABC):
     def _save_attributes(self):
+        assert hasattr(self, "_onedal_estimator")
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.fit_status_ = 0
+        self._tol = self._onedal_estimator._tol
+        print("_tol: ", self._tol)
+        self._n_init = self._onedal_estimator._n_init
         self._n_iter_ = self._onedal_estimator.n_iter_
         self._labels_ = self._onedal_estimator.labels_
         self._inertia_ = self._onedal_estimator.inertia_
+        self._algorithm = self._onedal_estimator._algorithm
         self._cluster_centers_ = self._onedal_estimator.cluster_centers_
         self._sparse = False
 

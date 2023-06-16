@@ -74,7 +74,7 @@ if daal_check_version((2023, 'P', 200)):
 
         def _compute_raw(self, X_table, module, policy, dtype = np.float32):
             params = self._get_onedal_params(dtype)
-
+            assert params['method'] in ['dense', 'random_dense', 'plus_plus_dense']
             result = module.compute(policy, params, X_table)
 
             return result.centroids
