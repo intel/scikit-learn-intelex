@@ -41,7 +41,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils import check_random_state, check_array
 from sklearn.utils.validation import _is_arraylike_not_scalar, check_is_fitted
 
-from sklearn.base import (BaseEstimator, ClusterMixin, TransformerMixin)
+from sklearn.base import (ClassNamePrefixFeaturesOutMixin, BaseEstimator, ClusterMixin, TransformerMixin)
 
 from sklearn.cluster._k_means_common import _is_same_clustering
 
@@ -263,8 +263,6 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             self._validate_center_shape(X, init)
 
         use_custom_init = daal_check_version((2023, 'P', 200)) and not callable(self.init)
-
-        print("_n_init: ",self._n_init)
 
         for _ in range(self._n_init):
             if use_custom_init:

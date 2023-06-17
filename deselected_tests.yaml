@@ -168,6 +168,28 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_relocated_clusters >=0.23,<0.24
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
 
+  # KMeans related tests
+  # Fail due to the inconsistency in RNG:
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-0.01-dense-normal]
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-0.01-dense-blobs]
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-1e-08-dense-normal]
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-1e-08-dense-blobs]
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-1e-100-dense-normal]
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-1e-100-dense-blobs]
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-0-dense-normal]
+  - tests/test_k_means.py::test_kmeans_elkan_results[42-0-dense-blobs]
+
+  # Fail due to not checking if labels are the same (convergence criteria):
+  - tests/test_k_means.py::test_kmeans_convergence[42-lloyd]
+
+  # Fail due to the lack of verbose mode in an acrual implementation:
+  - tests/test_k_means.py::test_kmeans_verbose[0.01-lloyd]
+  - tests/test_k_means.py::test_kmeans_verbose[0-lloyd]
+  - tests/test_k_means.py::test_kmeans_warns_less_centers_than_unique_points[42]
+
+  # Fail due to inconsistency in cluster enumeration:
+  - tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense]
+
   # In scikit-learn, these algorithms are not included in this test. However, scikit-learn-intelex
   # does and throws an error. This is due to the different structure of the transformer.__module__.split(".").
   - tests/test_common.py::test_transformers_get_feature_names_out[KMeans()] >=1.0

@@ -56,7 +56,6 @@ class BaseKMeans(ABC):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.fit_status_ = 0
         self._tol = self._onedal_estimator._tol
-        print("_tol: ", self._tol)
         self._n_init = self._onedal_estimator._n_init
         self._n_iter_ = self._onedal_estimator.n_iter_
         self._labels_ = self._onedal_estimator.labels_

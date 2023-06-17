@@ -154,7 +154,10 @@ if daal_check_version((2023, 'P', 200)):
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd"]
 
-            print(self.n_clusters, sample_count)
+            wrong = not (self.n_clusters <= sample_count)
+
+            if not (self.n_clusters <= sample_count):
+                print('\n', "!" * 15, self.n_clusters, sample_count)
 
             dal_ready = patching_status.and_conditions([
                 (self.n_clusters <= sample_count, 'n_clusters is smaller than number of samples'),
@@ -165,6 +168,7 @@ if daal_check_version((2023, 'P', 200)):
             ])
 
             if not dal_ready:
+                print("!" * 15)
                 return patching_status.get_status(logs=True)
 
             return patching_status.get_status(logs=True)
@@ -205,12 +209,13 @@ if daal_check_version((2023, 'P', 200)):
 
             X = self._validate_data(
                 X,
-                accept_sparse=False,
-                dtype=[np.float64, np.float32],
+                accept_sparse = False,
+                dtype = [np.float64, np.float32],
             )
 
             self._check_params_vs_input(X)
 
+            self._n_features_out = self.n_clusters
             self._n_threads = _openmp_effective_n_threads()
 
             self._initialize_onedal_estimator()
