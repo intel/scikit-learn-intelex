@@ -47,8 +47,10 @@ if daal_check_version((2023, 'P', 200)):
         vs = d[:, 1] / 3
 
         # Generating dataset
-        def gen_one(c): return gen.normal(
-            loc=cs[c, :], scale=vs[c], size=(n_points, n_dim))
+        def gen_one(c):
+            params = {'loc': cs[c, :], 'scale': vs[c], 'size': (n_points, n_dim)}
+            return gen.normal(**params)
+
         data = [gen_one(c) for c in range(n_cluster)]
         data = np.concatenate(data, axis=0)
         gen.shuffle(data, axis=0)

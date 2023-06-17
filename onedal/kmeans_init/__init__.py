@@ -18,6 +18,6 @@ from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, 'P', 200)):
     from .kmeans_init import KMeansInit, kmeans_plusplus
-    __all__ = [ 'KMeansInit', 'kmeans_plusplus' ]
+    __all__ = ['KMeansInit', 'kmeans_plusplus']
 else:
     __all__ = []

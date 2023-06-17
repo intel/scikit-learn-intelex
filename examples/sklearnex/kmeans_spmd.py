@@ -24,20 +24,24 @@ from onedal.spmd.cluster import KMeans
 
 from sklearn.datasets import load_digits
 
+
 def get_data_slice(chunk, count):
     assert chunk < count
-    X, y = load_digits(return_X_y = True)
+    X, y = load_digits(return_X_y=True)
     n_samples, _ = X.shape
     size = n_samples // count
     first = chunk * size
     last = first + size
     return (X[first:last, :], y[first:last])
 
+
 def get_train_data(rank, size):
     return get_data_slice(rank, size + 1)
 
+
 def get_test_data(size):
     return get_data_slice(size, size + 1)
+
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -49,7 +53,7 @@ queue = SyclQueue("gpu")
 
 dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=queue)
 
-model = KMeans(n_clusters = 10).fit(dpt_X)
+model = KMeans(n_clusters=10).fit(dpt_X)
 
 print(f"Number of iterations on {rank}:\n", model.n_iter_)
 print(f"Labels on rank {rank} (slice of 2):\n", model.labels_[:2])

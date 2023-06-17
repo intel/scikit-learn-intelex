@@ -53,7 +53,7 @@ if daal_check_version((2023, 'P', 100)):
                     'spmd.linear_model', 'spmd.neighbors']
 
 if daal_check_version((2023, 'P', 200)):
-    __all__ += [ 'kmeans_init' ]
+    __all__ += ['kmeans_init']
 
     if _is_dpc_backend:
         __all__ += ['spmd.cluster']

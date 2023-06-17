@@ -153,16 +153,12 @@ if daal_check_version((2023, 'P', 200)):
             sample_count = _num_samples(X)
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd"]
-
-            wrong = not (self.n_clusters <= sample_count)
-
-            if not (self.n_clusters <= sample_count):
-                print('\n', "!" * 15, self.n_clusters, sample_count)
+            correct_count = self.n_clusters <= sample_count
 
             dal_ready = patching_status.and_conditions([
-                (self.n_clusters <= sample_count, 'n_clusters is smaller than number of samples'),
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
                 (not issparse(self.init), 'Sparse init values are not supported'),
+                (correct_count, 'n_clusters is smaller than number of samples'),
                 (sample_weight is None, 'Sample weight is not None.'),
                 (not issparse(X), 'Sparse input is not supported.'),
             ])
@@ -231,9 +227,11 @@ if daal_check_version((2023, 'P', 200)):
                 f'sklearn.cluster.{class_name}.predict')
 
             supported_algs = ["auto", "full", "lloyd"]
+            dense_centers = not issparse(self.cluster_centers_)
+
             dal_ready = patching_status.and_conditions([
-                (not issparse(self.cluster_centers_), 'Sparse clusters is not supported.'),
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
+                (dense_centers, 'Sparse clusters is not supported.'),
                 (not issparse(X), 'Sparse input is not supported.')
             ])
 
