@@ -93,12 +93,10 @@ elseif(IFACE STREQUAL "dpc")
     set(TARGET "_onedal_py_dpc")
 
     if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
-        message("CXX ICX branch triggered")
         set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
     endif()
 
     if(CMAKE_C_COMPILER MATCHES ".*icpx" OR CMAKE_C_COMPILER MATCHES ".*icx")
-        message("CXX ICX branch triggered")
         set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS}")
     endif()
 
