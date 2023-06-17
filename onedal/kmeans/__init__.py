@@ -16,4 +16,4 @@
 
 from .kmeans import KMeans, k_means
 
-__all__ = ['KMeans', 'k_means']
+__all__ = [ 'KMeans', 'k_means' ]
