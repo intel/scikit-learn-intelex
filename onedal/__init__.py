@@ -35,7 +35,7 @@ if "Windows" in platform.system():
 try:
     import onedal._onedal_py_dpc as _backend
     _is_dpc_backend = True
-except ImportError as err:
+except ImportError:
     import onedal._onedal_py_host as _backend
     _is_dpc_backend = False
 

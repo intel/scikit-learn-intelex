@@ -41,14 +41,29 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils import check_random_state, check_array
 from sklearn.utils.validation import _is_arraylike_not_scalar, check_is_fitted
 
-from sklearn.base import (ClassNamePrefixFeaturesOutMixin, BaseEstimator, ClusterMixin, TransformerMixin)
+from sklearn.base import (
+    ClassNamePrefixFeaturesOutMixin,
+    BaseEstimator,
+    ClusterMixin,
+    TransformerMixin)
 
 from sklearn.cluster._k_means_common import _is_same_clustering
 
 from sklearn.metrics.pairwise import euclidean_distances
 
+
 class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
-    def __init__(self, n_clusters, *, init, n_init, max_iter, tol, verbose, random_state, n_local_trials = None):
+    def __init__(
+            self,
+            n_clusters,
+            *,
+            init,
+            n_init,
+            max_iter,
+            tol,
+            verbose,
+            random_state,
+            n_local_trials=None):
         self.n_clusters = n_clusters
         self.init = init
         self.max_iter = max_iter
@@ -71,7 +86,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 f"match the number of features of the data {X.shape[1]}."
             )
 
-    def _tolerance(self, rtol, X_table, policy, dtype = np.float32):
+    def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
@@ -82,7 +97,12 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         mean_var = from_table(res["variance"]).mean()
         return mean_var * rtol
 
-    def _check_params_vs_input(self, X_table, policy, default_n_init = 10, dtype = np.float32):
+    def _check_params_vs_input(
+            self,
+            X_table,
+            policy,
+            default_n_init=10,
+            dtype=np.float32):
         # n_clusters
         if X_table.shape[0] < self.n_clusters:
             raise ValueError(
@@ -143,7 +163,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
-    def _get_onedal_params(self, dtype = np.float32):
+    def _get_onedal_params(self, dtype=np.float32):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
             'fptype': 'float' if dtype == np.float32 else 'double',
@@ -164,21 +184,33 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         dtype = get_dtype(X_loc)
         X_table = to_table(X_loc)
 
-        self._check_params_vs_input(X_table, policy, dtype = dtype)
+        self._check_params_vs_input(X_table, policy, dtype=dtype)
 
         params = self._get_onedal_params(dtype)
 
         return (params, X_table, dtype)
 
-
-    def _init_centroids_custom(self, X_table, init, random_seed, policy, dtype = np.float32, n_centroids = None):
+    def _init_centroids_custom(
+            self,
+            X_table,
+            init,
+            random_seed,
+            policy,
+            dtype=np.float32,
+            n_centroids=None):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
 
         if isinstance(init, str) and init == "k-means++":
-            alg = KMeansInit(cluster_count = n_clusters, seed = random_seed, algorithm = "plus_plus_dense")
+            alg = KMeansInit(
+                cluster_count=n_clusters,
+                seed=random_seed,
+                algorithm="plus_plus_dense")
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif isinstance(init, str) and init == "random":
-            alg = KMeansInit(cluster_count = n_clusters, seed = random_seed, algorithm = "random_dense")
+            alg = KMeansInit(
+                cluster_count=n_clusters,
+                seed=random_seed,
+                algorithm="random_dense")
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif _is_arraylike_not_scalar(init):
             centers = np.asarray(init)
@@ -191,7 +223,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
 
         return centers_table
 
-    def _init_centroids_generic(self, X, init, random_state, policy, dtype = np.float32):
+    def _init_centroids_generic(self, X, init, random_state, policy, dtype=np.float32):
         n_samples = X.shape[0]
 
         if isinstance(init, str) and init == "k-means++":
@@ -209,7 +241,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             centers = X[seeds]
         elif callable(init):
             cc_arr = init(X, self.n_clusters, random_state)
-            cc_arr = np.ascontiguousarray(cc_arr, dtype = dtype)
+            cc_arr = np.ascontiguousarray(cc_arr, dtype=dtype)
             self._validate_center_shape(X, cc_arr)
             centers = cc_arr
         elif _is_arraylike_not_scalar(init):
@@ -222,7 +254,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         centers = _convert_to_supported(policy, centers)
         return to_table(centers)
 
-    def _fit_backend(self, X_table, centroids_table, module, policy, dtype = np.float32):
+    def _fit_backend(self, X_table, centroids_table, module, policy, dtype=np.float32):
         params = self._get_onedal_params(dtype)
 
         # TODO: check all features for having correct type
@@ -231,10 +263,10 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
 
         result = module.train(policy, params, X_table, centroids_table)
 
-        return ( result.responses, result.objective_function_value, \
-                        result.model, result.iteration_count )
+        return (result.responses, result.objective_function_value,
+                result.model, result.iteration_count)
 
-    def _fit(self, X, module, queue = None):
+    def _fit(self, X, module, queue=None):
         policy = self._get_policy(queue, X)
         _, X_table, dtype = self._get_params_and_input(X, policy)
 
@@ -269,11 +301,11 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 #random_seed = random_state.tomaxint()
                 random_seed = random_state.randint(np.iinfo('i').max)
                 centroids_table = self._init_centroids_custom(
-                    X_table, init, random_seed, policy, dtype = dtype
+                    X_table, init, random_seed, policy, dtype=dtype
                 )
             else:
                 centroids_table = self._init_centroids_generic(
-                    X, init, random_state, policy, dtype = dtype
+                    X, init, random_state, policy, dtype=dtype
                 )
 
             if self.verbose:
@@ -286,7 +318,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             if self.verbose:
                 print("KMeans iteration completed with "
                       "inertia {}.".format(inertia)
-                )
+                      )
 
             check, labels = is_better_iteration(inertia, labels)
 
@@ -303,7 +335,6 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 ConvergenceWarning,
                 stacklevel=2,
             )
-
 
         self.model_ = best_model
         self.n_iter_ = best_n_iter
@@ -335,14 +366,14 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
 
     cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
-    def _predict_raw(self, X_table, module, policy, dtype = np.float32):
+    def _predict_raw(self, X_table, module, policy, dtype=np.float32):
         params = self._get_onedal_params(dtype)
 
         result = module.infer(policy, params, self.model_, X_table)
 
         return from_table(result.responses).reshape(-1)
 
-    def _predict(self, X, module, queue = None):
+    def _predict(self, X, module, queue=None):
         check_is_fitted(self)
 
         policy = self._get_policy(queue, X)
@@ -382,10 +413,10 @@ class KMeans(_BaseKMeans):
         self.copy_x = copy_x
         self.algorithm = algorithm
 
-    def fit(self, X, queue = None):
+    def fit(self, X, queue=None):
         return super()._fit(X, _backend.kmeans.clustering, queue)
 
-    def predict(self, X, queue = None):
+    def predict(self, X, queue=None):
         """Predict the closest cluster each sample in X belongs to.
 
         In the vector quantization literature, `cluster_centers_` is called
@@ -404,7 +435,7 @@ class KMeans(_BaseKMeans):
         """
         return super()._predict(X, _backend.kmeans.clustering, queue)
 
-    def fit_predict(self, X, queue = None):
+    def fit_predict(self, X, queue=None):
         """Compute cluster centers and predict cluster index for each sample.
 
         Convenience method; equivalent to calling fit(X) followed by
@@ -422,7 +453,7 @@ class KMeans(_BaseKMeans):
         """
         return self.fit(X, queue).labels_
 
-    def fit_transform(self, X, queue = None):
+    def fit_transform(self, X, queue=None):
         """Compute clustering and transform X to cluster-distance space.
 
         Equivalent to fit(X).transform(X), but more efficiently implemented.
@@ -437,7 +468,7 @@ class KMeans(_BaseKMeans):
         X_new : ndarray of shape (n_samples, n_clusters)
             X transformed in the new space.
         """
-        return self.fit(X, queue = queue)._transform(X)
+        return self.fit(X, queue=queue)._transform(X)
 
     def transform(self, X):
         """Transform X to a cluster-distance space.
@@ -474,7 +505,7 @@ def k_means(
     copy_x=True,
     algorithm="lloyd",
     return_n_iter=False,
-    queue = None
+    queue=None
 ):
     est = KMeans(
         n_clusters=n_clusters,

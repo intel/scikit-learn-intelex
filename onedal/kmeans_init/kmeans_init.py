@@ -34,10 +34,11 @@ if daal_check_version((2023, 'P', 200)):
         """
         KMeansInit oneDAL implementation.
         """
+
         def __init__(self,
                      cluster_count,
-                     seed = 777,
-                     local_trials_count = None,
+                     seed=777,
+                     local_trials_count=None,
                      algorithm='plus_plus_dense'):
             self.cluster_count = cluster_count
             self.seed = seed
@@ -72,7 +73,7 @@ if daal_check_version((2023, 'P', 200)):
             params = self._get_onedal_params(dtype)
             return (params, to_table(X_loc), dtype)
 
-        def _compute_raw(self, X_table, module, policy, dtype = np.float32):
+        def _compute_raw(self, X_table, module, policy, dtype=np.float32):
             params = self._get_onedal_params(dtype)
 
             result = module.compute(policy, params, X_table)
@@ -87,12 +88,23 @@ if daal_check_version((2023, 'P', 200)):
 
             return from_table(centroids)
 
-        def compute_raw(self, X_table, policy, dtype = np.float32):
+        def compute_raw(self, X_table, policy, dtype=np.float32):
             return self._compute_raw(X_table, _backend.kmeans_init.init, policy, dtype)
 
-        def compute(self, X, queue = None):
+        def compute(self, X, queue=None):
             return self._compute(X, _backend.kmeans_init.init, queue)
 
-    def kmeans_plusplus(X, n_clusters, *, x_squared_norms=None, random_state=None, n_local_trials=None, queue=None):
+    def kmeans_plusplus(
+            X,
+            n_clusters,
+            *,
+            x_squared_norms=None,
+            random_state=None,
+            n_local_trials=None,
+            queue=None):
         random_seed = check_random_state(random_state).tomaxint()
-        return (KMeansInit(n_clusters, seed = random_seed, local_trials_count = n_local_trials).compute(X, queue), np.full(n_clusters, -1))
+        return (
+            KMeansInit(
+                n_clusters, seed=random_seed, local_trials_count=n_local_trials).compute(
+                X, queue), np.full(
+                n_clusters, -1))

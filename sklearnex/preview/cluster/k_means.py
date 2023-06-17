@@ -143,7 +143,7 @@ if daal_check_version((2023, 'P', 200)):
 
             self._onedal_estimator = onedal_KMeans(**onedal_params)
 
-        def _onedal_fit_supported(self, method_name, X, y = None, sample_weight = None):
+        def _onedal_fit_supported(self, method_name, X, y=None, sample_weight=None):
             assert method_name == 'fit'
 
             class_name = self.__class__.__name__
@@ -173,7 +173,7 @@ if daal_check_version((2023, 'P', 200)):
 
             return patching_status.get_status(logs=True)
 
-        def fit(self, X, y = None, sample_weight = None):
+        def fit(self, X, y=None, sample_weight=None):
             """Compute k-means clustering.
 
             Parameters
@@ -204,13 +204,13 @@ if daal_check_version((2023, 'P', 200)):
 
             return self
 
-        def _onedal_fit(self, X, _, sample_weight, queue = None):
+        def _onedal_fit(self, X, _, sample_weight, queue=None):
             assert sample_weight is None
 
             X = self._validate_data(
                 X,
-                accept_sparse = False,
-                dtype = [np.float64, np.float32],
+                accept_sparse=False,
+                dtype=[np.float64, np.float32],
             )
 
             self._check_params_vs_input(X)
@@ -219,7 +219,7 @@ if daal_check_version((2023, 'P', 200)):
             self._n_threads = _openmp_effective_n_threads()
 
             self._initialize_onedal_estimator()
-            self._onedal_estimator.fit(X, queue = queue)
+            self._onedal_estimator.fit(X, queue=queue)
 
             self._save_attributes()
 

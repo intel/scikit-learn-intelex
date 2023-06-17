@@ -28,19 +28,19 @@ class BaseKMeansSPMD(ABC):
 class KMeans(BaseKMeansSPMD, KMeans_Batch):
 
     @support_usm_ndarray()
-    def fit(self, X, queue = None):
+    def fit(self, X, queue=None):
         return super().fit(X, queue)
 
     @support_usm_ndarray()
-    def predict(self, X, queue = None):
+    def predict(self, X, queue=None):
         return super().predict(X, queue)
 
     @support_usm_ndarray()
-    def fit_predict(self, X, queue = None):
+    def fit_predict(self, X, queue=None):
         return super().fit_predict(X, queue)
 
     def transform(self, X):
         return super().transform(X)
 
-    def fit_transform(self, X, queue = None):
+    def fit_transform(self, X, queue=None):
         return super().fit_transform(X, queue)
