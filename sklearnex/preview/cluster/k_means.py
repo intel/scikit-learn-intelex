@@ -155,17 +155,13 @@ if daal_check_version((2023, 'P', 200)):
             supported_algs = ["auto", "full", "lloyd"]
             correct_count = self.n_clusters <= sample_count
 
-            dal_ready = patching_status.and_conditions([
+            patching_status.and_conditions([
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
                 (not issparse(self.init), 'Sparse init values are not supported'),
                 (correct_count, 'n_clusters is smaller than number of samples'),
                 (sample_weight is None, 'Sample weight is not None.'),
                 (not issparse(X), 'Sparse input is not supported.'),
             ])
-
-            if not dal_ready:
-                print("!" * 15)
-                return patching_status.get_status(logs=True)
 
             return patching_status.get_status(logs=True)
 
@@ -229,14 +225,11 @@ if daal_check_version((2023, 'P', 200)):
             supported_algs = ["auto", "full", "lloyd"]
             dense_centers = not issparse(self.cluster_centers_)
 
-            dal_ready = patching_status.and_conditions([
+            patching_status.and_conditions([
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
                 (dense_centers, 'Sparse clusters is not supported.'),
                 (not issparse(X), 'Sparse input is not supported.')
             ])
-
-            if not dal_ready:
-                return patching_status.get_status(logs=True)
 
             return patching_status.get_status(logs=True)
 

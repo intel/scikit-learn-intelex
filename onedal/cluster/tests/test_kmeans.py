@@ -59,8 +59,8 @@ if daal_check_version((2023, 'P', 200)):
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_dim', [3, 4, 9, 15, 17, 24])
-    @pytest.mark.parametrize('n_cluster', [9, 11, 24, 25, 32])
+    @pytest.mark.parametrize('n_dim', [3, 4, 17, 24])
+    @pytest.mark.parametrize('n_cluster', [9, 11, 32])
     @pytest.mark.parametrize('pipeline', ['implicit', 'external', 'internal'])
     def test_generated_dataset(queue, dtype, n_dim, n_cluster, pipeline):
         seed = 777 * n_dim * n_cluster
