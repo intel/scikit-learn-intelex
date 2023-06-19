@@ -25,7 +25,7 @@ if daal_check_version((2023, 'P', 200)):
     from ._common import BaseKMeans
     from ..._device_offload import dispatch, wrap_output_data
 
-    from onedal.kmeans import KMeans as onedal_KMeans
+    from onedal.cluster import KMeans as onedal_KMeans
     from sklearn.cluster import KMeans as sklearn_KMeans
 
     from daal4py.sklearn._utils import (

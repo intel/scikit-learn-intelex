@@ -20,9 +20,9 @@ from numpy.testing import assert_allclose, assert_array_equal
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 if daal_check_version((2023, 'P', 200)):
-    from onedal.kmeans import KMeans
+    from onedal.cluster import KMeans
+    from onedal.cluster import kmeans_plusplus as init_internal
     from onedal.tests.utils._device_selection import get_queues
-    from onedal.kmeans_init import kmeans_plusplus as init_internal
 
     from sklearn.cluster import kmeans_plusplus as init_external
     from sklearn.datasets import load_breast_cancer

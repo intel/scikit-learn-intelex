@@ -20,14 +20,11 @@ from numpy.testing import assert_allclose, assert_array_equal
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 if daal_check_version((2023, 'P', 200)):
-    from onedal.kmeans_init import kmeans_plusplus
+    from onedal.cluster import kmeans_plusplus, KMeans
     from onedal.tests.utils._device_selection import get_queues
 
-    #from sklearn.cluster import KMeans
-    from onedal.kmeans import KMeans
     from sklearn.datasets import load_breast_cancer
     from sklearn.metrics import davies_bouldin_score
-    from sklearn.model_selection import train_test_split
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])

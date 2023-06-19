@@ -17,7 +17,7 @@
 from abc import ABC
 from ...common._spmd_policy import _get_spmd_policy
 from ..._device_offload import support_usm_ndarray
-from onedal.kmeans import KMeans as KMeans_Batch
+from onedal.cluster import KMeans as KMeans_Batch
 
 
 class BaseKMeansSPMD(ABC):

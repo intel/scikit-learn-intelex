@@ -14,7 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 from abc import ABC
 
 

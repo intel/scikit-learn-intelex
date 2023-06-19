@@ -443,8 +443,7 @@ if ONEDAL_VERSION >= 20230100:
 
 if ONEDAL_VERSION >= 20230200:
     packages_with_tests += [
-        'onedal.kmeans_init',
-        'onedal.kmeans']
+        'onedal.cluster']
 
 if build_distribute:
     packages_with_tests += [

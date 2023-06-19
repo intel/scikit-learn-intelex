@@ -14,6 +14,12 @@
 # limitations under the License.
 #===============================================================================
 
+from daal4py.sklearn._utils import daal_check_version
+
 from .kmeans import KMeans, k_means
 
 __all__ = ['KMeans', 'k_means']
+
+if daal_check_version((2023, 'P', 200)):
+    from .kmeans_init import KMeansInit, kmeans_plusplus
+    __all__ += ['KMeansInit', 'kmeans_plusplus']
