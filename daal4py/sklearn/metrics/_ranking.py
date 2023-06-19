@@ -24,7 +24,7 @@ from sklearn.utils import check_array
 from sklearn.utils.multiclass import is_multilabel
 from sklearn.preprocessing import label_binarize
 
-from ..utils.validation import _daal_assert_all_finite
+from ..utils.validation import _assert_all_finite
 from .._utils import get_patch_message, sklearn_check_version, PatchingConditionsChain
 from .._device_offload import support_usm_ndarray
 import logging
@@ -36,6 +36,10 @@ if sklearn_check_version('0.22'):
     from sklearn.metrics._base import _average_binary_score
 else:
     from sklearn.metrics.ranking import roc_auc_score as multiclass_roc_auc_score
+
+if sklearn_check_version('1.3'):
+    from sklearn.utils._param_validation import (
+        validate_params, Interval, Real, StrOptions)
 
 try:
     import pandas as pd
@@ -96,7 +100,7 @@ def _daal_type_of_target(y):
     # check float and contains non-integer float values
     if y.dtype.kind == 'f' and np.any(y != y.astype(int)):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
-        _daal_assert_all_finite(y)
+        _assert_all_finite(y)
         return 'continuous' + suffix
 
     unique = np.sort(
@@ -112,7 +116,7 @@ def _daal_type_of_target(y):
 
 
 @support_usm_ndarray(freefunc=True)
-def _daal_roc_auc_score(
+def roc_auc_score(
     y_true,
     y_score,
     *,
@@ -176,3 +180,17 @@ def _daal_roc_auc_score(
         average,
         sample_weight=sample_weight,
     )
+
+
+if sklearn_check_version('1.3'):
+    roc_auc_score = validate_params(
+        {
+            "y_true": ["array-like"],
+            "y_score": ["array-like"],
+            "average": [StrOptions({"micro", "macro", "samples", "weighted"}), None],
+            "sample_weight": ["array-like", None],
+            "max_fpr": [Interval(Real, 0.0, 1, closed="right"), None],
+            "multi_class": [StrOptions({"raise", "ovr", "ovo"})],
+            "labels": ["array-like", None],
+        }
+    )(roc_auc_score)

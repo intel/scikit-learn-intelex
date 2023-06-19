@@ -38,6 +38,7 @@ cdef extern from "tree_visitor.h":
         double impurity
         Py_ssize_t n_node_samples
         double weighted_n_node_samples
+        unsigned char missing_go_to_left
 
     cdef struct TreeState:
         skl_tree_node *node_ar
@@ -50,21 +51,8 @@ cdef extern from "tree_visitor.h":
     cdef TreeState _getTreeState[M](M * model, size_t i, size_t n_classes)
     cdef TreeState _getTreeState[M](M * model, size_t n_classes)
 
-NODE_DTYPE = np.dtype({
-    'names': ['left_child', 'right_child', 'feature', 'threshold', 'impurity',
-              'n_node_samples', 'weighted_n_node_samples'],
-    'formats': [np.intp, np.intp, np.intp, np.float64, np.float64, np.intp,
-                np.float64],
-    'offsets': [
-        <Py_ssize_t> &(<skl_tree_node*> NULL).left_child,
-        <Py_ssize_t> &(<skl_tree_node*> NULL).right_child,
-        <Py_ssize_t> &(<skl_tree_node*> NULL).feature,
-        <Py_ssize_t> &(<skl_tree_node*> NULL).threshold,
-        <Py_ssize_t> &(<skl_tree_node*> NULL).impurity,
-        <Py_ssize_t> &(<skl_tree_node*> NULL).n_node_samples,
-        <Py_ssize_t> &(<skl_tree_node*> NULL).weighted_n_node_samples
-    ]
-})
+cdef skl_tree_node dummy;
+NODE_DTYPE = np.asarray(<skl_tree_node[:1]>(&dummy)).dtype
 
 
 cdef class pyTreeState(object):
@@ -89,7 +77,7 @@ cdef class pyTreeState(object):
         Py_INCREF(NODE_DTYPE)
         arr = PyArray_NewFromDescr(<PyTypeObject*> cnp.ndarray, <cnp.dtype> NODE_DTYPE, 1, shape,
                                    strides, nodes,
-                                   cnp.NPY_DEFAULT, None)
+                                   cnp.NPY_ARRAY_DEFAULT, None)
         set_rawp_base(arr, nodes)
         return arr
 

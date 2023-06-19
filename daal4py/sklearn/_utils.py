@@ -19,6 +19,8 @@ import sys
 import os
 import warnings
 
+from numpy.lib.recfunctions import require_fields
+
 from daal4py import _get__daal_link_version__ as dv
 from sklearn import __version__ as sklearn_version
 try:
@@ -176,11 +178,29 @@ def get_number_of_types(dataframe):
         return 1
 
 
+def check_tree_nodes(tree_nodes):
+    def convert_to_old_tree_nodes(tree_nodes):
+        # conversion from sklearn>=1.3 tree nodes format to previous format:
+        # removal of 'missing_go_to_left' field from node dtype
+        new_field = 'missing_go_to_left'
+        new_dtype = tree_nodes.dtype
+        old_dtype = np.dtype([
+            (key, value[0]) for key, value in
+            new_dtype.fields.items() if key != new_field])
+        return require_fields(tree_nodes, old_dtype)
+
+    if sklearn_check_version('1.3'):
+        return tree_nodes
+    else:
+        return convert_to_old_tree_nodes(tree_nodes)
+
+
 class PatchingConditionsChain:
     def __init__(self, scope_name):
         self.scope_name = scope_name
         self.patching_is_enabled = True
         self.messages = []
+        self.logger = logging.getLogger('sklearnex')
 
     def _iter_conditions(self, conditions_and_messages):
         result = []
@@ -195,22 +215,27 @@ class PatchingConditionsChain:
             self._iter_conditions(conditions_and_messages))
         return self.patching_is_enabled
 
+    def and_condition(self, condition, message):
+        return self.and_conditions([(condition, message)])
+
     def or_conditions(self, conditions_and_messages, conditions_merging=all):
         self.patching_is_enabled |= conditions_merging(
             self._iter_conditions(conditions_and_messages))
         return self.patching_is_enabled
 
-    def get_status(self):
-        return self.patching_is_enabled
-
     def write_log(self):
         if self.patching_is_enabled:
-            logging.info(f"{self.scope_name}: {get_patch_message('daal')}")
+            self.logger.info(f"{self.scope_name}: {get_patch_message('daal')}")
         else:
-            logging.debug(
+            self.logger.debug(
                 f'{self.scope_name}: debugging for the patch is enabled to track'
                 ' the usage of Intel® oneAPI Data Analytics Library (oneDAL)')
             for message in self.messages:
-                logging.debug(
+                self.logger.debug(
                     f'{self.scope_name}: patching failed with cause - {message}')
-            logging.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
+            self.logger.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
+
+    def get_status(self, logs=False):
+        if logs:
+            self.write_log()
+        return self.patching_is_enabled

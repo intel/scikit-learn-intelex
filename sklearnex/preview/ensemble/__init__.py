@@ -16,5 +16,7 @@
 # ===============================================================================
 
 from .forest import RandomForestClassifier, RandomForestRegressor
+from .extra_trees import ExtraTreesClassifier, ExtraTreesRegressor
 
-__all__ = ['RandomForestClassifier', 'RandomForestRegressor']
+__all__ = ['ExtraTreesClassifier', 'ExtraTreesRegressor',
+           'RandomForestClassifier', 'RandomForestRegressor']

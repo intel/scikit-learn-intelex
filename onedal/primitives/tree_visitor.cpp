@@ -59,6 +59,7 @@ public:
     double impurity;
     Py_ssize_t n_node_samples;
     double weighted_n_node_samples;
+    unsigned char missing_go_to_left;
 
     skl_tree_node()
             : left_child(ONEDAL_PY_TERMINAL_NODE),
@@ -67,7 +68,8 @@ public:
               threshold(get_nan64()),
               impurity(get_nan64()),
               n_node_samples(0),
-              weighted_n_node_samples(0.0) {}
+              weighted_n_node_samples(0.0),
+              missing_go_to_left(false) {}
 };
 
 // We only expose the minimum information to python
@@ -196,6 +198,7 @@ bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>&
     node_ar_ptr[node_id].impurity = info.get_impurity();
     node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
     node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
+    node_ar_ptr[node_id].missing_go_to_left = false;
 
     // wrap-up
     ++node_id;
@@ -223,6 +226,7 @@ void to_sklearn_tree_object_visitor<Task>::_onLeafNode(const df::leaf_node_info<
     node_ar_ptr[node_id].impurity = info.get_impurity();
     node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
     node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
+    node_ar_ptr[node_id].missing_go_to_left = false;
 }
 
 template <>
@@ -318,7 +322,8 @@ ONEDAL_PY_INIT_MODULE(get_tree) {
                          threshold,
                          impurity,
                          n_node_samples,
-                         weighted_n_node_samples);
+                         weighted_n_node_samples,
+                         missing_go_to_left);
 
     using task_list = types<task::classification, task::regression>;
     auto sub = m.def_submodule("get_tree");

@@ -27,16 +27,11 @@ sys.path.insert(0, '..')
 from stream import read_next
 
 try:
-    from dpctx import device_context, device_type
-    with device_context(device_type.gpu, 0):
+    from daal4py.oneapi import sycl_context
+    with sycl_context('gpu'):
         gpu_available = True
 except:
-    try:
-        from daal4py.oneapi import sycl_context
-        with sycl_context('gpu'):
-            gpu_available = True
-    except:
-        gpu_available = False
+    gpu_available = False
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -71,26 +66,9 @@ def main(readcsv=None, method='defaultDense'):
     # finalize computation
     result_classic = algo.finalize()
 
-    try:
-        from dpctx import device_context, device_type
-
-        def gpu_context():
-            return device_context(device_type.gpu, 0)
-
-        def cpu_context():
-            return device_context(device_type.cpu, 0)
-    except:
-        from daal4py.oneapi import sycl_context
-
-        def gpu_context():
-            return sycl_context('gpu')
-
-        def cpu_context():
-            return sycl_context('cpu')
-
     # It is possible to specify to make the computations on GPU
-    try:
-        with gpu_context():
+    if gpu_available:
+        with sycl_context('gpu'):
             # Configure a low order moments object for streaming
             algo = d4p.low_order_moments(streaming=True, fptype='float')
             # get the generator (defined in stream.py)...
@@ -105,10 +83,9 @@ def main(readcsv=None, method='defaultDense'):
                      'mean', 'secondOrderRawMoment', 'variance', 'standardDeviation',
                      'variation']:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
-    except RuntimeError:
-        pass
+
     # It is possible to specify to make the computations on CPU
-    with cpu_context():
+    with sycl_context('cpu'):
         # Configure a low order moments object for streaming
         algo = d4p.low_order_moments(streaming=True, fptype='float')
         # get the generator (defined in stream.py)...

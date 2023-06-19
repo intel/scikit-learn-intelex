@@ -61,7 +61,7 @@ jobs:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      pip install -r requirements-dev.txt
+      pip install -r dependencies-dev
       pip install -r requirements-doc.txt
       pip install -r requirements-test.txt -r requirements-test-optional.txt
       pip install jupyter matplotlib requests

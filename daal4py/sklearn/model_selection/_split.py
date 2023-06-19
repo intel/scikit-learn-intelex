@@ -24,6 +24,7 @@ import numpy as np
 from daal4py.sklearn._utils import PatchingConditionsChain
 import platform
 from .._device_offload import support_usm_ndarray
+from .._utils import sklearn_check_version
 
 try:
     from sklearn.utils import _safe_indexing as safe_indexing
@@ -39,8 +40,13 @@ except (ImportError, ModuleNotFoundError):
 try:
     import pandas as pd
     pandas_is_imported = True
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     pandas_is_imported = False
+
+if sklearn_check_version('1.3'):
+    import numbers
+    from sklearn.utils._param_validation import (
+        validate_params, Interval, RealNotInt)
 
 
 def get_dtypes(data):
@@ -54,7 +60,7 @@ def get_dtypes(data):
 
 
 @support_usm_ndarray(freefunc=True)
-def _daal_train_test_split(*arrays, **options):
+def train_test_split(*arrays, **options):
     n_arrays = len(arrays)
     if n_arrays == 0:
         raise ValueError("At least one array required as input")
@@ -249,3 +255,21 @@ def _daal_train_test_split(*arrays, **options):
             res.append(test_arr)
 
     return res
+
+
+if sklearn_check_version('1.3'):
+    train_test_split = validate_params({
+        "test_size": [
+            Interval(RealNotInt, 0, 1, closed="neither"),
+            Interval(numbers.Integral, 1, None, closed="left"),
+            None,
+        ],
+        "train_size": [
+            Interval(RealNotInt, 0, 1, closed="neither"),
+            Interval(numbers.Integral, 1, None, closed="left"),
+            None,
+        ],
+        "random_state": ["random_state"],
+        "shuffle": ["boolean"],
+        "stratify": ["array-like", None],
+    })(train_test_split)

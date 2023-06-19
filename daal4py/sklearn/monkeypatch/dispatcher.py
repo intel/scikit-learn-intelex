@@ -18,13 +18,13 @@ from daal4py.sklearn._utils import set_idp_sklearn_verbose
 from ..neighbors import KNeighborsRegressor as KNeighborsRegressor_daal4py
 from ..neighbors import NearestNeighbors as NearestNeighbors_daal4py
 from ..neighbors import KNeighborsClassifier as KNeighborsClassifier_daal4py
-from ..model_selection import _daal_train_test_split
-from ..utils.validation import _daal_assert_all_finite
+from ..model_selection import train_test_split
+from ..utils.validation import _assert_all_finite
 from ..svm.svm import SVC as SVC_daal4py
 from ..ensemble._forest import RandomForestClassifier as RandomForestClassifier_daal4py
 from ..ensemble._forest import RandomForestRegressor as RandomForestRegressor_daal4py
-from ..metrics import _daal_roc_auc_score
-from ..metrics import daal_pairwise_distances
+from ..metrics import roc_auc_score
+from ..metrics import pairwise_distances
 from ..cluster.k_means import KMeans as KMeans_daal4py
 from ..cluster.dbscan import DBSCAN as DBSCAN_daal4py
 from ..linear_model.coordinate_descent import Lasso as Lasso_daal4py
@@ -60,7 +60,7 @@ def _get_map_of_algorithms():
         'pca': [[(decomposition_module, 'PCA', PCA_daal4py), None]],
         'kmeans': [[(cluster_module, 'KMeans', KMeans_daal4py), None]],
         'dbscan': [[(cluster_module, 'DBSCAN', DBSCAN_daal4py), None]],
-        'distances': [[(metrics, 'pairwise_distances', daal_pairwise_distances), None]],
+        'distances': [[(metrics, 'pairwise_distances', pairwise_distances), None]],
         'linear': [[(linear_model_module, 'LinearRegression',
                      LinearRegression_daal4py), None]],
         'ridge': [[(linear_model_module, 'Ridge', Ridge_daal4py), None]],
@@ -82,11 +82,11 @@ def _get_map_of_algorithms():
         'random_forest_regressor': [[(ensemble_module, 'RandomForestRegressor',
                                       RandomForestRegressor_daal4py), None]],
         'train_test_split': [[(model_selection, 'train_test_split',
-                               _daal_train_test_split), None]],
+                               train_test_split), None]],
         'fin_check': [[(validation, '_assert_all_finite',
-                        _daal_assert_all_finite), None]],
+                        _assert_all_finite), None]],
         'roc_auc_score': [[(metrics, 'roc_auc_score',
-                           _daal_roc_auc_score), None]],
+                           roc_auc_score), None]],
         'tsne': [[(manifold_module, 'TSNE', TSNE_daal4py), None]],
     }
     mapping['svc'] = mapping['svm']

@@ -15,4 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.metrics import daal_pairwise_distances as pairwise_distances
+from daal4py.sklearn.metrics import pairwise_distances

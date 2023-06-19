@@ -30,7 +30,7 @@ Prerequisites
 -------------
 
 For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
-requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
+requirements <https://www.intel.com/content/www/us/en/developer/articles/system-requirements/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
 
 DPC++ compiler runtime can be installed either from PyPI or Anaconda:
 
@@ -48,7 +48,7 @@ Device offloading
 |intelex| offers two options for running an algorithm on a
 specific device with the help of dpctl:
 
-- Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl.tensor_api.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.
+- Pass input data as `dpctl.tensor.usm_ndarray <https://intelpython.github.io/dpctl/latest/docfiles/dpctl/usm_ndarray.html#dpctl.tensor.usm_ndarray>`_ to the algorithm.
 
   The computation will run on the device where the input data is
   located, and the result will be returned as :code:`usm_ndarray` to the same
@@ -107,3 +107,7 @@ An example on how to patch your code with Intel CPU/GPU optimizations:
                [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
    with config_context(target_offload="gpu:0"):
       clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+
+Note: Current offloading behavior restricts fitting and inference of any models to be
+in the same context or absence of context. For example, a model trained in the GPU context with
+target_offload="gpu:0" throws an error if the inference is made outside the same GPU context.

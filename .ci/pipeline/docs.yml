@@ -52,7 +52,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip setuptools
       pip install flake8
-      flake8 --ignore=E265,E722,E402,F401,F403 --max-line-length=90 --count
+      flake8 --ignore=E265,E722,E402,F401,F403,W503 --max-line-length=90 --count
     displayName: 'PEP 8 check'
 - job: Docs
   pool:
@@ -69,7 +69,7 @@ jobs:
     displayName: 'apt-get'
   - script: |
       pip install daal-devel impi-devel
-      pip install -r requirements-dev.txt
+      pip install -r dependencies-dev
       pip install -r requirements-doc.txt
       pip install -r requirements-test.txt
       pip list

@@ -17,7 +17,7 @@
 
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version,
-    make2d, get_dtype
+    make2d, check_tree_nodes
 )
 
 import numpy as np
@@ -30,7 +30,7 @@ from abc import ABC
 
 from sklearn.exceptions import DataConversionWarning
 
-from ..._config import get_config, config_context
+from ..._config import get_config
 from ..._device_offload import dispatch, wrap_output_data
 
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
@@ -42,7 +42,7 @@ from sklearn.utils.validation import (
     check_array,
     check_X_y)
 
-from onedal.datatypes import _check_array, _num_features, _num_samples
+from onedal.datatypes import _num_features, _num_samples
 
 from sklearn.utils import check_random_state, deprecated
 
@@ -327,7 +327,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         -------
         self : object
         """
-        dispatch(self, 'ensemble.RandomForestClassifier.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestClassifier.fit,
         }, X, y, sample_weight)
@@ -412,7 +412,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        return dispatch(self, 'ensemble.RandomForestClassifier.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_RandomForestClassifier.predict,
         }, X)
@@ -456,7 +456,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     (f'X has {num_features} features, '
                      f'but RandomForestClassifier is expecting '
                      f'{self.n_features_in_} features as input'))
-        return dispatch(self, 'ensemble.RandomForestClassifier.predict_proba', {
+        return dispatch(self, 'predict_proba', {
             'onedal': self.__class__._onedal_predict_proba,
             'sklearn': sklearn_RandomForestClassifier.predict_proba,
         }, X)
@@ -517,7 +517,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
             est_i.tree_ = Tree(
                 self.n_features_in_,
@@ -532,7 +532,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestClassifier.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random':
                 warnings.warn("'random' splitter mode supports GPU devices only "
@@ -559,8 +559,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestClassifier.predict',
-                           'ensemble.RandomForestClassifier.predict_proba']:
+        if method_name in ['predict', 'predict_proba']:
             X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
@@ -578,7 +577,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestClassifier.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 101)):
@@ -607,8 +606,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestClassifier.predict',
-                           'ensemble.RandomForestClassifier.predict_proba']:
+        if method_name in ['predict', 'predict_proba']:
             X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
@@ -894,7 +892,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
 
             est_i.tree_ = Tree(
@@ -922,7 +920,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestRegressor.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random':
                 warnings.warn("'random' splitter mode supports GPU devices only "
@@ -954,8 +952,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestRegressor.predict',
-                           'ensemble.RandomForestRegressor.predict_proba']:
+        if method_name == 'predict':
             if not hasattr(self, '_onedal_model'):
                 return False
             elif sp.issparse(data[0]):
@@ -972,7 +969,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             f'Unknown method {method_name} in {self.__class__.__name__}')
 
     def _onedal_gpu_supported(self, method_name, *data):
-        if method_name == 'ensemble.RandomForestRegressor.fit':
+        if method_name == 'fit':
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == 'random' and \
                     not daal_check_version((2023, 'P', 101)):
@@ -1002,8 +999,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             else:
                 return True
-        if method_name in ['ensemble.RandomForestRegressor.predict',
-                           'ensemble.RandomForestRegressor.predict_proba']:
+        if method_name == 'predict':
             X = data[0]
             if not hasattr(self, '_onedal_model'):
                 return False
@@ -1117,7 +1113,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 "Either switch to `bootstrap=True` or set "
                 "`max_sample=None`."
             )
-        dispatch(self, 'ensemble.RandomForestRegressor.fit', {
+        dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_RandomForestRegressor.fit,
         }, X, y, sample_weight)
@@ -1145,7 +1141,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         y : ndarray of shape (n_samples,) or (n_samples, n_outputs)
             The predicted classes.
         """
-        return dispatch(self, 'ensemble.RandomForestRegressor.predict', {
+        return dispatch(self, 'predict', {
             'onedal': self.__class__._onedal_predict,
             'sklearn': sklearn_RandomForestRegressor.predict,
         }, X)

@@ -165,7 +165,7 @@ if __name__ == "__main__":
     if dpctl_available:
         devices.append(None)
         devices.append(dpctl.SyclQueue('cpu'))
-        if dpctl.has_gpu_devices:
+        if dpctl.has_gpu_devices():
             devices.append(dpctl.SyclQueue('gpu'))
 
     else:
