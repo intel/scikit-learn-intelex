@@ -35,11 +35,12 @@ else:
 from onedal.basic_statistics import BasicStatistics
 
 from ..common._policy import _get_policy
+from ..datatypes.validation import _is_arraylike_not_scalar
 from ..datatypes._data_conversion import from_table, to_table
 
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils.validation import check_is_fitted
 from sklearn.utils import check_random_state, check_array
-from sklearn.utils.validation import _is_arraylike_not_scalar, check_is_fitted
 
 from sklearn.base import (
     BaseEstimator,
