@@ -431,7 +431,6 @@ packages_with_tests = [
     'onedal.datatypes',
     'onedal.decomposition',
     'onedal.ensemble',
-    'onedal.kmeans',
     'onedal.neighbors',
     'onedal.primitives',
     'onedal.svm']

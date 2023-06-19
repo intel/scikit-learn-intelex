@@ -40,7 +40,7 @@ except ImportError:
     _is_dpc_backend = False
 
 
-__all__ = ['decomposition', 'ensemble', 'kmeans', 'neighbors', 'primitives', 'svm']
+__all__ = ['decomposition', 'ensemble', 'neighbors', 'primitives', 'svm']
 
 if _is_dpc_backend:
     __all__.append('spmd')
@@ -53,7 +53,7 @@ if daal_check_version((2023, 'P', 100)):
                     'spmd.linear_model', 'spmd.neighbors']
 
 if daal_check_version((2023, 'P', 200)):
-    __all__ += ['kmeans_init']
+    __all__ += ['cluster']
 
     if _is_dpc_backend:
         __all__ += ['spmd.cluster']

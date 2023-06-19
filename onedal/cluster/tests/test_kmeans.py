@@ -16,8 +16,9 @@
 
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+
+from numpy.testing import assert_array_equal
+from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, 'P', 200)):
     from onedal.cluster import KMeans
