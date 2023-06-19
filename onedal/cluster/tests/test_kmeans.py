@@ -26,9 +26,6 @@ if daal_check_version((2023, 'P', 200)):
     from onedal.tests.utils._device_selection import get_queues
 
     from sklearn.cluster import kmeans_plusplus as init_external
-    from sklearn.datasets import load_breast_cancer
-    from sklearn.metrics import davies_bouldin_score
-    from sklearn.model_selection import train_test_split
 
     from sklearn.neighbors import NearestNeighbors
 

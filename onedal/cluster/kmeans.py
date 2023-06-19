@@ -28,7 +28,7 @@ from daal4py.sklearn._utils import daal_check_version
 from ..datatypes import _convert_to_supported
 
 if daal_check_version((2023, 'P', 200)):
-    from ..kmeans_init import KMeansInit
+    from .kmeans_init import KMeansInit
 else:
     from sklearn.cluster import _kmeans_plusplus
 
@@ -42,7 +42,6 @@ from sklearn.utils import check_random_state, check_array
 from sklearn.utils.validation import _is_arraylike_not_scalar, check_is_fitted
 
 from sklearn.base import (
-    ClassNamePrefixFeaturesOutMixin,
     BaseEstimator,
     ClusterMixin,
     TransformerMixin)
