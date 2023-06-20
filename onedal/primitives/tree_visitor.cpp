@@ -268,7 +268,7 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     }
     _onLeafNode(info);
     OVERFLOW_CHECK_BY_ADDING(std::size_t, node_id * 1 * this->class_count, info.get_response());
-    this->value_ar[node_id * 1 * this->class_count + info.get_response()] += info.get_sample_count();
+    this->value_ar[node_id * this->class_count + info.get_response()] += info.get_sample_count();
 
     // wrap-up
     ++node_id;
