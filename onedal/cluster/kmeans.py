@@ -276,15 +276,14 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         best_inertia, best_labels = None, None
 
         def is_better_iteration(inertia, labels):
-            curr_labels = from_table(labels).ravel()
             if best_inertia is None:
-                return (True, curr_labels)
+                return True
             else:
+                mod = _backend.kmeans_common
                 better_inertia = inertia < best_inertia
-                same_clusters = _is_same_clustering(
-                    curr_labels, best_labels, self.n_clusters)
-                check = better_inertia and not same_clusters
-                return (check, curr_labels)
+                same_clusters = mod._is_same_clustering(
+                    labels, best_labels, self.n_clusters)
+                return better_inertia and not same_clusters
 
         random_state = check_random_state(self.random_state)
 
@@ -320,13 +319,21 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                       "inertia {}.".format(inertia)
                       )
 
-            check, labels = is_better_iteration(inertia, labels)
-
-            if check:
+            if is_better_iteration(inertia, labels):
                 best_model, best_n_iter = model, n_iter
                 best_inertia, best_labels = inertia, labels
 
-        distinct_clusters = len(np.unique(best_labels))
+        # Types without conversion
+        self.model_ = best_model
+
+        # Simple types
+        self.n_iter_ = best_n_iter
+        self.inertia_ = best_inertia
+
+        # Complex type conversion
+        self.labels_ = from_table(best_labels).ravel()
+
+        distinct_clusters = len(np.unique(self.labels_))
         if distinct_clusters < self.n_clusters:
             warnings.warn(
                 "Number of distinct clusters ({}) found smaller than "
@@ -335,11 +342,6 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 ConvergenceWarning,
                 stacklevel=2,
             )
-
-        self.model_ = best_model
-        self.n_iter_ = best_n_iter
-        self.labels_ = best_labels
-        self.inertia_ = best_inertia
 
         return self
 
@@ -361,6 +363,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         self.model_ = _backend.kmeans.clustering.model()
         self.model_.centroids = to_table(self._cluster_centers_)
         self.n_features_in_ = self.model_.centroids.column_count
+        self.labels_ = np.arange(self.model_.centroids.row_count)
 
         return self
 
