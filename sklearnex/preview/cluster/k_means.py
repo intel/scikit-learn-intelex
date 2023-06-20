@@ -153,7 +153,7 @@ if daal_check_version((2023, 'P', 200)):
             sample_count = _num_samples(X)
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd"]
-            correct_count = self.n_clusters <= sample_count
+            correct_count = self.n_clusters < sample_count
 
             patching_status.and_conditions([
                 (self.algorithm in supported_algs, 'Only lloyd algorithm is supported.'),
