@@ -36,11 +36,11 @@ bool is_same_clustering(const dal::table& left,
     row_accessor<const std::int32_t> l_acc{ left };
     row_accessor<const std::int32_t> r_acc{ right };
 
-    if (left.get_row_count() > 1 || right.get_row_count() > 1)
-        throw std::length_error("Too many rows in input table");
+    if (left.get_column_count() > 1 || right.get_column_count() > 1)
+        throw std::length_error("Too many columns in input table");
 
-    const auto l_arr = l_acc.pull({0, 1});
-    const auto r_arr = r_acc.pull({0, 1});
+    const auto l_arr = l_acc.pull({0, -1});
+    const auto r_arr = r_acc.pull({0, -1});
 
     if (n_clusters < 1)
         throw std::invalid_argument("Invalid number of clusters");
