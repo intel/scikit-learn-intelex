@@ -47,6 +47,8 @@ steps:
     displayName: Conda build
   - script: |
       export PATH=${PWD}/aliases:${PATH}
+      export CC=gcc
+      export CXX=g++
       source activate CB
       bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
