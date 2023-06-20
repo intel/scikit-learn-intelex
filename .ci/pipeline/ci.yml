@@ -43,6 +43,8 @@ variables:
     value: python
   - name: 'ARGS'
     value: '1'
+  - name: 'SELECTED_TESTS'
+    value: 'all'
 
 jobs:
 - job: PEP8
@@ -59,69 +61,13 @@ jobs:
       flake8 --ignore=E265,E722,E402,F401,F403,W503 --max-line-length=90 --count
     displayName: 'PEP 8 check'
 
-- job: Linux
-  strategy:
-    matrix:
-      Python3.7_Sklearn1.0:
-        PYTHON_VERSION: '3.7'
-        SKLEARN_VERSION: '1.0'
-      Python3.8_Sklearn0.24:
-        PYTHON_VERSION: '3.8'
-        SKLEARN_VERSION: '0.24'
-      Python3.9_Sklearn1.0:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.0'
-      Python3.10_Sklearn1.1:
-        PYTHON_VERSION: '3.10'
-        SKLEARN_VERSION: '1.1'
-      Python3.11_Sklearn1.2:
-        PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: '1.2'
-  pool:
-    vmImage: 'ubuntu-22.04'
-  steps:
-  - template: build-and-test-lnx.yml
 - job: MacOS
   strategy:
     matrix:
-      Python3.7_Sklearn1.0:
-        PYTHON_VERSION: '3.7'
-        SKLEARN_VERSION: '1.0'
-      Python3.8_Sklearn0.24:
-        PYTHON_VERSION: '3.8'
-        SKLEARN_VERSION: '0.24'
-      Python3.9_Sklearn1.0:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.0'
-      Python3.10_Sklearn1.1:
-        PYTHON_VERSION: '3.10'
-        SKLEARN_VERSION: '1.1'
-      Python3.11_Sklearn1.2:
+      Python3.11_SklearnMain:
         PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: '1.2'
+        SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'macos-12'
   steps:
   - template: build-and-test-mac.yml
-- job: Windows
-  strategy:
-    matrix:
-      Python3.7_Sklearn1.0:
-        PYTHON_VERSION: '3.7'
-        SKLEARN_VERSION: '1.0'
-      Python3.8_Sklearn0.24:
-        PYTHON_VERSION: '3.8'
-        SKLEARN_VERSION: '0.24'
-      Python3.9_Sklearn1.0:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.0'
-      Python3.10_Sklearn1.1:
-        PYTHON_VERSION: '3.10'
-        SKLEARN_VERSION: '1.1'
-      Python3.11_Sklearn1.2:
-        PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: '1.2'
-  pool:
-    vmImage: 'windows-latest'
-  steps:
-  - template: build-and-test-win.yml
