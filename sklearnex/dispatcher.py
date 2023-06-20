@@ -23,9 +23,8 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 
 def _is_new_patching_available():
-    return os.environ.get("OFF_ONEDAL_IFACE") is None and daal_check_version(
-        (2021, "P", 300)
-    )
+    return os.environ.get("OFF_ONEDAL_IFACE") is None and \
+        daal_check_version((2021, "P", 300))
 
 
 def _is_preview_enabled():
@@ -70,6 +69,8 @@ def get_patch_map():
             RandomForestClassifier as RandomForestClassifier_sklearnex,
             RandomForestRegressor as RandomForestRegressor_sklearnex,
         )
+        from .preview.logistic_regression import \
+            LogisticRegression as LogisticRegression_sklearnex
         if (sklearn_check_version('1.1')):
             from .preview.objective_function import \
                 LinearModelLoss as LinearModelLoss_sklearnex
@@ -77,19 +78,25 @@ def get_patch_map():
         # Patch for mapping
         if _is_preview_enabled():
 
-            if (sklearn_check_version('1.1')):
-                # LinearModelLoss
-                mapping.pop("logisticregression")
-                mapping.pop("logistic")
-                mapping.pop("log_reg")
-                mapping["logreg_logloss"] = [
-                    [
-                        (logistic_regression_module,
-                         "LinearModelLoss",
-                         LinearModelLoss_sklearnex),
-                        None,
-                    ]
+            mapping.pop("logisticregression")
+            mapping.pop("logistic")
+            mapping.pop("log_reg")
+            mapping["logistic_regression"] = [
+                [
+                    (linear_model_module,
+                     "LogisticRegression",
+                     LogisticRegression_sklearnex),
+                    None
                 ]
+            ]
+            mapping["logreg_logloss"] = [
+                [
+                    (logistic_regression_module,
+                     "LinearModelLoss",
+                     LinearModelLoss_sklearnex),
+                    None,
+                ]
+            ]
 
             # Ensemble
             mapping["extra_trees_classifier"] = [[(ensemble_module,

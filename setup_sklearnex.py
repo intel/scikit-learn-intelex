@@ -84,6 +84,7 @@ packages_with_tests = [
     'sklearnex.preview.ensemble',
     'sklearnex.preview.linear_model',
     'sklearnex.preview.objective_function',
+    'sklearnex.preview.logistic_regression',
     'sklearnex.svm',
     'sklearnex.utils']
 

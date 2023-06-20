@@ -68,25 +68,25 @@ if sklearn_check_version('1.1'):
                     = data
 
                 if sp.issparse(coef) or sp.issparse(X) or sp.issparse(y):
-                    raise ValueError("sparse data is not supported.")
+                    return False
                 if (l2_reg_strength < 0.0):
                     raise ValueError("l2_reg_strength should be greater than zero")
                 if (n_threads != 1):
-                    raise ValueError("multithreading is not supported")
+                    return False
                 if (sample_weight is not None) and \
                         (not np.array_equal(sample_weight, np.ones_like(sample_weight))):
-                    raise ValueError("sample_weigth parameter is not supported")
+                    return False
                 if (raw_prediction is not None):
-                    raise ValueError("raw predictions are not supported")
+                    return False
 
                 if not self._test_type_and_finiteness(coef):
-                    raise ValueError("Input coef is not supported")
+                    return False
 
                 if not self._test_type_and_finiteness(X):
-                    raise ValueError("Input X is not supported")
+                    return False
 
                 if not self._test_type_and_finiteness(y):
-                    raise ValueError("Input y is not supported")
+                    return False
 
                 return True
 
@@ -158,7 +158,7 @@ if sklearn_check_version('1.1'):
                     l2_reg_strength=0.0,
                     n_threads=1,
                     raw_prediction=None,):
-                if type(self.base_loss == HalfBinomialLoss):
+                if type(self.base_loss) == HalfBinomialLoss:
                     return dispatch(self,
                                     'loss_gradient',
                                     {'onedal': self.__class__.onedal_loss_gradient,

@@ -15,6 +15,10 @@
 # ===============================================================================
 
 from sklearnex import patch_sklearn, unpatch_sklearn
+from daal4py.oneapi import sycl_context
+
+from dpctl import SyclQueue
+import dpctl.tensor as dpt
 
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -35,4 +39,35 @@ patch_sklearn(preview=True)
 
 model_cpu = LogisticRegression(solver='lbfgs', fit_intercept=True)
 y_pred_cpu = model_cpu.fit(X_train, y_train).predict(X_test)
-print("CPU optimized version, accuracy on test:", accuracy_score(y_test, y_pred_cpu))
+print(
+    "Sklearnex optimized version on CPU, accuracy on test:",
+    accuracy_score(
+        y_test,
+        y_pred_cpu))
+
+with sycl_context("gpu"):
+    model_gpu = LogisticRegression(solver='lbfgs', fit_intercept=True)
+    y_pred_gpu = model_gpu.fit(X_train, y_train).predict(X_test)
+    print(
+        "Sklearnex optimized version on GPU, accuracy on test:",
+        accuracy_score(
+            y_test,
+            y_pred_gpu))
+
+
+''' DPCTL tensor support
+    Please note that regardless of where input
+    dpctl tensors are stored CPU implementation will be used.
+    To use gpu implementation please specify it with sycl_context.
+'''
+
+dpt_X_train = dpt.asarray(X_train)
+dpt_X_test = dpt.asarray(X_test)
+dpt_y_train = dpt.asarray(y_train)
+
+model = LogisticRegression(solver='lbfgs', fit_intercept=True)
+dpt_y_pred = model.fit(dpt_X_train, dpt_y_train).predict(dpt_X_test)
+y_pred = dpt.to_numpy(dpt_y_pred)
+
+print("Sklearnex optimized version with dpctl tensors:",
+      accuracy_score(y_test, y_pred_gpu))
