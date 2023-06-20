@@ -47,8 +47,6 @@ from sklearn.base import (
     ClusterMixin,
     TransformerMixin)
 
-from sklearn.cluster._k_means_common import _is_same_clustering
-
 from sklearn.metrics.pairwise import euclidean_distances
 
 
