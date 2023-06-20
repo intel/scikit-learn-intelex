@@ -15,6 +15,14 @@
 #===============================================================================
 steps:
   - script: |
+      brew install gcc@12
+      mkdir -p ${PWD}/aliases
+      ln -s /usr/local/bin/gcc-12 ${PWD}/aliases/gcc
+      ln -s /usr/local/bin/g++-12 ${PWD}/aliases/g++
+      ln -s /usr/local/bin/c++-12 ${PWD}/aliases/c++
+      ln -s /usr/local/bin/cpp-12 ${PWD}/aliases/cpp
+    displayName: 'install gcc@12'
+  - script: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
@@ -38,6 +46,7 @@ steps:
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: Conda build
   - script: |
+      export PATH=${PWD}/aliases:${PATH}
       source activate CB
       bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
