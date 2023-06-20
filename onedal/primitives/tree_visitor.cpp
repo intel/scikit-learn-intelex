@@ -186,7 +186,7 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t
     this->class_count = _max_n_classes;
     OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, this->node_count, this->class_count);
     this->node_ar = new skl_tree_node[this->node_count];
-    this->value_ar = new double[this->node_count*1*this->class_count](); // oneDAL only supports scalar responses for now
+    this->value_ar = new double[this->node_count * this->class_count](); // oneDAL only supports scalar responses for now
 }
 
 template <typename Task>
