@@ -15,7 +15,7 @@
 # ===============================================================================
 
 from ..._device_offload import dispatch, wrap_output_data
-from ...utils.validation import assert_all_finite
+from ...utils.validation import _assert_all_finite
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 import logging
@@ -76,11 +76,6 @@ class LogisticRegression(sklearn_LogisticRegression):
             'sklearn': sklearn_LogisticRegression.fit,
         }, X, y, sample_weight)
         return self
-
-    # LogisticRegression.fit -> logistic_regression_path -> LinaerModelLoss
-    # dctl tensor(q) X, q
-
-    # LinearModelLoss - onedal
 
     def predict_onedal(self, X, queue=None):
         return super().predict(X)

@@ -36,6 +36,7 @@ y_pred = model.fit(X_train, y_train).predict(X_test)
 print("Sklearn LogisticRegression, accuracy on test:", accuracy_score(y_test, y_pred))
 
 patch_sklearn(preview=True)
+from sklearn.linear_model import LogisticRegression
 
 model_cpu = LogisticRegression(solver='lbfgs', fit_intercept=True)
 y_pred_cpu = model_cpu.fit(X_train, y_train).predict(X_test)
@@ -60,13 +61,14 @@ with sycl_context("gpu"):
     dpctl tensors are stored CPU implementation will be used.
     To use gpu implementation please specify it with sycl_context.
 '''
-
-dpt_X_train = dpt.asarray(X_train)
-dpt_X_test = dpt.asarray(X_test)
-dpt_y_train = dpt.asarray(y_train)
+queue = SyclQueue("gpu")
+dpt_X_train = dpt.asarray(X_train, usm_type="device", sycl_queue=queue)
+dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=queue)
+dpt_y_train = dpt.asarray(y_train, usm_type="device", sycl_queue=queue)
 
 model = LogisticRegression(solver='lbfgs', fit_intercept=True)
-dpt_y_pred = model.fit(dpt_X_train, dpt_y_train).predict(dpt_X_test)
+model.fit(dpt_X_train, dpt_y_train)
+dpt_y_pred = model.predict(dpt_X_test)
 y_pred = dpt.to_numpy(dpt_y_pred)
 
 print("Sklearnex optimized version with dpctl tensors:",
