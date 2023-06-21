@@ -33,16 +33,11 @@ except ImportError:
         return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 try:
-    from dpctx import device_context, device_type
-    with device_context(device_type.gpu, 0):
+    from daal4py.oneapi import sycl_context
+    with sycl_context('gpu'):
         gpu_available = True
 except:
-    try:
-        from daal4py.oneapi import sycl_context
-        with sycl_context('gpu'):
-            gpu_available = True
-    except:
-        gpu_available = False
+    gpu_available = False
 
 
 # Commone code for both CPU and GPU computations
@@ -83,26 +78,10 @@ def main(readcsv=read_csv, method='svdDense'):
     result_classic = compute(data)
 
     data = to_numpy(data)
-    try:
-        from dpctx import device_context, device_type
-
-        def gpu_context():
-            return device_context(device_type.gpu, 0)
-
-        def cpu_context():
-            return device_context(device_type.cpu, 0)
-    except:
-        from daal4py.oneapi import sycl_context
-
-        def gpu_context():
-            return sycl_context('gpu')
-
-        def cpu_context():
-            return sycl_context('cpu')
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with gpu_context():
+        with sycl_context('gpu'):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data)
         assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues, atol=1e-5)
@@ -112,7 +91,7 @@ def main(readcsv=read_csv, method='svdDense'):
         assert np.allclose(result_classic.variances, result_gpu.variances, atol=1e-5)
 
     # It is possible to specify to make the computations on CPU
-    with cpu_context():
+    with sycl_context('cpu'):
         sycl_data = sycl_buffer(data)
         result_cpu = compute(sycl_data)
 

@@ -403,9 +403,9 @@ class build(orig_build.build, custom_build):
 
 
 project_urls = {
-    'Bug Tracker': 'https://github.com/IntelPython/daal4py/issues',
+    'Bug Tracker': 'https://github.com/intel/scikit-learn-intelex',
     'Documentation': 'https://intelpython.github.io/daal4py/',
-    'Source Code': 'https://github.com/IntelPython/daal4py'
+    'Source Code': 'https://github.com/intel/scikit-learn-intelex/daal4py'
 }
 
 with open('README.md', 'r', encoding='utf8') as f:
@@ -463,8 +463,8 @@ setup(
     license="Apache-2.0",
     author="Intel Corporation",
     version=d4p_version,
-    url='https://github.com/IntelPython/daal4py',
-    author_email="scripting@intel.com",
+    url='https://github.com/intel/scikit-learn-intelex',
+    author_email="onedal.maintainers@intel.com",
     maintainer_email="onedal.maintainers@intel.com",
     project_urls=project_urls,
     cmdclass={'develop': develop, 'build': build, 'build_ext': parallel_build_ext},

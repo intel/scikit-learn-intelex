@@ -24,14 +24,15 @@ import scipy.sparse as sp
 from numpy.core.numeric import ComplexWarning
 from sklearn.utils.validation import (_num_samples, _ensure_no_complex_data,
                                       _ensure_sparse_format, column_or_1d,
-                                      check_consistent_length, _assert_all_finite)
+                                      check_consistent_length)
+from sklearn.utils.validation import _assert_all_finite as _sklearn_assert_all_finite
 from sklearn.utils.extmath import _safe_accumulator_op
 from .._utils import (is_DataFrame, get_dtype, get_number_of_types,
                       sklearn_check_version, PatchingConditionsChain)
 
 
-def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
-                            estimator_name=None, input_name=""):
+def _assert_all_finite(X, allow_nan=False, msg_dtype=None,
+                       estimator_name=None, input_name=""):
     if _get_config()['assume_finite']:
         return
 
@@ -40,10 +41,11 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
     if hasattr(X, 'size'):
         if X.size < 32768:
             if sklearn_check_version("1.1"):
-                _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype,
-                                   estimator_name=estimator_name, input_name=input_name)
+                _sklearn_assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype,
+                                           estimator_name=estimator_name,
+                                           input_name=input_name)
             else:
-                _assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
+                _sklearn_assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
             return
 
     is_df = is_DataFrame(X)
@@ -106,7 +108,7 @@ def _daal_assert_all_finite(X, allow_nan=False, msg_dtype=None,
 def _pandas_check_array(array, array_orig, force_all_finite, ensure_min_samples,
                         ensure_min_features, copy, context):
     if force_all_finite:
-        _daal_assert_all_finite(array, allow_nan=force_all_finite == 'allow-nan')
+        _assert_all_finite(array, allow_nan=force_all_finite == 'allow-nan')
 
     if ensure_min_samples > 0:
         n_samples = _num_samples(array)
@@ -333,8 +335,8 @@ def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
                     # then conversion float -> int would be disallowed.
                     array = np.asarray(array, order=order)
                     if array.dtype.kind == 'f':
-                        _daal_assert_all_finite(array, allow_nan=False,
-                                                msg_dtype=dtype)
+                        _assert_all_finite(array, allow_nan=False,
+                                           msg_dtype=dtype)
                     array = array.astype(dtype, casting="unsafe", copy=False)
                 else:
                     array = np.asarray(array, order=order, dtype=dtype)
@@ -383,8 +385,7 @@ def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
                              % (array.ndim, estimator_name))
 
         if force_all_finite:
-            _daal_assert_all_finite(array,
-                                    allow_nan=force_all_finite == 'allow-nan')
+            _assert_all_finite(array, allow_nan=force_all_finite == 'allow-nan')
 
     if ensure_min_samples > 0:
         n_samples = _num_samples(array)
@@ -529,7 +530,7 @@ def _daal_check_X_y(X, y, accept_sparse=False, *, accept_large_sparse=True,
                               ensure_2d=False, dtype=None)
     else:
         y = column_or_1d(y, warn=True)
-        _daal_assert_all_finite(y)
+        _assert_all_finite(y)
     if y_numeric and hasattr(y, 'dtype') and y.dtype.kind == 'O':
         y = y.astype(np.float64)
 

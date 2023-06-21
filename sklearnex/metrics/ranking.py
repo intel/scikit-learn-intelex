@@ -15,4 +15,4 @@
 # limitations under the License.
 #===============================================================================
 
-from daal4py.sklearn.metrics import _daal_roc_auc_score as roc_auc_score
+from daal4py.sklearn.metrics import roc_auc_score

@@ -154,7 +154,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 if max_samples > n_samples:
                     msg = "`max_samples` must be <= n_samples={} but got value {}"
                     raise ValueError(msg.format(n_samples, max_samples))
-            return float(max_samples / n_samples)
+            return max(float(max_samples / n_samples), 1 / n_samples)
 
         if isinstance(max_samples, numbers.Real):
             if sklearn_check_version('1.2'):
@@ -167,7 +167,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 if not (0 < float(max_samples) < 1):
                     msg = "`max_samples` must be in range (0, 1) but got value {}"
                     raise ValueError(msg.format(max_samples))
-            return float(max_samples)
+            return max(float(max_samples), 1 / n_samples)
 
         msg = "`max_samples` should be int or float, but got type '{}'"
         raise TypeError(msg.format(type(max_samples)))

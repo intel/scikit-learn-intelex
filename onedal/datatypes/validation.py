@@ -22,7 +22,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 from collections.abc import Sequence
 from numbers import Integral
-from daal4py.sklearn.utils.validation import _daal_assert_all_finite as assert_all_finite
+from daal4py.sklearn.utils.validation import _assert_all_finite
 
 
 class DataConversionWarning(UserWarning):
@@ -106,10 +106,10 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
     if force_all_finite:
         if sp.issparse(array):
             if hasattr(array, 'data'):
-                assert_all_finite(array.data)
+                _assert_all_finite(array.data)
                 force_all_finite = False
         else:
-            assert_all_finite(array)
+            _assert_all_finite(array)
             force_all_finite = False
     array = check_array(
         array=array,
@@ -160,7 +160,7 @@ def _check_X_y(
         y = _column_or_1d(y, warn=True)
     if y_numeric and y.dtype.kind == 'O':
         y = y.astype(np.float64)
-    assert_all_finite(y)
+    _assert_all_finite(y)
 
     lengths = [X.shape[0], y.shape[0]]
     uniques = np.unique(lengths)
@@ -233,7 +233,7 @@ def _type_of_target(y):
     # check float and contains non-integer float values
     if y.dtype.kind == 'f' and np.any(y != y.astype(int)):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
-        assert_all_finite(y)
+        _assert_all_finite(y)
         return 'continuous' + suffix
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):

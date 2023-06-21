@@ -23,7 +23,7 @@ if daal_check_version((2023, 'P', 100)):
     from ._common import BaseLinearRegression
     from ..._device_offload import dispatch, wrap_output_data
 
-    from ...utils.validation import assert_all_finite
+    from ...utils.validation import _assert_all_finite
     from daal4py.sklearn._utils import (
         get_dtype, make2d, sklearn_check_version, PatchingConditionsChain)
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
@@ -148,7 +148,7 @@ if daal_check_version((2023, 'P', 100)):
                 return False
 
             try:
-                assert_all_finite(X)
+                _assert_all_finite(X)
             except BaseException:
                 return False
             return True

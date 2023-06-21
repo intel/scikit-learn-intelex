@@ -250,10 +250,10 @@ deselected_tests:
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
   # Different results scikit-learn-intelex and scikit-learn linear regression with weights. Need to investigate.
-  - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=1.0
+  - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=0.24
 
   # Patched and unpatched kmeans set same values to different clusters. Need to investigate.
-  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=1.0
+  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
@@ -343,6 +343,11 @@ deselected_tests:
 
   # Temporary deselected up to 2021.6 release. Need to fix
   - ensemble/tests/test_bagging.py::test_classification
+
+  # Failure related to incompatibility of older sklearn versions with updated dependencies
+  - ensemble/_hist_gradient_boosting/tests/test_compare_lightgbm.py::test_same_predictions_multiclass_classification >=0.24,<1.0
+  - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=0.24,<1.0
+  - utils/tests/test_validation.py::test_check_array_pandas_dtype_casting >=1.0,<1.2
 
   # --------------------------------------------------------
   # No need to test daal4py patching
@@ -628,3 +633,87 @@ gpu:
   - model_selection/tests/test_validation.py::test_validation_curve_cv_splits_consistency
   - model_selection/tests/test_search.py::test_grid_search_cv_results
   - model_selection/tests/test_search.py::test_random_search_cv_results
+
+  # Segmentation faults on GPU
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob
+  - tests/test_common.py::test_search_cv
+
+  # KMeans based (unsupported for GPU)
+  - cluster/tests/test_k_means.py
+  - tests/test_common.py::test_estimators[KMeans()
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_check_is_fitted]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_check_is_fitted]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[BayesianGaussianMixture()]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[GaussianMixture()]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[KMeans()]
+  - tests/test_common.py::test_set_output_transform[KMeans()]
+  - tests/test_common.py::test_set_output_transform_pandas[KMeans()]
+  - tests/test_common.py::test_global_output_transform_pandas[KMeans()]
+  - mixture/tests/test_gaussian_mixture.py
+  - model_selection/tests/test_validation.py::test_cross_val_predict
+  - metrics/tests/test_score_objects.py::test_supervised_cluster_scorers
+  - tests/test_pipeline.py::test_fit_predict_on_pipeline
+  - tests/test_discriminant_analysis.py::test_lda_predict
+  # Other device issues
+  - tests/test_common.py::test_estimators[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])
+  - tests/test_common.py::test_estimators[VotingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])
+  - tests/test_common.py::test_check_n_features_in_after_fitting[SequentialFeatureSelector(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_check_n_features_in_after_fitting[VotingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_transformers_get_feature_names_out[RFE(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_transformers_get_feature_names_out[RFECV(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_transformers_get_feature_names_out[SequentialFeatureSelector(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_transformers_get_feature_names_out[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_transformers_get_feature_names_out[VotingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_set_output_transform[PCA()]
+  - tests/test_common.py::test_set_output_transform[RFE(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_set_output_transform[RFECV(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_set_output_transform[SequentialFeatureSelector(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_set_output_transform[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_set_output_transform[VotingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_set_output_transform_pandas[PCA()]
+  - tests/test_common.py::test_set_output_transform_pandas[RFE(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_set_output_transform_pandas[RFECV(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_set_output_transform_pandas[SequentialFeatureSelector(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_set_output_transform_pandas[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_set_output_transform_pandas[VotingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_global_output_transform_pandas[PCA()]
+  - tests/test_common.py::test_global_output_transform_pandas[RFE(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_global_output_transform_pandas[RFECV(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_global_output_transform_pandas[SequentialFeatureSelector(estimator=LogisticRegression(C=1))]
+  - tests/test_common.py::test_global_output_transform_pandas[StackingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_common.py::test_global_output_transform_pandas[VotingClassifier(estimators=[('est1',LogisticRegression(C=0.1)),('est2',LogisticRegression(C=1))])]
+  - tests/test_metaestimators.py::test_meta_estimators_delegate_data_validation[StackingClassifier]
+  - tests/test_multiclass.py::test_ovr_always_present
+  - tests/test_multiclass.py::test_support_missing_values[OneVsRestClassifier]
+  - tests/test_multiclass.py::test_support_missing_values[OneVsOneClassifier]
+  - tests/test_multioutput.py::test_multi_output_delegate_predict_proba
+  - tests/test_multioutput.py::test_classifier_chain_vs_independent_models
+  - tests/test_multioutput.py::test_base_chain_fit_and_predict
+  - tests/test_multioutput.py::test_base_chain_crossval_fit_and_predict
+  - tests/test_multioutput.py::test_multi_output_classes_[estimator1]
+  - tests/test_multioutput.py::test_multi_output_classes_[estimator2]
+  - tests/test_multioutput.py::test_support_missing_values[MultiOutputClassifier-LogisticRegression]
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order[list]
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order[array]
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order[tuple]
+  - tests/test_pipeline.py::test_pipeline_methods_anova
+  - tests/test_pipeline.py::test_pipeline_methods_pca_svm
+  - tests/test_pipeline.py::test_pipeline_score_samples_pca_lof
+  - tests/test_pipeline.py::test_score_samples_on_pipeline_without_score_samples
+  - tests/test_pipeline.py::test_pipeline_methods_preprocessing_svm
+  - tests/test_pipeline.py::test_pipeline_transform
+  - tests/test_pipeline.py::test_feature_union_weights
+  - tests/test_pipeline.py::test_classes_property
+  - tests/test_pipeline.py::test_set_feature_union_passthrough
+  - tests/test_pipeline.py::test_pipeline_missing_values_leniency
+  - tests/test_pipeline.py::test_pipeline_set_output_integration
+  - tests/test_pipeline.py::test_feature_union_set_output
+  - tests/test_parallel.py::test_dispatch_config_parallel[1]
+  - tests/test_parallel.py::test_dispatch_config_parallel[2]
+  # KD Tree (not implemented for GPU)
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-50-500-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-100-1000-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-50-500-l2-1000-5-100]
+  - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-100-1000-l2-1000-5-100]

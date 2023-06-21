@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 from sklearn.model_selection import train_test_split as skl_train_test_split
-from daal4py.sklearn.model_selection import _daal_train_test_split as d4p_train_test_split
+from daal4py.sklearn.model_selection import train_test_split as d4p_train_test_split
 from daal4py.sklearn._utils import daal_check_version
 from sklearn.datasets import make_classification
 

@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2022 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-# model builders are not available yet, coming soon
+
+[tool.black]
+line-length = 90
+target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
+extend-ignore = 'E203'

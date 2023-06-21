@@ -19,7 +19,7 @@ import types
 import tracemalloc
 from sklearnex import get_patch_map
 from sklearnex.model_selection import train_test_split
-from sklearnex.utils import assert_all_finite
+from sklearnex.utils import _assert_all_finite
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.preview.decomposition import PCA as PreviewPCA
 from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
@@ -52,8 +52,8 @@ class FiniteCheckEstimator:
         pass
 
     def fit(self, x, y):
-        assert_all_finite(x)
-        assert_all_finite(y)
+        _assert_all_finite(x)
+        _assert_all_finite(y)
 
 
 class PairwiseDistancesEstimator:

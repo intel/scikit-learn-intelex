@@ -17,7 +17,7 @@
 
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version,
-    make2d, get_dtype
+    make2d, check_tree_nodes
 )
 
 import numpy as np
@@ -30,7 +30,7 @@ from abc import ABC
 
 from sklearn.exceptions import DataConversionWarning
 
-from ..._config import get_config, config_context
+from ..._config import get_config
 from ..._device_offload import dispatch, wrap_output_data
 
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
@@ -42,7 +42,7 @@ from sklearn.utils.validation import (
     check_array,
     check_X_y)
 
-from onedal.datatypes import _check_array, _num_features, _num_samples
+from onedal.datatypes import _num_features, _num_samples
 
 from sklearn.utils import check_random_state, deprecated
 
@@ -517,7 +517,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
             est_i.tree_ = Tree(
                 self.n_features_in_,
@@ -892,7 +892,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             tree_i_state_dict = {
                 'max_depth': tree_i_state_class.max_depth,
                 'node_count': tree_i_state_class.node_count,
-                'nodes': tree_i_state_class.node_ar,
+                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
                 'values': tree_i_state_class.value_ar}
 
             est_i.tree_ = Tree(
