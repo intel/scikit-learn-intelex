@@ -21,7 +21,6 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 import logging
 from scipy import sparse as sp
 import numpy as np
-from daal4py.oneapi import sycl_context
 from daal4py.sklearn._utils import (
     get_dtype, make2d, PatchingConditionsChain)
 
@@ -30,7 +29,6 @@ from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegressio
 
 class LogisticRegression(sklearn_LogisticRegression):
     __doc__ = sklearn_LogisticRegression.__doc__
-    __parameter_constraints = dict = {**sklearn_LogisticRegression._parameter_constraints}
 
     def __init__(
         self,
