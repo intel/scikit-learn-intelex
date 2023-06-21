@@ -14,10 +14,11 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = [
-    'basic_statistics',
-    'cluster',
-    'decomposition',
-    'ensemble',
-    'linear_model',
-    'neighbors']
+from daal4py.sklearn._utils import daal_check_version
+
+if daal_check_version((2023, 'P', 200)):
+    from .kmeans import KMeans
+
+    __all__ = ['KMeans']
+else:
+    __all__ = []

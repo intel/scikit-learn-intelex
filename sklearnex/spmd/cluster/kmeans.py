@@ -14,10 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = [
-    'basic_statistics',
-    'cluster',
-    'decomposition',
-    'ensemble',
-    'linear_model',
-    'neighbors']
+from onedal.spmd.cluster import KMeans
+
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.

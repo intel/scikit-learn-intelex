@@ -442,6 +442,7 @@ if ONEDAL_VERSION >= 20230100:
 
 if ONEDAL_VERSION >= 20230200:
     packages_with_tests += [
+        'onedal.cluster',
         'onedal.objective_function']
 
 if build_distribute:
@@ -454,6 +455,9 @@ if build_distribute:
             'onedal.spmd.basic_statistics',
             'onedal.spmd.linear_model',
             'onedal.spmd.neighbors']
+    if ONEDAL_VERSION >= 20230200:
+        packages_with_tests += [
+            'onedal.spmd.cluster']
 
 setup(
     name="daal4py",

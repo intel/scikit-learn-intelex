@@ -80,6 +80,7 @@ packages_with_tests = [
     'sklearnex.model_selection',
     'sklearnex.neighbors',
     'sklearnex.preview',
+    'sklearnex.preview.cluster',
     'sklearnex.preview.decomposition',
     'sklearnex.preview.ensemble',
     'sklearnex.preview.linear_model',
@@ -98,6 +99,9 @@ if build_distribute:
             'sklearnex.spmd.basic_statistics',
             'sklearnex.spmd.linear_model',
             'sklearnex.spmd.neighbors']
+    if ONEDAL_VERSION >= 20230200:
+        packages_with_tests += [
+            'sklearnex.spmd.cluster']
 
 # sklearnex setup
 setup(name="scikit-learn-intelex",

@@ -54,3 +54,7 @@ if daal_check_version((2023, 'P', 100)):
 
 if daal_check_version((2023, 'P', 200)):
     __all__ += ['objective_function']
+    __all__ += ['cluster']
+
+    if _is_dpc_backend:
+        __all__ += ['spmd.cluster']

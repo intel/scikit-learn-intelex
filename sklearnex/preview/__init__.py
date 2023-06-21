@@ -16,8 +16,10 @@
 # ==============================================================================
 
 __all__ = [
+    'cluster',
     'decomposition',
     'linear_model',
     'ensemble',
     'objective_function',
     'logistic_regression']
+

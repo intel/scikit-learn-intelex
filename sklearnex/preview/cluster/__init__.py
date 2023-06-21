@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -14,10 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = [
-    'basic_statistics',
-    'cluster',
-    'decomposition',
-    'ensemble',
-    'linear_model',
-    'neighbors']
+from .k_means import KMeans
+
+__all__ = ['KMeans']
