@@ -116,10 +116,10 @@ using npy_dtype_t = decltype(NPY_FLOAT);
 using npy_to_dal_t = std::map<npy_dtype_t, dal::data_type>;
 using dal_to_npy_t = std::map<dal::data_type, npy_dtype_t>;
 
-ONEDAL_EXPORT const npy_to_dal_t& get_npy_to_dal_map();
-ONEDAL_EXPORT const dal_to_npy_t& get_dal_to_npy_map();
+const npy_to_dal_t& get_npy_to_dal_map();
+const dal_to_npy_t& get_dal_to_npy_map();
 
-ONEDAL_EXPORT dal::data_type convert_npy_to_dal_type(npy_dtype_t);
-ONEDAL_EXPORT npy_dtype_t convert_dal_to_npy_type(dal::data_type);
+dal::data_type convert_npy_to_dal_type(npy_dtype_t);
+npy_dtype_t convert_dal_to_npy_type(dal::data_type);
 
 } // namespace oneapi::dal::python

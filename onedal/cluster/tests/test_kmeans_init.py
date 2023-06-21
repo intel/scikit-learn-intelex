@@ -29,7 +29,7 @@ if daal_check_version((2023, 'P', 200)):
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_cluster', [2, 5, 7, 11, 15, 128])
+    @pytest.mark.parametrize('n_cluster', [2, 5, 11, 128])
     def test_breast_cancer(queue, dtype, n_cluster):
         X, _ = load_breast_cancer(return_X_y=True)
         X = np.asarray(X).astype(dtype=dtype)

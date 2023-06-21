@@ -82,11 +82,9 @@ bool is_same_clustering(const dal::table& left,
 } // namespace kmeans
 
 ONEDAL_PY_INIT_MODULE(kmeans_common) {
-
     auto sub = m.def_submodule("kmeans_common");
 
     sub.def("_is_same_clustering", &kmeans::is_same_clustering);
-
 } // ONEDAL_PY_INIT_MODULE(kmeans_common)
 
 } // namespace oneapi::dal::python::kmeans

@@ -92,7 +92,6 @@ ONEDAL_PY_INIT_MODULE(table) {
         return convert_from_dptensor(obj);
     });
 #endif // ONEDAL_DPCTL_INTEGRATION
-
 }
 
 } // namespace oneapi::dal::python

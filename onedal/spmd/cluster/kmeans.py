@@ -26,7 +26,6 @@ class BaseKMeansSPMD(ABC):
 
 
 class KMeans(BaseKMeansSPMD, KMeans_Batch):
-
     @support_usm_ndarray()
     def fit(self, X, queue=None):
         return super().fit(X, queue)
