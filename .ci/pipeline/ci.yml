@@ -60,6 +60,7 @@ jobs:
     displayName: 'PEP 8 check'
 
 - job: Linux
+  timeoutInMinutes: 120
   strategy:
     matrix:
       Python3.7_Sklearn1.0:
@@ -82,6 +83,7 @@ jobs:
   steps:
   - template: build-and-test-lnx.yml
 - job: MacOS
+  timeoutInMinutes: 120
   strategy:
     matrix:
       Python3.7_Sklearn1.0:
@@ -104,6 +106,7 @@ jobs:
   steps:
   - template: build-and-test-mac.yml
 - job: Windows
+  timeoutInMinutes: 120
   strategy:
     matrix:
       Python3.7_Sklearn1.0:
