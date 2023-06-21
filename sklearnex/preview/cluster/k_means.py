@@ -258,7 +258,7 @@ if daal_check_version((2023, 'P', 200)):
             if sklearn_check_version("1.2"):
                 self._validate_params()
 
-            return dispatch(self, 'fit', {
+            return dispatch(self, 'predict', {
                 'onedal': self.__class__._onedal_predict,
                 'sklearn': sklearn_KMeans.predict,
             }, X)
