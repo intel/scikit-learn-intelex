@@ -51,3 +51,9 @@ if daal_check_version((2023, 'P', 100)):
     if _is_dpc_backend:
         __all__ += ['spmd.basic_statistics', 'spmd.decomposition',
                     'spmd.linear_model', 'spmd.neighbors']
+
+if daal_check_version((2023, 'P', 200)):
+    __all__ += ['cluster']
+
+    if _is_dpc_backend:
+        __all__ += ['spmd.cluster']

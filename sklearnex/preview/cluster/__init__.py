@@ -15,4 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['cluster', 'decomposition', 'linear_model', 'ensemble']
+from .k_means import KMeans
+
+__all__ = ['KMeans']

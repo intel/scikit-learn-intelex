@@ -30,6 +30,16 @@ class DataConversionWarning(UserWarning):
     """
 
 
+def _is_arraylike(x):
+    """Returns whether the input is array-like."""
+    return hasattr(x, "__len__") or hasattr(x, "shape") or hasattr(x, "__array__")
+
+
+def _is_arraylike_not_scalar(array):
+    """Return True if array is array-like and not a scalar"""
+    return _is_arraylike(array) and not np.isscalar(array)
+
+
 def _column_or_1d(y, warn=False):
     y = np.asarray(y)
 

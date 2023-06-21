@@ -16,8 +16,12 @@
 
 #pragma once
 
+#include <map>
+
 #include <Python.h>
 #include <numpy/arrayobject.h>
+
+#include "oneapi/dal/common.hpp"
 
 #define SET_CTYPE_NPY_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
     switch (_T) {                                           \
@@ -105,3 +109,17 @@
 #define array_numdims(a)   PyArray_NDIM((PyArrayObject *)a)
 #define array_data(a)      PyArray_DATA((PyArrayObject *)a)
 #define array_size(a, i)   PyArray_DIM((PyArrayObject *)a, i)
+
+namespace oneapi::dal::python {
+
+using npy_dtype_t = decltype(NPY_FLOAT);
+using npy_to_dal_t = std::map<npy_dtype_t, dal::data_type>;
+using dal_to_npy_t = std::map<dal::data_type, npy_dtype_t>;
+
+const npy_to_dal_t& get_npy_to_dal_map();
+const dal_to_npy_t& get_dal_to_npy_map();
+
+dal::data_type convert_npy_to_dal_type(npy_dtype_t);
+npy_dtype_t convert_dal_to_npy_type(dal::data_type);
+
+} // namespace oneapi::dal::python
