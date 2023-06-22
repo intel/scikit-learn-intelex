@@ -15,14 +15,11 @@
 # ===============================================================================
 
 from ..._device_offload import dispatch, wrap_output_data
-from ...utils.validation import _assert_all_finite
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
-import logging
+from daal4py.sklearn._utils import sklearn_check_version
 from scipy import sparse as sp
 import numpy as np
-from daal4py.sklearn._utils import (
-    get_dtype, make2d, PatchingConditionsChain)
+from daal4py.sklearn._utils import PatchingConditionsChain
 
 from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
 
