@@ -43,7 +43,8 @@ if (sklearn_check_version('1.1')):
 
         logloss2, gradient2 = onedal_loss.loss_gradient(coef2, X, y)
 
-        gradient3, hessian, flag = onedal_loss.gradient_hessian(coef2, X, y)
+        if (sklearn_check_version('1.2')):
+            gradient3, hessian, flag = onedal_loss.gradient_hessian(coef2, X, y)
 
         gradient4, hessp = onedal_loss.gradient_hessian_product(coef2, X, y)
 
@@ -67,7 +68,8 @@ if (sklearn_check_version('1.1')):
         assert_allclose(logloss2, logloss_gth)
         assert_allclose(gradient, gradient_gth)
         assert_allclose(gradient2, gradient_gth)
-        assert_allclose(gradient3, gradient_gth)
+        if (sklearn_check_version('1.2')):
+            assert_allclose(gradient3, gradient_gth)
         assert_allclose(gradient4, gradient_gth)
         assert_allclose(hessian, hessian_gth)
         assert_allclose(hessp(np.ones(5)), hessp_res_gth)

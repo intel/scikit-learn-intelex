@@ -22,4 +22,3 @@ __all__ = [
     'ensemble',
     'objective_function',
     'logistic_regression']
-

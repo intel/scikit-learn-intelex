@@ -80,25 +80,26 @@ def get_patch_map():
         # Patch for mapping
         if _is_preview_enabled():
 
-            mapping.pop("logisticregression")
-            mapping.pop("logistic")
-            mapping.pop("log_reg")
-            mapping["logistic_regression"] = [
-                [
-                    (linear_model_module,
-                     "LogisticRegression",
-                     LogisticRegression_sklearnex),
-                    None
+            if (sklearn_check_version('1.1')):
+                mapping.pop("logisticregression")
+                mapping.pop("logistic")
+                mapping.pop("log_reg")
+                mapping["logistic_regression"] = [
+                    [
+                        (linear_model_module,
+                            "LogisticRegression",
+                            LogisticRegression_sklearnex),
+                        None
+                    ]
                 ]
-            ]
-            mapping["logreg_logloss"] = [
-                [
-                    (logistic_regression_module,
-                     "LinearModelLoss",
-                     LinearModelLoss_sklearnex),
-                    None,
+                mapping["logreg_logloss"] = [
+                    [
+                        (logistic_regression_module,
+                         "LinearModelLoss",
+                         LinearModelLoss_sklearnex),
+                        None,
+                    ]
                 ]
-            ]
 
             # Ensemble
             mapping["extra_trees_classifier"] = [[(ensemble_module,
