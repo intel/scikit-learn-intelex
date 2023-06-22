@@ -68,11 +68,12 @@ if (sklearn_check_version('1.1')):
         assert_allclose(logloss2, logloss_gth)
         assert_allclose(gradient, gradient_gth)
         assert_allclose(gradient2, gradient_gth)
+        assert_allclose(gradient4, gradient_gth)
+        assert_allclose(hessp(np.ones(5)), hessp_res_gth)
+
         if (sklearn_check_version('1.2')):
             assert_allclose(gradient3, gradient_gth)
-        assert_allclose(gradient4, gradient_gth)
-        assert_allclose(hessian, hessian_gth)
-        assert_allclose(hessp(np.ones(5)), hessp_res_gth)
+            assert_allclose(hessian, hessian_gth)
 
         if daal_check_version((2023, 'P', 200)):
             assert 'sklearnex' in onedal_loss.__module__
