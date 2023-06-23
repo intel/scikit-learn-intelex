@@ -73,8 +73,8 @@ The following algorithms support streaming:
 
 - Covariance
 
-  - `Covariance <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/covariance_streaming.py`_
+  - `Covariance <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/covariance_streaming.py>`_
 
 - QR
 
-  - `QR <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/qr_streaming.py`_
+  - `QR <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/qr_streaming.py>`_
