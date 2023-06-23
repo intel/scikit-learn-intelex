@@ -77,6 +77,7 @@ Important Links
    verbose.rst
    distributed-mode.rst
    oneAPI and GPU support <oneapi-gpu.rst>
+   deprecation.rst
 
 .. toctree::
    :caption: Community
