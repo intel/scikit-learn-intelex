@@ -27,3 +27,4 @@ Quick Start
    - :ref:`Supported algorithms and parameters <sklearn_algorithms>`
    - :ref:`samples`
    .. - :ref:`global_patching`
+   Getting Started Guide: https://www.intel.com/content/www/us/en/developer/articles/guide/intel-extension-for-scikit-learn-getting-started.html
