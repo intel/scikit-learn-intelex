@@ -49,7 +49,7 @@ print(
         y_test,
         y_pred_cpu))
 
-if (sklearn_check_version('1.1') and daal_check_version((2021, 'P', 200))):
+if (sklearn_check_version('1.1') and daal_check_version((2023, 'P', 200))):
 
     with sycl_context("gpu"):
         model_gpu = LogisticRegression(solver='lbfgs', fit_intercept=True)
