@@ -93,8 +93,8 @@ elseif(IFACE STREQUAL "dpc")
     if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
         set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
     endif()
-    
-    if(CMAKE_C_COMPILER MATCHES ".*icx")
+
+    if(CMAKE_C_COMPILER MATCHES ".*icpx" OR CMAKE_C_COMPILER MATCHES ".*icx")
         set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS}")
     endif()
 

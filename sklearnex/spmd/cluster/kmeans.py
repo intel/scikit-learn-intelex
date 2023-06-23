@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,4 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['cluster', 'decomposition', 'linear_model', 'ensemble']
+from onedal.spmd.cluster import KMeans
+
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.

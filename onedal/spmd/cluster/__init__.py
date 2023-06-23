@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,4 +14,11 @@
 # limitations under the License.
 #===============================================================================
 
-__all__ = ['cluster', 'decomposition', 'linear_model', 'ensemble']
+from daal4py.sklearn._utils import daal_check_version
+
+if daal_check_version((2023, 'P', 200)):
+    from .kmeans import KMeans
+
+    __all__ = ['KMeans']
+else:
+    __all__ = []
