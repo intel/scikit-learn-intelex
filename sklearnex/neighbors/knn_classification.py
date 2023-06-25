@@ -127,109 +127,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
                 n_jobs=n_jobs, **kwargs)
 
     def fit(self, X, y):
-        if sklearn_check_version("1.2"):
-            self._validate_params()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
-        if self.metric_params is not None and 'p' in self.metric_params:
-            if self.p is not None:
-                warnings.warn("Parameter p is found in metric_params. "
-                              "The corresponding parameter from __init__ "
-                              "is ignored.", SyntaxWarning, stacklevel=2)
-            self.effective_metric_params_ = self.metric_params.copy()
-            effective_p = self.metric_params["p"]
-        else:
-            self.effective_metric_params_ = {}
-            effective_p = self.p
-
-        if self.metric in ["minkowski"]:
-            self.effective_metric_params_["p"] = effective_p
-
-        self.effective_metric_ = self.metric
-        # For minkowski distance, use more efficient methods where available
-        if self.metric == "minkowski":
-            p = self.effective_metric_params_.pop("p", 2)
-            if p == 1:
-                self.effective_metric_ = "manhattan"
-            elif p == 2:
-                self.effective_metric_ = "euclidean"
-            elif p == np.inf:
-                self.effective_metric_ = "chebyshev"
-            else:
-                self.effective_metric_params_["p"] = p
-
-        if self.metric == "manhattan":
-            self.p = 1
-
-        if not isinstance(X, (KDTree, BallTree, sklearn_NeighborsBase)):
-            self._fit_X = _check_array(
-                X, dtype=[np.float64, np.float32], accept_sparse=True)
-            self.n_samples_fit_ = _num_samples(self._fit_X)
-            self.n_features_in_ = _num_features(self._fit_X)
-
-            if self.algorithm == "auto":
-                # A tree approach is better for small number of neighbors or small
-                # number of features, with KDTree generally faster when available
-                is_n_neighbors_valid_for_brute = self.n_neighbors is not None and \
-                    self.n_neighbors >= self._fit_X.shape[0] // 2
-                if self._fit_X.shape[1] > 15 or is_n_neighbors_valid_for_brute:
-                    self._fit_method = "brute"
-                else:
-                    if self.effective_metric_ in VALID_METRICS["kd_tree"]:
-                        self._fit_method = "kd_tree"
-                    elif callable(self.effective_metric_) or \
-                        self.effective_metric_ in \
-                            VALID_METRICS["ball_tree"]:
-                        self._fit_method = "ball_tree"
-                    else:
-                        self._fit_method = "brute"
-            else:
-                self._fit_method = self.algorithm
-
-        if hasattr(self, '_onedal_estimator'):
-            delattr(self, '_onedal_estimator')
-        # To cover test case when we pass patched
-        # estimator as an input for other estimator
-        if isinstance(X, sklearn_NeighborsBase):
-            self._fit_X = X._fit_X
-            self._tree = X._tree
-            self._fit_method = X._fit_method
-            self.n_samples_fit_ = X.n_samples_fit_
-            self.n_features_in_ = X.n_features_in_
-            if hasattr(X, '_onedal_estimator'):
-                if self._fit_method == "ball_tree":
-                    X._tree = BallTree(
-                        X._fit_X,
-                        self.leaf_size,
-                        metric=self.effective_metric_,
-                        **self.effective_metric_params_,
-                    )
-                elif self._fit_method == "kd_tree":
-                    X._tree = KDTree(
-                        X._fit_X,
-                        self.leaf_size,
-                        metric=self.effective_metric_,
-                        **self.effective_metric_params_,
-                    )
-                elif self._fit_method == "brute":
-                    X._tree = None
-                else:
-                    raise ValueError("algorithm = '%s' not recognized" % self.algorithm)
-
-        elif isinstance(X, BallTree):
-            self._fit_X = X.data
-            self._tree = X
-            self._fit_method = 'ball_tree'
-            self.n_samples_fit_ = X.data.shape[0]
-            self.n_features_in_ = X.data.shape[1]
-
-        elif isinstance(X, KDTree):
-            self._fit_X = X.data
-            self._tree = X
-            self._fit_method = 'kd_tree'
-            self.n_samples_fit_ = X.data.shape[0]
-            self.n_features_in_ = X.data.shape[1]
-
+        self._fit_validation(X, y)
         dispatch(self, 'fit', {
             'onedal': self.__class__._onedal_fit,
             'sklearn': sklearn_KNeighborsClassifier.fit,
@@ -292,7 +190,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             'weights': self.weights,
             'algorithm': self.algorithm,
             'metric': self.effective_metric_,
-            'p': self.p,
+            'p': self.effective_metric_params_['p'],
         }
 
         try:

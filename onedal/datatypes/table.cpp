@@ -14,6 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include "oneapi/dal/table/common.hpp"
 #include "oneapi/dal/table/homogen.hpp"
 
 #ifdef ONEDAL_DPCTL_INTEGRATION
@@ -21,6 +22,7 @@
 #endif // ONEDAL_DPCTL_INTEGRATION
 
 #include "onedal/datatypes/data_conversion.hpp"
+#include "onedal/datatypes/numpy_helpers.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "onedal/version.hpp"
 
@@ -65,6 +67,11 @@ ONEDAL_PY_INIT_MODULE(table) {
         }
         return "unknown";
     });
+    table_obj.def_property_readonly("shape", [](const table& t) {
+        const auto row_count = t.get_row_count();
+        const auto column_count = t.get_column_count();
+        return py::make_tuple(row_count, column_count);
+    });
 
 #ifdef ONEDAL_DPCTL_INTEGRATION
     define_sycl_usm_array_property(table_obj);
@@ -75,7 +82,7 @@ ONEDAL_PY_INIT_MODULE(table) {
         return convert_to_table(obj_ptr);
     });
 
-    m.def("from_table", [](dal::table& t) -> py::handle {
+    m.def("from_table", [](const dal::table& t) -> py::handle {
         auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
@@ -84,7 +91,6 @@ ONEDAL_PY_INIT_MODULE(table) {
     m.def("dpctl_to_table", [](py::object obj) {
         return convert_from_dptensor(obj);
     });
-
 #endif // ONEDAL_DPCTL_INTEGRATION
 }
 

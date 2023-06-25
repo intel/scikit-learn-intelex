@@ -49,13 +49,11 @@ Important Links
 - `About daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_
 
 .. toctree::
-   :caption: Getting Started
+   :caption: Get Started
    :titlesonly: 
    :hidden:
    :maxdepth: 1
 
-   .. gsg.rst 
-   
    quick-start.rst
    what-is-patching.rst
    
@@ -74,7 +72,8 @@ Important Links
    :hidden:
    :maxdepth: 2
 
-   releases.rst 
+   releases.rst
+   deprecation.rst
 
 .. toctree::
    :caption: Installation Guide
@@ -94,18 +93,12 @@ Important Links
    kaggle.rst
 
 .. toctree::
-   :caption: Performance Tuning Guide
-   :hidden:
-   :maxdepth: 2
-
-   guide/acceleration.rst
-
-.. toctree::
    :caption: Performance
    :hidden:
    :maxdepth: 2
 
    acceleration.rst
+   guide/acceleration.rst
 
 .. toctree::
    :caption: Blogs & Publications

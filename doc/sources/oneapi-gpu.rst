@@ -30,7 +30,7 @@ Prerequisites
 -------------
 
 For execution on GPU, DPC++ compiler runtime and driver are required. Refer to `DPC++ system
-requirements <https://software.intel.com/content/www/us/en/develop/articles/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
+requirements <https://www.intel.com/content/www/us/en/developer/articles/system-requirements/intel-oneapi-dpcpp-system-requirements.html>`_ for details.
 
 DPC++ compiler runtime can be installed either from PyPI or Anaconda:
 
