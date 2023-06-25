@@ -54,7 +54,8 @@ Important Links
    :hidden:
    :maxdepth: 1
 
-   gsg.rst 
+   .. gsg.rst 
+   
    quick-start.rst
    what-is-patching.rst
    

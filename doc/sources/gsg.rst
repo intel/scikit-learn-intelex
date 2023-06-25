@@ -21,3 +21,7 @@ Getting Started Guide
 ############################################
 
 Getting Started Guide: https://www.intel.com/content/www/us/en/developer/articles/guide/intel-extension-for-scikit-learn-getting-started.html
+
+.. .. raw:: html
+..     :url: https://www.intel.com/content/www/us/en/developer/articles/guide/intel-extension-for-scikit-learn-getting-started.html#article-content
+    
