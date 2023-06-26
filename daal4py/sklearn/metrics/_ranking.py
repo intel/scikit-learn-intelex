@@ -183,6 +183,8 @@ def roc_auc_score(
 
 
 if sklearn_check_version('1.3'):
+    validation_kwargs = {'prefer_skip_nested_validation': True} \
+        if sklearn_check_version('1.4') else {}
     roc_auc_score = validate_params(
         {
             "y_true": ["array-like"],
@@ -192,5 +194,5 @@ if sklearn_check_version('1.3'):
             "max_fpr": [Interval(Real, 0.0, 1, closed="right"), None],
             "multi_class": [StrOptions({"raise", "ovr", "ovo"})],
             "labels": ["array-like", None],
-        }
+        }, **validation_kwargs
     )(roc_auc_score)
