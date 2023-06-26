@@ -15,9 +15,6 @@
 #===============================================================================
 steps:
   - script: |
-      brew install libomp
-    displayName: 'install libomp'
-  - script: |
       echo "##vso[task.prependpath]$CONDA/bin"
       sudo chown -R $USER $CONDA
       conda config --set always_yes yes --set changeps1 no
