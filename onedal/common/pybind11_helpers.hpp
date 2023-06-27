@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
 #define ONEDAL_PY_INIT_MODULE(name) void init_##name(pybind11::module_& m)

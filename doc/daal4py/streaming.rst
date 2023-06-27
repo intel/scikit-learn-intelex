@@ -70,3 +70,11 @@ The following algorithms support streaming:
 - Moments of Low Order
 
   - `Low Order Moments <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/low_order_moms_streaming.py>`_
+
+- Covariance
+
+  - `Covariance <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/covariance_streaming.py>`_
+
+- QR
+
+  - `QR <https://github.com/intel/scikit-learn-intelex/tree/master/examples/daal4py/qr_streaming.py>`_
