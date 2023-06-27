@@ -75,6 +75,8 @@ def get_patch_map():
         # Patch for mapping
         if _is_preview_enabled():
             # Ensemble
+            mapping.pop("extratreesclassifier")
+            mapping.pop("extratreesregressor")
             mapping["extra_trees_classifier"] = [[(ensemble_module,
                                                    "ExtraTreesClassifier",
                                                    ExtraTreesClassifier_sklearnex),
@@ -83,10 +85,11 @@ def get_patch_map():
                                                   "ExtraTreesRegressor",
                                                   ExtraTreesRegressor_sklearnex),
                                                  None]]
-
+            mapping["extratreesclassifier"] = mapping["extra_trees_classifier"]
+            mapping["extratreesregressor"] = mapping["extra_trees_regressor"]
             mapping.pop("random_forest_classifier")
             mapping.pop("random_forest_regressor")
-            mapping.pop("randomrorestclassifier")
+            mapping.pop("randomforestclassifier")
             mapping.pop("randomforestregressor")
             mapping["random_forest_classifier"] = [
                 [
@@ -117,6 +120,7 @@ def get_patch_map():
 
             # Linear Regression
             mapping.pop("linear")
+            mapping.pop("linearregression")
             mapping["linear"] = [
                 [
                     (
@@ -127,6 +131,7 @@ def get_patch_map():
                     None,
                 ]
             ]
+            mapping["linearregression"] = mapping["linear"]
 
             # KMeans
             mapping.pop("kmeans")
