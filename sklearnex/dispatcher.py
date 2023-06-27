@@ -75,8 +75,6 @@ def get_patch_map():
         # Patch for mapping
         if _is_preview_enabled():
             # Ensemble
-            mapping.pop("extratreesclassifier")
-            mapping.pop("extratreesregressor")
             mapping["extra_trees_classifier"] = [[(ensemble_module,
                                                    "ExtraTreesClassifier",
                                                    ExtraTreesClassifier_sklearnex),
