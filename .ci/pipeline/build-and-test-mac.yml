@@ -50,13 +50,11 @@ steps:
     displayName: 'Install testing requirements'
   - script: |
       source activate CB
-      export DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib:$DYLD_LIBRARY_PATH
       cd ..
       ./s/conda-recipe/run_test.sh
     displayName: 'Sklearnex testing'
   - script: |
       source activate CB
-      export DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib:$DYLD_LIBRARY_PATH
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     condition: succeededOrFailed()
