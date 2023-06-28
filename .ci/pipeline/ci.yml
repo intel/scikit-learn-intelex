@@ -109,8 +109,6 @@ jobs:
         SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'macos-12'
-  variables:
-    SKLEARN_SKIP_OPENMP_TEST: 'true'
   steps:
   - template: build-and-test-mac.yml
 - job: Windows
