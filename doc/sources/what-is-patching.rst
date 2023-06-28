@@ -30,8 +30,6 @@ Patching
 
       .. include:: /patching/patching-options.rst
 
-      .. seealso:: :ref:`get_started`
-
    global patching
    
       .. include:: global-patching.rst
