@@ -20,4 +20,4 @@
 Release Notes
 ############################################
 
-   The updates of Intel® Extension for Scikit-learn* for each release can be found in `Releases <https://github.com/intel/scikit-learn-intelex/releases>`_.                                                                                                                                    
+The updates of Intel® Extension for Scikit-learn* for each release can be found in `Releases <https://github.com/intel/scikit-learn-intelex/releases>`_.                                                                                                                                    

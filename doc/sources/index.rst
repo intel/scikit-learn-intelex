@@ -56,6 +56,7 @@ Important Links
 
    quick-start.rst
    what-is-patching.rst
+   support.rst
    
 .. toctree::
    :caption: Features
