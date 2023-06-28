@@ -30,15 +30,9 @@ Patching
 
       .. include:: /patching/patching-options.rst
 
-      .. seealso:: :ref:`get_started`
-
-   global pathcing
-      One of the patching options available in |intelex|.
-      With global patching, you can patch all scikit-learn applications at once::
-
-         python -m sklearnex.glob patch_sklearn
-      
-      .. seealso:: :ref:`global_patching`
+   global patching
+   
+      .. include:: global-patching.rst
    
    unpatching
       To undo the patch is to return to the use of original scikit-learn implementation and
