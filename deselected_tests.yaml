@@ -25,6 +25,9 @@
 #  will exclude deselection in versions 0.18.1, and 0.18.2 only.
 
 deselected_tests:
+  # test for KMeans FutureWarning is not removed from sklearn tests suit yet
+  - cluster/tests/test_k_means.py::test_change_n_init_future_warning[KMeans-10] ==1.4.dev0
+
   # Non-critical, but there are significant numerical differences in doctest results
   - pipeline.py::sklearn.pipeline.FeatureUnion
   - ensemble/_forest.py::sklearn.ensemble._forest.RandomForestRegressor

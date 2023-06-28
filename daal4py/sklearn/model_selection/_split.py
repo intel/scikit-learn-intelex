@@ -258,6 +258,8 @@ def train_test_split(*arrays, **options):
 
 
 if sklearn_check_version('1.3'):
+    validation_kwargs = {'prefer_skip_nested_validation': True} \
+        if sklearn_check_version('1.4') else {}
     train_test_split = validate_params({
         "test_size": [
             Interval(RealNotInt, 0, 1, closed="neither"),
@@ -272,4 +274,4 @@ if sklearn_check_version('1.3'):
         "random_state": ["random_state"],
         "shuffle": ["boolean"],
         "stratify": ["array-like", None],
-    })(train_test_split)
+    }, **validation_kwargs)(train_test_split)
