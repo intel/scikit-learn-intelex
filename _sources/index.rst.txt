@@ -49,38 +49,75 @@ Important Links
 - `About daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_
 
 .. toctree::
-   :caption: About
+   :caption: Get Started
+   :titlesonly: 
    :hidden:
+   :maxdepth: 1
 
-   acceleration.rst
+   quick-start.rst
    what-is-patching.rst
-   Medium Blogs <blogs.rst>
+   support.rst
+   
+.. toctree::
+   :caption: Features
+   :hidden:
+   :maxdepth: 2
+
+   algorithms.rst
+   oneAPI and GPU support <oneapi-gpu.rst>
+   distributed-mode.rst
+   verbose.rst
+
+.. toctree::
+   :caption: Releases
+   :hidden:
+   :maxdepth: 2
+
+   releases.rst
+   deprecation.rst
+
+.. toctree::
+   :caption: Installation Guide
+   :hidden:
+   :maxdepth: 2
+
+   installation.rst
    System Requirements <system-requirements.rst>
    memory-requirements.rst
 
 .. toctree::
-   :caption: Get Started
+   :caption: Examples
    :hidden:
+   :maxdepth: 2
 
-   installation.rst
-   quick-start.rst
    samples.rst
    kaggle.rst
 
 .. toctree::
-   :caption: Developer Guide
+   :caption: Performance
    :hidden:
+   :maxdepth: 2
 
-   algorithms.rst
+   acceleration.rst
    guide/acceleration.rst
-   global-patching.rst
-   verbose.rst
-   distributed-mode.rst
-   oneAPI and GPU support <oneapi-gpu.rst>
 
 .. toctree::
-   :caption: Community
+   :caption: Blogs & Publications
    :hidden:
+   :maxdepth: 2
 
-   support.rst
+   Medium Blogs <blogs.rst>
+
+.. toctree::
+   :caption: How to contribute
+   :hidden:
+   :maxdepth: 2
+
    contribute.rst
+
+.. toctree::
+   :caption: License
+   :hidden:
+   :maxdepth: 2
+
+   license.rst
