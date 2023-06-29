@@ -24,6 +24,8 @@ from .._device_offload import dispatch, wrap_output_data
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 from sklearn.exceptions import NotFittedError
+if sklearn_check_version('1.0'):
+    from sklearn.utils.metaestimators import available_if
 
 from onedal.svm import SVC as onedal_SVC
 
@@ -116,36 +118,41 @@ class SVC(sklearn_SVC, BaseSVC):
             'sklearn': sklearn_SVC.predict,
         }, X)
 
-    @property
-    def predict_proba(self):
-        """
-        Compute probabilities of possible outcomes for samples in X.
+    if sklearn_check_version('1.0'):
+        @available_if(sklearn_SVC._check_proba)
+        def predict_proba(self, X):
+            """
+            Compute probabilities of possible outcomes for samples in X.
 
-        The model need to have probability information computed at training
-        time: fit with attribute `probability` set to True.
+            The model need to have probability information computed at training
+            time: fit with attribute `probability` set to True.
 
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            For kernel="precomputed", the expected shape of X is
-            (n_samples_test, n_samples_train).
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                For kernel="precomputed", the expected shape of X is
+                (n_samples_test, n_samples_train).
 
-        Returns
-        -------
-        T : ndarray of shape (n_samples, n_classes)
-            Returns the probability of the sample for each class in
-            the model. The columns correspond to the classes in sorted
-            order, as they appear in the attribute :term:`classes_`.
+            Returns
+            -------
+            T : ndarray of shape (n_samples, n_classes)
+                Returns the probability of the sample for each class in
+                the model. The columns correspond to the classes in sorted
+                order, as they appear in the attribute :term:`classes_`.
 
-        Notes
-        -----
-        The probability model is created using cross validation, so
-        the results can be slightly different than those obtained by
-        predict. Also, it will produce meaningless results on very small
-        datasets.
-        """
-        self._check_proba()
-        return self._predict_proba
+            Notes
+            -----
+            The probability model is created using cross validation, so
+            the results can be slightly different than those obtained by
+            predict. Also, it will produce meaningless results on very small
+            datasets.
+            """
+            return self._predict_proba(X)
+    else:
+        @property
+        def predict_proba(self):
+            self._check_proba()
+            return self._predict_proba
 
     @wrap_output_data
     def _predict_proba(self, X):

@@ -35,8 +35,12 @@ from scipy.spatial import distance
 
 import daal4py
 from daal4py.sklearn.utils.validation import _daal_check_array
-from .._utils import (getFPType, PatchingConditionsChain)
+from .._utils import (getFPType, PatchingConditionsChain, sklearn_check_version)
 from .._device_offload import support_usm_ndarray
+
+if sklearn_check_version('1.3'):
+    from sklearn.utils._param_validation import (
+        validate_params, Integral, StrOptions)
 
 
 def _daal4py_cosine_distance_dense(X):
@@ -215,3 +219,17 @@ def pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
         func = partial(distance.cdist, metric=metric, **kwds)
 
     return _parallel_pairwise(X, Y, func, n_jobs, **kwds)
+
+
+if sklearn_check_version('1.3'):
+    validation_kwargs = {'prefer_skip_nested_validation': True} \
+        if sklearn_check_version('1.4') else {}
+    pairwise_distances = validate_params(
+        {
+            "X": ["array-like", "sparse matrix"],
+            "Y": ["array-like", "sparse matrix", None],
+            "metric": [StrOptions(set(_VALID_METRICS) | {"precomputed"}), callable],
+            "n_jobs": [Integral, None],
+            "force_all_finite": ["boolean", StrOptions({"allow-nan"})],
+        }, **validation_kwargs
+    )(pairwise_distances)
