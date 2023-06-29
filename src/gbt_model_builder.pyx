@@ -285,3 +285,6 @@ class GBTDAALModel:
             return self._predict_regression(X, fptype)
         else:
             return self._predict_classification(X, fptype, resultsToEvaluate)
+
+def gbt_build_model(model):
+    return GBTDAALModel().build_model(model)

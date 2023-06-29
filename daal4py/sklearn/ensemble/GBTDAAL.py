@@ -289,3 +289,15 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
             raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
 
         return self
+
+def gbt_build_model(model):
+    (submodule_name, class_name) = (model.__class__.__module__,
+                                    model.__class__.__name__)
+    if class_name in ["Booster", "CatBoost"]:
+        return d4p.GBTDAALModel().build_model(model)
+    elif class_name in ["LGBMRegressor", "XGBRegressor", "CatBoostRegressor"]:
+        return GBTDAALRegressor().build_model(model)
+    elif class_name in ["LGBMClassifier", "XGBClassifier", "CatBoostClassifier"]:
+        return GBTDAALClassifier().build_model(model)
+    else:
+        raise TypeError(f"Unknown model format {submodule_name}.{class_name}")

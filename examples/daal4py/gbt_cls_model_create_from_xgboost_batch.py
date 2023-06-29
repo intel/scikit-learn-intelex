@@ -64,7 +64,7 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     xgb_errors_count = np.count_nonzero(xgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = d4p.GBTDAALModel().build_model(xgb_model)
+    daal_model = d4p.gbt_build_model(xgb_model)
 
     # daal4py prediction
     daal_prediction = daal_model.predict(X_test)
