@@ -206,8 +206,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                 ceil(
                     self.min_samples_split * n_samples)))
 
-        rs_ = check_random_state(self.random_state)
-        seed_ = rs_.randint(0, np.iinfo("i").max)
+        rs = check_random_state(self.random_state)
+        seed = rs.randint(0, np.iinfo("i").max)
 
         onedal_params = {
             'fptype': 'float' if data.dtype == np.float32 else 'double',
@@ -227,7 +227,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             'max_leaf_nodes': (0 if self.max_leaf_nodes is None else self.max_leaf_nodes),
             'max_bins': self.max_bins,
             'min_bin_size': self.min_bin_size,
-            'seed': seed_,
+            'seed': seed,
             'memory_saving_mode': False,
             'bootstrap': bool(self.bootstrap),
             'error_metric_mode': self.error_metric_mode,
