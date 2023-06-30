@@ -222,8 +222,6 @@ def pairwise_distances(X, Y=None, metric="euclidean", n_jobs=None,
 
 
 if sklearn_check_version('1.3'):
-    validation_kwargs = {'prefer_skip_nested_validation': True} \
-        if sklearn_check_version('1.4') else {}
     pairwise_distances = validate_params(
         {
             "X": ["array-like", "sparse matrix"],
@@ -231,5 +229,5 @@ if sklearn_check_version('1.3'):
             "metric": [StrOptions(set(_VALID_METRICS) | {"precomputed"}), callable],
             "n_jobs": [Integral, None],
             "force_all_finite": ["boolean", StrOptions({"allow-nan"})],
-        }, **validation_kwargs
+        }, prefer_skip_nested_validation=True
     )(pairwise_distances)
