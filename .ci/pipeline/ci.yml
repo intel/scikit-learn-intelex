@@ -40,7 +40,6 @@ variables:
   MACOSX_DEPLOYMENT_TARGET: '10.15'
   PYTHON: 'python'
   ARGS: '1'
-  SELECTED_TESTS: 'all'
 
 jobs:
 - job: PEP8
