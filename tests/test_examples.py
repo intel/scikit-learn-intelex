@@ -291,7 +291,7 @@ class TestExCSRMatrix(Base, unittest.TestCase):
         if any(ex.__name__.startswith(x) for x in ['adaboost',
                                                    'brownboost',
                                                    'stump_classification',
-                                                   'gbt_cls_model_create',
+                                                   'model_builders',
                                                    'decision_forest']):
             self.skipTest("not supporting CSR")
         method = \
