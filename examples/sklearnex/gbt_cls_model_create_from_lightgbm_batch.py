@@ -16,7 +16,7 @@
 
 # daal4py Gradient Bossting Classification model creation from LightGBM example
 
-import daal4py as d4p
+from daal4py.sklearn.ensemble import GBTDAALClassifier
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
@@ -28,8 +28,9 @@ def pd_read_csv(f, c=None, t=np.float64):
 
 def main(readcsv=pd_read_csv, method='defaultDense'):
     # Path to data
-    train_file = "./data/batch/df_classification_train.csv"
-    test_file = "./data/batch/df_classification_test.csv"
+    train_file = "./examples/daal4py/data/batch/df_classification_train.csv"
+    test_file = "./examples/daal4py/data/batch/df_classification_test.csv"
+
 
     # Data reading
     X_train = readcsv(train_file, range(3), t=np.float32)
@@ -37,37 +38,28 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     X_test = readcsv(test_file, range(3), t=np.float32)
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
-    # Datasets creation
-    lgb_train = lgb.Dataset(
-        X_train,
-        np.array(y_train).reshape(X_train.shape[0]),
-        free_raw_data=False
-    )
-
-    # training parameters setting
-    params = {
-        'max_bin': 256,
-        'scale_pos_weight': 2,
-        'lambda_l2': 1,
-        'alpha': 0.9,
-        'max_depth': 6,
-        'num_leaves': 2**6,
-        'verbose': -1,
-        'objective': 'multiclass',
-        'learning_rate': 0.3,
-        'num_class': 5,
-        'n_estimators': 25
-    }
+    clf = lgb.LGBMClassifier(
+        max_bin=256,
+        scale_pos_weight=2,
+        lambda_l2=1,
+        alpha=0.9,
+        max_depth=6,
+        num_leaves=2**6,
+        verbose=-1,
+        objective='multiclass',
+        learning_rate=0.3,
+        num_class=5,
+        n_estimators=25)
 
     # Training
-    lgb_model = lgb.train(params, lgb_train, valid_sets=lgb_train, verbose_eval=False)
+    clf.fit(X_train, np.array(y_train).reshape(X_train.shape[0]))
 
     # LightGBM prediction
-    lgb_prediction = np.argmax(lgb_model.predict(X_test), axis=1)
+    lgb_prediction = clf.predict(X_test)
     lgb_errors_count = np.count_nonzero(lgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = d4p.GBTDAALModel.convert_model(lgb_model)
+    daal_model = GBTDAALClassifier.convert_model(clf)
 
     # daal4py prediction
     daal_prediction = daal_model.predict(X_test)

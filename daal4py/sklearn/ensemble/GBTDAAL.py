@@ -27,7 +27,7 @@ import daal4py as d4p
 from .._utils import getFPType
 
 
-class GBTDAALBase(BaseEstimator, d4p.GBTDAALModel):
+class GBTDAALBase(BaseEstimator, d4p.GBTDAALBaseModel):
     def __init__(self,
                  split_method='inexact',
                  max_iterations=50,
@@ -166,7 +166,10 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
     def _predict(self, X, resultsToEvaluate):
         # Input validation
-        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+        if not hasattr(self, 'allow_nan_'):
+            X = check_array(X, dtype=[np.single, np.double])
+        else:
+            X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
 
         # Check is fit had been called
         check_is_fitted(self, ['n_features_in_', 'n_classes_'])
@@ -202,23 +205,13 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
         return proba
 
-    def build_model(self, model):
-        (submodule_name, class_name) = (model.__class__.__module__,
-                                        model.__class__.__name__)
-        # Build from LightGBM
-        if (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMClassifier"):
-            self._build_model_from_lightgbm(model.booster_)
-        # Build from XGBoost
-        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBClassifier"):
-            self._build_model_from_xgboost(model.get_booster())
-        # Build from CatBoost
-        elif (submodule_name, class_name) == ("catboost.core", "CatBoostClassifier"):
-            self._build_model_from_catboost(model)
-        else:
-            raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
+    def convert_model(model):
+        gbm = GBTDAALClassifier()
+        gbm._convert_model(model)
 
-        self.classes_ = model.classes_
-        return self
+        gbm.classes_ = model.classes_
+        gbm.allow_nan_ = True
+        return gbm
 
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
@@ -267,7 +260,10 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
 
     def predict(self, X):
         # Input validation
-        X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+        if not hasattr(self, 'allow_nan_'):
+            X = check_array(X, dtype=[np.single, np.double])
+        else:
+            X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
 
         # Check is fit had been called
         check_is_fitted(self, ['n_features_in_'])
@@ -275,29 +271,9 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         fptype = getFPType(X)
         return self._predict_regression(X, fptype)
 
-    def build_model(self, model):
-        (submodule_name, class_name) = (model.__class__.__module__,
-                                        model.__class__.__name__)
-        # Build from LightGBM
-        if (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMRegressor"):
-            self._build_model_from_lightgbm(model.booster_)
-        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBRegressor"):
-            self._build_model_from_xgboost(model.get_booster())
-        elif (submodule_name, class_name) == ("catboost.core", "CatBoostRegressor"):
-            self._build_model_from_catboost(model)
-        else:
-            raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
+    def convert_model(model):
+        gbm = GBTDAALRegressor()
+        gbm._convert_model(model)
 
-        return self
-
-def gbt_build_model(model):
-    (submodule_name, class_name) = (model.__class__.__module__,
-                                    model.__class__.__name__)
-    if class_name in ["Booster", "CatBoost"]:
-        return d4p.GBTDAALModel().build_model(model)
-    elif class_name in ["LGBMRegressor", "XGBRegressor", "CatBoostRegressor"]:
-        return GBTDAALRegressor().build_model(model)
-    elif class_name in ["LGBMClassifier", "XGBClassifier", "CatBoostClassifier"]:
-        return GBTDAALClassifier().build_model(model)
-    else:
-        raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
+        gbm.allow_nan_ = True
+        return gbm
