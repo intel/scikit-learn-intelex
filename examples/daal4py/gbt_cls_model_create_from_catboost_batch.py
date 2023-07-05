@@ -62,7 +62,7 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     cb_errors_count = np.count_nonzero(cb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = d4p.gbt_build_model(cb_model)
+    daal_model = d4p.GBTDAALModel.convert_model(cb_model)
 
     # daal4py prediction
     daal_prediction = daal_model.predict(X_test)

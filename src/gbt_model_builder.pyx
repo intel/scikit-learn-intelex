@@ -183,7 +183,7 @@ def gbt_reg_model_builder(n_features, n_iterations):
     return gbt_regression_model_builder(n_features, n_iterations)
 
 
-class GBTDAALModel:
+class GBTDAALBaseModel:
     def _get_params_from_lightgbm(self, params):
         self.n_classes_ = params["num_tree_per_iteration"]
         objective_fun = params["objective"]
@@ -207,40 +207,84 @@ class GBTDAALModel:
             self.n_classes_ = len(params['model_info']['class_params']['class_to_label'])
         self.n_features_in_ = len(params['features_info']['float_features'])
 
-    def _build_model_from_lightgbm(self, booster):
+    def _convert_model_from_lightgbm(self, booster):
         lgbm_params = get_lightgbm_params(booster)
         self.daal_model_ = get_gbt_model_from_lightgbm(booster, lgbm_params)
         self._get_params_from_lightgbm(lgbm_params)
 
-    def _build_model_from_xgboost(self, booster):
+    def _convert_model_from_xgboost(self, booster):
         xgb_params = get_xgboost_params(booster)
         self.daal_model_ = get_gbt_model_from_xgboost(booster, xgb_params)
         self._get_params_from_xgboost(xgb_params)
 
-    def _build_model_from_catboost(self, booster):
+    def _convert_model_from_catboost(self, booster):
         catboost_params = get_catboost_params(booster)
         self.daal_model_ = get_gbt_model_from_catboost(booster)
         self._get_params_from_catboost(catboost_params)
 
-
-    def build_model(self, model):
+    def _convert_model(self, model):
         (submodule_name, class_name) = (model.__class__.__module__,
                                         model.__class__.__name__)
-        # Build from LightGBM
-        if (submodule_name, class_name) == ("lightgbm.basic", "Booster"):
-            self._build_model_from_lightgbm(model)
-        # Build from XGBoost
+        self_class_name = self.__class__.__name__
+
+        # Build GBTDAALClassifier from LightGBM
+        if (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMClassifier"):
+            if self_class_name == "GBTDAALClassifier":
+                self._convert_model_from_lightgbm(model.booster_)
+            else:
+                raise TypeError(f"Only GBTDAALClassifier can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALClassifier from XGBoost
+        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBClassifier"):
+            if self_class_name == "GBTDAALClassifier":
+                self._convert_model_from_xgboost(model.get_booster())
+            else:
+                raise TypeError(f"Only GBTDAALClassifier can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALClassifier from CatBoost
+        elif (submodule_name, class_name) == ("catboost.core", "CatBoostClassifier"):
+            if self_class_name == "GBTDAALClassifier":
+                self._convert_model_from_catboost(model)
+            else:
+                raise TypeError(f"Only GBTDAALClassifier can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALRegressor from LightGBM
+        elif (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMRegressor"):
+            if self_class_name == "GBTDAALRegressor":
+                self._convert_model_from_lightgbm(model.booster_)
+            else:
+                raise TypeError(f"Only GBTDAALRegressor can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALRegressor from XGBoost
+        elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBRegressor"):
+            if self_class_name == "GBTDAALRegressor":
+                self._convert_model_from_xgboost(model.get_booster())
+            else:
+                raise TypeError(f"Only GBTDAALRegressor can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALRegressor from CatBoost
+        elif (submodule_name, class_name) == ("catboost.core", "CatBoostRegressor"):
+            if self_class_name == "GBTDAALRegressor":
+                self._convert_model_from_catboost(model)
+            else:
+                raise TypeError(f"Only GBTDAALRegressor can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALModel from LightGBM
+        elif (submodule_name, class_name) == ("lightgbm.basic", "Booster"):
+            if self_class_name == "GBTDAALModel":
+                self._convert_model_from_lightgbm(model)
+            else:
+                raise TypeError(f"Only GBTDAALModel can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALModel from XGBoost
         elif (submodule_name, class_name) == ("xgboost.core", "Booster"):
-            self._build_model_from_xgboost(model)
-        # Build from CatBoost
+            if self_class_name == "GBTDAALModel":
+                self._convert_model_from_xgboost(model)
+            else:
+                raise TypeError(f"Only GBTDAALModel can be created from {submodule_name}.{class_name} (got {self_class_name})")
+        # Build GBTDAALModel from CatBoost
         elif (submodule_name, class_name) == ("catboost.core", "CatBoost"):
-            self._build_model_from_catboost(model)
+            if self_class_name == "GBTDAALModel":
+                self._convert_model_from_catboost(model)
+            else:
+                raise TypeError(f"Only GBTDAALModel can be created from {submodule_name}.{class_name} (got {self_class_name})")
         else:
             raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
 
-        self.is_regression_ = isinstance(self.daal_model_, gbt_regression_model)
 
-        return self
 
     def _predict_classification(self, X, fptype, resultsToEvaluate):
         if X.shape[1] != self.n_features_in_:
@@ -260,7 +304,7 @@ class GBTDAALModel:
         predict_result = predict_algo.compute(X, self.daal_model_)
 
         if resultsToEvaluate == "computeClassLabels":
-            return predict_result.prediction.ravel().astype(np.int64, copy=False)
+             return predict_result.prediction.ravel().astype(np.int64, copy=False)
         else:
             return predict_result.probabilities
 
@@ -280,11 +324,24 @@ class GBTDAALModel:
 
         return predict_result.prediction.ravel()
 
-    def predict(self, X, fptype="float", resultsToEvaluate="computeClassLabels"):
-        if self.is_regression_:
+
+class GBTDAALModel(GBTDAALBaseModel):
+    def convert_model(model):
+        gbm = GBTDAALModel()
+        gbm._convert_model(model)
+
+        gbm._is_regression = isinstance(gbm.daal_model_, gbt_regression_model)
+
+        return gbm
+
+    def predict(self, X, fptype="float"):
+        if self._is_regression:
             return self._predict_regression(X, fptype)
         else:
-            return self._predict_classification(X, fptype, resultsToEvaluate)
+            return self._predict_classification(X, fptype, "computeClassLabels")
 
-def gbt_build_model(model):
-    return GBTDAALModel().build_model(model)
+    def predict_proba(self, X, fptype="float"):
+        if self._is_regression:
+            raise NotImplementedError("Can't predict probabilities for regression task")
+        else:
+            return self._predict_classification(X, fptype, "computeClassProbabilities")
