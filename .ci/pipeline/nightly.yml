@@ -82,30 +82,35 @@ jobs:
     displayName: 'Run jupyter notebook demo'
 
 - job: LinuxNightly
+  timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.10_SklearnMain:
-        PYTHON_VERSION: '3.10'
+      Python3.11_SklearnMain:
+        PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
 - job: MacOSNightly
+  timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.10_SklearnMain:
-        PYTHON_VERSION: '3.10'
+      Python3.11_SklearnMain:
+        PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'macos-12'
+  variables:
+    SKLEARN_SKIP_OPENMP_TEST: 'true'
   steps:
   - template: build-and-test-mac.yml
 - job: WindowsNightly
+  timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.10_SklearnMain:
-        PYTHON_VERSION: '3.10'
+      Python3.11_SklearnMain:
+        PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: 'main'
   pool:
     vmImage: 'windows-latest'

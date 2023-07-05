@@ -41,6 +41,7 @@ def get_patch_map():
     if _is_new_patching_available():
         # Scikit-learn* modules
         import sklearn as base_module
+        import sklearn.cluster as cluster_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
@@ -61,6 +62,7 @@ def get_patch_map():
         from .svm import NuSVR as NuSVR_sklearnex
 
         # Preview classes for patching
+        from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.decomposition import PCA as PCA_sklearnex
         from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
         from .preview.ensemble import (
@@ -81,10 +83,11 @@ def get_patch_map():
                                                   "ExtraTreesRegressor",
                                                   ExtraTreesRegressor_sklearnex),
                                                  None]]
-
+            mapping["extratreesclassifier"] = mapping["extra_trees_classifier"]
+            mapping["extratreesregressor"] = mapping["extra_trees_regressor"]
             mapping.pop("random_forest_classifier")
             mapping.pop("random_forest_regressor")
-            mapping.pop("randomrorestclassifier")
+            mapping.pop("randomforestclassifier")
             mapping.pop("randomforestregressor")
             mapping["random_forest_classifier"] = [
                 [
@@ -115,12 +118,27 @@ def get_patch_map():
 
             # Linear Regression
             mapping.pop("linear")
+            mapping.pop("linearregression")
             mapping["linear"] = [
                 [
                     (
                         linear_model_module,
                         "LinearRegression",
                         LinearRegression_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+            mapping["linearregression"] = mapping["linear"]
+
+            # KMeans
+            mapping.pop("kmeans")
+            mapping["kmeans"] = [
+                [
+                    (
+                        cluster_module,
+                        "KMeans",
+                        KMeans_sklearnex,
                     ),
                     None,
                 ]

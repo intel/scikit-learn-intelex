@@ -29,6 +29,7 @@ ONEDAL_PY_INIT_MODULE(spmd_policy);
 
 /* datatypes*/
 ONEDAL_PY_INIT_MODULE(table);
+ONEDAL_PY_INIT_MODULE(table_metadata);
 
 /* primitives */
 ONEDAL_PY_INIT_MODULE(get_tree);
@@ -45,6 +46,11 @@ ONEDAL_PY_INIT_MODULE(decomposition);
 ONEDAL_PY_INIT_MODULE(basic_statistics);
 ONEDAL_PY_INIT_MODULE(linear_model);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+ONEDAL_PY_INIT_MODULE(kmeans_init);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+ONEDAL_PY_INIT_MODULE(kmeans);
+ONEDAL_PY_INIT_MODULE(kmeans_common);
 ONEDAL_PY_INIT_MODULE(neighbors);
 ONEDAL_PY_INIT_MODULE(svm);
 
@@ -58,6 +64,7 @@ PYBIND11_MODULE(_onedal_py_host, m) {
 #endif
     init_policy(m);
     init_table(m);
+    init_table_metadata(m);
 
     init_covariance(m);
     init_linear_kernel(m);
@@ -72,6 +79,11 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_basic_statistics(m);
     init_linear_model(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    init_kmeans_init(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    init_kmeans(m);
+    init_kmeans_common(m);
     init_neighbors(m);
     init_svm(m);
 }

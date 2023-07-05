@@ -192,5 +192,5 @@ if sklearn_check_version('1.3'):
             "max_fpr": [Interval(Real, 0.0, 1, closed="right"), None],
             "multi_class": [StrOptions({"raise", "ovr", "ovo"})],
             "labels": ["array-like", None],
-        }
+        }, prefer_skip_nested_validation=True
     )(roc_auc_score)

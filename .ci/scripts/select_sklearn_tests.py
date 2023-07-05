@@ -16,6 +16,7 @@
 #===============================================================================
 import argparse
 import sys
+from daal4py.sklearn._utils import sklearn_check_version
 
 
 def parse_tests_tree(entry, prefix=''):
@@ -60,6 +61,8 @@ tests_map = {
         'test_svm.py'
     ]
 }
+if sklearn_check_version('1.2'):
+    tests_map["tests"] = ["test_public_functions.py"]
 
 
 if __name__ == '__main__':
