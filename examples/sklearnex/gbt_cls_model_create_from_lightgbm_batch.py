@@ -31,7 +31,6 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     train_file = "./examples/daal4py/data/batch/df_classification_train.csv"
     test_file = "./examples/daal4py/data/batch/df_classification_test.csv"
 
-
     # Data reading
     X_train = readcsv(train_file, range(3), t=np.float32)
     y_train = readcsv(train_file, range(3, 4), t=np.float32)
