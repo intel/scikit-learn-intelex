@@ -41,7 +41,6 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     cb_train = cb.Pool(X_train, label=np.array(y_train))
     cb_test = cb.Pool(X_test, label=np.array(y_test))
 
-
     clf = cb.CatBoostClassifier(
         reg_lambda=1,
         max_depth=6,
