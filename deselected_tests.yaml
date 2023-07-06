@@ -645,6 +645,7 @@ gpu:
   - ensemble/tests/test_forest.py::test_forest_classifier_oob
   - ensemble/tests/test_forest.py::test_forest_regressor_oob
   - tests/test_common.py::test_search_cv
+  - tests/test_t_sne.py::test_n_iter_without_progress
 
   # KMeans based (unsupported for GPU)
   - cluster/tests/test_k_means.py
