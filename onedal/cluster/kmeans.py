@@ -145,7 +145,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 stacklevel=2,
             )
             self._n_init = 1
-        assert self._algorithm == "lloyd"
+        assert self.algorithm == "lloyd"
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -402,6 +402,7 @@ class KMeans(_BaseKMeans):
 
         self.copy_x = copy_x
         self.algorithm = algorithm
+        assert self.algorithm == "lloyd"
 
     def fit(self, X, queue=None):
         return super()._fit(X, _backend.kmeans.clustering, queue)
