@@ -115,47 +115,36 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         self._n_init = self.n_init
         if self._n_init == "warn":
             warnings.warn(
-                "The default value of `n_init` will change from "
-                f"{default_n_init} to 'auto' in 1.4. Set the value of `n_init`"
-                " explicitly to suppress the warning",
+                (
+                    "The default value of `n_init` will change from "
+                    f"{default_n_init} to 'auto' in 1.4. Set the value of `n_init`"
+                    " explicitly to suppress the warning"
+                ),
                 FutureWarning,
+                stacklevel=2,
             )
             self._n_init = default_n_init
         if self._n_init == "auto":
-            if self.init == "k-means++":
+            if isinstance(self.init, str) and self.init == "k-means++":
                 self._n_init = 1
-            else:
+            elif isinstance(self.init, str) and self.init == "random":
                 self._n_init = default_n_init
+            elif callable(self.init):
+                self._n_init = default_n_init
+            else:  # array-like
+                self._n_init = 1
 
         if _is_arraylike_not_scalar(self.init) and self._n_init != 1:
             warnings.warn(
-                "Explicit initial center position passed: performing only"
-                f" one init in {self.__class__.__name__} instead of "
-                f"n_init={self._n_init}.",
+                (
+                    "Explicit initial center position passed: performing only"
+                    f" one init in {self.__class__.__name__} instead of "
+                    f"n_init={self._n_init}."
+                ),
                 RuntimeWarning,
                 stacklevel=2,
             )
             self._n_init = 1
-
-        self._algorithm = self.algorithm
-        if self._algorithm in ("auto", "full"):
-            warnings.warn(
-                (
-                    f"algorithm='{self._algorithm}' is deprecated, it will be "
-                    "removed in 1.3. Using 'lloyd' instead."
-                ),
-                FutureWarning,
-            )
-            self._algorithm = "lloyd"
-        if self._algorithm == "elkan" and self.n_clusters == 1:
-            warnings.warn(
-                (
-                    "algorithm='elkan' doesn't make sense for a single "
-                    "cluster. Using 'lloyd' instead."
-                ),
-                RuntimeWarning,
-            )
-            self._algorithm = "lloyd"
         assert self._algorithm == "lloyd"
 
     def _get_policy(self, queue, *data):
