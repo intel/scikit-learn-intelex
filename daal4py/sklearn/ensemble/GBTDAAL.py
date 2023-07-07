@@ -27,7 +27,7 @@ import daal4py as d4p
 from .._utils import getFPType
 
 
-class GBTDAALBase(BaseEstimator, d4p.GBTDAALBaseModel):
+class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
     def __init__(self,
                  split_method='inexact',
                  max_iterations=50,
