@@ -19,6 +19,7 @@
 import daal4py as d4p
 import numpy as np
 
+
 class GBTDAALBaseModel:
     def _get_params_from_lightgbm(self, params):
         self.n_classes_ = params["num_tree_per_iteration"]
@@ -68,55 +69,64 @@ class GBTDAALBaseModel:
             if self_class_name == "GBTDAALClassifier":
                 self._convert_model_from_lightgbm(model.booster_)
             else:
-                raise TypeError(f"Only GBTDAALClassifier can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALClassifier can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALClassifier from XGBoost
         elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBClassifier"):
             if self_class_name == "GBTDAALClassifier":
                 self._convert_model_from_xgboost(model.get_booster())
             else:
-                raise TypeError(f"Only GBTDAALClassifier can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALClassifier can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALClassifier from CatBoost
         elif (submodule_name, class_name) == ("catboost.core", "CatBoostClassifier"):
             if self_class_name == "GBTDAALClassifier":
                 self._convert_model_from_catboost(model)
             else:
-                raise TypeError(f"Only GBTDAALClassifier can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALClassifier can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALRegressor from LightGBM
         elif (submodule_name, class_name) == ("lightgbm.sklearn", "LGBMRegressor"):
             if self_class_name == "GBTDAALRegressor":
                 self._convert_model_from_lightgbm(model.booster_)
             else:
-                raise TypeError(f"Only GBTDAALRegressor can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALRegressor can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALRegressor from XGBoost
         elif (submodule_name, class_name) == ("xgboost.sklearn", "XGBRegressor"):
             if self_class_name == "GBTDAALRegressor":
                 self._convert_model_from_xgboost(model.get_booster())
             else:
-                raise TypeError(f"Only GBTDAALRegressor can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALRegressor can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALRegressor from CatBoost
         elif (submodule_name, class_name) == ("catboost.core", "CatBoostRegressor"):
             if self_class_name == "GBTDAALRegressor":
                 self._convert_model_from_catboost(model)
             else:
-                raise TypeError(f"Only GBTDAALRegressor can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALRegressor can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALModel from LightGBM
         elif (submodule_name, class_name) == ("lightgbm.basic", "Booster"):
             if self_class_name == "GBTDAALModel":
                 self._convert_model_from_lightgbm(model)
             else:
-                raise TypeError(f"Only GBTDAALModel can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALModel can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALModel from XGBoost
         elif (submodule_name, class_name) == ("xgboost.core", "Booster"):
             if self_class_name == "GBTDAALModel":
                 self._convert_model_from_xgboost(model)
             else:
-                raise TypeError(f"Only GBTDAALModel can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALModel can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         # Build GBTDAALModel from CatBoost
         elif (submodule_name, class_name) == ("catboost.core", "CatBoost"):
             if self_class_name == "GBTDAALModel":
                 self._convert_model_from_catboost(model)
             else:
-                raise TypeError(f"Only GBTDAALModel can be created from {submodule_name}.{class_name} (got {self_class_name})")
+                raise TypeError(f"Only GBTDAALModel can be created from\
+                                 {submodule_name}.{class_name} (got {self_class_name})")
         else:
             raise TypeError(f"Unknown model format {submodule_name}.{class_name}")
 
@@ -127,8 +137,8 @@ class GBTDAALBaseModel:
         if not hasattr(self, 'daal_model_'):
             raise ValueError((
                 "The class {} instance does not have 'daal_model_' attribute set. "
-                "Call 'fit' with appropriate arguments before using this method.").format(
-                    type(self).__name__))
+                "Call 'fit' with appropriate arguments before using this method.")
+                .format(type(self).__name__))
 
         # Prediction
         predict_algo = d4p.gbt_classification_prediction(
@@ -138,7 +148,7 @@ class GBTDAALBaseModel:
         predict_result = predict_algo.compute(X, self.daal_model_)
 
         if resultsToEvaluate == "computeClassLabels":
-             return predict_result.prediction.ravel().astype(np.int64, copy=False)
+            return predict_result.prediction.ravel().astype(np.int64, copy=False)
         else:
             return predict_result.probabilities
 
