@@ -16,9 +16,10 @@
 
 # daal4py Model builders API
 
-import daal4py as d4p
+from daal4py import GBTDAALBaseModel
 
-class GBTDAALModel(d4p.GBTDAALBaseModel):
+
+class GBTDAALModel(GBTDAALBaseModel):
     def predict(self, X, fptype="float"):
         if self._is_regression:
             return self._predict_regression(X, fptype)
@@ -31,10 +32,11 @@ class GBTDAALModel(d4p.GBTDAALBaseModel):
         else:
             return self._predict_classification(X, fptype, "computeClassProbabilities")
 
+
 def convert_model(model):
-  gbm = GBTDAALModel()
-  gbm._convert_model(model)
+    gbm = GBTDAALModel()
+    gbm._convert_model(model)
 
-  gbm._is_regression = isinstance(gbm.daal_model_, d4p.gbt_regression_model)
+    gbm._is_regression = isinstance(gbm.daal_model_, d4p.gbt_regression_model)
 
-  return gbm
+    return gbm
