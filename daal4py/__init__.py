@@ -49,3 +49,5 @@ except ImportError as e:
             '[c]sh/psxevars.[c]sh may solve the issue.\n')
 
     raise
+
+from . import (sklearn, mb)

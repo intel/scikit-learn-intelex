@@ -325,23 +325,3 @@ class GBTDAALBaseModel:
         return predict_result.prediction.ravel()
 
 
-class GBTDAALModel(GBTDAALBaseModel):
-    def convert_model(model):
-        gbm = GBTDAALModel()
-        gbm._convert_model(model)
-
-        gbm._is_regression = isinstance(gbm.daal_model_, gbt_regression_model)
-
-        return gbm
-
-    def predict(self, X, fptype="float"):
-        if self._is_regression:
-            return self._predict_regression(X, fptype)
-        else:
-            return self._predict_classification(X, fptype, "computeClassLabels")
-
-    def predict_proba(self, X, fptype="float"):
-        if self._is_regression:
-            raise NotImplementedError("Can't predict probabilities for regression task")
-        else:
-            return self._predict_classification(X, fptype, "computeClassProbabilities")
