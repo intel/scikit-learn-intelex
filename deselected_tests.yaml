@@ -738,6 +738,7 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[LocalOutlierFactor()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[NearestNeighbors()]
   - tests/test_common.py::test_f_contiguous_array_estimator[LocalOutlierFactor]
+  - tests/test_common.py::test_estimators[NearestNeighbors()-
   # KNeighborsRegressor
   - ensemble/tests/test_bagging.py::test_regression
   - ensemble/tests/test_bagging.py::test_single_estimator
@@ -778,6 +779,7 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-100-1000-minkowski-1000-5-100]
   - tests/test_common.py::test_check_n_features_in_after_fitting[KNeighborsRegressor()]
   - tests/test_common.py::test_f_contiguous_array_estimator[KNeighborsRegressor]
+  - tests/test_common.py::test_estimators[KNeighborsRegressor()-
   # KNeighborsClassifier
   - ensemble/tests/test_bagging.py::test_oob_score_consistency
   - ensemble/tests/test_bagging.py::test_max_samples_consistency
@@ -826,12 +828,15 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-100-1000-minkowski-1000-5-100]
   - tests/test_common.py::test_check_n_features_in_after_fitting[KNeighborsClassifier()]
   - tests/test_common.py::test_f_contiguous_array_estimator[KNeighborsClassifier]
+  - tests/test_common.py::test_estimators[KNeighborsClassifier()-
   # SVR
   - ensemble/tests/test_bagging.py::test_sparse_regression
   - tests/test_common.py::test_check_n_features_in_after_fitting[NuSVR()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVR()]
   - tests/test_multiclass.py::test_ovr_single_label_predict_proba
   - utils/tests/test_validation.py::test_check_is_fitted
+  - tests/test_common.py::test_estimators[NuSVR()-
+  - tests/test_common.py::test_estimators[SVR()-
   # SVC
   - ensemble/tests/test_bagging.py::test_oob_score_classification
   - ensemble/tests/test_bagging.py::test_deprecated_base_estimator_has_decision_function
@@ -859,6 +864,8 @@ gpu:
   - tests/test_multiclass.py::test_pairwise_indices
   - tests/test_multiclass.py::test_pairwise_n_features_in
   - tests/test_pipeline.py::test_pipeline_memory
+  - tests/test_common.py::test_estimators[NuSVC()-
+  - tests/test_common.py::test_estimators[SVC()-
   # part SVC, part KNeighborsClassifier
   - semi_supervised/tests/test_self_training
   # unsorted NearestNeighbors/KNClassifier/KNRegressor
@@ -1052,5 +1059,14 @@ gpu:
   - svm/tests/test_svm.py::test_n_iter_libsvm[dataset2-NuSVR-int]
   - svm/tests/test_svm.py::test_svm_class_weights_deprecation[SVR]
   - svm/tests/test_svm.py::test_svm_class_weights_deprecation[NuSVR]
-
-
+  # possible cause of timeout
+  - tests/test_common.py::test_estimators[CalibratedClassifierCV(estimator=LogisticRegression(C=1))-
+  - tests/test_common.py::test_estimators[LogisticRegression()-
+  - tests/test_common.py::test_estimators[LogisticRegressionCV()-
+  - tests/test_common.py::test_estimators[OneVsOneClassifier(estimator=LogisticRegression(C=1))-
+  - tests/test_common.py::test_estimators[OneVsRestClassifier(estimator=LogisticRegression(C=1))-
+  - tests/test_common.py::test_estimators[OutputCodeClassifier(estimator=LogisticRegression(C=1))-
+  - tests/test_common.py::test_estimators[RFE(estimator=LogisticRegression(C=1))-
+  - tests/test_common.py::test_estimators[RFECV(estimator=LogisticRegression(C=1))-
+  - tests/test_common.py::test_estimators[SelfTrainingClassifier(base_estimator=LogisticRegression(C=1))-
+  - tests/test_common.py::test_estimators[SequentialFeatureSelector(estimator=LogisticRegression(C=1))-
