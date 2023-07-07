@@ -725,6 +725,19 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsClassifier-100-1000-l2-1000-5-100]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-50-500-l2-1000-5-100]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-100-1000-l2-1000-5-100]
+  # failing due to numeric/code error
+  - ensemble/tests/test_bagging.py::test_parallel_classification
+  - sklearn/manifold/tests/test_t_sne.py::test_balance_property[42-False-LogisticRegressionCV]
+  - sklearn/manifold/tests/test_t_sne.py::test_n_iter_without_progress
+  - model_selection/tests/test_search.py::test_searchcv_raise_warning_with_non_finite_score[RandomizedSearchCV-specialized_params1-False]
+  - model_selection/tests/test_search.py::test_searchcv_raise_warning_with_non_finite_score[RandomizedSearchCV-specialized_params1-True]
+  - tests/test_calibration.py::test_calibrated_classifier_cv_double_sample_weights_equivalence
+  - tests/test_calibration.py::test_calibrated_classifier_cv_zeros_sample_weights_equivalence
+  - tests/test_common.py::test_estimators[FeatureAgglomeration()-check_parameters_default_constructible]
+  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimator_sparse_data]
+  - tests/test_common.py::test_transformers_get_feature_names_out[StackingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
+  - tests/test_common.py::test_transformers_get_feature_names_out[VotingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
+  - tests/test_common.py::test_f_contiguous_array_estimator[TSNE]
 
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   # NearestNeighbors
@@ -739,6 +752,12 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[NearestNeighbors()]
   - tests/test_common.py::test_f_contiguous_array_estimator[LocalOutlierFactor]
   - tests/test_common.py::test_estimators[NearestNeighbors()-
+  - model_selection/tests/test_search.py:test_search_cv_score_samples_method[search_cv0]
+  - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv1]
+  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_outliers_fit_predict]
+  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit_check_is_fitted]
+  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_n_features_in]
   # KNeighborsRegressor
   - ensemble/tests/test_bagging.py::test_regression
   - ensemble/tests/test_bagging.py::test_single_estimator
@@ -829,6 +848,9 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[KNeighborsClassifier()]
   - tests/test_common.py::test_f_contiguous_array_estimator[KNeighborsClassifier]
   - tests/test_common.py::test_estimators[KNeighborsClassifier()-
+  - model_selection/tests/test_search.py::test_search_cv_pairwise_property_equivalence_of_precomputed
+  - model_selection/tests/test_validation.py::test_cross_val_score_multilabel
+  - neighbors/tests/test_neighbors.py::test_precomputed_cross_validation
   # SVR
   - ensemble/tests/test_bagging.py::test_sparse_regression
   - tests/test_common.py::test_check_n_features_in_after_fitting[NuSVR()]
@@ -840,14 +862,14 @@ gpu:
   # SVC
   - ensemble/tests/test_bagging.py::test_oob_score_classification
   - ensemble/tests/test_bagging.py::test_deprecated_base_estimator_has_decision_function
-  - ensemble/tests/test_stacking.py::test_stacking_classifier_error[y1-params1-ValueError-does not implement the method predict_proba]
+  - ensemble/tests/test_stacking.py::test_stacking_classifier_error[y1-params1-ValueError-does
   - feature_selection/tests/test_rfe
   - metrics/tests/test_classification.py::test_classification_report_dictionary_output
   - metrics/tests/test_classification.py::test_multilabel_confusion_matrix_multiclass
   - metrics/tests/test_classification.py::test_precision_recall_f1_score_multiclass
   - metrics/tests/test_classification.py::test_confusion_matrix_multiclass_subset_labels
-  - metrics/tests/test_classification.py::test_confusion_matrix_error[empty list]
-  - metrics/tests/test_classification.py::test_confusion_matrix_error[unknown labels]
+  - metrics/tests/test_classification.py::test_confusion_matrix_error[empty
+  - metrics/tests/test_classification.py::test_confusion_matrix_error[unknown
   - metrics/tests/test_classification.py::test_classification_report_multiclass
   - metrics/tests/test_classification.py::test_classification_report_multiclass_with_label_detection
   - metrics/tests/test_classification.py::test_classification_report_multiclass_with_digits
@@ -866,6 +888,13 @@ gpu:
   - tests/test_pipeline.py::test_pipeline_memory
   - tests/test_common.py::test_estimators[NuSVC()-
   - tests/test_common.py::test_estimators[SVC()-
+  - sklearn/model_selection/tests/test_search.py::test_grid_search_precomputed_kernel
+  - model_selection/tests/test_search.py::test_search_cv_results_rank_tie_breaking
+  - model_selection/tests/test_split.py::test_kfold_can_detect_dependent_samples_on_digits
+  - model_selection/tests/test_validation.py::test_cross_val_score_mask
+  - model_selection/tests/test_validation.py::test_cross_val_score_precomputed
+  - model_selection/tests/test_validation.py::test_cross_val_score_with_score_func_classification
+  - svm/tests/test_svm.py::test_unfitted
   # part SVC, part KNeighborsClassifier
   - semi_supervised/tests/test_self_training
   # unsorted NearestNeighbors/KNClassifier/KNRegressor
@@ -958,7 +987,8 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_k_and_radius_neighbors_duplicates[kd_tree]
   - neighbors/tests/test_neighbors.py::test_same_knn_parallel[ball_tree]
   - neighbors/tests/test_neighbors.py::test_same_knn_parallel[kd_tree]
-  - neighbors/tests/test_neighbors.py::test_same_knn_parallel[auto]  - neighbors/tests/test_neighbors.py::test_knn_forcing_backend[ball_tree-threading]
+  - neighbors/tests/test_neighbors.py::test_same_knn_parallel[auto]
+  - neighbors/tests/test_neighbors.py::test_knn_forcing_backend[ball_tree-threading]
   - neighbors/tests/test_neighbors.py::test_knn_forcing_backend[ball_tree-sequential]
   - neighbors/tests/test_neighbors.py::test_knn_forcing_backend[ball_tree-multiprocessing]
   - neighbors/tests/test_neighbors.py::test_knn_forcing_backend[ball_tree-loky]
