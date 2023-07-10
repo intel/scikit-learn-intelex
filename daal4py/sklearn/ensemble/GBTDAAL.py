@@ -24,11 +24,10 @@ from sklearn import preprocessing
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils import check_random_state
 import daal4py as d4p
-from ...mb import GBTDAALBaseModel
 from .._utils import getFPType
 
 
-class GBTDAALBase(BaseEstimator, GBTDAALBaseModel):
+class GBTDAALBase(BaseEstimator, d4p.GBTDAALBaseModel):
     def __init__(self,
                  split_method='inexact',
                  max_iterations=50,
