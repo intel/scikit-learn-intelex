@@ -16,7 +16,7 @@
 
 # daal4py Model builders API
 
-from daal4py._daal4py import GBTDAALBaseModel, gbt_regression_model
+from .._daal4py import GBTDAALBaseModel, gbt_regression_model
 
 
 class GBTDAALModel(GBTDAALBaseModel):
