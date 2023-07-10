@@ -16,7 +16,7 @@
 
 # daal4py Gradient Bossting Classification model creation from XGBoost example
 
-from daal4py.sklearn.ensemble import GBTDAALClassifier
+import daal4py as d4p
 import xgboost as xgb
 import numpy as np
 import pandas as pd
@@ -59,7 +59,7 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     xgb_errors_count = np.count_nonzero(xgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = GBTDAALClassifier.convert_model(clf)
+    daal_model = d4p.sklearn.ensemble.GBTDAALClassifier.convert_model(clf)
 
     # daal4py prediction
     daal_prediction = daal_model.predict(X_test)

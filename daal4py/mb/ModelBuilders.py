@@ -20,6 +20,9 @@ import daal4py as d4p
 
 
 class GBTDAALModel(d4p.GBTDAALBaseModel):
+    def __init__(self):
+        pass
+
     def predict(self, X, fptype="float"):
         if self._is_regression:
             return self._predict_regression(X, fptype)
