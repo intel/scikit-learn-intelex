@@ -16,10 +16,10 @@
 
 # daal4py Model builders API
 
-import daal4py as d4p
+from daal4py._daal4py import GBTDAALBaseModel, gbt_regression_model
 
 
-class GBTDAALModel(d4p.GBTDAALBaseModel):
+class GBTDAALModel(GBTDAALBaseModel):
     def __init__(self):
         pass
 
@@ -40,6 +40,6 @@ def convert_model(model):
     gbm = GBTDAALModel()
     gbm._convert_model(model)
 
-    gbm._is_regression = isinstance(gbm.daal_model_, d4p.gbt_regression_model)
+    gbm._is_regression = isinstance(gbm.daal_model_, gbt_regression_model)
 
     return gbm
