@@ -15,6 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .ModelBuilders import (convert_model)
+from .ModelBuilders import (GBTDAALModel, convert_model)
 
-__all__ = ['convert_model']
+__all__ = ['GBTDAALModel', 'convert_model']
