@@ -16,7 +16,7 @@
 
 # daal4py Gradient Bossting Classification model creation from LightGBM example
 
-import daal4py as d4p
+from daal4py.mb import convert_model
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
@@ -67,7 +67,7 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     lgb_errors_count = np.count_nonzero(lgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = d4p.mb.convert_model(lgb_model)
+    daal_model = convert_model(lgb_model)
 
     # daal4py prediction
     daal_prediction = daal_model.predict(X_test)
