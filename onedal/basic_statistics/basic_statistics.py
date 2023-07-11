@@ -73,8 +73,10 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
-        data = np.asarray(data)
-        weights = np.asarray(weights)
+        if data:
+            data = np.asarray(data)
+        if weights:
+            weights = np.asarray(weights)
 
         data, weights = _convert_to_supported(
             policy, data, weights)
