@@ -128,11 +128,9 @@ def _transfer_to_host(queue, *data):
 def _get_backend(obj, queue, method_name, *data):
     cpu_device = queue is None or queue.sycl_device.is_cpu
     gpu_device = queue is not None and queue.sycl_device.is_gpu
-    onedal_cpu_supported = obj._onedal_cpu_supported(method_name, *data)
-    onedal_gpu_supported = obj._onedal_gpu_supported(method_name, *data)
 
-    if (cpu_device and onedal_cpu_supported) or \
-       (gpu_device and onedal_gpu_supported):
+    if (cpu_device and obj._onedal_cpu_supported(method_name, *data)) or \
+       (gpu_device and obj._onedal_gpu_supported(method_name, *data)):
         return 'onedal', queue
     if cpu_device:
         return 'sklearn', None
@@ -142,7 +140,7 @@ def _get_backend(obj, queue, method_name, *data):
         d4p_options.get('host_offload_on_fail', False)
 
     if gpu_device and allow_fallback_to_host:
-        if onedal_cpu_supported:
+        if obj._onedal_cpu_supported(method_name, *data):
             return 'onedal', None
         return 'sklearn', None
 
