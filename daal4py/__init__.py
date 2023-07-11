@@ -34,6 +34,8 @@ if "Windows" in platform.system():
         os.add_dll_directory(path_to_oneapi_backend)
     os.environ['PATH'] = path_to_libs + os.pathsep + os.environ['PATH']
 
+from . import mb
+
 try:
     from daal4py._daal4py import *
     from daal4py._daal4py import (
@@ -51,6 +53,5 @@ except ImportError as e:
     raise
 
 from . import sklearn
-from . import mb
 
 __all__ = ['mb', 'sklearn']

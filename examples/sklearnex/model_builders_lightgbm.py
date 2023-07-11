@@ -26,7 +26,7 @@ def pd_read_csv(f, c=None, t=np.float64):
     return pd.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 
 
-def main(readcsv=pd_read_csv, method='defaultDense'):
+def main(readcsv=pd_read_csv):
     # Path to data
     train_file = "../daal4py/data/batch/df_classification_train.csv"
     test_file = "../daal4py/data/batch/df_classification_test.csv"

@@ -101,6 +101,10 @@ class GBTDAALBase(BaseEstimator, d4p.GBTDAALBaseModel):
             raise ValueError('Parameter "min_bin_size" must be '
                              'non-zero positive integer value.')
 
+    allow_nan_ = False
+
+    def _more_tags(self):
+        return {"allow_nan": self.allow_nan_}
 
 class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def fit(self, X, y):
@@ -166,7 +170,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
     def _predict(self, X, resultsToEvaluate):
         # Input validation
-        if not hasattr(self, 'allow_nan_'):
+        if not self.allow_nan_:
             X = check_array(X, dtype=[np.single, np.double])
         else:
             X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
@@ -260,7 +264,7 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
 
     def predict(self, X):
         # Input validation
-        if not hasattr(self, 'allow_nan_'):
+        if not self.allow_nan_:
             X = check_array(X, dtype=[np.single, np.double])
         else:
             X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
