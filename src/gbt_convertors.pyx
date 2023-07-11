@@ -152,7 +152,7 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     else:
         is_regression = True
 
-    n_iterations = booster.best_ntree_limit
+    n_iterations = booster.best_iteration + 1
     trees_arr = trees_arr[: n_iterations * (n_classes if n_classes > 2 else 1)]
 
     # Create + base iteration
