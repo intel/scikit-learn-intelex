@@ -15,6 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-from .model_builders import convert_model
+from .model_builders import GBTDAALBaseModel, convert_model
 
-__all__ = ['convert_model']
+__all__ = ['GBTDAALBaseModel', 'convert_model']

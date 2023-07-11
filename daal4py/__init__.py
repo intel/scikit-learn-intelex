@@ -50,7 +50,7 @@ except ImportError as e:
 
     raise
 
-from . import sklearn
 from . import mb
+from . import sklearn
 
 __all__ = ['mb', 'sklearn']
