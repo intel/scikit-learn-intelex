@@ -106,6 +106,7 @@ class GBTDAALBase(BaseEstimator, d4p.GBTDAALBaseModel):
     def _more_tags(self):
         return {"allow_nan": self.allow_nan_}
 
+
 class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def fit(self, X, y):
         # Check the algorithm parameters
