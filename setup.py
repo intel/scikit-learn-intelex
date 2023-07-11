@@ -414,6 +414,7 @@ with open('README.md', 'r', encoding='utf8') as f:
 packages_with_tests = [
     'daal4py',
     'daal4py.oneapi',
+    'daal4py.mb',
     'daal4py.sklearn',
     'daal4py.sklearn.cluster',
     'daal4py.sklearn.decomposition',
