@@ -25,8 +25,7 @@ from ..common._policy import _get_policy
 from ..datatypes._data_conversion import (
     from_table,
     to_table,
-    _convert_to_supported,
-    _convert_to_dataframe)
+    _convert_to_supported)
 from onedal import _backend
 
 
