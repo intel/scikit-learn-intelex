@@ -19,6 +19,28 @@
 import numpy as np
 import daal4py as d4p
 
+try:
+    from pandas import DataFrame
+    from pandas.core.dtypes.cast import find_common_type
+    pandas_is_imported = True
+except (ImportError, ModuleNotFoundError):
+    pandas_is_imported = False
+
+def parse_dtype(dt):
+    if dt == np.double:
+        return "double"
+    if dt == np.single:
+        return "float"
+    raise ValueError(f"Input array has unexpected dtype = {dt}")
+
+def getFPType(X):
+    if pandas_is_imported:
+        if isinstance(X, DataFrame):
+            dt = find_common_type(X.dtypes.tolist())
+            return parse_dtype(dt)
+
+    dt = getattr(X, 'dtype', None)
+    return parse_dtype(dt)
 
 class GBTDAALBaseModel:
     def _get_params_from_lightgbm(self, params):
@@ -173,13 +195,15 @@ class GBTDAALModel(GBTDAALBaseModel):
     def __init__(self):
         pass
 
-    def predict(self, X, fptype="float"):
+    def predict(self, X):
+        fptype = getFPType(X)
         if self._is_regression:
             return self._predict_regression(X, fptype)
         else:
             return self._predict_classification(X, fptype, "computeClassLabels")
 
-    def predict_proba(self, X, fptype="float"):
+    def predict_proba(self, X):
+        fptype = getFPType(X)
         if self._is_regression:
             raise NotImplementedError("Can't predict probabilities for regression task")
         else:
