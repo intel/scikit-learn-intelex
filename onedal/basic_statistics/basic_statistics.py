@@ -73,9 +73,9 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
-        if data:
+        if not (data is None):
             data = np.asarray(data)
-        if weights:
+        if not (weights is None):
             weights = np.asarray(weights)
 
         data, weights = _convert_to_supported(
