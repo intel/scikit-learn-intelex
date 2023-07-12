@@ -19,3 +19,7 @@
 line-length = 90
 target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
 extend-ignore = 'E203'
+
+[tool.isort]
+profile = "black"
+line_length = 90
