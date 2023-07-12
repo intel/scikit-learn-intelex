@@ -153,7 +153,8 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
 
     trees_arr = booster.get_dump(dump_format="json")
     if xgb_config is None:
-        xgb_config =get_xgboost_params(booster)
+        xgb_config = get_xgboost_params(booster)
+
 
     n_features = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
     n_classes = int(xgb_config["learner"]["learner_model_param"]["num_class"])
