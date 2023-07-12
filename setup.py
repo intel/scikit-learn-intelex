@@ -15,24 +15,27 @@
 # limitations under the License.
 # ===============================================================================
 
+import distutils.command.build as orig_build
+import glob
+
 # System imports
 import os
+import pathlib
 import sys
 import time
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext as _build_ext
-import setuptools.command.develop as orig_develop
-import distutils.command.build as orig_build
-from os.path import join as jp
-import pathlib
+from concurrent.futures import ThreadPoolExecutor
 from distutils.sysconfig import get_config_vars
-from Cython.Build import cythonize
-import glob
+from os.path import join as jp
+
 import numpy as np
-from scripts.version import get_onedal_version
+import setuptools.command.develop as orig_develop
+from Cython.Build import cythonize
+from setuptools import Extension, setup
+from setuptools.command.build_ext import build_ext as _build_ext
+
 import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
-from concurrent.futures import ThreadPoolExecutor
+from scripts.version import get_onedal_version
 
 try:
     from ctypes.utils import find_library
