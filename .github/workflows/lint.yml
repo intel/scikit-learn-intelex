@@ -18,6 +18,16 @@ jobs:
           else
             echo "HAS_CHANGES=true" >> "$GITHUB_OUTPUT"
           fi
+      - uses: actions/setup-python@v4
+        name: Setup python for isort
+        if: steps.changedfiles.outputs.HAS_CHANGES == 'true'
+        with:
+          python-version: "3.10"
+      - name: Run isort on changed files
+        if: steps.changedfiles.outputs.HAS_CHANGES == 'true'
+        run: |
+          python -m pip install isort
+          isort --check ${{ steps.changedfiles.outputs.CHANGED_FILES }}
       - uses: psf/black@stable
         name: Run black on changed files
         if: steps.changedfiles.outputs.HAS_CHANGES == 'true'
