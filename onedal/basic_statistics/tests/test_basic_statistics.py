@@ -18,6 +18,8 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 if daal_check_version((2023, 'P', 100)):
     import pytest
+    import dpnp
+    import dpctl.tensor as dpt
     import numpy as np
     from numpy.testing import assert_allclose
 
@@ -25,35 +27,40 @@ if daal_check_version((2023, 'P', 100)):
     from onedal.tests.utils._device_selection import get_queues
 
     options_and_tests = [
-        ("sum", np.sum, (1e-5, 1e-7)),
-        ("min", np.min, (1e-5, 1e-7)),
-        ("max", np.max, (1e-5, 1e-7)),
-        ("mean", np.mean, (1e-5, 1e-7)),
-        ("standard_deviation", np.std, (3e-5, 3e-5))
+        ("sum", dpnp.sum, (1e-5, 1e-7)),
+        ("min", dpnp.min, (1e-5, 1e-7)),
+        ("max", dpnp.max, (1e-5, 1e-7)),
+        ("mean", dpnp.mean, (1e-5, 1e-7)),
+        ("standard_deviation", dpnp.std, (3e-5, 3e-5))
     ]
 
     @pytest.mark.parametrize('queue', get_queues())
-    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
+    @pytest.mark.parametrize('dtype', [dpnp.float32, dpnp.float64])
     def test_basic_uniform(queue, dtype):
         seed = 42
         s_count, f_count = 70000, 29
 
+        # HACK:
+        # default_rng is not available in dpnp.random.
         gen = np.random.default_rng(seed)
         data = gen.uniform(low=-0.5, high=+0.6,
                            size=(s_count, f_count))
         data = data.astype(dtype=dtype)
+        # TODO:
+        # add primitive for array creation.
+        data = dpnp.array(dpt.asarray(data, usm_type="device", sycl_queue=queue), copy=False)
 
         alg = BasicStatistics(result_options="mean")
-        res = alg.compute(data, queue=queue)
+        res = alg.compute(data)
 
-        res_mean = res["mean"]
-        gtr_mean = np.mean(data, axis=0)
-        tol = 2e-5 if res_mean.dtype == np.float32 else 1e-7
+        res_mean = res["mean"].asnumpy()
+        gtr_mean = np.mean(data.asnumpy(), axis=0)
+        tol = 2e-5 if res_mean.dtype == dpnp.float32 else 1e-7
         assert_allclose(gtr_mean, res_mean, rtol=tol)
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('option', options_and_tests)
-    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
+    @pytest.mark.parametrize('dtype', [dpnp.float32, dpnp.float64])
     def test_option_uniform(queue, option, dtype):
         seed = 77
         s_count, f_count = 19999, 31
@@ -65,18 +72,19 @@ if daal_check_version((2023, 'P', 100)):
         data = gen.uniform(low=-0.3, high=+0.7,
                            size=(s_count, f_count))
         data = data.astype(dtype=dtype)
+        data = dpnp.array(dpt.asarray(data, usm_type="device", sycl_queue=queue), copy=False)
 
         alg = BasicStatistics(result_options=result_option)
         res = alg.compute(data, queue=queue)
 
         res, gtr = res[result_option], function(data, axis=0)
 
-        tol = fp32tol if res.dtype == np.float32 else fp64tol
-        assert_allclose(gtr, res, rtol=tol)
+        tol = fp32tol if res.dtype == dpnp.float32 else fp64tol
+        assert_allclose(gtr.asnumpy(), res.asnumpy(), rtol=tol)
 
     @pytest.mark.parametrize('queue', get_queues())
     @pytest.mark.parametrize('option', options_and_tests)
-    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
+    @pytest.mark.parametrize('dtype', [dpnp.float32, dpnp.float64])
     def test_option_weighted(queue, option, dtype):
         seed = 999
         s_count, f_count = 1024, 127
@@ -93,12 +101,14 @@ if daal_check_version((2023, 'P', 100)):
 
         data = data.astype(dtype=dtype)
         weights = weights.astype(dtype=dtype)
+        data = dpnp.array(dpt.asarray(data, usm_type="device", sycl_queue=queue), copy=False)
+        weights = dpnp.array(dpt.asarray(weights, usm_type="device", sycl_queue=queue), copy=False)
 
         alg = BasicStatistics(result_options=result_option)
         res = alg.compute(data, weights, queue=queue)
 
-        weighted = np.diag(weights) @ data
+        weighted = np.diag(weights.asnumpy()) @ data.asnumpy()
         res, gtr = res[result_option], function(weighted, axis=0)
 
-        tol = fp32tol if res.dtype == np.float32 else fp64tol
-        assert_allclose(gtr, res, rtol=tol)
+        tol = fp32tol if res.dtype == dpnp.float32 else fp64tol
+        assert_allclose(gtr, res.asnumpy(), rtol=tol)

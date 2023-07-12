@@ -14,12 +14,15 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
+import dpnp
+import dpctl.tensor as dpt
 
 from onedal import _backend
 
-from daal4py.sklearn._utils import get_dtype
-from ..datatypes import _convert_to_supported
+# TODO:
+# remove unnecessary imports.
+# from daal4py.sklearn._utils import get_dtype
+# from ..datatypes import _convert_to_supported
 
 from ..common._policy import _get_policy
 from ..datatypes._data_conversion import from_table, to_table
@@ -45,38 +48,44 @@ if daal_check_version((2023, 'P', 200)):
             self.algorithm = algorithm
 
             if local_trials_count is None:
-                self.local_trials_count = 2 + int(np.log(cluster_count))
+                self.local_trials_count = 2 + int(dpnp.log(cluster_count))
             else:
                 self.local_trials_count = local_trials_count
 
         def _get_policy(self, queue, *data):
             return _get_policy(queue, *data)
 
-        def _get_onedal_params(self, dtype=np.float32):
+        def _get_onedal_params(self, dtype=dpnp.float32):
             return {
-                'fptype': 'float' if dtype == np.float32 else 'double',
+                'fptype': 'float' if dtype == dpnp.float32 else 'double',
                 'local_trials_count': self.local_trials_count,
                 'method': self.algorithm, 'seed': self.seed,
                 'cluster_count': self.cluster_count,
             }
 
         def _get_params_and_input(self, X, policy):
-            X_loc = np.asarray(X)
-            types = [np.float32, np.float64]
-            if get_dtype(X_loc) not in types:
-                X_loc = X_loc.astype(np.float64)
+            types = [dpnp.float32, dpnp.float64]
+            # TODO:
+            # move checking pandas dtypes on sklearnex level.
+            # if get_dtype(X_loc) not in types:
+            if X.dtype not in types:
+                X = X.astype(dpnp.float64)
 
-            X_loc = _convert_to_supported(policy, X_loc)
+            # TODO:
+            # X = _convert_to_supported(policy, X)
 
-            dtype = get_dtype(X_loc)
+            # TODO:
+            # move checking pandas dtypes on sklearnex level.
+            # dtype = get_dtype(X_loc)
+            dtype = X.dtype
             params = self._get_onedal_params(dtype)
-            return (params, to_table(X_loc), dtype)
+            return (params, to_table(X), dtype)
 
-        def _compute_raw(self, X_table, module, policy, dtype=np.float32):
+        def _compute_raw(self, X_table, module, policy, dtype=dpnp.float32):
             params = self._get_onedal_params(dtype)
 
             result = module.compute(policy, params, X_table)
-
+            # returns onedal table.
             return result.centroids
 
         def _compute(self, X, module, queue):
@@ -85,9 +94,11 @@ if daal_check_version((2023, 'P', 200)):
 
             centroids = self._compute_raw(X_table, module, policy, dtype)
 
-            return from_table(centroids)
+            # TODO:
+            # add from_table.
+            return dpnp.array(dpt.asarray(centroids), copy=False)
 
-        def compute_raw(self, X_table, policy, dtype=np.float32):
+        def compute_raw(self, X_table, policy, dtype=dpnp.float32):
             return self._compute_raw(X_table, _backend.kmeans_init.init, policy, dtype)
 
         def compute(self, X, queue=None):
@@ -105,5 +116,5 @@ if daal_check_version((2023, 'P', 200)):
         return (
             KMeansInit(
                 n_clusters, seed=random_seed, local_trials_count=n_local_trials).compute(
-                X, queue), np.full(
+                X, queue), dpnp.full(
                 n_clusters, -1))

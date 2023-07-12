@@ -19,8 +19,12 @@ import warnings
 
 from onedal import _is_dpc_backend
 from onedal import _backend
+# TODO:
+# updates on make3d usage.
 from daal4py.sklearn._utils import make2d
 
+# TODO:
+# import witout try-catch.
 try:
     import dpctl
     import dpctl.tensor as dpt
@@ -29,20 +33,29 @@ except ImportError:
     dpctl_available = False
 
 
+# TODO:
+# deprecate using map here.
 def _apply_and_pass(func, *args):
     if len(args) == 1:
         return func(args[0])
     return tuple(map(func, args))
 
+# TODO:
+# def convert_one_from_table(arg):
+#     return dpt.asarray(arg, copy=False)
+
 
 def from_table(*args):
+    # TODO:
+    # return _apply_and_pass(convert_one_from_table, *args)
     return _apply_and_pass(_backend.from_table, *args)
 
 
 def convert_one_to_table(arg):
-    if dpctl_available:
-        if isinstance(arg, dpt.usm_ndarray):
-            return _backend.dpctl_to_table(arg)
+    if hasattr(arg, 'get_array') and hasattr(arg.get_array(), '__sycl_usm_array_interface__'):
+        # TODO:
+        # check if dpctl.tensor. Add primitive for the check.
+        return _backend.dpctl_to_table(arg.get_array())
     arg = make2d(arg)
     return _backend.to_table(arg)
 
@@ -50,7 +63,8 @@ def convert_one_to_table(arg):
 def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
 
-
+# TODO:
+# update logic with dpnp impl.
 if _is_dpc_backend:
     from ..common._policy import _HostInteropPolicy
 
@@ -87,8 +101,8 @@ else:
         return _apply_and_pass(func, *data)
 
 
-#TODO: Update with dpctl
-#For now it will fall back to numpy
+# TODO:
+# remove _convert_to_dataframe.
 def _convert_one_to_dataframe(policy, x):
     is_numpy = isinstance(x, np.ndarray)
     if (x is None) or is_numpy:

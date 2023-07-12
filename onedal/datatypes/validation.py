@@ -14,14 +14,20 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
+# TODO:
+# avoid direct importing dpnp/dpctl for array routines from this module.
+import dpnp
 import warnings
 from scipy import sparse as sp
 from scipy.sparse import issparse, dok_matrix, lil_matrix
 from sklearn.preprocessing import LabelEncoder
+# TODO:
+# implement onedal's own `check_array` with dpdpnp.
 from sklearn.utils.validation import check_array
 from collections.abc import Sequence
 from numbers import Integral
+# TODO:
+# implement on onedal4py side.
 from daal4py.sklearn.utils.validation import _assert_all_finite
 
 
@@ -34,29 +40,30 @@ def _is_arraylike(x):
     """Returns whether the input is array-like."""
     return hasattr(x, "__len__") or hasattr(x, "shape") or hasattr(x, "__array__")
 
-
+# TODO:
+# remove this primitive.
 def _is_arraylike_not_scalar(array):
     """Return True if array is array-like and not a scalar"""
-    return _is_arraylike(array) and not np.isscalar(array)
+    return _is_arraylike(array) and not dpnp.isscalar(array)
 
 
 def _column_or_1d(y, warn=False):
-    y = np.asarray(y)
+    y = dpnp.asarray(y)
 
     # TODO: Convert this kind of arrays to a table like in daal4py
     if not y.flags.aligned and not y.flags.writeable:
-        y = np.array(y.tolist())
+        y = dpnp.array(y.tolist())
 
-    shape = np.shape(y)
+    shape = dpnp.shape(y)
     if len(shape) == 1:
-        return np.ravel(y)
+        return dpnp.ravel(y)
     if len(shape) == 2 and shape[1] == 1:
         if warn:
             warnings.warn("A column-vector y was passed when a 1d array was"
                           " expected. Please change the shape of y to "
                           "(n_samples, ), for example using ravel().",
                           DataConversionWarning, stacklevel=2)
-        return np.ravel(y)
+        return dpnp.ravel(y)
 
     raise ValueError(
         "y should be a 1d array, "
@@ -68,26 +75,26 @@ def _compute_class_weight(class_weight, classes, y):
         raise ValueError("classes should include all valid labels that can "
                          "be in y")
     if class_weight is None or len(class_weight) == 0:
-        weight = np.ones(classes.shape[0], dtype=np.float64, order='C')
+        weight = dpnp.ones(classes.shape[0], dtype=dpnp.float64, order='C')
     elif class_weight == 'balanced':
         y_ = _column_or_1d(y)
-        classes, _ = np.unique(y_, return_inverse=True)
+        classes, _ = dpnp.unique(y_, return_inverse=True)
 
         le = LabelEncoder()
         y_ind = le.fit_transform(y_)
-        if not all(np.in1d(classes, le.classes_)):
+        if not all(dpnp.in1d(classes, le.classes_)):
             raise ValueError("classes should have valid labels that are in y")
 
-        y_bin = np.bincount(y_ind).astype(np.float64)
+        y_bin = dpnp.bincount(y_ind).astype(dpnp.float64)
         weight = len(y_) / (len(le.classes_) * y_bin)
     else:
         # user-defined dictionary
-        weight = np.ones(classes.shape[0], dtype=np.float64, order='C')
+        weight = dpnp.ones(classes.shape[0], dtype=dpnp.float64, order='C')
         if not isinstance(class_weight, dict):
             raise ValueError("class_weight must be dict, 'balanced', or None,"
                              " got: %r" % class_weight)
         for c in class_weight:
-            i = np.searchsorted(classes, c)
+            i = dpnp.searchsorted(classes, c)
             if i >= len(classes) or classes[i] != c:
                 raise ValueError("Class label {} not present.".format(c))
             weight[i] = class_weight[c]
@@ -98,7 +105,7 @@ def _compute_class_weight(class_weight, classes, y):
 def _validate_targets(y, class_weight, dtype):
     y_ = _column_or_1d(y, warn=True)
     _check_classification_targets(y)
-    classes, y = np.unique(y_, return_inverse=True)
+    classes, y = dpnp.unique(y_, return_inverse=True)
     class_weight_res = _compute_class_weight(class_weight,
                                              classes=classes, y=y_)
 
@@ -107,7 +114,7 @@ def _validate_targets(y, class_weight, dtype):
             "The number of classes has to be greater than one; got %d"
             " class" % len(classes))
 
-    return np.asarray(y, dtype=dtype, order='C'), class_weight_res, classes
+    return dpnp.asarray(y, dtype=dtype, order='C'), class_weight_res, classes
 
 
 def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
@@ -121,6 +128,7 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
         else:
             _assert_all_finite(array)
             force_all_finite = False
+    # lets try it without copping.
     array = check_array(
         array=array,
         dtype=dtype,
@@ -136,12 +144,12 @@ def _check_array(array, dtype="numeric", accept_sparse=False, order=None,
 
     # TODO: Convert this kind of arrays to a table like in daal4py
     if not array.flags.aligned and not array.flags.writeable:
-        array = np.array(array.tolist())
+        array = dpnp.array(array.tolist())
 
     # TODO: If data is not contiguous copy to contiguous
     # Need implemeted numpy table in oneDAL
     if not array.flags.c_contiguous and not array.flags.f_contiguous:
-        array = np.ascontiguousarray(array, array.dtype)
+        array = dpnp.ascontiguousarray(array, array.dtype)
     return array
 
 
@@ -169,11 +177,11 @@ def _check_X_y(
     if not accept_2d_y:
         y = _column_or_1d(y, warn=True)
     if y_numeric and y.dtype.kind == 'O':
-        y = y.astype(np.float64)
+        y = y.astype(dpnp.float64)
     _assert_all_finite(y)
 
     lengths = [X.shape[0], y.shape[0]]
-    uniques = np.unique(lengths)
+    uniques = dpnp.unique(lengths)
     if len(uniques) > 1:
         raise ValueError("Found input variables with inconsistent numbers of"
                          " samples: %r" % [int(length) for length in lengths])
@@ -207,13 +215,13 @@ def _type_of_target(y):
     # DeprecationWarning will be replaced by ValueError, see NEP 34
     # https://numpy.org/neps/nep-0034-infer-dtype-is-object.html
     with warnings.catch_warnings():
-        warnings.simplefilter('error', np.VisibleDeprecationWarning)
+        warnings.simplefilter('error', dpnp.VisibleDeprecationWarning)
         try:
-            y = np.asarray(y)
-        except np.VisibleDeprecationWarning:
+            y = dpnp.asarray(y)
+        except dpnp.VisibleDeprecationWarning:
             # dtype=object should be provided explicitly for ragged arrays,
             # see NEP 34
-            y = np.asarray(y, dtype=object)
+            y = dpnp.asarray(y, dtype=object)
 
     # The old sequence of sequences format
     try:
@@ -241,18 +249,18 @@ def _type_of_target(y):
         suffix = ""  # [1, 2, 3] or [[1], [2], [3]]
 
     # check float and contains non-integer float values
-    if y.dtype.kind == 'f' and np.any(y != y.astype(int)):
+    if y.dtype.kind == 'f' and dpnp.any(y != y.astype(int)):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
         _assert_all_finite(y)
         return 'continuous' + suffix
 
-    if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
+    if (len(dpnp.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
         return 'multiclass' + suffix  # [1, 2, 3] or [[1., 2., 3]] or [[1, 2]]
     return 'binary'  # [1, 2] or [["a"], ["b"]]
 
 
 def _is_integral_float(y):
-    return y.dtype.kind == 'f' and np.all(y.astype(int) == y)
+    return y.dtype.kind == 'f' and dpnp.all(y.astype(int) == y)
 
 
 def _is_multilabel(y):
@@ -260,13 +268,13 @@ def _is_multilabel(y):
         # DeprecationWarning will be replaced by ValueError, see NEP 34
         # https://numpy.org/neps/nep-0034-infer-dtype-is-object.html
         with warnings.catch_warnings():
-            warnings.simplefilter('error', np.VisibleDeprecationWarning)
+            warnings.simplefilter('error', dpnp.VisibleDeprecationWarning)
             try:
-                y = np.asarray(y)
-            except np.VisibleDeprecationWarning:
+                y = dpnp.asarray(y)
+            except dpnp.VisibleDeprecationWarning:
                 # dtype=object should be provided explicitly for ragged arrays,
                 # see NEP 34
-                y = np.array(y, dtype=object)
+                y = dpnp.array(y, dtype=object)
 
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
@@ -274,9 +282,9 @@ def _is_multilabel(y):
     if issparse(y):
         if isinstance(y, (dok_matrix, lil_matrix)):
             y = y.tocsr()
-        return len(y.data) == 0 or np.unique(y.data).size == 1 and \
-            (y.dtype.kind in 'biu' or _is_integral_float(np.unique(y.data)))
-    labels = np.unique(y)
+        return len(y.data) == 0 or dpnp.unique(y.data).size == 1 and \
+            (y.dtype.kind in 'biu' or _is_integral_float(dpnp.unique(y.data)))
+    labels = dpnp.unique(y)
 
     return len(labels) < 3 and (
         y.dtype.kind in 'biu' or _is_integral_float(labels))
@@ -327,7 +335,7 @@ def _num_features(X, fallback_1d=False):
             raise TypeError(message)
         # Only convert X to a numpy array if there is no cheaper, heuristic
         # option.
-        X = np.asarray(X)
+        X = dpnp.asarray(X)
 
     if hasattr(X, 'shape'):
         ndim_thr = 1 if fallback_1d else 2
@@ -364,7 +372,7 @@ def _num_samples(x):
 
     if not hasattr(x, "__len__") and not hasattr(x, "shape"):
         if hasattr(x, "__array__"):
-            x = np.asarray(x)
+            x = dpnp.asarray(x)
         else:
             raise TypeError(message)
 

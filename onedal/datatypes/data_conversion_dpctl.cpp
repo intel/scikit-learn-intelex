@@ -133,6 +133,8 @@ void report_problem_to_dptensor(const char* clarification) {
 
 // TODO:
 // return type.
+// TODO:
+// add info about Endianness "<" (LE) or ">" (BE)
 std::string get_npy_typestr(const dal::data_type dtype) {
     switch (dtype) {
         case dal::data_type::float32: {
