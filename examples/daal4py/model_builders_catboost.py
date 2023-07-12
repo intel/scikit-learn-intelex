@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
 # limitations under the License.
 #===============================================================================
 
-# daal4py Gradient Bossting Classification model creation from XGBoost example
+# daal4py Gradient Bossting Classification model creation from Catboost example
 
 import daal4py as d4p
-import xgboost as xgb
+import catboost as cb
 import numpy as np
 import pandas as pd
 
@@ -26,7 +26,7 @@ def pd_read_csv(f, c=None, t=np.float64):
     return pd.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 
 
-def main(readcsv=pd_read_csv, method='defaultDense'):
+def main(readcsv=pd_read_csv):
     # Path to data
     train_file = "./data/batch/df_classification_train.csv"
     test_file = "./data/batch/df_classification_test.csv"
@@ -38,57 +38,55 @@ def main(readcsv=pd_read_csv, method='defaultDense'):
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
     # Datasets creation
-    xgb_train = xgb.DMatrix(X_train, label=np.array(y_train))
-    xgb_test = xgb.DMatrix(X_test, label=np.array(y_test))
+    cb_train = cb.Pool(X_train, label=np.array(y_train))
+    cb_test = cb.Pool(X_test, label=np.array(y_test))
 
     # training parameters setting
     params = {
-        'max_bin': 256,
-        'scale_pos_weight': 2,
-        'lambda_l2': 1,
-        'alpha': 0.9,
-        'max_depth': 8,
-        'num_leaves': 2**8,
-        'verbosity': 0,
-        'objective': 'multi:softmax',
+        'reg_lambda': 1,
+        'max_depth': 6,
+        'num_leaves': 2**6,
+        'verbose': 0,
+        'objective': 'MultiClass',
         'learning_rate': 0.3,
-        'num_class': 5,
+        'n_estimators': 25,
+        'classes_count': 5,
     }
 
     # Training
-    xgb_model = xgb.train(params, xgb_train, num_boost_round=100)
+    cb_model = cb.CatBoost(params)
+    cb_model.fit(cb_train)
 
-    # XGBoost prediction
-    xgb_prediction = xgb_model.predict(xgb_test)
-    xgb_errors_count = np.count_nonzero(xgb_prediction - np.ravel(y_test))
+    # Catboost prediction
+    cb_prediction = cb_model.predict(cb_test, prediction_type='Class').T[0]
+    cb_errors_count = np.count_nonzero(cb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = d4p.get_gbt_model_from_xgboost(xgb_model)
+    daal_model = d4p.mb.convert_model(cb_model)
 
     # daal4py prediction
-    daal_predict_algo = d4p.gbt_classification_prediction(
-        nClasses=params["num_class"],
-        resultsToEvaluate="computeClassLabels",
-        fptype='float'
-    )
-    daal_prediction = daal_predict_algo.compute(X_test, daal_model)
-    daal_errors_count = np.count_nonzero(daal_prediction.prediction - y_test)
-    assert np.absolute(xgb_errors_count - daal_errors_count) == 0
+    daal_prediction = daal_model.predict(X_test)
+    daal_errors_count = np.count_nonzero(daal_prediction - np.ravel(y_test))
+    assert np.absolute(cb_errors_count - daal_errors_count) == 0
 
-    return (xgb_prediction, xgb_errors_count, np.ravel(daal_prediction.prediction),
+    return (cb_prediction, cb_errors_count, daal_prediction,
             daal_errors_count, np.ravel(y_test))
 
 
 if __name__ == "__main__":
-    (xgb_prediction, xgb_errors_count,
+    (cb_prediction, cb_errors_count,
      daal_prediction, daal_errors_count, y_test) = main()
-    print("\nXGBoost prediction results (first 10 rows):\n", xgb_prediction[0:10])
-    print("\ndaal4py prediction results (first 10 rows):\n", daal_prediction[0:10])
+    print("\nCatboost prediction results (first 10 rows):\n",
+          cb_prediction[0:10])
+    print("\ndaal4py prediction results (first 10 rows):\n",
+          daal_prediction[0:10])
     print("\nGround truth (first 10 rows):\n", y_test[0:10])
 
-    print("XGBoost errors count:", xgb_errors_count)
-    print("XGBoost accuracy score:", 1 - xgb_errors_count / xgb_prediction.shape[0])
+    print("Catboost errors count:", cb_errors_count)
+    print("Catboost accuracy score:",
+          1 - cb_errors_count / cb_prediction.shape[0])
 
     print("\ndaal4py errors count:", daal_errors_count)
-    print("daal4py accuracy score:", 1 - daal_errors_count / daal_prediction.shape[0])
+    print("daal4py accuracy score:",
+          1 - daal_errors_count / daal_prediction.shape[0])
     print("\nAll looks good!")

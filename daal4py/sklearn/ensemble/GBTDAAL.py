@@ -27,7 +27,7 @@ import daal4py as d4p
 from .._utils import getFPType
 
 
-class GBTDAALBase(BaseEstimator):
+class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
     def __init__(self,
                  split_method='inexact',
                  max_iterations=50,
@@ -101,6 +101,11 @@ class GBTDAALBase(BaseEstimator):
             raise ValueError('Parameter "min_bin_size" must be '
                              'non-zero positive integer value.')
 
+    allow_nan_ = False
+
+    def _more_tags(self):
+        return {"allow_nan": self.allow_nan_}
+
 
 class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def fit(self, X, y):
@@ -165,41 +170,28 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         return self
 
     def _predict(self, X, resultsToEvaluate):
+        # Input validation
+        if not self.allow_nan_:
+            X = check_array(X, dtype=[np.single, np.double])
+        else:
+            X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+
         # Check is fit had been called
         check_is_fitted(self, ['n_features_in_', 'n_classes_'])
-
-        # Input validation
-        X = check_array(X, dtype=[np.single, np.double])
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError('Shape of input is different from what was seen in `fit`')
 
         # Trivial case
         if self.n_classes_ == 1:
             return np.full(X.shape[0], self.classes_[0])
 
-        if not hasattr(self, 'daal_model_'):
-            raise ValueError((
-                "The class {} instance does not have 'daal_model_' attribute set. "
-                "Call 'fit' with appropriate arguments before using this method.").format(
-                    type(self).__name__))
-
-        # Define type of data
         fptype = getFPType(X)
-
-        # Prediction
-        predict_algo = d4p.gbt_classification_prediction(
-            fptype=fptype,
-            nClasses=self.n_classes_,
-            resultsToEvaluate=resultsToEvaluate)
-        predict_result = predict_algo.compute(X, self.daal_model_)
+        predict_result = self._predict_classification(X, fptype, resultsToEvaluate)
 
         if resultsToEvaluate == "computeClassLabels":
             # Decode labels
             le = preprocessing.LabelEncoder()
             le.classes_ = self.classes_
-            return le.inverse_transform(
-                predict_result.prediction.ravel().astype(np.int64, copy=False))
-        return predict_result.probabilities
+            return le.inverse_transform(predict_result)
+        return predict_result
 
     def predict(self, X):
         return self._predict(X, "computeClassLabels")
@@ -217,6 +209,14 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
             proba[k] = np.log(proba[k])
 
         return proba
+
+    def convert_model(model):
+        gbm = GBTDAALClassifier()
+        gbm._convert_model(model)
+
+        gbm.classes_ = model.classes_
+        gbm.allow_nan_ = True
+        return gbm
 
 
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
@@ -264,25 +264,21 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         return self
 
     def predict(self, X):
+        # Input validation
+        if not self.allow_nan_:
+            X = check_array(X, dtype=[np.single, np.double])
+        else:
+            X = check_array(X, dtype=[np.single, np.double], force_all_finite='allow-nan')
+
         # Check is fit had been called
         check_is_fitted(self, ['n_features_in_'])
 
-        # Input validation
-        X = check_array(X, dtype=[np.single, np.double])
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError('Shape of input is different from what was seen in `fit`')
-
-        if not hasattr(self, 'daal_model_'):
-            raise ValueError((
-                "The class {} instance does not have 'daal_model_' attribute set. "
-                "Call 'fit' with appropriate arguments before using this method.").format(
-                    type(self).__name__))
-
-        # Define type of data
         fptype = getFPType(X)
+        return self._predict_regression(X, fptype)
 
-        # Prediction
-        predict_algo = d4p.gbt_regression_prediction(fptype=fptype)
-        predict_result = predict_algo.compute(X, self.daal_model_)
+    def convert_model(model):
+        gbm = GBTDAALRegressor()
+        gbm._convert_model(model)
 
-        return predict_result.prediction.ravel()
+        gbm.allow_nan_ = True
+        return gbm

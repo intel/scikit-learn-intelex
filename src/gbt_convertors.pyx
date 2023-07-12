@@ -21,14 +21,35 @@ import json
 import re
 from time import time
 
-def get_gbt_model_from_lightgbm(model: Any) -> Any:
+def get_lightgbm_params(booster):
+    return booster.dump_model()
+
+def get_xgboost_params(booster):
+    return json.loads(booster.save_config())
+
+def get_catboost_params(booster):
+    dump_filename = f"catboost_model_{getpid()}_{time()}"
+
+    # Dump model in file
+    booster.save_model(dump_filename, 'json')
+
+    # Read json with model
+    with open(dump_filename) as file:
+        model_data = json.load(file)
+
+    # Delete dump file
+    remove(dump_filename)
+    return model_data
+
+def get_gbt_model_from_lightgbm(model: Any, lgb_model = None) -> Any:
     class Node:
         def __init__(self, tree: Dict[str, Any], parent_id: int, position: int):
             self.tree = tree
             self.parent_id = parent_id
             self.position = position
 
-    lgb_model = model.dump_model()
+    if lgb_model is None:
+        lgb_model = get_lightgbm_params(model)
 
     n_features = lgb_model["max_feature_idx"] + 1
     n_iterations = len(lgb_model["tree_info"]) / lgb_model["num_tree_per_iteration"]
@@ -117,7 +138,7 @@ def get_gbt_model_from_lightgbm(model: Any) -> Any:
     return mb.model()
 
 
-def get_gbt_model_from_xgboost(booster: Any) -> Any:
+def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
     class Node:
         def __init__(self, tree: Dict, parent_id: int, position: int):
             self.tree = tree
@@ -131,7 +152,9 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
     booster.feature_names = [str(i) for i in lst]
 
     trees_arr = booster.get_dump(dump_format="json")
-    xgb_config = json.loads(booster.save_config())
+    if xgb_config is None:
+        xgb_config = get_xgboost_params(booster)
+
 
     n_features = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
     n_classes = int(xgb_config["learner"]["learner_model_param"]["num_class"])
@@ -238,22 +261,13 @@ def get_gbt_model_from_xgboost(booster: Any) -> Any:
 
     return mb.model()
 
-def get_gbt_model_from_catboost(model: Any) -> Any:
+def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
     if not model.is_fitted():
         raise RuntimeError(
             "Model should be fitted before exporting to daal4py.")
 
-    dump_filename = f"catboost_model_{getpid()}_{time()}"
-
-    # Dump model in file
-    model.save_model(dump_filename, 'json')
-
-    # Read json with model
-    with open(dump_filename) as file:
-        model_data = json.load(file)
-
-    # Delete dump file
-    remove(dump_filename)
+    if model_data is None:
+        model_data = get_catboost_params(model)
 
     if 'categorical_features' in model_data['features_info']:
         raise NotImplementedError(
