@@ -80,7 +80,7 @@ dpcpp_root = None if not dpcpp else os.environ['DPCPPROOT']
 
 try:
     import dpctl
-    dpctl_available = dpctl.__version__ >= '0.14'
+    dpctl_available = dpctl.__version__ >= "0.14"
 except ImportError:
     dpctl_available = False
 
