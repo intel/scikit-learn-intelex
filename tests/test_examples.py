@@ -203,6 +203,8 @@ gen_examples = [
      ((2020, 'P', 2), (2021, 'B', 109)), ['lightgbm']),
     ('gbt_cls_model_create_from_xgboost_batch', None, None,
      ((2020, 'P', 2), (2021, 'B', 109)), ['xgboost']),
+    ('model_builders_xgboost_early_stop_batch', None, None,
+     ((2020, 'P', 2), (2021, 'B', 109)), ['xgboost']),
     ('gbt_cls_model_create_from_catboost_batch', None, None,
      (2021, 'P', 4), ['catboost']),
     ('gradient_boosted_classification_batch',),
@@ -292,6 +294,7 @@ class TestExCSRMatrix(Base, unittest.TestCase):
                                                    'brownboost',
                                                    'stump_classification',
                                                    'gbt_cls_model_create',
+                                                   'model_builders',
                                                    'decision_forest']):
             self.skipTest("not supporting CSR")
         method = \

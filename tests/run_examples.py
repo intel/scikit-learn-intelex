@@ -159,6 +159,7 @@ req_library = defaultdict(lambda: [])
 req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['gbt_cls_model_create_from_lightgbm_batch.py'] = ['lightgbm']
 req_library['gbt_cls_model_create_from_xgboost_batch.py'] = ['xgboost']
+req_library['model_builders_xgboost_early_stop_batch.py'] = ['xgboost']
 req_library['gbt_cls_model_create_from_catboost_batch.py'] = ['catboost']
 req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
 req_library['kmeans_spmd.py'] = ['dpctl', 'mpi4py']
