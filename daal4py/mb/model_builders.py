@@ -26,12 +26,14 @@ try:
 except (ImportError, ModuleNotFoundError):
     pandas_is_imported = False
 
+
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
     if dt == np.single:
         return "float"
     raise ValueError(f"Input array has unexpected dtype = {dt}")
+
 
 def getFPType(X):
     if pandas_is_imported:
@@ -41,6 +43,7 @@ def getFPType(X):
 
     dt = getattr(X, 'dtype', None)
     return parse_dtype(dt)
+
 
 class GBTDAALBaseModel:
     def _get_params_from_lightgbm(self, params):
