@@ -37,6 +37,8 @@ Configurations:
 - HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
 
+.. Tip:: You can also try out the benchmarks used to create this data by going to Intel’s `scikit-learn_bench <https://github.com/IntelPython/scikit-learn_bench>`_ repository and following the relevant instructions.
+
 Kaggle Kernels
 **************
 

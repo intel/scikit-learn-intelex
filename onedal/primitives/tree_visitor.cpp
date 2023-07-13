@@ -75,13 +75,44 @@ public:
 // We only expose the minimum information to python
 template <typename T>
 struct tree_state {
+    skl_tree_node * node_ar;
+    double * value_ar;
+    std::size_t max_depth;
+    std::size_t node_count;
+    std::size_t leaf_count;
+    std::size_t class_count;
+};
+
+template <typename T>
+class tree_state_py {
+public:
     py::array_t<skl_tree_node> node_ar;
     py::array_t<double> value_ar;
     std::size_t max_depth;
     std::size_t node_count;
     std::size_t leaf_count;
     std::size_t class_count;
+
+    tree_state_py(tree_state<T> inp){
+        this->max_depth = inp.max_depth;
+        this->node_count = inp.node_count;        
+        this->leaf_count = inp.leaf_count;
+        this->class_count = inp.class_count;
+
+        auto node_ar_shape = py::array::ShapeContainer({ this->node_count });
+        auto node_ar_strides = py::array::StridesContainer({ sizeof(skl_tree_node) });
+
+        auto value_ar_shape = py::array::ShapeContainer({ static_cast<Py_ssize_t>(this->node_count),
+                                                      1,
+                                                      static_cast<Py_ssize_t>(this->class_count) });
+        auto value_ar_strides = py::array::StridesContainer(
+        { this->class_count * sizeof(double), this->class_count * sizeof(double), sizeof(double) });
+
+        this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, inp.node_ar);
+        this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, inp.value_ar);
+    }
 };
+
 
 // Declaration and implementation.
 template <typename Task>
@@ -239,8 +270,6 @@ bool to_sklearn_tree_object_visitor<df::task::regression>::call(
 template <>
 bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     const df::leaf_node_info<df::task::classification>& info) {
-
-
     std::size_t depth = static_cast<const std::size_t>(info.get_level());
     std::size_t label = info.get_response(); // these may be a slow accesses due to oneDAL abstraction
     double nNodeSampleCount = info.get_sample_count(); // do them only once
@@ -263,7 +292,7 @@ template <typename Task>
 void init_get_tree_state(py::module_& m) {
     using namespace decision_forest;
     using model_t = model<Task>;
-    using tree_state_t = tree_state<Task>;
+    using tree_state_t = tree_state_py<Task>;
 
     // TODO:
     // create one instance for cls and reg.
