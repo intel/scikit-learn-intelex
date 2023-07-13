@@ -36,7 +36,7 @@ if daal_check_version((2023, 'P', 100)):
     from scipy.sparse import issparse
 
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
-    from onedal.datatypes import (_num_samples, _get_2d_shape)
+    from onedal.datatypes import (_num_features, _num_samples)
 
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__
@@ -166,7 +166,9 @@ if daal_check_version((2023, 'P', 100)):
                 and self.normalize != 'deprecated'
             positive_is_set = hasattr(self, 'positive') and self.positive
 
-            n_samples, n_features = _get_2d_shape(X, fallback_1d=True)
+            n_samples = _num_samples(X)
+            n_features = _num_features(X, fallback_1d=True)
+
             # Check if equations are well defined
             is_good_for_onedal = n_samples > \
                 (n_features + int(self.fit_intercept))
