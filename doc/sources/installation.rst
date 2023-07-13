@@ -184,4 +184,3 @@ Next Steps
 ==========
 
 - :ref:`What is patching and how to patch scikit-learn <what_is_patching>`
-- :ref:`How to use scikit-learn-intelex <get_started>`

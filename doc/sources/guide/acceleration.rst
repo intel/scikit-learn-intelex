@@ -14,9 +14,9 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-####################
-Acceleration Details
-####################
+########################
+Performance Tuning Guide
+########################
 
 The performance of some algorithms changes based on the parameters that are used.
 This section denotes the details of such cases.

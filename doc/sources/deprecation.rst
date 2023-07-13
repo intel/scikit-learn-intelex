@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021 Intel Corporation
+.. * Copyright 2023 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _quick_start:
 
-############################################
-Quick Start
-############################################
+Deprecation Notice
+==================
 
-.. include:: usage.rst
+This page provides information about the deprecations of a specific |intelex| functionality. 
 
-.. seealso::
+macOS* Support
+**************
 
-   - :ref:`Supported algorithms and parameters <sklearn_algorithms>`
-   - :ref:`samples`
-   - :ref:`global_patching`
-   - `Getting Started Guide <https://www.intel.com/content/www/us/en/developer/articles/guide/intel-extension-for-scikit-learn-getting-started.html>`_
+**Deprecation:** macOS* support is deprecated for |intelex|. The 2023.x releases are the last to provide it. 
+
+**Reasons for deprecation:** No modern X86 macOS*-based systems are to be released.
+
+**Alternatives:** The 2023.x version on macOS*. 

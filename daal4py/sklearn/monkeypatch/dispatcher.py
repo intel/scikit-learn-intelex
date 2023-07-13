@@ -94,8 +94,13 @@ def _get_map_of_algorithms():
     mapping['kneighborsclassifier'] = mapping['knn_classifier']
     mapping['nearestneighbors'] = mapping['nearest_neighbors']
     mapping['kneighborsregressor'] = mapping['knn_regressor']
-    mapping['randomrorestclassifier'] = mapping['random_forest_classifier']
+    mapping['randomforestclassifier'] = mapping['random_forest_classifier']
     mapping['randomforestregressor'] = mapping['random_forest_regressor']
+    mapping["linearregression"] = mapping["linear"]
+    mapping["logisticregression"] = mapping["log_reg"]
+    mapping["_logistic_regression_path"] = mapping["logistic"]
+    mapping["_assert_all_finite"] = mapping["fin_check"]
+    mapping["pairwise_distances"] = mapping["distances"]
     return mapping
 
 

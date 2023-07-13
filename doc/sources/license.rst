@@ -1,5 +1,5 @@
 .. ******************************************************************************
-.. * Copyright 2021 Intel Corporation
+.. * Copyright 2023 Intel Corporation
 .. *
 .. * Licensed under the Apache License, Version 2.0 (the "License");
 .. * you may not use this file except in compliance with the License.
@@ -14,17 +14,10 @@
 .. * limitations under the License.
 .. *******************************************************************************/
 
-.. _quick_start:
+.. _license:
 
 ############################################
-Quick Start
+License
 ############################################
 
-.. include:: usage.rst
-
-.. seealso::
-
-   - :ref:`Supported algorithms and parameters <sklearn_algorithms>`
-   - :ref:`samples`
-   - :ref:`global_patching`
-   - `Getting Started Guide <https://www.intel.com/content/www/us/en/developer/articles/guide/intel-extension-for-scikit-learn-getting-started.html>`_
+License: https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE
