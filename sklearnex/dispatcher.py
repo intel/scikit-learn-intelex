@@ -47,11 +47,13 @@ def get_patch_map():
         import sklearn.linear_model as linear_model_module
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
+        import sklearn.utils.parallel as parallel_module
 
         # Classes and functions for patching
         from ._config import config_context as config_context_sklearnex
         from ._config import get_config as get_config_sklearnex
         from ._config import set_config as set_config_sklearnex
+        from .utils.parallel import _FuncWrapper as _FuncWrapper_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -220,6 +222,14 @@ def get_patch_map():
         ]
         mapping["config_context"] = [
             [(base_module, "config_context", config_context_sklearnex), None]
+        ]
+
+        # Necessary for proper work with multiple threads
+        mapping["parallel.get_config"] = [
+            [(parallel_module, "get_config", get_config_sklearnex), None]
+        ]
+        mapping["_funcwrapper"] = [
+            [(parallel_module, "_FuncWrapper", _FuncWrapper_sklearnex), None]
         ]
     return mapping
 
