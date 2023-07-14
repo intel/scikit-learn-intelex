@@ -178,6 +178,7 @@ skiped_files = ['__init__.py',
                 'verbose_mode.py',
                 'patch_sklearn.py']
 
+
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
         if not sycl_extention_available:
@@ -212,7 +213,6 @@ def get_exe_cmd(ex, nodist, nostream):
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
     else:
         return '"' + sys.executable + '" "' + ex + '"'
-
 
 
 def run(exdir, logdir, nodist=False, nostream=False):
