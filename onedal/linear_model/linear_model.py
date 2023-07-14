@@ -25,7 +25,6 @@ from ..datatypes import (
     _check_X_y,
     _num_features,
     _check_array,
-    _get_2d_shape,
     _check_n_features,
     _convert_to_supported)
 

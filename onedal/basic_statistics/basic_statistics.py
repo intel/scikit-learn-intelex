@@ -25,8 +25,7 @@ from ..common._policy import _get_policy
 from ..datatypes._data_conversion import (
     from_table,
     to_table,
-    _convert_to_supported,
-    _convert_to_dataframe)
+    _convert_to_supported)
 from onedal import _backend
 
 
@@ -74,14 +73,17 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
-        data_loc, weights_loc = _convert_to_dataframe(policy, data, weights)
+        if not (data is None):
+            data = np.asarray(data)
+        if not (weights is None):
+            weights = np.asarray(weights)
 
-        data_loc, weights_loc = _convert_to_supported(
-            policy, data_loc, weights_loc)
+        data, weights = _convert_to_supported(
+            policy, data, weights)
 
-        data_table, weights_table = to_table(data_loc, weights_loc)
+        data_table, weights_table = to_table(data, weights)
 
-        dtype = data_loc.dtype
+        dtype = data.dtype
         res = self._compute_raw(data_table, weights_table,
                                 module, policy, dtype)
 

@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 #===============================================================================
-# Copyright 2014 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +15,6 @@
 # limitations under the License.
 #===============================================================================
 
-# distutils: language = c++
-# cython: language_level=2
+from .model_builders import GBTDAALBaseModel, convert_model
 
-cdef extern from "dpctl_interop/daal_context_service.h":
-    void _dppl_set_current_queue_to_daal_context() except +
-    void _dppl_reset_daal_context() except +
-
-def set_current_queue_to_daal_context():
-    _dppl_set_current_queue_to_daal_context()
-
-def reset_daal_context():
-    _dppl_reset_daal_context()
+__all__ = ['GBTDAALBaseModel', 'convert_model']
