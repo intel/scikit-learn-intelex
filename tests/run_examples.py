@@ -125,19 +125,19 @@ def check_library(rule):
 
 
 req_version = defaultdict(lambda: (2019, 'P', 0))
-req_version['sycl/dbscan_batch.py'] = \
+req_version['sycl/dbscan.py'] = \
     (2021, 'P', 100)  # hangs in beta08, need to be fixed
-req_version['sycl/linear_regression_batch.py'] = \
+req_version['sycl/linear_regression.py'] = \
     (2021, 'P', 100)  # hangs in beta08, need to be fixed
-req_version['sycl/kmeans_batch.py'] = \
+req_version['sycl/kmeans.py'] = \
     (2021, 'P', 200)  # not equal results for host and gpu runs
-req_version['sycl/pca_transform_batch.py'] = (2021, 'P', 200)
-req_version['sycl/decision_forest_classification_hist_batch.py'] = (2021, 'P', 200)
-req_version['sycl/decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
-req_version['decision_forest_classification_hist_batch.py'] = (2023, 'P', 1)
-req_version['decision_forest_classification_default_dense_batch.py'] = (2023, 'P', 1)
-req_version['decision_forest_classification_traverse_batch.py'] = (2023, 'P', 1)
-req_version['decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
+req_version['sycl/pca_transform.py'] = (2021, 'P', 200)
+req_version['sycl/decision_forest_classification_hist.py'] = (2021, 'P', 200)
+req_version['sycl/decision_forest_regression_hist.py'] = (2021, 'P', 200)
+req_version['decision_forest_classification_hist.py'] = (2023, 'P', 1)
+req_version['decision_forest_classification_default_dense.py'] = (2023, 'P', 1)
+req_version['decision_forest_classification_traverse.py'] = (2023, 'P', 1)
+req_version['decision_forest_regression_hist.py'] = (2021, 'P', 200)
 req_version['basic_statistics_spmd.py'] = (2023, 'P', 1)
 req_version['kmeans_spmd.py'] = (2023, 'P', 2)
 req_version['knn_bf_classification_spmd.py'] = (2023, 'P', 1)
@@ -153,7 +153,7 @@ req_device['linear_regression_spmd.py'] = ["gpu"]
 req_device['pca_spmd.py'] = ["gpu"]
 req_device['random_forest_classifier_spmd.py'] = ["gpu"]
 req_device['random_forest_regressor_spmd.py'] = ["gpu"]
-req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
+req_device['sycl/gradient_boosted_regression.py'] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
 req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
@@ -198,15 +198,15 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
-    if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
-        return '"' + sys.executable + '" "' + ex + '"'
     if not nostream and ex.endswith('streaming.py'):
         return '"' + sys.executable + '" "' + ex + '"'
-    if not nodist and ex.endswith('spmd.py'):
+    elif not nodist and ex.endswith('spmd.py'):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
-    return None
+    else:
+        return '"' + sys.executable + '" "' + ex + '"'
+
 
 
 def run(exdir, logdir, nodist=False, nostream=False):
@@ -216,10 +216,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
         os.makedirs(logdir)
     for (dirpath, dirnames, filenames) in os.walk(exdir):
         for script in filenames:
-            if any(script.endswith(x) for x in ['spmd.py',
-                                                'streaming.py',
-                                                'stream.py',
-                                                'batch.py']):
+            if script.endswith('.py') and script != "__init__.py":
                 n += 1
                 logfn = jp(logdir, script.replace('.py', '.res'))
                 with open(logfn, 'w') as logfile:
