@@ -19,7 +19,7 @@
 import math
 import daal4py as d4p
 
-from gradient_boosted_classification_batch import main as gbt_classification
+from gradient_boosted_classification import main as gbt_classification
 
 
 def printTree(nodes, values):

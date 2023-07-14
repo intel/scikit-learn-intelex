@@ -19,7 +19,7 @@
 import math
 import daal4py as d4p
 
-from gradient_boosted_regression_batch import main as gbt_regression
+from gradient_boosted_regression import main as gbt_regression
 
 
 def printTree(nodes, values):

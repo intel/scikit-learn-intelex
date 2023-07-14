@@ -171,6 +171,12 @@ req_library['random_forest_regressor_spmd.py'] = ['dpctl', 'mpi4py']
 
 req_os = defaultdict(lambda: [])
 
+skiped_files = ['__init__.py',
+                'spmd_utils.py',
+                'log_reg_model_builder.py',
+                'n_jobs.py',
+                'verbose_mode.py',
+                'patch_sklearn.py']
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
@@ -216,7 +222,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
         os.makedirs(logdir)
     for (dirpath, dirnames, filenames) in os.walk(exdir):
         for script in filenames:
-            if script.endswith('.py') and script != "__init__.py":
+            if script.endswith('.py') and script not in skiped_files:
                 n += 1
                 logfn = jp(logdir, script.replace('.py', '.res'))
                 with open(logfn, 'w') as logfile:
