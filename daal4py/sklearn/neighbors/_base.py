@@ -31,21 +31,14 @@ from sklearn.base import is_classifier, is_regressor
 import logging
 import warnings
 
-if sklearn_check_version("0.22"):
-    from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
-    from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
-    from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
-    from sklearn.neighbors._ball_tree import BallTree
-    from sklearn.neighbors._kd_tree import KDTree
-    if not sklearn_check_version("1.2"):
-        from sklearn.neighbors._base import _check_weights
-else:
-    from sklearn.neighbors.base import KNeighborsMixin as BaseKNeighborsMixin
-    from sklearn.neighbors.base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
-    from sklearn.neighbors.base import NeighborsBase as BaseNeighborsBase
-    from sklearn.neighbors.ball_tree import BallTree
-    from sklearn.neighbors.kd_tree import KDTree
-    from sklearn.neighbors.base import _check_weights
+from sklearn.neighbors._base import KNeighborsMixin as BaseKNeighborsMixin
+from sklearn.neighbors._base import RadiusNeighborsMixin as BaseRadiusNeighborsMixin
+from sklearn.neighbors._base import NeighborsBase as BaseNeighborsBase
+from sklearn.neighbors._ball_tree import BallTree
+from sklearn.neighbors._kd_tree import KDTree
+from sklearn.neighbors import VALID_METRICS
+if not sklearn_check_version("1.2"):
+    from sklearn.neighbors._base import _check_weights
 
 
 def training_algorithm(method, fptype, params):
@@ -78,9 +71,7 @@ def parse_auto_method(estimator, method, n_samples, n_features):
         if estimator.metric == 'precomputed' or n_features > 11 or condition:
             result_method = 'brute'
         else:
-            kdtree_valid_metrics = KDTree.valid_metrics() \
-                if sklearn_check_version('1.3') else KDTree.valid_metrics
-            if estimator.effective_metric_ in kdtree_valid_metrics:
+            if estimator.effective_metric_ in VALID_METRICS['kd_tree']:
                 result_method = 'kd_tree'
             else:
                 result_method = 'brute'
