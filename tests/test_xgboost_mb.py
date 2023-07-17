@@ -14,8 +14,6 @@
 # limitations under the License.
 #===============================================================================
 
-# daal4py Gradient Bossting Classification model creation from XGBoost example
-
 import unittest
 import importlib.util
 import daal4py as d4p
@@ -67,37 +65,18 @@ class XgboostModelBuilder(unittest.TestCase):
             'early_stopping_rounds': 5
         }
 
-        # Training
         xgb_clf = xgb.XGBClassifier(**params)
         xgb_clf.fit(X_train, y_train, eval_set=[(X_test, y_test)])
         booster = xgb_clf.get_booster()
 
-        # XGBoost prediction
         xgb_prediction = xgb_clf.predict(X_test)
         xgb_proba = xgb_clf.predict_proba(X_test)
         xgb_errors_count = np.count_nonzero(xgb_prediction - np.ravel(y_test))
 
-        # Conversion to daal4py
-        daal_model = d4p.get_gbt_model_from_xgboost(booster)
+        daal_model = d4p.mb.convert_model(booster)
 
-        # daal4py prediction
-        daal_predict_algo = d4p.gbt_classification_prediction(
-            nClasses=params["num_class"],
-            resultsToEvaluate="computeClassLabels",
-            fptype='float'
-        )
-
-        daal_predict_proba_algo = d4p.gbt_classification_prediction(
-            nClasses=params["num_class"],
-            resultsToEvaluate="computeClassProbabilities",
-            fptype='float'
-        )
-        daal_prediction = np.ravel(
-            daal_predict_algo.compute(
-                X_test, daal_model).prediction)
-
-        daal_proba = daal_predict_proba_algo.compute(X_test, daal_model).probabilities
-
+        daal_prediction = daal_model.predict(X_test)
+        daal_proba = daal_model.predict_proba(X_test)
         daal_errors_count = np.count_nonzero(daal_prediction - np.ravel(y_test))
 
         self.assertTrue(np.absolute(xgb_errors_count - daal_errors_count) == 0)
