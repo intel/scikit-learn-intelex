@@ -90,8 +90,8 @@ def get_patched_estimators(ban_list, output_list):
         estimator, name = listing[0][0][2], listing[0][0][1]
         if not isinstance(estimator, types.FunctionType):
             if name not in ban_list:
-                if isinstance(estimator(), BaseEstimator):
-                    if hasattr(estimator, "fit"):
+                if issubclass(estimator, BaseEstimator):
+                    if hasattr(estimator, 'fit'):
                         output_list.append(estimator)
 
 
