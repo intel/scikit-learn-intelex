@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2022 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,8 +44,9 @@ class _FuncWrapper:
         with config_context(**config):
             return self.function(*args, **kwargs)
 
+
 class _FuncWrapperOld:
-    """ "Load the global configuration before calling the function."""
+    """Load the global configuration before calling the function."""
 
     def __init__(self, function):
         self.function = function
