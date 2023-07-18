@@ -59,7 +59,7 @@ class XgboostModelBuilder(unittest.TestCase):
             'max_depth': 8,
             'num_leaves': 2**8,
             'verbosity': 0,
-            'objective': 'multi:softmax',
+            'objective': 'multi:softproba',
             'learning_rate': 0.3,
             'num_class': num_classes,
             'early_stopping_rounds': 5
