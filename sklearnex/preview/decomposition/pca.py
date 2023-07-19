@@ -22,9 +22,9 @@ from scipy.sparse import issparse
 
 from ..._device_offload import dispatch
 from daal4py.sklearn._utils import sklearn_check_version
+from onedal.utils import _check_array
 
 from sklearn.utils.extmath import stable_cumsum
-from onedal.datatypes import _check_array
 from sklearn.utils.validation import check_array
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted

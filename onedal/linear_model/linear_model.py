@@ -21,17 +21,19 @@ import numpy as np
 from numbers import Number
 
 from daal4py.sklearn._utils import (get_dtype, make2d)
-from ..datatypes import (
-    _check_X_y,
-    _num_features,
-    _check_array,
-    _check_n_features,
-    _convert_to_supported)
 
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
-from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes import (
+    from_table,
+    to_table,
+    _convert_to_supported)
+from ..utils import (
+    _check_X_y,
+    _num_features,
+    _check_array,
+    _check_n_features)
 from onedal import _backend
 
 
