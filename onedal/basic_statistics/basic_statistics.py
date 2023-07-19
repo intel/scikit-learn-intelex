@@ -22,7 +22,7 @@ from numbers import Number
 
 from ..common._policy import _get_policy
 
-from ..datatypes._data_conversion import (
+from ..datatypes import (
     from_table,
     to_table,
     _convert_to_supported)

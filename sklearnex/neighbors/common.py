@@ -16,7 +16,7 @@
 #===============================================================================
 
 from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
-from onedal.datatypes import _check_array, _num_features, _num_samples
+from onedal.utils import _check_array, _num_features, _num_samples
 
 import numpy as np
 from scipy import sparse as sp
