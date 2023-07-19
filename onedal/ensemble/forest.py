@@ -53,7 +53,6 @@ from ..utils import (
 from onedal import _backend
 
 from sklearn.ensemble import BaseEnsemble
-from sklearn.tree import DecisionTreeClassifier
 
 
 class BaseForest(BaseEnsemble, metaclass=ABCMeta):
@@ -536,7 +535,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                  voting_mode='weighted',
                  error_metric_mode='none',
                  variable_importance_mode='none',
-                 algorithm='dense',
+                 algorithm='hist',
                  **kwargs):
         super().__init__(
             n_estimators=n_estimators,
