@@ -17,7 +17,6 @@
 import unittest
 import importlib.util
 import daal4py as d4p
-import xgboost as xgb
 import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
@@ -40,6 +39,7 @@ class XgboostModelBuilder(unittest.TestCase):
     @unittest.skipUnless(importlib.util.find_spec('xgboost')
                          is not None, 'xgoost library is not installed')
     def test_earlystop(self):
+        import xgboost as xgb
         num_classes = 3
         X, y = make_classification(n_samples=1000,
                                    n_features=10,
