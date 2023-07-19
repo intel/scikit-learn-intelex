@@ -22,7 +22,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from sklearn.calibration import CalibratedClassifierCV
 
-from onedal.datatypes.validation import _column_or_1d
+from onedal.utils import _column_or_1d
 
 
 def get_coef(self):

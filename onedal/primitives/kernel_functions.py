@@ -15,11 +15,11 @@
 #===============================================================================
 
 import numpy as np
-from onedal.datatypes import _check_array
 from onedal import _backend
 
 from ..common._policy import _get_policy
-from ..datatypes._data_conversion import from_table, to_table, _convert_to_supported
+from ..datatypes import from_table, to_table, _convert_to_supported
+from ..utils import _check_array
 
 
 def _check_inputs(X, Y):

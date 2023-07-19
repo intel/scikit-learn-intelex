@@ -21,11 +21,13 @@ from onedal import _backend
 
 # TODO:
 # remove unnecessary imports.
-# from daal4py.sklearn._utils import get_dtype
-# from ..datatypes import _convert_to_supported
+from daal4py.sklearn._utils import get_dtype
+from ..datatypes import (
+    from_table,
+    to_table,
+    _convert_to_supported)
 
 from ..common._policy import _get_policy
-from ..datatypes._data_conversion import from_table, to_table
 
 from sklearn.utils import check_random_state
 

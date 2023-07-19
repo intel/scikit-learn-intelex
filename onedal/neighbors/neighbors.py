@@ -19,15 +19,6 @@ from abc import ABCMeta
 from numbers import Integral
 
 import numpy as np
-from ..datatypes import (
-    _check_X_y,
-    _check_array,
-    _column_or_1d,
-    _check_n_features,
-    _check_classification_targets,
-    _convert_to_supported,
-    _num_samples
-)
 
 from daal4py import (
     bf_knn_classification_training,
@@ -40,7 +31,18 @@ from onedal import _backend
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
-from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes import (
+    from_table,
+    to_table,
+    _convert_to_supported)
+from ..utils import (
+    _check_X_y,
+    _check_array,
+    _column_or_1d,
+    _check_n_features,
+    _check_classification_targets,
+    _num_samples
+)
 
 
 class NeighborsCommonBase(metaclass=ABCMeta):
