@@ -390,9 +390,3 @@ def _num_samples(x):
         return len(x)
     except TypeError as type_error:
         raise TypeError(message) from type_error
-
-
-def _get_2d_shape(x, fallback_1d=True):
-    n_samples = _num_samples(x)
-    n_features = _num_features(x, fallback_1d)
-    return (n_samples, n_features)
