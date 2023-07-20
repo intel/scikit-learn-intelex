@@ -12,6 +12,7 @@ jobs:
       - id: changedfiles
         name: Get list of changed .py files
         run: |
+          set -x
           echo "CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | xargs)" >> "$GITHUB_OUTPUT"
           if [[ $(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | wc -l) -eq 0 ]]; then
             echo "HAS_CHANGES=false" >> "$GITHUB_OUTPUT"
@@ -26,6 +27,7 @@ jobs:
       - name: Run isort on changed files
         if: steps.changedfiles.outputs.HAS_CHANGES == 'true'
         run: |
+          set -x
           python -m pip install isort
           isort --check ${{ steps.changedfiles.outputs.CHANGED_FILES }}
       - uses: psf/black@stable
