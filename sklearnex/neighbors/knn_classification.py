@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,125 +13,203 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-from daal4py.sklearn._utils import sklearn_check_version
 import warnings
 
-from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._ball_tree import BallTree
+from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
-if not sklearn_check_version('1.2'):
+
+from daal4py.sklearn._utils import sklearn_check_version
+
+if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
+
+import numpy as np
 from sklearn.neighbors._base import VALID_METRICS
-from sklearn.neighbors._classification import KNeighborsClassifier as \
-    sklearn_KNeighborsClassifier
-from sklearn.neighbors._unsupervised import NearestNeighbors as \
-    sklearn_NearestNeighbors
+from sklearn.neighbors._classification import (
+    KNeighborsClassifier as sklearn_KNeighborsClassifier,
+)
+from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from onedal.datatypes import _check_array, _num_features, _num_samples
 from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 
-from .common import KNeighborsDispatchingBase
 from .._device_offload import dispatch, wrap_output_data
-import numpy as np
-
+from .common import KNeighborsDispatchingBase
 
 if sklearn_check_version("0.24"):
+
     class KNeighborsClassifier_(sklearn_KNeighborsClassifier):
-        if sklearn_check_version('1.2'):
+        if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {
-                **sklearn_KNeighborsClassifier._parameter_constraints}
+                **sklearn_KNeighborsClassifier._parameter_constraints
+            }
 
         @_deprecate_positional_args
-        def __init__(self, n_neighbors=5, *,
-                     weights='uniform', algorithm='auto', leaf_size=30,
-                     p=2, metric='minkowski', metric_params=None, n_jobs=None,
-                     **kwargs):
+        def __init__(
+            self,
+            n_neighbors=5,
+            *,
+            weights="uniform",
+            algorithm="auto",
+            leaf_size=30,
+            p=2,
+            metric="minkowski",
+            metric_params=None,
+            n_jobs=None,
+            **kwargs,
+        ):
             super().__init__(
                 n_neighbors=n_neighbors,
                 algorithm=algorithm,
-                leaf_size=leaf_size, metric=metric, p=p,
+                leaf_size=leaf_size,
+                metric=metric,
+                p=p,
                 metric_params=metric_params,
-                n_jobs=n_jobs, **kwargs)
-            self.weights = \
-                weights if sklearn_check_version("1.0") \
-                else _check_weights(weights)
+                n_jobs=n_jobs,
+                **kwargs,
+            )
+            self.weights = (
+                weights if sklearn_check_version("1.0") else _check_weights(weights)
+            )
+
 elif sklearn_check_version("0.22"):
-    from sklearn.neighbors._base import SupervisedIntegerMixin as \
-        BaseSupervisedIntegerMixin
+    from sklearn.neighbors._base import (
+        SupervisedIntegerMixin as BaseSupervisedIntegerMixin,
+    )
 
-    class KNeighborsClassifier_(sklearn_KNeighborsClassifier,
-                                BaseSupervisedIntegerMixin):
+    class KNeighborsClassifier_(sklearn_KNeighborsClassifier, BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
-        def __init__(self, n_neighbors=5, *,
-                     weights='uniform', algorithm='auto', leaf_size=30,
-                     p=2, metric='minkowski', metric_params=None, n_jobs=None,
-                     **kwargs):
+        def __init__(
+            self,
+            n_neighbors=5,
+            *,
+            weights="uniform",
+            algorithm="auto",
+            leaf_size=30,
+            p=2,
+            metric="minkowski",
+            metric_params=None,
+            n_jobs=None,
+            **kwargs,
+        ):
             super().__init__(
                 n_neighbors=n_neighbors,
                 algorithm=algorithm,
-                leaf_size=leaf_size, metric=metric, p=p,
+                leaf_size=leaf_size,
+                metric=metric,
+                p=p,
                 metric_params=metric_params,
-                n_jobs=n_jobs, **kwargs)
+                n_jobs=n_jobs,
+                **kwargs,
+            )
             self.weights = _check_weights(weights)
-else:
-    from sklearn.neighbors.base import SupervisedIntegerMixin as \
-        BaseSupervisedIntegerMixin
 
-    class KNeighborsClassifier_(sklearn_KNeighborsClassifier,
-                                BaseSupervisedIntegerMixin):
+else:
+    from sklearn.neighbors.base import (
+        SupervisedIntegerMixin as BaseSupervisedIntegerMixin,
+    )
+
+    class KNeighborsClassifier_(sklearn_KNeighborsClassifier, BaseSupervisedIntegerMixin):
         @_deprecate_positional_args
-        def __init__(self, n_neighbors=5, *,
-                     weights='uniform', algorithm='auto', leaf_size=30,
-                     p=2, metric='minkowski', metric_params=None, n_jobs=None,
-                     **kwargs):
+        def __init__(
+            self,
+            n_neighbors=5,
+            *,
+            weights="uniform",
+            algorithm="auto",
+            leaf_size=30,
+            p=2,
+            metric="minkowski",
+            metric_params=None,
+            n_jobs=None,
+            **kwargs,
+        ):
             super().__init__(
                 n_neighbors=n_neighbors,
                 algorithm=algorithm,
-                leaf_size=leaf_size, metric=metric, p=p,
+                leaf_size=leaf_size,
+                metric=metric,
+                p=p,
                 metric_params=metric_params,
-                n_jobs=n_jobs, **kwargs)
+                n_jobs=n_jobs,
+                **kwargs,
+            )
             self.weights = _check_weights(weights)
 
 
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
-    if sklearn_check_version('1.2'):
-        _parameter_constraints: dict = {
-            **KNeighborsClassifier_._parameter_constraints}
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {**KNeighborsClassifier_._parameter_constraints}
 
-    if sklearn_check_version('1.0'):
-        def __init__(self, n_neighbors=5, *,
-                     weights='uniform', algorithm='auto', leaf_size=30,
-                     p=2, metric='minkowski', metric_params=None, n_jobs=None):
+    if sklearn_check_version("1.0"):
+
+        def __init__(
+            self,
+            n_neighbors=5,
+            *,
+            weights="uniform",
+            algorithm="auto",
+            leaf_size=30,
+            p=2,
+            metric="minkowski",
+            metric_params=None,
+            n_jobs=None,
+        ):
             super().__init__(
                 n_neighbors=n_neighbors,
                 weights=weights,
                 algorithm=algorithm,
-                leaf_size=leaf_size, metric=metric, p=p,
+                leaf_size=leaf_size,
+                metric=metric,
+                p=p,
                 metric_params=metric_params,
-                n_jobs=n_jobs)
+                n_jobs=n_jobs,
+            )
+
     else:
+
         @_deprecate_positional_args
-        def __init__(self, n_neighbors=5, *,
-                     weights='uniform', algorithm='auto', leaf_size=30,
-                     p=2, metric='minkowski', metric_params=None, n_jobs=None,
-                     **kwargs):
+        def __init__(
+            self,
+            n_neighbors=5,
+            *,
+            weights="uniform",
+            algorithm="auto",
+            leaf_size=30,
+            p=2,
+            metric="minkowski",
+            metric_params=None,
+            n_jobs=None,
+            **kwargs,
+        ):
             super().__init__(
                 n_neighbors=n_neighbors,
                 weights=weights,
                 algorithm=algorithm,
-                leaf_size=leaf_size, metric=metric, p=p,
+                leaf_size=leaf_size,
+                metric=metric,
+                p=p,
                 metric_params=metric_params,
-                n_jobs=n_jobs, **kwargs)
+                n_jobs=n_jobs,
+                **kwargs,
+            )
 
     def fit(self, X, y):
         self._fit_validation(X, y)
-        dispatch(self, 'fit', {
-            'onedal': self.__class__._onedal_fit,
-            'sklearn': sklearn_KNeighborsClassifier.fit,
-        }, X, y)
+        dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": sklearn_KNeighborsClassifier.fit,
+            },
+            X,
+            y,
+        )
         return self
 
     @wrap_output_data
@@ -139,58 +217,81 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'predict', {
-            'onedal': self.__class__._onedal_predict,
-            'sklearn': sklearn_KNeighborsClassifier.predict,
-        }, X)
+        return dispatch(
+            self,
+            "predict",
+            {
+                "onedal": self.__class__._onedal_predict,
+                "sklearn": sklearn_KNeighborsClassifier.predict,
+            },
+            X,
+        )
 
     @wrap_output_data
     def predict_proba(self, X):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'predict_proba', {
-            'onedal': self.__class__._onedal_predict_proba,
-            'sklearn': sklearn_KNeighborsClassifier.predict_proba,
-        }, X)
+        return dispatch(
+            self,
+            "predict_proba",
+            {
+                "onedal": self.__class__._onedal_predict_proba,
+                "sklearn": sklearn_KNeighborsClassifier.predict_proba,
+            },
+            X,
+        )
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(self, 'kneighbors', {
-            'onedal': self.__class__._onedal_kneighbors,
-            'sklearn': sklearn_KNeighborsClassifier.kneighbors,
-        }, X, n_neighbors, return_distance)
+        return dispatch(
+            self,
+            "kneighbors",
+            {
+                "onedal": self.__class__._onedal_kneighbors,
+                "sklearn": sklearn_KNeighborsClassifier.kneighbors,
+            },
+            X,
+            n_neighbors,
+            return_distance,
+        )
 
     @wrap_output_data
-    def radius_neighbors(self, X=None, radius=None, return_distance=True,
-                         sort_results=False):
-        _onedal_estimator = getattr(self, '_onedal_estimator', None)
+    def radius_neighbors(
+        self, X=None, radius=None, return_distance=True, sort_results=False
+    ):
+        _onedal_estimator = getattr(self, "_onedal_estimator", None)
 
-        if _onedal_estimator is not None or getattr(self, '_tree', 0) is None and \
-                self._fit_method == 'kd_tree':
+        if (
+            _onedal_estimator is not None
+            or getattr(self, "_tree", 0) is None
+            and self._fit_method == "kd_tree"
+        ):
             if sklearn_check_version("0.24"):
-                sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, '_y', None))
+                sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
             else:
                 sklearn_NearestNeighbors.fit(self, self._fit_X)
         if sklearn_check_version("0.22"):
             result = sklearn_NearestNeighbors.radius_neighbors(
-                self, X, radius, return_distance, sort_results)
+                self, X, radius, return_distance, sort_results
+            )
         else:
             result = sklearn_NearestNeighbors.radius_neighbors(
-                self, X, radius, return_distance)
+                self, X, radius, return_distance
+            )
 
         return result
 
     def _onedal_fit(self, X, y, queue=None):
         onedal_params = {
-            'n_neighbors': self.n_neighbors,
-            'weights': self.weights,
-            'algorithm': self.algorithm,
-            'metric': self.effective_metric_,
-            'p': self.effective_metric_params_['p'],
+            "n_neighbors": self.n_neighbors,
+            "weights": self.weights,
+            "algorithm": self.algorithm,
+            "metric": self.effective_metric_,
+            "p": self.effective_metric_params_["p"],
         }
 
         try:
@@ -212,10 +313,12 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     def _onedal_predict_proba(self, X, queue=None):
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
-    def _onedal_kneighbors(self, X=None, n_neighbors=None,
-                           return_distance=True, queue=None):
+    def _onedal_kneighbors(
+        self, X=None, n_neighbors=None, return_distance=True, queue=None
+    ):
         return self._onedal_estimator.kneighbors(
-            X, n_neighbors, return_distance, queue=queue)
+            X, n_neighbors, return_distance, queue=queue
+        )
 
     def _save_attributes(self):
         self.classes_ = self._onedal_estimator.classes_

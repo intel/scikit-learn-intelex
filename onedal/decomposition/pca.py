@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,24 +12,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
 
-from onedal import _backend
-from ..common._policy import _get_policy
-from ..datatypes._data_conversion import from_table, to_table
-from ..datatypes import _convert_to_supported
 from daal4py.sklearn._utils import sklearn_check_version
+from onedal import _backend
+
+from ..common._policy import _get_policy
+from ..datatypes import _convert_to_supported
+from ..datatypes._data_conversion import from_table, to_table
 
 
-class PCA():
+class PCA:
     def __init__(
-        self,
-        n_components=None,
-        is_deterministic=True,
-        method='precomputed',
-        copy=True
+        self, n_components=None, is_deterministic=True, method="precomputed", copy=True
     ):
         self.n_components = n_components
         self.method = method
@@ -37,11 +34,10 @@ class PCA():
 
     def get_onedal_params(self, data):
         return {
-            'fptype':
-                'float' if data.dtype == np.float32 else 'double',
-            'method': self.method,
-            'n_components': self.n_components,
-            'is_deterministic': self.is_deterministic
+            "fptype": "float" if data.dtype == np.float32 else "double",
+            "method": self.method,
+            "n_components": self.n_components,
+            "is_deterministic": self.is_deterministic,
         }
 
     def _get_policy(self, queue, *data):
@@ -54,34 +50,27 @@ class PCA():
         policy = self._get_policy(queue, X)
         # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
         # fails to be converted to oneDAL table
-        if isinstance(X, np.ndarray) and not X.flags['OWNDATA']:
+        if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
             X = X.copy()
         X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
         cov_result = _backend.covariance.compute(
-            policy,
-            {'fptype': params['fptype'], 'method': 'dense'},
-            to_table(X)
+            policy, {"fptype": params["fptype"], "method": "dense"}, to_table(X)
         )
         covariance_matrix = from_table(cov_result.cov_matrix)
         self.mean_ = from_table(cov_result.means)
         result = _backend.decomposition.dim_reduction.train(
-            policy,
-            params,
-            to_table(covariance_matrix)
+            policy, params, to_table(covariance_matrix)
         )
 
         self.n_components_ = self.n_components
         self.variances_ = from_table(result.variances)
         self.components_ = from_table(result.eigenvectors)
-        self.explained_variance_ = \
-            np.maximum(from_table(result.eigenvalues).ravel(), 0)
+        self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
         tot_var = covariance_matrix.trace()
         self.explained_variance_ratio_ = self.explained_variance_ / tot_var
-        self.singular_values_ = np.sqrt(
-            (n_samples - 1) * self.explained_variance_
-        )
+        self.singular_values_ = np.sqrt((n_samples - 1) * self.explained_variance_)
 
         if sklearn_check_version("1.2"):
             self.n_features_in_ = n_features
@@ -94,10 +83,8 @@ class PCA():
         self.n_samples_ = n_samples
         if self.n_components < n_sf_min:
             if self.explained_variance_.shape[0] < n_sf_min:
-                resid_var_ = tot_var - \
-                    self.explained_variance_[:self.n_components].sum()
-                self.noise_variance_ = \
-                    resid_var_ / (n_sf_min - self.n_components)
+                resid_var_ = tot_var - self.explained_variance_[: self.n_components].sum()
+                self.noise_variance_ = resid_var_ / (n_sf_min - self.n_components)
         return self
 
     def _create_model(self):
@@ -112,8 +99,7 @@ class PCA():
 
         X = _convert_to_supported(policy, X)
         params = self.get_onedal_params(X)
-        result = _backend.decomposition.dim_reduction.infer(policy,
-                                                            params,
-                                                            model,
-                                                            to_table(X))
+        result = _backend.decomposition.dim_reduction.infer(
+            policy, params, model, to_table(X)
+        )
         return from_table(result.transformed_data)

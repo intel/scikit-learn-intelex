@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
-from onedal.datatypes import _check_array, _num_features, _num_samples
+import warnings
 
 import numpy as np
 from scipy import sparse as sp
-import warnings
-
+from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
-from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._kd_tree import KDTree
+
+from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+from onedal.datatypes import _check_array, _num_features, _num_samples
 
 
 class KNeighborsDispatchingBase:
@@ -34,11 +34,15 @@ class KNeighborsDispatchingBase:
             self._validate_params()
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
-        if self.metric_params is not None and 'p' in self.metric_params:
+        if self.metric_params is not None and "p" in self.metric_params:
             if self.p is not None:
-                warnings.warn("Parameter p is found in metric_params. "
-                              "The corresponding parameter from __init__ "
-                              "is ignored.", SyntaxWarning, stacklevel=2)
+                warnings.warn(
+                    "Parameter p is found in metric_params. "
+                    "The corresponding parameter from __init__ "
+                    "is ignored.",
+                    SyntaxWarning,
+                    stacklevel=2,
+                )
             self.effective_metric_params_ = self.metric_params.copy()
             effective_p = self.metric_params["p"]
         else:
@@ -59,31 +63,35 @@ class KNeighborsDispatchingBase:
 
         if not isinstance(X, (KDTree, BallTree, sklearn_NeighborsBase)):
             self._fit_X = _check_array(
-                X, dtype=[np.float64, np.float32], accept_sparse=True)
+                X, dtype=[np.float64, np.float32], accept_sparse=True
+            )
             self.n_samples_fit_ = _num_samples(self._fit_X)
             self.n_features_in_ = _num_features(self._fit_X)
 
             if self.algorithm == "auto":
                 # A tree approach is better for small number of neighbors or small
                 # number of features, with KDTree generally faster when available
-                is_n_neighbors_valid_for_brute = self.n_neighbors is not None and \
-                    self.n_neighbors >= self._fit_X.shape[0] // 2
+                is_n_neighbors_valid_for_brute = (
+                    self.n_neighbors is not None
+                    and self.n_neighbors >= self._fit_X.shape[0] // 2
+                )
                 if self._fit_X.shape[1] > 15 or is_n_neighbors_valid_for_brute:
                     self._fit_method = "brute"
                 else:
                     if self.effective_metric_ in VALID_METRICS["kd_tree"]:
                         self._fit_method = "kd_tree"
-                    elif callable(self.effective_metric_) or \
-                        self.effective_metric_ in \
-                            VALID_METRICS["ball_tree"]:
+                    elif (
+                        callable(self.effective_metric_)
+                        or self.effective_metric_ in VALID_METRICS["ball_tree"]
+                    ):
                         self._fit_method = "ball_tree"
                     else:
                         self._fit_method = "brute"
             else:
                 self._fit_method = self.algorithm
 
-        if hasattr(self, '_onedal_estimator'):
-            delattr(self, '_onedal_estimator')
+        if hasattr(self, "_onedal_estimator"):
+            delattr(self, "_onedal_estimator")
         # To cover test case when we pass patched
         # estimator as an input for other estimator
         if isinstance(X, sklearn_NeighborsBase):
@@ -92,8 +100,8 @@ class KNeighborsDispatchingBase:
             self._fit_method = X._fit_method
             self.n_samples_fit_ = X.n_samples_fit_
             self.n_features_in_ = X.n_features_in_
-            if hasattr(X, '_onedal_estimator'):
-                self.effective_metric_params_.pop('p')
+            if hasattr(X, "_onedal_estimator"):
+                self.effective_metric_params_.pop("p")
                 if self._fit_method == "ball_tree":
                     X._tree = BallTree(
                         X._fit_X,
@@ -116,58 +124,63 @@ class KNeighborsDispatchingBase:
         elif isinstance(X, BallTree):
             self._fit_X = X.data
             self._tree = X
-            self._fit_method = 'ball_tree'
+            self._fit_method = "ball_tree"
             self.n_samples_fit_ = X.data.shape[0]
             self.n_features_in_ = X.data.shape[1]
 
         elif isinstance(X, KDTree):
             self._fit_X = X.data
             self._tree = X
-            self._fit_method = 'kd_tree'
+            self._fit_method = "kd_tree"
             self.n_samples_fit_ = X.data.shape[0]
             self.n_features_in_ = X.data.shape[1]
 
     def _onedal_supported(self, device, method_name, *data):
         class_name = self.__class__.__name__
-        is_classifier = 'Classifier' in class_name
-        is_regressor = 'Regressor' in class_name
+        is_classifier = "Classifier" in class_name
+        is_regressor = "Regressor" in class_name
         is_unsupervised = not (is_classifier or is_regressor)
         patching_status = PatchingConditionsChain(
-            f'sklearn.neighbors.{class_name}.{method_name}')
+            f"sklearn.neighbors.{class_name}.{method_name}"
+        )
 
         if not patching_status.and_condition(
             not isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase)),
-            f'Input type {type(data[0])} is not supported.'
+            f"Input type {type(data[0])} is not supported.",
         ):
             return patching_status.get_status(logs=True)
 
-        if self._fit_method in ['auto', 'ball_tree']:
-            condition = self.n_neighbors is not None and \
-                self.n_neighbors >= self.n_samples_fit_ // 2
+        if self._fit_method in ["auto", "ball_tree"]:
+            condition = (
+                self.n_neighbors is not None
+                and self.n_neighbors >= self.n_samples_fit_ // 2
+            )
             if self.n_features_in_ > 15 or condition:
-                result_method = 'brute'
+                result_method = "brute"
             else:
-                if self.effective_metric_ in ['euclidean']:
-                    result_method = 'kd_tree'
+                if self.effective_metric_ in ["euclidean"]:
+                    result_method = "kd_tree"
                 else:
-                    result_method = 'brute'
+                    result_method = "brute"
         else:
             result_method = self._fit_method
 
-        p_less_than_one = "p" in self.effective_metric_params_.keys() and \
-            self.effective_metric_params_["p"] < 1
+        p_less_than_one = (
+            "p" in self.effective_metric_params_.keys()
+            and self.effective_metric_params_["p"] < 1
+        )
         if not patching_status.and_condition(
             not p_less_than_one, '"p" metric parameter is less than 1'
         ):
             return patching_status.get_status(logs=True)
 
         if not patching_status.and_condition(
-            not sp.isspmatrix(data[0]), 'Sparse input is not supported.'
+            not sp.isspmatrix(data[0]), "Sparse input is not supported."
         ):
             return patching_status.get_status(logs=True)
 
         if not is_unsupervised:
-            is_valid_weights = self.weights in ['uniform', "distance"]
+            is_valid_weights = self.weights in ["uniform", "distance"]
             if is_classifier:
                 class_count = 1
             is_single_output = False
@@ -177,65 +190,73 @@ class KNeighborsDispatchingBase:
                 y = np.asarray(data[1])
                 if is_classifier:
                     class_count = len(np.unique(y))
-            if hasattr(self, '_onedal_estimator'):
+            if hasattr(self, "_onedal_estimator"):
                 y = self._onedal_estimator._y
-            if y is not None and hasattr(y, 'ndim') and hasattr(y, 'shape'):
+            if y is not None and hasattr(y, "ndim") and hasattr(y, "shape"):
                 is_single_output = y.ndim == 1 or y.ndim == 2 and y.shape[1] == 1
 
         # TODO: add native support for these metric names
-        metrics_map = {
-            'manhattan': ['l1', 'cityblock'],
-            'euclidean': ['l2']
-        }
+        metrics_map = {"manhattan": ["l1", "cityblock"], "euclidean": ["l2"]}
         for origin, aliases in metrics_map.items():
             if self.effective_metric_ in aliases:
                 self.effective_metric_ = origin
                 break
-        if self.effective_metric_ == 'manhattan':
-            self.effective_metric_params_['p'] = 1
-        elif self.effective_metric_ == 'euclidean':
-            self.effective_metric_params_['p'] = 2
+        if self.effective_metric_ == "manhattan":
+            self.effective_metric_params_["p"] = 1
+        elif self.effective_metric_ == "euclidean":
+            self.effective_metric_params_["p"] = 2
 
         onedal_brute_metrics = [
-            'manhattan', 'minkowski', 'euclidean', 'chebyshev', 'cosine']
-        onedal_kdtree_metrics = ['euclidean']
-        is_valid_for_brute = result_method == 'brute' and \
-            self.effective_metric_ in onedal_brute_metrics
-        is_valid_for_kd_tree = result_method == 'kd_tree' and \
-            self.effective_metric_ in onedal_kdtree_metrics
-        if result_method == 'kd_tree':
+            "manhattan",
+            "minkowski",
+            "euclidean",
+            "chebyshev",
+            "cosine",
+        ]
+        onedal_kdtree_metrics = ["euclidean"]
+        is_valid_for_brute = (
+            result_method == "brute" and self.effective_metric_ in onedal_brute_metrics
+        )
+        is_valid_for_kd_tree = (
+            result_method == "kd_tree" and self.effective_metric_ in onedal_kdtree_metrics
+        )
+        if result_method == "kd_tree":
             if not patching_status.and_condition(
-                device != 'gpu', '"kd_tree" method is not supported on GPU.'
+                device != "gpu", '"kd_tree" method is not supported on GPU.'
             ):
                 return patching_status.get_status(logs=True)
 
         if not patching_status.and_condition(
             is_valid_for_kd_tree or is_valid_for_brute,
-            f'{result_method} with {self.effective_metric_} metric is not supported.'
+            f"{result_method} with {self.effective_metric_} metric is not supported.",
         ):
             return patching_status.get_status(logs=True)
         if not is_unsupervised:
-            if not patching_status.and_conditions([
-                (is_single_output, 'Only single output is supported.'),
-                (is_valid_weights,
-                 f'"{type(self.weights)}" weights type is not supported.')
-            ]):
+            if not patching_status.and_conditions(
+                [
+                    (is_single_output, "Only single output is supported."),
+                    (
+                        is_valid_weights,
+                        f'"{type(self.weights)}" weights type is not supported.',
+                    ),
+                ]
+            ):
                 return patching_status.get_status(logs=True)
-        if method_name == 'fit':
+        if method_name == "fit":
             if is_classifier:
                 patching_status.and_condition(
-                    class_count >= 2, 'One-class case is not supported.'
+                    class_count >= 2, "One-class case is not supported."
                 )
             return patching_status.get_status(logs=True)
-        if method_name in ['predict', 'predict_proba', 'kneighbors']:
+        if method_name in ["predict", "predict_proba", "kneighbors"]:
             patching_status.and_condition(
-                hasattr(self, '_onedal_estimator'), 'oneDAL model was not trained.'
+                hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."
             )
             return patching_status.get_status(logs=True)
-        raise RuntimeError(f'Unknown method {method_name} in {class_name}')
+        raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
     def _onedal_gpu_supported(self, method_name, *data):
-        return self._onedal_supported('gpu', method_name, *data)
+        return self._onedal_supported("gpu", method_name, *data)
 
     def _onedal_cpu_supported(self, method_name, *data):
-        return self._onedal_supported('cpu', method_name, *data)
+        return self._onedal_supported("cpu", method_name, *data)

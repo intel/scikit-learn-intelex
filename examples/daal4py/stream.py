@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,24 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # Example showing daal4py's operation on streams using a generator
 
-import daal4py as d4p
-import numpy as np
 import os
+
+import numpy as np
+
+import daal4py as d4p
 
 try:
     import pandas
 
     def read_csv(f, c=None, s=0, n=None, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None,
-                               skiprows=s, nrows=n, dtype=t)
+        return pandas.read_csv(
+            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
+        )
+
 except:
     # fall back to numpy genfromtxt
     def read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max):
-        a = np.genfromtxt(f, usecols=c, delimiter=',', skip_header=s, max_rows=n)
+        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
         if a.shape[0] == 0:
             raise Exception("done")
         if a.ndim == 1:
