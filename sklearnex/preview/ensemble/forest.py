@@ -43,6 +43,7 @@ from sklearn.utils.validation import (
     check_X_y)
 
 from onedal.datatypes import _num_features, _num_samples
+from onedal import _backend
 
 from sklearn.utils import check_random_state, deprecated
 
@@ -53,7 +54,7 @@ from sklearn.tree._tree import Tree
 
 from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
-from onedal.primitives import get_tree_state_cls, get_tree_state_reg
+from onedal.primitives import get_forest_state
 
 from scipy import sparse as sp
 
@@ -499,6 +500,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
+        allstates = get_forest_state(self._onedal_model, n_classes_)
+
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -512,20 +515,14 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
-            tree_i_state_class = get_tree_state_cls(
-                self._onedal_model, i, n_classes_)
-            tree_i_state_dict = {
-                'max_depth': tree_i_state_class.max_depth,
-                'node_count': tree_i_state_class.node_count,
-                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
-                'values': tree_i_state_class.value_ar}
+            allstates[i]['nodes'] = check_tree_nodes(allstates[i]['nodes'])
             est_i.tree_ = Tree(
                 self.n_features_in_,
                 np.array(
                     [n_classes_],
                     dtype=np.intp),
                 self.n_outputs_)
-            est_i.tree_.__setstate__(tree_i_state_dict)
+            est_i.tree_.__setstate__(allstates[i])
             estimators_.append(est_i)
 
         self._cached_estimators_ = estimators_
@@ -875,6 +872,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
+        allstates = get_forest_state(self._onedal_model)
+
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -887,18 +886,12 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 est_i.n_features_ = self.n_features_in_
             est_i.n_classes_ = 1
             est_i.n_outputs_ = self.n_outputs_
-            tree_i_state_class = get_tree_state_reg(
-                self._onedal_model, i)
-            tree_i_state_dict = {
-                'max_depth': tree_i_state_class.max_depth,
-                'node_count': tree_i_state_class.node_count,
-                'nodes': check_tree_nodes(tree_i_state_class.node_ar),
-                'values': tree_i_state_class.value_ar}
+            allstates[i]['nodes'] = check_tree_nodes(allstates[i]['nodes'])
 
             est_i.tree_ = Tree(
                 self.n_features_in_, np.array(
                     [1], dtype=np.intp), self.n_outputs_)
-            est_i.tree_.__setstate__(tree_i_state_dict)
+            est_i.tree_.__setstate__(allstates[i])
             estimators_.append(est_i)
 
         return estimators_

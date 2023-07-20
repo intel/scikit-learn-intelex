@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <limits>
 #include <vector>
+#include <iostream>
 
 #define ONEDAL_PY_TERMINAL_NODE -1
 #define ONEDAL_PY_NO_FEATURE    -2
@@ -82,7 +83,7 @@ struct tree_state {
     std::size_t leaf_count;
     std::size_t class_count;
 };
-
+    
 // Declaration and implementation.
 template <typename Task>
 class node_count_visitor {
@@ -99,6 +100,15 @@ public:
         depth = std::max(depth, static_cast<const std::size_t>(info.get_level()));
         return true;
     }
+
+    /*node_count_visitor(node_count_visitor&&) = default;
+    bool operator()(const df::leaf_node_info<Task>& info) {
+        return call(info);
+    }
+    bool operator()(const df::split_node_info<Task>& info) {
+        return call(info);
+    }*/
+
 
     std::size_t n_nodes;
     std::size_t depth;
@@ -133,14 +143,22 @@ public:
                                    std::size_t _max_n_classes);
     bool call(const df::leaf_node_info<Task>& info);
     bool call(const df::split_node_info<Task>& info);
+    double* value_ar_ptr;
+    skl_tree_node* node_ar_ptr;
+
+    /*to_sklearn_tree_object_visitor(to_sklearn_tree_object_visitor&&) = default;
+    bool operator()(const df::leaf_node_info<Task>& info) {
+        return call(info);
+    }
+    bool operator()(const df::split_node_info<Task>& info) {
+        return call(info);
+    }*/
 
 protected:
     std::size_t node_id;
     std::size_t max_n_classes;
     std::vector<Py_ssize_t> parents;
     void _onLeafNode(const df::leaf_node_info<Task>& info);
-    double* value_ar_ptr;
-    skl_tree_node* node_ar_ptr;
 };
 
 template <typename Task>
@@ -167,14 +185,19 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t
 
     OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, this->node_count, this->class_count);
 
-    this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides);
-    this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides);
+    this->node_ar_ptr = new skl_tree_node[this->node_count];
+    this->value_ar_ptr = new double[this->node_count*this->class_count]();
+
+    // array_t doesn't initialize the underlying memory with the object's constructor
+    // so the values will not match what is defined above, must be done on C++ side
+    this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, this->node_ar_ptr, py::none());
+    this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, this->value_ar_ptr, py::none());
 
     py::buffer_info node_ar_buf = this->node_ar.request();
-    this->node_ar_ptr = static_cast<skl_tree_node*>(node_ar_buf.ptr);
+    //this->node_ar_ptr = static_cast<skl_tree_node*>(node_ar_buf.ptr);
     
     py::buffer_info value_ar_buf = this->value_ar.request();
-    this->value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
+    //this->value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
 }
 
 template <typename Task>
@@ -190,6 +213,7 @@ bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>&
             this->node_ar_ptr[parent].left_child = node_id;
         }
     }
+
     parents[info.get_level()] = node_id;
     this->node_ar_ptr[node_id].feature = info.get_feature_index();
     this->node_ar_ptr[node_id].threshold = info.get_feature_value();
@@ -239,6 +263,7 @@ bool to_sklearn_tree_object_visitor<df::task::regression>::call(
 template <>
 bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     const df::leaf_node_info<df::task::classification>& info) {
+        
     std::size_t depth = static_cast<const std::size_t>(info.get_level());
     std::size_t label = info.get_response(); // these may be a slow accesses due to oneDAL abstraction
     double nNodeSampleCount = info.get_sample_count(); // do them only once
@@ -258,35 +283,59 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
 }
 
 template <typename Task>
+py::list get_all_states(const decision_forest::model<Task>& model, std::size_t n_classes) {
+    using ncv_dec = node_visitor<Task, node_count_visitor<Task>>;
+    using tsv_dec = node_visitor<Task, to_sklearn_tree_object_visitor<Task>>;
+
+    std::size_t tree_count = model.get_tree_count();
+    std::vector<node_count_visitor<Task>> ncvs(tree_count, node_count_visitor<Task>());
+    std::vector<ncv_dec> ncv_decorators;
+    for(std::size_t i=0; i < tree_count; i++){
+        ncv_decorators.push_back(ncv_dec{&ncvs[i]});
+    }
+
+    model.template traverse_depth_first<std::vector<ncv_dec>, ncv_dec> (std::move(ncv_decorators));
+
+    // generate memory block here
+    py::list output;
+
+    // this may be slow based on the memory allocation
+    std::vector<to_sklearn_tree_object_visitor<Task>> tsvs;
+    std::vector<tsv_dec> tsv_decorators;
+    for(std::size_t i=0; i < tree_count; i++){
+        tsvs.push_back(to_sklearn_tree_object_visitor<Task>(ncvs[i].depth,
+                                                            ncvs[i].n_nodes,
+                                                            ncvs[i].n_leaf_nodes,
+                                                            n_classes));
+    }
+    // must be done separately due to the nature of the decorators and a constant pointer vs vector push back
+    for(std::size_t i=0; i < tree_count; i++){
+        tsv_decorators.push_back(tsv_dec{&tsvs[i]});
+    }
+
+    model.template traverse_depth_first<std::vector<tsv_dec>, tsv_dec>(std::move(tsv_decorators));
+
+    // create list here
+    for( std::size_t i=0; i < tree_count; i++){
+        py::dict est_tree_state;
+        est_tree_state["max_depth"] = tsvs[i].max_depth;
+        est_tree_state["node_count"] = tsvs[i].node_count;
+        est_tree_state["nodes"] = tsvs[i].node_ar;
+        est_tree_state["values"] = tsvs[i].value_ar;
+        output.append(est_tree_state);
+    }
+
+    return output;
+}
+
+
+template <typename Task>
 void init_get_tree_state(py::module_& m) {
     using namespace decision_forest;
     using model_t = model<Task>;
     using tree_state_t = tree_state<Task>;
 
-    // TODO:
-    // create one instance for cls and reg.
-    py::class_<tree_state_t>(m, "get_tree_state")
-        .def(py::init([](const model_t& model, std::size_t iTree, std::size_t n_classes) {
-            // First count nodes
-            node_count_visitor<Task> ncv;
-            node_visitor<Task, decltype(ncv)> ncv_decorator{ &ncv };
-
-            model.traverse_depth_first(iTree, std::move(ncv_decorator));
-            // then do the final tree traversal
-            to_sklearn_tree_object_visitor<Task> tsv(ncv.depth,
-                                                     ncv.n_nodes,
-                                                     ncv.n_leaf_nodes,
-                                                     n_classes);
-            node_visitor<Task, decltype(tsv)> tsv_decorator{ &tsv };
-            model.traverse_depth_first(iTree, std::move(tsv_decorator));
-            return tree_state_t(tsv);
-        }))
-        .def_readwrite("node_ar", &tree_state_t::node_ar, py::return_value_policy::take_ownership)
-        .def_readwrite("value_ar", &tree_state_t::value_ar, py::return_value_policy::take_ownership)
-        .def_readwrite("max_depth", &tree_state_t::max_depth)
-        .def_readwrite("node_count", &tree_state_t::node_count)
-        .def_readwrite("leaf_count", &tree_state_t::leaf_count)
-        .def_readwrite("class_count", &tree_state_t::class_count);
+    m.def("get_all_states", &get_all_states<Task>, py::return_value_policy::take_ownership);
 }
 
 ONEDAL_PY_TYPE2STR(decision_forest::task::classification, "classification");
