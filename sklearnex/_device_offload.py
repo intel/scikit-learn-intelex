@@ -128,23 +128,21 @@ def _transfer_to_host(queue, *data):
 def _get_backend(obj, queue, method_name, *data):
     cpu_device = queue is None or queue.sycl_device.is_cpu
     gpu_device = queue is not None and queue.sycl_device.is_gpu
-    cpu_fallback = False
 
     if (cpu_device and obj._onedal_cpu_supported(method_name, *data)) or \
        (gpu_device and obj._onedal_gpu_supported(method_name, *data)):
-        return 'onedal', queue, cpu_fallback
+        return 'onedal', queue
     if cpu_device:
-        return 'sklearn', None, cpu_fallback
+        return 'sklearn', None
 
     _, d4p_options = _get_device_info_from_daal4py()
-    allow_fallback = get_config()['allow_fallback_to_host'] or \
+    allow_fallback_to_host = get_config()['allow_fallback_to_host'] or \
         d4p_options.get('host_offload_on_fail', False)
 
-    if gpu_device and allow_fallback:
+    if gpu_device and allow_fallback_to_host:
         if obj._onedal_cpu_supported(method_name, *data):
-            cpu_fallback = True
-            return 'onedal', None, cpu_fallback
-        return 'sklearn', None, cpu_fallback
+            return 'onedal', None
+        return 'sklearn', None
 
     raise RuntimeError("Device support is not implemented")
 
@@ -155,7 +153,7 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
 
-    backend, q, cpu_fallback = _get_backend(obj, q, method_name, *hostargs)
+    backend, q = _get_backend(obj, q, method_name, *hostargs)
 
     if backend == 'onedal':
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
