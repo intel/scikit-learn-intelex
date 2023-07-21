@@ -335,19 +335,21 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         if not sklearn_check_version('1.0'):
             self.n_features_ = self.n_features_in_
 
-        data = [X, y]
-
         if sample_weight is not None and len(sample_weight) > 0:
             sample_weight = self._get_sample_weight(sample_weight, X)
-            data.append(sample_weight)
+            policy = self._get_policy(queue, X, y, sample_weight)
+            X, y, sample_weight = _convert_to_supported(policy, X, y, sample_weight)
+            params = self._get_onedal_params(X)
+            train_result = module.train(
+                policy, params, *to_table(X, y, sample_weight))
 
-        policy = self._get_policy(queue, *data)
+        else:
+            policy = self._get_policy(queue, X, y)
+            X, y =  = _convert_to_supported(policy, X, y)
+            params = self._get_onedal_params(X)
+            train_result = module.train(
+                policy, params, *to_table(X, y))
 
-        #pass as *data
-        data = _convert_to_supported(policy, *data)
-        params = self._get_onedal_params(X)
-        train_result = module.train(
-            policy, params, *to_table(*data))
         self._onedal_model = train_result.model
 
         if self.oob_score:
