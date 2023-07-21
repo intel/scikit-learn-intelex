@@ -19,13 +19,15 @@ from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_ke
 from .get_tree import get_tree_state_cls, get_tree_state_reg
 
 __all__ = [
-    'get_tree_state_cls',
-    'get_tree_state_reg',
-    'linear_kernel',
-    'rbf_kernel',
-    'poly_kernel',
-    'sigmoid_kernel']
+    "get_tree_state_cls",
+    "get_tree_state_reg",
+    "linear_kernel",
+    "rbf_kernel",
+    "poly_kernel",
+    "sigmoid_kernel",
+]
 
-if daal_check_version((2023, 'P', 301)):
+if daal_check_version((2023, "P", 301)):
     from .get_tree import get_forest_state
-    __all__ += ['get_forest_state']
+
+    __all__ += ["get_forest_state"]
