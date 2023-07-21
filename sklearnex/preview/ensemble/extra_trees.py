@@ -15,51 +15,40 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._utils import (
-    daal_check_version,
-    sklearn_check_version,
-    make2d,
-    PatchingConditionsChain,
-    check_tree_nodes,
-)
-
-import numpy as np
-
 import numbers
-
 import warnings
-
 from abc import ABC
 
-from sklearn.exceptions import DataConversionWarning
-
-from ..._config import get_config
-from ..._device_offload import dispatch, wrap_output_data
-
+import numpy as np
+from scipy import sparse as sp
+from sklearn.base import clone
 from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifier
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
-
+from sklearn.exceptions import DataConversionWarning
+from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
+from sklearn.tree._tree import Tree
+from sklearn.utils import check_random_state, deprecated
 from sklearn.utils.validation import (
-    check_is_fitted,
-    check_consistent_length,
     check_array,
+    check_consistent_length,
+    check_is_fitted,
     check_X_y,
 )
 
-from onedal.utils import _num_features, _num_samples
-
-from sklearn.utils import check_random_state, deprecated
-
-from sklearn.base import clone
-
-from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
-from sklearn.tree._tree import Tree
-
+from daal4py.sklearn._utils import (
+    PatchingConditionsChain,
+    check_tree_nodes,
+    daal_check_version,
+    make2d,
+    sklearn_check_version,
+)
 from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
+from onedal.utils import _num_features, _num_samples
 
-from scipy import sparse as sp
+from ..._config import get_config
+from ..._device_offload import dispatch, wrap_output_data
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval

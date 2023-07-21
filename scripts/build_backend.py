@@ -173,7 +173,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
-        "-Dpybind11_DIR=" + pybind11.get_cmake_dir()
+        "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 
     if dpctl_available:

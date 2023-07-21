@@ -14,43 +14,42 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
-
-from abc import ABCMeta, abstractmethod
 import numbers
-from numbers import Number
 import warnings
-from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import (
-    check_random_state,
-    compute_sample_weight,
-    check_array,
-    deprecated,
-)
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_consistent_length,
-    _num_samples,
-)
+from abc import ABCMeta, abstractmethod
 from math import ceil
+from numbers import Number
 
 import numpy as np
 from scipy import sparse as sp
-
-from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..common._policy import _get_policy
-from ..common._estimator_checks import _check_is_fitted
-from ..datatypes import from_table, to_table, _convert_to_supported
-from ..utils import (
-    _validate_targets,
-    _check_X_y,
-    _check_array,
-    _column_or_1d,
-    _check_n_features,
+from sklearn.ensemble import BaseEnsemble
+from sklearn.exceptions import DataConversionWarning
+from sklearn.utils import (
+    check_array,
+    check_random_state,
+    compute_sample_weight,
+    deprecated,
 )
+from sklearn.utils.validation import (
+    _num_samples,
+    check_consistent_length,
+    check_is_fitted,
+)
+
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal import _backend
 
-from sklearn.ensemble import BaseEnsemble
+from ..common._estimator_checks import _check_is_fitted
+from ..common._mixin import ClassifierMixin, RegressorMixin
+from ..common._policy import _get_policy
+from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils import (
+    _check_array,
+    _check_n_features,
+    _check_X_y,
+    _column_or_1d,
+    _validate_targets,
+)
 
 
 class BaseForest(BaseEnsemble, metaclass=ABCMeta):

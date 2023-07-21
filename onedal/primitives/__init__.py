@@ -15,8 +15,9 @@
 # ===============================================================================
 
 from daal4py.sklearn._utils import daal_check_version
-from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_kernel
+
 from .get_tree import get_tree_state_cls, get_tree_state_reg
+from .kernel_functions import linear_kernel, poly_kernel, rbf_kernel, sigmoid_kernel
 
 __all__ = [
     "get_tree_state_cls",
