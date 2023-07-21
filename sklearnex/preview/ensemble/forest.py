@@ -42,8 +42,7 @@ from sklearn.utils.validation import (
     check_array,
     check_X_y)
 
-from onedal.datatypes import _num_features, _num_samples
-from onedal import _backend
+from onedal.utils import _num_features, _num_samples
 
 from sklearn.utils import check_random_state, deprecated
 

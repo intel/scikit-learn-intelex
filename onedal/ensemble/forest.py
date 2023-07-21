@@ -16,7 +16,7 @@
 
 from daal4py.sklearn._utils import (
     daal_check_version, sklearn_check_version)
-from sklearn.ensemble import BaseEnsemble
+
 from abc import ABCMeta, abstractmethod
 import numbers
 from numbers import Number
@@ -35,22 +35,24 @@ from math import ceil
 
 import numpy as np
 from scipy import sparse as sp
-from ..datatypes import (
-    _validate_targets,
-    _check_X_y,
-    _check_array,
-    _column_or_1d,
-    _check_n_features,
-    _convert_to_supported
-)
 
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
 from ..common._estimator_checks import _check_is_fitted
-from ..datatypes._data_conversion import from_table, to_table
+from ..datatypes import (
+    from_table,
+    to_table,
+    _convert_to_supported)
+from ..utils import (
+    _validate_targets,
+    _check_X_y,
+    _check_array,
+    _column_or_1d,
+    _check_n_features
+)
 from onedal import _backend
 
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaseEnsemble
 
 
 class BaseForest(BaseEnsemble, metaclass=ABCMeta):
