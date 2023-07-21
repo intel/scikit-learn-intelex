@@ -308,17 +308,17 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
     def _get_sample_weight(self, sample_weight, X):
         sample_weight = np.asarray(sample_weight, dtype=X.dtype).ravel()
 
+        sample_weight = _check_array(
+            sample_weight, accept_sparse=False, ensure_2d=False,
+            dtype=X.dtype, order="C"
+        )
+
         if sample_weight.size != X.shape[0]:
             raise ValueError("sample_weight and X have incompatible shapes: "
                              "%r vs %r\n"
                              "Note: Sparse matrices cannot be indexed w/"
                              "boolean masks (use `indices=True` in CV)."
                              % (sample_weight.shape, X.shape))
-
-        sample_weight = _check_array(
-            sample_weight, accept_sparse=False, ensure_2d=False,
-            dtype=X.dtype, order="C"
-        )
 
         return sample_weight
 
