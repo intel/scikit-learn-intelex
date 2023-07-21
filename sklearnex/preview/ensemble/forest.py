@@ -937,7 +937,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
-        allstates = get_forest_state(self._onedal_model)
+        if daal_check_version((2023, "P", 301)):
+            allstates = get_forest_state(self._onedal_model)
 
         for i in range(self.n_estimators):
             est_i = clone(est)
