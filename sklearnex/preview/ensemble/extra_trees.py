@@ -607,7 +607,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 np.array([n_classes_], dtype=np.intp),
                 self.n_outputs_,
             )
-            est_i.tree_.__setstate__(tree_state_dict)
+            est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 
         self._cached_estimators_ = estimators_
@@ -721,7 +721,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                         (self.warm_start is False, "Warm start is not supported."),
                         (
                             daal_check_version((2023, "P", 100)),
-                            "ExtraTrees only supported starting from oneDAL version 2023.1",
+                            "ExtraTrees supported starting from oneDAL version 2023.1",
                         ),
                     ]
                 )
