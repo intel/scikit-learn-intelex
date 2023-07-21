@@ -37,7 +37,7 @@ class XgboostModelBuilder(unittest.TestCase):
         hasattr(d4p, 'gbt_classification_prediction'),
         daal_check_version(((2021, 'P', 1)))]), reason)
     @unittest.skipUnless(importlib.util.find_spec('xgboost')
-                         is not None, 'xgoost library is not installed')
+                         is not None, 'xgboost library is not installed')
     def test_earlystop(self):
         import xgboost as xgb
         num_classes = 3
