@@ -18,6 +18,7 @@
 #include "onedal/common.hpp"
 #include "oneapi/dal/algo/decision_forest.hpp"
 #include "numpy/arrayobject.h"
+#include "onedal/version.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -282,6 +283,7 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     return true;
 }
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
 template <typename Task>
 py::list get_all_states(const decision_forest::model<Task>& model, std::size_t n_classes) {
     using ncv_dec = node_visitor<Task, node_count_visitor<Task>>;
@@ -327,15 +329,43 @@ py::list get_all_states(const decision_forest::model<Task>& model, std::size_t n
 
     return output;
 }
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
 
 
 template <typename Task>
 void init_get_tree_state(py::module_& m) {
     using namespace decision_forest;
     using model_t = model<Task>;
-    using tree_state_t = tree_state<Task>;
+    using tree_state_t = tree_state<Task>;    
+    
+    // TODO:
+    // create one instance for cls and reg.
+    py::class_<tree_state_t>(m, "get_tree_state")
+        .def(py::init([](const model_t& model, std::size_t iTree, std::size_t n_classes) {
+            // First count nodes
+            node_count_visitor<Task> ncv;
+            node_visitor<Task, decltype(ncv)> ncv_decorator{ &ncv };
 
+            model.traverse_depth_first(iTree, std::move(ncv_decorator));
+            // then do the final tree traversal
+            to_sklearn_tree_object_visitor<Task> tsv(ncv.depth,
+                                                     ncv.n_nodes,
+                                                     ncv.n_leaf_nodes,
+                                                     n_classes);
+            node_visitor<Task, decltype(tsv)> tsv_decorator{ &tsv };
+            model.traverse_depth_first(iTree, std::move(tsv_decorator));
+            return tree_state_t(tsv);
+        }))
+        .def_readwrite("node_ar", &tree_state_t::node_ar, py::return_value_policy::take_ownership)
+        .def_readwrite("value_ar", &tree_state_t::value_ar, py::return_value_policy::take_ownership)
+        .def_readwrite("max_depth", &tree_state_t::max_depth)
+        .def_readwrite("node_count", &tree_state_t::node_count)
+        .def_readwrite("leaf_count", &tree_state_t::leaf_count)
+        .def_readwrite("class_count", &tree_state_t::class_count);
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
     m.def("get_all_states", &get_all_states<Task>, py::return_value_policy::take_ownership);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
 }
 
 ONEDAL_PY_TYPE2STR(decision_forest::task::classification, "classification");

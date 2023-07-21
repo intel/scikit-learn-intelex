@@ -14,12 +14,18 @@
 # limitations under the License.
 # ===============================================================================
 
+from daal4py.sklearn._utils import daal_check_version
 from .kernel_functions import linear_kernel, rbf_kernel, poly_kernel, sigmoid_kernel
-from .get_tree import get_forest_state
+from .get_tree import get_tree_state_cls, get_tree_state_reg
 
 __all__ = [
-    'get_forest_state',
+    'get_tree_state_cls',
+    'get_tree_state_reg',
     'linear_kernel',
     'rbf_kernel',
     'poly_kernel',
     'sigmoid_kernel']
+
+if daal_check_version((2023, 'P', 301)):
+    from .get_tree import get_forest_state
+    __all__ += ['get_forest_state']

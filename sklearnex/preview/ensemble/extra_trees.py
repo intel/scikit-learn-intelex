@@ -53,12 +53,15 @@ from sklearn.tree._tree import Tree
 
 from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
-from onedal.primitives import get_forest_state
+from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 
 from scipy import sparse as sp
 
 if sklearn_check_version('1.2'):
     from sklearn.utils._param_validation import Interval
+
+if daal_check_version((2023, 'P', 301)):
+    from onedal.primitives import get_forest_state
 
 
 class BaseTree(ABC):
@@ -519,8 +522,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
+        
         random_state_checked = check_random_state(self.random_state)
-        allstates = get_forest_state(self._onedal_model, n_classes_)
+        if daal_check_version((2023, 'P', 301)):
+            allstates = get_forest_state(self._onedal_model, n_classes_)
+    
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -534,14 +540,25 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
-            allstates[i]['nodes'] = check_tree_nodes(allstates[i]['nodes'])
+            if daal_check_version((2023, 'P', 301)):
+                tree_i_state_dict = allstates[i]
+                tree_i_state_dict['nodes'] = check_tree_nodes(tree_i_state_dict['nodes'])
+            else:
+                tree_i_state_class = get_tree_state_cls(
+                self._onedal_model, i, n_classes_)
+                tree_i_state_dict = {
+                    'max_depth': tree_i_state_class.max_depth,
+                    'node_count': tree_i_state_class.node_count,
+                    'nodes': check_tree_nodes(tree_i_state_class.node_ar),
+                    'values': tree_i_state_class.value_ar}
+            
             est_i.tree_ = Tree(
                 self.n_features_in_,
                 np.array(
                     [n_classes_],
                     dtype=np.intp),
                 self.n_outputs_)
-            est_i.tree_.__setstate__(allstates[i])
+            est_i.tree_.__setstate__(tree_state_dict)
             estimators_.append(est_i)
 
         self._cached_estimators_ = estimators_
@@ -894,7 +911,9 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
-        allstates = get_all_states(self._onedal_model)
+        if daal_check_version((2023, 'P', 301)):
+            allstates = get_forest_state(self._onedal_model)
+            
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -907,11 +926,22 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 est_i.n_features_ = self.n_features_in_
             est_i.n_classes_ = 1
             est_i.n_outputs_ = self.n_outputs_
-            allstates[i]['nodes'] = check_tree_nodes(allstates[i]['nodes'])
+            if daal_check_version((2023, 'P', 301)):
+                tree_i_state_dict = allstates[i]
+                tree_i_state_dict['nodes'] = check_tree_nodes(tree_i_state_dict['nodes'])
+            else:
+                tree_i_state_class = get_tree_state_reg(
+                    self._onedal_model, i)
+                tree_i_state_dict = {
+                    'max_depth': tree_i_state_class.max_depth,
+                    'node_count': tree_i_state_class.node_count,
+                    'nodes': check_tree_nodes(tree_i_state_class.node_ar),
+                    'values': tree_i_state_class.value_ar}
+
             est_i.tree_ = Tree(
                 self.n_features_in_, np.array(
                     [1], dtype=np.intp), self.n_outputs_)
-            est_i.tree_.__setstate__(allstates[i])
+            est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 
         return estimators_
