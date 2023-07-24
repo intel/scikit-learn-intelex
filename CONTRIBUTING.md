@@ -42,15 +42,14 @@ To contribute your changes directly to the repository, do the following:
 
 Public CI is enabled for the repository. Your PR should pass all of our checks. We will review your contribution and, if any additional fixes or modifications are necessary, we may give some feedback to guide you. When accepted, your pull request will be merged into our GitHub repository.
 
-## Code style rules
+## Code Style
 
-We use [black](https://black.readthedocs.io/en/stable/) and [isort](https://pycqa.github.io/isort/) to format Python code. We have chosen a line length of 90 characters and use default options otherwise. You can find the linter configuration in our [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/master/pyproject.toml).
-A Github Action will verify your changes comply with the output of these auto-formatting tools.
+We use [black](https://black.readthedocs.io/en/stable/) and [isort](https://pycqa.github.io/isort/) formatters for Python* code. The line length is 90 characters; use default options otherwise. You can find the linter configuration in our [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/master/pyproject.toml).
+A GitHub* Action verifies if your changes comply with the output of the auto-formatting tools.
 
-Optionally, you can install pre-commit hooks that do the formatting for you:
+Optionally, you can install pre-commit hooks that do the formatting for you. For this, run from the top level of the repository:
 
 ```bash
-# from the top level of the repository, run
 pip install pre-commit
 pre-commit install
 ```
