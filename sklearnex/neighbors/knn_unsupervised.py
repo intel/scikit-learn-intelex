@@ -32,7 +32,7 @@ from sklearn.neighbors._unsupervised import NearestNeighbors as \
 
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
-from onedal.datatypes import _check_array, _num_features, _num_samples
+from onedal.utils import _check_array, _num_features, _num_samples
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 
 from .common import KNeighborsDispatchingBase

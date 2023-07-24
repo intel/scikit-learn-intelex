@@ -1,0 +1,37 @@
+name: Lint
+
+on: [pull_request, push]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: changedfiles
+        name: Get list of changed .py files
+        run: |
+          set -x
+          echo "CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | xargs)" >> "$GITHUB_OUTPUT"
+          if [[ $(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .py$ | wc -l) -eq 0 ]]; then
+            echo "HAS_CHANGES=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "HAS_CHANGES=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v4
+        name: Setup python for isort
+        if: steps.changedfiles.outputs.HAS_CHANGES == 'true'
+        with:
+          python-version: "3.10"
+      - name: Run isort on changed files
+        if: steps.changedfiles.outputs.HAS_CHANGES == 'true'
+        run: |
+          set -x
+          python -m pip install isort
+          isort --check ${{ steps.changedfiles.outputs.CHANGED_FILES }}
+      - uses: psf/black@stable
+        name: Run black on changed files
+        if: steps.changedfiles.outputs.HAS_CHANGES == 'true'
+        with:
+          src: ${{ steps.changedfiles.outputs.CHANGED_FILES }}

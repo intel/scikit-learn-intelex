@@ -25,7 +25,10 @@ from abc import ABC
 from daal4py.sklearn._utils import get_dtype
 from daal4py.sklearn._utils import daal_check_version
 
-from ..datatypes import _convert_to_supported
+from ..datatypes import (
+    from_table,
+    to_table,
+    _convert_to_supported)
 
 if daal_check_version((2023, 'P', 200)):
     from .kmeans_init import KMeansInit
@@ -35,8 +38,7 @@ else:
 from onedal.basic_statistics import BasicStatistics
 
 from ..common._policy import _get_policy
-from ..datatypes.validation import _is_arraylike_not_scalar
-from ..datatypes._data_conversion import from_table, to_table
+from ..utils import _is_arraylike_not_scalar
 
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils.validation import check_is_fitted
