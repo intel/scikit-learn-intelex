@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,57 +12,71 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-import unittest
 import importlib.util
-import daal4py as d4p
+import unittest
+
 import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
+
+import daal4py as d4p
+from daal4py import _get__daal_link_version__ as dv
 from daal4py.sklearn._utils import daal_check_version
 
-from daal4py import _get__daal_link_version__ as dv
 # First item is major version - 2021,
 # second is minor+patch - 0110,
 # third item is status - B
 daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
-reason = str(((2021, 'P', 1))) + " not supported in this library version "
+reason = str(((2021, "P", 1))) + " not supported in this library version "
 reason += str(daal_version)
 
 
 class XgboostModelBuilder(unittest.TestCase):
-    @unittest.skipUnless(all([
-        hasattr(d4p, 'get_gbt_model_from_xgboost'),
-        hasattr(d4p, 'gbt_classification_prediction'),
-        daal_check_version(((2021, 'P', 1)))]), reason)
-    @unittest.skipUnless(importlib.util.find_spec('xgboost')
-                         is not None, 'xgboost library is not installed')
+    @unittest.skipUnless(
+        all(
+            [
+                hasattr(d4p, "get_gbt_model_from_xgboost"),
+                hasattr(d4p, "gbt_classification_prediction"),
+                daal_check_version(((2021, "P", 1))),
+            ]
+        ),
+        reason,
+    )
+    @unittest.skipUnless(
+        importlib.util.find_spec("xgboost") is not None,
+        "xgboost library is not installed",
+    )
     def test_earlystop(self):
         import xgboost as xgb
+
         num_classes = 3
-        X, y = make_classification(n_samples=1000,
-                                   n_features=10,
-                                   n_informative=3,
-                                   n_classes=num_classes,
-                                   random_state=42)
+        X, y = make_classification(
+            n_samples=1000,
+            n_features=10,
+            n_informative=3,
+            n_classes=num_classes,
+            random_state=42,
+        )
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.3, random_state=42)
+            X, y, test_size=0.3, random_state=42
+        )
 
         # training parameters setting
         params = {
-            'n_estimators': 100,
-            'max_bin': 256,
-            'scale_pos_weight': 2,
-            'lambda_l2': 1,
-            'alpha': 0.9,
-            'max_depth': 8,
-            'num_leaves': 2**8,
-            'verbosity': 0,
-            'objective': 'multi:softproba',
-            'learning_rate': 0.3,
-            'num_class': num_classes,
-            'early_stopping_rounds': 5
+            "n_estimators": 100,
+            "max_bin": 256,
+            "scale_pos_weight": 2,
+            "lambda_l2": 1,
+            "alpha": 0.9,
+            "max_depth": 8,
+            "num_leaves": 2**8,
+            "verbosity": 0,
+            "objective": "multi:softproba",
+            "learning_rate": 0.3,
+            "num_class": num_classes,
+            "early_stopping_rounds": 5,
         }
 
         xgb_clf = xgb.XGBClassifier(**params)
@@ -83,5 +97,5 @@ class XgboostModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(xgb_proba, daal_proba))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
