@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,71 +12,72 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import os
 import struct
 import subprocess
 import sys
+from collections import defaultdict
+from os.path import join as jp
+from time import gmtime, strftime
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
-from os.path import join as jp
-from time import gmtime, strftime
-from collections import defaultdict
 
-print('Starting examples validation')
+print("Starting examples validation")
 # First item is major version - 2021,
 # second is minor+patch - 0110,
 # third item is status - B
-print('DAAL version:', get_daal_version())
+print("DAAL version:", get_daal_version())
 
 runner_path = os.path.realpath(__file__)
 runner_dir = os.path.dirname(runner_path)
 examples_rootdir = jp(
-    os.path.dirname(os.path.abspath(os.path.join(runner_path,
-                                                 os.pardir))),
-    'examples')
+    os.path.dirname(os.path.abspath(os.path.join(runner_path, os.pardir))), "examples"
+)
 
 IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 system_os = "not_supported"
-if 'linux' in sys.platform:
+if "linux" in sys.platform:
     IS_LIN = True
     system_os = "lnx"
-elif sys.platform == 'darwin':
+elif sys.platform == "darwin":
     IS_MAC = True
     system_os = "mac"
-elif sys.platform in ['win32', 'cygwin']:
+elif sys.platform in ["win32", "cygwin"]:
     IS_WIN = True
     system_os = "win"
 else:
-    assert False, sys.platform + ' not supported'
+    assert False, sys.platform + " not supported"
 
-assert 8 * struct.calcsize('P') in [32, 64]
+assert 8 * struct.calcsize("P") in [32, 64]
 
-if 8 * struct.calcsize('P') == 32:
-    logdir = jp(runner_dir, '_results', 'ia32')
+if 8 * struct.calcsize("P") == 32:
+    logdir = jp(runner_dir, "_results", "ia32")
 else:
-    logdir = jp(runner_dir, '_results', 'intel64')
+    logdir = jp(runner_dir, "_results", "intel64")
 
 ex_log_dirs = [
-    (jp(examples_rootdir, 'daal4py'), jp(logdir, 'daal4py')),
-    (jp(examples_rootdir, 'sklearnex'), jp(logdir, 'sklearnex'))]
+    (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
+    (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
+]
 
 availabe_devices = []
 
 try:
     from daal4py.oneapi import sycl_context
+
     sycl_extention_available = True
 except ModuleNotFoundError:
     sycl_extention_available = False
-print('Sycl extensions available: {}'.format(sycl_extention_available))
+print("Sycl extensions available: {}".format(sycl_extention_available))
 
 if sycl_extention_available:
     try:
-        with sycl_context('gpu'):
+        with sycl_context("gpu"):
             gpu_available = True
             availabe_devices.append("gpu")
     except RuntimeError:
@@ -84,7 +85,7 @@ if sycl_extention_available:
     availabe_devices.append("cpu")
     # validate that host and cpu devices avaialbe for logging reasons. Examples and
     # vaidaton logic assumes that host and cpu devices are always available
-    print('Sycl gpu device: {}'.format(gpu_available))
+    print("Sycl gpu device: {}".format(gpu_available))
 
 
 def check_version(rule, target):
@@ -118,56 +119,72 @@ def check_library(rule):
     for rule_item in rule:
         try:
             import importlib
+
             importlib.import_module(rule_item, package=None)
         except ImportError:
             return False
     return True
 
 
-req_version = defaultdict(lambda: (2019, 'P', 0))
-req_version['sycl/dbscan_batch.py'] = \
-    (2021, 'P', 100)  # hangs in beta08, need to be fixed
-req_version['sycl/linear_regression_batch.py'] = \
-    (2021, 'P', 100)  # hangs in beta08, need to be fixed
-req_version['sycl/kmeans_batch.py'] = \
-    (2021, 'P', 200)  # not equal results for host and gpu runs
-req_version['sycl/pca_transform_batch.py'] = (2021, 'P', 200)
-req_version['sycl/decision_forest_classification_hist_batch.py'] = (2021, 'P', 200)
-req_version['sycl/decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
-req_version['decision_forest_classification_hist_batch.py'] = (2023, 'P', 1)
-req_version['decision_forest_classification_default_dense_batch.py'] = (2023, 'P', 1)
-req_version['decision_forest_classification_traverse_batch.py'] = (2023, 'P', 1)
-req_version['decision_forest_regression_hist_batch.py'] = (2021, 'P', 200)
-req_version['basic_statistics_spmd.py'] = (2023, 'P', 1)
-req_version['kmeans_spmd.py'] = (2023, 'P', 2)
-req_version['knn_bf_classification_spmd.py'] = (2023, 'P', 1)
-req_version['knn_bf_regression_spmd.py'] = (2023, 'P', 1)
-req_version['linear_regression_spmd.py'] = (2023, 'P', 1)
+req_version = defaultdict(lambda: (2019, "P", 0))
+req_version["sycl/dbscan_batch.py"] = (
+    2021,
+    "P",
+    100,
+)  # hangs in beta08, need to be fixed
+req_version["sycl/linear_regression_batch.py"] = (
+    2021,
+    "P",
+    100,
+)  # hangs in beta08, need to be fixed
+req_version["sycl/kmeans_batch.py"] = (
+    2021,
+    "P",
+    200,
+)  # not equal results for host and gpu runs
+req_version["sycl/pca_transform_batch.py"] = (2021, "P", 200)
+req_version["sycl/decision_forest_classification_hist_batch.py"] = (2021, "P", 200)
+req_version["sycl/decision_forest_regression_hist_batch.py"] = (2021, "P", 200)
+req_version["decision_forest_classification_hist_batch.py"] = (2023, "P", 1)
+req_version["decision_forest_classification_default_dense_batch.py"] = (2023, "P", 1)
+req_version["decision_forest_classification_traverse_batch.py"] = (2023, "P", 1)
+req_version["decision_forest_regression_hist_batch.py"] = (2021, "P", 200)
+req_version["basic_statistics_spmd.py"] = (2023, "P", 1)
+req_version["kmeans_spmd.py"] = (2023, "P", 2)
+req_version["knn_bf_classification_spmd.py"] = (2023, "P", 1)
+req_version["knn_bf_regression_spmd.py"] = (2023, "P", 1)
+req_version["linear_regression_spmd.py"] = (2023, "P", 1)
 
 req_device = defaultdict(lambda: [])
-req_device['basic_statistics_spmd.py'] = ["gpu"]
-req_device['kmeans_spmd.py'] = ["gpu"]
-req_device['knn_bf_classification_spmd.py'] = ["gpu"]
-req_device['knn_bf_regression_spmd.py'] = ["gpu"]
-req_device['linear_regression_spmd.py'] = ["gpu"]
-req_device['pca_spmd.py'] = ["gpu"]
-req_device['random_forest_classifier_spmd.py'] = ["gpu"]
-req_device['random_forest_regressor_spmd.py'] = ["gpu"]
-req_device['sycl/gradient_boosted_regression_batch.py'] = ["gpu"]
+req_device["basic_statistics_spmd.py"] = ["gpu"]
+req_device["kmeans_spmd.py"] = ["gpu"]
+req_device["knn_bf_classification_dpnp_batch.py"] = ["gpu"]
+req_device["knn_bf_classification_spmd.py"] = ["gpu"]
+req_device["knn_bf_regression_spmd.py"] = ["gpu"]
+req_device["linear_regression_spmd.py"] = ["gpu"]
+req_device["pca_spmd.py"] = ["gpu"]
+req_device["random_forest_classifier_dpctl_batch.py"] = ["gpu"]
+req_device["random_forest_classifier_spmd.py"] = ["gpu"]
+req_device["random_forest_regressor_dpnp_batch.py"] = ["gpu"]
+req_device["random_forest_regressor_spmd.py"] = ["gpu"]
+req_device["sycl/gradient_boosted_regression_batch.py"] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
-req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['model_builders_lightgbm.py'] = ['lightgbm']
-req_library['model_builders_xgboost.py'] = ['xgboost']
-req_library['model_builders_catboost.py'] = ['catboost']
-req_library['basic_statistics_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['kmeans_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['knn_bf_classification_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['knn_bf_regression_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['linear_regression_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['pca_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['random_forest_classifier_spmd.py'] = ['dpctl', 'mpi4py']
-req_library['random_forest_regressor_spmd.py'] = ['dpctl', 'mpi4py']
+req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["model_builders_lightgbm.py"] = ["lightgbm"]
+req_library["model_builders_xgboost.py"] = ["xgboost"]
+req_library["model_builders_catboost.py"] = ["catboost"]
+req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["kmeans_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["knn_bf_classification_dpnp_batch.py"] = ["dpctl", "dpnp"]
+req_library["knn_bf_classification_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["knn_bf_regression_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["linear_regression_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["pca_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["random_forest_classifier_dpctl_batch.py"] = ["dpctl"]
+req_library["random_forest_classifier_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["random_forest_regressor_dpnp_batch.py"] = ["dpnp"]
+req_library["random_forest_regressor_spmd.py"] = ["dpctl", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
 
@@ -176,11 +193,11 @@ def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
         if not sycl_extention_available:
             return None
-        if not check_version(req_version["sycl/" + os.path.basename(ex)],
-                             get_daal_version()):
+        if not check_version(
+            req_version["sycl/" + os.path.basename(ex)], get_daal_version()
+        ):
             return None
-        if not check_device(
-                req_device["sycl/" + os.path.basename(ex)], availabe_devices):
+        if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
             return None
         if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None
@@ -190,19 +207,22 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
-    if os.path.dirname(ex).endswith("sklearnex") and not nodist and \
-            ex.endswith('spmd.py'):
+    if (
+        os.path.dirname(ex).endswith("sklearnex")
+        and not nodist
+        and ex.endswith("spmd.py")
+    ):
         if not check_device(req_device[os.path.basename(ex)], availabe_devices):
             return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
-    if any(ex.endswith(x) for x in ['batch.py', 'stream.py']):
+    if any(ex.endswith(x) for x in ["batch.py", "stream.py"]):
         return '"' + sys.executable + '" "' + ex + '"'
-    if not nostream and ex.endswith('streaming.py'):
+    if not nostream and ex.endswith("streaming.py"):
         return '"' + sys.executable + '" "' + ex + '"'
-    if not nodist and ex.endswith('spmd.py'):
+    if not nodist and ex.endswith("spmd.py"):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
@@ -214,44 +234,44 @@ def run(exdir, logdir, nodist=False, nostream=False):
     n = 0
     if not os.path.exists(logdir):
         os.makedirs(logdir)
-    for (dirpath, dirnames, filenames) in os.walk(exdir):
+    for dirpath, dirnames, filenames in os.walk(exdir):
         for script in filenames:
-            if any(script.endswith(x) for x in ['spmd.py',
-                                                'streaming.py',
-                                                'stream.py',
-                                                'batch.py']):
+            if any(
+                script.endswith(x)
+                for x in ["spmd.py", "streaming.py", "stream.py", "batch.py"]
+            ):
                 n += 1
-                logfn = jp(logdir, script.replace('.py', '.res'))
-                with open(logfn, 'w') as logfile:
-                    print('\n##### ' + jp(dirpath, script))
-                    execute_string = get_exe_cmd(jp(dirpath, script),
-                                                 nodist, nostream)
+                logfn = jp(logdir, script.replace(".py", ".res"))
+                with open(logfn, "w") as logfile:
+                    print("\n##### " + jp(dirpath, script))
+                    execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
                     if execute_string:
                         os.chdir(dirpath)
                         proc = subprocess.Popen(
-                            execute_string if IS_WIN else ['/bin/bash',
-                                                           '-c',
-                                                           execute_string],
+                            execute_string
+                            if IS_WIN
+                            else ["/bin/bash", "-c", execute_string],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT,
-                            shell=False
+                            shell=False,
                         )
                         out = proc.communicate()[0]
-                        logfile.write(out.decode('ascii'))
+                        logfile.write(out.decode("ascii"))
                         if proc.returncode:
                             print(out)
                             print(
-                                strftime("%H:%M:%S", gmtime()) + '\tFAILED'
-                                '\t' + script + '\twith errno'
-                                '\t' + str(proc.returncode)
+                                strftime("%H:%M:%S", gmtime()) + "\tFAILED"
+                                "\t" + script + "\twith errno"
+                                "\t" + str(proc.returncode)
                             )
                         else:
                             success += 1
-                            print(strftime("%H:%M:%S", gmtime()) + '\t'
-                                  'PASSED\t' + script)
+                            print(
+                                strftime("%H:%M:%S", gmtime()) + "\t" "PASSED\t" + script
+                            )
                     else:
                         success += 1
-                        print(strftime("%H:%M:%S", gmtime()) + '\tSKIPPED\t' + script)
+                        print(strftime("%H:%M:%S", gmtime()) + "\tSKIPPED\t" + script)
     return success, n
 
 
@@ -263,13 +283,15 @@ def run_all(nodist=False, nostream=False):
         success += s
         num += n
     if success != num:
-        print('{}/{} examples passed/skipped, '
-              '{} failed'.format(success, num, num - success))
-        print('Error(s) occured. Logs can be found in ' + logdir)
+        print(
+            "{}/{} examples passed/skipped, "
+            "{} failed".format(success, num, num - success)
+        )
+        print("Error(s) occured. Logs can be found in " + logdir)
         return 4711
-    print('{}/{} examples passed/skipped'.format(success, num))
+    print("{}/{} examples passed/skipped".format(success, num))
     return 0
 
 
-if __name__ == '__main__':
-    sys.exit(run_all('nodist' in sys.argv or not __has_dist__, 'nostream' in sys.argv))
+if __name__ == "__main__":
+    sys.exit(run_all("nodist" in sys.argv or not __has_dist__, "nostream" in sys.argv))
