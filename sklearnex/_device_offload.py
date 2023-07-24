@@ -33,6 +33,12 @@ oneapi_is_available = 'daal4py.oneapi' in sys.modules
 if oneapi_is_available:
     from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
 
+try:
+    import dpnp
+    dpnp_available = True
+except ImportError:
+    dpnp_available = False
+
 
 class DummySyclQueue:
     '''This class is designed to act like dpctl.SyclQueue
@@ -182,6 +188,8 @@ def wrap_output_data(func):
             usm_iface = getattr(data[0], '__sycl_usm_array_interface__', None)
         result = func(self, *args, **kwargs)
         if usm_iface is not None:
-            return _copy_to_usm(usm_iface['syclobj'], result)
+            result = _copy_to_usm(usm_iface['syclobj'], result)
+            if dpnp_available and isinstance(data[0], dpnp.ndarray):
+                result = dpnp.asarray(result, copy=False)
         return result
     return wrapper
