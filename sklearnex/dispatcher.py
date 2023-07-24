@@ -56,33 +56,49 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
+
+        # Preview classes for patching
+        from .preview.cluster import KMeans as KMeans_sklearnex
+        from .preview.decomposition import PCA as PCA_sklearnex
+        from .preview.ensemble import (
+            ExtraTreesClassifier as ExtraTreesClassifier_sklearnex,
+        )
+        from .preview.ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
+        from .preview.ensemble import (
+            RandomForestClassifier as RandomForestClassifier_sklearnex,
+        )
+        from .preview.ensemble import (
+            RandomForestRegressor as RandomForestRegressor_sklearnex,
+        )
+        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
 
-        # Preview classes for patching
-        from .preview.cluster import KMeans as KMeans_sklearnex
-        from .preview.decomposition import PCA as PCA_sklearnex
-        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
-        from .preview.ensemble import (
-            ExtraTreesClassifier as ExtraTreesClassifier_sklearnex,
-            ExtraTreesRegressor as ExtraTreesRegressor_sklearnex,
-            RandomForestClassifier as RandomForestClassifier_sklearnex,
-            RandomForestRegressor as RandomForestRegressor_sklearnex,
-        )
-
         # Patch for mapping
         if _is_preview_enabled():
             # Ensemble
-            mapping["extra_trees_classifier"] = [[(ensemble_module,
-                                                   "ExtraTreesClassifier",
-                                                   ExtraTreesClassifier_sklearnex),
-                                                  None]]
-            mapping["extra_trees_regressor"] = [[(ensemble_module,
-                                                  "ExtraTreesRegressor",
-                                                  ExtraTreesRegressor_sklearnex),
-                                                 None]]
+            mapping["extra_trees_classifier"] = [
+                [
+                    (
+                        ensemble_module,
+                        "ExtraTreesClassifier",
+                        ExtraTreesClassifier_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+            mapping["extra_trees_regressor"] = [
+                [
+                    (
+                        ensemble_module,
+                        "ExtraTreesRegressor",
+                        ExtraTreesRegressor_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
             mapping["extratreesclassifier"] = mapping["extra_trees_classifier"]
             mapping["extratreesregressor"] = mapping["extra_trees_regressor"]
             mapping.pop("random_forest_classifier")
@@ -239,9 +255,7 @@ def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
                 algorithm, verbose=False, deprecation=False, get_map=get_patch_map
             )
     else:
-        patch_sklearn_orig(
-            name, verbose=False, deprecation=False, get_map=get_patch_map
-        )
+        patch_sklearn_orig(name, verbose=False, deprecation=False, get_map=get_patch_map)
 
     if verbose and sys.stderr is not None:
         sys.stderr.write(
@@ -288,9 +302,7 @@ def sklearn_is_patched(name=None, return_map=False):
                 )
             return is_patched
     else:
-        return sklearn_is_patched_orig(
-            name, get_map=get_patch_map, return_map=return_map
-        )
+        return sklearn_is_patched_orig(name, get_map=get_patch_map, return_map=return_map)
 
 
 def is_patched_instance(instance: object) -> bool:

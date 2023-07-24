@@ -23,7 +23,7 @@ def get_cluster_centers(self):
 
 def set_cluster_centers(self, value):
     self._cluster_centers_ = value
-    if hasattr(self, '_onedal_estimator'):
+    if hasattr(self, "_onedal_estimator"):
         self._onedal_estimator.cluster_centers_ = value
 
 
@@ -33,7 +33,7 @@ def get_labels(self):
 
 def set_labels(self, value):
     self._labels_ = value
-    if hasattr(self, '_onedal_estimator'):
+    if hasattr(self, "_onedal_estimator"):
         self._onedal_estimator.labels_ = value
 
 
@@ -43,7 +43,7 @@ def get_inertia(self):
 
 def set_inertia(self, value):
     self._inertia_ = value
-    if hasattr(self, '_onedal_estimator'):
+    if hasattr(self, "_onedal_estimator"):
         self._onedal_estimator.inertia_ = value
 
 
@@ -53,7 +53,7 @@ def get_n_iter(self):
 
 def set_n_iter(self, value):
     self._n_iter_ = value
-    if hasattr(self, '_onedal_estimator'):
+    if hasattr(self, "_onedal_estimator"):
         self._onedal_estimator.n_iter_ = value
 
 

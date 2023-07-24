@@ -14,22 +14,22 @@
 # limitations under the License.
 # ===============================================================================
 
-import pytest
 import numpy as np
-
+import pytest
 from numpy.testing import assert_array_equal
+
 from daal4py.sklearn._utils import daal_check_version
 
-if daal_check_version((2023, 'P', 200)):
-    from onedal.cluster import kmeans_plusplus, KMeans
-    from onedal.tests.utils._device_selection import get_queues
-
+if daal_check_version((2023, "P", 200)):
     from sklearn.datasets import load_breast_cancer
     from sklearn.metrics import davies_bouldin_score
 
-    @pytest.mark.parametrize('queue', get_queues())
-    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_cluster', [2, 5, 11, 128])
+    from onedal.cluster import KMeans, kmeans_plusplus
+    from onedal.tests.utils._device_selection import get_queues
+
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    @pytest.mark.parametrize("n_cluster", [2, 5, 11, 128])
     def test_breast_cancer(queue, dtype, n_cluster):
         X, _ = load_breast_cancer(return_X_y=True)
         X = np.asarray(X).astype(dtype=dtype)
@@ -58,7 +58,7 @@ if daal_check_version((2023, 'P', 200)):
 
         # Generating dataset
         def gen_one(c):
-            params = {'loc': cs[c, :], 'scale': vs[c], 'size': (n_points, n_dim)}
+            params = {"loc": cs[c, :], "scale": vs[c], "size": (n_points, n_dim)}
             return gen.normal(**params)
 
         data = [gen_one(c) for c in range(n_cluster)]
@@ -69,10 +69,10 @@ if daal_check_version((2023, 'P', 200)):
 
         return (cs, vs, data)
 
-    @pytest.mark.parametrize('queue', get_queues())
-    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
-    @pytest.mark.parametrize('n_dim', [3, 12, 17])
-    @pytest.mark.parametrize('n_cluster', [2, 15, 61])
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    @pytest.mark.parametrize("n_dim", [3, 12, 17])
+    @pytest.mark.parametrize("n_cluster", [2, 15, 61])
     def test_generated_dataset(queue, dtype, n_dim, n_cluster):
         seed = 777 * n_dim * n_cluster
         cs, vs, X = generate_dataset(n_dim, n_cluster, seed=seed, dtype=dtype)
