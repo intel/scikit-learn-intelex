@@ -14,12 +14,11 @@
 # limitations under the License.
 #===============================================================================
 
-from ._config import get_config
-from ._utils import get_patch_message
-from functools import wraps
-import numpy as np
-import sys
 import logging
+import sys
+from functools import wraps
+
+import numpy as np
 
 try:
     from dpctl import SyclQueue
@@ -29,15 +28,18 @@ try:
 except ImportError:
     dpctl_available = False
 
-oneapi_is_available = 'daal4py.oneapi' in sys.modules
-if oneapi_is_available:
-    from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
-
 try:
     import dpnp
     dpnp_available = True
 except ImportError:
     dpnp_available = False
+
+from ._config import get_config
+from ._utils import get_patch_message
+
+oneapi_is_available = 'daal4py.oneapi' in sys.modules
+if oneapi_is_available:
+    from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
 
 
 class DummySyclQueue:
