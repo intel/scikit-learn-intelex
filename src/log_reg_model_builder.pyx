@@ -19,9 +19,7 @@
 # We will extend this once we know how other model builders will work in oneDAL
 
 import numpy
-
 cimport numpy
-
 
 cdef extern from "log_reg_model_builder.h":
     cdef cppclass c_logistic_regression_model_builder:

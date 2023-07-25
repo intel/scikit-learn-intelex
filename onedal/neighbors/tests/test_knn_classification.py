@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
-import numpy as np
 import pytest
+import numpy as np
 from numpy.testing import assert_array_equal
-from sklearn import datasets
 
 from onedal.neighbors import KNeighborsClassifier
 from onedal.tests.utils._device_selection import get_queues
 
+from sklearn import datasets
 
-@pytest.mark.parametrize("queue", get_queues())
+
+@pytest.mark.parametrize('queue', get_queues())
 def test_iris(queue):
     iris = datasets.load_iris()
     clf = KNeighborsClassifier(2).fit(iris.data, iris.target, queue=queue)
@@ -32,14 +33,13 @@ def test_iris(queue):
 
 
 # TODO: investigate failures on GPU
-@pytest.mark.parametrize("queue", get_queues("cpu"))
+@pytest.mark.parametrize('queue', get_queues('cpu'))
 def test_pickle(queue):
     iris = datasets.load_iris()
     clf = KNeighborsClassifier(2).fit(iris.data, iris.target, queue=queue)
     expected = clf.predict(iris.data, queue=queue)
 
     import pickle
-
     dump = pickle.dumps(clf)
     clf2 = pickle.loads(dump)
 

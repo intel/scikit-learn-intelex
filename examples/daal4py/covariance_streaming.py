@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py covariance example for streaming on shared memory systems
+
+import daal4py as d4p
 
 # let's use a generator for getting stream from file (defined in stream.py)
 from stream import read_next
 
-import daal4py as d4p
 
-
-def main(readcsv=None, method="defaultDense"):
+def main(readcsv=None, method='defaultDense'):
     infile = "./data/batch/covcormoments_dense.csv"
 
     # configure a covariance object
@@ -44,4 +44,4 @@ if __name__ == "__main__":
     res = main()
     print("Covariance matrix:\n", res.covariance)
     print("Mean vector:\n", res.mean)
-    print("All looks good!")
+    print('All looks good!')

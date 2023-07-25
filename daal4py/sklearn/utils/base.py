@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 from .validation import _daal_check_array, _daal_check_X_y
 
 
-def _daal_validate_data(
-    self, X, y=None, reset=True, validate_separately=False, **check_params
-):
+def _daal_validate_data(self, X, y=None, reset=True,
+                        validate_separately=False, **check_params):
     """Validate input data and set or check the `n_features_in_` attribute.
 
     Parameters
@@ -50,7 +49,7 @@ def _daal_validate_data(
     """
 
     if y is None:
-        if self._get_tags()["requires_y"]:
+        if self._get_tags()['requires_y']:
             raise ValueError(
                 f"This {self.__class__.__name__} estimator "
                 f"requires y to be passed, but the target y is None."
@@ -70,6 +69,6 @@ def _daal_validate_data(
             X, y = _daal_check_X_y(X, y, **check_params)
         out = X, y
 
-    if check_params.get("ensure_2d", True):
+    if check_params.get('ensure_2d', True):
         self._check_n_features(X, reset=reset)
     return out

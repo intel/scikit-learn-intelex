@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py SVD example for streaming on shared memory systems
 
-import numpy as np
-
 import daal4py as d4p
+import numpy as np
 
 # let's try to use pandas' fast csv reader
 try:
     import pandas
 
     def read_csv(f, c, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
-        )
-
+        return pandas.read_csv(f, usecols=c, delimiter=',',
+                               header=None, skiprows=s, nrows=n, dtype=t)
 except:
     # fall back to numpy genfromtxt
     def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
-        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
+        a = np.genfromtxt(f, usecols=c, delimiter=',', skip_header=s, max_rows=n)
         if a.shape[0] == 0:
             raise Exception("done")
         if a.ndim == 1:
@@ -40,7 +37,7 @@ except:
         return a
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=read_csv, method='defaultDense'):
     infiles = ["./data/distributed/svd_{}.csv".format(i) for i in range(1, 5)]
 
     # configure a SVD object
@@ -64,6 +61,7 @@ if __name__ == "__main__":
     print("\nSingular values:\n", result.singularValues)
     print("\nRight orthogonal matrix V:\n", result.rightSingularMatrix)
     print(
-        "\nLeft orthogonal matrix U (first 10 rows):\n", result.leftSingularMatrix[0:10]
+        "\nLeft orthogonal matrix U (first 10 rows):\n",
+        result.leftSingularMatrix[0:10]
     )
-    print("All looks good!")
+    print('All looks good!')

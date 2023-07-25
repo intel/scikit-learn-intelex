@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py Naive Bayes Classification example for distributed memory systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./naive_bayes_spmd.py
 
-from numpy import loadtxt
-
 import daal4py as d4p
+from numpy import loadtxt
 
 if __name__ == "__main__":
     # Initialize SPMD mode
@@ -33,8 +32,8 @@ if __name__ == "__main__":
     talgo = d4p.multinomial_naive_bayes_training(20, distributed=True)
 
     # Read data. Let's use 20 features per observation
-    data = loadtxt(infile, delimiter=",", usecols=range(20))
-    labels = loadtxt(infile, delimiter=",", usecols=range(20, 21))
+    data = loadtxt(infile, delimiter=',', usecols=range(20))
+    labels = loadtxt(infile, delimiter=',', usecols=range(20, 21))
     labels.shape = (labels.size, 1)  # must be a 2d array
     tresult = talgo.compute(data, labels)
 
@@ -43,15 +42,14 @@ if __name__ == "__main__":
     if d4p.my_procid() == 0:
         palgo = d4p.multinomial_naive_bayes_prediction(20)
         # read test data (with same #features)
-        pdata = loadtxt(
-            "./data/batch/naivebayes_test_dense.csv", delimiter=",", usecols=range(20)
-        )
+        pdata = loadtxt("./data/batch/naivebayes_test_dense.csv",
+                        delimiter=',', usecols=range(20))
         # now predict using the model from the training above
         presult = palgo.compute(pdata, tresult.model)
 
         # Prediction result provides prediction
         assert presult.prediction.shape == (pdata.shape[0], 1)
 
-        print("All looks good!")
+        print('All looks good!')
 
     d4p.daalfini()

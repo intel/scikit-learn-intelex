@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,131 +12,80 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py KNN regression scikit-learn-compatible classes
 
+from ._base import NeighborsBase, KNeighborsMixin
 from sklearn.base import RegressorMixin
-
-from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
-from ._base import KNeighborsMixin, NeighborsBase
+from .._device_offload import support_usm_ndarray
+
 
 if sklearn_check_version("0.22"):
-    from sklearn.neighbors._regression import (
-        KNeighborsRegressor as BaseKNeighborsRegressor,
-    )
-
+    from sklearn.neighbors._regression import KNeighborsRegressor as \
+        BaseKNeighborsRegressor
     if not sklearn_check_version("1.2"):
         from sklearn.neighbors._base import _check_weights
     from sklearn.utils.validation import _deprecate_positional_args
 else:
+    from sklearn.neighbors.regression import KNeighborsRegressor as \
+        BaseKNeighborsRegressor
     from sklearn.neighbors.base import _check_weights
-    from sklearn.neighbors.regression import (
-        KNeighborsRegressor as BaseKNeighborsRegressor,
-    )
 
     def _deprecate_positional_args(f):
         return f
 
 
 if sklearn_check_version("0.24"):
-
     class KNeighborsRegressor_(KNeighborsMixin, RegressorMixin, NeighborsBase):
         @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
+        def __init__(self, n_neighbors=5, *, weights='uniform',
+                     algorithm='auto', leaf_size=30,
+                     p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                     **kwargs):
             super().__init__(
                 n_neighbors=n_neighbors,
                 algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params, n_jobs=n_jobs, **kwargs)
 else:
     if sklearn_check_version("0.22"):
-        from sklearn.neighbors._base import (
-            SupervisedFloatMixin as BaseSupervisedFloatMixin,
-        )
+        from sklearn.neighbors._base import SupervisedFloatMixin as \
+            BaseSupervisedFloatMixin
     else:
-        from sklearn.neighbors.base import (
-            SupervisedFloatMixin as BaseSupervisedFloatMixin,
-        )
+        from sklearn.neighbors.base import SupervisedFloatMixin as \
+            BaseSupervisedFloatMixin
 
-    class KNeighborsRegressor_(
-        NeighborsBase, KNeighborsMixin, BaseSupervisedFloatMixin, RegressorMixin
-    ):
+    class KNeighborsRegressor_(NeighborsBase, KNeighborsMixin,
+                               BaseSupervisedFloatMixin, RegressorMixin):
         @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
+        def __init__(self, n_neighbors=5, *, weights='uniform',
+                     algorithm='auto', leaf_size=30,
+                     p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                     **kwargs):
             super().__init__(
                 n_neighbors=n_neighbors,
                 algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
+                leaf_size=leaf_size, metric=metric, p=p,
+                metric_params=metric_params, n_jobs=n_jobs, **kwargs)
 
 
 class KNeighborsRegressor(KNeighborsRegressor_):
     __doc__ = BaseKNeighborsRegressor.__doc__
 
     @_deprecate_positional_args
-    def __init__(
-        self,
-        n_neighbors=5,
-        *,
-        weights="uniform",
-        algorithm="auto",
-        leaf_size=30,
-        p=2,
-        metric="minkowski",
-        metric_params=None,
-        n_jobs=None,
-        **kwargs,
-    ):
+    def __init__(self, n_neighbors=5, *, weights='uniform',
+                 algorithm='auto', leaf_size=30,
+                 p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                 **kwargs):
         super().__init__(
             n_neighbors=n_neighbors,
             algorithm=algorithm,
-            leaf_size=leaf_size,
-            metric=metric,
-            p=p,
-            metric_params=metric_params,
-            n_jobs=n_jobs,
-            **kwargs,
-        )
-        self.weights = (
+            leaf_size=leaf_size, metric=metric, p=p,
+            metric_params=metric_params, n_jobs=n_jobs, **kwargs)
+        self.weights = \
             weights if sklearn_check_version("1.0") else _check_weights(weights)
-        )
 
     def _more_tags(self):
         return BaseKNeighborsRegressor._more_tags(self)
@@ -178,6 +127,6 @@ class KNeighborsRegressor(KNeighborsRegressor_):
         y : ndarray of shape (n_queries,) or (n_queries, n_outputs), dtype=int
             Target values.
         """
-        if sklearn_check_version("1.0"):
+        if sklearn_check_version('1.0'):
             self._check_feature_names(X, reset=False)
         return BaseKNeighborsRegressor.predict(self, X)

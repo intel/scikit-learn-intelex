@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
-from ._pairwise import pairwise_distances
 from ._ranking import roc_auc_score
+from ._pairwise import pairwise_distances
 
-__all__ = ["roc_auc_score", "pairwise_distances"]
+__all__ = ['roc_auc_score', 'pairwise_distances']

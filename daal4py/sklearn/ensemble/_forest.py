@@ -37,10 +37,10 @@ from sklearn.utils.validation import (
 import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
-    check_tree_nodes,
     daal_check_version,
-    getFPType,
     sklearn_check_version,
+    getFPType,
+    check_tree_nodes,
 )
 
 from .._device_offload import support_usm_ndarray

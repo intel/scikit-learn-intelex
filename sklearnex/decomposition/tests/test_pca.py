@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+#===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -21,8 +21,7 @@ from numpy.testing import assert_allclose
 
 def test_sklearnex_import():
     from sklearnex.decomposition import PCA
-
     X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
-    pca = PCA(n_components=2, svd_solver="full").fit(X)
-    assert "daal4py" in pca.__module__
+    pca = PCA(n_components=2, svd_solver='full').fit(X)
+    assert 'daal4py' in pca.__module__
     assert_allclose(pca.singular_values_, [6.30061232, 0.54980396])

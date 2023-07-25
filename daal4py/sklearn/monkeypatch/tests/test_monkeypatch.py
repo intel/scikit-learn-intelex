@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 import daal4py.sklearn
 
@@ -25,9 +25,8 @@ def test_monkey_patching():
         _classes.append(v[0][0])
 
     assert len(_tokens) == len(_classes)
-    assert (
-        isinstance(_tokens, list) and len(_tokens) > 0
-    ), "Internal Error: list of patched names has unexcepable format."
+    assert isinstance(_tokens, list) and len(_tokens) > 0, \
+        "Internal Error: list of patched names has unexcepable format."
 
     daal4py.sklearn.patch_sklearn()
 
@@ -37,7 +36,8 @@ def test_monkey_patching():
         n = _classes[i][1]
 
         class_module = getattr(p, n).__module__
-        assert class_module.startswith("daal4py"), "Patching has completed with error."
+        assert class_module.startswith('daal4py'), \
+            "Patching has completed with error."
 
     for i, _ in enumerate(_tokens):
         t = _tokens[i]
@@ -46,7 +46,8 @@ def test_monkey_patching():
 
         daal4py.sklearn.unpatch_sklearn(t)
         class_module = getattr(p, n).__module__
-        assert class_module.startswith("sklearn"), "Unpatching has completed with error."
+        assert class_module.startswith('sklearn'), \
+            "Unpatching has completed with error."
 
     daal4py.sklearn.unpatch_sklearn()
 
@@ -56,7 +57,8 @@ def test_monkey_patching():
         n = _classes[i][1]
 
         class_module = getattr(p, n).__module__
-        assert class_module.startswith("sklearn"), "Unpatching has completed with error."
+        assert class_module.startswith('sklearn'), \
+            "Unpatching has completed with error."
 
     for i, _ in enumerate(_tokens):
         t = _tokens[i]
@@ -66,6 +68,7 @@ def test_monkey_patching():
         daal4py.sklearn.patch_sklearn(t)
 
         class_module = getattr(p, n).__module__
-        assert class_module.startswith("daal4py"), "Patching has completed with error."
+        assert class_module.startswith('daal4py'), \
+            "Patching has completed with error."
 
     daal4py.sklearn.unpatch_sklearn()

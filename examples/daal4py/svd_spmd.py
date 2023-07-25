@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py SVD example for distributed memory systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./svd_spmd.py
 
-from numpy import allclose, loadtxt
-
 import daal4py as d4p
+from numpy import loadtxt, allclose
 
 
 def main():
@@ -34,7 +33,7 @@ def main():
     result1 = algo.compute(infile)
 
     # We can also load the data ourselfs and provide the numpy array
-    data = loadtxt(infile, delimiter=",")
+    data = loadtxt(infile, delimiter=',')
     result2 = algo.compute(data)
 
     # SVD result objects provide leftSingularMatrix,
@@ -61,5 +60,5 @@ if __name__ == "__main__":
             "but only his part of leftSingularMatrix:\n"
         )
         print(result)
-        print("All looks good!")
+        print('All looks good!')
     d4p.daalfini()

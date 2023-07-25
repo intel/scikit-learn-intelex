@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,28 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py Gradient Bossting Regression example for shared memory systems
 
-import numpy as np
-
 import daal4py as d4p
+import numpy as np
 
 # let's try to use pandas' fast csv reader
 try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=np.float32)
-
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=np.float32)
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=np.float32)
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=np.float32)
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=read_csv, method='defaultDense'):
     maxIterations = 200
 
     # input data file
@@ -56,17 +54,16 @@ def main(readcsv=read_csv, method="defaultDense"):
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    ptdata = np.loadtxt(
-        testfile, usecols=range(13, 14), delimiter=",", ndmin=2, dtype=np.float32
-    )
+    ptdata = np.loadtxt(testfile, usecols=range(13, 14),
+                        delimiter=',', ndmin=2, dtype=np.float32)
     # ptdata = np.loadtxt('../tests/unittest_data/gradient_boosted_regression_batch.csv',
     #                     delimiter=',', ndmin=2, dtype=np.float32)
-    if hasattr(ptdata, "toarray"):
+    if hasattr(ptdata, 'toarray'):
         ptdata = ptdata.toarray()
         # to make the next assertion work with scipy's csr_matrix
-    assert True or np.square(predict_result.prediction - ptdata).mean() < 1e-2, np.square(
-        predict_result.prediction - ptdata
-    ).mean()
+    assert True or \
+           np.square(predict_result.prediction - ptdata).mean() < 1e-2, \
+           np.square(predict_result.prediction - ptdata).mean()
 
     return (train_result, predict_result, ptdata)
 
@@ -75,7 +72,7 @@ if __name__ == "__main__":
     (train_result, predict_result, ptdata) = main()
     print(
         "\nGradient boosted trees prediction results (first 10 rows):\n",
-        predict_result.prediction[0:10],
+        predict_result.prediction[0:10]
     )
     print("\nGround truth (first 10 rows):\n", ptdata[0:10])
-    print("All looks good!")
+    print('All looks good!')

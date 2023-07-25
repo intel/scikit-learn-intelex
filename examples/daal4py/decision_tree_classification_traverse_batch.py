@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py Decision Tree Regression example for shared memory systems
 
 import math
+import daal4py as d4p
 
 from decision_tree_classification_batch import main as dt_classification
-
-import daal4py as d4p
 
 
 def printTree(nodes, values):
@@ -53,4 +52,4 @@ if __name__ == "__main__":
     treeState = d4p.getTreeState(train_result.model, treeId, 5)
     # Now let printTree traverse the TreeState
     printTree(treeState.node_ar, treeState.value_ar)
-    print("All looks good!")
+    print('All looks good!')

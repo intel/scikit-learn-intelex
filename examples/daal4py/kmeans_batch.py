@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,28 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py K-Means example for shared memory systems
 
-import numpy as np
-
 import daal4py as d4p
+import numpy as np
 
 # let's try to use pandas' fast csv reader
 try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=read_csv, method='defaultDense'):
     infile = "./data/batch/kmeans_dense.csv"
     nClusters = 20
     maxIter = 5
@@ -70,4 +68,4 @@ if __name__ == "__main__":
     print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
     print("\nFirst 10 dimensions of centroids:\n", result.centroids[:, 0:10])
     print("\nObjective function value:\n", result.objectiveFunction)
-    print("All looks good!")
+    print('All looks good!')

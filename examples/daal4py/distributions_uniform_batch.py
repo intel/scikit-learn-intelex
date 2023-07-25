@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py uniform distribution example for shared memory systems
 
+import daal4py as d4p
 import numpy as np
 
-import daal4py as d4p
 
+def main(readcsv=None, method='defaultDense'):
 
-def main(readcsv=None, method="defaultDense"):
     # Create algorithm
     algorithm = d4p.distributions_uniform(engine=d4p.engines_mt19937(seed=777))
 
@@ -32,20 +32,10 @@ def main(readcsv=None, method="defaultDense"):
     assert np.allclose(data, res.randomNumbers)
     assert np.allclose(
         data,
-        [
-            [
-                0.22933409,
-                0.44584412,
-                0.44559617,
-                0.9918884,
-                0.36859825,
-                0.57550881,
-                0.26983509,
-                0.83136875,
-                0.33614365,
-                0.53768455,
-            ]
-        ],
+        [[
+            0.22933409, 0.44584412, 0.44559617, 0.9918884, 0.36859825,
+            0.57550881, 0.26983509, 0.83136875, 0.33614365, 0.53768455,
+        ]]
     )
 
     return data

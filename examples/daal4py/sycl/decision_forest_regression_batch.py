@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py Decision Forest Regression example for shared memory systems
 
-import os
-
-import numpy as np
-
 import daal4py as d4p
+import numpy as np
+import os
 from daal4py.oneapi import sycl_buffer
 
 # let's try to use pandas' fast csv reader
@@ -28,41 +26,38 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except Exception:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
-
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
 
 try:
     from daal4py.oneapi import sycl_context
-
-    with sycl_context("gpu"):
+    with sycl_context('gpu'):
         gpu_available = True
 except Exception:
     gpu_available = False
 
 
 # Commone code for both CPU and GPU computations
-def compute(train_data, train_labels, predict_data, method="defaultDense"):
+def compute(train_data, train_labels, predict_data, method='defaultDense'):
     # Configure a training object
     train_algo = d4p.decision_forest_regression_training(
         nTrees=100,
-        fptype="float",
+        fptype='float',
         engine=d4p.engines_mt2203(seed=777),
-        varImportance="MDA_Raw",
+        varImportance='MDA_Raw',
         bootstrap=True,
-        resultsToCompute="computeOutOfBagError|computeOutOfBagErrorPerObservation",
-        method=method,
+        resultsToCompute='computeOutOfBagError|computeOutOfBagErrorPerObservation',
+        method=method
     )
     # Training result provides (depending on parameters) model,
     # outOfBagError, outOfBagErrorPerObservation and/or variableImportance
     train_result = train_algo.compute(train_data, train_labels)
 
     # now predict using the model from the training above
-    predict_algo = d4p.decision_forest_regression_prediction(fptype="float")
+    predict_algo = d4p.decision_forest_regression_prediction(fptype='float')
 
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
@@ -73,13 +68,11 @@ def compute(train_data, train_labels, predict_data, method="defaultDense"):
 def to_numpy(data):
     try:
         from pandas import DataFrame
-
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
     except Exception:
         try:
             from scipy.sparse import csr_matrix
-
             if isinstance(data, csr_matrix):
                 return data.toarray()
         except Exception:
@@ -88,11 +81,11 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=read_csv, method='defaultDense'):
     nFeatures = 13
     # input data file
-    train_file = os.path.join("..", "data", "batch", "df_regression_train.csv")
-    predict_file = os.path.join("..", "data", "batch", "df_regression_test.csv")
+    train_file = os.path.join('..', 'data', 'batch', 'df_regression_train.csv')
+    predict_file = os.path.join('..', 'data', 'batch', 'df_regression_test.csv')
 
     # Read train data. Let's use 3 features per observation
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
@@ -102,9 +95,8 @@ def main(readcsv=read_csv, method="defaultDense"):
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    train_result, predict_result = compute(
-        train_data, train_labels, predict_data, "defaultDense"
-    )
+    train_result, predict_result = compute(train_data, train_labels,
+                                           predict_data, "defaultDense")
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
     assert (np.square(predict_result.prediction - predict_labels).mean() < 18).any()
 
@@ -114,13 +106,12 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with sycl_context("gpu"):
+        with sycl_context('gpu'):
             sycl_train_data = sycl_buffer(train_data)
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
-            train_result, predict_result = compute(
-                sycl_train_data, sycl_train_labels, sycl_predict_data, "hist"
-            )
+            train_result, predict_result = compute(sycl_train_data, sycl_train_labels,
+                                                   sycl_predict_data, 'hist')
             assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
             assert (
                 np.square(predict_result.prediction - predict_labels).mean() < 18
@@ -135,7 +126,7 @@ if __name__ == "__main__":
     print("\nOOB error:\n", train_result.outOfBagError)
     print(
         "\nDecision forest prediction results (first 10 rows):\n",
-        predict_result.prediction[0:10],
+        predict_result.prediction[0:10]
     )
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
-    print("All looks good!")
+    print('All looks good!')

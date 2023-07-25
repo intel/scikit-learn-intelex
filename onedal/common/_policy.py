@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
-
-import sys
+#===============================================================================
 
 from onedal import _backend, _is_dpc_backend
+import sys
 
-oneapi_is_available = "daal4py.oneapi" in sys.modules
+oneapi_is_available = 'daal4py.oneapi' in sys.modules
 if oneapi_is_available:
     from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
 
@@ -36,9 +35,9 @@ def _get_policy(queue, *data):
 
 
 def _get_queue(*data):
-    if len(data) > 0 and hasattr(data[0], "__sycl_usm_array_interface__"):
+    if len(data) > 0 and hasattr(data[0], '__sycl_usm_array_interface__'):
         # Assume that all data reside on the same device
-        return data[0].__sycl_usm_array_interface__["syclobj"]
+        return data[0].__sycl_usm_array_interface__['syclobj']
     return None
 
 
@@ -48,7 +47,7 @@ class _Daal4PyContextReset:
         self._host_context = None
         if oneapi_is_available:
             self._d4p_context = _get_sycl_ctxt()
-            self._host_context = sycl_execution_context("cpu")
+            self._host_context = sycl_execution_context('cpu')
             self._host_context.apply()
 
     def __del__(self):
@@ -63,14 +62,12 @@ class _HostInteropPolicy(_backend.host_policy):
 
 
 if _is_dpc_backend:
-
     class _DataParallelInteropPolicy(_backend.data_parallel_policy):
         def __init__(self, queue):
             self._queue = queue
             self._d4p_interop = _Daal4PyContextReset()
-            if "sklearnex" in sys.modules:
+            if 'sklearnex' in sys.modules:
                 from sklearnex._device_offload import DummySyclQueue
-
                 if isinstance(queue, DummySyclQueue):
                     super().__init__(self._queue.sycl_device.get_filter_string())
                     return

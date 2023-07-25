@@ -14,18 +14,17 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
 import warnings
 
-import numpy as np
-
+from onedal import _is_dpc_backend
+from onedal import _backend
 from daal4py.sklearn._utils import make2d
-from onedal import _backend, _is_dpc_backend
 
 try:
     import dpctl
     import dpctl.tensor as dpt
-
-    dpctl_available = dpctl.__version__ >= "0.14"
+    dpctl_available = dpctl.__version__ >= '0.14'
 except ImportError:
     dpctl_available = False
 
@@ -68,11 +67,9 @@ if _is_dpc_backend:
 
         def convert_or_pass(x):
             if (x is not None) and (x.dtype == np.float64):
-                warnings.warn(
-                    "Data will be converted into float32 from "
-                    "float64 because device does not support it",
-                    RuntimeWarning,
-                )
+                warnings.warn("Data will be converted into float32 from "
+                              "float64 because device does not support it",
+                              RuntimeWarning, )
                 return x.astype(np.float32)
             else:
                 return x
@@ -83,7 +80,6 @@ if _is_dpc_backend:
         return _apply_and_pass(func, *data)
 
 else:
-
     def _convert_to_supported(policy, *data):
         def func(x):
             return x

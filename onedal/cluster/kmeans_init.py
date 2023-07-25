@@ -15,28 +15,32 @@
 # ===============================================================================
 
 import numpy as np
-from sklearn.utils import check_random_state
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal import _backend
 
+from daal4py.sklearn._utils import get_dtype
+from ..datatypes import (
+    from_table,
+    to_table,
+    _convert_to_supported)
+
 from ..common._policy import _get_policy
-from ..datatypes import _convert_to_supported, from_table, to_table
 
-if daal_check_version((2023, "P", 200)):
+from sklearn.utils import check_random_state
 
+from daal4py.sklearn._utils import daal_check_version
+
+if daal_check_version((2023, 'P', 200)):
     class KMeansInit:
         """
         KMeansInit oneDAL implementation.
         """
 
-        def __init__(
-            self,
-            cluster_count,
-            seed=777,
-            local_trials_count=None,
-            algorithm="plus_plus_dense",
-        ):
+        def __init__(self,
+                     cluster_count,
+                     seed=777,
+                     local_trials_count=None,
+                     algorithm='plus_plus_dense'):
             self.cluster_count = cluster_count
             self.seed = seed
             self.local_trials_count = local_trials_count
@@ -52,11 +56,10 @@ if daal_check_version((2023, "P", 200)):
 
         def _get_onedal_params(self, dtype=np.float32):
             return {
-                "fptype": "float" if dtype == np.float32 else "double",
-                "local_trials_count": self.local_trials_count,
-                "method": self.algorithm,
-                "seed": self.seed,
-                "cluster_count": self.cluster_count,
+                'fptype': 'float' if dtype == np.float32 else 'double',
+                'local_trials_count': self.local_trials_count,
+                'method': self.algorithm, 'seed': self.seed,
+                'cluster_count': self.cluster_count,
             }
 
         def _get_params_and_input(self, X, policy):
@@ -93,18 +96,16 @@ if daal_check_version((2023, "P", 200)):
             return self._compute(X, _backend.kmeans_init.init, queue)
 
     def kmeans_plusplus(
-        X,
-        n_clusters,
-        *,
-        x_squared_norms=None,
-        random_state=None,
-        n_local_trials=None,
-        queue=None,
-    ):
+            X,
+            n_clusters,
+            *,
+            x_squared_norms=None,
+            random_state=None,
+            n_local_trials=None,
+            queue=None):
         random_seed = check_random_state(random_state).tomaxint()
         return (
             KMeansInit(
-                n_clusters, seed=random_seed, local_trials_count=n_local_trials
-            ).compute(X, queue),
-            np.full(n_clusters, -1),
-        )
+                n_clusters, seed=random_seed, local_trials_count=n_local_trials).compute(
+                X, queue), np.full(
+                n_clusters, -1))

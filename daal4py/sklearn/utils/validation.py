@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,55 +12,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
-
-import warnings
-from contextlib import suppress
+#===============================================================================
 
 import numpy as np
+import daal4py as d4p
+from sklearn import get_config as _get_config
+from sklearn.utils.fixes import _object_dtype_isnan
+import warnings
+from contextlib import suppress
 import scipy.sparse as sp
 from numpy.core.numeric import ComplexWarning
-from sklearn import get_config as _get_config
-from sklearn.utils.extmath import _safe_accumulator_op
-from sklearn.utils.fixes import _object_dtype_isnan
+from sklearn.utils.validation import (_num_samples, _ensure_no_complex_data,
+                                      _ensure_sparse_format, column_or_1d,
+                                      check_consistent_length)
 from sklearn.utils.validation import _assert_all_finite as _sklearn_assert_all_finite
-from sklearn.utils.validation import (
-    _ensure_no_complex_data,
-    _ensure_sparse_format,
-    _num_samples,
-    check_consistent_length,
-    column_or_1d,
-)
-
-import daal4py as d4p
-
-from .._utils import (
-    PatchingConditionsChain,
-    get_dtype,
-    get_number_of_types,
-    is_DataFrame,
-    sklearn_check_version,
-)
+from sklearn.utils.extmath import _safe_accumulator_op
+from .._utils import (is_DataFrame, get_dtype, get_number_of_types,
+                      sklearn_check_version, PatchingConditionsChain)
 
 
-def _assert_all_finite(
-    X, allow_nan=False, msg_dtype=None, estimator_name=None, input_name=""
-):
-    if _get_config()["assume_finite"]:
+def _assert_all_finite(X, allow_nan=False, msg_dtype=None,
+                       estimator_name=None, input_name=""):
+    if _get_config()['assume_finite']:
         return
 
     # Data with small size has too big relative overhead
     # TODO: tune threshold size
-    if hasattr(X, "size"):
+    if hasattr(X, 'size'):
         if X.size < 32768:
             if sklearn_check_version("1.1"):
-                _sklearn_assert_all_finite(
-                    X,
-                    allow_nan=allow_nan,
-                    msg_dtype=msg_dtype,
-                    estimator_name=estimator_name,
-                    input_name=input_name,
-                )
+                _sklearn_assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype,
+                                           estimator_name=estimator_name,
+                                           input_name=input_name)
             else:
                 _sklearn_assert_all_finite(X, allow_nan=allow_nan, msg_dtype=msg_dtype)
             return
@@ -74,28 +57,25 @@ def _assert_all_finite(
         lst = []
         for idx in X:
             arr = X[idx].to_numpy()
-            lst.append(arr if arr.flags["C_CONTIGUOUS"] else np.ascontiguousarray(arr))
+            lst.append(arr if arr.flags['C_CONTIGUOUS'] else np.ascontiguousarray(arr))
     else:
         X = np.asanyarray(X)
         is_df = False
 
     dt = np.dtype(get_dtype(X))
-    is_float = dt.kind in "fc"
+    is_float = dt.kind in 'fc'
 
     msg_err = "Input {} contains {} or a value too large for {!r}."
-    type_err = "infinity" if allow_nan else "NaN, infinity"
-    err = msg_err.format(input_name, type_err, msg_dtype if msg_dtype is not None else dt)
+    type_err = 'infinity' if allow_nan else 'NaN, infinity'
+    err = msg_err.format(
+        input_name, type_err, msg_dtype if msg_dtype is not None else dt)
 
     _patching_status = PatchingConditionsChain(
-        "sklearn.utils.validation._assert_all_finite"
-    )
-    _dal_ready = _patching_status.and_conditions(
-        [
-            (X.ndim in [1, 2], "X has not 1 or 2 dimensions."),
-            (not np.any(np.equal(X.shape, 0)), "X shape contains 0."),
-            (dt in [np.float32, np.float64], "X dtype is not float32 or float64."),
-        ]
-    )
+        'sklearn.utils.validation._assert_all_finite')
+    _dal_ready = _patching_status.and_conditions([
+        (X.ndim in [1, 2], "X has not 1 or 2 dimensions."),
+        (not np.any(np.equal(X.shape, 0)), "X shape contains 0."),
+        (dt in [np.float32, np.float64], "X dtype is not float32 or float64.")])
     _patching_status.write_log()
     if _dal_ready:
         if X.ndim == 1:
@@ -116,43 +96,35 @@ def _assert_all_finite(
     elif is_float and (np.isfinite(_safe_accumulator_op(np.sum, X))):
         pass
     elif is_float:
-        if allow_nan and np.isinf(X).any() or not allow_nan and not np.isfinite(X).all():
+        if allow_nan and np.isinf(X).any() or \
+                not allow_nan and not np.isfinite(X).all():
             raise ValueError(err)
     # for object dtype data, we only check for NaNs (GH-13254)
-    elif dt == np.dtype("object") and not allow_nan:
+    elif dt == np.dtype('object') and not allow_nan:
         if _object_dtype_isnan(X).any():
             raise ValueError(f"Input {input_name} contains NaN")
 
 
-def _pandas_check_array(
-    array,
-    array_orig,
-    force_all_finite,
-    ensure_min_samples,
-    ensure_min_features,
-    copy,
-    context,
-):
+def _pandas_check_array(array, array_orig, force_all_finite, ensure_min_samples,
+                        ensure_min_features, copy, context):
     if force_all_finite:
-        _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+        _assert_all_finite(array, allow_nan=force_all_finite == 'allow-nan')
 
     if ensure_min_samples > 0:
         n_samples = _num_samples(array)
         if n_samples < ensure_min_samples:
-            raise ValueError(
-                "Found array with %d sample(s) (shape=%s) while a"
-                " minimum of %d is required%s."
-                % (n_samples, array.shape, ensure_min_samples, context)
-            )
+            raise ValueError("Found array with %d sample(s) (shape=%s) while a"
+                             " minimum of %d is required%s."
+                             % (n_samples, array.shape, ensure_min_samples,
+                                context))
 
     if ensure_min_features > 0:
         n_features = array.shape[1]
         if n_features < ensure_min_features:
-            raise ValueError(
-                "Found array with %d feature(s) (shape=%s) while"
-                " a minimum of %d is required%s."
-                % (n_features, array.shape, ensure_min_features, context)
-            )
+            raise ValueError("Found array with %d feature(s) (shape=%s) while"
+                             " a minimum of %d is required%s."
+                             % (n_features, array.shape, ensure_min_features,
+                                context))
 
     if copy and np.may_share_memory(array, array_orig):
         array = array.copy()
@@ -160,21 +132,11 @@ def _pandas_check_array(
     return array
 
 
-def _daal_check_array(
-    array,
-    accept_sparse=False,
-    *,
-    accept_large_sparse=True,
-    dtype="numeric",
-    order=None,
-    copy=False,
-    force_all_finite=True,
-    ensure_2d=True,
-    allow_nd=False,
-    ensure_min_samples=1,
-    ensure_min_features=1,
-    estimator=None,
-):
+def _daal_check_array(array, accept_sparse=False, *, accept_large_sparse=True,
+                      dtype="numeric", order=None, copy=False, force_all_finite=True,
+                      ensure_2d=True, allow_nd=False, ensure_min_samples=1,
+                      ensure_min_features=1, estimator=None):
+
     """Input validation on an array, list, sparse matrix or similar.
 
     By default, the input is checked to be a non-empty 2D array containing
@@ -257,11 +219,9 @@ def _daal_check_array(
     array_converted : object
         The converted and validated array.
     """
-    if force_all_finite not in (True, False, "allow-nan"):
-        raise ValueError(
-            'force_all_finite should be a bool or "allow-nan"'
-            ". Got {!r} instead".format(force_all_finite)
-        )
+    if force_all_finite not in (True, False, 'allow-nan'):
+        raise ValueError('force_all_finite should be a bool or "allow-nan"'
+                         '. Got {!r} instead'.format(force_all_finite))
 
     if estimator is not None:
         if isinstance(estimator, str):
@@ -277,23 +237,17 @@ def _daal_check_array(
     # a branch for heterogeneous pandas.DataFrame
     if is_DataFrame(array) and get_number_of_types(array) > 1:
         from pandas.api.types import is_sparse
-
-        if hasattr(array, "sparse") or not array.dtypes.apply(is_sparse).any():
-            return _pandas_check_array(
-                array,
-                array_orig,
-                force_all_finite,
-                ensure_min_samples,
-                ensure_min_features,
-                copy,
-                context,
-            )
+        if hasattr(array, 'sparse') or \
+                not array.dtypes.apply(is_sparse).any():
+            return _pandas_check_array(array, array_orig, force_all_finite,
+                                       ensure_min_samples, ensure_min_features,
+                                       copy, context)
 
     # store whether originally we wanted numeric dtype
     dtype_numeric = isinstance(dtype, str) and dtype == "numeric"
 
     dtype_orig = getattr(array, "dtype", None)
-    if not hasattr(dtype_orig, "kind"):
+    if not hasattr(dtype_orig, 'kind'):
         # not a data type (e.g. a column named dtype in a pandas DataFrame)
         dtype_orig = None
 
@@ -301,13 +255,13 @@ def _daal_check_array(
     # DataFrame), and store them. If not, store None.
     dtypes_orig = None
     has_pd_integer_array = False
-    if hasattr(array, "dtypes") and hasattr(array.dtypes, "__array__"):
+    if hasattr(array, "dtypes") and hasattr(array.dtypes, '__array__'):
         # throw warning if columns are sparse. If all columns are sparse, then
         # array.sparse exists and sparsity will be perserved (later).
         with suppress(ImportError):
             from pandas.api.types import is_sparse
-
-            if not hasattr(array, "sparse") and array.dtypes.apply(is_sparse).any():
+            if not hasattr(array, 'sparse') and \
+                    array.dtypes.apply(is_sparse).any():
                 warnings.warn(
                     "pandas.DataFrame with sparse columns found."
                     "It will be converted to a dense numpy array."
@@ -316,36 +270,20 @@ def _daal_check_array(
         dtypes_orig = list(array.dtypes)
         # pandas boolean dtype __array__ interface coerces bools to objects
         for i, dtype_iter in enumerate(dtypes_orig):
-            if dtype_iter.kind == "b":
+            if dtype_iter.kind == 'b':
                 dtypes_orig[i] = np.dtype(np.object)
             elif dtype_iter.name.startswith(("Int", "UInt")):
                 # name looks like an Integer Extension Array, now check for
                 # the dtype
                 with suppress(ImportError):
-                    from pandas import (
-                        Int8Dtype,
-                        Int16Dtype,
-                        Int32Dtype,
-                        Int64Dtype,
-                        UInt8Dtype,
-                        UInt16Dtype,
-                        UInt32Dtype,
-                        UInt64Dtype,
-                    )
-
-                    if isinstance(
-                        dtype_iter,
-                        (
-                            Int8Dtype,
-                            Int16Dtype,
-                            Int32Dtype,
-                            Int64Dtype,
-                            UInt8Dtype,
-                            UInt16Dtype,
-                            UInt32Dtype,
-                            UInt64Dtype,
-                        ),
-                    ):
+                    from pandas import (Int8Dtype, Int16Dtype,
+                                        Int32Dtype, Int64Dtype,
+                                        UInt8Dtype, UInt16Dtype,
+                                        UInt32Dtype, UInt64Dtype)
+                    if isinstance(dtype_iter, (Int8Dtype, Int16Dtype,
+                                               Int32Dtype, Int64Dtype,
+                                               UInt8Dtype, UInt16Dtype,
+                                               UInt32Dtype, UInt64Dtype)):
                         has_pd_integer_array = True
 
         if all(isinstance(dtype, np.dtype) for dtype in dtypes_orig):
@@ -372,20 +310,16 @@ def _daal_check_array(
         array = array.astype(dtype)
 
     # When all dataframe columns are sparse, convert to a sparse array
-    if hasattr(array, "sparse") and array.ndim > 1:
+    if hasattr(array, 'sparse') and array.ndim > 1:
         # DataFrame.sparse only supports `to_coo`
         array = array.sparse.to_coo()
 
     if sp.issparse(array):
         _ensure_no_complex_data(array)
-        array = _ensure_sparse_format(
-            array,
-            accept_sparse=accept_sparse,
-            dtype=dtype,
-            copy=copy,
-            force_all_finite=force_all_finite,
-            accept_large_sparse=accept_large_sparse,
-        )
+        array = _ensure_sparse_format(array, accept_sparse=accept_sparse,
+                                      dtype=dtype, copy=copy,
+                                      force_all_finite=force_all_finite,
+                                      accept_large_sparse=accept_large_sparse)
     else:
         # If np.array(..) gives ComplexWarning, then we convert the warning
         # to an error. This is needed because specifying a non complex
@@ -394,19 +328,21 @@ def _daal_check_array(
         # of warnings context manager.
         with warnings.catch_warnings():
             try:
-                warnings.simplefilter("error", ComplexWarning)
-                if dtype is not None and np.dtype(dtype).kind in "iu":
+                warnings.simplefilter('error', ComplexWarning)
+                if dtype is not None and np.dtype(dtype).kind in 'iu':
                     # Conversion float -> int should not contain NaN or
                     # inf (numpy#14412). We cannot use casting='safe' because
                     # then conversion float -> int would be disallowed.
                     array = np.asarray(array, order=order)
-                    if array.dtype.kind == "f":
-                        _assert_all_finite(array, allow_nan=False, msg_dtype=dtype)
+                    if array.dtype.kind == 'f':
+                        _assert_all_finite(array, allow_nan=False,
+                                           msg_dtype=dtype)
                     array = array.astype(dtype, casting="unsafe", copy=False)
                 else:
                     array = np.asarray(array, order=order, dtype=dtype)
             except ComplexWarning:
-                raise ValueError("Complex data not supported\n" "{}\n".format(array))
+                raise ValueError("Complex data not supported\n"
+                                 "{}\n".format(array))
 
         # It is possible that the np.array(..) gave no warning. This happens
         # when no dtype conversion happened, for example dtype = None. The
@@ -421,16 +357,14 @@ def _daal_check_array(
                     "Expected 2D array, got scalar array instead:\narray={}.\n"
                     "Reshape your data either using array.reshape(-1, 1) if "
                     "your data has a single feature or array.reshape(1, -1) "
-                    "if it contains a single sample.".format(array)
-                )
+                    "if it contains a single sample.".format(array))
             # If input is 1D raise error
             if array.ndim == 1:
                 raise ValueError(
                     "Expected 2D array, got 1D array instead:\narray={}.\n"
                     "Reshape your data either using array.reshape(-1, 1) if "
                     "your data has a single feature or array.reshape(1, -1) "
-                    "if it contains a single sample.".format(array)
-                )
+                    "if it contains a single sample.".format(array))
 
         # in the future np.flexible dtypes will be handled like object dtypes
         if dtype_numeric and np.issubdtype(array.dtype, np.flexible):
@@ -441,39 +375,33 @@ def _daal_check_array(
                 "a float dtype before using it in scikit-learn, "
                 "for example by using "
                 "your_array = your_array.astype(np.float64).",
-                FutureWarning,
-                stacklevel=2,
-            )
+                FutureWarning, stacklevel=2)
 
         # make sure we actually converted to numeric:
         if dtype_numeric and array.dtype.kind == "O":
             array = array.astype(np.float64)
         if not allow_nd and array.ndim >= 3:
-            raise ValueError(
-                "Found array with dim %d. %s expected <= 2."
-                % (array.ndim, estimator_name)
-            )
+            raise ValueError("Found array with dim %d. %s expected <= 2."
+                             % (array.ndim, estimator_name))
 
         if force_all_finite:
-            _assert_all_finite(array, allow_nan=force_all_finite == "allow-nan")
+            _assert_all_finite(array, allow_nan=force_all_finite == 'allow-nan')
 
     if ensure_min_samples > 0:
         n_samples = _num_samples(array)
         if n_samples < ensure_min_samples:
-            raise ValueError(
-                "Found array with %d sample(s) (shape=%s) while a"
-                " minimum of %d is required%s."
-                % (n_samples, array.shape, ensure_min_samples, context)
-            )
+            raise ValueError("Found array with %d sample(s) (shape=%s) while a"
+                             " minimum of %d is required%s."
+                             % (n_samples, array.shape, ensure_min_samples,
+                                context))
 
     if ensure_min_features > 0 and array.ndim == 2:
         n_features = array.shape[1]
         if n_features < ensure_min_features:
-            raise ValueError(
-                "Found array with %d feature(s) (shape=%s) while"
-                " a minimum of %d is required%s."
-                % (n_features, array.shape, ensure_min_features, context)
-            )
+            raise ValueError("Found array with %d feature(s) (shape=%s) while"
+                             " a minimum of %d is required%s."
+                             % (n_features, array.shape, ensure_min_features,
+                                context))
 
     if copy and np.may_share_memory(array, array_orig):
         array = np.array(array, dtype=dtype, order=order)
@@ -481,24 +409,11 @@ def _daal_check_array(
     return array
 
 
-def _daal_check_X_y(
-    X,
-    y,
-    accept_sparse=False,
-    *,
-    accept_large_sparse=True,
-    dtype="numeric",
-    order=None,
-    copy=False,
-    force_all_finite=True,
-    ensure_2d=True,
-    allow_nd=False,
-    multi_output=False,
-    ensure_min_samples=1,
-    ensure_min_features=1,
-    y_numeric=False,
-    estimator=None,
-):
+def _daal_check_X_y(X, y, accept_sparse=False, *, accept_large_sparse=True,
+                    dtype="numeric", order=None, copy=False, force_all_finite=True,
+                    ensure_2d=True, allow_nd=False, multi_output=False,
+                    ensure_min_samples=1, ensure_min_features=1, y_numeric=False,
+                    estimator=None):
     """Input validation for standard estimators.
 
     Checks X and y for consistent length, enforces X to be 2D and y 1D. By
@@ -601,27 +516,22 @@ def _daal_check_X_y(
         raise ValueError("y cannot be None")
 
     X = _daal_check_array(
-        X,
-        accept_sparse=accept_sparse,
+        X, accept_sparse=accept_sparse,
         accept_large_sparse=accept_large_sparse,
-        dtype=dtype,
-        order=order,
-        copy=copy,
+        dtype=dtype, order=order, copy=copy,
         force_all_finite=force_all_finite,
-        ensure_2d=ensure_2d,
-        allow_nd=allow_nd,
+        ensure_2d=ensure_2d, allow_nd=allow_nd,
         ensure_min_samples=ensure_min_samples,
         ensure_min_features=ensure_min_features,
-        estimator=estimator,
+        estimator=estimator
     )
     if multi_output:
-        y = _daal_check_array(
-            y, accept_sparse="csr", force_all_finite=True, ensure_2d=False, dtype=None
-        )
+        y = _daal_check_array(y, accept_sparse='csr', force_all_finite=True,
+                              ensure_2d=False, dtype=None)
     else:
         y = column_or_1d(y, warn=True)
         _assert_all_finite(y)
-    if y_numeric and hasattr(y, "dtype") and y.dtype.kind == "O":
+    if y_numeric and hasattr(y, 'dtype') and y.dtype.kind == 'O':
         y = y.astype(np.float64)
 
     check_consistent_length(X, y)

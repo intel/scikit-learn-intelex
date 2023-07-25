@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
-
-import sys
+#===============================================================================
 
 from onedal import _backend, _is_dpc_backend
+import sys
 
 if _is_dpc_backend:
-
     class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
         def __init__(self, queue):
             self._queue = queue

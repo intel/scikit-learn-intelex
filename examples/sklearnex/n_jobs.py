@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # sklearnex doesn't have interface for threading configuration and not following
 # scikit-learn n_jobs yet. Thus it's requered to use daal4py package to set this.
 # nthreads parameter define number of threads used by sklearnex.
 # Without this code sklearnex would be using all system cores
 import daal4py
-
 daal4py.daalinit(nthreads=2)
 
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn
-
 patch_sklearn()
 
 # Remaining non modified scikit-learn code
@@ -39,8 +37,8 @@ X, labels_true = make_blobs(
 
 X = StandardScaler().fit_transform(X)
 
-from sklearn import metrics
 from sklearn.cluster import DBSCAN
+from sklearn import metrics
 
 db = DBSCAN(eps=0.3, min_samples=10).fit(X)
 labels = db.labels_

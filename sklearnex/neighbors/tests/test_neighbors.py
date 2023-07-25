@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -21,41 +21,37 @@ from numpy.testing import assert_allclose
 
 def test_sklearnex_import_knn_classifier():
     from sklearnex.neighbors import KNeighborsClassifier
-
     X = [[0], [1], [2], [3]]
     y = [0, 0, 1, 1]
     neigh = KNeighborsClassifier(n_neighbors=3).fit(X, y)
-    assert "sklearnex" in neigh.__module__
+    assert 'sklearnex' in neigh.__module__
     assert_allclose(neigh.predict([[1.1]]), [0])
 
 
 def test_sklearnex_import_knn_regression():
     from sklearnex.neighbors import KNeighborsRegressor
-
     X = [[0], [1], [2], [3]]
     y = [0, 0, 1, 1]
     neigh = KNeighborsRegressor(n_neighbors=2).fit(X, y)
-    assert "sklearnex" in neigh.__module__
+    assert 'sklearnex' in neigh.__module__
     assert_allclose(neigh.predict([[1.5]]), [0.5])
 
 
 def test_sklearnex_import_nn():
     from sklearnex.neighbors import NearestNeighbors
-
     X = [[0, 0, 2], [1, 0, 0], [0, 0, 1]]
     neigh = NearestNeighbors(n_neighbors=2).fit(X)
-    assert "sklearnex" in neigh.__module__
+    assert 'sklearnex' in neigh.__module__
     result = neigh.kneighbors([[0, 0, 1.3]], 2, return_distance=False)
     assert_allclose(result, [[2, 0]])
 
 
 def test_sklearnex_import_lof():
     from sklearnex.neighbors import LocalOutlierFactor
-
     X = [[7, 7, 7], [1, 0, 0], [0, 0, 1], [0, 0, 1]]
     lof = LocalOutlierFactor(n_neighbors=2)
     result = lof.fit_predict(X)
-    assert hasattr(lof, "_knn")
-    assert "sklearnex" in lof.__module__
-    assert "sklearnex" in lof._knn.__module__
+    assert hasattr(lof, '_knn')
+    assert 'sklearnex' in lof.__module__
+    assert 'sklearnex' in lof._knn.__module__
     assert_allclose(result, [-1, 1, 1, 1])

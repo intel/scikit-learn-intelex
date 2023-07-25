@@ -16,32 +16,33 @@
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
-if daal_check_version((2023, "P", 100)):
-    import numpy as np
+if daal_check_version((2023, 'P', 100)):
     import pytest
+    import numpy as np
     from numpy.testing import assert_allclose, assert_array_equal
-    from sklearn.datasets import load_diabetes
-    from sklearn.metrics import mean_squared_error
-    from sklearn.model_selection import train_test_split
 
     from onedal.linear_model import LinearRegression
     from onedal.tests.utils._device_selection import get_queues
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    from sklearn.datasets import load_diabetes
+    from sklearn.metrics import mean_squared_error
+    from sklearn.model_selection import train_test_split
+
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
     def test_diabetes(queue, dtype):
         X, y = load_diabetes(return_X_y=True)
         X, y = X.astype(dtype), y.astype(dtype)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, train_size=0.8, random_state=777
-        )
+        X_train, X_test, y_train, y_test = \
+            train_test_split(X, y,
+                             train_size=0.8, random_state=777)
         model = LinearRegression(fit_intercept=True)
         model.fit(X_train, y_train, queue=queue)
         y_pred = model.predict(X_test, queue=queue)
         assert mean_squared_error(y_test, y_pred) < 2396
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
     def test_pickle(queue, dtype):
         X, y = load_diabetes(return_X_y=True)
         X, y = X.astype(dtype), y.astype(dtype)
@@ -50,7 +51,6 @@ if daal_check_version((2023, "P", 100)):
         expected = model.predict(X, queue=queue)
 
         import pickle
-
         dump = pickle.dumps(model)
         model2 = pickle.loads(dump)
 
@@ -59,8 +59,8 @@ if daal_check_version((2023, "P", 100)):
 
         assert_array_equal(expected, result)
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
     def test_full_results(queue, dtype):
         seed = 42
         f_count, r_count = 19, 7
@@ -90,8 +90,8 @@ if daal_check_version((2023, "P", 100)):
         tol = 2e-4 if res.dtype == np.float32 else 1e-7
         assert_allclose(gtr, res, rtol=tol)
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
     def test_no_intercept_results(queue, dtype):
         seed = 42
         f_count, r_count = 19, 7
@@ -117,8 +117,8 @@ if daal_check_version((2023, "P", 100)):
         tol = 5e-5 if res.dtype == np.float32 else 1e-7
         assert_allclose(gtr, res, rtol=tol)
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    @pytest.mark.parametrize('queue', get_queues())
+    @pytest.mark.parametrize('dtype', [np.float32, np.float64])
     def test_reconstruct_model(queue, dtype):
         seed = 42
         s_count = 3500

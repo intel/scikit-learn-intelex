@@ -15,13 +15,13 @@
 # ===============================================================================
 
 from abc import ABC
-
 import numpy as np
-from sklearn.calibration import CalibratedClassifierCV
+from daal4py.sklearn._utils import sklearn_check_version
+
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
+from sklearn.calibration import CalibratedClassifierCV
 
-from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _column_or_1d
 
 
@@ -31,7 +31,7 @@ def get_coef(self):
 
 def set_coef(self, value):
     self._coef_ = value
-    if hasattr(self, "_onedal_estimator"):
+    if hasattr(self, '_onedal_estimator'):
         self._onedal_estimator.coef_ = value
         if not self._is_in_fit:
             del self._onedal_estimator._onedal_model
@@ -43,7 +43,7 @@ def get_intercept(self):
 
 def set_intercept(self, value):
     self._intercept_ = value
-    if hasattr(self, "_onedal_estimator"):
+    if hasattr(self, '_onedal_estimator'):
         self._onedal_estimator.intercept_ = value
         if not self._is_in_fit:
             del self._onedal_estimator._onedal_model

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+#===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +13,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
-
-import operator
+#===============================================================================
 
 # coding: utf-8
 import os
 import sys
+import operator
 
-qoi_list = ["failed", "passed", "xpassed", "xfailed", "skipped", "deselected"]
+qoi_list = ['failed', 'passed', 'xpassed', 'xfailed', 'skipped', 'deselected']
 
 
 def get_counts(tkn):
-    data = [x.split() for x in os.getenv(tkn).split(",")]
+    data = [x.split() for x in os.getenv(tkn).split(',')]
     counts = {x[-1]: int(x[-2]) for x in data if len(x) > 0 and x[-1] in qoi_list}
     return counts
 
@@ -36,9 +35,9 @@ def sum_of_attributes(counts, keys):
     return sum([counts.get(k, 0) for k in keys])
 
 
-d4p = get_counts("D4P")
+d4p = get_counts('D4P')
 
-if d4p and sum_of_attributes(d4p, "failed") == 0:
+if d4p and sum_of_attributes(d4p, 'failed') == 0:
     print("Patched scikit-learn passed the compatibility check")
     sys.exit(0)
 else:

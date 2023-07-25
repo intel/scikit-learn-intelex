@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,18 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 from .._utils import get_sklearnex_version
-
-if get_sklearnex_version((2021, "P", 300)):
-    from .nusvc import NuSVC
-    from .nusvr import NuSVR
-    from .svc import SVC
+if get_sklearnex_version((2021, 'P', 300)):
     from .svr import SVR
-
-    __all__ = ["SVR", "SVC", "NuSVC", "NuSVR"]
+    from .svc import SVC
+    from .nusvr import NuSVR
+    from .nusvc import NuSVC
+    __all__ = ['SVR', 'SVC', 'NuSVC', 'NuSVR']
 else:
     from daal4py.sklearn.svm import SVC
-
-    __all__ = ["SVC"]
+    __all__ = ['SVC']

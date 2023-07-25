@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,39 +12,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py PCA example for shared memory systems
 
-import numpy as np
-
 import daal4py as d4p
+import numpy as np
 
 # let's try to use pandas' fast csv reader
 try:
     import pandas
 
     def read_csv(f, c=None, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c=None, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
-def main(readcsv=read_csv, method="svdDense"):
+def main(readcsv=read_csv, method='svdDense'):
     infile = "./data/batch/pca_normalized.csv"
 
     # 'normalization' is an optional parameter to PCA;
     # we use z-score which could be configured differently
     zscore = d4p.normalization_zscore()
     # configure a PCA object
-    algo = d4p.pca(
-        resultsToCompute="mean|variance|eigenvalue",
-        isDeterministic=True,
-        normalization=zscore,
-    )
+    algo = d4p.pca(resultsToCompute="mean|variance|eigenvalue",
+                   isDeterministic=True, normalization=zscore)
 
     # let's provide a file directly, not a table/array
     result1 = algo.compute(infile)
@@ -72,4 +67,4 @@ if __name__ == "__main__":
     print("\nEigenvectors:\n", result1.eigenvectors)
     print("\nMeans:\n", result1.means)
     print("\nVariances:\n", result1.variances)
-    print("All looks good!")
+    print('All looks good!')

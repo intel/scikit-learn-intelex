@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
-
+#===============================================================================
 
 class ClassifierMixin:
     _estimator_type = "classifier"
 
     def score(self, X, y, sample_weight=None, queue=None):
         from sklearn.metrics import accuracy_score
-
-        return accuracy_score(
-            y, self.predict(X, queue=queue), sample_weight=sample_weight
-        )
+        return accuracy_score(y, self.predict(X, queue=queue),
+                              sample_weight=sample_weight)
 
     def _more_tags(self):
         return {"requires_y": True}
@@ -34,7 +31,6 @@ class RegressorMixin:
 
     def score(self, X, y, sample_weight=None, queue=None):
         from sklearn.metrics import r2_score
-
         return r2_score(y, self.predict(X, queue=queue), sample_weight=sample_weight)
 
     def _more_tags(self):

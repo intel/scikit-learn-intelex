@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 from daal4py.sklearn._utils import sklearn_check_version
 
-if sklearn_check_version("0.23"):
+if sklearn_check_version('0.23'):
     from ._svm_0_23 import *
-elif sklearn_check_version("0.22"):
+elif sklearn_check_version('0.22'):
     from ._svm_0_22 import *

@@ -1,4 +1,4 @@
-# ===============================================================================
+#===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+#===============================================================================
 
 # daal4py low order moments example for shared memory systems
 
-import numpy as np
-
 import daal4py as d4p
+import numpy as np
 
 # let's try to use pandas' fast csv reader
 try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
+        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
 
 
 def main(readcsv=read_csv, method="defaultDense"):
@@ -44,21 +42,9 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert all(
-        getattr(res, name).shape == (1, data.shape[1])
-        for name in [
-            "minimum",
-            "maximum",
-            "sum",
-            "sumSquares",
-            "sumSquaresCentered",
-            "mean",
-            "secondOrderRawMoment",
-            "variance",
-            "standardDeviation",
-            "variation",
-        ]
-    )
+    assert all(getattr(res, name).shape == (1, data.shape[1]) for name in
+               ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
+               'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation'])
 
     return res
 
@@ -76,4 +62,4 @@ if __name__ == "__main__":
     print("\nVariance:\n", res.variance)
     print("\nStandard deviation:\n", res.standardDeviation)
     print("\nVariation:\n", res.variation)
-    print("All looks good!")
+    print('All looks good!')
