@@ -53,7 +53,7 @@ def test_generator(file):
     print("Generating tests for " + os.path.splitext(file)[0])
 
 
-files = [f for f in os.listdir(examples_path) if f.endswith(".py") and 'spmd' not in f]
+files = [f for f in os.listdir(examples_path) if f.endswith(".py") and ('spmd' or 'batch') not in f]
 
 for file in files:
     test_generator(file)
