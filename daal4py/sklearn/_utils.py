@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,37 +12,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-import numpy as np
-import sys
 import os
+import sys
 import warnings
 
+import numpy as np
 from numpy.lib.recfunctions import require_fields
+from sklearn import __version__ as sklearn_version
 
 from daal4py import _get__daal_link_version__ as dv
-from sklearn import __version__ as sklearn_version
+
 try:
     from packaging.version import Version
 except ImportError:
     from distutils.version import LooseVersion as Version
+
 import logging
 
 try:
     from pandas import DataFrame
     from pandas.core.dtypes.cast import find_common_type
+
     pandas_is_imported = True
 except (ImportError, ModuleNotFoundError):
     pandas_is_imported = False
 
 try:
     from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
+
     ctx_imported = True
 except (ImportError, ModuleNotFoundError):
     ctx_imported = False
 
-oneapi_is_available = 'daal4py.oneapi' in sys.modules
+oneapi_is_available = "daal4py.oneapi" in sys.modules
 if oneapi_is_available:
     from daal4py.oneapi import _get_device_name_sycl_ctxt
 
@@ -53,11 +57,15 @@ def set_idp_sklearn_verbose():
         if logLevel is not None:
             logging.basicConfig(
                 stream=sys.stdout,
-                format='%(levelname)s: %(message)s', level=logLevel.upper())
+                format="%(levelname)s: %(message)s",
+                level=logLevel.upper(),
+            )
     except Exception:
-        warnings.warn('Unknown level "{}" for logging.\n'
-                      'Please, use one of "CRITICAL", "ERROR", '
-                      '"WARNING", "INFO", "DEBUG".'.format(logLevel))
+        warnings.warn(
+            'Unknown level "{}" for logging.\n'
+            'Please, use one of "CRITICAL", "ERROR", '
+            '"WARNING", "INFO", "DEBUG".'.format(logLevel)
+        )
 
 
 def daal_check_version(rule):
@@ -83,7 +91,7 @@ sklearn_versions_map = {}
 def sklearn_check_version(ver):
     if ver in sklearn_versions_map.keys():
         return sklearn_versions_map[ver]
-    if hasattr(Version(ver), 'base_version'):
+    if hasattr(Version(ver), "base_version"):
         base_sklearn_version = Version(sklearn_version).base_version
         res = bool(Version(base_sklearn_version) >= Version(ver))
     else:
@@ -111,7 +119,7 @@ def getFPType(X):
             dt = find_common_type(X.dtypes.tolist())
             return parse_dtype(dt)
 
-    dt = getattr(X, 'dtype', None)
+    dt = getattr(X, "dtype", None)
     return parse_dtype(dt)
 
 
@@ -128,15 +136,16 @@ def get_patch_message(s):
         message = "running accelerated version on "
         if oneapi_is_available:
             dev = _get_device_name_sycl_ctxt()
-            if dev == 'cpu' or dev is None:
-                message += 'CPU'
-            elif dev == 'gpu':
-                message += 'GPU'
+            if dev == "cpu" or dev is None:
+                message += "CPU"
+            elif dev == "gpu":
+                message += "GPU"
             else:
-                raise ValueError(f"Unexpected device name {dev}."
-                                 " Supported types are cpu and gpu")
+                raise ValueError(
+                    f"Unexpected device name {dev}." " Supported types are cpu and gpu"
+                )
         else:
-            message += 'CPU'
+            message += "CPU"
 
     elif s == "sklearn":
         message = "fallback to original Scikit-learn"
@@ -145,7 +154,8 @@ def get_patch_message(s):
     else:
         raise ValueError(
             f"Invalid input - expected one of 'daal','sklearn',"
-            f" 'sklearn_after_daal', got {s}")
+            f" 'sklearn_after_daal', got {s}"
+        )
     return message
 
 
@@ -182,14 +192,18 @@ def check_tree_nodes(tree_nodes):
     def convert_to_old_tree_nodes(tree_nodes):
         # conversion from sklearn>=1.3 tree nodes format to previous format:
         # removal of 'missing_go_to_left' field from node dtype
-        new_field = 'missing_go_to_left'
+        new_field = "missing_go_to_left"
         new_dtype = tree_nodes.dtype
-        old_dtype = np.dtype([
-            (key, value[0]) for key, value in
-            new_dtype.fields.items() if key != new_field])
+        old_dtype = np.dtype(
+            [
+                (key, value[0])
+                for key, value in new_dtype.fields.items()
+                if key != new_field
+            ]
+        )
         return require_fields(tree_nodes, old_dtype)
 
-    if sklearn_check_version('1.3'):
+    if sklearn_check_version("1.3"):
         return tree_nodes
     else:
         return convert_to_old_tree_nodes(tree_nodes)
@@ -200,7 +214,7 @@ class PatchingConditionsChain:
         self.scope_name = scope_name
         self.patching_is_enabled = True
         self.messages = []
-        self.logger = logging.getLogger('sklearnex')
+        self.logger = logging.getLogger("sklearnex")
 
     def _iter_conditions(self, conditions_and_messages):
         result = []
@@ -212,7 +226,8 @@ class PatchingConditionsChain:
 
     def and_conditions(self, conditions_and_messages, conditions_merging=all):
         self.patching_is_enabled &= conditions_merging(
-            self._iter_conditions(conditions_and_messages))
+            self._iter_conditions(conditions_and_messages)
+        )
         return self.patching_is_enabled
 
     def and_condition(self, condition, message):
@@ -220,7 +235,8 @@ class PatchingConditionsChain:
 
     def or_conditions(self, conditions_and_messages, conditions_merging=all):
         self.patching_is_enabled |= conditions_merging(
-            self._iter_conditions(conditions_and_messages))
+            self._iter_conditions(conditions_and_messages)
+        )
         return self.patching_is_enabled
 
     def write_log(self):
@@ -228,11 +244,13 @@ class PatchingConditionsChain:
             self.logger.info(f"{self.scope_name}: {get_patch_message('daal')}")
         else:
             self.logger.debug(
-                f'{self.scope_name}: debugging for the patch is enabled to track'
-                ' the usage of Intel® oneAPI Data Analytics Library (oneDAL)')
+                f"{self.scope_name}: debugging for the patch is enabled to track"
+                " the usage of Intel® oneAPI Data Analytics Library (oneDAL)"
+            )
             for message in self.messages:
                 self.logger.debug(
-                    f'{self.scope_name}: patching failed with cause - {message}')
+                    f"{self.scope_name}: patching failed with cause - {message}"
+                )
             self.logger.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
 
     def get_status(self, logs=False):
