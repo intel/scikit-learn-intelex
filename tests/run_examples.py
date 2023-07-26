@@ -207,11 +207,8 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
-    if (
-        os.path.dirname(ex).endswith("sklearnex")
-        and not nodist
-        and ex.endswith("spmd.py")
-    ):
+
+    if os.path.dirname(ex).endswith("sklearnex"):
         if not check_device(req_device[os.path.basename(ex)], availabe_devices):
             return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
