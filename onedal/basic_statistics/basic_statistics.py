@@ -14,19 +14,16 @@
 # limitations under the License.
 # ===============================================================================
 
-from sklearn.base import BaseEstimator
 from abc import ABCMeta, abstractmethod
-
-import numpy as np
 from numbers import Number
 
-from ..common._policy import _get_policy
+import numpy as np
+from sklearn.base import BaseEstimator
 
-from ..datatypes import (
-    from_table,
-    to_table,
-    _convert_to_supported)
 from onedal import _backend
+
+from ..common._policy import _get_policy
+from ..datatypes import _convert_to_supported, from_table, to_table
 
 
 class BaseBasicStatistics(metaclass=ABCMeta):
@@ -37,10 +34,18 @@ class BaseBasicStatistics(metaclass=ABCMeta):
 
     @staticmethod
     def get_all_result_options():
-        return ["min", "max", "sum", "mean",
-                "variance", "variation", "sum_squares",
-                "standard_deviation", "sum_squares_centered",
-                "second_order_raw_moment"]
+        return [
+            "min",
+            "max",
+            "sum",
+            "mean",
+            "variance",
+            "variation",
+            "sum_squares",
+            "standard_deviation",
+            "sum_squares_centered",
+            "second_order_raw_moment",
+        ]
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -56,8 +61,9 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _get_onedal_params(self, dtype=np.float32):
         options = self._get_result_options(self.options)
         return {
-            'fptype': 'float' if dtype == np.float32 else 'double',
-            'method': self.algorithm, 'result_option': options,
+            "fptype": "float" if dtype == np.float32 else "double",
+            "method": self.algorithm,
+            "result_option": options,
         }
 
     def _compute_raw(self, data_table, weights_table, module, policy, dtype=np.float32):
@@ -78,14 +84,12 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         if not (weights is None):
             weights = np.asarray(weights)
 
-        data, weights = _convert_to_supported(
-            policy, data, weights)
+        data, weights = _convert_to_supported(policy, data, weights)
 
         data_table, weights_table = to_table(data, weights)
 
         dtype = data.dtype
-        res = self._compute_raw(data_table, weights_table,
-                                module, policy, dtype)
+        res = self._compute_raw(data_table, weights_table, module, policy, dtype)
 
         return {k: from_table(v).ravel() for k, v in res.items()}
 
@@ -95,17 +99,13 @@ class BasicStatistics(BaseBasicStatistics):
     Basic Statistics oneDAL implementation.
     """
 
-    def __init__(
-            self,
-            result_options="all",
-            *,
-            algorithm="by_default",
-            **kwargs):
+    def __init__(self, result_options="all", *, algorithm="by_default", **kwargs):
         super().__init__(result_options, algorithm)
 
     def compute(self, data, weights=None, queue=None):
         return super()._compute(data, weights, _backend.basic_statistics.compute, queue)
 
     def compute_raw(self, data_table, weights_table, policy, dtype=np.float32):
-        return super()._compute_raw(data_table, weights_table,
-                                    _backend.basic_statistics.compute, policy, dtype)
+        return super()._compute_raw(
+            data_table, weights_table, _backend.basic_statistics.compute, policy, dtype
+        )

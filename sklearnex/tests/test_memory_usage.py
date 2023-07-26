@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,31 +12,35 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-import pytest
-import types
-import tracemalloc
-from sklearnex import get_patch_map
-from sklearnex.model_selection import train_test_split
-from sklearnex.utils import _assert_all_finite
-from sklearnex.metrics import pairwise_distances, roc_auc_score
-from sklearnex.preview.decomposition import PCA as PreviewPCA
-from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
-from sklearnex.preview.ensemble import (
-    RandomForestClassifier as PreviewRandomForestClassifier,
-    RandomForestRegressor as PreviewRandomForestRegressor,
-    ExtraTreesClassifier as PreviewExtraTreesClassifier,
-    ExtraTreesRegressor as PreviewExtraTreesRegressor
-)
-from sklearn.base import BaseEstimator
-from sklearn.model_selection import KFold
-from sklearn.datasets import make_classification
-from scipy.stats import pearsonr
-import pandas as pd
-import numpy as np
 import gc
 import logging
+import tracemalloc
+import types
+
+import numpy as np
+import pandas as pd
+import pytest
+from scipy.stats import pearsonr
+from sklearn.base import BaseEstimator
+from sklearn.datasets import make_classification
+from sklearn.model_selection import KFold
+
+from sklearnex import get_patch_map
+from sklearnex.metrics import pairwise_distances, roc_auc_score
+from sklearnex.model_selection import train_test_split
+from sklearnex.preview.decomposition import PCA as PreviewPCA
+from sklearnex.preview.ensemble import ExtraTreesClassifier as PreviewExtraTreesClassifier
+from sklearnex.preview.ensemble import ExtraTreesRegressor as PreviewExtraTreesRegressor
+from sklearnex.preview.ensemble import (
+    RandomForestClassifier as PreviewRandomForestClassifier,
+)
+from sklearnex.preview.ensemble import (
+    RandomForestRegressor as PreviewRandomForestRegressor,
+)
+from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
+from sklearnex.utils import _assert_all_finite
 
 
 class TrainTestSplitEstimator:
@@ -63,12 +67,12 @@ class PairwiseDistancesEstimator:
 
 class CosineDistancesEstimator(PairwiseDistancesEstimator):
     def __init__(self):
-        self.metric = 'cosine'
+        self.metric = "cosine"
 
 
 class CorrelationDistancesEstimator(PairwiseDistancesEstimator):
     def __init__(self):
-        self.metric = 'correlation'
+        self.metric = "correlation"
 
 
 class RocAucEstimator:
@@ -87,21 +91,21 @@ def get_patched_estimators(ban_list, output_list):
         if not isinstance(estimator, types.FunctionType):
             if name not in ban_list:
                 if isinstance(estimator(), BaseEstimator):
-                    if hasattr(estimator, 'fit'):
+                    if hasattr(estimator, "fit"):
                         output_list.append(estimator)
 
 
 def remove_duplicated_estimators(estimators_list):
     estimators_map = {}
     for estimator in estimators_list:
-        full_name = f'{estimator.__module__}.{estimator.__name__}'
+        full_name = f"{estimator.__module__}.{estimator.__name__}"
         estimators_map[full_name] = estimator
     return estimators_map.values()
 
 
 BANNED_ESTIMATORS = (
-    'LocalOutlierFactor',  # fails on ndarray_c for sklearn > 1.0
-    'TSNE',  # too slow for using in testing on common data size
+    "LocalOutlierFactor",  # fails on ndarray_c for sklearn > 1.0
+    "TSNE",  # too slow for using in testing on common data size
 )
 estimators = [
     PreviewPCA,
@@ -114,7 +118,7 @@ estimators = [
     FiniteCheckEstimator,
     CosineDistancesEstimator,
     CorrelationDistancesEstimator,
-    RocAucEstimator
+    RocAucEstimator,
 ]
 get_patched_estimators(BANNED_ESTIMATORS, estimators)
 estimators = remove_duplicated_estimators(estimators)
@@ -136,17 +140,9 @@ def dataframe_f(x, y):
     return pd.DataFrame(np.asfortranarray(x)), pd.Series(y)
 
 
-data_transforms = [
-    ndarray_c,
-    ndarray_f,
-    dataframe_c,
-    dataframe_f
-]
+data_transforms = [ndarray_c, ndarray_f, dataframe_c, dataframe_f]
 
-data_shapes = [
-    (1000, 100),
-    (2000, 50)
-]
+data_shapes = [(1000, 100), (2000, 50)]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
 N_SPLITS = 10
@@ -154,9 +150,13 @@ N_SPLITS = 10
 
 def gen_clsf_data(n_samples, n_features):
     data, label = make_classification(
-        n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777)
-    return data, label, \
-        data.size * data.dtype.itemsize + label.size * label.dtype.itemsize
+        n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777
+    )
+    return (
+        data,
+        label,
+        data.size * data.dtype.itemsize + label.size * label.dtype.itemsize,
+    )
 
 
 def split_train_inference(kf, x, y, estimator):
@@ -172,11 +172,11 @@ def split_train_inference(kf, x, y, estimator):
         # fallback to stock scikit-learn with default parameters
         alg = estimator()
         alg.fit(x_train, y_train)
-        if hasattr(alg, 'predict'):
+        if hasattr(alg, "predict"):
             alg.predict(x_test)
-        elif hasattr(alg, 'transform'):
+        elif hasattr(alg, "transform"):
             alg.transform(x_test)
-        elif hasattr(alg, 'kneighbors'):
+        elif hasattr(alg, "kneighbors"):
             alg.kneighbors(x_test)
         del alg, x_train, x_test, y_train, y_test
         mem_tracks.append(tracemalloc.get_traced_memory()[0])
@@ -194,38 +194,46 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
 
     mem_before, _ = tracemalloc.get_traced_memory()
     mem_tracks = split_train_inference(kf, x, y, estimator)
-    mem_iter_diffs = (np.array(mem_tracks[1:]) - np.array(mem_tracks[:-1]))
+    mem_iter_diffs = np.array(mem_tracks[1:]) - np.array(mem_tracks[:-1])
     mem_incr_mean, mem_incr_std = mem_iter_diffs.mean(), mem_iter_diffs.std()
     mem_incr_mean, mem_incr_std = round(mem_incr_mean), round(mem_incr_std)
     mem_iter_corr, _ = pearsonr(mem_tracks, list(range(len(mem_tracks))))
     if mem_iter_corr > 0.95:
-        logging.warning('Memory usage is steadily increasing with iterations '
-                        '(Pearson correlation coefficient between '
-                        f'memory tracks and iterations is {mem_iter_corr})\n'
-                        'Memory usage increase per iteration: '
-                        f'{mem_incr_mean}±{mem_incr_std} bytes')
+        logging.warning(
+            "Memory usage is steadily increasing with iterations "
+            "(Pearson correlation coefficient between "
+            f"memory tracks and iterations is {mem_iter_corr})\n"
+            "Memory usage increase per iteration: "
+            f"{mem_incr_mean}±{mem_incr_std} bytes"
+        )
     mem_before_gc, _ = tracemalloc.get_traced_memory()
     mem_diff = mem_before_gc - mem_before
-    message = 'Size of extra allocated memory {} using garbage collector ' \
-        f'is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data' \
-        f'\n\tAlgorithm: {estimator.__name__}' \
-        f'\n\tInput data size: {data_memory_size} bytes' \
-        '\n\tExtra allocated memory size: {} bytes' \
-        ' / {} %'
+    message = (
+        "Size of extra allocated memory {} using garbage collector "
+        f"is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data"
+        f"\n\tAlgorithm: {estimator.__name__}"
+        f"\n\tInput data size: {data_memory_size} bytes"
+        "\n\tExtra allocated memory size: {} bytes"
+        " / {} %"
+    )
     if mem_diff >= EXTRA_MEMORY_THRESHOLD * data_memory_size:
-        logging.warning(message.format(
-            'before', mem_diff, round((mem_diff) / data_memory_size * 100, 2)))
+        logging.warning(
+            message.format(
+                "before", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
+            )
+        )
     gc.collect()
     mem_after, _ = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     mem_diff = mem_after - mem_before
 
-    assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, \
-        message.format('after', mem_diff, round((mem_diff) / data_memory_size * 100, 2))
+    assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, message.format(
+        "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
+    )
 
 
-@pytest.mark.parametrize('data_transform_function', data_transforms)
-@pytest.mark.parametrize('estimator', estimators)
-@pytest.mark.parametrize('data_shape', data_shapes)
+@pytest.mark.parametrize("data_transform_function", data_transforms)
+@pytest.mark.parametrize("estimator", estimators)
+@pytest.mark.parametrize("data_shape", data_shapes)
 def test_memory_leaks(estimator, data_transform_function, data_shape):
     _kfold_function_template(estimator, data_transform_function, data_shape)
