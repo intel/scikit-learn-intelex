@@ -20,9 +20,6 @@ from functools import wraps
 
 import numpy as np
 
-from ._config import get_config
-from ._utils import get_patch_message
-
 try:
     from dpctl import SyclQueue
     from dpctl.memory import MemoryUSMDevice, as_usm_memory
@@ -31,6 +28,16 @@ try:
     dpctl_available = True
 except ImportError:
     dpctl_available = False
+
+try:
+    import dpnp
+
+    dpnp_available = True
+except ImportError:
+    dpnp_available = False
+
+from ._config import get_config
+from ._utils import get_patch_message
 
 oneapi_is_available = "daal4py.oneapi" in sys.modules
 if oneapi_is_available:
@@ -197,7 +204,9 @@ def wrap_output_data(func):
             usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
         result = func(self, *args, **kwargs)
         if usm_iface is not None:
-            return _copy_to_usm(usm_iface["syclobj"], result)
+            result = _copy_to_usm(usm_iface["syclobj"], result)
+            if dpnp_available and isinstance(data[0], dpnp.ndarray):
+                result = dpnp.array(result, copy=False)
         return result
 
     return wrapper
