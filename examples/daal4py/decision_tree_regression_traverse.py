@@ -17,9 +17,10 @@
 # daal4py Decision Tree Regression example for shared memory systems
 
 import math
-import daal4py as d4p
 
 from decision_tree_regression import main as dt_regression
+
+import daal4py as d4p
 
 
 def printTree(nodes, values):

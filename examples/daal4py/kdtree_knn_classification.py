@@ -16,9 +16,11 @@
 
 # daal4py KD-Tree KNN example for shared memory systems
 
-import daal4py as d4p
-import numpy as np
 import os
+
+import numpy as np
+
+import daal4py as d4p
 
 # let's try to use pandas' fast csv reader
 try:

@@ -16,6 +16,7 @@
 
 import os
 import sys
+
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
 examples_path = os.path.join(os.path.dirname(test_path), "examples", "daal4py")
@@ -23,11 +24,13 @@ sys.path.insert(0, examples_path)
 os.chdir(examples_path)
 
 import unittest
+
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 
 from daal4py.sklearn._utils import get_daal_version
+
 # First item is major version - 2021,
 # second is minor+patch - 0110,
 # third item is status - B

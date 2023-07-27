@@ -17,9 +17,10 @@
 # daal4py Gradient Boosting Classification Tree Traversal example
 
 import math
-import daal4py as d4p
 
 from gradient_boosted_classification import main as gbt_classification
+
+import daal4py as d4p
 
 
 def printTree(nodes, values):

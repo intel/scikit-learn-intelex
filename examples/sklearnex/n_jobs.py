@@ -19,14 +19,17 @@
 # nthreads parameter define number of threads used by sklearnex.
 # Without this code sklearnex would be using all system cores
 import sys
+
 print("KNOWN BUG IN EXAMPLES. TODO: fixme")
 sys.exit()
 
 import daal4py
+
 daal4py.daalinit(nthreads=2)
 
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn
+
 patch_sklearn()
 
 # Remaining non modified scikit-learn code
@@ -41,8 +44,8 @@ X, labels_true = make_blobs(
 
 X = StandardScaler().fit_transform(X)
 
-from sklearn.cluster import DBSCAN
 from sklearn import metrics
+from sklearn.cluster import DBSCAN
 
 db = DBSCAN(eps=0.3, min_samples=10).fit(X)
 labels = db.labels_

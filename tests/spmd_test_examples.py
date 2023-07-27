@@ -14,13 +14,15 @@
 # limitations under the License.
 #===============================================================================
 
-import daal4py as d4p
 import os
+
+import daal4py as d4p
 
 if d4p.__has_dist__:
     import unittest
+
     import numpy as np
-    from test_examples import np_read_csv, add_test
+    from test_examples import add_test, np_read_csv
 
     class Base():
         def test_svd_spmd(self):

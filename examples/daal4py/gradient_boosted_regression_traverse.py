@@ -17,9 +17,10 @@
 # daal4py Gradient Boosting Regression Tree Traversal example
 
 import math
-import daal4py as d4p
 
 from gradient_boosted_regression import main as gbt_regression
+
+import daal4py as d4p
 
 
 def printTree(nodes, values):

@@ -16,8 +16,9 @@
 
 # daal4py normal distribution example for shared memory systems
 
-import daal4py as d4p
 import numpy as np
+
+import daal4py as d4p
 
 
 def main(readcsv=None, method='defaultDense'):

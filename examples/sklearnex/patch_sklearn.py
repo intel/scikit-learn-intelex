@@ -17,18 +17,22 @@
 # Calling scikit-learn patch - this would enable acceleration on all
 # enabled algorithms. This is most straight forward way of patching
 import sys
+
 print("KNOWN BUG IN EXAMPLES. TODO: fixme")
 sys.exit()
 
 from sklearnex import patch_sklearn
+
 patch_sklearn()
 
 # Function that can validate current state of patching
 from sklearnex import sklearn_is_patched
+
 sklearn_is_patched()
 
 # Calling scikit-learn unpatch - this would revert patching for all algorithms
 from sklearnex import unpatch_sklearn
+
 unpatch_sklearn()
 
 # Direct import of functions in way aligned with scikit-learn

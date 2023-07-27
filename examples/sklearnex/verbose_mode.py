@@ -18,13 +18,16 @@
 # to allow you to see if stock of accelerated version was used.
 # By setting sklearnex logger level to "INFO" you would enable this verbose mode
 import sys
+
 print("KNOWN BUG IN EXAMPLES. TODO: fixme")
 sys.exit()
 import logging
+
 logging.getLogger('sklearnex').setLevel(logging.INFO)
 
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn
+
 patch_sklearn()
 
 # Remaining non modified scikit-learn code

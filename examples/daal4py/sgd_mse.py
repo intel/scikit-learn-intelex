@@ -17,8 +17,9 @@
 # daal4py SGD (Stochastic Gradient Descent) example for shared memory systems
 # using Mean Squared Error objective function
 
-import daal4py as d4p
 import numpy as np
+
+import daal4py as d4p
 
 # let's try to use pandas' fast csv reader
 try:

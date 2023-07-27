@@ -17,9 +17,10 @@
 # daal4py Decision Forest Regression Tree Traversal example
 
 import math
-import daal4py as d4p
 
 from decision_forest_regression_default_dense import main as df_regression
+
+import daal4py as d4p
 
 
 def printTree(nodes, values):

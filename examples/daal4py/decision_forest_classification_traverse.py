@@ -17,9 +17,11 @@
 # daal4py Decision Forest Classification Tree Traversal example
 
 import math
-import daal4py as d4p
 
-from decision_forest_classification_default_dense import main as df_classification
+from decision_forest_classification_default_dense import \
+    main as df_classification
+
+import daal4py as d4p
 
 
 def printTree(nodes, values):
