@@ -21,7 +21,7 @@
 import daal4py as d4p
 
 # let's use a reading of file in chunks (defined in spmd_utils.py)
-from spmd_utils import read_csv, get_chunk_params
+from examples.utils import read_csv, get_chunk_params
 
 
 def main():
