@@ -53,12 +53,11 @@ def _get_dataframes_and_queues(
 
 
 def _as_numpy(obj, *args, **kwargs):
-    if isinstance(obj, dpnp.ndarray):
+    if dpnp_available and isinstance(obj, dpnp.ndarray):
         return obj.asnumpy(*args, **kwargs)
-    elif isinstance(obj, dpt.usm_ndarray):
+    if dpctl_available and isinstance(obj, dpt.usm_ndarray):
         return dpt.to_numpy(obj, *args, **kwargs)
-    else:
-        return np.asarray(obj, *args, **kwargs)
+    return np.asarray(obj, *args, **kwargs)
 
 
 def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs):
