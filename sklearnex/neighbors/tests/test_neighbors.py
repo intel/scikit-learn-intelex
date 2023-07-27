@@ -16,45 +16,66 @@
 # ===============================================================================
 
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    _get_dataframes_and_queues,
+)
+from onedal.tests.utils._device_selection import get_queues
 
-def test_sklearnex_import_knn_classifier():
+
+@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+def test_sklearnex_import_knn_classifier(dataframe, queue):
     from sklearnex.neighbors import KNeighborsClassifier
 
-    X = [[0], [1], [2], [3]]
-    y = [0, 0, 1, 1]
+    X = _convert_to_dataframe([[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe([0, 0, 1, 1], sycl_queue=queue, target_df=dataframe)
     neigh = KNeighborsClassifier(n_neighbors=3).fit(X, y)
+    y_test = _convert_to_dataframe([[1.1]], sycl_queue=queue, target_df=dataframe)
+    pred = _as_numpy(neigh.predict(y_test))
     assert "sklearnex" in neigh.__module__
-    assert_allclose(neigh.predict([[1.1]]), [0])
+    assert_allclose(pred, [0])
 
 
-def test_sklearnex_import_knn_regression():
+@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+def test_sklearnex_import_knn_regression(dataframe, queue):
     from sklearnex.neighbors import KNeighborsRegressor
 
-    X = [[0], [1], [2], [3]]
-    y = [0, 0, 1, 1]
+    X = _convert_to_dataframe([[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe([0, 0, 1, 1], sycl_queue=queue, target_df=dataframe)
     neigh = KNeighborsRegressor(n_neighbors=2).fit(X, y)
+    y_test = _convert_to_dataframe([[1.5]], sycl_queue=queue, target_df=dataframe)
+    pred = _as_numpy(neigh.predict(y_test))
     assert "sklearnex" in neigh.__module__
-    assert_allclose(neigh.predict([[1.5]]), [0.5])
+    assert_allclose(pred, [0.5])
 
 
-def test_sklearnex_import_nn():
+@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+def test_sklearnex_import_nn(dataframe, queue):
     from sklearnex.neighbors import NearestNeighbors
 
     X = [[0, 0, 2], [1, 0, 0], [0, 0, 1]]
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    test = _convert_to_dataframe([[0, 0, 1.3]], sycl_queue=queue, target_df=dataframe)
     neigh = NearestNeighbors(n_neighbors=2).fit(X)
+    result = neigh.kneighbors(test, 2, return_distance=False)
+    result = _as_numpy(result)
     assert "sklearnex" in neigh.__module__
-    result = neigh.kneighbors([[0, 0, 1.3]], 2, return_distance=False)
     assert_allclose(result, [[2, 0]])
 
 
-def test_sklearnex_import_lof():
+@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+def test_sklearnex_import_lof(dataframe, queue):
     from sklearnex.neighbors import LocalOutlierFactor
 
     X = [[7, 7, 7], [1, 0, 0], [0, 0, 1], [0, 0, 1]]
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     lof = LocalOutlierFactor(n_neighbors=2)
     result = lof.fit_predict(X)
+    result = _as_numpy(result)
     assert hasattr(lof, "_knn")
     assert "sklearnex" in lof.__module__
     assert "sklearnex" in lof._knn.__module__

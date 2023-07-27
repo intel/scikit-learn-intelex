@@ -16,14 +16,24 @@
 # ===============================================================================
 
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    _get_dataframes_and_queues,
+)
+from onedal.tests.utils._device_selection import get_queues
 
-def test_sklearnex_import():
+
+@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+def test_sklearnex_import(dataframe, queue):
     from sklearnex.preview.decomposition import PCA
 
-    X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
+    X = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     pca = PCA(n_components=2, svd_solver="full").fit(X)
     assert "sklearnex" in pca.__module__
     assert hasattr(pca, "_onedal_estimator")
-    assert_allclose(pca.singular_values_, [6.30061232, 0.54980396])
+    assert_allclose(_as_numpy(pca.singular_values_), [6.30061232, 0.54980396])
