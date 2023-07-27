@@ -189,10 +189,7 @@ req_library["random_forest_regressor_spmd.py"] = ["dpctl", "mpi4py"]
 req_os = defaultdict(lambda: [])
 
 skiped_files = [
-    "log_reg_model_builder.py",
-    "n_jobs.py",
-    "verbose_mode.py",
-    "patch_sklearn.py",
+    "log_reg_model_builder.py"
 ]
 
 

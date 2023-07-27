@@ -16,10 +16,6 @@
 
 # Calling scikit-learn patch - this would enable acceleration on all
 # enabled algorithms. This is most straight forward way of patching
-import sys
-
-print("KNOWN BUG IN EXAMPLES. TODO: fixme")
-sys.exit()
 
 from sklearnex import patch_sklearn
 
