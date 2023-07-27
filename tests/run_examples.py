@@ -250,7 +250,9 @@ def run(exdir, logdir, nodist=False, nostream=False):
                     logfn = jp(logdir, script.replace(".py", ".res"))
                     with open(logfn, "w") as logfile:
                         print("\n##### " + jp(dirpath, script))
-                        execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
+                        execute_string = get_exe_cmd(
+                            jp(dirpath, script), nodist, nostream
+                        )
                         if execute_string:
                             os.chdir(dirpath)
                             proc = subprocess.Popen(
@@ -273,7 +275,8 @@ def run(exdir, logdir, nodist=False, nostream=False):
                             else:
                                 success += 1
                                 print(
-                                    strftime("%H:%M:%S", gmtime()) + "\t" "PASSED\t" + script
+                                    strftime("%H:%M:%S", gmtime()) + "\t"
+                                    "PASSED\t" + script
                                 )
                         else:
                             success += 1
