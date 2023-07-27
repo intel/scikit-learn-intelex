@@ -1235,7 +1235,7 @@ def gen_daal4py(dalroot, outdir, version, warn_all=False, no_dist=False, no_stre
     ):
         with open(jp("src", "gbt_model_builder.pyx"), "r") as f:
             pyx_gbt_model_builder = f.read()
-        with open(jp("src", "gbt_convertors.pyx"), "r") as f:
+        with open(jp('src', 'gbt_convertors.py'), 'r') as f:
             pyx_gbt_generators = f.read()
     if (
         "algorithms::logistic_regression" in iface.namespace_dict
