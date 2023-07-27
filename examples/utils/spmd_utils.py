@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # Example showing reading of file in few chunks, this reader is used in SPMD examples
 
@@ -23,20 +23,23 @@ try:
     import pandas
 
     def read_csv(f, c=None, sr=0, nr=None, t=np.float64):
-        return pandas.read_csv(f, usecols=c, skiprows=sr, nrows=nr,
-                               delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(
+            f, usecols=c, skiprows=sr, nrows=nr, delimiter=",", header=None, dtype=t
+        )
+
 except:
     # fall back to numpy loadtxt
     def read_csv(f, c=None, sr=0, nr=np.iinfo(np.int64).max, t=np.float64):
-        res = np.genfromtxt(f, usecols=c, delimiter=',',
-                            skip_header=sr, max_rows=nr, dtype=t)
+        res = np.genfromtxt(
+            f, usecols=c, delimiter=",", skip_header=sr, max_rows=nr, dtype=t
+        )
         if res.ndim == 1:
             return res[:, np.newaxis]
         return res
 
 
 def get_chunk_params(lines_count, chunks_count, chunk_number):
-    'returns count of rows to skip from beginning of file and count of rows to read'
+    "returns count of rows to skip from beginning of file and count of rows to read"
     min_nrows = (int)(lines_count / chunks_count)
     rest_rows = lines_count - min_nrows * chunks_count
     is_tail = rest_rows > chunk_number

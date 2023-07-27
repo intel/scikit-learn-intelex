@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py logistic regression example for shared memory systems
 
@@ -25,14 +25,15 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     nClasses = 2
     nFeatures = 20
 
@@ -55,8 +56,10 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_result = predict_alg.compute(predict_data, train_result.model)
 
     # the prediction result provides prediction
-    assert predict_result.prediction.shape == (predict_data.shape[0],
-                                               train_labels.shape[1])
+    assert predict_result.prediction.shape == (
+        predict_data.shape[0],
+        train_labels.shape[1],
+    )
 
     return (train_result, predict_result, predict_labels)
 
@@ -66,7 +69,7 @@ if __name__ == "__main__":
     print("\nLogistic Regression coefficients:\n", train_result.model.Beta)
     print(
         "\nLogistic regression prediction results (first 10 rows):\n",
-        predict_result.prediction[0:10]
+        predict_result.prediction[0:10],
     )
     print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
-    print('All looks good!')
+    print("All looks good!")

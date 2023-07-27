@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py Saga example for shared memory systems
 
@@ -25,14 +25,15 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     infile = "./data/batch/XM.csv"
     # Read the data, let's have 3 independent variables
     data = readcsv(infile, range(1))
@@ -40,22 +41,26 @@ def main(readcsv=read_csv, method='defaultDense'):
     nVectors = data.shape[0]
 
     # configure a Logistic Loss object
-    logloss_algo = d4p.optimization_solver_logistic_loss(numberOfTerms=nVectors,
-                                                         penaltyL1=0.3,
-                                                         penaltyL2=0,
-                                                         interceptFlag=True,
-                                                         resultsToCompute='gradient')
+    logloss_algo = d4p.optimization_solver_logistic_loss(
+        numberOfTerms=nVectors,
+        penaltyL1=0.3,
+        penaltyL2=0,
+        interceptFlag=True,
+        resultsToCompute="gradient",
+    )
     logloss_algo.setup(data, dep_data)
 
     # configure an Saga object
     lr = np.array([[0.01]], dtype=np.double)
     niters = 100000
-    saga_algo = d4p.optimization_solver_saga(nIterations=niters,
-                                             accuracyThreshold=1e-5,
-                                             batchSize=1,
-                                             function=logloss_algo,
-                                             learningRateSequence=lr,
-                                             optionalResultRequired=True)
+    saga_algo = d4p.optimization_solver_saga(
+        nIterations=niters,
+        accuracyThreshold=1e-5,
+        batchSize=1,
+        function=logloss_algo,
+        learningRateSequence=lr,
+        optionalResultRequired=True,
+    )
 
     # finally do the computation
     inp = np.zeros((2, 1), dtype=np.double)
@@ -72,4 +77,4 @@ if __name__ == "__main__":
     res = main()
     print("\nMinimum:\n", res.minimum)
     print("\nNumber of iterations performed:\n", res.nIterations[0][0])
-    print('All looks good!')
+    print("All looks good!")

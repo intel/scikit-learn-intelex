@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py cosine distance example for shared memory systems
 
@@ -27,21 +27,22 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
-    data = readcsv(os.path.join('data', 'batch', 'distance.csv'), range(10))
+def main(readcsv=read_csv, method="defaultDense"):
+    data = readcsv(os.path.join("data", "batch", "distance.csv"), range(10))
 
     # Create algorithm to compute cosine distance (no parameters)
     algorithm = d4p.cosine_distance()
 
     # Computed cosine distance with file or numpy array
-    res1 = algorithm.compute(os.path.join('data', 'batch', 'distance.csv'))
+    res1 = algorithm.compute(os.path.join("data", "batch", "distance.csv"))
     res2 = algorithm.compute(data)
 
     assert np.allclose(res1.cosineDistance, res2.cosineDistance)

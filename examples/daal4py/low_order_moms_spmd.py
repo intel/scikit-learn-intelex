@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py low order moments example for distributed memory systems; SPMD mode
 # run like this:
@@ -29,24 +29,36 @@ def main():
 
     # We know the number of lines in the file
     # and use this to separate data between processes
-    skiprows, nrows = get_chunk_params(lines_count=200,
-                                       chunks_count=d4p.num_procs(),
-                                       chunk_number=d4p.my_procid())
+    skiprows, nrows = get_chunk_params(
+        lines_count=200, chunks_count=d4p.num_procs(), chunk_number=d4p.my_procid()
+    )
 
     # Each process reads its chunk of the file
     data = read_csv(infile, sr=skiprows, nr=nrows)
 
     # Create algorithm with distributed mode
-    alg = d4p.low_order_moments(method='defaultDense', distributed=True)
+    alg = d4p.low_order_moments(method="defaultDense", distributed=True)
 
     # Perform computation
     res = alg.compute(data)
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert all(getattr(res, name).shape == (1, data.shape[1]) for name in
-               ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-                'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation'])
+    assert all(
+        getattr(res, name).shape == (1, data.shape[1])
+        for name in [
+            "minimum",
+            "maximum",
+            "sum",
+            "sumSquares",
+            "sumSquaresCentered",
+            "mean",
+            "secondOrderRawMoment",
+            "variance",
+            "standardDeviation",
+            "variation",
+        ]
+    )
 
     return res
 

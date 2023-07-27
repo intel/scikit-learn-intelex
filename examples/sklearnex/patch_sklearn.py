@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # Calling scikit-learn patch - this would enable acceleration on all
 # enabled algorithms. This is most straight forward way of patching
@@ -38,10 +38,10 @@ unpatch_sklearn()
 # Direct import of functions in way aligned with scikit-learn
 from sklearnex.neighbors import NearestNeighbors
 
-#Patching can be enabled for selected algorithms/estimators only
+# Patching can be enabled for selected algorithms/estimators only
 patch_sklearn(["DBSCAN"])
 
-#Remaining non modified scikit-learn codes
+# Remaining non modified scikit-learn codes
 from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 

@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # sklearnex can help you debug your aplications by printing messages on it's invocation
 # to allow you to see if stock of accelerated version was used.
@@ -23,7 +23,7 @@ print("KNOWN BUG IN EXAMPLES. TODO: fixme")
 sys.exit()
 import logging
 
-logging.getLogger('sklearnex').setLevel(logging.INFO)
+logging.getLogger("sklearnex").setLevel(logging.INFO)
 
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn

@@ -188,10 +188,12 @@ req_library["random_forest_regressor_spmd.py"] = ["dpctl", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
 
-skiped_files = ['log_reg_model_builder.py',
-                'n_jobs.py',
-                'verbose_mode.py',
-                'patch_sklearn.py']
+skiped_files = [
+    "log_reg_model_builder.py",
+    "n_jobs.py",
+    "verbose_mode.py",
+    "patch_sklearn.py",
+]
 
 
 def get_exe_cmd(ex, nodist, nostream):
@@ -220,7 +222,7 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
-    if not nodist and ex.endswith('spmd.py'):
+    if not nodist and ex.endswith("spmd.py"):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
@@ -235,50 +237,58 @@ def run(exdir, logdir, nodist=False, nostream=False):
         os.makedirs(logdir)
     for dirpath, dirnames, filenames in os.walk(exdir):
         for script in filenames:
-            if script.endswith('.py') and script not in ['__init__.py']:
+            if script.endswith(".py") and script not in ["__init__.py"]:
                 n += 1
                 if script in skiped_files:
-                   print(strftime("%H:%M:%S", gmtime()) + '\tKNOWN BUG IN EXAMPLES\t' + script)
+                    print(
+                        strftime("%H:%M:%S", gmtime())
+                        + "\tKNOWN BUG IN EXAMPLES\t"
+                        + script
+                    )
                 else:
-                  logfn = jp(logdir, script.replace(".py", ".res"))
-                  with open(logfn, "w") as logfile:
-                      print("\n##### " + jp(dirpath, script))
-                      execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
-                      if execute_string:
-                          os.chdir(dirpath)
-                          proc = subprocess.Popen(
-                              execute_string
-                              if IS_WIN
-                              else ["/bin/bash", "-c", execute_string],
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT,
-                              shell=False,
-                          )
-                          out = proc.communicate()[0]
-                          logfile.write(out.decode("ascii"))
-                          if proc.returncode:
-                              print(out)
-                              print(
-                                  strftime("%H:%M:%S", gmtime()) + "\tFAILED"
-                                  "\t" + script + "\twith errno"
-                                  "\t" + str(proc.returncode)
-                              )
-                              out = proc.communicate()[0]
-                              logfile.write(out.decode('ascii'))
-                              if proc.returncode:
-                                  print(out)
-                                  print(
-                                      strftime("%H:%M:%S", gmtime()) + '\tFAILED'
-                                      '\t' + script + '\twith errno'
-                                      '\t' + str(proc.returncode)
-                                  )
-                              else:
-                                  success += 1
-                                  print(strftime("%H:%M:%S", gmtime()) + '\t'
-                                      'PASSED\t' + script)
-                          else:
-                              success += 1
-                          print(strftime("%H:%M:%S", gmtime()) + '\tSKIPPED\t' + script)
+                    logfn = jp(logdir, script.replace(".py", ".res"))
+                    with open(logfn, "w") as logfile:
+                        print("\n##### " + jp(dirpath, script))
+                        execute_string = get_exe_cmd(
+                            jp(dirpath, script), nodist, nostream
+                        )
+                        if execute_string:
+                            os.chdir(dirpath)
+                            proc = subprocess.Popen(
+                                execute_string
+                                if IS_WIN
+                                else ["/bin/bash", "-c", execute_string],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                shell=False,
+                            )
+                            out = proc.communicate()[0]
+                            logfile.write(out.decode("ascii"))
+                            if proc.returncode:
+                                print(out)
+                                print(
+                                    strftime("%H:%M:%S", gmtime()) + "\tFAILED"
+                                    "\t" + script + "\twith errno"
+                                    "\t" + str(proc.returncode)
+                                )
+                                out = proc.communicate()[0]
+                                logfile.write(out.decode("ascii"))
+                                if proc.returncode:
+                                    print(out)
+                                    print(
+                                        strftime("%H:%M:%S", gmtime()) + "\tFAILED"
+                                        "\t" + script + "\twith errno"
+                                        "\t" + str(proc.returncode)
+                                    )
+                                else:
+                                    success += 1
+                                    print(
+                                        strftime("%H:%M:%S", gmtime()) + "\t"
+                                        "PASSED\t" + script
+                                    )
+                            else:
+                                success += 1
+                            print(strftime("%H:%M:%S", gmtime()) + "\tSKIPPED\t" + script)
     return success, n
 
 

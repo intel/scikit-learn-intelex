@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py normalization zscore example for shared memory systems
 
@@ -25,14 +25,15 @@ try:
     import pandas
 
     def read_csv(f, c=None, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c=None, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     infile = "./data/batch/normalization.csv"
 
     # configure a covariance object
@@ -57,4 +58,4 @@ def main(readcsv=read_csv, method='defaultDense'):
 if __name__ == "__main__":
     res = main()
     print("ZScore result (first 5 rows):\n", res.normalizedData[:5])
-    print('All looks good!')
+    print("All looks good!")

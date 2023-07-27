@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py Gradient Boosting Regression Tree Traversal example
 
@@ -52,5 +52,5 @@ if __name__ == "__main__":
     for treeId in range(train_result.model.NumberOfTrees):
         treeState = d4p.getTreeState(train_result.model, treeId)
         printTree(treeState.node_ar, treeState.value_ar)
-    print('Traversed {} trees.'.format(train_result.model.NumberOfTrees))
-    print('All looks good!')
+    print("Traversed {} trees.".format(train_result.model.NumberOfTrees))
+    print("All looks good!")

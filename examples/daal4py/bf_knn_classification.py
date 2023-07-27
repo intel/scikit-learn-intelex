@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py Brute Force KNN example for shared memory systems
 
@@ -27,17 +27,18 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     # Input data set parameters
-    train_file = os.path.join('data', 'batch', 'k_nearest_neighbors_train.csv')
-    predict_file = os.path.join('data', 'batch', 'k_nearest_neighbors_test.csv')
+    train_file = os.path.join("data", "batch", "k_nearest_neighbors_train.csv")
+    predict_file = os.path.join("data", "batch", "k_nearest_neighbors_test.csv")
 
     # Read data. Let's use 5 features per observation
     nFeatures = 5
@@ -71,6 +72,5 @@ if __name__ == "__main__":
     print("Brute Force kNN classification results:")
     print("Ground truth(observations #30-34):\n", predict_labels[30:35])
     print(
-        "Classification results(observations #30-34):\n",
-        predict_result.prediction[30:35]
+        "Classification results(observations #30-34):\n", predict_result.prediction[30:35]
     )

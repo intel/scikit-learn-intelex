@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py DBSCAN example for shared memory systems
 
@@ -25,14 +25,15 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     infile = "./data/batch/dbscan_dense.csv"
     epsilon = 0.04
     minObservations = 45
@@ -45,7 +46,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     algo = d4p.dbscan(
         minObservations=minObservations,
         epsilon=epsilon,
-        resultsToCompute='computeCoreIndices|computeCoreObservations'
+        resultsToCompute="computeCoreIndices|computeCoreObservations",
     )
     # and compute
     result = algo.compute(data)
@@ -71,4 +72,4 @@ if __name__ == "__main__":
     print("\nFirst 10 cluster core indices:\n", result.coreIndices[0:10])
     print("\nFirst 10 cluster core observations:\n", result.coreObservations[0:10])
     print("\nNumber of clusters:\n", result.nClusters)
-    print('All looks good!')
+    print("All looks good!")

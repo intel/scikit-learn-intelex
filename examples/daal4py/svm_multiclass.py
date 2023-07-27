@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py multi-class SVM example for shared memory systems
 
@@ -25,28 +25,29 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     nFeatures = 20
     nClasses = 5
 
     # read training data from file
     # with nFeatures features per observation and 1 class label
-    train_file = 'data/batch/svm_multi_class_train_dense.csv'
+    train_file = "data/batch/svm_multi_class_train_dense.csv"
     train_data = readcsv(train_file, range(nFeatures))
     train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
 
     # Create and configure algorithm object
     algorithm = d4p.multi_class_classifier_training(
         nClasses=nClasses,
-        training=d4p.svm_training(method='thunder'),
-        prediction=d4p.svm_prediction()
+        training=d4p.svm_training(method="thunder"),
+        prediction=d4p.svm_prediction(),
     )
 
     # Pass data to training. Training result provides model
@@ -56,15 +57,15 @@ def main(readcsv=read_csv, method='defaultDense'):
 
     # Now the prediction stage
     # Read data
-    pred_file = 'data/batch/svm_multi_class_test_dense.csv'
+    pred_file = "data/batch/svm_multi_class_test_dense.csv"
     pred_data = readcsv(pred_file, range(nFeatures))
     pred_labels = readcsv(pred_file, range(nFeatures, nFeatures + 1))
 
     # Create an algorithm object to predict multi-class SVM values
     algorithm = d4p.multi_class_classifier_prediction(
         nClasses,
-        training=d4p.svm_training(method='thunder'),
-        prediction=d4p.svm_prediction()
+        training=d4p.svm_training(method="thunder"),
+        prediction=d4p.svm_prediction(),
     )
     # Pass data to prediction. Prediction result provides prediction
     pred_result = algorithm.compute(pred_data, train_result.model)
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     (pred_res, pred_labels) = main()
     print(
         "\nSVM classification results (first 20 observations):\n",
-        pred_res.prediction[0:20]
+        pred_res.prediction[0:20],
     )
     print("\nGround truth (first 20 observations):\n", pred_labels[0:20])
-    print('All looks good!')
+    print("All looks good!")

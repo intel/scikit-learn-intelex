@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py Decision Tree Regression example for shared memory systems
 
@@ -25,14 +25,15 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     infile = "./data/batch/decision_tree_train.csv"
     prunefile = "./data/batch/decision_tree_prune.csv"
     testfile = "./data/batch/decision_tree_test.csv"
@@ -67,7 +68,7 @@ if __name__ == "__main__":
     (train_result, predict_result, ptdata) = main()
     print(
         "\nDecision tree prediction results (first 20 rows):\n",
-        predict_result.prediction[0:20]
+        predict_result.prediction[0:20],
     )
     print("\nGround truth (first 10 rows):\n", ptdata[0:20])
-    print('All looks good!')
+    print("All looks good!")

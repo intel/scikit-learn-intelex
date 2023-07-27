@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 import sys
 
 print("KNOWN BUG IN EXAMPLES. TODO: fixme")
@@ -33,15 +33,15 @@ def main():
     # set parameters and train
     clf = LogisticRegression(fit_intercept=True, max_iter=1000, random_state=0).fit(X, y)
 
-    #set parameters and call model builder
-    builder = d4p.logistic_regression_model_builder(n_classes=n_classes,
-                                                    n_features=X.shape[1])
+    # set parameters and call model builder
+    builder = d4p.logistic_regression_model_builder(
+        n_classes=n_classes, n_features=X.shape[1]
+    )
     builder.set_beta(clf.coef_, clf.intercept_)
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(
-        nClasses=n_classes,
-        resultsToEvaluate="computeClassLabels"
+        nClasses=n_classes, resultsToEvaluate="computeClassLabels"
     )
     # set parameters and compute predictions
     predict_result_daal = predict_alg.compute(X, builder.model)
@@ -51,19 +51,19 @@ def main():
 
 
 if __name__ == "__main__":
-    if daal_check_version(((2021, 'P', 1))):
+    if daal_check_version(((2021, "P", 1))):
         (builder, predict_result_daal) = main()
         print("\nLogistic Regression coefficients:\n", builder.model)
         print(
             "\nLogistic regression prediction results (first 10 rows):\n",
-            predict_result_daal.prediction[0:10]
+            predict_result_daal.prediction[0:10],
         )
         print(
             "\nLogistic regression prediction probabilities (first 10 rows):\n",
-            predict_result_daal.probabilities[0:10]
+            predict_result_daal.probabilities[0:10],
         )
         print(
             "\nLogistic regression prediction log probabilities (first 10 rows):\n",
-            predict_result_daal.logProbabilities[0:10]
+            predict_result_daal.logProbabilities[0:10],
         )
-        print('All looks good!')
+        print("All looks good!")
