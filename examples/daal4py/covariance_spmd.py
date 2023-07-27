@@ -19,6 +19,7 @@
 #    mpirun -n 4 python ./covariance_spmd.py
 
 import daal4py as d4p
+
 # let's use a reading of file in chunks (defined in spmd_utils.py)
 from examples.utils import get_chunk_params, read_csv
 

@@ -18,8 +18,7 @@
 
 import math
 
-from decision_forest_classification_default_dense import \
-    main as df_classification
+from decision_forest_classification_default_dense import main as df_classification
 
 import daal4py as d4p
 
