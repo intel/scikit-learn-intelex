@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import sklearn
+
 import sklearnex
 
 
@@ -27,12 +28,12 @@ def test_get_config_contains_sklearn_params():
 
 def test_set_config_works():
     default_config = sklearnex.get_config()
-    sklearnex.set_config(assume_finite=True,
-                         target_offload='cpu:0',
-                         allow_fallback_to_host=True)
+    sklearnex.set_config(
+        assume_finite=True, target_offload="cpu:0", allow_fallback_to_host=True
+    )
 
     config = sklearnex.get_config()
-    assert config['target_offload'] == 'cpu:0'
-    assert config['allow_fallback_to_host']
-    assert config['assume_finite']
+    assert config["target_offload"] == "cpu:0"
+    assert config["allow_fallback_to_host"]
+    assert config["assume_finite"]
     sklearnex.set_config(**default_config)

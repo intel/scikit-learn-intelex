@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,20 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py AdaBoost (Adaptive Boosting) scikit-learn-compatible estimator class
 
-import numpy as np
 import numbers
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+
+import numpy as np
+from sklearn import __version__ as sklearn_version
 from sklearn import preprocessing
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+
 import daal4py as d4p
+
 from .._utils import getFPType
 
-from sklearn import __version__ as sklearn_version
 try:
     from packaging.version import Version
 except ImportError:
@@ -33,13 +36,15 @@ except ImportError:
 
 
 class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
-    def __init__(self,
-                 split_criterion='gini',
-                 max_tree_depth=1,
-                 min_observations_in_leaf_node=1,
-                 max_iterations=100,
-                 learning_rate=1.0,
-                 accuracy_threshold=0.01):
+    def __init__(
+        self,
+        split_criterion="gini",
+        max_tree_depth=1,
+        min_observations_in_leaf_node=1,
+        max_iterations=100,
+        learning_rate=1.0,
+        accuracy_threshold=0.01,
+    ):
         self.split_criterion = split_criterion
         self.max_tree_depth = max_tree_depth
         self.min_observations_in_leaf_node = min_observations_in_leaf_node
@@ -48,30 +53,44 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         self.accuracy_threshold = accuracy_threshold
 
     def fit(self, X, y):
-        if self.split_criterion not in ('gini', 'infoGain'):
-            raise ValueError('Parameter "split_criterion" must be '
-                             '"gini" or "infoGain".')
-        if not isinstance(self.max_tree_depth, numbers.Integral) or \
-                self.max_tree_depth < 0:
-            raise ValueError('Parameter "max_tree_depth" must be '
-                             'positive integer value or zero.')
-        if not isinstance(self.min_observations_in_leaf_node, numbers.Integral) or \
-                self.min_observations_in_leaf_node <= 0:
-            raise ValueError('Parameter "min_observations_in_leaf_node" must be '
-                             'non-zero positive integer value.')
-        if not isinstance(self.max_iterations, numbers.Integral) or \
-                self.max_iterations <= 0:
-            raise ValueError('Parameter "max_iterations" must be '
-                             'non-zero positive integer value.')
+        if self.split_criterion not in ("gini", "infoGain"):
+            raise ValueError(
+                'Parameter "split_criterion" must be ' '"gini" or "infoGain".'
+            )
+        if (
+            not isinstance(self.max_tree_depth, numbers.Integral)
+            or self.max_tree_depth < 0
+        ):
+            raise ValueError(
+                'Parameter "max_tree_depth" must be ' "positive integer value or zero."
+            )
+        if (
+            not isinstance(self.min_observations_in_leaf_node, numbers.Integral)
+            or self.min_observations_in_leaf_node <= 0
+        ):
+            raise ValueError(
+                'Parameter "min_observations_in_leaf_node" must be '
+                "non-zero positive integer value."
+            )
+        if (
+            not isinstance(self.max_iterations, numbers.Integral)
+            or self.max_iterations <= 0
+        ):
+            raise ValueError(
+                'Parameter "max_iterations" must be ' "non-zero positive integer value."
+            )
         if self.learning_rate <= 0:
-            raise ValueError('Parameter "learning_rate" must be '
-                             'non-zero positive value.')
+            raise ValueError(
+                'Parameter "learning_rate" must be ' "non-zero positive value."
+            )
         # it is not clear why it is so but we will get error from
         # Intel(R) oneAPI Data Analytics
         # Library otherwise
         if self.accuracy_threshold < 0 and self.accuracy_threshold >= 1:
-            raise ValueError('Parameter "accuracy_threshold" must be '
-                             'more or equal to 0 and less than 1.')
+            raise ValueError(
+                'Parameter "accuracy_threshold" must be '
+                "more or equal to 0 and less than 1."
+            )
 
         # Check that X and y have correct shape
         X, y = check_X_y(X, y, y_numeric=False, dtype=[np.single, np.double])
@@ -107,11 +126,12 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
             maxTreeDepth=self.max_tree_depth + 1,
             minObservationsInLeafNodes=self.min_observations_in_leaf_node,
             splitCriterion=self.split_criterion,
-            pruning='none')
+            pruning="none",
+        )
 
         pr = d4p.decision_tree_classification_prediction(
-            fptype=fptype,
-            nClasses=self.n_classes_)
+            fptype=fptype, nClasses=self.n_classes_
+        )
 
         train_algo = d4p.adaboost_training(
             fptype=fptype,
@@ -120,7 +140,8 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
             weakLearnerPrediction=pr,
             maxIterations=self.max_iterations,
             learningRate=self.learning_rate,
-            accuracyThreshold=self.accuracy_threshold)
+            accuracyThreshold=self.accuracy_threshold,
+        )
 
         train_result = train_algo.compute(X, y_)
 
@@ -135,33 +156,36 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         if Version(sklearn_version) >= Version("0.22"):
             check_is_fitted(self)
         else:
-            check_is_fitted(self, ['n_features_in_', 'n_classes_'])
+            check_is_fitted(self, ["n_features_in_", "n_classes_"])
 
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])
         if X.shape[1] != self.n_features_in_:
-            raise ValueError('Shape of input is different from what was seen in `fit`')
+            raise ValueError("Shape of input is different from what was seen in `fit`")
 
         # Trivial case
         if self.n_classes_ == 1:
             return np.full(X.shape[0], self.classes_[0])
 
-        if not hasattr(self, 'daal_model_'):
-            raise ValueError((
-                "The class {} instance does not have 'daal_model_' attribute set. "
-                "Call 'fit' with appropriate arguments before using this method.").format(
-                    type(self).__name__))
+        if not hasattr(self, "daal_model_"):
+            raise ValueError(
+                (
+                    "The class {} instance does not have 'daal_model_' attribute set. "
+                    "Call 'fit' with appropriate arguments before using this method."
+                ).format(type(self).__name__)
+            )
 
         # Define type of data
         fptype = getFPType(X)
 
-        pr = d4p.decision_tree_classification_prediction(fptype=fptype,
-                                                         nClasses=self.n_classes_)
+        pr = d4p.decision_tree_classification_prediction(
+            fptype=fptype, nClasses=self.n_classes_
+        )
 
         # Prediction
-        predict_algo = d4p.adaboost_prediction(fptype=fptype,
-                                               nClasses=self.n_classes_,
-                                               weakLearnerPrediction=pr)
+        predict_algo = d4p.adaboost_prediction(
+            fptype=fptype, nClasses=self.n_classes_, weakLearnerPrediction=pr
+        )
         predict_result = predict_algo.compute(X, self.daal_model_)
 
         prediction = predict_result.prediction

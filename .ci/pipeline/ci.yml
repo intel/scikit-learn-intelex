@@ -42,20 +42,6 @@ variables:
   ARGS: '1'
 
 jobs:
-- job: PEP8
-  pool:
-    vmImage: 'ubuntu-22.04'
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.9'
-      addToPath: true
-  - script: |
-      python -m pip install --upgrade pip setuptools
-      pip install flake8
-      flake8 --ignore=E265,E722,E402,F401,F403,W503 --max-line-length=90 --count
-    displayName: 'PEP 8 check'
-
 - job: Linux
   timeoutInMinutes: 120
   strategy:

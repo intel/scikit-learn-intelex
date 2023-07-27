@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
+
+import numbers
 
 import numpy as np
 from scipy import sparse as sp
-import numbers
-
+from sklearn.cluster import DBSCAN as DBSCAN_original
 from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
 
-from sklearn.cluster import DBSCAN as DBSCAN_original
-
 import daal4py
-from daal4py.sklearn._utils import (
-    make2d, getFPType, PatchingConditionsChain)
+from daal4py.sklearn._utils import PatchingConditionsChain, getFPType, make2d
 
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
 
-if sklearn_check_version('1.1') and not sklearn_check_version('1.2'):
+if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
 
 
@@ -40,12 +38,12 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
 
     fpt = getFPType(XX)
     alg = daal4py.dbscan(
-        method='defaultDense',
+        method="defaultDense",
         fptype=fpt,
         epsilon=float(eps),
         minObservations=int(min_samples),
         memorySavingMode=False,
-        resultsToCompute="computeCoreIndices"
+        resultsToCompute="computeCoreIndices",
     )
 
     daal_res = alg.compute(XX, ww)
@@ -189,16 +187,17 @@ class DBSCAN(DBSCAN_original):
     >>> clustering
     DBSCAN(eps=3, min_samples=2)
     """
-    if sklearn_check_version('1.2'):
+
+    if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**DBSCAN_original._parameter_constraints}
 
     def __init__(
         self,
         eps=0.5,
         min_samples=5,
-        metric='euclidean',
+        metric="euclidean",
         metric_params=None,
-        algorithm='auto',
+        algorithm="auto",
         leaf_size=30,
         p=None,
         n_jobs=None,
@@ -282,26 +281,29 @@ class DBSCAN(DBSCAN_original):
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-        _patching_status = PatchingConditionsChain(
-            "sklearn.cluster.DBSCAN.fit")
-        _dal_ready = _patching_status.and_conditions([
-            (self.algorithm in ['auto', 'brute'],
-                f"'{self.algorithm}' algorithm is not supported. "
-                "Only 'auto' and 'brute' algorithms are supported"),
-            (self.metric == 'euclidean' or (self.metric == 'minkowski' and self.p == 2),
-                f"'{self.metric}' (p={self.p}) metric is not supported. "
-                "Only 'euclidean' or 'minkowski' with p=2 metrics are supported."),
-            (not sp.issparse(X), "X is sparse. Sparse input is not supported.")
-        ])
+        _patching_status = PatchingConditionsChain("sklearn.cluster.DBSCAN.fit")
+        _dal_ready = _patching_status.and_conditions(
+            [
+                (
+                    self.algorithm in ["auto", "brute"],
+                    f"'{self.algorithm}' algorithm is not supported. "
+                    "Only 'auto' and 'brute' algorithms are supported",
+                ),
+                (
+                    self.metric == "euclidean"
+                    or (self.metric == "minkowski" and self.p == 2),
+                    f"'{self.metric}' (p={self.p}) metric is not supported. "
+                    "Only 'euclidean' or 'minkowski' with p=2 metrics are supported.",
+                ),
+                (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            ]
+        )
 
         _patching_status.write_log()
         if _dal_ready:
-            X = check_array(X, accept_sparse='csr', dtype=[np.float64, np.float32])
+            X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
             core_ind, assignments = _daal_dbscan(
-                X,
-                self.eps,
-                self.min_samples,
-                sample_weight=sample_weight
+                X, self.eps, self.min_samples, sample_weight=sample_weight
             )
             self.core_sample_indices_ = core_ind
             self.labels_ = assignments

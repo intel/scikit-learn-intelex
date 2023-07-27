@@ -99,8 +99,11 @@ def _load_all_models(patched):
     models = []
     for patch_infos in get_patch_map().values():
         maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
-        if maybe_class is not None and isclass(maybe_class) and \
-                issubclass(maybe_class, BaseEstimator):
+        if (
+            maybe_class is not None
+            and isclass(maybe_class)
+            and issubclass(maybe_class, BaseEstimator)
+        ):
             models.append(maybe_class())
 
     if patched:
@@ -113,9 +116,7 @@ PATCHED_MODELS = _load_all_models(patched=True)
 UNPATCHED_MODELS = _load_all_models(patched=False)
 
 
-@pytest.mark.parametrize(
-    ("patched", "unpatched"), zip(PATCHED_MODELS, UNPATCHED_MODELS)
-)
+@pytest.mark.parametrize(("patched", "unpatched"), zip(PATCHED_MODELS, UNPATCHED_MODELS))
 def test_is_patched_instance(patched, unpatched):
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"

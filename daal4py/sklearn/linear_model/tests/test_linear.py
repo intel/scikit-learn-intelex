@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-import pytest
 import numpy as np
-from sklearn.utils._testing import assert_array_almost_equal
-from sklearn.linear_model import LinearRegression
+import pytest
 from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression
+from sklearn.utils._testing import assert_array_almost_equal
 
 
 def make_dataset(n_samples, n_features, kind=np.array, random_state=0, types=None):
     try:
         from pandas import DataFrame
+
         if kind not in (list, np.array, DataFrame):
             kind = np.array
     except ImportError:
@@ -62,7 +63,7 @@ def make_dataset(n_samples, n_features, kind=np.array, random_state=0, types=Non
 
 
 def test_linear_array_vs_dataframe_homogen():
-    pd = pytest.importorskip('pandas')
+    pd = pytest.importorskip("pandas")
 
     x_train, y_train = make_dataset(100, 20)
     x_test, _ = make_dataset(100, 20, random_state=1)
@@ -77,15 +78,17 @@ def test_linear_array_vs_dataframe_homogen():
     df_reg.fit(df_x_train, df_y_train)
 
     assert_array_almost_equal(
-        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1)))
+        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1))
+    )
     assert_array_almost_equal(array_reg.intercept_, df_reg.intercept_)
     assert_array_almost_equal(
         array_reg.predict(x_test).reshape((-1, 1)),
-        df_reg.predict(df_x_test).reshape((-1, 1)))
+        df_reg.predict(df_x_test).reshape((-1, 1)),
+    )
 
 
 def test_linear_array_vs_dataframe_heterogen():
-    pd = pytest.importorskip('pandas')
+    pd = pytest.importorskip("pandas")
 
     types = (np.float64, np.float32)
 
@@ -102,15 +105,18 @@ def test_linear_array_vs_dataframe_heterogen():
     df_reg.fit(df_x_train, df_y_train)
 
     assert_array_almost_equal(
-        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1)))
+        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1))
+    )
     assert_array_almost_equal(array_reg.intercept_, df_reg.intercept_)
     assert_array_almost_equal(
         array_reg.predict(x_test).reshape((-1, 1)),
-        df_reg.predict(df_x_test).reshape((-1, 1)), decimal=5)
+        df_reg.predict(df_x_test).reshape((-1, 1)),
+        decimal=5,
+    )
 
 
 def test_linear_array_vs_dataframe_heterogen_double_float():
-    pd = pytest.importorskip('pandas')
+    pd = pytest.importorskip("pandas")
 
     types = (np.float64, np.float32)
 
@@ -127,15 +133,17 @@ def test_linear_array_vs_dataframe_heterogen_double_float():
     df_reg.fit(df_x_train, df_y_train)
 
     assert_array_almost_equal(
-        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1)))
+        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1))
+    )
     assert_array_almost_equal(array_reg.intercept_, df_reg.intercept_)
     assert_array_almost_equal(
         array_reg.predict(x_test).reshape((-1, 1)),
-        df_reg.predict(df_x_test).reshape((-1, 1)))
+        df_reg.predict(df_x_test).reshape((-1, 1)),
+    )
 
 
 def test_linear_array_vs_dataframe_heterogen_double_int():
-    pd = pytest.importorskip('pandas')
+    pd = pytest.importorskip("pandas")
 
     types = (np.float64, np.int32)
 
@@ -152,15 +160,17 @@ def test_linear_array_vs_dataframe_heterogen_double_int():
     df_reg.fit(df_x_train, df_y_train)
 
     assert_array_almost_equal(
-        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1)))
+        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1))
+    )
     assert_array_almost_equal(array_reg.intercept_, df_reg.intercept_)
     assert_array_almost_equal(
         array_reg.predict(x_test).reshape((-1, 1)),
-        df_reg.predict(df_x_test).reshape((-1, 1)))
+        df_reg.predict(df_x_test).reshape((-1, 1)),
+    )
 
 
 def test_linear_array_vs_dataframe_heterogen_float_int():
-    pd = pytest.importorskip('pandas')
+    pd = pytest.importorskip("pandas")
 
     types = (np.float32, np.int32)
 
@@ -177,8 +187,10 @@ def test_linear_array_vs_dataframe_heterogen_float_int():
     df_reg.fit(df_x_train, df_y_train)
 
     assert_array_almost_equal(
-        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1)))
+        array_reg.coef_.reshape((-1, 1)), df_reg.coef_.reshape((-1, 1))
+    )
     assert_array_almost_equal(array_reg.intercept_, df_reg.intercept_)
     assert_array_almost_equal(
         array_reg.predict(x_test).reshape((-1, 1)),
-        df_reg.predict(df_x_test).reshape((-1, 1)))
+        df_reg.predict(df_x_test).reshape((-1, 1)),
+    )
