@@ -240,6 +240,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
             if script.endswith(".py") and script not in ["__init__.py"]:
                 n += 1
                 if script in skiped_files:
+                    print("\n##### " + jp(dirpath, script))
                     print(
                         strftime("%H:%M:%S", gmtime())
                         + "\tKNOWN BUG IN EXAMPLES\t"
@@ -249,9 +250,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
                     logfn = jp(logdir, script.replace(".py", ".res"))
                     with open(logfn, "w") as logfile:
                         print("\n##### " + jp(dirpath, script))
-                        execute_string = get_exe_cmd(
-                            jp(dirpath, script), nodist, nostream
-                        )
+                        execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
                         if execute_string:
                             os.chdir(dirpath)
                             proc = subprocess.Popen(
@@ -271,23 +270,13 @@ def run(exdir, logdir, nodist=False, nostream=False):
                                     "\t" + script + "\twith errno"
                                     "\t" + str(proc.returncode)
                                 )
-                                out = proc.communicate()[0]
-                                logfile.write(out.decode("ascii"))
-                                if proc.returncode:
-                                    print(out)
-                                    print(
-                                        strftime("%H:%M:%S", gmtime()) + "\tFAILED"
-                                        "\t" + script + "\twith errno"
-                                        "\t" + str(proc.returncode)
-                                    )
-                                else:
-                                    success += 1
-                                    print(
-                                        strftime("%H:%M:%S", gmtime()) + "\t"
-                                        "PASSED\t" + script
-                                    )
                             else:
                                 success += 1
+                                print(
+                                    strftime("%H:%M:%S", gmtime()) + "\t" "PASSED\t" + script
+                                )
+                        else:
+                            success += 1
                             print(strftime("%H:%M:%S", gmtime()) + "\tSKIPPED\t" + script)
     return success, n
 
