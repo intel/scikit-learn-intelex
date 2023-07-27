@@ -43,12 +43,17 @@ def _get_dataframes_and_queues(
         pytest.param("numpy", None, id="numpy"),
     ]
 
+    def _get_df_and_q(dataframe: str):
+        for queue in get_queues(device_filter_):
+            id = "{}-SyclQueue_{}".format(
+                dataframe, "GPU" if queue.sycl_device.is_gpu else "CPU"
+            )
+            dataframes_and_queues.append(pytest.param(dataframe, queue, id=id))
+
     if dpctl_available and "dpctl" in dataframe_filter_:
-        for queue in get_queues(device_filter_):
-            dataframes_and_queues.append(pytest.param("dpctl", queue))
+        _get_df_and_q("dpctl")
     if dpnp_available and "dpnp" in dataframe_filter_:
-        for queue in get_queues(device_filter_):
-            dataframes_and_queues.append(pytest.param("dpnp", queue))
+        _get_df_and_q("dpnp")
     return dataframes_and_queues
 
 
