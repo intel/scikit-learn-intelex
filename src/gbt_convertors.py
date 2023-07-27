@@ -14,12 +14,14 @@
 # limitations under the License.
 #===============================================================================
 
-from typing import List, Deque, Dict, Any
+from typing import List, Deque, Dict, Any, Optional
 from collections import deque
 from os import remove, getpid
 import json
 import re
 from time import time
+
+from attr import dataclass
 
 def get_lightgbm_params(booster):
     return booster.dump_model()
@@ -42,11 +44,11 @@ def get_catboost_params(booster):
     return model_data
 
 def get_gbt_model_from_lightgbm(model: Any, lgb_model = None) -> Any:
+    @dataclass
     class Node:
-        def __init__(self, tree: Dict[str, Any], parent_id: int, position: int):
-            self.tree = tree
-            self.parent_id = parent_id
-            self.position = position
+        tree: Dict[str, Any]
+        parent_id: int
+        position: int
 
     if lgb_model is None:
         lgb_model = get_lightgbm_params(model)
@@ -139,11 +141,12 @@ def get_gbt_model_from_lightgbm(model: Any, lgb_model = None) -> Any:
 
 
 def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
+    @dataclass
     class Node:
-        def __init__(self, tree: Dict, parent_id: int, position: int):
-            self.tree = tree
-            self.parent_id = parent_id
-            self.position = position
+        tree: Dict[str, Any]
+        parent_id: int
+        position: int
+        cover: float
 
     # Release Note for XGBoost 1.5.0: Python interface now supports configuring
     # constraints using feature names instead of feature indices. This also
@@ -189,7 +192,6 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
 
     class_label = 0
     iterations_counter = 0
-    mis_eq_yes = None
     for tree in trees_arr:
         n_nodes = 1
         # find out the number of nodes in the tree
@@ -330,12 +332,12 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
             tree_symmetric.append(
                 (model_data['oblivious_trees'][tree_num], cur_tree_depth))
         else:
+            @dataclass
             class Node:
-                def __init__(self, parent=None, split=None, value=None) -> None:
-                    self.right = None
-                    self.left = None
-                    self.split = split
-                    self.value = value
+                split: Optional[float] = None
+                value: Optional[list[float]] = None
+                right: Optional[int] = None
+                left: Optional[int] = None
 
             n_nodes = 1
             # Check if node is a leaf (in case of stump)
