@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -21,10 +21,11 @@ from numpy.testing import assert_allclose
 
 def test_sklearnex_import_train_test_split():
     from sklearnex.model_selection import train_test_split
+
     X = np.arange(100).reshape((10, 10))
     y = np.arange(10)
 
-    split = train_test_split(X, y, test_size=None, train_size=.5)
+    split = train_test_split(X, y, test_size=None, train_size=0.5)
     X_train, X_test, y_train, y_test = split
     assert len(y_test) == len(y_train)
 

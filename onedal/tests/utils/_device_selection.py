@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,22 +12,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-import pytest
 import functools
 
+import pytest
 
-def get_queues(filter_='cpu,gpu'):
+
+def get_queues(filter_="cpu,gpu"):
     queues = []
 
     try:
         import dpctl
 
-        if dpctl.has_cpu_devices and 'cpu' in filter_:
-            queues.append(dpctl.SyclQueue('cpu'))
-        if dpctl.has_gpu_devices and 'gpu' in filter_:
-            queues.append(dpctl.SyclQueue('gpu'))
+        if dpctl.has_cpu_devices and "cpu" in filter_:
+            queues.append(dpctl.SyclQueue("cpu"))
+        if dpctl.has_gpu_devices and "gpu" in filter_:
+            queues.append(dpctl.SyclQueue("gpu"))
     finally:
         return queues
 
@@ -35,6 +36,7 @@ def get_queues(filter_='cpu,gpu'):
 def get_memory_usm():
     try:
         from dpctl.memory import MemoryUSMDevice, MemoryUSMShared
+
         return [MemoryUSMDevice, MemoryUSMShared]
     except ImportError:
         return []
@@ -47,9 +49,9 @@ def is_dpctl_available(targets=None):
         if targets is None:
             return True
         for device in targets:
-            if device == 'cpu' and not dpctl.has_cpu_devices():
+            if device == "cpu" and not dpctl.has_cpu_devices():
                 return False
-            if device == 'gpu' and not dpctl.has_gpu_devices():
+            if device == "gpu" and not dpctl.has_gpu_devices():
                 return False
         return True
     except ImportError:
@@ -58,14 +60,15 @@ def is_dpctl_available(targets=None):
 
 def device_type_to_str(queue):
     if queue is None:
-        return 'cpu'
+        return "cpu"
 
     from dpctl import device_type
+
     if queue.sycl_device.device_type == device_type.cpu:
-        return 'cpu'
+        return "cpu"
     if queue.sycl_device.device_type == device_type.gpu:
-        return 'gpu'
-    return 'unknown'
+        return "gpu"
+    return "unknown"
 
 
 def pass_if_not_implemented_for_gpu(reason=""):
@@ -75,9 +78,11 @@ def pass_if_not_implemented_for_gpu(reason=""):
         @functools.wraps(test)
         def wrapper(queue, *args, **kwargs):
             if queue is not None and queue.sycl_device.is_gpu:
-                with pytest.raises(RuntimeError, match='is not implemented for GPU'):
+                with pytest.raises(RuntimeError, match="is not implemented for GPU"):
                     test(queue, *args, **kwargs)
             else:
                 test(queue, *args, **kwargs)
+
         return wrapper
+
     return decorator
