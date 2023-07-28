@@ -188,9 +188,7 @@ req_library["random_forest_regressor_spmd.py"] = ["dpctl", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
 
-skiped_files = [
-    "log_reg_model_builder.py"
-]
+skiped_files = ["log_reg_model_builder.py"]
 
 
 def get_exe_cmd(ex, nodist, nostream):
