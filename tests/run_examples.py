@@ -235,6 +235,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
             if script.endswith(".py") and script not in ["__init__.py"]:
                 n += 1
                 if script in skiped_files:
+                    success += 1
                     print("\n##### " + jp(dirpath, script))
                     print(
                         strftime("%H:%M:%S", gmtime())
