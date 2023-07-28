@@ -623,8 +623,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ]
             )
 
-            dal_ready = dal_ready and not hasattr(self, "estimators_")
-
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
@@ -684,8 +682,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                     (sample_weight is not None, "sample_weight is not supported."),
                 ]
             )
-
-            dal_ready &= not hasattr(self, "estimators_")
 
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
@@ -1154,8 +1150,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            dal_ready &= not hasattr(self, "estimators_")
-
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
@@ -1215,8 +1209,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                     (sample_weight is not None, "sample_weight is not supported."),
                 ]
             )
-
-            dal_ready &= not hasattr(self, "estimators_")
 
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
