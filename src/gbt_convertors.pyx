@@ -16,18 +16,35 @@
 
 import json
 from collections import deque
-from dataclasses import dataclass
 from os import getpid, remove
 from time import time
-from typing import TYPE_CHECKING, Any, Deque, Dict, Generator, List, Optional
+from typing import Any, Deque, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
-
-if TYPE_CHECKING:
-    import xgboost as xgb
+import xgboost as xgb
 
 
-@dataclass
+class CatBoostNode:
+    def __init__(
+        self,
+        split: Optional[float] = None,
+        value: Optional[List[float]] = None,
+        right: Optional[int] = None,
+        left: Optional[float] = None,
+    ) -> None:
+        self.split = split
+        self.value = value
+        self.right = right
+        self.left = left
+
+
+class LightGbmNode:
+    def __init__(self, tree: Dict[str, Any], parent_id: int, position: int) -> None:
+        self.tree = tree
+        self.parent_id = parent_id
+        self.position = position
+
+
 class Node:
     """Helper class holding Tree Node information"""
 
@@ -43,6 +60,32 @@ class Node:
     parent_id: Optional[int] = -1
     position: Optional[int] = -1
 
+    def __init__(
+        self,
+        tree_id: int,
+        node_id: int,
+        left_child_id: Optional[int],
+        right_child_id: Optional[int],
+        cover: float,
+        is_leaf: bool,
+        default_left: bool,
+        feature: Optional[int],
+        value: Optional[float],
+        parent_id: Optional[int] = -1,
+        position: Optional[int] = -1,
+    ) -> None:
+        self.tree_id = tree_id
+        self.node_id = node_id
+        self.left_child_id = left_child_id
+        self.right_child_id = right_child_id
+        self.cover = cover
+        self.is_leaf = is_leaf
+        self.default_left = default_left
+        self.feature = feature
+        self.value = value
+        self.parent_id = parent_id
+        self.position = position
+
     def get_value_closest_float_downward(self) -> np.float64:
         """Get the closest exact fp value smaller than self.value"""
         return np.nextafter(np.single(self.value), np.single(-np.inf))
@@ -51,7 +94,7 @@ class Node:
 class TreeView:
     """Helper class, treating a list of nodes as one tree"""
 
-    def __init__(self, tree_id: int, nodes: list[Node]) -> None:
+    def __init__(self, tree_id: int, nodes: List[Node]) -> None:
         self.tree_id = tree_id
         self.nodes = nodes
         self.n_nodes = len(nodes)
@@ -68,7 +111,7 @@ class TreeView:
             raise ValueError("Tree is leaf-only but leaf node has no value")
         return self.nodes[0].value
 
-    def get_children(self, node: Node) -> tuple[Node, Node]:
+    def get_children(self, node: Node) -> Tuple[Node, Node]:
         """Find children of the provided node"""
         children_ids = (node.left_child_id, node.right_child_id)
         selection = [n for n in self.nodes if n.node_id in children_ids]
@@ -121,12 +164,12 @@ class NodeList(list):
         for tid in tree_ids:
             yield TreeView(tree_id=tid, nodes=[n for n in self if n.tree_id == tid])
 
-    def _fill_leaf_values(self, booster_dump: list[str]) -> None:
+    def _fill_leaf_values(self, booster_dump: List[str]) -> None:
         """Fill the leaf values (i.e. the predictions) from `booster_dump`
         Note: These values are not contained in the pd.DataFrame format"""
 
         def get_leaf_nodes(
-            node: Dict[str, Any], leaf_nodes: list[Dict[str, Any]] = []
+            node: Dict[str, Any], leaf_nodes: List[Dict[str, Any]] = []
         ) -> None:
             """Helper to get all leaf nodes from the json.loads() of the booster_dump"""
             if "children" in node:
@@ -198,12 +241,6 @@ def get_catboost_params(booster):
 
 
 def get_gbt_model_from_lightgbm(model: Any, lgb_model=None) -> Any:
-    @dataclass
-    class LightGbmNode:
-        tree: Dict[str, Any]
-        parent_id: int
-        position: int
-
     if lgb_model is None:
         lgb_model = get_lightgbm_params(model)
 
@@ -347,8 +384,9 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
     if is_regression:
         mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations + 1)
 
+        # TODO: Understand why this tree is added
         tree_id = mb.create_tree(1)
-        mb.add_leaf(tree_id=tree_id, response=base_score)
+        mb.add_leaf(tree_id=tree_id, response=base_score, cover=1)
     else:
         mb = gbt_clf_model_builder(
             n_features=n_features, n_iterations=n_iterations, n_classes=n_classes
@@ -367,22 +405,24 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
             class_label += 1
 
         if tree.is_leaf:
-            mb.add_leaf(tree_id=tree_id, response=tree.value)
+            mb.add_leaf(tree_id=tree_id, response=tree.value, cover=tree.cover)
             continue
 
         root_node = tree.nodes[0]
         assert isinstance(
             root_node.feature, int
         ), f"Feature names must be integers (got ({type(root_node.feature)}){root_node.feature})"
+
         parent_id = mb.add_split(
             tree_id=tree_id,
             feature_index=root_node.feature,
             feature_value=root_node.get_value_closest_float_downward(),
+            cover=root_node.cover,
             default_left=root_node.default_left,
         )
 
         # create queue
-        node_queue: Deque[Node] = deque()
+        node_queue: Deque[NodeList.Node] = deque()
         children = tree.get_children(root_node)
         for position, child in enumerate(children):
             child.parent_id = parent_id
@@ -398,6 +438,7 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
                 mb.add_leaf(
                     tree_id=tree_id,
                     response=node.value,
+                    cover=node.cover,
                     parent_id=node.parent_id,
                     position=node.position,
                 )
@@ -409,6 +450,7 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
                     tree_id=tree_id,
                     feature_index=node.feature,
                     feature_value=node.get_value_closest_float_downward(),
+                    cover=node.cover,
                     default_left=node.default_left,
                     parent_id=node.parent_id,
                     position=node.position,
@@ -501,14 +543,6 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                 (model_data["oblivious_trees"][tree_num], cur_tree_depth)
             )
         else:
-
-            @dataclass
-            class CatBoostNode:
-                split: Optional[float] = None
-                value: Optional[list[float]] = None
-                right: Optional[int] = None
-                left: Optional[int] = None
-
             n_nodes = 1
             # Check if node is a leaf (in case of stump)
             if "split" in model_data["trees"][tree_num]:

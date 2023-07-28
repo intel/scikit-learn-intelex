@@ -38,10 +38,10 @@ cdef extern from "gbt_model_builder.h":
     cdef cppclass c_gbt_regression_model_builder:
         c_gbt_regression_model_builder(size_t nFeatures, size_t nIterations) except +
         c_gbt_reg_tree_id createTree(size_t nNodes)
-        c_gbt_reg_node_id addLeafNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, double response)
+        c_gbt_reg_node_id addLeafNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, double response, double cover)
 
     cdef c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft)
-    cdef c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder     * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft)
+    cdef c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder     * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, double cover, int defaultLeft)
 
 cdef class gbt_classification_model_builder:
     '''
@@ -65,7 +65,7 @@ cdef class gbt_classification_model_builder:
         '''
         return self.c_ptr.createTree(n_nodes, class_label)
 
-    def add_leaf(self, c_gbt_clf_tree_id tree_id, double response, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
+    def add_leaf(self, c_gbt_clf_tree_id tree_id, double response, double cover, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
         '''
         Create Leaf node and add it to certain tree
 
@@ -73,11 +73,13 @@ cdef class gbt_classification_model_builder:
         :param node-handle parent_id: parent node to which new node is added (use noParent for root node)
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
         :param double response: response value for leaf node to be predicted
+        :param double cover: cover (sum_hess) of the leaf node
         :rtype: node identifier
         '''
+        # TODO: Forward cover to oneDAL
         return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
 
-    def add_split(self, c_gbt_clf_tree_id tree_id, size_t feature_index, double feature_value, int default_left, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
+    def add_split(self, c_gbt_clf_tree_id tree_id, size_t feature_index, double feature_value, double cover, int default_left, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
@@ -86,9 +88,11 @@ cdef class gbt_classification_model_builder:
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
         :param size_t feature_index: feature index for spliting
         :param double feature_value: feature value for spliting
+        :param double cover: cover (sum_hess) of the solit node
         :param int default_left: default behaviour in case of missing value
         :rtype: node identifier
         '''
+        # TODO: Forward cover to oneDAL
         return clfAddSplitNodeWrapper(self.c_ptr, tree_id, parent_id, position, feature_index, feature_value, default_left)
 
     def model(self):
@@ -123,7 +127,7 @@ cdef class gbt_regression_model_builder:
         '''
         return self.c_ptr.createTree(n_nodes)
 
-    def add_leaf(self, c_gbt_reg_tree_id tree_id, double response, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
+    def add_leaf(self, c_gbt_reg_tree_id tree_id, double response, double cover, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
         '''
         Create Leaf node and add it to certain tree
 
@@ -131,11 +135,12 @@ cdef class gbt_regression_model_builder:
         :param node-handle parent_id: parent node to which new node is added (use noParent for root node)
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
         :param double response: response value for leaf node to be predicted
+        :param double cover: cover (sum_hess) of the leaf node
         :rtype: node identifier
         '''
-        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
+        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response, cover)
 
-    def add_split(self, c_gbt_reg_tree_id tree_id, size_t feature_index, double feature_value, int default_left, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
+    def add_split(self, c_gbt_reg_tree_id tree_id, size_t feature_index, double feature_value, double cover, int default_left, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
         '''
         Create Split node and add it to certain tree.
 
@@ -144,10 +149,11 @@ cdef class gbt_regression_model_builder:
         :param size_t position: position in parent (e.g. 0 for left and 1 for right child in a binary tree)
         :param size_t feature_index: feature index for spliting
         :param double feature_value: feature value for spliting
+        :param double cover: cover (sum_hess) of the split node
         :param int default_left: default behaviour in case of missing value
         :rtype: node identifier
         '''
-        return regAddSplitNodeWrapper(self.c_ptr, tree_id, parent_id, position, feature_index, feature_value, default_left)
+        return regAddSplitNodeWrapper(self.c_ptr, tree_id, parent_id, position, feature_index, feature_value, cover, default_left)
 
     def model(self):
         '''
