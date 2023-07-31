@@ -47,7 +47,8 @@ def get_patch_map():
         import sklearn.linear_model as linear_model_module
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
-        if sklearn_check_version('1.2.1'):
+
+        if sklearn_check_version("1.2.1"):
             import sklearn.utils.parallel as parallel_module
         else:
             import sklearn.utils.fixes as parallel_module
@@ -56,7 +57,8 @@ def get_patch_map():
         from ._config import config_context as config_context_sklearnex
         from ._config import get_config as get_config_sklearnex
         from ._config import set_config as set_config_sklearnex
-        if sklearn_check_version('1.2.1'):
+
+        if sklearn_check_version("1.2.1"):
             from .utils.parallel import _FuncWrapper as _FuncWrapper_sklearnex
         else:
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex

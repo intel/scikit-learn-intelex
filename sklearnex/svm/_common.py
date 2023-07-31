@@ -107,21 +107,20 @@ class BaseSVC(BaseSVM):
             n_splits = 5
             n_jobs = n_splits if queue is None or queue.sycl_device.is_cpu else 1
             cv = StratifiedKFold(
-                n_splits=n_splits,
-                shuffle=True,
-                random_state=self.random_state)
+                n_splits=n_splits, shuffle=True, random_state=self.random_state
+            )
             if sklearn_check_version("0.24"):
                 self.clf_prob = CalibratedClassifierCV(
-                    clf_base, ensemble=False, cv=cv, method='sigmoid',
-                    n_jobs=n_jobs)
+                    clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_jobs
+                )
             else:
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base, cv=cv, method='sigmoid')
+                self.clf_prob = CalibratedClassifierCV(clf_base, cv=cv, method="sigmoid")
             self.clf_prob.fit(X, y, sample_weight)
         except ValueError:
             clf_base = clf_base.fit(X, y, sample_weight)
             self.clf_prob = CalibratedClassifierCV(
-                clf_base, cv="prefit", method='sigmoid')
+                clf_base, cv="prefit", method="sigmoid"
+            )
             self.clf_prob.fit(X, y, sample_weight)
 
     def _save_attributes(self):
