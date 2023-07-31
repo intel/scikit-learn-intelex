@@ -24,7 +24,6 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     _get_dataframes_and_queues,
 )
-from onedal.tests.utils._device_selection import get_queues
 
 
 @pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
