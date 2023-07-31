@@ -16,7 +16,7 @@
 steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: install_dpcpp.bat
+  - script: .ci\scripts\install_dpcpp.bat
     displayName: 'dpcpp installation'
   - script: |
       set DPCPP_PACKAGE="dpctl>=0.14.5 dpnp>=0.12.1 dpcpp-cpp-rt>=2023.2.0"
