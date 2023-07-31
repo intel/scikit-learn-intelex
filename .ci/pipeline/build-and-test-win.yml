@@ -38,8 +38,8 @@ steps:
     displayName: 'System info'
   - script: |
       call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-      call "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat"
       call activate CB
+      set DPCPPROOT=C:\Program Files (x86)\Intel\oneAPI\compiler\latest
       set PREFIX=%CONDA_PREFIX%
       set PYTHON=python
       call conda-recipe\bld.bat
