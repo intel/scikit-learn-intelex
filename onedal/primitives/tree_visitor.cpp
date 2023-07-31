@@ -191,14 +191,20 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t
 
     // array_t doesn't initialize the underlying memory with the object's constructor
     // so the values will not match what is defined above, must be done on C++ side
-    this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, this->node_ar_ptr, py::none());
-    this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, this->value_ar_ptr, py::none());
 
-    py::buffer_info node_ar_buf = this->node_ar.request();
-    //this->node_ar_ptr = static_cast<skl_tree_node*>(node_ar_buf.ptr);
-    
-    py::buffer_info value_ar_buf = this->value_ar.request();
-    //this->value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
+    py::capsule free_value_ar(this->value_ar_ptr, [](void* f){
+        double *value_ar_ptr = reinterpret_cast<double *>(f);
+        delete[] value_ar_ptr;
+    });
+
+    py::capsule free_node_ar(this->node_ar_ptr, [](void* f){
+        skl_tree_node *node_ar_ptr = reinterpret_cast<skl_tree_node *>(f);
+        delete[] node_ar_ptr;
+    });
+
+    this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, this->node_ar_ptr, free_node_ar);
+    this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, this->value_ar_ptr, free_value_ar);
+
 }
 
 template <typename Task>
