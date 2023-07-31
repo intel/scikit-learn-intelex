@@ -18,7 +18,6 @@
 #include "onedal/common.hpp"
 #include "oneapi/dal/algo/decision_forest.hpp"
 #include "numpy/arrayobject.h"
-#include "onedal/version.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -26,7 +25,6 @@
 #include <algorithm>
 #include <limits>
 #include <vector>
-#include <iostream>
 
 #define ONEDAL_PY_TERMINAL_NODE -1
 #define ONEDAL_PY_NO_FEATURE    -2
@@ -102,14 +100,6 @@ public:
         return true;
     }
 
-    /*node_count_visitor(node_count_visitor&&) = default;
-    bool operator()(const df::leaf_node_info<Task>& info) {
-        return call(info);
-    }
-    bool operator()(const df::split_node_info<Task>& info) {
-        return call(info);
-    }*/
-
 
     std::size_t n_nodes;
     std::size_t depth;
@@ -146,14 +136,6 @@ public:
     bool call(const df::split_node_info<Task>& info);
     double* value_ar_ptr;
     skl_tree_node* node_ar_ptr;
-
-    /*to_sklearn_tree_object_visitor(to_sklearn_tree_object_visitor&&) = default;
-    bool operator()(const df::leaf_node_info<Task>& info) {
-        return call(info);
-    }
-    bool operator()(const df::split_node_info<Task>& info) {
-        return call(info);
-    }*/
 
 protected:
     std::size_t node_id;
