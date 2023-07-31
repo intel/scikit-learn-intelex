@@ -19,9 +19,9 @@ steps:
   - script: .ci\scripts\install_dpcpp.bat
     displayName: 'dpcpp installation'
   - script: |
-      set DPCPP_PACKAGE="dpctl>=0.14.5 dpnp>=0.12.1 dpcpp-cpp-rt>=2023.2.0"
-      IF %PYTHON_VERSION%==3.7 (set DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.2.0")
-      IF %PYTHON_VERSION%==3.9 (set DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.2.0")
+      set DPCPP_PACKAGE=dpctl dpnp dpcpp-cpp-rt
+      IF %PYTHON_VERSION%==3.7 (set DPCPP_PACKAGE=dpcpp-cpp-rt)
+      IF %PYTHON_VERSION%==3.11 (set DPCPP_PACKAGE=dpcpp-cpp-rt)
       conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml %DPCPP_PACKAGE%
     displayName: 'Create Anaconda environment'
   - script: |
