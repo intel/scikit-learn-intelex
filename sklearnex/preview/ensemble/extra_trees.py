@@ -193,12 +193,14 @@ class BaseTree(ABC):
 
     @property
     def estimators_(self):
-        if hasattr(self, '_cached_estimators_'): 
+        if hasattr(self, "_cached_estimators_"):
             if self._cached_estimators_ is None and self._onedal_model:
                 self._estimators_()
             return self._cached_estimators_
         else:
-            raise AttributeError(f"'{self.__class__.__name__}' has no attribute 'estimators_'")
+            raise AttributeError(
+                f"'{self.__class__.__name__}' has no attribute 'estimators_'"
+            )
 
     @estimators_.setter
     def estimators_(self, estimators):
@@ -1021,7 +1023,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             )
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
-        
+
         self._cached_estimators_ = estimators_
 
     def _onedal_fit_ready(self, patching_status, X, y, sample_weight):
