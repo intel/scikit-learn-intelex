@@ -53,9 +53,6 @@ from ..._device_offload import dispatch, wrap_output_data
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
-if daal_check_version((2023, "P", 301)):
-    from onedal.primitives import get_forest_state
-
 
 class BaseTree(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
@@ -193,6 +190,20 @@ class BaseTree(ABC):
                     )
                 )
         return sample_weight
+
+    @property
+    def estimators_(self):
+        if hasattr(self, '_cached_estimators_'): 
+            if self._cached_estimators_ is None and self._onedal_model:
+                self._estimators_()
+            return self._cached_estimators_
+        else:
+            raise AttributeError(f"'{self.__class__.__name__}' has no attribute 'estimators_'")
+
+    @estimators_.setter
+    def estimators_(self, estimators):
+        # Needed to allow for proper sklearn operation in fallback mode
+        self._cached_estimators_ = estimators
 
 
 class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
@@ -544,11 +555,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         def n_features_(self):
             return self.n_features_in_
 
-    @property
     def _estimators_(self):
-        if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_:
-                return self._cached_estimators_
         if sklearn_check_version("0.22"):
             check_is_fitted(self)
         else:
@@ -575,8 +582,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         estimators_ = []
 
         random_state_checked = check_random_state(self.random_state)
-        if daal_check_version((2023, "P", 301)):
-            allstates = get_forest_state(self._onedal_model, n_classes_)
 
         for i in range(self.n_estimators):
             est_i = clone(est)
@@ -590,17 +595,13 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
-            if daal_check_version((2023, "P", 301)):
-                tree_i_state_dict = allstates[i]
-                tree_i_state_dict["nodes"] = check_tree_nodes(tree_i_state_dict["nodes"])
-            else:
-                tree_i_state_class = get_tree_state_cls(self._onedal_model, i, n_classes_)
-                tree_i_state_dict = {
-                    "max_depth": tree_i_state_class.max_depth,
-                    "node_count": tree_i_state_class.node_count,
-                    "nodes": check_tree_nodes(tree_i_state_class.node_ar),
-                    "values": tree_i_state_class.value_ar,
-                }
+            tree_i_state_class = get_tree_state_cls(self._onedal_model, i, n_classes_)
+            tree_i_state_dict = {
+                "max_depth": tree_i_state_class.max_depth,
+                "node_count": tree_i_state_class.node_count,
+                "nodes": check_tree_nodes(tree_i_state_class.node_ar),
+                "values": tree_i_state_class.value_ar,
+            }
 
             est_i.tree_ = Tree(
                 self.n_features_in_,
@@ -611,7 +612,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             estimators_.append(est_i)
 
         self._cached_estimators_ = estimators_
-        return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -634,8 +634,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                     ),
                 ]
             )
-
-            dal_ready = dal_ready and not hasattr(self, "estimators_")
 
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
@@ -696,8 +694,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                     (sample_weight is not None, "sample_weight is not supported."),
                 ]
             )
-
-            dal_ready &= not hasattr(self, "estimators_")
 
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
@@ -831,6 +827,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             onedal_params["min_impurity_split"] = self.min_impurity_split
         else:
             onedal_params["min_impurity_split"] = None
+
+        # Lazy evaluation of estimators_
         self._cached_estimators_ = None
 
         # Compute
@@ -840,7 +838,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         self._save_attributes()
         if sklearn_check_version("1.2"):
             self._estimator = ExtraTreeClassifier()
-        self.estimators_ = self._estimators_
+
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
@@ -975,11 +973,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
 
-    @property
     def _estimators_(self):
-        if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_:
-                return self._cached_estimators_
         if sklearn_check_version("0.22"):
             check_is_fitted(self)
         else:
@@ -1003,8 +997,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
-        if daal_check_version((2023, "P", 301)):
-            allstates = get_forest_state(self._onedal_model)
 
         for i in range(self.n_estimators):
             est_i = clone(est)
@@ -1017,25 +1009,22 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 est_i.n_features_ = self.n_features_in_
             est_i.n_classes_ = 1
             est_i.n_outputs_ = self.n_outputs_
-            if daal_check_version((2023, "P", 301)):
-                tree_i_state_dict = allstates[i]
-                tree_i_state_dict["nodes"] = check_tree_nodes(tree_i_state_dict["nodes"])
-            else:
-                tree_i_state_class = get_tree_state_reg(self._onedal_model, i)
-                tree_i_state_dict = {
-                    "max_depth": tree_i_state_class.max_depth,
-                    "node_count": tree_i_state_class.node_count,
-                    "nodes": check_tree_nodes(tree_i_state_class.node_ar),
-                    "values": tree_i_state_class.value_ar,
-                }
+
+            tree_i_state_class = get_tree_state_reg(self._onedal_model, i)
+            tree_i_state_dict = {
+                "max_depth": tree_i_state_class.max_depth,
+                "node_count": tree_i_state_class.node_count,
+                "nodes": check_tree_nodes(tree_i_state_class.node_ar),
+                "values": tree_i_state_class.value_ar,
+            }
 
             est_i.tree_ = Tree(
                 self.n_features_in_, np.array([1], dtype=np.intp), self.n_outputs_
             )
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
-
-        return estimators_
+        
+        self._cached_estimators_ = estimators_
 
     def _onedal_fit_ready(self, patching_status, X, y, sample_weight):
         if sp.issparse(y):
@@ -1173,8 +1162,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            dal_ready &= not hasattr(self, "estimators_")
-
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
@@ -1234,8 +1221,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                     (sample_weight is not None, "sample_weight is not supported."),
                 ]
             )
-
-            dal_ready &= not hasattr(self, "estimators_")
 
             if dal_ready and (self.random_state is not None):
                 warnings.warn(
@@ -1331,14 +1316,17 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         }
         if daal_check_version((2023, "P", 101)):
             onedal_params["splitter_mode"] = "random"
+
+        # Lazy evaluation of estimators_
         self._cached_estimators_ = None
+
         self._onedal_estimator = self._onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
         if sklearn_check_version("1.2"):
             self._estimator = ExtraTreeRegressor()
-        self.estimators_ = self._estimators_
+
         return self
 
     def _onedal_predict(self, X, queue=None):

@@ -204,7 +204,6 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t
 
     this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, this->node_ar_ptr, free_node_ar);
     this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, this->value_ar_ptr, free_value_ar);
-
 }
 
 template <typename Task>
@@ -289,55 +288,6 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     return true;
 }
 
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
-template <typename Task>
-py::list get_all_states(const decision_forest::model<Task>& model, std::size_t n_classes) {
-    using ncv_dec = node_visitor<Task, node_count_visitor<Task>>;
-    using tsv_dec = node_visitor<Task, to_sklearn_tree_object_visitor<Task>>;
-
-    std::size_t tree_count = model.get_tree_count();
-    std::vector<node_count_visitor<Task>> ncvs(tree_count, node_count_visitor<Task>());
-    std::vector<ncv_dec> ncv_decorators;
-    for(std::size_t i=0; i < tree_count; i++){
-        ncv_decorators.push_back(ncv_dec{&ncvs[i]});
-    }
-
-    model.template traverse_depth_first<std::vector<ncv_dec>, ncv_dec> (std::move(ncv_decorators));
-
-    // generate memory block here
-    py::list output;
-
-    // this may be slow based on the memory allocation
-    std::vector<to_sklearn_tree_object_visitor<Task>> tsvs;
-    std::vector<tsv_dec> tsv_decorators;
-    for(std::size_t i=0; i < tree_count; i++){
-        tsvs.push_back(to_sklearn_tree_object_visitor<Task>(ncvs[i].depth,
-                                                            ncvs[i].n_nodes,
-                                                            ncvs[i].n_leaf_nodes,
-                                                            n_classes));
-    }
-    // must be done separately due to the nature of the decorators and a constant pointer vs vector push back
-    for(std::size_t i=0; i < tree_count; i++){
-        tsv_decorators.push_back(tsv_dec{&tsvs[i]});
-    }
-
-    model.template traverse_depth_first<std::vector<tsv_dec>, tsv_dec>(std::move(tsv_decorators));
-
-    // create list here
-    for( std::size_t i=0; i < tree_count; i++){
-        py::dict est_tree_state;
-        est_tree_state["max_depth"] = tsvs[i].max_depth;
-        est_tree_state["node_count"] = tsvs[i].node_count;
-        est_tree_state["nodes"] = tsvs[i].node_ar;
-        est_tree_state["values"] = tsvs[i].value_ar;
-        output.append(est_tree_state);
-    }
-
-    return output;
-}
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
-
-
 template <typename Task>
 void init_get_tree_state(py::module_& m) {
     using namespace decision_forest;
@@ -368,10 +318,6 @@ void init_get_tree_state(py::module_& m) {
         .def_readwrite("node_count", &tree_state_t::node_count)
         .def_readwrite("leaf_count", &tree_state_t::leaf_count)
         .def_readwrite("class_count", &tree_state_t::class_count);
-
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
-    m.def("get_all_states", &get_all_states<Task>, py::return_value_policy::take_ownership);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230301
 }
 
 ONEDAL_PY_TYPE2STR(decision_forest::task::classification, "classification");
