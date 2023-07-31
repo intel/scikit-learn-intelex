@@ -566,7 +566,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 "nodes": check_tree_nodes(tree_i_state_class.node_ar),
                 "values": tree_i_state_class.value_ar,
             }
-
             est_i.tree_ = Tree(
                 self.n_features_in_,
                 np.array([n_classes_], dtype=np.intp),
@@ -943,7 +942,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 est_i.n_features_ = self.n_features_in_
             est_i.n_classes_ = 1
             est_i.n_outputs_ = self.n_outputs_
-
             tree_i_state_class = get_tree_state_reg(self._onedal_model, i)
             tree_i_state_dict = {
                 "max_depth": tree_i_state_class.max_depth,
