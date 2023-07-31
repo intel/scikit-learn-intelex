@@ -252,7 +252,7 @@ template <>
 bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     const df::leaf_node_info<df::task::classification>& info) {
         
-    const std::size_t depth = static_cast<const std::size_t>(info.get_level());
+    std::size_t depth = static_cast<const std::size_t>(info.get_level());
     const std::size_t label = info.get_response(); // these may be a slow accesses due to oneDAL abstraction
     const double nNodeSampleCount = info.get_sample_count(); // do them only once
 
