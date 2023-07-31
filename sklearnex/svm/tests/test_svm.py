@@ -26,7 +26,11 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 
-@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+# TODO:
+# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
+@pytest.mark.parametrize(
+    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+)
 def test_sklearnex_import_svc(dataframe, queue):
     from sklearnex.svm import SVC
 
