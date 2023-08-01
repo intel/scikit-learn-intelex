@@ -48,18 +48,6 @@ class LightGbmNode:
 class Node:
     """Helper class holding Tree Node information"""
 
-    tree_id: int
-    node_id: int
-    left_child_id: Optional[int]
-    right_child_id: Optional[int]
-    cover: float
-    is_leaf: bool
-    default_left: bool
-    feature: Optional[int]
-    value: Optional[float]
-    parent_id: Optional[int] = -1
-    position: Optional[int] = -1
-
     def __init__(
         self,
         tree_id: int,
@@ -69,8 +57,8 @@ class Node:
         cover: float,
         is_leaf: bool,
         default_left: bool,
-        feature: Optional[int],
-        value: Optional[float],
+        feature: int,
+        value: float,
         parent_id: Optional[int] = -1,
         position: Optional[int] = -1,
     ) -> None:
@@ -81,14 +69,22 @@ class Node:
         self.cover = cover
         self.is_leaf = is_leaf
         self.default_left = default_left
-        self.feature = feature
-        self.value = value
         self.parent_id = parent_id
         self.position = position
+        self.value = value
+        self.__feature = feature
 
     def get_value_closest_float_downward(self) -> np.float64:
         """Get the closest exact fp value smaller than self.value"""
         return np.nextafter(np.single(self.value), np.single(-np.inf))
+
+    @property
+    def feature(self) -> int:
+        if not (isinstance(self.__feature, str) and self.__feature.isnumeric()):
+            raise ValueError(
+                f"Feature names must be integers (got ({type(self.__feature)}){self.__feature})"
+            )
+        return int(self.__feature)
 
 
 class TreeView:
@@ -127,91 +123,43 @@ class NodeList(list):
 
     @staticmethod
     def from_booster(booster: xgb.Booster) -> "NodeList":
-        """Create a TreeList object from a xgb.Booster object"""
-        tl = NodeList()
-        df = booster.trees_to_dataframe()
-        for _, node in df.iterrows():
-            tree_id, node_id = map(int, node["ID"].split("-"))  # e.g. 0-1
-            is_leaf = node["Feature"] == "Leaf"
-            left_child_id = (
-                int(node["Yes"].split("-")[1]) if isinstance(node["Yes"], str) else None
-            )
-            right_child_id = (
-                int(node["No"].split("-")[1]) if isinstance(node["No"], str) else None
-            )
-            tl.append(
-                Node(
-                    tree_id=tree_id,
-                    node_id=node_id,
-                    left_child_id=left_child_id,
-                    right_child_id=right_child_id,
-                    cover=node["Cover"],
-                    feature=int(node["Feature"]) if node["Feature"].isnumeric() else None,
-                    is_leaf=is_leaf,
-                    default_left=node["Yes"] == node["Missing"],
-                    value=None if is_leaf else node["Split"],
+        nl = NodeList()
+        dump = booster.get_dump(dump_format="json", with_stats=True)
+        for tree_id, raw_tree in enumerate(dump):
+            nodes = deque()
+            nodes.append(json.loads(raw_tree))
+            while nodes:
+                node = nodes.popleft()
+                if "children" in node:
+                    left_child_id = node["children"][0]["nodeid"]
+                    right_child_id = node["children"][1]["nodeid"]
+                    nodes.append(node["children"][0])
+                    nodes.append(node["children"][1])
+                else:
+                    left_child_id, right_child_id = None, None
+                is_leaf = "leaf" in node
+                default_left = "yes" in node and node["yes"] == node["missing"]
+                nl.append(
+                    Node(
+                        tree_id=tree_id,
+                        node_id=node["nodeid"],
+                        left_child_id=left_child_id,
+                        right_child_id=right_child_id,
+                        cover=node["cover"],
+                        feature=node.get("split"),
+                        is_leaf=is_leaf,
+                        default_left=default_left,
+                        value=node["leaf"] if is_leaf else node["split_condition"],
+                    )
                 )
-            )
 
-        # fill the missing leaf values which are not part of the dataframe
-        tl._fill_leaf_values(booster.get_dump(dump_format="json"))
-
-        return tl
+        return nl
 
     def iter_trees(self) -> Generator[TreeView, None, None]:
         """Iterate over TreeViews"""
         tree_ids = set((node.tree_id for node in self))
         for tid in tree_ids:
             yield TreeView(tree_id=tid, nodes=[n for n in self if n.tree_id == tid])
-
-    def _fill_leaf_values(self, booster_dump: List[str]) -> None:
-        """Fill the leaf values (i.e. the predictions) from `booster_dump`
-        Note: These values are not contained in the pd.DataFrame format"""
-
-        def get_leaf_nodes(
-            node: Dict[str, Any], leaf_nodes: List[Dict[str, Any]] = []
-        ) -> None:
-            """Helper to get all leaf nodes from the json.loads() of the booster_dump"""
-            if "children" in node:
-                get_leaf_nodes(node["children"][0], leaf_nodes)
-                get_leaf_nodes(node["children"][1], leaf_nodes)
-                return
-
-            if "leaf" not in node:
-                raise KeyError(f"Node does not have a 'leaf' value: {node}")
-
-            leaf_nodes.append(node)
-
-        root_nodes = [json.loads(s) for s in booster_dump]
-
-        for tree_id, root_node in enumerate(root_nodes):
-            leaf_nodes = []
-            get_leaf_nodes(root_node, leaf_nodes)
-
-            for node in self:
-                if not node.is_leaf:
-                    continue
-
-                if node.tree_id != tree_id:
-                    continue
-
-                try:
-                    node.value = float(
-                        [
-                            l["leaf"] for l in leaf_nodes if l["nodeid"] == node.node_id
-                        ].pop()
-                    )
-                except IndexError as e:
-                    raise ValueError(
-                        f"No leaf information for node {node.node_id} in tree {node.tree_id}"
-                    ) from e
-
-        # assert all tree leafs have a value
-        for node in self:
-            if node.is_leaf:
-                assert (
-                    node.value is not None
-                ), f"Failed to find leaf value for node {node}"
 
     def __setitem__(self):
         raise NotImplementedError("Use TreeList.from_booster() to initialize a TreeList")
@@ -380,11 +328,11 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
 
     n_iterations = booster.best_iteration + 1
 
-    # Create + base iteration
+    # Create
     if is_regression:
         mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations + 1)
 
-        # TODO: Understand why this tree is added
+        # add base score as the first tree
         tree_id = mb.create_tree(1)
         mb.add_leaf(tree_id=tree_id, response=base_score, cover=1)
     else:
@@ -409,10 +357,6 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
             continue
 
         root_node = tree.nodes[0]
-        assert isinstance(
-            root_node.feature, int
-        ), f"Feature names must be integers (got ({type(root_node.feature)}){root_node.feature})"
-
         parent_id = mb.add_split(
             tree_id=tree_id,
             feature_index=root_node.feature,
@@ -443,9 +387,6 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
                     position=node.position,
                 )
             else:
-                assert isinstance(
-                    node.feature, int
-                ), f"Feature names must be integers (got ({type(node.feature)}){node.feature})"
                 parent_id = mb.add_split(
                     tree_id=tree_id,
                     feature_index=node.feature,
