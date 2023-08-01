@@ -15,53 +15,45 @@
 # ===============================================================================
 
 import warnings
+from abc import ABC
 
 import numpy as np
 
+from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal import _backend
 
-from abc import ABC
+from ..datatypes import _convert_to_supported, from_table, to_table
 
-from daal4py.sklearn._utils import get_dtype
-from daal4py.sklearn._utils import daal_check_version
-
-from ..datatypes import _convert_to_supported
-
-if daal_check_version((2023, 'P', 200)):
+if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
 else:
     from sklearn.cluster import _kmeans_plusplus
 
+from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.utils import check_array, check_random_state
+from sklearn.utils.validation import check_is_fitted
+
 from onedal.basic_statistics import BasicStatistics
 
 from ..common._policy import _get_policy
-from ..datatypes.validation import _is_arraylike_not_scalar
-from ..datatypes._data_conversion import from_table, to_table
-
-from sklearn.exceptions import ConvergenceWarning
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils import check_random_state, check_array
-
-from sklearn.base import (
-    BaseEstimator,
-    ClusterMixin,
-    TransformerMixin)
-
-from sklearn.metrics.pairwise import euclidean_distances
+from ..utils import _is_arraylike_not_scalar
 
 
 class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
     def __init__(
-            self,
-            n_clusters,
-            *,
-            init,
-            n_init,
-            max_iter,
-            tol,
-            verbose,
-            random_state,
-            n_local_trials=None):
+        self,
+        n_clusters,
+        *,
+        init,
+        n_init,
+        max_iter,
+        tol,
+        verbose,
+        random_state,
+        n_local_trials=None,
+    ):
         self.n_clusters = n_clusters
         self.init = init
         self.max_iter = max_iter
@@ -96,11 +88,8 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         return mean_var * rtol
 
     def _check_params_vs_input(
-            self,
-            X_table,
-            policy,
-            default_n_init=10,
-            dtype=np.float32):
+        self, X_table, policy, default_n_init=10, dtype=np.float32
+    ):
         # n_clusters
         if X_table.shape[0] < self.n_clusters:
             raise ValueError(
@@ -115,48 +104,37 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         self._n_init = self.n_init
         if self._n_init == "warn":
             warnings.warn(
-                "The default value of `n_init` will change from "
-                f"{default_n_init} to 'auto' in 1.4. Set the value of `n_init`"
-                " explicitly to suppress the warning",
+                (
+                    "The default value of `n_init` will change from "
+                    f"{default_n_init} to 'auto' in 1.4. Set the value of `n_init`"
+                    " explicitly to suppress the warning"
+                ),
                 FutureWarning,
+                stacklevel=2,
             )
             self._n_init = default_n_init
         if self._n_init == "auto":
-            if self.init == "k-means++":
+            if isinstance(self.init, str) and self.init == "k-means++":
                 self._n_init = 1
-            else:
+            elif isinstance(self.init, str) and self.init == "random":
                 self._n_init = default_n_init
+            elif callable(self.init):
+                self._n_init = default_n_init
+            else:  # array-like
+                self._n_init = 1
 
         if _is_arraylike_not_scalar(self.init) and self._n_init != 1:
             warnings.warn(
-                "Explicit initial center position passed: performing only"
-                f" one init in {self.__class__.__name__} instead of "
-                f"n_init={self._n_init}.",
+                (
+                    "Explicit initial center position passed: performing only"
+                    f" one init in {self.__class__.__name__} instead of "
+                    f"n_init={self._n_init}."
+                ),
                 RuntimeWarning,
                 stacklevel=2,
             )
             self._n_init = 1
-
-        self._algorithm = self.algorithm
-        if self._algorithm in ("auto", "full"):
-            warnings.warn(
-                (
-                    f"algorithm='{self._algorithm}' is deprecated, it will be "
-                    "removed in 1.3. Using 'lloyd' instead."
-                ),
-                FutureWarning,
-            )
-            self._algorithm = "lloyd"
-        if self._algorithm == "elkan" and self.n_clusters == 1:
-            warnings.warn(
-                (
-                    "algorithm='elkan' doesn't make sense for a single "
-                    "cluster. Using 'lloyd' instead."
-                ),
-                RuntimeWarning,
-            )
-            self._algorithm = "lloyd"
-        assert self._algorithm == "lloyd"
+        assert self.algorithm == "lloyd"
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -164,11 +142,12 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
     def _get_onedal_params(self, dtype=np.float32):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
-            'fptype': 'float' if dtype == np.float32 else 'double',
-            'method': 'by_default', 'seed': -1,
-            'max_iteration_count': self.max_iter,
-            'cluster_count': self.n_clusters,
-            'accuracy_threshold': thr,
+            "fptype": "float" if dtype == np.float32 else "double",
+            "method": "by_default",
+            "seed": -1,
+            "max_iteration_count": self.max_iter,
+            "cluster_count": self.n_clusters,
+            "accuracy_threshold": thr,
         }
 
     def _get_params_and_input(self, X, policy):
@@ -189,26 +168,19 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         return (params, X_table, dtype)
 
     def _init_centroids_custom(
-            self,
-            X_table,
-            init,
-            random_seed,
-            policy,
-            dtype=np.float32,
-            n_centroids=None):
+        self, X_table, init, random_seed, policy, dtype=np.float32, n_centroids=None
+    ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
 
         if isinstance(init, str) and init == "k-means++":
             alg = KMeansInit(
-                cluster_count=n_clusters,
-                seed=random_seed,
-                algorithm="plus_plus_dense")
+                cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_dense"
+            )
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif isinstance(init, str) and init == "random":
             alg = KMeansInit(
-                cluster_count=n_clusters,
-                seed=random_seed,
-                algorithm="random_dense")
+                cluster_count=n_clusters, seed=random_seed, algorithm="random_dense"
+            )
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif _is_arraylike_not_scalar(init):
             centers = np.asarray(init)
@@ -231,11 +203,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 random_state=random_state,
             )
         elif isinstance(init, str) and init == "random":
-            seeds = random_state.choice(
-                n_samples,
-                size=self.n_clusters,
-                replace=False
-            )
+            seeds = random_state.choice(n_samples, size=self.n_clusters, replace=False)
             centers = X[seeds]
         elif callable(init):
             cc_arr = init(X, self.n_clusters, random_state)
@@ -247,7 +215,8 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         else:
             raise ValueError(
                 f"init should be either 'k-means++', 'random', a ndarray or a "
-                f"callable, got '{ init }' instead.")
+                f"callable, got '{ init }' instead."
+            )
 
         centers = _convert_to_supported(policy, centers)
         return to_table(centers)
@@ -261,8 +230,12 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
 
         result = module.train(policy, params, X_table, centroids_table)
 
-        return (result.responses, result.objective_function_value,
-                result.model, result.iteration_count)
+        return (
+            result.responses,
+            result.objective_function_value,
+            result.model,
+            result.iteration_count,
+        )
 
     def _fit(self, X, module, queue=None):
         policy = self._get_policy(queue, X)
@@ -280,7 +253,8 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 mod = _backend.kmeans_common
                 better_inertia = inertia < best_inertia
                 same_clusters = mod._is_same_clustering(
-                    labels, best_labels, self.n_clusters)
+                    labels, best_labels, self.n_clusters
+                )
                 return better_inertia and not same_clusters
 
         random_state = check_random_state(self.random_state)
@@ -291,12 +265,12 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             init = check_array(init, dtype=dtype, copy=True, order="C")
             self._validate_center_shape(X, init)
 
-        use_custom_init = daal_check_version((2023, 'P', 200)) and not callable(self.init)
+        use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
 
         for _ in range(self._n_init):
             if use_custom_init:
-                #random_seed = random_state.tomaxint()
-                random_seed = random_state.randint(np.iinfo('i').max)
+                # random_seed = random_state.tomaxint()
+                random_seed = random_state.randint(np.iinfo("i").max)
                 centroids_table = self._init_centroids_custom(
                     X_table, init, random_seed, policy, dtype=dtype
                 )
@@ -313,9 +287,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             )
 
             if self.verbose:
-                print("KMeans iteration completed with "
-                      "inertia {}.".format(inertia)
-                      )
+                print("KMeans iteration completed with " "inertia {}.".format(inertia))
 
             if is_better_iteration(inertia, labels):
                 best_model, best_n_iter = model, n_iter
@@ -413,6 +385,7 @@ class KMeans(_BaseKMeans):
 
         self.copy_x = copy_x
         self.algorithm = algorithm
+        assert self.algorithm == "lloyd"
 
     def fit(self, X, queue=None):
         return super()._fit(X, _backend.kmeans.clustering, queue)
@@ -506,7 +479,7 @@ def k_means(
     copy_x=True,
     algorithm="lloyd",
     return_n_iter=False,
-    queue=None
+    queue=None,
 ):
     est = KMeans(
         n_clusters=n_clusters,

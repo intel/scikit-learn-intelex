@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 
-from ...common._spmd_policy import _get_spmd_policy
-from ..._device_offload import support_usm_ndarray
 from onedal.decomposition.pca import PCA as PCABatch
+
+from ..._device_offload import support_usm_ndarray
+from ...common._spmd_policy import _get_spmd_policy
 
 
 class BasePCASPMD:
@@ -26,7 +27,6 @@ class BasePCASPMD:
 
 
 class PCA(BasePCASPMD, PCABatch):
-
     @support_usm_ndarray()
     def fit(self, X, queue):
         return super().fit(X, queue)

@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 from functools import wraps
 
 try:
-    from sklearnex._device_offload import (_get_global_queue,
-                                           _transfer_to_host,
-                                           _copy_to_usm)
+    import dpnp
+
+    dpnp_available = True
+except ImportError:
+    dpnp_available = False
+
+try:
+    from sklearnex._device_offload import (
+        _copy_to_usm,
+        _get_global_queue,
+        _transfer_to_host,
+    )
+
     _sklearnex_available = True
 except ImportError:
     import logging
-    logging.warning('Device support requires '
-                    'Intel(R) Extension for Scikit-learn*.')
+
+    logging.warning("Device support requires " "Intel(R) Extension for Scikit-learn*.")
     _sklearnex_available = False
 
 
@@ -40,9 +50,7 @@ def _extract_usm_iface(*args, **kwargs):
     allargs = (*args, *kwargs.values())
     if len(allargs) == 0:
         return None
-    return getattr(allargs[0],
-                   '__sycl_usm_array_interface__',
-                   None)
+    return getattr(allargs[0], "__sycl_usm_array_interface__", None)
 
 
 def _run_on_device(func, obj=None, *args, **kwargs):
@@ -57,21 +65,31 @@ def support_usm_ndarray(freefunc=False):
             if _sklearnex_available:
                 usm_iface = _extract_usm_iface(*args, **kwargs)
                 data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-                hostkwargs['queue'] = data_queue
+                hostkwargs["queue"] = data_queue
                 result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-                if usm_iface is not None and hasattr(result, '__array_interface__'):
-                    return _copy_to_usm(data_queue, result)
+                if usm_iface is not None and hasattr(result, "__array_interface__"):
+                    result = _copy_to_usm(data_queue, result)
+                    if (
+                        dpnp_available
+                        and len(args) > 0
+                        and isinstance(args[0], dpnp.ndarray)
+                    ):
+                        result = dpnp.array(result, copy=False)
                 return result
             return _run_on_device(func, obj, *args, **kwargs)
 
         if freefunc:
+
             @wraps(func)
             def wrapper_free(*args, **kwargs):
                 return wrapper_impl(None, *args, **kwargs)
+
             return wrapper_free
 
         @wraps(func)
         def wrapper_with_self(self, *args, **kwargs):
             return wrapper_impl(self, *args, **kwargs)
+
         return wrapper_with_self
+
     return decorator

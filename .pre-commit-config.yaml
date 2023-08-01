@@ -1,5 +1,5 @@
 #===============================================================================
-# Copyright 2014 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
 # limitations under the License.
 #===============================================================================
 
-# distutils: language = c++
-# cython: language_level=2
-
-cdef extern from "dpctl_interop/daal_context_service.h":
-    void _dppl_set_current_queue_to_daal_context() except +
-    void _dppl_reset_daal_context() except +
-
-def set_current_queue_to_daal_context():
-    _dppl_set_current_queue_to_daal_context()
-
-def reset_daal_context():
-    _dppl_reset_daal_context()
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        language_version: python3.10
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        language_version: python3.10
