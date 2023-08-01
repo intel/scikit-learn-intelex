@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +12,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py Decision Forest Classification example for shared memory systems
 
-import daal4py as d4p
 import numpy as np
+
+import daal4py as d4p
 
 # let's try to use pandas' fast csv reader
 try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2, dtype=t)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
 
 
-def main(readcsv=read_csv, method='defaultDense'):
+def main(readcsv=read_csv, method="defaultDense"):
     # input data file
     infile = "./data/batch/df_classification_train.csv"
     testfile = "./data/batch/df_classification_test.csv"
@@ -44,9 +46,9 @@ def main(readcsv=read_csv, method='defaultDense'):
         minObservationsInLeafNode=8,
         featuresPerNode=3,
         engine=d4p.engines_mt19937(seed=777),
-        varImportance='MDI',
+        varImportance="MDI",
         bootstrap=True,
-        resultsToCompute='computeOutOfBagError'
+        resultsToCompute="computeOutOfBagError",
     )
 
     # Read data. Let's use 3 features per observation
@@ -60,7 +62,7 @@ def main(readcsv=read_csv, method='defaultDense'):
     predict_algo = d4p.decision_forest_classification_prediction(
         nClasses=5,
         resultsToEvaluate="computeClassLabels|computeClassProbabilities",
-        votingMethod="unweighted"
+        votingMethod="unweighted",
     )
     # read test data (with same #features)
     pdata = readcsv(testfile, range(3), t=np.float32)
@@ -80,11 +82,11 @@ if __name__ == "__main__":
     print("\nOOB error:\n", train_result.outOfBagError)
     print(
         "\nDecision forest prediction results (first 10 rows):\n",
-        predict_result.prediction[0:10]
+        predict_result.prediction[0:10],
     )
     print(
         "\nDecision forest probabilities results (first 10 rows):\n",
-        predict_result.probabilities[0:10]
+        predict_result.probabilities[0:10],
     )
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
-    print('All looks good!')
+    print("All looks good!")
