@@ -17,6 +17,13 @@
 from functools import wraps
 
 try:
+    import dpnp
+
+    dpnp_available = True
+except ImportError:
+    dpnp_available = False
+
+try:
     from sklearnex._device_offload import (
         _copy_to_usm,
         _get_global_queue,
@@ -61,7 +68,13 @@ def support_usm_ndarray(freefunc=False):
                 hostkwargs["queue"] = data_queue
                 result = _run_on_device(func, obj, *hostargs, **hostkwargs)
                 if usm_iface is not None and hasattr(result, "__array_interface__"):
-                    return _copy_to_usm(data_queue, result)
+                    result = _copy_to_usm(data_queue, result)
+                    if (
+                        dpnp_available
+                        and len(args) > 0
+                        and isinstance(args[0], dpnp.ndarray)
+                    ):
+                        result = dpnp.array(result, copy=False)
                 return result
             return _run_on_device(func, obj, *args, **kwargs)
 

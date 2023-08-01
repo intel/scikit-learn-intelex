@@ -593,8 +593,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
-            elif hasattr(self, "estimators_"):
-                return False
             else:
                 return True
         if method_name in ["predict", "predict_proba"]:
@@ -642,8 +640,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             elif self.oob_score:
                 return False
             elif not self.n_outputs_ == 1:
-                return False
-            elif hasattr(self, "estimators_"):
                 return False
             else:
                 return True
@@ -1004,8 +1000,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
-            elif hasattr(self, "estimators_"):
-                return False
             else:
                 return True
         if method_name == "predict":
@@ -1056,8 +1050,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif self.warm_start:
                 return False
             elif self.oob_score:
-                return False
-            elif hasattr(self, "estimators_"):
                 return False
             else:
                 return True
