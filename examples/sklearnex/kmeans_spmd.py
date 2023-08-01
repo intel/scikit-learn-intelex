@@ -14,15 +14,15 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 from warnings import warn
 
-from mpi4py import MPI
-from dpctl import SyclQueue
 import dpctl.tensor as dpt
-from onedal.spmd.cluster import KMeans
-
+import numpy as np
+from dpctl import SyclQueue
+from mpi4py import MPI
 from sklearn.datasets import load_digits
+
+from onedal.spmd.cluster import KMeans
 
 
 def get_data_slice(chunk, count):
