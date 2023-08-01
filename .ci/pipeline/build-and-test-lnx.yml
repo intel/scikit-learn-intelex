@@ -24,7 +24,7 @@ steps:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep '3.7') ] || [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.2.0"; else export DPCPP_PACKAGE="dpctl>=0.14.5 dpnp>=0.12.1 dpcpp-cpp-rt>=2023.2.0"; fi
+      if [ $(echo $(PYTHON_VERSION) | grep '3.7') ] || [ $(echo $(PYTHON_VERSION) | grep '3.11') ]; then export DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.2.0"; else export DPCPP_PACKAGE="dpctl>=0.14 dpnp>=0.12.1 dpcpp-cpp-rt>=2023.2.0"; fi
       conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE
     displayName: 'Conda create'
   - script: |
