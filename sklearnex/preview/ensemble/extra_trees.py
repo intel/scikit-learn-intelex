@@ -623,11 +623,16 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None) and \
-               (not daal_check_version((2023, 'P', 300))):
-                warnings.warn("Setting 'random_state' value is not supported. "
-                              "State set by oneDAL to default value (777).",
-                              RuntimeWarning)
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2023, "P", 300)))
+            ):
+                warnings.warn(
+                    "Setting 'random_state' value is not supported. "
+                    "State set by oneDAL to default value (777).",
+                    RuntimeWarning,
+                )
 
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
@@ -682,11 +687,16 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None) and \
-               (not daal_check_version((2023, 'P', 300))):
-                warnings.warn("Setting 'random_state' value is not supported. "
-                              "State set by oneDAL to default value (777).",
-                              RuntimeWarning)
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2023, "P", 300)))
+            ):
+                warnings.warn(
+                    "Setting 'random_state' value is not supported. "
+                    "State set by oneDAL to default value (777).",
+                    RuntimeWarning,
+                )
 
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
@@ -1148,11 +1158,16 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None) and \
-               (not daal_check_version((2023, 'P', 300))):
-                warnings.warn("Setting 'random_state' value is not supported. "
-                              "State set by oneDAL to default value (777).",
-                              RuntimeWarning)
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2023, "P", 300)))
+            ):
+                warnings.warn(
+                    "Setting 'random_state' value is not supported. "
+                    "State set by oneDAL to default value (777).",
+                    RuntimeWarning,
+                )
 
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
@@ -1207,11 +1222,16 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None) and \
-               (not daal_check_version((2023, 'P', 300))):
-                warnings.warn("Setting 'random_state' value is not supported. "
-                              "State set by oneDAL to default value (777).",
-                              RuntimeWarning)
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2023, "P", 300)))
+            ):
+                warnings.warn(
+                    "Setting 'random_state' value is not supported. "
+                    "State set by oneDAL to default value (777).",
+                    RuntimeWarning,
+                )
 
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
