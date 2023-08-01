@@ -1,4 +1,4 @@
-/*******************************************************************************
+    /*******************************************************************************
 * Copyright 2023 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -184,16 +184,16 @@ struct params2desc {
                         .set_max_leaf_nodes(params["max_leaf_nodes"].cast<std::int64_t>())
                         .set_max_bins(params["max_bins"].cast<std::int64_t>())
                         .set_min_bin_size(params["min_bin_size"].cast<std::int64_t>())
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
-                        .set_seed(params["seed"].cast<std::int64_t>())
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
                         .set_memory_saving_mode(params["memory_saving_mode"].cast<bool>())
                         .set_bootstrap(params["bootstrap"].cast<bool>())
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
                         .set_splitter_mode(get_splitter_mode(params))
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
                         .set_error_metric_mode(get_error_metric_mode(params))
-                        .set_variable_importance_mode(get_variable_importance_mode(params));
+                        .set_variable_importance_mode(get_variable_importance_mode(params))
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
+                        .set_seed(params["seed"].cast<std::int64_t>());
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
 
         if constexpr (is_cls) {
             desc.set_class_count(params["class_count"].cast<std::int64_t>());
