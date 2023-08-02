@@ -40,6 +40,20 @@ To contribute your changes directly to the repository, do the following:
 - Document your code.
 - [Submit](https://github.com/intel/scikit-learn-intelex/pulls) a pull request into the `master` branch. Provide a brief description of the changes you are contributing.
 
+Standard acronyms to start the commit message with are
+API: an (incompatible) API change
+BLD: change related to building scikit-learn-intelex
+BUG: bug fix
+DEP: deprecate something, or remove a deprecated object
+DEV: development tool or utility
+DOC: documentation
+ENH: enhancement
+MAINT: maintenance commit (refactoring, typos, etc.)
+REV: revert an earlier commit
+STY: style fix (whitespace, PEP8)
+TST: addition or modification of tests
+REL: related to releasing scikit-learn-intelex
+
 Public CI is enabled for the repository. Your PR should pass all of our checks. We will review your contribution and, if any additional fixes or modifications are necessary, we may give some feedback to guide you. When accepted, your pull request will be merged into our GitHub repository.
 
 ## Code Style
