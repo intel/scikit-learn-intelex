@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # sklearnex RF example for distributed systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./random_forest_regressor_spmd.py
 
-import numpy as np
-
 import dpctl
 import dpctl.tensor as dpt
+import dpnp
 
+import numpy as np
 from mpi4py import MPI
-from sklearnex.spmd.ensemble import RandomForestRegressor
-
 from numpy.testing import assert_allclose
+
+from sklearnex.spmd.ensemble import RandomForestRegressor
 
 
 def generate_X_y(par, coef_seed, data_seed):
-    ns, nf = par['ns'], par['nf']
+    ns, nf = par["ns"], par["nf"]
 
     crng = np.random.default_rng(coef_seed)
     coef = crng.uniform(-10, 10, size=(nf,))
@@ -46,24 +46,32 @@ comm = MPI.COMM_WORLD
 mpi_size = comm.Get_size()
 mpi_rank = comm.Get_rank()
 
-params_train = {'ns': 10000, 'nf': 3}
-params_test = {'ns': 100, 'nf': 3}
+params_train = {"ns": 10000, "nf": 3}
+params_test = {"ns": 100, "nf": 3}
 
 X_train, y_train, coef_train = generate_X_y(params_train, 10, mpi_rank)
 X_test, y_test, coef_test = generate_X_y(params_test, 10, mpi_rank + 99)
 
 assert_allclose(coef_train, coef_test)
 
+# Both `dpnp.ndarrays` and `dpctl.tensors` can be used in the same flow
+# for invoking GPU offloading. Just make sure that, they are using
+# the same sycl context.
+
 q = dpctl.SyclQueue("gpu")  # GPU
 
 dpt_X_train = dpt.asarray(X_train, usm_type="device", sycl_queue=q)
 dpt_y_train = dpt.asarray(y_train, usm_type="device", sycl_queue=q)
-dpt_X_test = dpt.asarray(X_test, usm_type="device", sycl_queue=q)
+
+dpnp_X_test = dpnp.asarray(X_test, usm_type="device", sycl_queue=q)
 
 rf = RandomForestRegressor(max_depth=2, random_state=0).fit(dpt_X_train, dpt_y_train)
 
-y_predict = rf.predict(dpt_X_test)
+y_predict = rf.predict(dpnp_X_test)
 
 print("Ground truth (first 5 observations on rank {}):\n{}".format(mpi_rank, y_test[:5]))
-print("Regression results (first 5 observations on rank {}):\n{}"
-      .format(mpi_rank, dpt.to_numpy(y_predict)[:5]))
+print(
+    "Regression results (first 5 observations on rank {}):\n{}".format(
+        mpi_rank, y_predict[:5]
+    )
+)

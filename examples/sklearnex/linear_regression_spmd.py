@@ -14,12 +14,13 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 from warnings import warn
 
-from mpi4py import MPI
-from dpctl import SyclQueue
 import dpctl.tensor as dpt
+import numpy as np
+from dpctl import SyclQueue
+from mpi4py import MPI
+
 from sklearnex.spmd.linear_model import LinearRegression
 
 
@@ -28,7 +29,7 @@ def generate_X_y(ns, data_seed):
 
     crng = np.random.default_rng(777)
     coef = crng.uniform(-4, 1, size=(nr, nf)).T
-    intp = crng.uniform(-1, 9, size=(nr, ))
+    intp = crng.uniform(-1, 9, size=(nr,))
 
     drng = np.random.default_rng(data_seed)
     data = drng.uniform(-7, 7, size=(ns, nf))
@@ -50,8 +51,10 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 
 if size < 2:
-    warn("This example was intentionally "
-         "designed to run in distributed mode only", RuntimeWarning)
+    warn(
+        "This example was intentionally " "designed to run in distributed mode only",
+        RuntimeWarning,
+    )
 
 X, y = get_train_data(rank)
 

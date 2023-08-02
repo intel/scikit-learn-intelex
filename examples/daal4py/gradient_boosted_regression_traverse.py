@@ -22,6 +22,8 @@ from gradient_boosted_regression import main as gbt_regression
 
 import daal4py as d4p
 
+import daal4py as d4p
+
 
 def printTree(nodes, values):
     def printNodes(node_id, nodes, values, level):

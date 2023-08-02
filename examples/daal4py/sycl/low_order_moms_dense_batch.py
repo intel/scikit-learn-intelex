@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py low order moments example for shared memory systems
 
-import daal4py as d4p
-import numpy as np
 import os
+
+import numpy as np
+
+import daal4py as d4p
 from daal4py.oneapi import sycl_buffer
 
 # let's try to use pandas' fast csv reader
@@ -26,15 +28,18 @@ try:
     import pandas
 
     def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=',', header=None, dtype=t)
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
 except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=',', ndmin=2)
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
+
 
 try:
     from daal4py.oneapi import sycl_context
-    with sycl_context('gpu'):
+
+    with sycl_context("gpu"):
         gpu_available = True
 except:
     gpu_available = False
@@ -42,7 +47,7 @@ except:
 
 # Commone code for both CPU and GPU computations
 def compute(data, method):
-    alg = d4p.low_order_moments(method=method, fptype='float')
+    alg = d4p.low_order_moments(method=method, fptype="float")
     return alg.compute(data)
 
 
@@ -50,12 +55,14 @@ def compute(data, method):
 def to_numpy(data):
     try:
         from pandas import DataFrame
+
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
     except ImportError:
         pass
     try:
         from scipy.sparse import csr_matrix
+
         if isinstance(data, csr_matrix):
             return data.toarray()
     except ImportError:
@@ -65,7 +72,7 @@ def to_numpy(data):
 
 def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
-    file = os.path.join('..', 'data', 'batch', 'covcormoments_dense.csv')
+    file = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
     data = readcsv(file, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)
@@ -75,27 +82,58 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with sycl_context('gpu'):
+        with sycl_context("gpu"):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, "defaultDense")
-        for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered',
-                     'mean', 'secondOrderRawMoment', 'variance', 'standardDeviation',
-                     'variation']:
+        for name in [
+            "minimum",
+            "maximum",
+            "sum",
+            "sumSquares",
+            "sumSquaresCentered",
+            "mean",
+            "secondOrderRawMoment",
+            "variance",
+            "standardDeviation",
+            "variation",
+        ]:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
 
     # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
+    with sycl_context("cpu"):
         sycl_data = sycl_buffer(data)
         result_cpu = compute(sycl_data, "defaultDense")
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert all(getattr(result_classic, name).shape == (1, data.shape[1]) for name in
-           ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-            'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation'])
+    assert all(
+        getattr(result_classic, name).shape == (1, data.shape[1])
+        for name in [
+            "minimum",
+            "maximum",
+            "sum",
+            "sumSquares",
+            "sumSquaresCentered",
+            "mean",
+            "secondOrderRawMoment",
+            "variance",
+            "standardDeviation",
+            "variation",
+        ]
+    )
 
-    for name in ['minimum', 'maximum', 'sum', 'sumSquares', 'sumSquaresCentered', 'mean',
-                 'secondOrderRawMoment', 'variance', 'standardDeviation', 'variation']:
+    for name in [
+        "minimum",
+        "maximum",
+        "sum",
+        "sumSquares",
+        "sumSquaresCentered",
+        "mean",
+        "secondOrderRawMoment",
+        "variance",
+        "standardDeviation",
+        "variation",
+    ]:
         assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
 
     return result_classic
@@ -114,4 +152,4 @@ if __name__ == "__main__":
     print("\nVariance:\n", res.variance)
     print("\nStandard deviation:\n", res.standardDeviation)
     print("\nVariation:\n", res.variation)
-    print('All looks good!')
+    print("All looks good!")
