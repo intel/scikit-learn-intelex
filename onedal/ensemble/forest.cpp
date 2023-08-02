@@ -190,16 +190,17 @@ struct params2desc {
                         .set_splitter_mode(get_splitter_mode(params))
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
                         .set_error_metric_mode(get_error_metric_mode(params))
-                        .set_variable_importance_mode(get_variable_importance_mode(params))
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
-                        .set_seed(params["seed"].cast<std::int64_t>());
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
+                        .set_variable_importance_mode(get_variable_importance_mode(params));
 
         if constexpr (is_cls) {
             desc.set_class_count(params["class_count"].cast<std::int64_t>());
             desc.set_infer_mode(get_infer_mode(params));
             desc.set_voting_mode(get_voting_mode(params));
         }
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
+                        desc.set_seed(params["seed"].cast<std::int64_t>());
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
 
         return desc;
     }
