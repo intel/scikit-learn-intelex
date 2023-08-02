@@ -199,7 +199,7 @@ struct params2desc {
         }
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
-                        desc.set_seed(params["seed"].cast<std::int64_t>());
+        desc.set_seed(params["seed"].cast<std::int64_t>());
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
 
         return desc;
