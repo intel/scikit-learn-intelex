@@ -16,7 +16,6 @@
 
 # Calling scikit-learn patch - this would enable acceleration on all
 # enabled algorithms. This is most straight forward way of patching
-
 from sklearnex import patch_sklearn
 
 patch_sklearn()

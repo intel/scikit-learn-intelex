@@ -22,8 +22,6 @@ from decision_forest_regression_default_dense import main as df_regression
 
 import daal4py as d4p
 
-import daal4py as d4p
-
 
 def printTree(nodes, values):
     def printNodes(node_id, nodes, values, level):

@@ -17,7 +17,6 @@
 # sklearnex can help you debug your aplications by printing messages on it's invocation
 # to allow you to see if stock of accelerated version was used.
 # By setting sklearnex logger level to "INFO" you would enable this verbose mode
-
 import logging
 
 logging.getLogger("sklearnex").setLevel(logging.INFO)
