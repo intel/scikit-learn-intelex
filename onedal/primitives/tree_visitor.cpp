@@ -273,8 +273,8 @@ template <typename Task>
 void init_get_tree_state(py::module_& m) {
     using namespace decision_forest;
     using model_t = model<Task>;
-    using tree_state_t = tree_state<Task>;    
-    
+    using tree_state_t = tree_state<Task>;
+
     // TODO:
     // create one instance for cls and reg.
     py::class_<tree_state_t>(m, "get_tree_state")
