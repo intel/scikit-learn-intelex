@@ -364,16 +364,13 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         if sample_weight is not None and len(sample_weight) > 0:
             sample_weight = self._get_sample_weight(sample_weight, X)
-            policy = self._get_policy(queue, X, y, sample_weight)
-            X, y, sample_weight = _convert_to_supported(policy, X, y, sample_weight)
-            params = self._get_onedal_params(X)
-            train_result = module.train(policy, params, *to_table(X, y, sample_weight))
-
+            data = (X, y, sample_weight)
         else:
-            policy = self._get_policy(queue, X, y)
-            X, y = _convert_to_supported(policy, X, y)
-            params = self._get_onedal_params(X)
-            train_result = module.train(policy, params, *to_table(X, y))
+            data = (X, y)
+        policy = self._get_policy(queue, *data)
+        data = _convert_to_supported(policy, *data)
+        params = self._get_onedal_params(data[0])
+        train_result = module.train(policy, params, *to_table(*data))
 
         self._onedal_model = train_result.model
 

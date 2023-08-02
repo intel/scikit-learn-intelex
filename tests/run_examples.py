@@ -184,7 +184,7 @@ req_library["pca_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["random_forest_classifier_dpctl_batch.py"] = ["dpctl"]
 req_library["random_forest_classifier_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["random_forest_regressor_dpnp_batch.py"] = ["dpnp"]
-req_library["random_forest_regressor_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
 

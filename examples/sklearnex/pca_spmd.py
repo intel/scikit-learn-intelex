@@ -14,10 +14,11 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
-from mpi4py import MPI
 import dpctl
 import dpctl.tensor as dpt
+import numpy as np
+from mpi4py import MPI
+
 from sklearnex.spmd.decomposition import PCA
 
 

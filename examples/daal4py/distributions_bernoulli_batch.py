@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py bernoulli distribution example for shared memory systems
 
-import daal4py as d4p
 import numpy as np
 
+import daal4py as d4p
 
-def main(readcsv=None, method='defaultDense'):
 
+def main(readcsv=None, method="defaultDense"):
     # Create algorithm
     algorithm = d4p.distributions_bernoulli(0.5, engine=d4p.engines_mt19937(seed=777))
 
@@ -31,11 +31,7 @@ def main(readcsv=None, method='defaultDense'):
 
     assert np.allclose(data, res.randomNumbers)
     assert np.allclose(
-        data,
-        [[
-            1.0, 1.000, 1.000, 0.000, 1.000,
-            0.000, 1.000, 0.000, 1.000, 0.000
-        ]]
+        data, [[1.0, 1.000, 1.000, 0.000, 1.000, 0.000, 1.000, 0.000, 1.000, 0.000]]
     )
 
     return data
