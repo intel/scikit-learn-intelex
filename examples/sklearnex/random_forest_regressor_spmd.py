@@ -21,7 +21,6 @@
 import dpctl
 import dpctl.tensor as dpt
 import dpnp
-
 import numpy as np
 from mpi4py import MPI
 from numpy.testing import assert_allclose
