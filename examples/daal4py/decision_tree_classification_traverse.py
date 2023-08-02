@@ -22,6 +22,8 @@ from decision_tree_classification import main as dt_classification
 
 import daal4py as d4p
 
+import daal4py as d4p
+
 
 def printTree(nodes, values):
     def printNodes(node_id, nodes, values, level):

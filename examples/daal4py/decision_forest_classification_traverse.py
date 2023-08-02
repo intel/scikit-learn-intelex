@@ -22,6 +22,8 @@ from decision_forest_classification_default_dense import main as df_classificati
 
 import daal4py as d4p
 
+import daal4py as d4p
+
 
 def printTree(nodes, values):
     def printNodes(node_id, nodes, values, level):
