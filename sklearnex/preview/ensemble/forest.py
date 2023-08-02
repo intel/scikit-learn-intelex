@@ -523,10 +523,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             return self.n_features_in_
 
     def _estimators_(self):
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "_onedal_model")
+        check_is_fitted(self, "_onedal_model")
         classes_ = self.classes_[0]
         n_classes_ = self.n_classes_[0]
         # convert model to estimators
@@ -774,7 +771,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
-        check_is_fitted(self)
+
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
 
@@ -783,7 +780,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32])
-        check_is_fitted(self)
+
         if sklearn_check_version("0.23"):
             self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
@@ -909,10 +906,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.splitter_mode = splitter_mode
 
     def _estimators_(self):
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "_onedal_model")
+        check_is_fitted(self, "_onedal_model")
         # convert model to estimators
         params = {
             "criterion": self.criterion,
@@ -1141,9 +1135,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         return self
 
     def _onedal_predict(self, X, queue=None):
+        X = check_array(X, dtype=[np.float32, np.float64])
+
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = self._validate_X_predict(X)
+
         return self._onedal_estimator.predict(X, queue=queue)
 
     def fit(self, X, y, sample_weight=None):
