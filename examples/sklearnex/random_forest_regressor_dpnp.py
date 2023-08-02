@@ -15,7 +15,7 @@
 # ===============================================================================
 
 # sklearnex RF example for GPU offloading with DPNP ndarray:
-#    python ./random_forest_regressor_dpnp_batch.py.py
+#    python ./random_forest_regressor_dpnp_batch.py
 
 import dpnp
 import numpy as np
