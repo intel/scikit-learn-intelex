@@ -39,7 +39,7 @@ def test_rf_classifier(queue):
 
 
 @pytest.mark.parametrize("queue", get_queues("cpu"))
-def test_rf_regression(queue):
+def test_rf_regression_cpu(queue):
     X, y = make_regression(
         n_samples=100, n_features=4, n_informative=2, random_state=0, shuffle=False
     )
@@ -51,7 +51,7 @@ def test_rf_regression(queue):
 
 
 @pytest.mark.parametrize("queue", get_queues("gpu"))
-def test_rf_regression(queue):
+def test_rf_regression_gpu(queue):
     X, y = make_regression(
         n_samples=100, n_features=4, n_informative=2, random_state=0, shuffle=False
     )
@@ -90,6 +90,6 @@ def test_rf_regression_random_splitter(queue):
         X, y, queue=queue
     )
     if daal_check_version((2023, "P", 300)):
-        assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
-    else:
         assert_allclose([-6.88], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    else:
+        assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
