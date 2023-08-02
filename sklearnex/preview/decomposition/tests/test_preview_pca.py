@@ -22,11 +22,11 @@ from numpy.testing import assert_allclose
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
-    _get_dataframes_and_queues,
+    get_dataframes_and_queues,
 )
 
 
-@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import(dataframe, queue):
     from sklearnex.preview.decomposition import PCA
 

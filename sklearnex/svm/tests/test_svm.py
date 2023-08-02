@@ -22,14 +22,14 @@ from numpy.testing import assert_allclose
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
-    _get_dataframes_and_queues,
+    get_dataframes_and_queues,
 )
 
 
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_svc(dataframe, queue):
     from sklearnex.svm import SVC
@@ -47,7 +47,7 @@ def test_sklearnex_import_svc(dataframe, queue):
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_nusvc(dataframe, queue):
     from sklearnex.svm import NuSVC
@@ -67,7 +67,7 @@ def test_sklearnex_import_nusvc(dataframe, queue):
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_svr(dataframe, queue):
     from sklearnex.svm import SVR
@@ -85,7 +85,7 @@ def test_sklearnex_import_svr(dataframe, queue):
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_nusvr(dataframe, queue):
     from sklearnex.svm import NuSVR

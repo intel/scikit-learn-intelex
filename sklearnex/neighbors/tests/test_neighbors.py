@@ -22,11 +22,11 @@ from numpy.testing import assert_allclose
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
-    _get_dataframes_and_queues,
+    get_dataframes_and_queues,
 )
 
 
-@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_knn_classifier(dataframe, queue):
     from sklearnex.neighbors import KNeighborsClassifier
 
@@ -39,7 +39,7 @@ def test_sklearnex_import_knn_classifier(dataframe, queue):
     assert_allclose(pred, [0])
 
 
-@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_knn_regression(dataframe, queue):
     from sklearnex.neighbors import KNeighborsRegressor
 
@@ -55,7 +55,7 @@ def test_sklearnex_import_knn_regression(dataframe, queue):
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors`.
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe,queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 def test_sklearnex_import_nn(dataframe, queue):
     from sklearnex.neighbors import NearestNeighbors
@@ -70,7 +70,7 @@ def test_sklearnex_import_nn(dataframe, queue):
     assert_allclose(result, [[2, 0]])
 
 
-@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_lof(dataframe, queue):
     from sklearnex.neighbors import LocalOutlierFactor
 

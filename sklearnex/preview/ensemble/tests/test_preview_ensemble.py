@@ -23,11 +23,11 @@ from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
-    _get_dataframes_and_queues,
+    get_dataframes_and_queues,
 )
 
 
-@pytest.mark.parametrize("dataframe,queue", _get_dataframes_and_queues())
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_rf_classifier(dataframe, queue):
     from sklearnex.preview.ensemble import RandomForestClassifier
 
@@ -49,7 +49,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_rf_regression(dataframe, queue):
     from sklearnex.preview.ensemble import RandomForestRegressor
@@ -66,7 +66,7 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_et_classifier(dataframe, queue):
     from sklearnex.preview.ensemble import ExtraTreesClassifier
@@ -91,7 +91,7 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
-    "dataframe,queue", _get_dataframes_and_queues(device_filter_="cpu")
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_et_regression(dataframe, queue):
     from sklearnex.preview.ensemble import ExtraTreesRegressor

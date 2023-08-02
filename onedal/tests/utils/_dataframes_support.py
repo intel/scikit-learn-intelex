@@ -36,24 +36,26 @@ import numpy as np
 from onedal.tests.utils._device_selection import get_queues
 
 
-def _get_dataframes_and_queues(
+def get_dataframes_and_queues(
     dataframe_filter_="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
     dataframes_and_queues = [
         pytest.param("numpy", None, id="numpy"),
     ]
 
-    def _get_df_and_q(dataframe: str):
+    def get_df_and_q(dataframe: str):
+        df_and_q = []
         for queue in get_queues(device_filter_):
             id = "{}-SyclQueue_{}".format(
                 dataframe, "GPU" if queue.sycl_device.is_gpu else "CPU"
             )
-            dataframes_and_queues.append(pytest.param(dataframe, queue, id=id))
+            df_and_q.append(pytest.param(dataframe, queue, id=id))
+        return df_and_q
 
     if dpctl_available and "dpctl" in dataframe_filter_:
-        _get_df_and_q("dpctl")
+        dataframes_and_queues.extend(get_df_and_q("dpctl"))
     if dpnp_available and "dpnp" in dataframe_filter_:
-        _get_df_and_q("dpnp")
+        dataframes_and_queues.extend(get_df_and_q("dpnp"))
     return dataframes_and_queues
 
 
