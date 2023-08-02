@@ -845,6 +845,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
+        check_is_fitted(self, "_onedal_model")
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
@@ -854,6 +855,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
 
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32])
+        check_is_fitted(self, "_onedal_model")
 
         if sklearn_check_version("0.23"):
             self._check_n_features(X, reset=False)
@@ -1327,6 +1329,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
+        check_is_fitted(self, "_onedal_model")
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
