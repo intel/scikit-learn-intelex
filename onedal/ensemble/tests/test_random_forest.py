@@ -50,7 +50,6 @@ def test_rf_regression(queue):
         assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
 
 
-
 @pytest.mark.parametrize("queue", get_queues("gpu"))
 def test_rf_regression(queue):
     X, y = make_regression(
