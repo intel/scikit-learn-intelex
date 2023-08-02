@@ -434,7 +434,8 @@ packages_with_tests = [
     'onedal.ensemble',
     'onedal.neighbors',
     'onedal.primitives',
-    'onedal.svm']
+    'onedal.svm',
+    'onedal.utils']
 
 if ONEDAL_VERSION >= 20230100:
     packages_with_tests += [
