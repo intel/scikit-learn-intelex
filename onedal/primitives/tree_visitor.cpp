@@ -82,7 +82,6 @@ struct tree_state {
     std::size_t leaf_count;
     std::size_t class_count;
 };
-    
 // Declaration and implementation.
 template <typename Task>
 class node_count_visitor {
