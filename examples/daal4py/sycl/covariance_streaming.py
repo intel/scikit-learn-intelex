@@ -1,4 +1,4 @@
-#===============================================================================
+# ===============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 # daal4py covariance example for streaming on shared memory systems
 
-import daal4py as d4p
-import numpy as np
 import os
-from daal4py.oneapi import sycl_buffer
 
 # let's use a generator for getting stream from file (defined in stream.py)
 import sys
-sys.path.insert(0, '..')
+
+import numpy as np
+
+import daal4py as d4p
+from daal4py.oneapi import sycl_buffer
+
+sys.path.insert(0, "..")
 from stream import read_next
 
 try:
     from daal4py.oneapi import sycl_context
-    with sycl_context('gpu'):
+
+    with sycl_context("gpu"):
         gpu_available = True
 except:
     gpu_available = False
@@ -38,12 +42,14 @@ except:
 def to_numpy(data):
     try:
         from pandas import DataFrame
+
         if isinstance(data, DataFrame):
             return np.ascontiguousarray(data.values)
     except ImportError:
         pass
     try:
         from scipy.sparse import csr_matrix
+
         if isinstance(data, csr_matrix):
             return data.toarray()
     except ImportError:
@@ -51,12 +57,12 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=None, method='defaultDense'):
-    infile = os.path.join('..', 'data', 'batch', 'covcormoments_dense.csv')
+def main(readcsv=None, method="defaultDense"):
+    infile = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
 
     # Using of the classic way (computations on CPU)
     # configure a covariance object
-    algo = d4p.covariance(streaming=True, fptype='float')
+    algo = d4p.covariance(streaming=True, fptype="float")
     # get the generator (defined in stream.py)...
     rn = read_next(infile, 112, readcsv)
     # ... and iterate through chunks/stream
@@ -67,9 +73,9 @@ def main(readcsv=None, method='defaultDense'):
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
-        with sycl_context('gpu'):
+        with sycl_context("gpu"):
             # configure a covariance object
-            algo = d4p.covariance(streaming=True, fptype='float')
+            algo = d4p.covariance(streaming=True, fptype="float")
             # get the generator (defined in stream.py)...
             rn = read_next(infile, 112, readcsv)
             # ... and iterate through chunks/stream
@@ -83,9 +89,9 @@ def main(readcsv=None, method='defaultDense'):
         assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     # It is possible to specify to make the computations on CPU
-    with sycl_context('cpu'):
+    with sycl_context("cpu"):
         # configure a covariance object
-        algo = d4p.covariance(streaming=True, fptype='float')
+        algo = d4p.covariance(streaming=True, fptype="float")
         # get the generator (defined in stream.py)...
         rn = read_next(infile, 112, readcsv)
         # ... and iterate through chunks/stream
@@ -108,4 +114,4 @@ if __name__ == "__main__":
     res = main()
     print("Covariance matrix:\n", res.covariance)
     print("Mean vector:\n", res.mean)
-    print('All looks good!')
+    print("All looks good!")
