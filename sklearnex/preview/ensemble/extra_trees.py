@@ -626,7 +626,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             if (
                 dal_ready
                 and (self.random_state is not None)
-                and (not daal_check_version((2023, "P", 300)))
+                and (not daal_check_version((2024, "P", 0)))
             ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
@@ -690,7 +690,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             if (
                 dal_ready
                 and (self.random_state is not None)
-                and (not daal_check_version((2023, "P", 300)))
+                and (not daal_check_version((2024, "P", 0)))
             ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
@@ -1161,7 +1161,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             if (
                 dal_ready
                 and (self.random_state is not None)
-                and (not daal_check_version((2023, "P", 300)))
+                and (not daal_check_version((2024, "P", 0)))
             ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
@@ -1225,7 +1225,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             if (
                 dal_ready
                 and (self.random_state is not None)
-                and (not daal_check_version((2023, "P", 300)))
+                and (not daal_check_version((2024, "P", 0)))
             ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "

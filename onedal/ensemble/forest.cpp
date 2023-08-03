@@ -198,9 +198,9 @@ struct params2desc {
             desc.set_voting_mode(get_voting_mode(params));
         }
 
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
         desc.set_seed(params["seed"].cast<std::int64_t>());
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230300
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
         return desc;
     }
