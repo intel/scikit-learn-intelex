@@ -15,7 +15,7 @@
 # ===============================================================================
 
 # sklearnex kNN example for GPU offloading with DPNP ndarray:
-#    python ./knn_bf_classification_dpnp_batch.py.py
+#    python ./knn_bf_classification_dpnp_batch.py
 
 import dpctl
 import dpnp
