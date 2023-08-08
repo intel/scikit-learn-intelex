@@ -42,6 +42,20 @@ variables:
   ARGS: '1'
 
 jobs:
+- job: Lint
+  pool:
+    vmImage: 'ubuntu-22.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.9'
+      addToPath: true
+  - script: |
+      python -m pip install --upgrade pip setuptools
+      pip install isort black
+      isort --check .
+      black --check .
+    displayName: 'Linting'
 - job: Linux
   timeoutInMinutes: 120
   strategy:
