@@ -147,9 +147,12 @@ class TreeView:
         return self.root_node.n_children + 1
 
 
-class TreeList(list):
+class TreeList:
     """Helper class that is able to extract all information required by the
     model builders from an XGBoost.Booster object"""
+
+    def __init__(self):
+        self.tree_views: List[TreeView] = []
 
     @staticmethod
     def from_booster(booster: xgb.Booster) -> "TreeList":
@@ -161,6 +164,14 @@ class TreeList(list):
             tl.append(TreeView(tree_id=tree_id, root_node=root_node))
 
         return tl
+
+    def append(self, elem):
+        self.tree_views.append(elem)
+
+    def __iter__(self) -> Generator[TreeView, None, None]:
+        """Iterate over TreeViews"""
+        for tree_view in self.tree_views:
+            yield tree_view
 
     def __setitem__(self):
         raise NotImplementedError("Use TreeList.from_booster() to initialize a TreeList")
@@ -356,6 +367,41 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
         if tree.is_leaf:
             mb.add_leaf(tree_id=tree_id, response=tree.value, cover=tree.cover)
             continue
+
+        # def append(node: Node):
+        #     if node.is_leaf:
+        #         assert node.parent_id != -1, "node.parent_id must not be -1"
+        #         assert node.position != -1, "node.position must not be -1"
+
+        #         mb.add_leaf(
+        #             tree_id=tree_id,
+        #             response=node.value,
+        #             cover=node.cover,
+        #             parent_id=node.parent_id,
+        #             position=node.position,
+        #         )
+
+        #     else:
+        #         assert node.left_child, "Split node must have left child"
+        #         assert node.right_child, "Split node must have right child"
+
+        #         parent_id = mb.add_split(
+        #                 tree_id=tree_id,
+        #                 feature_index=node.feature,
+        #                 feature_value=node.get_value_closest_float_downward(),<<
+        #                 cover=node.cover,
+        #                 default_left=node.default_left,
+        #             )
+
+        #         node.left_child.parent_id = parent_id
+        #         node.left_child.position = 0
+        #         append(node.left_child)
+
+        #         node.right_child.parent_id = parent_id
+        #         node.right_child.position = 1
+        #         append(node.right_child)
+
+        # append(tree.root_node)
 
         root_node = tree.root_node
         parent_id = mb.add_split(
