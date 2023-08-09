@@ -26,9 +26,9 @@ def get_queues(filter_="cpu,gpu"):
         import dpctl
 
         if dpctl.has_cpu_devices and "cpu" in filter_:
-            queues.append(dpctl.SyclQueue("cpu"))
+            queues.append(pytest.param(dpctl.SyclQueue("cpu"), id="SyclQueue_CPU"))
         if dpctl.has_gpu_devices and "gpu" in filter_:
-            queues.append(dpctl.SyclQueue("gpu"))
+            queues.append(pytest.param(dpctl.SyclQueue("gpu"), id="SyclQueue_GPU"))
     finally:
         return queues
 
