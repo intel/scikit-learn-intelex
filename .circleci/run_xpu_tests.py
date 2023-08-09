@@ -67,11 +67,11 @@ if __name__ == '__main__':
     yml_deselected_tests = yml_deselected_tests + deselected_tests
 
     pytest_params = [
-        "-ra", "--disable-warnings", "-vv"
+        "-ra", "--disable-warnings"
     ]
 
-    # if not args.quiet:
-    #     pytest_params.append("-q")
+    if not args.quiet:
+        pytest_params.append("-q")
 
     if not args.no_intel_optimized:
         from sklearnex import patch_sklearn
