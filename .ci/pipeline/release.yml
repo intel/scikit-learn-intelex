@@ -68,7 +68,7 @@ jobs:
     condition: eq( variables['Agent.OS'], 'Darwin')
     displayName: Add sudo access
   - script: |
-      conda update -y -q conda
+      conda update -y -q -c defaults conda
       conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest pyyaml
     displayName: 'Install scikit-learn-intelex'
   - script: |
