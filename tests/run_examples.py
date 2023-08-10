@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import argparse
 import os
 import struct
 import subprocess
@@ -24,6 +25,10 @@ from time import gmtime, strftime
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--assert_gpu", action="store_true")
+args = parser.parse_args()
 
 print("Starting examples validation")
 # First item is major version - 2021,
@@ -65,7 +70,7 @@ ex_log_dirs = [
     (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
 ]
 
-availabe_devices = []
+available_devices = []
 
 try:
     from daal4py.oneapi import sycl_context
@@ -79,13 +84,16 @@ if sycl_extention_available:
     try:
         with sycl_context("gpu"):
             gpu_available = True
-            availabe_devices.append("gpu")
+            available_devices.append("gpu")
     except RuntimeError:
         gpu_available = False
-    availabe_devices.append("cpu")
+    available_devices.append("cpu")
     # validate that host and cpu devices avaialbe for logging reasons. Examples and
     # vaidaton logic assumes that host and cpu devices are always available
     print("Sycl gpu device: {}".format(gpu_available))
+
+if args.assert_gpu and "gpu" not in available_devices:
+    raise RuntimeError("GPU device not available or not detected")
 
 
 def check_version(rule, target):
@@ -197,7 +205,9 @@ def get_exe_cmd(ex, nodist, nostream):
             req_version["sycl/" + os.path.basename(ex)], get_daal_version()
         ):
             return None
-        if not check_device(req_device["sycl/" + os.path.basename(ex)], availabe_devices):
+        if not check_device(
+            req_device["sycl/" + os.path.basename(ex)], available_devices
+        ):
             return None
         if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None
@@ -209,7 +219,7 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
 
     if os.path.dirname(ex).endswith("sklearnex"):
-        if not check_device(req_device[os.path.basename(ex)], availabe_devices):
+        if not check_device(req_device[os.path.basename(ex)], available_devices):
             return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
