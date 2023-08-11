@@ -22,6 +22,11 @@ if daal_check_version((2023, "P", 100)):
     from numpy.testing import assert_allclose
 
     from onedal.basic_statistics import BasicStatistics
+    from onedal.tests.utils._dataframes_support import (
+        _as_numpy,
+        _convert_to_dataframe,
+        get_dataframes_and_queues,
+    )
     from onedal.tests.utils._device_selection import get_queues
 
     options_and_tests = [
@@ -32,9 +37,12 @@ if daal_check_version((2023, "P", 100)):
         ("standard_deviation", np.std, (3e-5, 3e-5)),
     ]
 
-    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize(
+        "dataframe,queue",
+        get_dataframes_and_queues(device_filter_="gpu", numpy_and_sycl_queue=True),
+    )
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_basic_uniform(queue, dtype):
+    def test_basic_uniform(dataframe, queue, dtype):
         seed = 42
         s_count, f_count = 70000, 29
 
@@ -42,18 +50,21 @@ if daal_check_version((2023, "P", 100)):
         data = gen.uniform(low=-0.5, high=+0.6, size=(s_count, f_count))
         data = data.astype(dtype=dtype)
 
-        alg = BasicStatistics(result_options="mean")
-        res = alg.compute(data, queue=queue)
+        df_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
 
-        res_mean = res["mean"]
+        alg = BasicStatistics(result_options="mean")
+        res = alg.compute(df_data, queue=queue)
+        res_mean = _as_numpy(res["mean"])
         gtr_mean = np.mean(data, axis=0)
         tol = 2e-5 if res_mean.dtype == np.float32 else 1e-7
         assert_allclose(gtr_mean, res_mean, rtol=tol)
 
-    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize(
+        "dataframe,queue", get_dataframes_and_queues(device_filter_="gpu")
+    )
     @pytest.mark.parametrize("option", options_and_tests)
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_option_uniform(queue, option, dtype):
+    def test_option_uniform(dataframe, queue, option, dtype):
         seed = 77
         s_count, f_count = 19999, 31
 
@@ -63,19 +74,22 @@ if daal_check_version((2023, "P", 100)):
         gen = np.random.default_rng(seed)
         data = gen.uniform(low=-0.3, high=+0.7, size=(s_count, f_count))
         data = data.astype(dtype=dtype)
+        df_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
 
         alg = BasicStatistics(result_options=result_option)
-        res = alg.compute(data, queue=queue)
+        res = alg.compute(df_data, queue=queue)
 
-        res, gtr = res[result_option], function(data, axis=0)
+        # res, gtr = res[result_option], function(data, axis=0)
+        res = _as_numpy(res[result_option])
+        gtr = function(data, axis=0)
 
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, rtol=tol)
 
-    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
     @pytest.mark.parametrize("option", options_and_tests)
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_option_weighted(queue, option, dtype):
+    def test_option_weighted(dataframe, queue, option, dtype):
         seed = 999
         s_count, f_count = 1024, 127
 

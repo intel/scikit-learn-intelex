@@ -18,9 +18,13 @@ import warnings
 
 import numpy as np
 
+# TODO:
+# updates on make2d usage.
 from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
+# TODO:
+# import witout try-catch.
 try:
     import dpctl
     import dpctl.tensor as dpt
@@ -29,7 +33,16 @@ try:
 except ImportError:
     dpctl_available = False
 
+try:
+    import dpnp
 
+    dpnp_available = True
+except ImportError:
+    dpnp_available = False
+
+
+# TODO:
+# deprecate using map here.
 def _apply_and_pass(func, *args):
     if len(args) == 1:
         return func(args[0])
@@ -40,10 +53,19 @@ def from_table(*args):
     return _apply_and_pass(_backend.from_table, *args)
 
 
+def dpnp_ndarray_from_table(arg):
+    return dpnp.array(dpt.asarray(arg), copy=False)
+
+
 def convert_one_to_table(arg):
-    if dpctl_available:
-        if isinstance(arg, dpt.usm_ndarray):
-            return _backend.dpctl_to_table(arg)
+    # TODO:
+    # only for dpnp.ndarrays.
+    if hasattr(arg, "get_array") and hasattr(
+        arg.get_array(), "__sycl_usm_array_interface__"
+    ):
+        # TODO:
+        # check if dpctl.tensor. Add primitive for the check.
+        return _backend.dpctl_to_table(arg.get_array())
     arg = make2d(arg)
     return _backend.to_table(arg)
 
@@ -52,6 +74,8 @@ def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
 
 
+# TODO:
+# update logic with dpnp impl.
 if _is_dpc_backend:
     from ..common._policy import _HostInteropPolicy
 

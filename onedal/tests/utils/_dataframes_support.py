@@ -37,8 +37,11 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter_="numpy,dpnp,dpctl",
+    device_filter_="cpu,gpu",
+    numpy_and_sycl_queue=False,
 ):
+    # default case with no explicitly provided sycl_queue.
     dataframes_and_queues = [
         pytest.param("numpy", None, id="numpy"),
     ]
@@ -50,6 +53,8 @@ def get_dataframes_and_queues(
             df_and_q.append(pytest.param(dataframe, queue.values[0], id=id))
         return df_and_q
 
+    if numpy_and_sycl_queue and "numpy" in dataframe_filter_:
+        dataframes_and_queues.extend(get_df_and_q("numpy"))
     if dpctl_available and "dpctl" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpctl"))
     if dpnp_available and "dpnp" in dataframe_filter_:
@@ -57,6 +62,8 @@ def get_dataframes_and_queues(
     return dataframes_and_queues
 
 
+# TODO:
+# move to utils._array_api
 def _as_numpy(obj, *args, **kwargs):
     if dpnp_available and isinstance(obj, dpnp.ndarray):
         return obj.asnumpy(*args, **kwargs)

@@ -24,6 +24,13 @@ except ImportError:
     dpnp_available = False
 
 try:
+    import dpctl
+    import dpctl.tensor as dpt
+
+    dpctl_available = True
+except ImportError:
+    dpctl_available = False
+try:
     from sklearnex._device_offload import (
         _copy_to_usm,
         _get_global_queue,

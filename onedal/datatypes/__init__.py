@@ -14,6 +14,11 @@
 # limitations under the License.
 # ===============================================================================
 
-from ._data_conversion import _convert_to_supported, from_table, to_table
+from ._data_conversion import (
+    _convert_to_supported,
+    dpnp_ndarray_from_table,
+    from_table,
+    to_table,
+)
 
-__all__ = ["from_table", "to_table", "_convert_to_supported"]
+__all__ = ["dpnp_ndarray_from_table", "from_table", "to_table", "_convert_to_supported"]

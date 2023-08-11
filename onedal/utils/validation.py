@@ -18,12 +18,15 @@ import warnings
 from collections.abc import Sequence
 from numbers import Integral
 
+import dpnp
 import numpy as np
 from scipy import sparse as sp
 from scipy.sparse import dok_matrix, issparse, lil_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
+# TODO:
+# implement on onedal4py side.
 from daal4py.sklearn.utils.validation import _assert_all_finite
 
 
@@ -38,6 +41,8 @@ def _is_arraylike(x):
 
 def _is_arraylike_not_scalar(array):
     """Return True if array is array-like and not a scalar"""
+    if isinstance(array, dpnp.ndarray):
+        return not dpnp.isscalar(array)
     return _is_arraylike(array) and not np.isscalar(array)
 
 

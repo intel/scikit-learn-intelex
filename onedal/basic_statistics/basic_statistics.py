@@ -17,13 +17,22 @@
 from abc import ABCMeta, abstractmethod
 from numbers import Number
 
+import dpctl
+import dpctl.tensor as dpt
+import dpnp
 import numpy as np
 from sklearn.base import BaseEstimator
 
 from onedal import _backend
 
 from ..common._policy import _get_policy
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import (
+    _convert_to_supported,
+    dpnp_ndarray_from_table,
+    from_table,
+    to_table,
+)
+from ..utils._array_api import as_dpnp_ndarray
 
 
 class BaseBasicStatistics(metaclass=ABCMeta):
@@ -79,19 +88,26 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
-        if not (data is None):
-            data = np.asarray(data)
-        if not (weights is None):
-            weights = np.asarray(weights)
+        # TODO:
+        # move ndarray creation
+        # if not (data is None):
+        #     data = np.asarray(data)
+        # if not (weights is None):
+        #     weights = np.asarray(weights)
 
         data, weights = _convert_to_supported(policy, data, weights)
 
-        data_table, weights_table = to_table(data, weights)
+        # data_table, weights_table = to_table(data, weights)
 
+        data_table = to_table(data)
+        weights_table = to_table(weights)
         dtype = data.dtype
         res = self._compute_raw(data_table, weights_table, module, policy, dtype)
 
-        return {k: from_table(v).ravel() for k, v in res.items()}
+        if isinstance(data, np.ndarray):
+            return {k: from_table(v).ravel() for k, v in res.items()}
+        else:
+            return {k: dpnp.ravel(dpnp_ndarray_from_table(v)) for k, v in res.items()}
 
 
 class BasicStatistics(BaseBasicStatistics):
@@ -103,6 +119,8 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def compute(self, data, weights=None, queue=None):
+        if not isinstance(data, np.ndarray):
+            data = as_dpnp_ndarray(data)
         return super()._compute(data, weights, _backend.basic_statistics.compute, queue)
 
     def compute_raw(self, data_table, weights_table, policy, dtype=np.float32):
