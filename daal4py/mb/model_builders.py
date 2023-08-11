@@ -200,7 +200,9 @@ class GBTDAALBaseModel:
         else:
             return predict_result.probabilities
 
-    def _predict_regression(self, X, fptype):
+    def _predict_regression(
+        self, X, fptype, pred_contribs=False, pred_interactions=False
+    ):
         if X.shape[1] != self.n_features_in_:
             raise ValueError("Shape of input is different from what was seen in `fit`")
 
@@ -213,7 +215,11 @@ class GBTDAALBaseModel:
             )
 
         # Prediction
-        predict_algo = d4p.gbt_regression_prediction(fptype=fptype)
+        predict_algo = d4p.gbt_regression_prediction(
+            fptype=fptype,
+            predShapContributions=pred_contribs,
+            predShapInteractions=pred_interactions,
+        )
         predict_result = predict_algo.compute(X, self.daal_model_)
 
         return predict_result.prediction.ravel()
@@ -223,11 +229,15 @@ class GBTDAALModel(GBTDAALBaseModel):
     def __init__(self):
         pass
 
-    def predict(self, X):
+    def predict(self, X, pred_contribs=False, pred_interactions=False):
         fptype = getFPType(X)
         if self._is_regression:
-            return self._predict_regression(X, fptype)
+            return self._predict_regression(X, fptype, pred_contribs, pred_interactions)
         else:
+            if pred_contribs or pred_interactions:
+                raise NotImplementedError(
+                    f"{'pred_contribs' if pred_contribs else 'pred_interactions'} is not implemented for classification models"
+                )
             return self._predict_classification(X, fptype, "computeClassLabels")
 
     def predict_proba(self, X):
