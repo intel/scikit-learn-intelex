@@ -27,7 +27,7 @@ from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--assert_gpu", action="store_true")
+parser.add_argument("--assert-gpu", action="store_true")
 args = parser.parse_args()
 
 print("Starting examples validation")
