@@ -14,14 +14,27 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version
+import numpy as np
+import pytest
+from sklearn.cluster.tests.common import generate_clustered_data
 
-from .dbscan import DBSCAN
-from .kmeans import KMeans, k_means
+from onedal.cluster import DBSCAN
+from onedal.tests.utils._device_selection import get_queues
 
-__all__ = ["DBSCAN", "KMeans", "k_means"]
 
-if daal_check_version((2023, "P", 200)):
-    from .kmeans_init import KMeansInit, kmeans_plusplus
+# TODO:
+# tests will be added.
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_dbscan(queue, dtype):
+    eps = 0.8
+    min_samples = 10
+    metric = "euclidean"
 
-    __all__ += ["KMeansInit", "kmeans_plusplus"]
+    n_clusters = 3
+    X = generate_clustered_data(n_clusters=n_clusters)
+    X = np.asarray(X, dtype=dtype)
+    db = DBSCAN(metric=metric, eps=eps, min_samples=min_samples)
+    labels = db.fit(X, queue).labels_
+
+    n_clusters_2 = len(set(labels)) - int(-1 in labels)
