@@ -226,31 +226,36 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             class_weight=None,
             ccp_alpha=0.0,
             max_samples=None,
+            monotonic_cst=None,
             max_bins=256,
             min_bin_size=1,
             splitter_mode="best",
         ):
-            super(RandomForestClassifier, self).__init__(
-                n_estimators=n_estimators,
-                criterion=criterion,
-                max_depth=max_depth,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                max_leaf_nodes=max_leaf_nodes,
-                min_impurity_decrease=min_impurity_decrease,
-                bootstrap=bootstrap,
-                oob_score=oob_score,
-                n_jobs=n_jobs,
-                random_state=random_state,
-                verbose=verbose,
-                warm_start=warm_start,
-                class_weight=class_weight,
-            )
+            original_params = {
+                "n_estimators": n_estimators,
+                "criterion": criterion,
+                "max_depth": max_depth,
+                "min_samples_split": min_samples_split,
+                "min_samples_leaf": min_samples_leaf,
+                "min_weight_fraction_leaf": min_weight_fraction_leaf,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "min_impurity_decrease": min_impurity_decrease,
+                "bootstrap": bootstrap,
+                "oob_score": oob_score,
+                "n_jobs": n_jobs,
+                "random_state": random_state,
+                "verbose": verbose,
+                "warm_start": warm_start,
+                "class_weight": class_weight,
+            }
+            if sklearn_check_version("1.4"):
+                original_params["monotonic_cst"] = monotonic_cst
+            super(RandomForestClassifier, self).__init__(**original_params)
             self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
@@ -373,6 +378,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         correct_ccp_alpha = self.ccp_alpha == 0.0
         correct_criterion = self.criterion == "gini"
         correct_warm_start = self.warm_start is False
+        correct_monotonic_cst = self.monotonic_cst is None
 
         if daal_check_version((2021, "P", 500)):
             correct_oob_score = not self.oob_score
@@ -386,6 +392,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 correct_ccp_alpha,
                 correct_criterion,
                 correct_warm_start,
+                correct_monotonic_cst,
             ]
         )
         if ready:
@@ -810,30 +817,35 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             warm_start=False,
             ccp_alpha=0.0,
             max_samples=None,
+            monotonic_cst=None,
             max_bins=256,
             min_bin_size=1,
             splitter_mode="best",
         ):
-            super(RandomForestRegressor, self).__init__(
-                n_estimators=n_estimators,
-                criterion=criterion,
-                max_depth=max_depth,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                max_leaf_nodes=max_leaf_nodes,
-                min_impurity_decrease=min_impurity_decrease,
-                bootstrap=bootstrap,
-                oob_score=oob_score,
-                n_jobs=n_jobs,
-                random_state=random_state,
-                verbose=verbose,
-                warm_start=warm_start,
-            )
+            original_params = {
+                "n_estimators": n_estimators,
+                "criterion": criterion,
+                "max_depth": max_depth,
+                "min_samples_split": min_samples_split,
+                "min_samples_leaf": min_samples_leaf,
+                "min_weight_fraction_leaf": min_weight_fraction_leaf,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "min_impurity_decrease": min_impurity_decrease,
+                "bootstrap": bootstrap,
+                "oob_score": oob_score,
+                "n_jobs": n_jobs,
+                "random_state": random_state,
+                "verbose": verbose,
+                "warm_start": warm_start,
+            }
+            if sklearn_check_version("1.4"):
+                original_params["monotonic_cst"] = monotonic_cst
+            super(RandomForestRegressor, self).__init__(**original_params)
             self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
@@ -1000,6 +1012,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
+            elif self.monotonic_cst is not None:
+                return False
             else:
                 return True
         if method_name == "predict":
@@ -1050,6 +1064,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif self.warm_start:
                 return False
             elif self.oob_score:
+                return False
+            elif self.monotonic_cst is not None:
                 return False
             else:
                 return True
