@@ -24,6 +24,8 @@ from sklearn.preprocessing import LabelEncoder
 from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
 from onedal.utils import _column_or_1d
 
+from ..base import TuningBase
+
 
 def get_dual_coef(self):
     return self.dual_coef_
@@ -49,7 +51,7 @@ def set_intercept(self, value):
             del self._onedal_estimator._onedal_model
 
 
-class BaseSVM(ABC):
+class BaseSVM(ABC, TuningBase):
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
         patching_status.and_conditions([(False, "GPU offloading is not supported.")])

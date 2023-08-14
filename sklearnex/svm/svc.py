@@ -307,3 +307,9 @@ class SVC(sklearn_SVC, BaseSVC):
 
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)
+
+    def _get_param_distributions(self):
+        return {
+            "kernel": ("categorical", {"choices": ["linear", "poly", "rbf", "sigmoid"]}),
+            "C": ("float", {"low": 1e-6, "high": 2e2, "log": True}),
+        }
