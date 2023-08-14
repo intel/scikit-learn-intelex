@@ -210,6 +210,8 @@ dal::table convert_to_table(PyObject *obj) {
                         MAKE_CSR_TABLE,
                         throw std::invalid_argument("Found unsupported data type in csr_matrix"));
 #undef MAKE_CSR_TABLE
+        Py_DECREF(np_column_indices);
+        Py_DECREF(np_row_indices);
     }
     else {
         throw std::invalid_argument(
