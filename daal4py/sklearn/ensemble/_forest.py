@@ -263,30 +263,35 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             class_weight=None,
             ccp_alpha=0.0,
             max_samples=None,
+            monotonic_cst=None,
             maxBins=256,
             minBinSize=1,
             binningStrategy="quantiles",
         ):
-            super().__init__(
-                n_estimators=n_estimators,
-                criterion=criterion,
-                max_depth=max_depth,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                max_leaf_nodes=max_leaf_nodes,
-                min_impurity_decrease=min_impurity_decrease,
-                bootstrap=bootstrap,
-                oob_score=oob_score,
-                n_jobs=n_jobs,
-                random_state=random_state,
-                verbose=verbose,
-                warm_start=warm_start,
-                class_weight=class_weight,
-            )
+            original_params = {
+                "n_estimators": n_estimators,
+                "criterion": criterion,
+                "max_depth": max_depth,
+                "min_samples_split": min_samples_split,
+                "min_samples_leaf": min_samples_leaf,
+                "min_weight_fraction_leaf": min_weight_fraction_leaf,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "min_impurity_decrease": min_impurity_decrease,
+                "bootstrap": bootstrap,
+                "oob_score": oob_score,
+                "n_jobs": n_jobs,
+                "random_state": random_state,
+                "verbose": verbose,
+                "warm_start": warm_start,
+                "class_weight": class_weight,
+            }
+            if sklearn_check_version("1.4"):
+                original_params["monotonic_cst"] = monotonic_cst
+            super().__init__(**original_params)
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
@@ -392,6 +397,10 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
                     "OOB score is only supported starting from 2021.5 version of oneDAL.",
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
+                (
+                    self.monotonic_cst is None,
+                    "Monotonicity constraints are not supported.",
+                ),
                 (
                     self.criterion == "gini",
                     f"'{self.criterion}' criterion is not supported. "
@@ -828,29 +837,34 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             warm_start=False,
             ccp_alpha=0.0,
             max_samples=None,
+            monotonic_cst=None,
             maxBins=256,
             minBinSize=1,
             binningStrategy="quantiles",
         ):
-            super().__init__(
-                n_estimators=n_estimators,
-                criterion=criterion,
-                max_depth=max_depth,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                max_leaf_nodes=max_leaf_nodes,
-                min_impurity_decrease=min_impurity_decrease,
-                bootstrap=bootstrap,
-                oob_score=oob_score,
-                n_jobs=n_jobs,
-                random_state=random_state,
-                verbose=verbose,
-                warm_start=warm_start,
-            )
+            original_params = {
+                "n_estimators": n_estimators,
+                "criterion": criterion,
+                "max_depth": max_depth,
+                "min_samples_split": min_samples_split,
+                "min_samples_leaf": min_samples_leaf,
+                "min_weight_fraction_leaf": min_weight_fraction_leaf,
+                "max_features": max_features,
+                "max_leaf_nodes": max_leaf_nodes,
+                "min_impurity_decrease": min_impurity_decrease,
+                "bootstrap": bootstrap,
+                "oob_score": oob_score,
+                "n_jobs": n_jobs,
+                "random_state": random_state,
+                "verbose": verbose,
+                "warm_start": warm_start,
+            }
+            if sklearn_check_version("1.4"):
+                original_params["monotonic_cst"] = monotonic_cst
+            super().__init__(**original_params)
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
@@ -963,6 +977,10 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                     "OOB score is only supported starting from 2021.5 version of oneDAL.",
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
+                (
+                    self.monotonic_cst is None,
+                    "Monotonicity constraints are not supported.",
+                ),
                 (
                     self.criterion in ["mse", "squared_error"],
                     f"'{self.criterion}' criterion is not supported. "
