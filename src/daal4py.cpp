@@ -619,6 +619,8 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 }
                 else
                     throw std::invalid_argument("Failed accessing csr data when converting csr_matrix.\n");
+                Py_DECREF(np_indcs);
+                Py_DECREF(np_roffs);
             }
             else
                 throw std::invalid_argument("Got invalid csr_matrix object.\n");
