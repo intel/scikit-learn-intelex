@@ -65,7 +65,7 @@ class BaseDBSCAN(ClusterMixin):
             "min_observations": int(self.min_samples),
             "epsilon": float(self.eps),
             "mem_save_mode": False,
-            "result_options": "core_observation_indices",
+            "result_options": "core_observation_indices|responses",
         }
 
     def _fit(self, X, y, sample_weight, module, queue):
