@@ -77,13 +77,14 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         return obj
     # Numpy ndarray.
     # `sycl_queue` arg is ignored.
-    elif target_df == "numpy":
+    if target_df == "numpy":
         return np.asarray(obj, *args, **kwargs)
     # DPNP ndarray.
-    elif target_df == "dpnp":
+    if target_df == "dpnp":
         return dpnp.asarray(
             obj, usm_type="device", sycl_queue=sycl_queue, *args, **kwargs
         )
     # DPCtl tensor.
-    elif target_df == "dpctl":
+    if target_df == "dpctl":
         return dpt.asarray(obj, usm_type="device", sycl_queue=sycl_queue, *args, **kwargs)
+    raise RuntimeError("Unsupported dataframe conversion")
