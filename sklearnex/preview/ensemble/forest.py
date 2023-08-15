@@ -255,7 +255,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-            self.monotonic_cst = monotonic_cst
+            if sklearn_check_version("1.4"):
+                self.monotonic_cst = monotonic_cst
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
@@ -378,7 +379,9 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         correct_ccp_alpha = self.ccp_alpha == 0.0
         correct_criterion = self.criterion == "gini"
         correct_warm_start = self.warm_start is False
-        correct_monotonic_cst = self.monotonic_cst is None
+        correct_monotonic_cst = (
+            sklearn_check_version("1.4") and self.monotonic_cst is None
+        )
 
         if daal_check_version((2021, "P", 500)):
             correct_oob_score = not self.oob_score
@@ -845,7 +848,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.warm_start = warm_start
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-            self.monotonic_cst = monotonic_cst
+            if sklearn_check_version("1.4"):
+                self.monotonic_cst = monotonic_cst
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.min_impurity_split = None
@@ -1012,7 +1016,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif not self.n_outputs_ == 1:
                 return False
-            elif self.monotonic_cst is not None:
+            elif sklearn_check_version("1.4") and self.monotonic_cst is not None:
                 return False
             else:
                 return True
@@ -1065,7 +1069,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif self.oob_score:
                 return False
-            elif self.monotonic_cst is not None:
+            elif sklearn_check_version("1.4") and self.monotonic_cst is not None:
                 return False
             else:
                 return True

@@ -291,7 +291,8 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             super().__init__(**original_params)
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-            self.monotonic_cst = monotonic_cst
+            if sklearn_check_version("1.4"):
+                self.monotonic_cst = monotonic_cst
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
@@ -398,7 +399,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
                 (
-                    self.monotonic_cst is None,
+                    sklearn_check_version("1.4") and self.monotonic_cst is None,
                     "Monotonicity constraints are not supported.",
                 ),
                 (
@@ -864,7 +865,8 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             super().__init__(**original_params)
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-            self.monotonic_cst = monotonic_cst
+            if sklearn_check_version("1.4"):
+                self.monotonic_cst = monotonic_cst
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
@@ -978,7 +980,7 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
                 (
-                    self.monotonic_cst is None,
+                    sklearn_check_version("1.4") and self.monotonic_cst is None,
                     "Monotonicity constraints are not supported.",
                 ),
                 (
