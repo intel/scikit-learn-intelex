@@ -241,7 +241,61 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             "binningStrategy": [StrOptions({"quantiles", "averages"})],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            criterion="gini",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="sqrt",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            class_weight=None,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            maxBins=256,
+            minBinSize=1,
+            binningStrategy="quantiles",
+        ):
+            super().__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                monotonic_cst=monotonic_cst,
+            )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+            self.binningStrategy = binningStrategy
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
@@ -263,36 +317,30 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             class_weight=None,
             ccp_alpha=0.0,
             max_samples=None,
-            monotonic_cst=None,
             maxBins=256,
             minBinSize=1,
             binningStrategy="quantiles",
         ):
-            original_params = {
-                "n_estimators": n_estimators,
-                "criterion": criterion,
-                "max_depth": max_depth,
-                "min_samples_split": min_samples_split,
-                "min_samples_leaf": min_samples_leaf,
-                "min_weight_fraction_leaf": min_weight_fraction_leaf,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "min_impurity_decrease": min_impurity_decrease,
-                "bootstrap": bootstrap,
-                "oob_score": oob_score,
-                "n_jobs": n_jobs,
-                "random_state": random_state,
-                "verbose": verbose,
-                "warm_start": warm_start,
-                "class_weight": class_weight,
-            }
-            if sklearn_check_version("1.4"):
-                original_params["monotonic_cst"] = monotonic_cst
-            super().__init__(**original_params)
+            super().__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+            )
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-            if sklearn_check_version("1.4"):
-                self.monotonic_cst = monotonic_cst
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
@@ -816,7 +864,60 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             "binningStrategy": [StrOptions({"quantiles", "averages"})],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="squared_error",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features=1.0,
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            maxBins=256,
+            minBinSize=1,
+            binningStrategy="quantiles",
+        ):
+            super().__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                monotonic_cst=monotonic_cst,
+            )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+            self.binningStrategy = binningStrategy
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
@@ -838,35 +939,29 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             warm_start=False,
             ccp_alpha=0.0,
             max_samples=None,
-            monotonic_cst=None,
             maxBins=256,
             minBinSize=1,
             binningStrategy="quantiles",
         ):
-            original_params = {
-                "n_estimators": n_estimators,
-                "criterion": criterion,
-                "max_depth": max_depth,
-                "min_samples_split": min_samples_split,
-                "min_samples_leaf": min_samples_leaf,
-                "min_weight_fraction_leaf": min_weight_fraction_leaf,
-                "max_features": max_features,
-                "max_leaf_nodes": max_leaf_nodes,
-                "min_impurity_decrease": min_impurity_decrease,
-                "bootstrap": bootstrap,
-                "oob_score": oob_score,
-                "n_jobs": n_jobs,
-                "random_state": random_state,
-                "verbose": verbose,
-                "warm_start": warm_start,
-            }
-            if sklearn_check_version("1.4"):
-                original_params["monotonic_cst"] = monotonic_cst
-            super().__init__(**original_params)
+            super().__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+            )
             self.ccp_alpha = ccp_alpha
             self.max_samples = max_samples
-            if sklearn_check_version("1.4"):
-                self.monotonic_cst = monotonic_cst
             self.maxBins = maxBins
             self.minBinSize = minBinSize
             self.min_impurity_split = None
