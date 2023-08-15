@@ -447,10 +447,6 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
                 (
-                    sklearn_check_version("1.4") and self.monotonic_cst is None,
-                    "Monotonicity constraints are not supported.",
-                ),
-                (
                     self.criterion == "gini",
                     f"'{self.criterion}' criterion is not supported. "
                     "Only 'gini' criterion is supported.",
@@ -462,6 +458,16 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             ]
         )
+
+        if sklearn_check_version("1.4"):
+            _patching_status.and_conditions(
+                [
+                    (
+                        self.monotonic_cst is None,
+                        "Monotonicity constraints are not supported.",
+                    ),
+                ]
+            )
 
         if _dal_ready:
             if sklearn_check_version("1.0"):
@@ -1075,10 +1081,6 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                 ),
                 (self.warm_start is False, "Warm start is not supported."),
                 (
-                    sklearn_check_version("1.4") and self.monotonic_cst is None,
-                    "Monotonicity constraints are not supported.",
-                ),
-                (
                     self.criterion in ["mse", "squared_error"],
                     f"'{self.criterion}' criterion is not supported. "
                     "Only 'mse' and 'squared_error' criteria are supported.",
@@ -1090,6 +1092,15 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             ]
         )
+        if sklearn_check_version("1.4"):
+            _patching_status.and_conditions(
+                [
+                    (
+                        self.monotonic_cst is None,
+                        "Monotonicity constraints are not supported.",
+                    ),
+                ]
+            )
 
         if _dal_ready:
             if sklearn_check_version("1.0"):
