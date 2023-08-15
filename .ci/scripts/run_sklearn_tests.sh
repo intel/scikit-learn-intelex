@@ -30,6 +30,7 @@ export DESELECTED_TESTS=$(python ../.circleci/deselect_tests.py ../deselected_te
 # specific MSYS environment with conda packages downloaded from intel channel
 if [[ "${os}" =~ "MSYS" ]] && [ -z "${OCL_ICD_FILENAMES}" ] && [ -n "${CONDA_PREFIX}" ]; then
     export OCL_ICD_FILENAMES=$(find $CONDA_PREFIX -name intelocl64.dll | sed 's/\\/\//g')
+    echo "OCL_ICD_FILENAMES is set to ${OCL_ICD_FILENAMES}"
 fi
 
 python scripts/run_sklearn_tests.py -d ${1:-none}
