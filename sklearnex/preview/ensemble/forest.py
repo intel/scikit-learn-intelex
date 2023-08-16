@@ -51,6 +51,8 @@ from ..._device_offload import dispatch, wrap_output_data
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
+if sklearn_check_version("1.4"):
+    from daal4py.sklearn.utils import _assert_all_finite
 
 
 class BaseRandomForest(ABC):
@@ -431,6 +433,14 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         correct_monotonic_cst = (
             sklearn_check_version("1.4") and self.monotonic_cst is None
         )
+        if correct_sparsity and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                correct_finiteness = True
+            except ValueError:
+                correct_finiteness = False
+        else:
+            correct_finiteness = True
 
         if daal_check_version((2021, "P", 500)):
             correct_oob_score = not self.oob_score
@@ -445,6 +455,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 correct_criterion,
                 correct_warm_start,
                 correct_monotonic_cst,
+                correct_finiteness,
             ]
         )
         if ready:
@@ -726,6 +737,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 multi_output=False,
                 accept_sparse=False,
                 dtype=[np.float64, np.float32],
+                force_all_finite=not sklearn_check_version("1.4"),
             )
         else:
             X, y = check_X_y(
@@ -1076,6 +1088,14 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             y = np.reshape(y, (-1, 1))
         self.n_outputs_ = y.shape[1]
         ready = self.n_outputs_ == 1
+        if not sp.issparse(X) and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                ready &= True
+            except ValueError:
+                ready &= False
+        else:
+            ready &= True
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
@@ -1197,7 +1217,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             sample_weight = self.check_sample_weight(sample_weight, X)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
-        X = check_array(X, dtype=[np.float64, np.float32])
+        X = check_array(
+            X,
+            dtype=[np.float64, np.float32],
+            force_all_finite=not sklearn_check_version("1.4"),
+        )
         y = np.atleast_1d(np.asarray(y))
         y = check_array(y, ensure_2d=False, dtype=X.dtype)
         check_consistent_length(X, y)

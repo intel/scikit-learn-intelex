@@ -48,6 +48,8 @@ from ..utils.validation import _daal_num_features
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
+if sklearn_check_version("1.4"):
+    from daal4py.sklearn.utils import _assert_all_finite
 
 
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
@@ -458,10 +460,18 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             ]
         )
-
-        if sklearn_check_version("1.4"):
+        if _dal_ready and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                input_is_finite = True
+            except ValueError:
+                input_is_finite = False
             _patching_status.and_conditions(
                 [
+                    (
+                        input_is_finite,
+                        "Non-finite input is not supported.",
+                    ),
                     (
                         self.monotonic_cst is None,
                         "Monotonicity constraints are not supported.",
@@ -472,7 +482,11 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if _dal_ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X, dtype=[np.float32, np.float64])
+            X = check_array(
+                X,
+                dtype=[np.float32, np.float64],
+                force_all_finite=not sklearn_check_version("1.4"),
+            )
             y = np.asarray(y)
             y = np.atleast_1d(y)
 
@@ -1092,9 +1106,18 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             ]
         )
-        if sklearn_check_version("1.4"):
+        if _dal_ready and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                input_is_finite = True
+            except ValueError:
+                input_is_finite = False
             _patching_status.and_conditions(
                 [
+                    (
+                        input_is_finite,
+                        "Non-finite input is not supported.",
+                    ),
                     (
                         self.monotonic_cst is None,
                         "Monotonicity constraints are not supported.",
@@ -1105,7 +1128,11 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if _dal_ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X, dtype=[np.float64, np.float32])
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=not sklearn_check_version("1.4"),
+            )
             y = np.asarray(y)
             y = np.atleast_1d(y)
 
