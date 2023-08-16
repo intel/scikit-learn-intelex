@@ -75,6 +75,8 @@ class BaseDBSCAN(ClusterMixin):
         # XX = make2d(X)
         # TODO:
         # sample_weight check.
+        # if sample_weight is not None:
+        #     sample_weight = _check_sample_weight(sample_weight, X)
         X_loc = np.asarray(X)
         types = [np.float32, np.float64]
         if get_dtype(X_loc) not in types:
@@ -94,9 +96,6 @@ class BaseDBSCAN(ClusterMixin):
         self.components_ = np.take(X, self.core_sample_indices_, axis=0)
         self.n_features_in_ = X.shape[1]
         return self
-
-    # def fit_predict(self, X, y, sample_weight, module, queue):
-    #     pass
 
 
 class DBSCAN(BaseDBSCAN):
