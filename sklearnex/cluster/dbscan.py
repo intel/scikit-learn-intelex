@@ -188,27 +188,16 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
 
     # @wrap_output_data
     def fit(self, X, y=None, sample_weight=None):
-        # dispatch(
-        #     self,
-        #     "fit",
-        #     {
-        #         "onedal": self.__class__._onedal_fit,
-        #         "sklearn": super(DBSCAN, self).fit,
-        #     },
-        #     X,
-        #     y,
-        #     sample_weight,
-        # )
-
         dispatch(
             self,
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_DBSCAN.fit,
+                "sklearn": super(DBSCAN, self).fit,
             },
             X,
             y,
             sample_weight,
         )
+
         return self
