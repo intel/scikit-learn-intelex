@@ -36,17 +36,17 @@ APIs for different frameworks.
 XGBoost::
 
   import daal4py as d4p
-  d4p_model = d4p.get_gbt_model_from_xgboost(xgb_model)
+  daal_model = d4p.mb.convert_model(xgb_model)
 
 LightGBM::
 
   import daal4py as d4p
-  d4p_model = d4p.get_gbt_model_from_lightgbm(lgb_model)
+  daal_model = d4p.mb.convert_model(lgb_model)
 
 CatBoost::
 
   import daal4py as d4p
-  d4p_model = d4p.get_gbt_model_from_catboost(cb_model)
+  daal_model = d4p.mb.convert_model(cb_model)
 
 .. note:: Convert model only once and then use it for the inference.
 
@@ -56,27 +56,9 @@ GBT implementation in daal4py assumes separate APIs for the classification and r
 Specify the corresponding API and match the corresponding problem 
 in the initial framework.
 
-Classification::
+    daal_prediction = daal_model.predict(test_data)
 
-    d4p_cls_algo = d4p.gbt_classification_prediction(
-        nClasses=params['classes_count'],
-        resultsToEvaluate="computeClassLabels",
-        fptype='float'
-    )
 
-Regression::
-    d4p_reg_algo = d4p.gbt_regression_prediction()
-
-Next, daal4py algorithm object needs compute method to be called. 
-Both the data and the previously converted model should be passed with the results of the prediction 
-available within the  ``.prediction`` parameter.
-
-Compute::
-
-    d4p_predictions = d4p_reg_algo.compute(X_test, d4p_model).prediction
-
-The one-line variant of the same code::
-    d4p_prediction = d4p.gbt_regression_prediction().compute(X_test, d4p_model).prediction
 
 
 Limitations
