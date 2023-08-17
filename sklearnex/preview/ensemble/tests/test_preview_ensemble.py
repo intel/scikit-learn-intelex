@@ -44,7 +44,8 @@ def test_sklearnex_import_rf_regression():
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
     assert "sklearnex.preview" in rf.__module__
     pred = rf.predict([[0, 0, 0, 0]])
-    if daal_check_version((2024, "P", 000)):
+    if daal_check_version((2024, "P", 0)):
+
         assert_allclose([-6.971], pred, atol=1e-2)
     else:
         assert_allclose([-6.839], pred, atol=1e-2)
