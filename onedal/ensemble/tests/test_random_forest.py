@@ -86,7 +86,7 @@ def test_rf_regression_random_splitter(queue):
     rf = RandomForestRegressor(max_depth=2, random_state=0, splitter_mode="random").fit(
         X, y, queue=queue
     )
-    if daal_check_version((2023, "P", 300)):
+    if daal_check_version((2024, "P", 0)):
         assert_allclose([-6.88], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
     else:
         assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
