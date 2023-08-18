@@ -62,7 +62,7 @@ Classification and Regression Inference
 ----------------------------------------
 
 The API is the same for classification and regression inference. 
-Based on the original model passed to the ``convert_model``, ``daal_prediction`` is either the classification or regression output. 
+Based on the original model passed to the ``convert_model``, ``d4p_prediction`` is either the classification or regression output. 
     
     ::
       
