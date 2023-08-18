@@ -19,6 +19,9 @@
 ##############
 Streaming Data
 ##############
+
+.. include:: note.rst
+  
 For large quantities of data it might be impossible to provide all input data at
 once. This might be because the data resides in multiple files and merging it is
 to costly (or not feasible in other ways). In other cases the data is simply too

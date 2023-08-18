@@ -19,6 +19,9 @@
 ###############################################
 Scaling on Distributed Memory (Multiprocessing)
 ###############################################
+
+.. include:: note.rst
+
 It's Easy
 ---------
 daal4py operates in SPMD style (Single Program Multiple Data), which means your
