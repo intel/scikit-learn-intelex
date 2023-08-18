@@ -29,7 +29,7 @@
         var wapLocalCode = 'us-en'; // Dynamically set per localized site, see mapping table for values
         var wapSection = "scikit-learn"; // WAP team will give you a unique section for your site
         // Load TMS
-        if(document.location.href.contains("intel.github.io/scikit-learn-intelex")){
+        if(document.location.href.includes("intel.github.io/scikit-learn-intelex")){
           (function () {
             var url = 'https://www.intel.com/content/dam/www/global/wap/tms-loader.js'; // WAP file URL
             var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true; po.src = url;
@@ -178,7 +178,16 @@ a Kaggle notebook that summarizes the speedup you can achieve with Intel® Exten
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Intel.</p>
+<jinja2.runtime.BlockReference object at 0x7f901f22f1f0>
+<a href=
+    "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
+    Cookies
+</a>
+<a href=
+    "https://www.intel.com/content/www/us/en/privacy/intel-privacy-notice.html">
+    Privacy
+</a>
+
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
