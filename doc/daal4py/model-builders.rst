@@ -68,8 +68,8 @@ Based on the original model passed to the ``convert_model``, ``d4p_prediction`` 
       
       d4p_prediction = d4p_model.predict(test_data)
 
-Here, the ``predict()`` method of ``daal_model`` is being used to make predictions on the ``test_data`` dataset.
-The ``daal_prediction``variable stores the predictions made by the ``predict()`` method. 
+Here, the ``predict()`` method of ``d4p_model`` is being used to make predictions on the ``test_data`` dataset.
+The ``d4p_prediction``variable stores the predictions made by the ``predict()`` method. 
 
 Scikit-learn-style Estimators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
