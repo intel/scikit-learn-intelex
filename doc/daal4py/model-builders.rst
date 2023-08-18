@@ -44,17 +44,17 @@ API usage for different frameworks is the same:
 XGBoost::
 
   import daal4py as d4p
-  daal_model = d4p.mb.convert_model(xgb_model)
+  d4p_model = d4p.mb.convert_model(xgb_model)
 
 LightGBM::
 
   import daal4py as d4p
-  daal_model = d4p.mb.convert_model(lgb_model)
+  d4p_model = d4p.mb.convert_model(lgb_model)
 
 CatBoost::
 
   import daal4py as d4p
-  daal_model = d4p.mb.convert_model(cb_model)
+  d4p_model = d4p.mb.convert_model(cb_model)
 
 .. note:: Convert model only once and then use it for the inference.
 
