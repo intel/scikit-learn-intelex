@@ -19,20 +19,28 @@
 ###############################################
 Model Builders for the Gradient Boosting Frameworks
 ###############################################
+
+.. include:: note.rst
+
 Introduction
 ------------------
 Gradient boosting on decision trees is one of the most accurate and efficient 
 machine learning algorithms for classification and regression. 
-The most popular implementations of it are the XGBoost*, 
-LightGBM*, and CatBoost* frameworks.
+The most popular implementations of it are: 
+
+* XGBoost*
+* LightGBM*
+* CatBoost*
+
 daal4py Model Builders deliver the accelerated
 models inference of those frameworks. The inference is performed by the oneDAL GBT implementation tuned 
 for the best performance on the Intel(R) Architecture. 
 
 Conversion
 ---------
-The first step is to convert already trained model. There are similar 
-APIs for different frameworks. 
+The first step is to convert already trained model. The
+API usage for different frameworks is the same:
+
 XGBoost::
 
   import daal4py as d4p
@@ -51,14 +59,29 @@ CatBoost::
 .. note:: Convert model only once and then use it for the inference.
 
 Classification and Regression Inference
----------
-GBT implementation in daal4py assumes separate APIs for the classification and regression.
-Specify the corresponding API and match the corresponding problem 
-in the initial framework.
+----------------------------------------
 
-    daal_prediction = daal_model.predict(test_data)
+The API is the same for classification and regression inference. 
+Based on the original model passed to the ``convert_model``, ``daal_prediction`` is either the classification or regression output. 
+    
+    ::
+      
+      daal_prediction = daal_model.predict(test_data)
 
+Here, the ``predict()`` method of ``daal_model`` is being used to make predictions on the ``test_data`` dataset.
+The ``daal_prediction``variable stores the predictions made by the ``predict()`` method. 
 
+Scikit-learn-style Estimators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also use the scikit-learn-style classes ``GBTDAALClassifier`` and ``GBTDAALRegressor`` to convert and infer your models. For example:
+
+:: 
+
+  from daal4py.sklearn.ensemble import GBTDAALRegressor
+  reg = xgb.XGBRegressor()
+  reg.fit(X, y)
+  d4p_predt = GBTDAALRegressor.convert_model(reg).predict(X)
 
 
 Limitations
@@ -79,4 +102,4 @@ Model Builders models conversion
 Articles and Blog Posts
 ---------------------------------
 
--  `Improving the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>` _
+-  `Improving the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_
