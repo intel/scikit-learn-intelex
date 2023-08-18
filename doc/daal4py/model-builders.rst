@@ -69,7 +69,7 @@ Based on the original model passed to the ``convert_model``, ``d4p_prediction`` 
       d4p_prediction = d4p_model.predict(test_data)
 
 Here, the ``predict()`` method of ``d4p_model`` is being used to make predictions on the ``test_data`` dataset.
-The ``d4p_prediction``variable stores the predictions made by the ``predict()`` method. 
+The ``d4p_prediction`` variable stores the predictions made by the ``predict()`` method. 
 
 Scikit-learn-style Estimators
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -82,14 +82,6 @@ You can also use the scikit-learn-style classes ``GBTDAALClassifier`` and ``GBTD
   reg = xgb.XGBRegressor()
   reg.fit(X, y)
   d4p_predt = GBTDAALRegressor.convert_model(reg).predict(X)
-
-
-Limitations
----------------------------------
-Missing Values (NaN)
-Note that there is temporary limitation on the use of missing values 
-(NaN) during training and prediction. This problem is addressed on 
-the master branch and to be available in the 2023.2 release.
 
 Examples
 ---------------------------------
