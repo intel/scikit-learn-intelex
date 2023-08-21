@@ -188,11 +188,6 @@ if daal_check_version((2023, "P", 200)):
 
             """
 
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            if sklearn_check_version("1.2"):
-                self._validate_params()
-
             dispatch(
                 self,
                 "fit",
@@ -208,6 +203,11 @@ if daal_check_version((2023, "P", 200)):
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=True)
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+
             assert sample_weight is None
 
             X = self._validate_data(
@@ -270,11 +270,6 @@ if daal_check_version((2023, "P", 200)):
 
             """
 
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            if sklearn_check_version("1.2"):
-                self._validate_params()
-
             return dispatch(
                 self,
                 "predict",
@@ -286,6 +281,10 @@ if daal_check_version((2023, "P", 200)):
             )
 
         def _onedal_predict(self, X, queue=None):
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=True)
+            if sklearn_check_version("1.2"):
+                self._validate_params()
             X = self._validate_data(X, accept_sparse=False, reset=False)
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()

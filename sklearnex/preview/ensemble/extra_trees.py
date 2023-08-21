@@ -503,24 +503,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-        # TODO:
-        # _check_proba()
-        # self._check_proba()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-        if hasattr(self, "n_features_in_"):
-            try:
-                num_features = _num_features(X)
-            except TypeError:
-                num_features = _num_samples(X)
-            if num_features != self.n_features_in_:
-                raise ValueError(
-                    (
-                        f"X has {num_features} features, "
-                        f"but ExtraTreesClassifier is expecting "
-                        f"{self.n_features_in_} features as input"
-                    )
-                )
+
         return dispatch(
             self,
             "predict_proba",
@@ -840,6 +823,24 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
+        # TODO:
+        # _check_proba()
+        # self._check_proba()
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        if hasattr(self, "n_features_in_"):
+            try:
+                num_features = _num_features(X)
+            except TypeError:
+                num_features = _num_samples(X)
+            if num_features != self.n_features_in_:
+                raise ValueError(
+                    (
+                        f"X has {num_features} features, "
+                        f"but ExtraTreesClassifier is expecting "
+                        f"{self.n_features_in_} features as input"
+                    )
+                )
         X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
         if sklearn_check_version("0.23"):

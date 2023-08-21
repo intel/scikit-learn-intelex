@@ -118,10 +118,6 @@ if daal_check_version((2023, "P", 100)):
             self : object
                 Fitted Estimator.
             """
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            if sklearn_check_version("1.2"):
-                self._validate_params()
 
             dispatch(
                 self,
@@ -149,8 +145,7 @@ if daal_check_version((2023, "P", 100)):
             C : array, shape (n_samples, n_targets)
                 Returns predicted values.
             """
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
+
             return dispatch(
                 self,
                 "predict",
@@ -280,6 +275,10 @@ if daal_check_version((2023, "P", 100)):
             self._onedal_estimator = onedal_LinearRegression(**onedal_params)
 
         def _onedal_fit(self, X, y, sample_weight, queue=None):
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=True)
+            if sklearn_check_version("1.2"):
+                self._validate_params()
             assert sample_weight is None
 
             check_params = {
@@ -309,6 +308,8 @@ if daal_check_version((2023, "P", 100)):
             self._save_attributes()
 
         def _onedal_predict(self, X, queue=None):
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=False)
             X = self._validate_data(X, accept_sparse=False, reset=False)
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()

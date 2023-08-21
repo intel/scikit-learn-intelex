@@ -468,24 +468,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             The class probabilities of the input samples. The order of the
             classes corresponds to that in the attribute :term:`classes_`.
         """
-        # TODO:
-        # _check_proba()
-        # self._check_proba()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-        if hasattr(self, "n_features_in_"):
-            try:
-                num_features = _num_features(X)
-            except TypeError:
-                num_features = _num_samples(X)
-            if num_features != self.n_features_in_:
-                raise ValueError(
-                    (
-                        f"X has {num_features} features, "
-                        f"but RandomForestClassifier is expecting "
-                        f"{self.n_features_in_} features as input"
-                    )
-                )
+
         return dispatch(
             self,
             "predict_proba",
@@ -768,6 +751,24 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
+        # TODO:
+        # _check_proba()
+        # self._check_proba()
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        if hasattr(self, "n_features_in_"):
+            try:
+                num_features = _num_features(X)
+            except TypeError:
+                num_features = _num_samples(X)
+            if num_features != self.n_features_in_:
+                raise ValueError(
+                    (
+                        f"X has {num_features} features, "
+                        f"but RandomForestClassifier is expecting "
+                        f"{self.n_features_in_} features as input"
+                    )
+                )
         X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
         if sklearn_check_version("0.23"):
@@ -1070,6 +1071,12 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        if not self.bootstrap and self.max_samples is not None:
+            raise ValueError(
+                "`max_sample` cannot be set if `bootstrap=False`. "
+                "Either switch to `bootstrap=True` or set "
+                "`max_sample=None`."
+            )
         if sp.issparse(y):
             raise ValueError("sparse multilabel-indicator for y is not supported.")
         if sklearn_check_version("1.2"):
@@ -1158,12 +1165,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         -------
         self : object
         """
-        if not self.bootstrap and self.max_samples is not None:
-            raise ValueError(
-                "`max_sample` cannot be set if `bootstrap=False`. "
-                "Either switch to `bootstrap=True` or set "
-                "`max_sample=None`."
-            )
+
         dispatch(
             self,
             "fit",
