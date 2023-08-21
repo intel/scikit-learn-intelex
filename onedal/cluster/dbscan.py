@@ -21,16 +21,16 @@ import numpy as np
 
 # from ..common._mixin import ClusterMixin
 from sklearn.base import BaseEstimator, ClusterMixin
+from sklearn.utils import check_array
 
 # from daal4py.sklearn._utils import daal_check_version, get_dtype
+from daal4py.sklearn._utils import PatchingConditionsChain, getFPType, make2d
 from daal4py.sklearn._utils import get_dtype
 from onedal import _backend
 
 # from sklearn.base import BaseEstimator
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
-
-# class BaseDBSCAN(ClusterMixin, BaseEstimator)
 
 
 class BaseDBSCAN(ClusterMixin):
@@ -70,21 +70,17 @@ class BaseDBSCAN(ClusterMixin):
 
     def _fit(self, X, y, sample_weight, module, queue):
         policy = self._get_policy(queue, X)
-        # X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
-        # ww = make2d(sample_weight) if sample_weight is not None else None
-        # XX = make2d(X)
-        # TODO:
-        # sample_weight check.
-        # if sample_weight is not None:
-        #     sample_weight = _check_sample_weight(sample_weight, X)
-        X_loc = np.asarray(X)
+        X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+        ww = make2d(sample_weight) if sample_weight is not None else None
+        XX = make2d(X)
+
         types = [np.float32, np.float64]
-        if get_dtype(X_loc) not in types:
-            X_loc = X_loc.astype(np.float64)
-        X_loc = _convert_to_supported(policy, X_loc)
-        dtype = get_dtype(X_loc)
+        if get_dtype(XX) not in types:
+            XX = XX.astype(np.float64)
+        XX = _convert_to_supported(policy, XX)
+        dtype = get_dtype(XX)
         params = self._get_onedal_params(dtype)
-        result = module.compute(policy, params, to_table(X_loc), to_table(sample_weight))
+        result = module.compute(policy, params, to_table(XX), to_table(ww))
 
         self.labels_ = from_table(result.responses).ravel()
         if result.core_observation_indices is not None:

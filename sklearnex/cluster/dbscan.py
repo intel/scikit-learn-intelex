@@ -61,9 +61,8 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
     # if sklearn_check_version("1.1"):
     #    _parameter_constraints: dict = {
     #        **sklearn_DBSCAN._parameter_constraints,
-    #        "eps": [Interval(numbers.Integral, 2, None, closed="left")],
-    #        "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
-    #        "splitter_mode": [StrOptions({"best", "random"})],
+    #        "eps": [Interval(numbers.Integral, 0.0, None, closed="neither")],
+    #        "min_samples": [Interval(numbers.Integral, 1, None, closed="left")],
     #    }
 
     def __init__(
@@ -140,6 +139,8 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
+
+        # X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
 
         onedal_params = {
             "eps": self.eps,
