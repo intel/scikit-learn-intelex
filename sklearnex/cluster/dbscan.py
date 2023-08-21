@@ -187,14 +187,13 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
                 return True
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
-    # @wrap_output_data
     def fit(self, X, y=None, sample_weight=None):
         dispatch(
             self,
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": super(DBSCAN, self).fit,
+                "sklearn": sklearn_DBSCAN.fit,
             },
             X,
             y,
