@@ -117,22 +117,18 @@ html_favicon = '_static/favicons.png'
 # documentation.
 #
 
-cookie_link = '''
-    <p align="right">
-        <a href=
-            "https://www.intel.com/content/www/us/en/privacy/intel-cookie-notice.html">
-            Cookies
-        </a>
-    </p>
-'''
 
 html_theme_options = {
-    'repository_url': 'https://github.com/intel/scikit-learn-intelex',
-    'path_to_docs': 'doc/sources',
-    'use_issues_button': True,
-    'use_edit_page_button': True,
-    'repository_branch': 'master',
-    'extra_footer': cookie_link
+    'logo_only': False,
+    'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': False,
+    'vcs_pageview_mode': '',
+    'collapse_navigation': True,
+    'sticky_navigation': True,
+    'navigation_depth': -1,
+    'includehidden': True,
+    'titles_only': False
 }
 
 
