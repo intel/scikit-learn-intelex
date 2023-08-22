@@ -64,3 +64,5 @@ If you want to run them locally, refer to `these instructions
 .. seealso::
 
    There are also :ref:`Kaggle kernels <kaggle>` that use |intelex| for a variety of machine learning scenarios.
+
+.. note:: Explore the complete list of oneAPI code samples in the `oneAPI Samples Catalog <https://oneapi-src.github.io/oneAPI-samples/>`_. These samples were designed to help you develop, offload, and optimize multiarchitecture applications targeting CPUs, GPUs, and FPGAs. 
