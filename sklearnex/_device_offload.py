@@ -186,7 +186,7 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     if backend == "sklearn":
         return branches[backend](obj, *hostargs, **hostkwargs)
     if backend == "daal4py":
-        return branches[backend](*hostargs, **hostkwargs)
+        return branches[backend](obj._daal4py_estimator, *hostargs, **hostkwargs)
     raise RuntimeError(
         f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
     )
