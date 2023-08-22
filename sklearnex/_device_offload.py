@@ -143,14 +143,18 @@ def _transfer_to_host(queue, *data):
     return queue, host_data
 
 
-def _get_backend(obj, queue, method_name, *data):
+def _get_backend(obj, queue, method_name, daal4py_branch_available, *data):
     cpu_device = queue is None or queue.sycl_device.is_cpu
     gpu_device = queue is not None and queue.sycl_device.is_gpu
+
+    if cpu_device and daal4py_branch_available:
+        return "daal4py", None
 
     if (cpu_device and obj._onedal_cpu_supported(method_name, *data)) or (
         gpu_device and obj._onedal_gpu_supported(method_name, *data)
     ):
         return "onedal", queue
+
     if cpu_device:
         return "sklearn", None
 
@@ -173,12 +177,16 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
 
-    backend, q = _get_backend(obj, q, method_name, *hostargs)
+    daal4py_branch_available = True if "daal4py" in branches else False
+
+    backend, q = _get_backend(obj, q, method_name, daal4py_branch_available, *hostargs)
 
     if backend == "onedal":
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == "sklearn":
         return branches[backend](obj, *hostargs, **hostkwargs)
+    if backend == "daal4py":
+        return branches[backend](*hostargs, **hostkwargs)
     raise RuntimeError(
         f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
     )
