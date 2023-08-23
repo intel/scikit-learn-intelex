@@ -1094,8 +1094,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 ready &= True
             except ValueError:
                 ready &= False
-        else:
-            ready &= True
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
