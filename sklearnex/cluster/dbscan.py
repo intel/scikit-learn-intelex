@@ -15,26 +15,15 @@
 # limitations under the License.
 # ===============================================================================
 
-# from daal4py.sklearn.cluster import DBSCAN
-
 import numbers
 from abc import ABC
 
 import numpy as np
 from scipy import sparse as sp
 from sklearn.cluster import DBSCAN as sklearn_DBSCAN
-from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
 
-# TODO:
-# move the checks to onedal4py side.
-import daal4py
-from daal4py.sklearn._utils import (
-    PatchingConditionsChain,
-    getFPType,
-    make2d,
-    sklearn_check_version,
-)
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
 from .._device_offload import dispatch, wrap_output_data
@@ -140,8 +129,6 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
 
-        # X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
-
         onedal_params = {
             "eps": self.eps,
             "min_samples": self.min_samples,
@@ -187,6 +174,9 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
                 return True
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
+    # TODO:
+    # update this decorator.
+    # @wrap_output_data
     def fit(self, X, y=None, sample_weight=None):
         dispatch(
             self,
