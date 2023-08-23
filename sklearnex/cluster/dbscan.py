@@ -45,14 +45,8 @@ class BaseDBSCAN(ABC):
 class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
     __doc__ = sklearn_DBSCAN.__doc__
 
-    # TODO:
-    # move scalar checks here.
-    # if sklearn_check_version("1.1"):
-    #    _parameter_constraints: dict = {
-    #        **sklearn_DBSCAN._parameter_constraints,
-    #        "eps": [Interval(numbers.Integral, 0.0, None, closed="neither")],
-    #        "min_samples": [Interval(numbers.Integral, 1, None, closed="left")],
-    #    }
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {**sklearn_DBSCAN._parameter_constraints}
 
     def __init__(
         self,
@@ -86,8 +80,6 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        # TODO:
-        # use `_parameter_constraints` instead.
         if sklearn_check_version("1.2"):
             self._validate_params()
         elif sklearn_check_version("1.1"):
