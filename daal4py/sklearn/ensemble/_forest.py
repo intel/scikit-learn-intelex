@@ -48,6 +48,8 @@ from ..utils.validation import _daal_num_features
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
+if sklearn_check_version("1.4"):
+    from daal4py.sklearn.utils import _assert_all_finite
 
 
 def _to_absolute_max_features(max_features, n_features, is_classification=False):
@@ -241,7 +243,61 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             "binningStrategy": [StrOptions({"quantiles", "averages"})],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            criterion="gini",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="sqrt",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            class_weight=None,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            maxBins=256,
+            minBinSize=1,
+            binningStrategy="quantiles",
+        ):
+            super().__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                monotonic_cst=monotonic_cst,
+            )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+            self.binningStrategy = binningStrategy
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
@@ -404,11 +460,33 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             ]
         )
+        if _dal_ready and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                input_is_finite = True
+            except ValueError:
+                input_is_finite = False
+            _patching_status.and_conditions(
+                [
+                    (
+                        input_is_finite,
+                        "Non-finite input is not supported.",
+                    ),
+                    (
+                        self.monotonic_cst is None,
+                        "Monotonicity constraints are not supported.",
+                    ),
+                ]
+            )
 
         if _dal_ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X, dtype=[np.float32, np.float64])
+            X = check_array(
+                X,
+                dtype=[np.float32, np.float64],
+                force_all_finite=not sklearn_check_version("1.4"),
+            )
             y = np.asarray(y)
             y = np.atleast_1d(y)
 
@@ -806,7 +884,60 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             "binningStrategy": [StrOptions({"quantiles", "averages"})],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="squared_error",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features=1.0,
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            maxBins=256,
+            minBinSize=1,
+            binningStrategy="quantiles",
+        ):
+            super().__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                monotonic_cst=monotonic_cst,
+            )
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
+            self.maxBins = maxBins
+            self.minBinSize = minBinSize
+            self.min_impurity_split = None
+            self.binningStrategy = binningStrategy
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
@@ -975,11 +1106,33 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
                 (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             ]
         )
+        if _dal_ready and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                input_is_finite = True
+            except ValueError:
+                input_is_finite = False
+            _patching_status.and_conditions(
+                [
+                    (
+                        input_is_finite,
+                        "Non-finite input is not supported.",
+                    ),
+                    (
+                        self.monotonic_cst is None,
+                        "Monotonicity constraints are not supported.",
+                    ),
+                ]
+            )
 
         if _dal_ready:
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X, dtype=[np.float64, np.float32])
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=not sklearn_check_version("1.4"),
+            )
             y = np.asarray(y)
             y = np.atleast_1d(y)
 

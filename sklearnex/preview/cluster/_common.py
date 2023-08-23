@@ -67,7 +67,7 @@ class BaseKMeans(ABC):
         self._n_iter_ = self._onedal_estimator.n_iter_
         self._labels_ = self._onedal_estimator.labels_
         self._inertia_ = self._onedal_estimator.inertia_
-        self._algorithm = self._onedal_estimator._algorithm
+        self._algorithm = self._onedal_estimator.algorithm
         self._cluster_centers_ = self._onedal_estimator.cluster_centers_
         self._sparse = False
 
