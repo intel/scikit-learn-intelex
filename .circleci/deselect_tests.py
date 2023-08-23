@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#===============================================================================
+# ==============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ==============================================================================
 
 # coding: utf-8
 import argparse
-import sys
 import os.path
-from yaml import FullLoader, load as yaml_load
+import sys
+
+from yaml import FullLoader
+from yaml import load as yaml_load
+
 try:
     from packaging.version import Version
 except ImportError:
     from distutils.version import LooseVersion as Version
+
+import warnings
+
 import sklearn
 from sklearn import __version__ as sklearn_version
-import warnings
 
 
 def evaluate_cond(cond, v):
@@ -44,15 +49,16 @@ def evaluate_cond(cond, v):
         return Version(v) > Version(cond[1:])
     warnings.warn(
         'Test selection condition "{0}" should start with '
-        '>=, <=, ==, !=, < or > to compare to version of scikit-learn run. '
-        'The test will not be deselected'.format(cond))
+        ">=, <=, ==, !=, < or > to compare to version of scikit-learn run. "
+        "The test will not be deselected".format(cond)
+    )
     return False
 
 
 def filter_by_version_and_platform(entry, sk_ver):
     if not entry:
         return None
-    t = entry.split(' ')
+    t = entry.split(" ")
     if len(t) == 1:
         return entry
     elif len(t) == 2:
@@ -62,7 +68,7 @@ def filter_by_version_and_platform(entry, sk_ver):
     test_name, cond, platform = t
     if platform is not None and platform != sys.platform:
         return None
-    conds = cond.split(',')
+    conds = cond.split(",")
     if all([evaluate_cond(cond, sk_ver) for cond in conds]):
         return test_name
     return None
@@ -71,33 +77,46 @@ def filter_by_version_and_platform(entry, sk_ver):
 def create_pytest_switches(filename, absolute, reduced, public, gpu, base_dir=None):
     pytest_switches = []
     if os.path.exists(filename):
-        with open(filename, 'r') as fh:
+        with open(filename, "r") as fh:
             dt = yaml_load(fh, Loader=FullLoader)
 
         if absolute:
-            base_dir = os.path.relpath(
-                os.path.dirname(sklearn.__file__),
-                os.path.expanduser('~')) + '/'
+            base_dir = (
+                os.path.relpath(
+                    os.path.dirname(sklearn.__file__), os.path.expanduser("~")
+                )
+                + "/"
+            )
         elif base_dir is None:
             base_dir = ""
-        elif not base_dir.endswith('/'):
-            base_dir += '/'
+        elif not base_dir.endswith("/"):
+            base_dir += "/"
 
         filtered_deselection = [
             filter_by_version_and_platform(test_name, sklearn_version)
-            for test_name in dt.get('deselected_tests', [])]
+            for test_name in dt.get("deselected_tests", [])
+        ]
         if reduced:
             filtered_deselection.extend(
-                [filter_by_version_and_platform(test_name, sklearn_version)
-                 for test_name in dt.get('reduced_tests', [])])
+                [
+                    filter_by_version_and_platform(test_name, sklearn_version)
+                    for test_name in dt.get("reduced_tests", [])
+                ]
+            )
         if public:
             filtered_deselection.extend(
-                [filter_by_version_and_platform(test_name, sklearn_version)
-                 for test_name in dt.get('public', [])])
+                [
+                    filter_by_version_and_platform(test_name, sklearn_version)
+                    for test_name in dt.get("public", [])
+                ]
+            )
         if gpu:
             filtered_deselection.extend(
-                [filter_by_version_and_platform(test_name, sklearn_version)
-                 for test_name in dt.get('gpu', [])])
+                [
+                    filter_by_version_and_platform(test_name, sklearn_version)
+                    for test_name in dt.get("gpu", [])
+                ]
+            )
         pytest_switches = []
         for test_name in filtered_deselection:
             if test_name:
@@ -105,21 +124,26 @@ def create_pytest_switches(filename, absolute, reduced, public, gpu, base_dir=No
     return pytest_switches
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     argParser = argparse.ArgumentParser(
         prog="deselect_tests.py",
         description="Produce pytest CLI options to deselect tests specified in yaml file",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    argParser.add_argument('conf_file', nargs=1, type=str)
-    argParser.add_argument('--absolute', action='store_true')
-    argParser.add_argument('--reduced', action='store_true')
-    argParser.add_argument('--public', action='store_true')
-    argParser.add_argument('--gpu', action='store_true')
-    argParser.add_argument('--base-dir', type=str, default=None)
+    argParser.add_argument("conf_file", nargs=1, type=str)
+    argParser.add_argument("--absolute", action="store_true")
+    argParser.add_argument("--reduced", action="store_true")
+    argParser.add_argument("--public", action="store_true")
+    argParser.add_argument("--gpu", action="store_true")
+    argParser.add_argument("--base-dir", type=str, default=None)
     args = argParser.parse_args()
 
     fn = args.conf_file[0]
     if os.path.exists(fn):
-        print(" ".join(create_pytest_switches(fn, args.absolute, args.reduced,
-                                              args.public, args.gpu, args.base_dir)))
+        print(
+            " ".join(
+                create_pytest_switches(
+                    fn, args.absolute, args.reduced, args.public, args.gpu, args.base_dir
+                )
+            )
+        )
