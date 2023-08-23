@@ -52,7 +52,7 @@ jobs:
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
-      pip install isort black
+      pip install isort black[jupyter]
       isort --check .
       black --check .
     displayName: 'Linting'

@@ -1,4 +1,4 @@
-#===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ==============================================================================
 
 import unittest
 
-from sklearn.utils.estimator_checks import check_estimator
 import sklearn.utils.estimator_checks
+from sklearn.utils.estimator_checks import check_estimator
 
 from daal4py import _get__daal_link_version__ as dv
+
 # First item is major version - 2021,
 # second is minor+patch - 0110,
 # third item is status - B
 daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
-print('DAAL version:', daal_version)
+print("DAAL version:", daal_version)
 
-from daal4py.sklearn.ensemble import GBTDAALClassifier
-from daal4py.sklearn.ensemble import GBTDAALRegressor
-from daal4py.sklearn.ensemble import AdaBoostClassifier
+from daal4py.sklearn.ensemble import (
+    AdaBoostClassifier,
+    GBTDAALClassifier,
+    GBTDAALRegressor,
+)
 
 
 def check_version(rule, target):
@@ -80,7 +83,7 @@ class Test(unittest.TestCase):
         md = sklearn.utils.estimator_checks
         # got unexpected slightly different
         # prediction result between two same calls in this test
-        saved = _replace_and_save(md, ['check_estimators_data_not_an_array'], dummy)
+        saved = _replace_and_save(md, ["check_estimators_data_not_an_array"], dummy)
         check_estimator(GBTDAALRegressor())
         _restore_from_saved(md, saved)
 
@@ -88,5 +91,5 @@ class Test(unittest.TestCase):
         check_estimator(AdaBoostClassifier())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

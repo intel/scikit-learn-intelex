@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,61 +13,75 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
-import os
-from os.path import join as jp
-import sys
-import numpy as np
-import subprocess
-from distutils import log
-from distutils.sysconfig import get_python_inc, get_config_var
 import multiprocessing
+import os
+import subprocess
+import sys
+from distutils import log
+from distutils.sysconfig import get_config_var, get_python_inc
 from math import floor
+from os.path import join as jp
+
+import numpy as np
 
 IS_WIN = False
 IS_MAC = False
 IS_LIN = False
 
-if 'linux' in sys.platform:
+if "linux" in sys.platform:
     IS_LIN = True
-elif sys.platform == 'darwin':
+elif sys.platform == "darwin":
     IS_MAC = True
-elif sys.platform in ['win32', 'cygwin']:
+elif sys.platform in ["win32", "cygwin"]:
     IS_WIN = True
 
 
-def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, libdirs,
-              includes, eca, ela, defines, installpath=''):
+def build_cpp(
+    cc,
+    cxx,
+    sources,
+    targetprefix,
+    targetname,
+    targetsuffix,
+    libs,
+    libdirs,
+    includes,
+    eca,
+    ela,
+    defines,
+    installpath="",
+):
     import shutil
     import subprocess
-    from sysconfig import get_paths as gp
     from os.path import basename
+    from sysconfig import get_paths as gp
 
-    log.info(f'building cpp target {targetname}...')
+    log.info(f"building cpp target {targetname}...")
 
-    include_dir_plat = ['-I' + incdir for incdir in includes]
+    include_dir_plat = ["-I" + incdir for incdir in includes]
     if IS_WIN:
-        eca += ['/EHsc']
-        lib_prefix = ''
-        lib_suffix = '.lib'
-        obj_ext = '.obj'
-        libdirs += [jp(gp()['data'], 'libs')]
-        library_dir_plat = ['/link'] + [f'/LIBPATH:{libdir}' for libdir in libdirs]
+        eca += ["/EHsc"]
+        lib_prefix = ""
+        lib_suffix = ".lib"
+        obj_ext = ".obj"
+        libdirs += [jp(gp()["data"], "libs")]
+        library_dir_plat = ["/link"] + [f"/LIBPATH:{libdir}" for libdir in libdirs]
         additional_linker_opts = [
-            '/DLL',
-            f'/OUT:{targetprefix}{targetname}{targetsuffix}'
+            "/DLL",
+            f"/OUT:{targetprefix}{targetname}{targetsuffix}",
         ]
     else:
-        eca += ['-fPIC']
-        ela += ['-shared']
-        lib_prefix = '-l'
-        lib_suffix = ''
-        obj_ext = '.o'
-        library_dir_plat = ['-L' + libdir for libdir in libdirs]
-        additional_linker_opts = ['-o', f'{targetprefix}{targetname}{targetsuffix}']
-    eca += ['-c']
-    libs = [f'{lib_prefix}{str(item)}{lib_suffix}' for item in libs]
+        eca += ["-fPIC"]
+        ela += ["-shared"]
+        lib_prefix = "-l"
+        lib_suffix = ""
+        obj_ext = ".o"
+        library_dir_plat = ["-L" + libdir for libdir in libdirs]
+        additional_linker_opts = ["-o", f"{targetprefix}{targetname}{targetsuffix}"]
+    eca += ["-c"]
+    libs = [f"{lib_prefix}{str(item)}{lib_suffix}" for item in libs]
 
     d4p_dir = os.getcwd()
     build_dir = os.path.join(d4p_dir, f"build_{targetname}")
@@ -77,13 +91,13 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
     os.mkdir(build_dir)
     os.chdir(build_dir)
 
-    objfiles = [basename(f).replace('.cpp', obj_ext) for f in sources]
+    objfiles = [basename(f).replace(".cpp", obj_ext) for f in sources]
     for i, cppfile in enumerate(sources):
         if IS_WIN:
-            out = [f'/Fo{objfiles[i]}']
+            out = [f"/Fo{objfiles[i]}"]
         else:
-            out = ['-o', objfiles[i]]
-        cmd = [cc] + include_dir_plat + eca + [f'{d4p_dir}/{cppfile}'] + out + defines
+            out = ["-o", objfiles[i]]
+        cmd = [cc] + include_dir_plat + eca + [f"{d4p_dir}/{cppfile}"] + out + defines
         log.info(subprocess.list2cmdline(cmd))
         subprocess.check_call(cmd)
 
@@ -93,20 +107,25 @@ def build_cpp(cc, cxx, sources, targetprefix, targetname, targetsuffix, libs, li
         cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
     log.info(subprocess.list2cmdline(cmd))
     subprocess.check_call(cmd)
-    shutil.copy(f'{targetprefix}{targetname}{targetsuffix}',
-                os.path.join(d4p_dir, installpath))
+    shutil.copy(
+        f"{targetprefix}{targetname}{targetsuffix}", os.path.join(d4p_dir, installpath)
+    )
     if IS_WIN:
-        target_lib_suffix = targetsuffix.replace('.dll', '.lib')
-        shutil.copy(f'{targetprefix}{targetname}{target_lib_suffix}',
-                    os.path.join(d4p_dir, installpath))
+        target_lib_suffix = targetsuffix.replace(".dll", ".lib")
+        shutil.copy(
+            f"{targetprefix}{targetname}{target_lib_suffix}",
+            os.path.join(d4p_dir, installpath),
+        )
     os.chdir(d4p_dir)
 
 
 def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_dist=True):
     import pybind11
+
     try:
         import dpctl
-        dpctl_available = dpctl.__version__ >= '0.14'
+
+        dpctl_available = dpctl.__version__ >= "0.14"
     except ImportError:
         dpctl_available = False
 
@@ -126,37 +145,37 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
 
     cmake_generator = "-GNinja" if IS_WIN else ""
     python_include = get_python_inc()
-    win_python_path_lib = os.path.abspath(jp(get_config_var('LIBDEST'), "..", "libs"))
-    python_library_dir = win_python_path_lib if IS_WIN else get_config_var('LIBDIR')
+    win_python_path_lib = os.path.abspath(jp(get_config_var("LIBDEST"), "..", "libs"))
+    python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
 
-    if iface == 'dpc':
+    if iface == "dpc":
         if IS_WIN:
-            cxx = 'icx'
+            cxx = "icx"
         else:
-            cxx = 'icpx'
+            cxx = "icpx"
     elif cxx is None:
-        raise RuntimeError('CXX compiler shall be specified')
+        raise RuntimeError("CXX compiler shall be specified")
 
-    build_distribute = iface == 'dpc' and dpctl_available and not no_dist
+    build_distribute = iface == "dpc" and dpctl_available and not no_dist
 
     log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
 
     if build_distribute:
-        mpi_root = os.environ['MPIROOT']
-        MPI_INCDIRS = jp(mpi_root, 'include')
-        MPI_LIBDIRS = jp(mpi_root, 'lib')
-        MPI_LIBNAME = getattr(os.environ, 'MPI_LIBNAME', None)
+        mpi_root = os.environ["MPIROOT"]
+        MPI_INCDIRS = jp(mpi_root, "include")
+        MPI_LIBDIRS = jp(mpi_root, "lib")
+        MPI_LIBNAME = getattr(os.environ, "MPI_LIBNAME", None)
         if MPI_LIBNAME:
             MPI_LIBS = MPI_LIBNAME
         elif IS_WIN:
-            if os.path.isfile(jp(mpi_root, 'lib', 'mpi.lib')):
-                MPI_LIBS = 'mpi'
-            if os.path.isfile(jp(mpi_root, 'lib', 'impi.lib')):
-                MPI_LIBS = 'impi'
+            if os.path.isfile(jp(mpi_root, "lib", "mpi.lib")):
+                MPI_LIBS = "mpi"
+            if os.path.isfile(jp(mpi_root, "lib", "impi.lib")):
+                MPI_LIBS = "impi"
             assert MPI_LIBS, "Couldn't find MPI library"
         else:
-            MPI_LIBS = 'mpi'
+            MPI_LIBS = "mpi"
 
     cmake_args = [
         "cmake",
@@ -171,15 +190,15 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
         "-DPYTHON_INCLUDE_DIR=" + python_include,
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
-        "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ['DALROOT'], 'include'),
-        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ['DALROOT'], 'lib', 'intel64'),
+        "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ["DALROOT"], "include"),
+        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", "intel64"),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
     ]
 
     if dpctl_available:
         cmake_args += [
             "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
-            "-DONEDAL_DPCTL_INTEGRATION:BOOL=ON"
+            "-DONEDAL_DPCTL_INTEGRATION:BOOL=ON",
         ]
 
     if build_distribute:
@@ -187,26 +206,21 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
             "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
             "-DMPI_LIBS=" + MPI_LIBS,
-            "-DONEDAL_DIST_SPMD:BOOL=ON"
+            "-DONEDAL_DIST_SPMD:BOOL=ON",
         ]
 
     cpu_count = multiprocessing.cpu_count()
     # limit parallel cmake jobs if memory size is insufficient
     # TODO: add on all platforms
     if IS_LIN:
-        with open('/proc/meminfo', 'r') as meminfo_file_obj:
-            memfree = meminfo_file_obj.read().split('\n')[1].split(' ')
-            while '' in memfree:
-                memfree.remove('')
+        with open("/proc/meminfo", "r") as meminfo_file_obj:
+            memfree = meminfo_file_obj.read().split("\n")[1].split(" ")
+            while "" in memfree:
+                memfree.remove("")
             memfree = int(memfree[1])  # total memory in kB
-        cpu_count = min(cpu_count, floor(max(1, memfree / 2 ** 20)))
+        cpu_count = min(cpu_count, floor(max(1, memfree / 2**20)))
 
-    make_args = [
-        "cmake",
-        "--build",
-        abs_build_temp_path,
-        "-j " + str(cpu_count)
-    ]
+    make_args = ["cmake", "--build", abs_build_temp_path, "-j " + str(cpu_count)]
 
     make_install_args = [
         "cmake",
