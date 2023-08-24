@@ -32,9 +32,6 @@ deselected_tests:
   # test for KMeans FutureWarning is not removed from sklearn tests suit yet
   - cluster/tests/test_k_means.py::test_change_n_init_future_warning[KMeans-10] ==1.4.dev0
 
-  # Numerical differences between sklearn and sklearnex preview KMeans
-  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
-
   # Non-critical, but there are significant numerical differences in doctest results
   - pipeline.py::sklearn.pipeline.FeatureUnion
   - ensemble/_forest.py::sklearn.ensemble._forest.RandomForestRegressor
@@ -1105,3 +1102,13 @@ gpu:
   - tests/test_common.py::test_estimators[RFECV(estimator=LogisticRegression(C=1))-
   - tests/test_common.py::test_estimators[SelfTrainingClassifier(base_estimator=LogisticRegression(C=1))-
   - tests/test_common.py::test_estimators[SequentialFeatureSelector(estimator=LogisticRegression(C=1))-
+
+preview:
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] ==1.2
+  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
+  - ensemble/tests/test_forest.py::test_criterion_deprecated[mse-squared_error] <1.1
+  - ensemble/tests/test_forest.py::test_criterion_deprecated[mse-squared_error-RandomForestRegressor] ==1.1
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X1-y1-0.65-array-ExtraTreesClassifier] >=1.3
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[True-X0-y0-0.7-array-ExtraTreesRegressor] >=1.3
