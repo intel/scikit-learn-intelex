@@ -22,9 +22,6 @@ from sklearn.cluster.tests.common import generate_clustered_data
 from onedal.cluster import DBSCAN as ONEDAL_DBSCAN
 from onedal.tests.utils._device_selection import get_queues
 
-METRIC = ("euclidean",)
-USE_WEIGHTS = (True, False)
-
 
 def generate_data(
     low: int, high: int, samples_number: int, sample_dimension: tuple
@@ -82,8 +79,13 @@ def _test_dbscan_big_data_numpy_gen(
     )
 
 
-@pytest.mark.parametrize("metric", METRIC)
-@pytest.mark.parametrize("use_weights", USE_WEIGHTS)
+@pytest.mark.parametrize(
+    "metric",
+    [
+        "euclidean",
+    ],
+)
+@pytest.mark.parametrize("use_weights", [True, False])
 @pytest.mark.parametrize("queue", get_queues())
 def test_dbscan_big_data_numpy_gen(queue, metric, use_weights: bool):
     eps = 35.0
@@ -111,8 +113,13 @@ def _test_across_grid_parameter_numpy_gen(queue, metric, use_weights: bool):
             )
 
 
-@pytest.mark.parametrize("metric", METRIC)
-@pytest.mark.parametrize("use_weights", USE_WEIGHTS)
+@pytest.mark.parametrize(
+    "metric",
+    [
+        "euclidean",
+    ],
+)
+@pytest.mark.parametrize("use_weights", [True, False])
 @pytest.mark.parametrize("queue", get_queues())
 def test_across_grid_parameter_numpy_gen(queue, metric, use_weights: bool):
     _test_across_grid_parameter_numpy_gen(queue, metric=metric, use_weights=use_weights)
