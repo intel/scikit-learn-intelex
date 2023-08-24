@@ -23,7 +23,7 @@ from distutils import log
 from distutils.sysconfig import get_config_var, get_python_inc
 from math import floor
 from os.path import join as jp
-
+import platform as plt
 import numpy as np
 
 IS_WIN = False
@@ -166,6 +166,15 @@ def custom_build_cmake_clib(
             assert MPI_LIBS, "Couldn't find MPI library"
         else:
             MPI_LIBS = "mpi"
+    
+    plt_arch = plt.machine()
+    arch_dir = None
+    if plt_arch=="x86_64":
+        arch_dir = "intel64"
+    elif plt_arch == "aarch64":
+        arch_dir = "arm"
+    else:
+        arch_dir = plt_arch
 
     use_parameters_arg = "yes" if use_parameters_lib else "no"
     log.info(f"Build using parameters library: {use_parameters_arg}")
@@ -184,7 +193,7 @@ def custom_build_cmake_clib(
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ["DALROOT"], "include"),
-        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", "intel64"),
+        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", arch_dir),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
         "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_arg,
     ]

@@ -21,13 +21,22 @@ if "Windows" in platform.system():
     import site
     import sys
 
+    plt_arch = platform.machine()
+    arch_dir = None
+    if plt_arch=="x86_64":
+        arch_dir = "intel64"
+    elif plt_arch == "aarch64":
+        arch_dir = "arm"
+    else:
+        arch_dir = plt_arch
+    
     current_path = os.path.dirname(__file__)
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
     path_to_oneapi_backend = os.path.join(current_path, "oneapi")
     if sys.version_info.minor >= 8:
         if "DALROOT" in os.environ:
-            dal_root_redist = os.path.join(os.environ["DALROOT"], "redist", "intel64")
+            dal_root_redist = os.path.join(os.environ["DALROOT"], "redist", arch_dir)
             if os.path.exists(dal_root_redist):
                 os.add_dll_directory(dal_root_redist)
                 os.environ["PATH"] = dal_root_redist + os.pathsep + os.environ["PATH"]

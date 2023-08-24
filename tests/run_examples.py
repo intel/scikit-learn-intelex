@@ -22,6 +22,7 @@ import sys
 from collections import defaultdict
 from os.path import join as jp
 from time import gmtime, strftime
+import platform as plt
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
@@ -57,12 +58,21 @@ elif sys.platform in ["win32", "cygwin"]:
 else:
     assert False, sys.platform + " not supported"
 
+plt_arch = plt.machine()
+arch_dir = None
+if plt_arch=="x86_64":
+    arch_dir = "intel64"
+elif plt_arch == "aarch64":
+    arch_dir = "arm"
+else:
+    arch_dir = plt_arch
+
 assert 8 * struct.calcsize("P") in [32, 64]
 
 if 8 * struct.calcsize("P") == 32:
     logdir = jp(runner_dir, "_results", "ia32")
 else:
-    logdir = jp(runner_dir, "_results", "intel64")
+    logdir = jp(runner_dir, "_results", arch_dir)
 
 ex_log_dirs = [
     (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
