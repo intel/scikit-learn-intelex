@@ -18,6 +18,8 @@
 Examples
 ##########
 
+.. include:: note.rst
+  
 Below are examples on how to utilize daal4py for various usage styles.
 
 General usage

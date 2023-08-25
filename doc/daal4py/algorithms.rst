@@ -18,6 +18,8 @@
 Algorithms
 ##########
 
+.. include:: note.rst
+
 Classification
 --------------
 See also |onedal-dg-classification|_.
