@@ -48,6 +48,7 @@ if __name__ == "__main__":
     parser.add_argument("--reduced", action="store_true")
     parser.add_argument("--public", action="store_true")
     parser.add_argument("--gpu", action="store_true")
+    parser.add_argument("--preview", action="store_true")
     args = parser.parse_args()
 
     yml_deselected_tests = []
@@ -57,7 +58,7 @@ if __name__ == "__main__":
             from deselect_tests import create_pytest_switches
 
             yml_deselected_tests = create_pytest_switches(
-                fn, args.absolute, args.reduced, args.public, args.gpu
+                fn, args.absolute, args.reduced, args.public, args.gpu, args.preview
             )
 
     deselected_tests = []
