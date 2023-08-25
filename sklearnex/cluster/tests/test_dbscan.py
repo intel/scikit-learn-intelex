@@ -19,19 +19,18 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-#from onedal.tests.utils._dataframes_support import (
-#    _convert_to_dataframe,
-#    get_dataframes_and_queues,
-#)
-#
-#
-#@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-#def test_sklearnex_import(dataframe, queue):
-def test_sklearnex_import():
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_sklearnex_import_dbscan(dataframe, queue):
     from sklearnex.cluster import DBSCAN
 
     X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
-    # X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     dbscan = DBSCAN(eps=3, min_samples=2).fit(X)
     assert "sklearnex" in dbscan.__module__
 
