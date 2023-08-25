@@ -27,13 +27,14 @@ from numpy.testing import assert_allclose
 #
 #@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 #def test_sklearnex_import(dataframe, queue):
-#    from sklearnex.cluster import DBSCAN
-#
-#    X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
-#    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-#    dbscan = DBSCAN(eps=3, min_samples=2).fit(X)
-#    assert "sklearnex" in dbscan.__module__
-#
-#    result = dbscan.labels_
-#    expected = np.array([0, 0, 0, 1, 1, -1], dtype=np.int32)
-#    assert_allclose(expected, result)
+def test_sklearnex_import():
+    from sklearnex.cluster import DBSCAN
+
+    X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
+    # X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    dbscan = DBSCAN(eps=3, min_samples=2).fit(X)
+    assert "sklearnex" in dbscan.__module__
+
+    result = dbscan.labels_
+    expected = np.array([0, 0, 0, 1, 1, -1], dtype=np.int32)
+    assert_allclose(expected, result)
