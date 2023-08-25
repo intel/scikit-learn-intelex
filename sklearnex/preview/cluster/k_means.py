@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import logging
 
@@ -216,7 +216,10 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            self._check_params_vs_input(X)
+            if sklearn_check_version("1.2"):
+                self._check_params_vs_input(X)
+            else:
+                self._check_params(X)
 
             self._n_features_out = self.n_clusters
             self._n_threads = _openmp_effective_n_threads()

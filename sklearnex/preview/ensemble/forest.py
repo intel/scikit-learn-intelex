@@ -51,6 +51,8 @@ from ..._device_offload import dispatch, wrap_output_data
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
+if sklearn_check_version("1.4"):
+    from daal4py.sklearn.utils import _assert_all_finite
 
 
 class BaseRandomForest(ABC):
@@ -220,7 +222,62 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             "splitter_mode": [StrOptions({"best", "random"})],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            criterion="gini",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="sqrt",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            class_weight=None,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            max_bins=256,
+            min_bin_size=1,
+            splitter_mode="best",
+        ):
+            super(RandomForestClassifier, self).__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                monotonic_cst=monotonic_cst,
+            )
+            self.warm_start = warm_start
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+            self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
@@ -389,6 +446,17 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         correct_ccp_alpha = self.ccp_alpha == 0.0
         correct_criterion = self.criterion == "gini"
         correct_warm_start = self.warm_start is False
+        correct_monotonic_cst = (
+            sklearn_check_version("1.4") and self.monotonic_cst is None
+        )
+        if correct_sparsity and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                correct_finiteness = True
+            except ValueError:
+                correct_finiteness = False
+        else:
+            correct_finiteness = True
 
         if daal_check_version((2021, "P", 500)):
             correct_oob_score = not self.oob_score
@@ -402,6 +470,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 correct_ccp_alpha,
                 correct_criterion,
                 correct_warm_start,
+                correct_monotonic_cst,
+                correct_finiteness,
             ]
         )
         if ready:
@@ -676,6 +746,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 multi_output=False,
                 accept_sparse=False,
                 dtype=[np.float64, np.float32],
+                force_all_finite=not sklearn_check_version("1.4"),
             )
         else:
             X, y = check_X_y(
@@ -801,7 +872,61 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             "splitter_mode": [StrOptions({"best", "random"})],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="squared_error",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features=1.0,
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            max_bins=256,
+            min_bin_size=1,
+            splitter_mode="best",
+        ):
+            super(RandomForestRegressor, self).__init__(
+                n_estimators=n_estimators,
+                criterion=criterion,
+                max_depth=max_depth,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                max_leaf_nodes=max_leaf_nodes,
+                min_impurity_decrease=min_impurity_decrease,
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                monotonic_cst=monotonic_cst,
+            )
+            self.warm_start = warm_start
+            self.ccp_alpha = ccp_alpha
+            self.max_samples = max_samples
+            self.monotonic_cst = monotonic_cst
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+            self.min_impurity_split = None
+            self.splitter_mode = splitter_mode
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
@@ -969,6 +1094,12 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             y = np.reshape(y, (-1, 1))
         self.n_outputs_ = y.shape[1]
         ready = self.n_outputs_ == 1
+        if not sp.issparse(X) and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                ready &= True
+            except ValueError:
+                ready &= False
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
@@ -1005,6 +1136,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             elif self.oob_score and not daal_check_version((2023, "P", 101)):
                 return False
             elif not self.n_outputs_ == 1:
+                return False
+            elif sklearn_check_version("1.4") and self.monotonic_cst is not None:
                 return False
             else:
                 return True
@@ -1057,6 +1190,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                 return False
             elif self.oob_score:
                 return False
+            elif sklearn_check_version("1.4") and self.monotonic_cst is not None:
+                return False
             else:
                 return True
         if method_name == "predict":
@@ -1086,7 +1221,11 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             sample_weight = self.check_sample_weight(sample_weight, X)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
-        X = check_array(X, dtype=[np.float64, np.float32])
+        X = check_array(
+            X,
+            dtype=[np.float64, np.float32],
+            force_all_finite=not sklearn_check_version("1.4"),
+        )
         y = np.atleast_1d(np.asarray(y))
         y = check_array(y, ensure_2d=False, dtype=X.dtype)
         check_consistent_length(X, y)
