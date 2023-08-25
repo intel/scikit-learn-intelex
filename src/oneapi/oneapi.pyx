@@ -17,9 +17,9 @@
 # distutils: language = c++
 # cython: language_level=2
 
-from libcpp.string cimport string as std_string
-from cpython.ref cimport PyObject, Py_INCREF
+from cpython.ref cimport Py_INCREF, PyObject
 from libcpp cimport bool
+from libcpp.string cimport string as std_string
 
 
 cdef extern from "oneapi/oneapi.h":
@@ -56,7 +56,9 @@ cdef class sycl_execution_context:
 
 
 # thread-local storage
+
 from threading import local as threading_local
+
 _tls = threading_local()
 
 def _is_tls_initialized():
@@ -107,6 +109,7 @@ def is_in_sycl_ctxt():
 
 from contextlib import contextmanager
 
+
 @contextmanager
 def sycl_context(dev='host', host_offload_on_fail=False):
     # Code to acquire resource
@@ -123,8 +126,11 @@ def sycl_context(dev='host', host_offload_on_fail=False):
 
 
 cimport numpy as np
+
 import numpy as np
+
 from cpython.pycapsule cimport PyCapsule_New
+
 
 cdef class sycl_buffer:
     'Sycl buffer for DAAL. A generic implementation needs to do much more.'

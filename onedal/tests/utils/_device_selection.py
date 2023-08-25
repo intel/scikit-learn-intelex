@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import functools
 
@@ -26,9 +26,9 @@ def get_queues(filter_="cpu,gpu"):
         import dpctl
 
         if dpctl.has_cpu_devices and "cpu" in filter_:
-            queues.append(dpctl.SyclQueue("cpu"))
+            queues.append(pytest.param(dpctl.SyclQueue("cpu"), id="SyclQueue_CPU"))
         if dpctl.has_gpu_devices and "gpu" in filter_:
-            queues.append(dpctl.SyclQueue("gpu"))
+            queues.append(pytest.param(dpctl.SyclQueue("gpu"), id="SyclQueue_GPU"))
     finally:
         return queues
 
