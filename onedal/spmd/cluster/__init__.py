@@ -19,6 +19,8 @@ from daal4py.sklearn._utils import daal_check_version
 if daal_check_version((2023, "P", 200)):
     from .kmeans import KMeans
 
-    __all__ = ["KMeans"]
+    __all__ = ["DBSCAN", "KMeans"]
 else:
-    __all__ = []
+    __all__ = [
+        "DBSCAN",
+    ]
