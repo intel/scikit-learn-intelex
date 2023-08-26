@@ -439,7 +439,7 @@ def __logistic_regression_path(
                     "%d or %d" % (coef.size, n_features, w0.size)
                 )
             if _dal_ready:
-                w0[-coef.size :] = (
+                w0[-coef.size:] = (
                     np.roll(coef, 1, -1) if coef.size != n_features else coef
                 )
             else:
@@ -469,7 +469,7 @@ def __logistic_regression_path(
                 )
 
             if _dal_ready:
-                w0[:, -coef.shape[1] :] = (
+                w0[:, -coef.shape[1]:] = (
                     np.roll(coef, 1, -1) if coef.shape[1] != n_features else coef
                 )
             else:

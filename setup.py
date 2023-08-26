@@ -177,22 +177,40 @@ def get_libs(iface="daal"):
     major_version = ONEDAL_MAJOR_BINARY_VERSION
     if IS_WIN:
         libraries_plat = [f"onedal_core_dll.{major_version}"]
-        onedal_lib = [f"onedal_dll.{major_version}"]
-        onedal_dpc_lib = [f"onedal_dpc_dll.{major_version}"]
+        onedal_lib = [
+            f"onedal_dll.{major_version}",
+            f"onedal_parameters_dll.{major_version}",
+        ]
+        onedal_dpc_lib = [
+            f"onedal_dpc_dll.{major_version}",
+            f"onedal_parameters_dpc_dll.{major_version}",
+        ]
     elif IS_MAC:
         libraries_plat = [
             f"onedal_core.{major_version}",
             f"onedal_thread.{major_version}",
         ]
-        onedal_lib = [f"onedal.{major_version}"]
-        onedal_dpc_lib = [f"onedal_dpc.{major_version}"]
+        onedal_lib = [
+            f"onedal.{major_version}",
+            f"onedal_parameters.{major_version}",
+        ]
+        onedal_dpc_lib = [
+            f"onedal_dpc.{major_version}",
+            f"onedal_parameters_dpc.{major_version}",
+        ]
     else:
         libraries_plat = [
             f":libonedal_core.so.{major_version}",
             f":libonedal_thread.so.{major_version}",
         ]
-        onedal_lib = [f":libonedal.so.{major_version}"]
-        onedal_dpc_lib = [f":libonedal_dpc.so.{major_version}"]
+        onedal_lib = [
+            f":libonedal.so.{major_version}",
+            f":libonedal_parameters.so.{major_version}",
+        ]
+        onedal_dpc_lib = [
+            f":libonedal_dpc.so.{major_version}",
+            f":libonedal_parameters_dpc.so.{major_version}",
+        ]
     if iface == "onedal":
         libraries_plat = onedal_lib + libraries_plat
     elif iface == "onedal_dpc":

@@ -127,7 +127,7 @@ def train_test_split(*arrays, **options):
             ):
                 random_state = mkl_random.RandomState(random_state, rng)
                 indexes = random_state.permutation(n_samples)
-                test, train = indexes[:n_test], indexes[n_test : (n_test + n_train)]
+                test, train = indexes[:n_test], indexes[n_test: (n_test + n_train)]
             elif (
                 rng == "OPTIMIZED_MT19937"
                 and (isinstance(random_state, int) or random_state is None)
@@ -140,7 +140,7 @@ def train_test_split(*arrays, **options):
                 random_state = np.random.RandomState(random_state)
                 random_state = random_state.get_state()[1]
                 d4p.daal_generate_shuffled_indices([indexes], [random_state])
-                test, train = indexes[:n_test], indexes[n_test : (n_test + n_train)]
+                test, train = indexes[:n_test], indexes[n_test: (n_test + n_train)]
             else:
                 cv = ShuffleSplit(
                     test_size=n_test, train_size=n_train, random_state=random_state

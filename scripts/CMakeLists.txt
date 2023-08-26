@@ -141,8 +141,13 @@ elseif(IFACE STREQUAL "dpc")
         list(APPEND COMPILE_DEFINITIONS
              "ONEDAL_DATA_PARALLEL_SPMD")
     endif()
+
 else()
     message(FATAL_ERROR "Invalid IFACE value: " ${IFACE})
+endif()
+
+if ()
+    list(FILTER ONEDAL_LIBRARIES EXCLUDE REGEX)
 endif()
 
 pybind11_add_module(${TARGET} ${sources})

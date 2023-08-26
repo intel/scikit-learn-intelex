@@ -54,7 +54,7 @@ if d4p.__has_dist__:
             data = np.loadtxt("./data/distributed/kmeans_dense.csv", delimiter=",")
 
             rpp = int(data.shape[0] / d4p.num_procs())
-            spmd_data = data[rpp * d4p.my_procid() : rpp * d4p.my_procid() + rpp, :]
+            spmd_data = data[rpp * d4p.my_procid(): rpp * d4p.my_procid() + rpp, :]
 
             for init_method in [
                 "plusPlusDense",

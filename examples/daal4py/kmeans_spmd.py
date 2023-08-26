@@ -35,7 +35,7 @@ def main(method="plusPlusDense"):
     # now slice the data,
     # it would have been better to read only what we need, of course...
     rpp = int(data.shape[0] / d4p.num_procs())
-    data = data[rpp * d4p.my_procid() : rpp * d4p.my_procid() + rpp, :]
+    data = data[rpp * d4p.my_procid(): rpp * d4p.my_procid() + rpp, :]
 
     # compute initial centroids
     init_result = init_algo.compute(data)

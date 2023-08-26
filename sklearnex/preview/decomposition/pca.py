@@ -340,7 +340,7 @@ class PCA(sklearn_PCA):
         if self.n_components_ < n_sf_min:
             if self.explained_variance_.shape[0] == n_sf_min:
                 self.noise_variance_ = self.explained_variance_[
-                    self.n_components_ :
+                    self.n_components_:
                 ].mean()
             else:
                 self.noise_variance_ = self._onedal_estimator.noise_variance_
