@@ -146,10 +146,6 @@ else()
     message(FATAL_ERROR "Invalid IFACE value: " ${IFACE})
 endif()
 
-if ()
-    list(FILTER ONEDAL_LIBRARIES EXCLUDE REGEX)
-endif()
-
 pybind11_add_module(${TARGET} ${sources})
 
 set(EXTERNAL_INCLUDE_DIRECTORIES
