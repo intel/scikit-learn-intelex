@@ -83,47 +83,6 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sklearn_check_version("1.2"):
-            self._validate_params()
-        elif sklearn_check_version("1.1"):
-            check_scalar(
-                self.eps,
-                "eps",
-                target_type=numbers.Real,
-                min_val=0.0,
-                include_boundaries="neither",
-            )
-            check_scalar(
-                self.min_samples,
-                "min_samples",
-                target_type=numbers.Integral,
-                min_val=1,
-                include_boundaries="left",
-            )
-            check_scalar(
-                self.leaf_size,
-                "leaf_size",
-                target_type=numbers.Integral,
-                min_val=1,
-                include_boundaries="left",
-            )
-            if self.p is not None:
-                check_scalar(
-                    self.p,
-                    "p",
-                    target_type=numbers.Real,
-                    min_val=0.0,
-                    include_boundaries="left",
-                )
-            if self.n_jobs is not None:
-                check_scalar(self.n_jobs, "n_jobs", target_type=numbers.Integral)
-        else:
-            if self.eps <= 0.0:
-                raise ValueError(f"eps == {self.eps}, must be > 0.0.")
-
-        if sample_weight is not None:
-            sample_weight = _check_sample_weight(sample_weight, X)
-
         onedal_params = {
             "eps": self.eps,
             "min_samples": self.min_samples,
@@ -170,6 +129,46 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def fit(self, X, y=None, sample_weight=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+        elif sklearn_check_version("1.1"):
+            check_scalar(
+                self.eps,
+                "eps",
+                target_type=numbers.Real,
+                min_val=0.0,
+                include_boundaries="neither",
+            )
+            check_scalar(
+                self.min_samples,
+                "min_samples",
+                target_type=numbers.Integral,
+                min_val=1,
+                include_boundaries="left",
+            )
+            check_scalar(
+                self.leaf_size,
+                "leaf_size",
+                target_type=numbers.Integral,
+                min_val=1,
+                include_boundaries="left",
+            )
+            if self.p is not None:
+                check_scalar(
+                    self.p,
+                    "p",
+                    target_type=numbers.Real,
+                    min_val=0.0,
+                    include_boundaries="left",
+                )
+            if self.n_jobs is not None:
+                check_scalar(self.n_jobs, "n_jobs", target_type=numbers.Integral)
+        else:
+            if self.eps <= 0.0:
+                raise ValueError(f"eps == {self.eps}, must be > 0.0.")
+
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
         dispatch(
             self,
             "fit",
