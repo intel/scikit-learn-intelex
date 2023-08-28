@@ -20,6 +20,7 @@
 Scikit-Learn API and patching
 #############################
 
+
 Python interface to efficient Intel(R) oneAPI Data Analytics Library provided by daal4py allows one
 to create scikit-learn compatible estimators, transformers, clusterers, etc. powered by oneDAL which
 are nearly as efficient as native programs.

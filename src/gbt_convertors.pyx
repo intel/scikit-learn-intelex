@@ -14,12 +14,13 @@
 # limitations under the License.
 #===============================================================================
 
-from typing import List, Deque, Dict, Any
-from collections import deque
-from os import remove, getpid
 import json
 import re
+from collections import deque
+from os import getpid, remove
 from time import time
+from typing import Any, Deque, Dict, List
+
 
 def get_lightgbm_params(booster):
     return booster.dump_model()

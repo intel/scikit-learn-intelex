@@ -24,7 +24,11 @@ cd $ci_dir
 # selected tests might be set externally
 # ('all' - special value to run all tests)
 export SELECTED_TESTS=${SELECTED_TESTS:-$(python scripts/select_sklearn_tests.py)}
-export DESELECTED_TESTS=$(python ../.circleci/deselect_tests.py ../deselected_tests.yaml)
+
+if [ -n "${SKLEARNEX_PREVIEW}" ]; then
+    export DESELECT_FLAGS="--preview ${DESELECT_FLAGS}"
+fi
+export DESELECTED_TESTS=$(python ../.circleci/deselect_tests.py ../deselected_tests.yaml ${DESELECT_FLAGS})
 
 # manual setting of OCL_ICD_FILENAMES is required in
 # specific MSYS environment with conda packages downloaded from intel channel
