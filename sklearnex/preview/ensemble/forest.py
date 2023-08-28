@@ -446,9 +446,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         correct_ccp_alpha = self.ccp_alpha == 0.0
         correct_criterion = self.criterion == "gini"
         correct_warm_start = self.warm_start is False
-        correct_monotonic_cst = (
-            sklearn_check_version("1.4") and self.monotonic_cst is None
-        )
+        correct_monotonic_cst = getattr(self, "monotonic_cst", None) is None
         if correct_sparsity and sklearn_check_version("1.4"):
             try:
                 _assert_all_finite(X)
