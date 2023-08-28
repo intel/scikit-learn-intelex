@@ -60,7 +60,10 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
     assert "sklearnex.preview" in rf.__module__
     pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
-    assert_allclose([-6.839], pred, atol=1e-2)
+    if daal_check_version((2024, "P", 0)):
+        assert_allclose([-6.971], pred, atol=1e-2)
+    else:
+        assert_allclose([-6.839], pred, atol=1e-2)
 
 
 # TODO:
@@ -104,7 +107,9 @@ def test_sklearnex_import_et_regression(dataframe, queue):
     rf = ExtraTreesRegressor(max_depth=2, random_state=0).fit(X, y)
     assert "sklearnex" in rf.__module__
     pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
-    if daal_check_version((2023, "P", 200)):
+    if daal_check_version((2024, "P", 0)):
+        assert_allclose([5.372], pred, atol=1e-2)
+    elif daal_check_version((2023, "P", 200)):
         assert_allclose([27.138], pred, atol=1e-2)
     else:
         assert_allclose([-2.826], pred, atol=1e-2)
