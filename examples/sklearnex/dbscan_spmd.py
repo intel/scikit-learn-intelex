@@ -14,6 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+# sklearnex DBSCAN example for distributed systems; SPMD mode
+# run like this:
+#    mpirun -n 4 python ./dbscan_spmd.py
+
 from warnings import warn
 
 import dpctl.tensor as dpt
@@ -22,7 +26,7 @@ from dpctl import SyclQueue
 from mpi4py import MPI
 from sklearn.datasets import load_digits
 
-from onedal.spmd.cluster import DBSCAN
+from sklearnex.spmd.cluster import DBSCAN
 
 
 def get_data_slice(chunk, count):
@@ -53,7 +57,6 @@ queue = SyclQueue("gpu")
 
 dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=queue)
 
-model = DBSCAN(eps=3, min_samples=2).fit(X)
+model = DBSCAN(eps=3, min_samples=2).fit(dpt_X)
 
-print(f"Number of iterations on {rank}:\n", model.n_iter_)
 print(f"Labels on rank {rank} (slice of 2):\n", model.labels_[:2])

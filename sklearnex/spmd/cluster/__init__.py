@@ -16,6 +16,8 @@
 
 from daal4py.sklearn._utils import daal_check_version
 
+from .dbscan import DBSCAN
+
 if daal_check_version((2023, "P", 200)):
     from .kmeans import KMeans
 
