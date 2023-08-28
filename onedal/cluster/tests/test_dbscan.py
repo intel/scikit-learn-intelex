@@ -35,11 +35,11 @@ def generate_data(
 
 def check_labels_equals(left_labels: np.ndarray, right_labels: np.ndarray) -> bool:
     if left_labels.shape != right_labels.shape:
-        raise Exception("Shapes not equals")
+        raise Exception("Shapes not equal")
     if len(left_labels.shape) != 1:
         raise Exception("Shapes size not equals 1")
     if len(set(left_labels)) != len(set(right_labels)):
-        raise Exception("Clusters count not equals")
+        raise Exception("Cluster counts not equal")
     dict_checker = {}
     for index_sample in range(left_labels.shape[0]):
         if left_labels[index_sample] not in dict_checker:
