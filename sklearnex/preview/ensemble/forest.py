@@ -470,6 +470,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 correct_warm_start,
                 correct_monotonic_cst,
                 correct_finiteness,
+                self.class_weight != "balanced_subsample",
             ]
         )
         if ready:
