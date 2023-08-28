@@ -1078,7 +1078,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             )
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
-        self._cached_estimators = estimators_
+        self._cached_estimators_ = estimators_
 
     def _onedal_ready(self, X, y, sample_weight):
         # TODO:

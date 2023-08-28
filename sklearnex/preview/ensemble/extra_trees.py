@@ -561,7 +561,9 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         # _estimators_ should only be called if _onedal_model exists
         check_is_fitted(self, "_onedal_model")
         classes_ = self.classes_[0]
-        n_classes_ = self.n_classes_[0]
+        n_classes_ = (
+            self.n_classes_ if isinstance(self.n_classes_, int) else self.n_classes_[0]
+        )
         # convert model to estimators
         params = {
             "criterion": self.criterion,
