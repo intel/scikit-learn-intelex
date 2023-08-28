@@ -636,7 +636,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -696,7 +700,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -1162,7 +1170,11 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -1222,7 +1234,11 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -1287,7 +1303,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version("1.0"):
             self.n_features_ = self.n_features_in_
-        rs_ = check_random_state(self.random_state)
 
         if self.oob_score:
             err = "out_of_bag_error_r2|out_of_bag_error_prediction"
@@ -1307,7 +1322,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             "bootstrap": self.bootstrap,
             "oob_score": self.oob_score,
             "n_jobs": self.n_jobs,
-            "random_state": rs_,
+            "random_state": self.random_state,
             "verbose": self.verbose,
             "warm_start": self.warm_start,
             "error_metric_mode": err,
