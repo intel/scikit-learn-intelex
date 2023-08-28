@@ -561,6 +561,8 @@ gpu:
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_idempotent]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_n_features_in]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit2d_predict1d]
+  # sparse input is not implemented for DBSCAN.
+  - tests/test_common.py::test_estimators[DBSCAN()-check_estimator_sparse_data]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_dtypes]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_score_takes_y]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_fit_returns_self]
@@ -1031,6 +1033,8 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend[sqeuclidean]
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend[yule]
   - neighbors/tests/test_neighbors.py::test_regressor_predict_on_arraylikes
+  # `precomputed` metric is not implemented for DBSCAN
+  - neighbors/tests/test_neighbors_pipeline.py::test_dbscan
   - neighbors/tests/test_neighbors_pipeline.py::test_lof_novelty_false
   - neighbors/tests/test_neighbors_pipeline.py::test_lof_novelty_true
   - neighbors/tests/test_neighbors_pipeline.py::test_kneighbors_regressor
