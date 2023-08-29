@@ -29,7 +29,6 @@ build:
     include_recipe: False
     script_env:
     - DPCPPROOT
-    - DAALROOT
     - DALROOT
     ignore_run_exports:
        - python

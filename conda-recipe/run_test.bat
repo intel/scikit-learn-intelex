@@ -27,8 +27,6 @@ IF DEFINED DPCPPROOT (
     dpcpp --version
 )
 
-IF DEFINED DAALROOT (set DALROOT=%DAALROOT%)
-
 IF DEFINED DALROOT (
     echo "Sourcing DALROOT"
     call "%DALROOT%\env\vars.bat"

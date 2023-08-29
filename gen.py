@@ -36,7 +36,7 @@ if __name__ == "__main__":
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     argParser.add_argument(
-        "--daalroot",
+        "--dalroot",
         required=True,
         help="DAAL root directory (reads include dir in there)",
     )
@@ -48,4 +48,4 @@ if __name__ == "__main__":
     )
 
     args = argParser.parse_args()
-    gen_daal4py(args.daalroot, args.outdir, "v_develop", args.wall)
+    gen_daal4py(args.dalroot, args.outdir, "v_develop", args.wall)
