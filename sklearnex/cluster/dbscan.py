@@ -33,6 +33,9 @@ if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
 
 
 class BaseDBSCAN(ABC):
+    def _onedal_dbscan(self, **onedal_params):
+        return onedal_DBSCAN(**onedal_params)
+
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
 
@@ -90,7 +93,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
             "p": self.p,
             "n_jobs": self.n_jobs,
         }
-        self._onedal_estimator = onedal_DBSCAN(**onedal_params)
+        self._onedal_estimator = self._onedal_dbscan(**onedal_params)
 
         self._onedal_estimator.fit(X, y=y, sample_weight=sample_weight, queue=queue)
         self._save_attributes()

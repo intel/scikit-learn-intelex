@@ -14,14 +14,17 @@
 # limitations under the License.
 # ==============================================================================
 
-from daal4py.sklearn._utils import daal_check_version
-from .dbscan import DBSCAN
+from abc import ABC
 
-if daal_check_version((2023, "P", 200)):
-    from .kmeans import KMeans
+from onedal.cluster import DBSCAN as DBSCAN_Batch
 
-    __all__ = ["DBSCAN", "KMeans"]
-else:
-    __all__ = [
-        "DBSCAN",
-    ]
+from ...common._spmd_policy import _get_spmd_policy
+
+
+class BaseDBSCANspmd(ABC):
+    def _get_policy(self, queue, *data):
+        return _get_spmd_policy(queue)
+
+
+class DBSCAN(BaseDBSCANspmd, DBSCAN_Batch):
+    pass
