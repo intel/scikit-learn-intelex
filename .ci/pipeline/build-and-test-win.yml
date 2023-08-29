@@ -59,3 +59,10 @@ steps:
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     condition: succeededOrFailed()
+  - script: |
+      call activate CB
+      bash .ci/scripts/run_sklearn_tests.sh
+    env:
+      SKLEARNEX_PREVIEW: "YES"
+    displayName: 'Sklearn testing [preview]'
+    condition: succeededOrFailed()

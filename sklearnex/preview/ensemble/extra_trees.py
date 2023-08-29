@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numbers
 import warnings
@@ -190,6 +190,22 @@ class BaseTree(ABC):
                     )
                 )
         return sample_weight
+
+    @property
+    def estimators_(self):
+        if hasattr(self, "_cached_estimators_"):
+            if self._cached_estimators_ is None and self._onedal_model:
+                self._estimators_()
+            return self._cached_estimators_
+        else:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' has no attribute 'estimators_'"
+            )
+
+    @estimators_.setter
+    def estimators_(self, estimators):
+        # Needed to allow for proper sklearn operation in fallback mode
+        self._cached_estimators_ = estimators
 
 
 class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
@@ -541,17 +557,13 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         def n_features_(self):
             return self.n_features_in_
 
-    @property
     def _estimators_(self):
-        if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_:
-                return self._cached_estimators_
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "_onedal_model")
+        # _estimators_ should only be called if _onedal_model exists
+        check_is_fitted(self, "_onedal_model")
         classes_ = self.classes_[0]
-        n_classes_ = self.n_classes_[0]
+        n_classes_ = (
+            self.n_classes_ if isinstance(self.n_classes_, int) else self.n_classes_[0]
+        )
         # convert model to estimators
         params = {
             "criterion": self.criterion,
@@ -570,7 +582,9 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
+
         random_state_checked = check_random_state(self.random_state)
+
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -599,7 +613,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             estimators_.append(est_i)
 
         self._cached_estimators_ = estimators_
-        return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -623,7 +636,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -683,7 +700,11 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -705,7 +726,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
                         (self.warm_start is False, "Warm start is not supported."),
                         (
                             daal_check_version((2023, "P", 100)),
-                            "ExtraTrees only supported starting from oneDAL version 2023.1",
+                            "ExtraTrees supported starting from oneDAL version 2023.1",
                         ),
                     ]
                 )
@@ -815,6 +836,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
             onedal_params["min_impurity_split"] = self.min_impurity_split
         else:
             onedal_params["min_impurity_split"] = None
+
+        # Lazy evaluation of estimators_
         self._cached_estimators_ = None
 
         # Compute
@@ -824,7 +847,7 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         self._save_attributes()
         if sklearn_check_version("1.2"):
             self._estimator = ExtraTreeClassifier()
-        self.estimators_ = self._estimators_
+
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
@@ -832,7 +855,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
-        check_is_fitted(self)
+        check_is_fitted(self, "_onedal_model")
+
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
 
@@ -841,7 +865,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
 
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32])
-        check_is_fitted(self)
+        check_is_fitted(self, "_onedal_model")
+
         if sklearn_check_version("0.23"):
             self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
@@ -959,15 +984,9 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
 
-    @property
     def _estimators_(self):
-        if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_:
-                return self._cached_estimators_
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "_onedal_model")
+        # _estimators_ should only be called if _onedal_model exists
+        check_is_fitted(self, "_onedal_model")
         # convert model to estimators
         params = {
             "criterion": self.criterion,
@@ -987,6 +1006,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
+
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -1012,7 +1032,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
 
-        return estimators_
+        self._cached_estimators_ = estimators_
 
     def _onedal_fit_ready(self, patching_status, X, y, sample_weight):
         if sp.issparse(y):
@@ -1150,7 +1170,11 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -1210,7 +1234,11 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
 
-            if dal_ready and (self.random_state is not None):
+            if (
+                dal_ready
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
                 warnings.warn(
                     "Setting 'random_state' value is not supported. "
                     "State set by oneDAL to default value (777).",
@@ -1275,7 +1303,6 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version("1.0"):
             self.n_features_ = self.n_features_in_
-        rs_ = check_random_state(self.random_state)
 
         if self.oob_score:
             err = "out_of_bag_error_r2|out_of_bag_error_prediction"
@@ -1295,7 +1322,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             "bootstrap": self.bootstrap,
             "oob_score": self.oob_score,
             "n_jobs": self.n_jobs,
-            "random_state": rs_,
+            "random_state": self.random_state,
             "verbose": self.verbose,
             "warm_start": self.warm_start,
             "error_metric_mode": err,
@@ -1304,20 +1331,26 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         }
         if daal_check_version((2023, "P", 101)):
             onedal_params["splitter_mode"] = "random"
+
+        # Lazy evaluation of estimators_
         self._cached_estimators_ = None
+
         self._onedal_estimator = self._onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
         if sklearn_check_version("1.2"):
             self._estimator = ExtraTreeRegressor()
-        self.estimators_ = self._estimators_
+
         return self
 
     def _onedal_predict(self, X, queue=None):
+        X = check_array(X, dtype=[np.float32, np.float64])
+        check_is_fitted(self, "_onedal_model")
+
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = self._validate_X_predict(X)
+
         return self._onedal_estimator.predict(X, queue=queue)
 
     def fit(self, X, y, sample_weight=None):
