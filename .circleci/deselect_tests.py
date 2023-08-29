@@ -74,7 +74,9 @@ def filter_by_version_and_platform(entry, sk_ver):
     return None
 
 
-def create_pytest_switches(filename, absolute, reduced, public, gpu, base_dir=None):
+def create_pytest_switches(
+    filename, absolute, reduced, public, gpu, preview, base_dir=None
+):
     pytest_switches = []
     if os.path.exists(filename):
         with open(filename, "r") as fh:
@@ -117,6 +119,13 @@ def create_pytest_switches(filename, absolute, reduced, public, gpu, base_dir=No
                     for test_name in dt.get("gpu", [])
                 ]
             )
+        if preview:
+            filtered_deselection.extend(
+                [
+                    filter_by_version_and_platform(test_name, sklearn_version)
+                    for test_name in dt.get("preview", [])
+                ]
+            )
         pytest_switches = []
         for test_name in filtered_deselection:
             if test_name:
@@ -135,6 +144,7 @@ if __name__ == "__main__":
     argParser.add_argument("--reduced", action="store_true")
     argParser.add_argument("--public", action="store_true")
     argParser.add_argument("--gpu", action="store_true")
+    argParser.add_argument("--preview", action="store_true")
     argParser.add_argument("--base-dir", type=str, default=None)
     args = argParser.parse_args()
 
@@ -143,7 +153,13 @@ if __name__ == "__main__":
         print(
             " ".join(
                 create_pytest_switches(
-                    fn, args.absolute, args.reduced, args.public, args.gpu, args.base_dir
+                    fn,
+                    args.absolute,
+                    args.reduced,
+                    args.public,
+                    args.gpu,
+                    args.preview,
+                    args.base_dir,
                 )
             )
         )

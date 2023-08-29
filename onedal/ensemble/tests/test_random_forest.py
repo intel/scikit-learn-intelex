@@ -46,7 +46,19 @@ def test_rf_regression(queue):
         n_samples=100, n_features=4, n_informative=2, random_state=0, shuffle=False
     )
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y, queue=queue)
-    assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+
+    # GPU and CPU implementations of Random Forest use RNGs differently. They build
+    # different ensembles of trees, thereby requiring separate check values.
+    if queue.sycl_device.is_gpu:
+        if daal_check_version((2024, "P", 0)):
+            assert_allclose([1.82], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+        else:
+            assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    else:
+        if daal_check_version((2024, "P", 0)):
+            assert_allclose([-6.97], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+        else:
+            assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
 
 
 @pytest.mark.skipif(
@@ -79,4 +91,7 @@ def test_rf_regression_random_splitter(queue):
     rf = RandomForestRegressor(max_depth=2, random_state=0, splitter_mode="random").fit(
         X, y, queue=queue
     )
-    assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    if daal_check_version((2024, "P", 0)):
+        assert_allclose([-6.88], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    else:
+        assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)

@@ -411,13 +411,18 @@ class custom_build:
         if is_onedal_iface:
             cxx = os.getenv("CXX", "cl" if IS_WIN else "g++")
             build_backend.custom_build_cmake_clib(
-                "host", cxx, ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist
+                iface="host",
+                cxx=cxx,
+                onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
+                no_dist=no_dist,
             )
         if dpcpp:
             build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib(
-                    "dpc", ONEDAL_MAJOR_BINARY_VERSION, no_dist=no_dist
+                    iface="dpc",
+                    onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
+                    no_dist=no_dist,
                 )
 
     def post_build(self):

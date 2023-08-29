@@ -29,11 +29,8 @@ if [ "$sklearn_version" == "main" ]; then
     sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn/" requirements-test.txt
     # install sklearn build dependencies
     pip install threadpoolctl joblib scipy
-    # clone, build and install sklearn
-    git clone https://github.com/scikit-learn/scikit-learn.git
-    cd scikit-learn
-    git log -n 1
-    python setup.py install --single-version-externally-managed --record=record.txt
+    # install sklearn from main branch of git repo
+    pip install git+https://github.com/scikit-learn/scikit-learn.git@main
 else
     sed -i.bak -e "s/scikit-learn==1.2.2/scikit-learn==${sklearn_version}.*/" requirements-test.txt
     sed -i.bak -e "s/scikit-learn==1.0.2/scikit-learn==${sklearn_version}.*/" requirements-test.txt

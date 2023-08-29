@@ -82,7 +82,6 @@ struct tree_state {
     std::size_t leaf_count;
     std::size_t class_count;
 };
-
 // Declaration and implementation.
 template <typename Task>
 class node_count_visitor {
@@ -99,6 +98,7 @@ public:
         depth = std::max(depth, static_cast<const std::size_t>(info.get_level()));
         return true;
     }
+
 
     std::size_t n_nodes;
     std::size_t depth;
@@ -133,6 +133,8 @@ public:
                                    std::size_t _max_n_classes);
     bool call(const df::leaf_node_info<Task>& info);
     bool call(const df::split_node_info<Task>& info);
+    double* value_ar_ptr;
+    skl_tree_node* node_ar_ptr;
 
 protected:
     std::size_t node_id;
@@ -163,42 +165,49 @@ to_sklearn_tree_object_visitor<Task>::to_sklearn_tree_object_visitor(std::size_t
     auto value_ar_strides = py::array::StridesContainer(
         { this->class_count * sizeof(double), this->class_count * sizeof(double), sizeof(double) });
 
-    skl_tree_node* node_ar_ptr = new skl_tree_node[this->node_count];
-
-
     OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, this->node_count, this->class_count);
-    double* value_ar_ptr =
-        new double[this->node_count * 1 *
-                   this->class_count](); // oneDAL only supports scalar responses for now
 
-    this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, node_ar_ptr);
-    this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, value_ar_ptr);
+    this->node_ar_ptr = new skl_tree_node[this->node_count];
+    this->value_ar_ptr = new double[this->node_count*this->class_count]();
+
+    // array_t doesn't initialize the underlying memory with the object's constructor
+    // so the values will not match what is defined above, must be done on C++ side
+
+    py::capsule free_value_ar(this->value_ar_ptr, [](void* f){
+        double *value_ar_ptr = reinterpret_cast<double *>(f);
+        delete[] value_ar_ptr;
+    });
+
+    py::capsule free_node_ar(this->node_ar_ptr, [](void* f){
+        skl_tree_node *node_ar_ptr = reinterpret_cast<skl_tree_node *>(f);
+        delete[] node_ar_ptr;
+    });
+
+    this->node_ar = py::array_t<skl_tree_node>(node_ar_shape, node_ar_strides, this->node_ar_ptr, free_node_ar);
+    this->value_ar = py::array_t<double>(value_ar_shape, value_ar_strides, this->value_ar_ptr, free_value_ar);
 }
 
 template <typename Task>
 bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>& info) {
-    py::buffer_info node_ar_buf = this->node_ar.request();
-
-    skl_tree_node* node_ar_ptr = static_cast<skl_tree_node*>(node_ar_buf.ptr);
-
     if (info.get_level() > 0) {
         // has parents
         Py_ssize_t parent = parents[info.get_level() - 1];
-        if (node_ar_ptr[parent].left_child > 0) {
-            assert(node_ar_ptr[node_id].right_child < 0);
-            node_ar_ptr[parent].right_child = node_id;
+        if (this->node_ar_ptr[parent].left_child > 0) {
+            assert(this->node_ar_ptr[node_id].right_child < 0);
+            this->node_ar_ptr[parent].right_child = node_id;
         }
         else {
-            node_ar_ptr[parent].left_child = node_id;
+            this->node_ar_ptr[parent].left_child = node_id;
         }
     }
+
     parents[info.get_level()] = node_id;
-    node_ar_ptr[node_id].feature = info.get_feature_index();
-    node_ar_ptr[node_id].threshold = info.get_feature_value();
-    node_ar_ptr[node_id].impurity = info.get_impurity();
-    node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
-    node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
-    node_ar_ptr[node_id].missing_go_to_left = false;
+    this->node_ar_ptr[node_id].feature = info.get_feature_index();
+    this->node_ar_ptr[node_id].threshold = info.get_feature_value();
+    this->node_ar_ptr[node_id].impurity = info.get_impurity();
+    this->node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
+    this->node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
+    this->node_ar_ptr[node_id].missing_go_to_left = false;
 
     // wrap-up
     ++node_id;
@@ -208,25 +217,21 @@ bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>&
 // stuff that is done for all leaf node types
 template <typename Task>
 void to_sklearn_tree_object_visitor<Task>::_onLeafNode(const df::leaf_node_info<Task>& info) {
-    py::buffer_info node_ar_buf = this->node_ar.request();
-
-    skl_tree_node* node_ar_ptr = static_cast<skl_tree_node*>(node_ar_buf.ptr);
-
     if (info.get_level()) {
         Py_ssize_t parent = parents[info.get_level() - 1];
-        if (node_ar_ptr[parent].left_child > 0) {
-            assert(node_ar_ptr[node_id].right_child < 0);
-            node_ar_ptr[parent].right_child = node_id;
+        if (this->node_ar_ptr[parent].left_child > 0) {
+            assert(this->node_ar_ptr[node_id].right_child < 0);
+            this->node_ar_ptr[parent].right_child = node_id;
         }
         else {
-            node_ar_ptr[parent].left_child = node_id;
+            this->node_ar_ptr[parent].left_child = node_id;
         }
     }
 
-    node_ar_ptr[node_id].impurity = info.get_impurity();
-    node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
-    node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
-    node_ar_ptr[node_id].missing_go_to_left = false;
+    this->node_ar_ptr[node_id].impurity = info.get_impurity();
+    this->node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
+    this->node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
+    this->node_ar_ptr[node_id].missing_go_to_left = false;
 }
 
 template <>
@@ -235,10 +240,7 @@ bool to_sklearn_tree_object_visitor<df::task::regression>::call(
     _onLeafNode(info);
     OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, node_id, class_count);
 
-    py::buffer_info value_ar_buf = this->value_ar.request();
-    double* value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
-
-    value_ar_ptr[node_id * 1 * this->class_count] = info.get_response();
+    this->value_ar_ptr[node_id * this->class_count] = info.get_response();
 
     // wrap-up
     ++node_id;
@@ -248,26 +250,19 @@ bool to_sklearn_tree_object_visitor<df::task::regression>::call(
 template <>
 bool to_sklearn_tree_object_visitor<df::task::classification>::call(
     const df::leaf_node_info<df::task::classification>& info) {
-    py::buffer_info value_ar_buf = this->value_ar.request();
-    double* value_ar_ptr = static_cast<double*>(value_ar_buf.ptr);
+        
+    std::size_t depth = static_cast<const std::size_t>(info.get_level());
+    const std::size_t label = info.get_response(); // these may be a slow accesses due to oneDAL abstraction
+    const double nNodeSampleCount = info.get_sample_count(); // do them only once
 
-    if (info.get_level() > 0) {
-        std::size_t depth = static_cast<const std::size_t>(info.get_level()) - 1;
-        while (depth >= 0) {
-            const std::size_t id = parents[depth];
-            OVERFLOW_CHECK_BY_MULTIPLICATION(std::size_t, id, this->class_count);
-            const auto row = id * 1 * this->class_count;
-            OVERFLOW_CHECK_BY_ADDING(std::size_t, row, info.get_response());
-            value_ar_ptr[row + info.get_response()] += info.get_sample_count();
-            if (depth == 0) {
-                break;
-            }
-            --depth;
-        }
+    while(depth--)
+    {
+        const std::size_t id = parents[depth];
+        const std::size_t row = id * this->class_count;
+        this->value_ar_ptr[row + label] += nNodeSampleCount;
     }
     _onLeafNode(info);
-    OVERFLOW_CHECK_BY_ADDING(std::size_t, node_id * 1 * this->class_count, info.get_response());
-    value_ar_ptr[node_id * 1 * this->class_count + info.get_response()] += info.get_sample_count();
+    this->value_ar_ptr[node_id * this->class_count + label] += nNodeSampleCount;
 
     // wrap-up
     ++node_id;

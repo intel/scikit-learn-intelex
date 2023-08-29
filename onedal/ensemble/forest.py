@@ -215,6 +215,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             else int(ceil(self.min_samples_split * n_samples))
         )
 
+        rs = check_random_state(self.random_state)
+        seed = rs.randint(0, np.iinfo("i").max)
+
         onedal_params = {
             "fptype": "float" if data.dtype == np.float32 else "double",
             "method": self.algorithm,
@@ -234,6 +237,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             "max_leaf_nodes": (0 if self.max_leaf_nodes is None else self.max_leaf_nodes),
             "max_bins": self.max_bins,
             "min_bin_size": self.min_bin_size,
+            "seed": seed,
             "memory_saving_mode": False,
             "bootstrap": bool(self.bootstrap),
             "error_metric_mode": self.error_metric_mode,
@@ -327,48 +331,22 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
-    def _get_sample_weight(self, X, y, sample_weight):
-        n_samples = X.shape[0]
-        dtype = X.dtype
-        if n_samples == 1:
-            raise ValueError("n_samples=1")
+    def _get_sample_weight(self, sample_weight, X):
+        sample_weight = np.asarray(sample_weight, dtype=X.dtype).ravel()
 
-        sample_weight = np.asarray(
-            [] if sample_weight is None else sample_weight, dtype=dtype
+        sample_weight = _check_array(
+            sample_weight, accept_sparse=False, ensure_2d=False, dtype=X.dtype, order="C"
         )
-        sample_weight = sample_weight.ravel()
 
-        sample_weight_count = sample_weight.shape[0]
-        if sample_weight_count != 0 and sample_weight_count != n_samples:
+        if sample_weight.size != X.shape[0]:
             raise ValueError(
                 "sample_weight and X have incompatible shapes: "
                 "%r vs %r\n"
                 "Note: Sparse matrices cannot be indexed w/"
                 "boolean masks (use `indices=True` in CV)."
-                % (len(sample_weight), X.shape)
+                % (sample_weight.shape, X.shape)
             )
 
-        if sample_weight_count == 0:
-            sample_weight = np.ones(n_samples, dtype=dtype)
-        elif isinstance(sample_weight, Number):
-            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
-        else:
-            sample_weight = _check_array(
-                sample_weight,
-                accept_sparse=False,
-                ensure_2d=False,
-                dtype=dtype,
-                order="C",
-            )
-            if sample_weight.ndim != 1:
-                raise ValueError("Sample weights must be 1D array or scalar")
-
-            if sample_weight.shape != (n_samples,):
-                raise ValueError(
-                    "sample_weight.shape == {}, expected {}!".format(
-                        sample_weight.shape, (n_samples,)
-                    )
-                )
         return sample_weight
 
     def _get_policy(self, queue, *data):
@@ -383,16 +361,21 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             accept_sparse="csr",
         )
         y = self._validate_targets(y, X.dtype)
-        sample_weight = self._get_sample_weight(X, y, sample_weight)
 
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version("1.0"):
             self.n_features_ = self.n_features_in_
-        policy = self._get_policy(queue, X, y, sample_weight)
 
-        X, y, sample_weight = _convert_to_supported(policy, X, y, sample_weight)
-        params = self._get_onedal_params(X)
-        train_result = module.train(policy, params, *to_table(X, y, sample_weight))
+        if sample_weight is not None and len(sample_weight) > 0:
+            sample_weight = self._get_sample_weight(sample_weight, X)
+            data = (X, y, sample_weight)
+        else:
+            data = (X, y)
+        policy = self._get_policy(queue, *data)
+        data = _convert_to_supported(policy, *data)
+        params = self._get_onedal_params(data[0])
+        train_result = module.train(policy, params, *to_table(*data))
+
         self._onedal_model = train_result.model
 
         if self.oob_score:
