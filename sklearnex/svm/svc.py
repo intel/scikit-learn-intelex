@@ -232,9 +232,9 @@ class SVC(sklearn_SVC, BaseSVC):
         patching_status = PatchingConditionsChain(
             f"sklearn.svm.{class_name}.{method_name}"
         )
-        self._is_sparse = sp.isspmatrix(data[0])
-        if method_name == "fit":
+        if len(data) > 1:
             self._class_count = len(np.unique(data[1]))
+        self._is_sparse = sp.isspmatrix(data[0])
         conditions = [
             (
                 self.kernel in ["linear", "rbf"],
@@ -245,12 +245,16 @@ class SVC(sklearn_SVC, BaseSVC):
             (not self._is_sparse, "Sparse input is not supported on GPU."),
             (self._class_count == 2, "Multiclassification is not supported on GPU."),
         ]
+        if method_name == "fit":
+            patching_status.and_conditions(conditions)
+            return patching_status.get_status(logs=True)
         if method_name in ["predict", "predict_proba", "decision_function"]:
             conditions.append(
                 (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained")
             )
-        patching_status.and_conditions(conditions)
-        return patching_status.get_status(logs=True)
+            patching_status.and_conditions(conditions)
+            return patching_status.get_status(logs=True)
+        raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
