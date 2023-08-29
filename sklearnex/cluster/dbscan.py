@@ -23,7 +23,7 @@ from scipy import sparse as sp
 from sklearn.cluster import DBSCAN as sklearn_DBSCAN
 from sklearn.utils.validation import _check_sample_weight
 
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
 from .._device_offload import dispatch, wrap_output_data
@@ -99,18 +99,29 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         self._save_attributes()
 
     def _onedal_supported(self, method_name, *data):
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f"sklearn.cluster.{class_name}.{method_name}"
+        )
         if method_name == "fit":
             X, y, sample_weight = data
-            if self.algorithm not in ["auto", "brute"]:
-                return False
-            elif not (
-                self.metric == "euclidean" or (self.metric == "minkowski" and self.p == 2)
-            ):
-                return False
-            elif sp.issparse(X):
-                return False
-            else:
-                return True
+            patching_status.and_conditions(
+                [
+                    (
+                        self.algorithm in ["auto", "brute"],
+                        f"'{self.algorithm}' algorithm is not supported. "
+                        "Only 'auto' and 'brute' algorithms are supported",
+                    ),
+                    (
+                        self.metric == "euclidean"
+                        or (self.metric == "minkowski" and self.p == 2),
+                        f"'{self.metric}' (p={self.p}) metric is not supported. "
+                        "Only 'euclidean' or 'minkowski' with p=2 metrics are supported.",
+                    ),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                ]
+            )
+            return patching_status.get_status(logs=True)
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_cpu_supported(self, method_name, *data):
