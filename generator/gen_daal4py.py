@@ -1192,9 +1192,7 @@ class cython_interface(object):
 ###############################################################################
 
 
-def gen_daal4py(
-    dalroot, outdir, version, warn_all=False, no_dist=False, no_stream=False
-):
+def gen_daal4py(dalroot, outdir, version, warn_all=False, no_dist=False, no_stream=False):
     global no_warn
     if warn_all:
         no_warn = {}
