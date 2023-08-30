@@ -1192,19 +1192,17 @@ class cython_interface(object):
 ###############################################################################
 
 
-def gen_daal4py(
-    daalroot, outdir, version, warn_all=False, no_dist=False, no_stream=False
-):
+def gen_daal4py(dalroot, outdir, version, warn_all=False, no_dist=False, no_stream=False):
     global no_warn
     if warn_all:
         no_warn = {}
-    orig_path = jp(daalroot, "include")
+    orig_path = jp(dalroot, "include")
     assert os.path.isfile(jp(orig_path, "algorithms", "algorithm.h")) and os.path.isfile(
         jp(orig_path, "algorithms", "model.h")
     ), (
-        "Path/$DAALROOT '"
+        "Path/$DALROOT '"
         + orig_path
-        + "' doesn't seem host oneDAL headers. Please provide correct daalroot."
+        + "' doesn't seem host oneDAL headers. Please provide correct dalroot."
     )
     head_path = jp("build", "include")
     algo_path = jp(head_path, "algorithms")
