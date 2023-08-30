@@ -119,7 +119,7 @@ def build_cpp(
     os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_dist=True):
+def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_dist=True, use_parameters_lib = True):
     import pybind11
 
     try:
@@ -193,6 +193,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ["DALROOT"], "include"),
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", "intel64"),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
+        "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_lib,
     ]
 
     if dpctl_available:
