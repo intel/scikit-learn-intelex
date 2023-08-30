@@ -26,9 +26,7 @@ static_assert(false, "DAAL_SYCL_INTERFACE not defined")
     PySyclExecutionContext::PySyclExecutionContext(const std::string & dev)
     : m_ctxt(NULL)
 {
-    if (dev == "gpu")
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
-    else if (dev == "cpu")
+    if (dev == "cpu")
         m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
     else if (dev == "host")
         m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));

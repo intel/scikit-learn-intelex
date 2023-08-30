@@ -112,6 +112,8 @@ from contextlib import contextmanager
 
 @contextmanager
 def sycl_context(dev='host', host_offload_on_fail=False):
+    if dev == 'gpu':
+        raise RuntimeError("sycl_context deprecated for GPU, use config_context and/or dpctl instead")
     # Code to acquire resource
     prev_ctxt = _get_sycl_ctxt()
     prev_params = _get_sycl_ctxt_params()
