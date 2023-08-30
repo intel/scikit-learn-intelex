@@ -22,6 +22,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Validate
-        uses: rinchsan/renovate-config-validator@v0.0.12
+        uses: suzuki-shunsuke/github-action-renovate-config-validator@v0.1.2
         with:
-          pattern: '*.json' # Regular expression for filename to validate, default to *.json
+          config_file_path: renovate.json
