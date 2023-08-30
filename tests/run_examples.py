@@ -157,6 +157,7 @@ req_version["linear_regression_spmd.py"] = (2023, "P", 1)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
+req_device["dbscan_spmd.py"] = ["gpu"]
 req_device["kmeans_spmd.py"] = ["gpu"]
 req_device["knn_bf_classification_dpnp.py"] = ["gpu"]
 req_device["knn_bf_classification_spmd.py"] = ["gpu"]
@@ -171,6 +172,7 @@ req_device["sycl/gradient_boosted_regression.py"] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["model_builders_lightgbm.py"] = ["lightgbm"]
 req_library["model_builders_xgboost.py"] = ["xgboost"]
 req_library["model_builders_catboost.py"] = ["catboost"]

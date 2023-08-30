@@ -52,6 +52,7 @@ def get_patch_map():
         from ._config import config_context as config_context_sklearnex
         from ._config import get_config as get_config_sklearnex
         from ._config import set_config as set_config_sklearnex
+        from .cluster import DBSCAN as DBSCAN_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -159,6 +160,10 @@ def get_patch_map():
                     None,
                 ]
             ]
+
+        # DBSCAN
+        mapping.pop("dbscan")
+        mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
 
         # SVM
         mapping.pop("svm")

@@ -16,15 +16,21 @@
 # ===============================================================================
 
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
 
-def test_sklearnex_import():
+# TODO:
+# adding this parameterized testing
+# somehow breaks other test with preview module patch:
+# sklearnex/tests/test_monkeypatch.py::test_preview_namespace.
+# @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_sklearnex_import_dbscan():
     from sklearnex.cluster import DBSCAN
 
     X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
     dbscan = DBSCAN(eps=3, min_samples=2).fit(X)
-    assert "daal4py" in dbscan.__module__
+    assert "sklearnex" in dbscan.__module__
 
     result = dbscan.labels_
     expected = np.array([0, 0, 0, 1, 1, -1], dtype=np.int32)

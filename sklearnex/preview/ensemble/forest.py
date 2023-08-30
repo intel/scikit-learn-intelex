@@ -194,6 +194,22 @@ class BaseRandomForest(ABC):
                 )
         return sample_weight
 
+    @property
+    def estimators_(self):
+        if hasattr(self, "_cached_estimators_"):
+            if self._cached_estimators_ is None and self._onedal_model:
+                self._estimators_()
+            return self._cached_estimators_
+        else:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' has no attribute 'estimators_'"
+            )
+
+    @estimators_.setter
+    def estimators_(self, estimators):
+        # Needed to allow for proper sklearn operation in fallback mode
+        self._cached_estimators_ = estimators
+
 
 class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
     __doc__ = sklearn_RandomForestClassifier.__doc__
@@ -430,9 +446,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         correct_ccp_alpha = self.ccp_alpha == 0.0
         correct_criterion = self.criterion == "gini"
         correct_warm_start = self.warm_start is False
-        correct_monotonic_cst = (
-            sklearn_check_version("1.4") and self.monotonic_cst is None
-        )
+        correct_monotonic_cst = getattr(self, "monotonic_cst", None) is None
         if correct_sparsity and sklearn_check_version("1.4"):
             try:
                 _assert_all_finite(X)
@@ -456,6 +470,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 correct_warm_start,
                 correct_monotonic_cst,
                 correct_finiteness,
+                self.class_weight != "balanced_subsample",
             ]
         )
         if ready:
@@ -576,17 +591,12 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         def n_features_(self):
             return self.n_features_in_
 
-    @property
     def _estimators_(self):
-        if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_:
-                return self._cached_estimators_
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "_onedal_model")
+        check_is_fitted(self, "_onedal_model")
         classes_ = self.classes_[0]
-        n_classes_ = self.n_classes_[0]
+        n_classes_ = (
+            self.n_classes_ if isinstance(self.n_classes_, int) else self.n_classes_[0]
+        )
         # convert model to estimators
         params = {
             "criterion": self.criterion,
@@ -606,6 +616,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
+
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -634,7 +645,6 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             estimators_.append(est_i)
 
         self._cached_estimators_ = estimators_
-        return estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
         if method_name == "fit":
@@ -814,6 +824,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         }
         if daal_check_version((2023, "P", 101)):
             onedal_params["splitter_mode"] = self.splitter_mode
+
+        # Lazy evaluation of estimators_
         self._cached_estimators_ = None
 
         # Compute
@@ -823,7 +835,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._save_attributes()
         if sklearn_check_version("1.2"):
             self._estimator = DecisionTreeClassifier()
-        self.estimators_ = self._estimators_
+
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
         self.classes_ = self.classes_[0]
@@ -831,7 +843,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
-        check_is_fitted(self)
+        check_is_fitted(self, "_onedal_model")
+
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
 
@@ -840,7 +853,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32])
-        check_is_fitted(self)
+        check_is_fitted(self, "_onedal_model")
+
         if sklearn_check_version("0.23"):
             self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
@@ -1019,15 +1033,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             self.min_impurity_split = None
             self.splitter_mode = splitter_mode
 
-    @property
     def _estimators_(self):
-        if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_:
-                return self._cached_estimators_
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "_onedal_model")
+        check_is_fitted(self, "_onedal_model")
         # convert model to estimators
         params = {
             "criterion": self.criterion,
@@ -1047,6 +1054,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
+
         for i in range(self.n_estimators):
             est_i = clone(est)
             est_i.set_params(
@@ -1071,8 +1079,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             )
             est_i.tree_.__setstate__(tree_i_state_dict)
             estimators_.append(est_i)
-
-        return estimators_
+        self._cached_estimators_ = estimators_
 
     def _onedal_ready(self, X, y, sample_weight):
         # TODO:
@@ -1226,7 +1233,6 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version("1.0"):
             self.n_features_ = self.n_features_in_
-        rs_ = check_random_state(self.random_state)
 
         if self.oob_score:
             err = "out_of_bag_error_r2|out_of_bag_error_prediction"
@@ -1246,7 +1252,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             "bootstrap": self.bootstrap,
             "oob_score": self.oob_score,
             "n_jobs": self.n_jobs,
-            "random_state": rs_,
+            "random_state": self.random_state,
             "verbose": self.verbose,
             "warm_start": self.warm_start,
             "error_metric_mode": err,
@@ -1255,20 +1261,27 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         }
         if daal_check_version((2023, "P", 101)):
             onedal_params["splitter_mode"] = self.splitter_mode
+
+        # Lazy evaluation of estimators_
         self._cached_estimators_ = None
+
+        # Compute
         self._onedal_estimator = self._onedal_regressor(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
         if sklearn_check_version("1.2"):
             self._estimator = DecisionTreeRegressor()
-        self.estimators_ = self._estimators_
+
         return self
 
     def _onedal_predict(self, X, queue=None):
+        X = check_array(X, dtype=[np.float32, np.float64])
+        check_is_fitted(self, "_onedal_model")
+
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        X = self._validate_X_predict(X)
+
         return self._onedal_estimator.predict(X, queue=queue)
 
     def fit(self, X, y, sample_weight=None):
