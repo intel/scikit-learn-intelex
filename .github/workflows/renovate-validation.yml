@@ -24,4 +24,4 @@ jobs:
       - name: Validate
         uses: suzuki-shunsuke/github-action-renovate-config-validator@v0.1.2
         with:
-          config_file_path: renovate.json
+          config_file_path: .github/renovate.json
