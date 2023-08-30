@@ -18,8 +18,8 @@
 # run like this:
 #    mpirun -n 4 python ./low_order_moms_spmd.py
 
-# let's use a reading of file in chunks (defined in spmd_utils.py)
-from spmd_utils import get_chunk_params, read_csv
+# let's use a reading of file in chunks (defined in spmd_chunks_read.py)
+from spmd_chunks_read import get_chunk_params, read_csv
 
 import daal4py as d4p
 
