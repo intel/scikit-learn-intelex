@@ -14,11 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py Gradient Boosting Regression Tree Traversal example
+# daal4py Gradient Boosting Classification Tree Traversal example
 
 import math
 
-from gradient_boosted_regression_batch import main as gbt_regression
+from gradient_boosted_classification import main as gbt_classification
 
 import daal4py as d4p
 
@@ -47,10 +47,10 @@ def printTree(nodes, values):
 
 if __name__ == "__main__":
     # First get our result and model
-    (train_result, _, _) = gbt_regression()
+    (train_result, _, _) = gbt_classification()
     # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
     for treeId in range(train_result.model.NumberOfTrees):
-        treeState = d4p.getTreeState(train_result.model, treeId)
+        treeState = d4p.getTreeState(train_result.model, treeId, 5)
         printTree(treeState.node_ar, treeState.value_ar)
     print("Traversed {} trees.".format(train_result.model.NumberOfTrees))
     print("All looks good!")
