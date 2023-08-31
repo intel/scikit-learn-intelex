@@ -70,15 +70,12 @@ def _run_on_device(func, queue, obj=None, *args, **kwargs):
                 ):
                     return dispatch_by_obj(obj, func, *args, **kwargs)
             except RuntimeError as r:
-                try:
-                    from sklearnex._config import config_context
-                    with config_context(
-                        target_offload="gpu" if queue.sycl_device.is_gpu else "cpu",
-                        allow_fallback_to_host=host_offload,
-                    ):
-                        return dispatch_by_obj(obj, func, *args, **kwargs)
-                except:
-                    raise r
+                from sklearnex._config import config_context
+                with config_context(
+                    target_offload="gpu" if queue.sycl_device.is_gpu else "cpu",
+                    allow_fallback_to_host=host_offload,
+                ):
+                    return dispatch_by_obj(obj, func, *args, **kwargs)
     return dispatch_by_obj(obj, func, *args, **kwargs)
 
 
