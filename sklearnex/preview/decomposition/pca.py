@@ -193,6 +193,8 @@ class PCA(sklearn_PCA):
             raise ValueError("Unrecognized svd_solver='{0}'".format(self._fit_svd_solver))
 
     def _onedal_gpu_supported(self, method_name, *data):
+        # TODO:
+        # add patching condition.
         if method_name == "fit":
             return self._fit_svd_solver == "full"
         elif method_name == "transform":
@@ -200,6 +202,8 @@ class PCA(sklearn_PCA):
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_cpu_supported(self, method_name, *data):
+        # TODO:
+        # add patching condition.
         if method_name == "fit":
             return self._fit_svd_solver == "full"
         elif method_name == "transform":

@@ -217,18 +217,18 @@ if daal_check_version((2023, "P", 100)):
                 ]
             )
             if not dal_ready:
-                return patching_status.get_status(logs=True)
+                return patching_status
 
             if not patching_status.and_condition(
                 self._test_type_and_finiteness(X), "Input X is not supported."
             ):
-                return patching_status.get_status(logs=True)
+                return patching_status
 
             patching_status.and_condition(
                 self._test_type_and_finiteness(y), "Input y is not supported."
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         def _onedal_predict_supported(self, method_name, *data):
             assert method_name == "predict"
@@ -252,13 +252,13 @@ if daal_check_version((2023, "P", 100)):
                 ]
             )
             if not dal_ready:
-                return patching_status.get_status(logs=True)
+                return patching_status
 
             patching_status.and_condition(
                 self._test_type_and_finiteness(*data), "Input X is not supported."
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         def _onedal_supported(self, method_name, *data):
             if method_name == "fit":

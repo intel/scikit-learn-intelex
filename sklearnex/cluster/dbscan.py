@@ -23,10 +23,11 @@ from scipy import sparse as sp
 from sklearn.cluster import DBSCAN as sklearn_DBSCAN
 from sklearn.utils.validation import _check_sample_weight
 
-from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
 from .._device_offload import dispatch, wrap_output_data
+from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -121,7 +122,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 ]
             )
-            return patching_status.get_status(logs=True)
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_cpu_supported(self, method_name, *data):

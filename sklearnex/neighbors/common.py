@@ -24,8 +24,10 @@ from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 
-from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
+
+from .._utils import PatchingConditionsChain
 
 
 class KNeighborsDispatchingBase:
@@ -148,7 +150,7 @@ class KNeighborsDispatchingBase:
             not isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase)),
             f"Input type {type(data[0])} is not supported.",
         ):
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         if self._fit_method in ["auto", "ball_tree"]:
             condition = (
@@ -172,12 +174,12 @@ class KNeighborsDispatchingBase:
         if not patching_status.and_condition(
             not p_less_than_one, '"p" metric parameter is less than 1'
         ):
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         if not patching_status.and_condition(
             not sp.isspmatrix(data[0]), "Sparse input is not supported."
         ):
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         if not is_unsupervised:
             is_valid_weights = self.weights in ["uniform", "distance"]
@@ -224,13 +226,13 @@ class KNeighborsDispatchingBase:
             if not patching_status.and_condition(
                 device != "gpu", '"kd_tree" method is not supported on GPU.'
             ):
-                return patching_status.get_status(logs=True)
+                return patching_status
 
         if not patching_status.and_condition(
             is_valid_for_kd_tree or is_valid_for_brute,
             f"{result_method} with {self.effective_metric_} metric is not supported.",
         ):
-            return patching_status.get_status(logs=True)
+            return patching_status
         if not is_unsupervised:
             if not patching_status.and_conditions(
                 [
@@ -241,18 +243,18 @@ class KNeighborsDispatchingBase:
                     ),
                 ]
             ):
-                return patching_status.get_status(logs=True)
+                return patching_status
         if method_name == "fit":
             if is_classifier:
                 patching_status.and_condition(
                     class_count >= 2, "One-class case is not supported."
                 )
-            return patching_status.get_status(logs=True)
+            return patching_status
         if method_name in ["predict", "predict_proba", "kneighbors"]:
             patching_status.and_condition(
                 hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."
             )
-            return patching_status.get_status(logs=True)
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
     def _onedal_gpu_supported(self, method_name, *data):

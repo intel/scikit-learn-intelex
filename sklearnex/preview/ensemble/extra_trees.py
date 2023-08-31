@@ -36,7 +36,6 @@ from sklearn.utils.validation import (
 )
 
 from daal4py.sklearn._utils import (
-    PatchingConditionsChain,
     check_tree_nodes,
     daal_check_version,
     make2d,
@@ -47,8 +46,10 @@ from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
+from ..._utils import PatchingConditionsChain
 from ..._config import get_config
 from ..._device_offload import dispatch, wrap_output_data
+
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
@@ -615,6 +616,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         self._cached_estimators_ = estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
+        # TODO:
+        # update patching condition.
         class_name = self.__class__.__name__
         _patching_status = PatchingConditionsChain(
             f"sklearn.ensemble.{class_name}.{method_name}"
@@ -682,6 +685,8 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         return dal_ready
 
     def _onedal_gpu_supported(self, method_name, *data):
+        # TODO:
+        # update patching condition.
         class_name = self.__class__.__name__
         _patching_status = PatchingConditionsChain(
             f"sklearn.ensemble.{class_name}.{method_name}"

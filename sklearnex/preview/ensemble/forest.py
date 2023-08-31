@@ -647,6 +647,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._cached_estimators_ = estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
+        # TODO:
+        # add patching condition return.
         if method_name == "fit":
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == "random":
@@ -692,6 +694,8 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_gpu_supported(self, method_name, *data):
+        # TODO:
+        # add patching condition return.
         if method_name == "fit":
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == "random" and not daal_check_version(
@@ -1104,6 +1108,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         return ready, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
+        # TODO:
+        # add patching condition return.
         if method_name == "fit":
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == "random":
@@ -1158,6 +1164,8 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_gpu_supported(self, method_name, *data):
+        # TODO:
+        # add patching condition return.
         if method_name == "fit":
             ready, X, y, sample_weight = self._onedal_ready(*data)
             if self.splitter_mode == "random" and not daal_check_version(
