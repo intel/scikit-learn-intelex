@@ -177,6 +177,8 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
         else:
             MPI_LIBS = "mpi"
 
+    use_parameters_arg = 'yes' if use_parameters_lib else 'no'
+
     cmake_args = [
         "cmake",
         cmake_generator,
@@ -193,7 +195,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ["DALROOT"], "include"),
         "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", "intel64"),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
-        "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_lib,
+        "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_arg,
     ]
 
     if dpctl_available:
