@@ -14,11 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py Decision Forest Classification Tree Traversal example
+# daal4py Decision Forest Regression Tree Traversal example
 
 import math
 
-from decision_forest_classification_default_dense_batch import main as df_classification
+from decision_forest_regression_default_dense import main as df_regression
 
 import daal4py as d4p
 
@@ -47,12 +47,10 @@ def printTree(nodes, values):
 
 if __name__ == "__main__":
     # First get our result and model
-    (train_result, _, _) = df_classification()
+    (train_result, _, _) = df_regression()
     # Retrieve and print all trees; encoded as in sklearn.ensamble.tree_.Tree
     for treeId in range(train_result.model.NumberOfTrees):
-        treeState = d4p.getTreeState(train_result.model, treeId, 5)
+        treeState = d4p.getTreeState(train_result.model, treeId)
         printTree(treeState.node_ar, treeState.value_ar)
-    # Now let printTree traverse the TreeState
-    printTree(treeState.node_ar, treeState.value_ar)
     print("Traversed {} trees.".format(train_result.model.NumberOfTrees))
     print("All looks good!")
