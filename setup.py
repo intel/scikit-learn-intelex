@@ -86,7 +86,7 @@ mpi_root = None if no_dist else os.environ["MPIROOT"]
 dpcpp = True if "DPCPPROOT" in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
 
-use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 2024)
+use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
 try:
     import dpctl
