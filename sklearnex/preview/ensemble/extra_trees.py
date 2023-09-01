@@ -250,9 +250,9 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
         # The splitter is recognized here for proper dispatching.
         self.n_features_in_ = None
         self._estimator = estimator  # TODO: Verify if this is done in older verions
-        if self._estimator = DecisionTreeClassifier:
+        if self._estimator == DecisionTreeClassifier:
             self._onedal_classifier = onedal_RandomForestClassifier
-        elif self._estimator = ExtraTreeClassifier:
+        elif self._estimator == ExtraTreeClassifier:
             self._onedal_classifier = onedal_ExtraTreesClassifier
 
     def fit(self, X, y, sample_weight=None):
@@ -779,9 +779,9 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
         # The splitter is recognized here for proper dispatching.
         self.n_features_in_ = None
         self._estimator = estimator  # TODO: Verify if this is done in older verions
-        if self._estimator = DecisionTreeRegressor:
+        if self._estimator == DecisionTreeRegressor:
             self._onedal_regressor = onedal_RandomForestRegressor
-        elif self._estimator = ExtraTreeRegressor:
+        elif self._estimator == ExtraTreeRegressor:
             self._onedal_regressor = onedal_ExtraTreesRegressor
 
 
