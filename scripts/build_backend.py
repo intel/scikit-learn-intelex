@@ -178,6 +178,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
             MPI_LIBS = "mpi"
 
     use_parameters_arg = 'yes' if use_parameters_lib else 'no'
+    log.info(f"Build using parameters library: {use_parameters_arg}")
 
     cmake_args = [
         "cmake",

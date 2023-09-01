@@ -72,9 +72,7 @@ if(ONEDAL_DIST_SPMD)
     message(STATUS "MPI_LIBRARY_DIR:" ${MPI_LIBRARY_DIR})
 endif()
 
-if(oneDAL_USE_PARAMETERS_LIB)
-    message(STATUS "oneDAL_USE_PARAMETERS_LIB:" ${oneDAL_USE_PARAMETERS_LIB})
-endif()
+message(STATUS "oneDAL_USE_PARAMETERS_LIB:" ${oneDAL_USE_PARAMETERS_LIB})
 
 find_package(pybind11 REQUIRED)
 
