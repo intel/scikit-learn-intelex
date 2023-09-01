@@ -44,6 +44,8 @@ from daal4py.sklearn._utils import (
 )
 from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
+from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
+from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 # try catch needed for changes in structures observed in Scikit-learn around v0.22
 try:
     from sklearn.ensemble._forest import ForestClassifier as sklearnForestClassifier
@@ -83,12 +85,6 @@ class BaseTree(ABC):
                     self._onedal_estimator.oob_decision_function_
                 )
         return self
-
-    def _onedal_classifier(self, **onedal_params):
-        return onedal_ExtraTreesClassifier(**onedal_params)
-
-    def _onedal_regressor(self, **onedal_params):
-        return onedal_ExtraTreesRegressor(**onedal_params)
 
     # TODO:
     # move to onedal modul.
@@ -254,7 +250,10 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
         # The splitter is recognized here for proper dispatching.
         self.n_features_in_ = None
         self._estimator = estimator  # TODO: Verify if this is done in older verions
-
+        if self._estimator = DecisionTreeClassifier:
+            self._onedal_classifier = onedal_RandomForestClassifier
+        elif self._estimator = ExtraTreeClassifier:
+            self._onedal_classifier = onedal_ExtraTreesClassifier
 
     def fit(self, X, y, sample_weight=None):
         dispatch(
@@ -780,6 +779,10 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
         # The splitter is recognized here for proper dispatching.
         self.n_features_in_ = None
         self._estimator = estimator  # TODO: Verify if this is done in older verions
+        if self._estimator = DecisionTreeRegressor:
+            self._onedal_regressor = onedal_RandomForestRegressor
+        elif self._estimator = ExtraTreeRegressor:
+            self._onedal_regressor = onedal_ExtraTreesRegressor
 
 
     def _estimators_(self):
