@@ -46,6 +46,7 @@ from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
 from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
+
 # try catch needed for changes in structures observed in Scikit-learn around v0.22
 try:
     from sklearn.ensemble._forest import ForestClassifier as sklearnForestClassifier
@@ -212,7 +213,6 @@ class BaseTree(ABC):
 
 
 class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
-
     # Surprisingly, even though scikit-learn warns against using
     # their ForestClassifier directly, it actually has a more stable
     # API than the user-facing objects (over time). If they change it
@@ -324,7 +324,7 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
             check_consistent_length(X, y)
 
             if y.ndim == 1:
-                y = np.reshape(y, (-1,1))
+                y = np.reshape(y, (-1, 1))
             self.n_outputs_ = y.shape[1]
             ready = patching_status.and_conditions(
                 [
@@ -418,7 +418,7 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
 
     fit.__doc__ = sklearnForestClassifier.fit.__doc__
     predict.__doc__ = sklearnForestClassifier.predict.__doc__
-    predict_proba.__doc__ = sklearnForestClassifier.predict_proba.__doc__  
+    predict_proba.__doc__ = sklearnForestClassifier.predict_proba.__doc__
 
     if sklearn_check_version("1.0"):
 
@@ -499,7 +499,8 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
             dal_ready = ready and _patching_status.and_conditions(
                 [
                     (
-                        daal_check_version((2023, "P", 200)) or self._estimator.__class__ == DecisionTreeClassifier,
+                        daal_check_version((2023, "P", 200))
+                        or self._estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                     (
@@ -529,7 +530,8 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
                     (
-                        daal_check_version((2023, "P", 100)) or self._estimator.__class__ == DecisionTreeClassifier,
+                        daal_check_version((2023, "P", 100))
+                        or self._estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                 ]
@@ -566,7 +568,8 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
             dal_ready = ready and _patching_status.and_conditions(
                 [
                     (
-                        daal_check_version((2023, "P", 100)) or self._estimator.__class__ == DecisionTreeClassifier,
+                        daal_check_version((2023, "P", 100))
+                        or self._estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
                     (sample_weight is not None, "sample_weight is not supported."),
@@ -598,7 +601,8 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
                         ),
                         (self.warm_start is False, "Warm start is not supported."),
                         (
-                            daal_check_version((2023, "P", 100)) or self._estimator.__class__ == DecisionTreeClassifier,
+                            daal_check_version((2023, "P", 100))
+                            or self._estimator.__class__ == DecisionTreeClassifier,
                             "ExtraTrees supported starting from oneDAL version 2023.1",
                         ),
                     ]
@@ -748,7 +752,6 @@ class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
 
 
 class ForestRegressor(sklearn_ForestRegressor, BaseTree):
-
     def __init__(
         self,
         estimator,
@@ -783,7 +786,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
             self._onedal_regressor = onedal_RandomForestRegressor
         elif self._estimator == ExtraTreeRegressor:
             self._onedal_regressor = onedal_ExtraTreesRegressor
-
 
     def _estimators_(self):
         # _estimators_ should only be called if _onedal_model exists
@@ -961,7 +963,8 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
             dal_ready = ready and _patching_status.and_conditions(
                 [
                     (
-                        daal_check_version((2023, "P", 200)) or self._estimator.__class__ == DecisionTreeClassifier,
+                        daal_check_version((2023, "P", 200))
+                        or self._estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                     (
@@ -991,7 +994,8 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
                     (
-                        daal_check_version((2023, "P", 200)) or self._estimator.__class__ == DecisionTreeClassifier,
+                        daal_check_version((2023, "P", 200))
+                        or self._estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                 ]
@@ -1028,7 +1032,8 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
             dal_ready = ready and _patching_status.and_conditions(
                 [
                     (
-                        daal_check_version((2023, "P", 100)) or self._estimator.__class__ == DecisionTreeClassifier,
+                        daal_check_version((2023, "P", 100))
+                        or self._estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
                     (sample_weight is not None, "sample_weight is not supported."),
@@ -1055,7 +1060,8 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
                     (
-                        daal_check_version((2023, "P", 100)) or self._estimator.__class__ == DecisionTreeClassifier,
+                        daal_check_version((2023, "P", 100))
+                        or self._estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
                 ]
@@ -1193,16 +1199,19 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
         def n_features_(self):
             return self.n_features_in_
 
+
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
 
-    if sklearn_check_version('1.2'):
+    if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
             **sklearn_ExtraTreesClassifier._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]}
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+        }
 
     if sklearn_check_version("1.0"):
+
         def __init__(
             self,
             n_estimators=100,
@@ -1225,7 +1234,7 @@ class ExtraTreesClassifier(ForestClassifier):
             ccp_alpha=0.0,
             max_samples=None,
             max_bins=256,
-            min_bin_size=1
+            min_bin_size=1,
         ):
             super().__init__(
                 ExtraTreeClassifier(),
@@ -1263,7 +1272,9 @@ class ExtraTreesClassifier(ForestClassifier):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+
     else:
+
         def __init__(
             self,
             n_estimators=100,
@@ -1287,7 +1298,7 @@ class ExtraTreesClassifier(ForestClassifier):
             ccp_alpha=0.0,
             max_samples=None,
             max_bins=256,
-            min_bin_size=1
+            min_bin_size=1,
         ):
             super().__init__(
                 ExtraTreeClassifier(),
@@ -1334,13 +1345,15 @@ class ExtraTreesClassifier(ForestClassifier):
 class ExtraTreeRegressor(ForestRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
 
-    if sklearn_check_version('1.2'):
+    if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
             **sklearn_ExtraTreesClassifier._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
-            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")]}
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+        }
 
-    if sklearn_check_version('1.0'):
+    if sklearn_check_version("1.0"):
+
         def __init__(
             self,
             n_estimators=100,
@@ -1350,7 +1363,7 @@ class ExtraTreeRegressor(ForestRegressor):
             min_samples_split=2,
             min_samples_leaf=1,
             min_weight_fraction_leaf=0.0,
-            max_features=1.0 if sklearn_check_version('1.1') else 'auto',
+            max_features=1.0 if sklearn_check_version("1.1") else "auto",
             max_leaf_nodes=None,
             min_impurity_decrease=0.0,
             bootstrap=False,
@@ -1362,7 +1375,7 @@ class ExtraTreeRegressor(ForestRegressor):
             ccp_alpha=0.0,
             max_samples=None,
             max_bins=256,
-            min_bin_size=1
+            min_bin_size=1,
         ):
             super().__init__(
                 estimator=ExtraTreeRegressor(),
@@ -1401,6 +1414,7 @@ class ExtraTreeRegressor(ForestRegressor):
             self.min_bin_size = min_bin_size
 
     else:
+
         def __init__(
             self,
             n_estimators=100,
@@ -1423,7 +1437,7 @@ class ExtraTreeRegressor(ForestRegressor):
             ccp_alpha=0.0,
             max_samples=None,
             max_bins=256,
-            min_bin_size=1
+            min_bin_size=1,
         ):
             super().__init__(
                 estimator=ExtraTreeRegressor(),
@@ -1437,8 +1451,7 @@ class ExtraTreeRegressor(ForestRegressor):
                     "max_features",
                     "max_leaf_nodes",
                     "min_impurity_decrease",
-                    "min_impurity_split"
-                    "random_state",
+                    "min_impurity_split" "random_state",
                     "ccp_alpha",
                 ),
                 bootstrap=bootstrap,
