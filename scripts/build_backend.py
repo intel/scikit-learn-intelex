@@ -119,7 +119,9 @@ def build_cpp(
     os.chdir(d4p_dir)
 
 
-def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_dist=True, use_parameters_lib = True):
+def custom_build_cmake_clib(
+    iface, cxx=None, onedal_major_binary_version=1, no_dist=True, use_parameters_lib=True
+):
     import pybind11
 
     try:
@@ -177,7 +179,7 @@ def custom_build_cmake_clib(iface, cxx=None, onedal_major_binary_version=1, no_d
         else:
             MPI_LIBS = "mpi"
 
-    use_parameters_arg = 'yes' if use_parameters_lib else 'no'
+    use_parameters_arg = "yes" if use_parameters_lib else "no"
     log.info(f"Build using parameters library: {use_parameters_arg}")
 
     cmake_args = [
