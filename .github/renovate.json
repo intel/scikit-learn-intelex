@@ -15,8 +15,7 @@
       "groupName": "Doc packages",
       "matchUpdateTypes": ["patch", "minor"],
       "schedule": ["before 2am on monday"],
-      "excludeCommitPaths": ["(^|/)requirements-.[^oc].txt$",
-      "(^|/)dependencies-dev$"]
+      "matchFileNames": ["(^|/)requirements-doc.txt$"]
     }
   ]
 }
