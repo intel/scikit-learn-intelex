@@ -46,10 +46,9 @@ from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
-from ..._utils import PatchingConditionsChain
 from ..._config import get_config
 from ..._device_offload import dispatch, wrap_output_data
-
+from ..._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
@@ -616,8 +615,6 @@ class ExtraTreesClassifier(sklearn_ExtraTreesClassifier, BaseTree):
         self._cached_estimators_ = estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
-        # TODO:
-        # update patching condition.
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.ensemble.{class_name}.{method_name}"
@@ -1058,7 +1055,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 FutureWarning,
             )
 
-        ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (
                     self.oob_score
@@ -1084,7 +1081,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             ]
         )
 
-        if ready:
+        if patching_status.get_status():
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             X = check_array(X, dtype=[np.float64, np.float32])
@@ -1109,7 +1106,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 y = np.reshape(y, (-1, 1))
 
             self.n_outputs_ = y.shape[1]
-            ready = patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (
                         self.n_outputs_ == 1,
@@ -1150,18 +1147,20 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                     "`max_sample=None`."
                 )
 
-        return ready, X, y, sample_weight
+        return patching_status, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
-        _patching_status = PatchingConditionsChain(
+        patching_status = PatchingConditionsChain(
             f"sklearn.ensemble.{class_name}.{method_name}"
         )
 
         if method_name == "fit":
-            ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
+            patching_status, X, y, sample_weight = self._onedal_fit_ready(
+                patching_status, *data
+            )
 
-            dal_ready = ready and _patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (
                         daal_check_version((2023, "P", 200)),
@@ -1175,7 +1174,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             )
 
             if (
-                dal_ready
+                patching_status.get_status()
                 and (self.random_state is not None)
                 and (not daal_check_version((2024, "P", 0)))
             ):
@@ -1188,7 +1187,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
 
-            dal_ready = _patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
@@ -1200,7 +1199,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
             if hasattr(self, "n_outputs_"):
-                dal_ready &= _patching_status.and_conditions(
+                patching_status.and_conditions(
                     [
                         (
                             self.n_outputs_ == 1,
@@ -1216,19 +1215,20 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 f"Unknown method {method_name} in {self.__class__.__name__}"
             )
 
-        _patching_status.write_log()
-        return dal_ready
+        return patching_status
 
     def _onedal_gpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
-        _patching_status = PatchingConditionsChain(
+        patching_status = PatchingConditionsChain(
             f"sklearn.ensemble.{class_name}.{method_name}"
         )
 
         if method_name == "fit":
-            ready, X, y, sample_weight = self._onedal_fit_ready(_patching_status, *data)
+            patching_status, X, y, sample_weight = self._onedal_fit_ready(
+                patching_status, *data
+            )
 
-            dal_ready = ready and _patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (
                         daal_check_version((2023, "P", 100)),
@@ -1239,7 +1239,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
             )
 
             if (
-                dal_ready
+                patching_status.get_status()
                 and (self.random_state is not None)
                 and (not daal_check_version((2024, "P", 0)))
             ):
@@ -1249,10 +1249,10 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                     RuntimeWarning,
                 )
 
-        elif method_name in ["predict", "predict_proba"]:
+        elif method_name == "predict":
             X = data[0]
 
-            dal_ready = _patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
@@ -1264,7 +1264,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 ]
             )
             if hasattr(self, "n_outputs_"):
-                dal_ready &= _patching_status.and_conditions(
+                patching_status.and_conditions(
                     [
                         (
                             self.n_outputs_ == 1,
@@ -1278,8 +1278,7 @@ class ExtraTreesRegressor(sklearn_ExtraTreesRegressor, BaseTree):
                 f"Unknown method {method_name} in {self.__class__.__name__}"
             )
 
-        _patching_status.write_log()
-        return dal_ready
+        return patching_status
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sp.issparse(y):
