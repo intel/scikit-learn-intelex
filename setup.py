@@ -86,6 +86,8 @@ mpi_root = None if no_dist else os.environ["MPIROOT"]
 dpcpp = True if "DPCPPROOT" in os.environ else False
 dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
 
+use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
+
 try:
     import dpctl
 
@@ -177,22 +179,56 @@ def get_libs(iface="daal"):
     major_version = ONEDAL_MAJOR_BINARY_VERSION
     if IS_WIN:
         libraries_plat = [f"onedal_core_dll.{major_version}"]
-        onedal_lib = [f"onedal_dll.{major_version}"]
-        onedal_dpc_lib = [f"onedal_dpc_dll.{major_version}"]
+        onedal_lib = [
+            f"onedal_dll.{major_version}",
+        ]
+        onedal_dpc_lib = [
+            f"onedal_dpc_dll.{major_version}",
+        ]
+        if use_parameters_lib:
+            onedal_lib += [
+                f"onedal_parameters.{major_version}",
+                f"onedal_parameters_dll.{major_version}",
+            ]
+            onedal_dpc_lib += [
+                f"onedal_parameters_dpc_dll.{major_version}",
+            ]
     elif IS_MAC:
         libraries_plat = [
             f"onedal_core.{major_version}",
             f"onedal_thread.{major_version}",
         ]
-        onedal_lib = [f"onedal.{major_version}"]
-        onedal_dpc_lib = [f"onedal_dpc.{major_version}"]
+        onedal_lib = [
+            f"onedal.{major_version}",
+        ]
+        onedal_dpc_lib = [
+            f"onedal_dpc.{major_version}",
+        ]
+        if use_parameters_lib:
+            onedal_lib += [
+                f"onedal_parameters.{major_version}",
+            ]
+            onedal_dpc_lib += [
+                f"onedal_parameters_dpc.{major_version}",
+            ]
     else:
         libraries_plat = [
             f":libonedal_core.so.{major_version}",
             f":libonedal_thread.so.{major_version}",
         ]
-        onedal_lib = [f":libonedal.so.{major_version}"]
-        onedal_dpc_lib = [f":libonedal_dpc.so.{major_version}"]
+        onedal_lib = [
+            f":libonedal.so.{major_version}",
+        ]
+        onedal_dpc_lib = [
+            f":libonedal_dpc.so.{major_version}",
+        ]
+        if use_parameters_lib:
+            onedal_lib += [
+                f":libonedal_parameters.so.{major_version}",
+            ]
+            onedal_dpc_lib += [
+                f":libonedal_parameters_dpc.so.{major_version}",
+            ]
     if iface == "onedal":
         libraries_plat = onedal_lib + libraries_plat
     elif iface == "onedal_dpc":
@@ -415,6 +451,7 @@ class custom_build:
                 cxx=cxx,
                 onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                 no_dist=no_dist,
+                use_parameters_lib=use_parameters_lib,
             )
         if dpcpp:
             build_oneapi_backend()
@@ -423,6 +460,7 @@ class custom_build:
                     iface="dpc",
                     onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                     no_dist=no_dist,
+                    use_parameters_lib=use_parameters_lib,
                 )
 
     def post_build(self):
