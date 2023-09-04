@@ -1347,7 +1347,7 @@ class ExtraTreesRegressor(ForestRegressor):
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
-            **sklearn_ExtraTreesClassifier._parameter_constraints,
+            **sklearn_ExtraTreesRegressor._parameter_constraints,
             "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
             "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
         }
