@@ -203,7 +203,7 @@ class BaseTree(ABC):
             return self._cached_estimators_
         else:
             raise AttributeError(
-                f"'{self.__class__.__name__}' has no attribute 'estimators_'"
+                f"'{self.__class__.__name__}' object has no attribute 'estimators_'"
             )
 
     @estimators_.setter
