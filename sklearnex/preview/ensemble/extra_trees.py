@@ -1342,7 +1342,7 @@ class ExtraTreesClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
 
 
-class ExtraTreeRegressor(ForestRegressor):
+class ExtraTreesRegressor(ForestRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
 
     if sklearn_check_version("1.2"):
