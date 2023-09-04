@@ -49,11 +49,11 @@ from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegresso
 
 # try catch needed for changes in structures observed in Scikit-learn around v0.22
 try:
-    from sklearn.ensemble._forest import ForestClassifier as sklearnForestClassifier
-    from sklearn.ensemble._forest import ForestRegressor as sklearnForestRegressor
+    from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifier
+    from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
 except ModuleNotFoundError:
-    from sklearn.ensemble.forest import ForestClassifier as sklearnForestClassifier
-    from sklearn.ensemble.forest import ForestRegressor as sklearnForestRegressor
+    from sklearn.ensemble.forest import ForestClassifier as sklearn_ForestClassifier
+    from sklearn.ensemble.forest import ForestRegressor as sklearn_ForestRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
@@ -212,7 +212,7 @@ class BaseTree(ABC):
         self._cached_estimators_ = estimators
 
 
-class ForestClassifier(sklearnForestClassifier, BaseTree):
+class ForestClassifier(sklearn_ForestClassifier, BaseTree):
     # Surprisingly, even though scikit-learn warns against using
     # their ForestClassifier directly, it actually has a more stable
     # API than the user-facing objects (over time). If they change it
@@ -416,9 +416,9 @@ class ForestClassifier(sklearnForestClassifier, BaseTree):
             X,
         )
 
-    fit.__doc__ = sklearnForestClassifier.fit.__doc__
-    predict.__doc__ = sklearnForestClassifier.predict.__doc__
-    predict_proba.__doc__ = sklearnForestClassifier.predict_proba.__doc__
+    fit.__doc__ = sklearn_ForestClassifier.fit.__doc__
+    predict.__doc__ = sklearn_ForestClassifier.predict.__doc__
+    predict_proba.__doc__ = sklearn_ForestClassifier.predict_proba.__doc__
 
     if sklearn_check_version("1.0"):
 
@@ -1186,8 +1186,8 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
             X,
         )
 
-    fit.__doc__ = sklearnForestRegressor.fit.__doc__
-    predict.__doc__ = sklearnForestRegressor.predict.__doc__
+    fit.__doc__ = sklearn_ForestRegressor.fit.__doc__
+    predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
 
     if sklearn_check_version("1.0"):
 
