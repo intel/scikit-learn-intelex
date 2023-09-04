@@ -212,7 +212,7 @@ class BaseTree(ABC):
         self._cached_estimators_ = estimators
 
 
-class ForestClassifier(sklearnForestClassifier, TreeClassifierBase):
+class ForestClassifier(sklearnForestClassifier, BaseTree):
     # Surprisingly, even though scikit-learn warns against using
     # their ForestClassifier directly, it actually has a more stable
     # API than the user-facing objects (over time). If they change it
