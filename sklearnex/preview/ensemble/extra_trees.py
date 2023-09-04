@@ -253,6 +253,10 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
             self._onedal_classifier = onedal_RandomForestClassifier
         elif self._estimator.__class__ == ExtraTreeClassifier:
             self._onedal_classifier = onedal_ExtraTreesClassifier
+        else:
+            raise TypeError(
+                f"{estimator.__class__.__name__} is not a supported tree classifier"
+            )
 
     def fit(self, X, y, sample_weight=None):
         dispatch(
@@ -784,6 +788,10 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
             self._onedal_regressor = onedal_RandomForestRegressor
         elif self._estimator.__class__ == ExtraTreeRegressor:
             self._onedal_regressor = onedal_ExtraTreesRegressor
+        else:
+            raise TypeError(
+                f"{estimator.__class__.__name__} is not a supported tree regressor"
+            )
 
     def _estimators_(self):
         # _estimators_ should only be called if _onedal_model exists
