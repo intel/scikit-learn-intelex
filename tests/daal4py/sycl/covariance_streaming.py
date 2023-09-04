@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py low order moments example for streaming on shared memory systems
+# daal4py covariance example for streaming on shared memory systems
 
 import os
 
@@ -58,14 +58,13 @@ def to_numpy(data):
 
 
 def main(readcsv=None, method="defaultDense"):
-    # read data from file
-    infile = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
+    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "covcormoments_dense.csv")
 
     # Using of the classic way (computations on CPU)
-    # Configure a low order moments object for streaming
-    algo = d4p.low_order_moments(streaming=True, fptype="float")
+    # configure a covariance object
+    algo = d4p.covariance(streaming=True, fptype="float")
     # get the generator (defined in stream.py)...
-    rn = read_next(infile, 55, readcsv)
+    rn = read_next(infile, 112, readcsv)
     # ... and iterate through chunks/stream
     for chunk in rn:
         algo.compute(chunk)
@@ -75,36 +74,26 @@ def main(readcsv=None, method="defaultDense"):
     # It is possible to specify to make the computations on GPU
     if gpu_available:
         with sycl_context("gpu"):
-            # Configure a low order moments object for streaming
-            algo = d4p.low_order_moments(streaming=True, fptype="float")
+            # configure a covariance object
+            algo = d4p.covariance(streaming=True, fptype="float")
             # get the generator (defined in stream.py)...
-            rn = read_next(infile, 55, readcsv)
+            rn = read_next(infile, 112, readcsv)
             # ... and iterate through chunks/stream
             for chunk in rn:
                 sycl_chunk = sycl_buffer(to_numpy(chunk))
                 algo.compute(sycl_chunk)
             # finalize computation
             result_gpu = algo.finalize()
-        for name in [
-            "minimum",
-            "maximum",
-            "sum",
-            "sumSquares",
-            "sumSquaresCentered",
-            "mean",
-            "secondOrderRawMoment",
-            "variance",
-            "standardDeviation",
-            "variation",
-        ]:
-            assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
+        assert np.allclose(result_classic.covariance, result_gpu.covariance)
+        assert np.allclose(result_classic.mean, result_gpu.mean)
+        assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     # It is possible to specify to make the computations on CPU
     with sycl_context("cpu"):
-        # Configure a low order moments object for streaming
-        algo = d4p.low_order_moments(streaming=True, fptype="float")
+        # configure a covariance object
+        algo = d4p.covariance(streaming=True, fptype="float")
         # get the generator (defined in stream.py)...
-        rn = read_next(infile, 55, readcsv)
+        rn = read_next(infile, 112, readcsv)
         # ... and iterate through chunks/stream
         for chunk in rn:
             sycl_chunk = sycl_buffer(to_numpy(chunk))
@@ -112,36 +101,17 @@ def main(readcsv=None, method="defaultDense"):
         # finalize computation
         result_cpu = algo.finalize()
 
-    # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
-    # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    for name in [
-        "minimum",
-        "maximum",
-        "sum",
-        "sumSquares",
-        "sumSquaresCentered",
-        "mean",
-        "secondOrderRawMoment",
-        "variance",
-        "standardDeviation",
-        "variation",
-    ]:
-        assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
+    # covariance result objects provide correlation, covariance and mean
+
+    assert np.allclose(result_classic.covariance, result_cpu.covariance)
+    assert np.allclose(result_classic.mean, result_cpu.mean)
+    assert np.allclose(result_classic.correlation, result_cpu.correlation)
 
     return result_classic
 
 
 if __name__ == "__main__":
     res = main()
-    # print results
-    print("\nMinimum:\n", res.minimum)
-    print("\nMaximum:\n", res.maximum)
-    print("\nSum:\n", res.sum)
-    print("\nSum of squares:\n", res.sumSquares)
-    print("\nSum of squared difference from the means:\n", res.sumSquaresCentered)
-    print("\nMean:\n", res.mean)
-    print("\nSecond order raw moment:\n", res.secondOrderRawMoment)
-    print("\nVariance:\n", res.variance)
-    print("\nStandard deviation:\n", res.standardDeviation)
-    print("\nVariation:\n", res.variation)
+    print("Covariance matrix:\n", res.covariance)
+    print("Mean vector:\n", res.mean)
     print("All looks good!")

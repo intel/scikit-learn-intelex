@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py covariance example for shared memory systems
+# daal4py low order moments example for shared memory systems
 
 import os
 
@@ -45,11 +45,10 @@ except:
     gpu_available = False
 
 
-# Common code for both CPU and GPU computations
+# Commone code for both CPU and GPU computations
 def compute(data, method):
-    # configure a covariance object
-    algo = d4p.covariance(method=method, fptype="float")
-    return algo.compute(data)
+    alg = d4p.low_order_moments(method=method, fptype="float")
+    return alg.compute(data)
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -72,10 +71,9 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
-
-    # Load the data
-    data = readcsv(infile, range(10), t=np.float32)
+    # read data from file
+    file = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "covcormoments_dense.csv")
+    data = readcsv(file, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic = compute(data, method)
@@ -87,26 +85,71 @@ def main(readcsv=read_csv, method="defaultDense"):
         with sycl_context("gpu"):
             sycl_data = sycl_buffer(data)
             result_gpu = compute(sycl_data, "defaultDense")
-
-            assert np.allclose(result_classic.covariance, result_gpu.covariance)
-            assert np.allclose(result_classic.mean, result_gpu.mean)
-            assert np.allclose(result_classic.correlation, result_gpu.correlation)
+        for name in [
+            "minimum",
+            "maximum",
+            "sum",
+            "sumSquares",
+            "sumSquaresCentered",
+            "mean",
+            "secondOrderRawMoment",
+            "variance",
+            "standardDeviation",
+            "variation",
+        ]:
+            assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
 
     # It is possible to specify to make the computations on CPU
     with sycl_context("cpu"):
         sycl_data = sycl_buffer(data)
         result_cpu = compute(sycl_data, "defaultDense")
 
-    # covariance result objects provide correlation, covariance and mean
-    assert np.allclose(result_classic.covariance, result_cpu.covariance)
-    assert np.allclose(result_classic.mean, result_cpu.mean)
-    assert np.allclose(result_classic.correlation, result_cpu.correlation)
+    # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
+    # mean, secondOrderRawMoment, variance, standardDeviation, variation
+    assert all(
+        getattr(result_classic, name).shape == (1, data.shape[1])
+        for name in [
+            "minimum",
+            "maximum",
+            "sum",
+            "sumSquares",
+            "sumSquaresCentered",
+            "mean",
+            "secondOrderRawMoment",
+            "variance",
+            "standardDeviation",
+            "variation",
+        ]
+    )
+
+    for name in [
+        "minimum",
+        "maximum",
+        "sum",
+        "sumSquares",
+        "sumSquaresCentered",
+        "mean",
+        "secondOrderRawMoment",
+        "variance",
+        "standardDeviation",
+        "variation",
+    ]:
+        assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
 
     return result_classic
 
 
 if __name__ == "__main__":
     res = main()
-    print("Covariance matrix:\n", res.covariance)
-    print("Mean vector:\n", res.mean)
+    # print results
+    print("\nMinimum:\n", res.minimum)
+    print("\nMaximum:\n", res.maximum)
+    print("\nSum:\n", res.sum)
+    print("\nSum of squares:\n", res.sumSquares)
+    print("\nSum of squared difference from the means:\n", res.sumSquaresCentered)
+    print("\nMean:\n", res.mean)
+    print("\nSecond order raw moment:\n", res.secondOrderRawMoment)
+    print("\nVariance:\n", res.variance)
+    print("\nStandard deviation:\n", res.standardDeviation)
+    print("\nVariation:\n", res.variation)
     print("All looks good!")

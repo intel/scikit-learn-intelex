@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py DBSCAN example for shared memory systems
+# daal4py covariance example for shared memory systems
 
 import os
 
@@ -45,6 +45,13 @@ except:
     gpu_available = False
 
 
+# Common code for both CPU and GPU computations
+def compute(data, method):
+    # configure a covariance object
+    algo = d4p.covariance(method=method, fptype="float")
+    return algo.compute(data)
+
+
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
     try:
@@ -64,30 +71,14 @@ def to_numpy(data):
     return data
 
 
-# Common code for both CPU and GPU computations
-def compute(data, minObservations, epsilon):
-    # configure dbscan main object:
-    # we also request the indices and observations of cluster cores
-    algo = d4p.dbscan(
-        minObservations=minObservations,
-        fptype="float",
-        epsilon=epsilon,
-        resultsToCompute="computeCoreIndices|computeCoreObservations",
-        memorySavingMode=True,
-    )
-    # and compute
-    return algo.compute(data)
-
-
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = os.path.join("..", "data", "batch", "dbscan_dense.csv")
-    epsilon = 0.04
-    minObservations = 45
+    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "covcormoments_dense.csv")
 
     # Load the data
-    data = readcsv(infile, range(2), t=np.float32)
+    data = readcsv(infile, range(10), t=np.float32)
 
-    result_classic = compute(data, minObservations, epsilon)
+    # Using of the classic way (computations on CPU)
+    result_classic = compute(data, method)
 
     data = to_numpy(data)
 
@@ -95,29 +86,27 @@ def main(readcsv=read_csv, method="defaultDense"):
     if gpu_available:
         with sycl_context("gpu"):
             sycl_data = sycl_buffer(data)
-            result_gpu = compute(sycl_data, minObservations, epsilon)
-            assert np.allclose(result_classic.nClusters, result_gpu.nClusters)
-            assert np.allclose(result_classic.assignments, result_gpu.assignments)
-            assert np.allclose(result_classic.coreIndices, result_gpu.coreIndices)
-            assert np.allclose(
-                result_classic.coreObservations, result_gpu.coreObservations
-            )
+            result_gpu = compute(sycl_data, "defaultDense")
 
+            assert np.allclose(result_classic.covariance, result_gpu.covariance)
+            assert np.allclose(result_classic.mean, result_gpu.mean)
+            assert np.allclose(result_classic.correlation, result_gpu.correlation)
+
+    # It is possible to specify to make the computations on CPU
     with sycl_context("cpu"):
         sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, minObservations, epsilon)
-        assert np.allclose(result_classic.nClusters, result_cpu.nClusters)
-        assert np.allclose(result_classic.assignments, result_cpu.assignments)
-        assert np.allclose(result_classic.coreIndices, result_cpu.coreIndices)
-        assert np.allclose(result_classic.coreObservations, result_cpu.coreObservations)
+        result_cpu = compute(sycl_data, "defaultDense")
+
+    # covariance result objects provide correlation, covariance and mean
+    assert np.allclose(result_classic.covariance, result_cpu.covariance)
+    assert np.allclose(result_classic.mean, result_cpu.mean)
+    assert np.allclose(result_classic.correlation, result_cpu.correlation)
 
     return result_classic
 
 
 if __name__ == "__main__":
-    result = main()
-    print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
-    print("\nFirst 10 cluster core indices:\n", result.coreIndices[0:10])
-    print("\nFirst 10 cluster core observations:\n", result.coreObservations[0:10])
-    print("\nNumber of clusters:\n", result.nClusters)
+    res = main()
+    print("Covariance matrix:\n", res.covariance)
+    print("Mean vector:\n", res.mean)
     print("All looks good!")

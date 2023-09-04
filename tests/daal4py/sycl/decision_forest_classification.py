@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2021 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py Decision Forest Regression example of Hist method for shared memory systems
+# daal4py Decision Forest Classification example for shared memory systems
 
 import os
 
@@ -46,26 +46,31 @@ except Exception:
 
 
 # Commone code for both CPU and GPU computations
-def compute(train_data, train_labels, predict_data):
-    # Configure a training object
-    train_algo = d4p.decision_forest_regression_training(
-        method="hist",
-        maxBins=256,
-        minBinSize=1,
-        nTrees=100,
+def compute(train_data, train_labels, predict_data, method="defaultDense"):
+    # Configure a training object (5 classes)
+    train_algo = d4p.decision_forest_classification_training(
+        5,
         fptype="float",
-        varImportance="MDA_Raw",
+        nTrees=10,
+        minObservationsInLeafNode=8,
+        featuresPerNode=3,
+        engine=d4p.engines_mt19937(seed=777),
+        varImportance="MDI",
         bootstrap=True,
-        engine=d4p.engines_mt2203(seed=777),
-        resultsToCompute="computeOutOfBagError|computeOutOfBagErrorPerObservation",
+        resultsToCompute="computeOutOfBagError",
+        method=method,
     )
-
     # Training result provides (depending on parameters) model,
     # outOfBagError, outOfBagErrorPerObservation and/or variableImportance
     train_result = train_algo.compute(train_data, train_labels)
 
     # now predict using the model from the training above
-    predict_algo = d4p.decision_forest_regression_prediction(fptype="float")
+    predict_algo = d4p.decision_forest_classification_prediction(
+        nClasses=5,
+        fptype="float",
+        resultsToEvaluate="computeClassLabels|computeClassProbabilities",
+        votingMethod="unweighted",
+    )
 
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
@@ -91,11 +96,11 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv):
-    nFeatures = 13
+def main(readcsv=read_csv, method="defaultDense"):
+    nFeatures = 3
     # input data file
-    train_file = os.path.join("..", "data", "batch", "df_regression_train.csv")
-    predict_file = os.path.join("..", "data", "batch", "df_regression_test.csv")
+    train_file = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "df_classification_train.csv")
+    predict_file = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "df_classification_test.csv")
 
     # Read train data. Let's use 3 features per observation
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
@@ -105,9 +110,11 @@ def main(readcsv=read_csv):
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    train_result, predict_result = compute(train_data, train_labels, predict_data)
+    train_result, predict_result = compute(
+        train_data, train_labels, predict_data, "defaultDense"
+    )
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-    assert (np.square(predict_result.prediction - predict_labels).mean() < 19).any()
+    assert (np.mean(predict_result.prediction != predict_labels) < 0.03).any()
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
@@ -120,12 +127,10 @@ def main(readcsv=read_csv):
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
             train_result, predict_result = compute(
-                sycl_train_data, sycl_train_labels, sycl_predict_data
+                sycl_train_data, sycl_train_labels, sycl_predict_data, "hist"
             )
             assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-            assert (
-                np.square(predict_result.prediction - predict_labels).mean() < 18
-            ).any()
+            assert (np.mean(predict_result.prediction != predict_labels) < 0.03).any()
 
     return (train_result, predict_result, predict_labels)
 
@@ -137,6 +142,10 @@ if __name__ == "__main__":
     print(
         "\nDecision forest prediction results (first 10 rows):\n",
         predict_result.prediction[0:10],
+    )
+    print(
+        "\nDecision forest probabilities results (first 10 rows):\n",
+        predict_result.probabilities[0:10],
     )
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     print("All looks good!")

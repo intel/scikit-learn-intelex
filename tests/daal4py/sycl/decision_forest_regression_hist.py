@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2020 Intel Corporation
+# Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py Decision Forest Regression example for shared memory systems
+# daal4py Decision Forest Regression example of Hist method for shared memory systems
 
 import os
 
@@ -46,17 +46,20 @@ except Exception:
 
 
 # Commone code for both CPU and GPU computations
-def compute(train_data, train_labels, predict_data, method="defaultDense"):
+def compute(train_data, train_labels, predict_data):
     # Configure a training object
     train_algo = d4p.decision_forest_regression_training(
+        method="hist",
+        maxBins=256,
+        minBinSize=1,
         nTrees=100,
         fptype="float",
-        engine=d4p.engines_mt2203(seed=777),
         varImportance="MDA_Raw",
         bootstrap=True,
+        engine=d4p.engines_mt2203(seed=777),
         resultsToCompute="computeOutOfBagError|computeOutOfBagErrorPerObservation",
-        method=method,
     )
+
     # Training result provides (depending on parameters) model,
     # outOfBagError, outOfBagErrorPerObservation and/or variableImportance
     train_result = train_algo.compute(train_data, train_labels)
@@ -88,11 +91,11 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=read_csv):
     nFeatures = 13
     # input data file
-    train_file = os.path.join("..", "data", "batch", "df_regression_train.csv")
-    predict_file = os.path.join("..", "data", "batch", "df_regression_test.csv")
+    train_file = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "df_regression_train.csv")
+    predict_file = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "df_regression_test.csv")
 
     # Read train data. Let's use 3 features per observation
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
@@ -102,11 +105,9 @@ def main(readcsv=read_csv, method="defaultDense"):
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    train_result, predict_result = compute(
-        train_data, train_labels, predict_data, "defaultDense"
-    )
+    train_result, predict_result = compute(train_data, train_labels, predict_data)
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-    assert (np.square(predict_result.prediction - predict_labels).mean() < 18).any()
+    assert (np.square(predict_result.prediction - predict_labels).mean() < 19).any()
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
@@ -119,7 +120,7 @@ def main(readcsv=read_csv, method="defaultDense"):
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
             train_result, predict_result = compute(
-                sycl_train_data, sycl_train_labels, sycl_predict_data, "hist"
+                sycl_train_data, sycl_train_labels, sycl_predict_data
             )
             assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
             assert (

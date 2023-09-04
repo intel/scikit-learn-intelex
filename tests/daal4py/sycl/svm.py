@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2014 Intel Corporation
+# Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py BF KNN example for shared memory systems
+# daal4py SVM example for shared memory systems
 
 import os
 
@@ -45,6 +45,32 @@ except:
     gpu_available = False
 
 
+# Common code for both CPU and GPU computations
+def compute(train_indep_data, train_dep_data, test_indep_data, method="defaultDense"):
+    # Configure a SVM object to use linear kernel
+    kernel_function = d4p.kernel_function_linear(
+        fptype="float", method="defaultDense", k=1.0, b=0.0
+    )
+    train_algo = d4p.svm_training(
+        fptype="float",
+        method=method,
+        kernel=kernel_function,
+        C=1.0,
+        accuracyThreshold=1e-3,
+        tau=1e-8,
+        cacheSize=600000000,
+    )
+
+    train_result = train_algo.compute(train_indep_data, train_dep_data)
+
+    # Create an algorithm object and call compute
+    predict_algo = d4p.svm_prediction(fptype="float", kernel=kernel_function)
+    predict_result = predict_algo.compute(test_indep_data, train_result.model)
+    decision_result = predict_result.prediction
+    predict_labels = np.where(decision_result >= 0, 1, -1)
+    return predict_labels, decision_result
+
+
 # At this moment with sycl we are working only with numpy arrays
 def to_numpy(data):
     try:
@@ -64,72 +90,59 @@ def to_numpy(data):
     return data
 
 
-# Common code for both CPU and GPU computations
-def compute(train_data, train_labels, predict_data, nClasses):
-    # Create an algorithm object and call compute
-    train_algo = d4p.bf_knn_classification_training(nClasses=nClasses, fptype="float")
-    train_result = train_algo.compute(train_data, train_labels)
+def main(readcsv=read_csv):
+    # input data file
+    train_file = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "svm_two_class_train_dense.csv")
+    predict_file = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "svm_two_class_test_dense.csv")
 
-    # Create an algorithm object and call compute
-    predict_algo = d4p.bf_knn_classification_prediction(nClasses=nClasses, fptype="float")
-    predict_result = predict_algo.compute(predict_data, train_result.model)
-    return predict_result
-
-
-def main(readcsv=read_csv, method="defaultDense"):
-    # Input data set parameters
-    train_file = os.path.join("..", "data", "batch", "k_nearest_neighbors_train.csv")
-    predict_file = os.path.join("..", "data", "batch", "k_nearest_neighbors_test.csv")
-
-    # Read data. Let's use 5 features per observation
-    nFeatures = 5
-    nClasses = 5
+    nFeatures = 20
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
     train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1), t=np.float32)
     predict_data = readcsv(predict_file, range(nFeatures), t=np.float32)
     predict_labels = readcsv(predict_file, range(nFeatures, nFeatures + 1), t=np.float32)
 
-    predict_result_classic = compute(train_data, train_labels, predict_data, nClasses)
-
-    # We expect less than 170 mispredicted values
-    assert np.count_nonzero(predict_labels != predict_result_classic.prediction) < 170
+    predict_result_classic, decision_function_classic = compute(
+        train_data, train_labels, predict_data, "boser"
+    )
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
     predict_data = to_numpy(predict_data)
 
+    # It is possible to specify to make the computations on GPU
     if gpu_available:
         with sycl_context("gpu"):
             sycl_train_data = sycl_buffer(train_data)
             sycl_train_labels = sycl_buffer(train_labels)
             sycl_predict_data = sycl_buffer(predict_data)
 
-            predict_result_gpu = compute(
-                sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses
+            predict_result_gpu, decision_function_gpu = compute(
+                sycl_train_data, sycl_train_labels, sycl_predict_data, "thunder"
             )
-            assert np.allclose(
-                predict_result_gpu.prediction, predict_result_classic.prediction
-            )
+            # assert np.allclose(predict_result_gpu, predict_result_classic)
 
     with sycl_context("cpu"):
         sycl_train_data = sycl_buffer(train_data)
-        sycl_train_labels = sycl_buffer(train_labels)
         sycl_predict_data = sycl_buffer(predict_data)
 
-        predict_result_cpu = compute(
-            sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses
+        predict_result_cpu, decision_function_cpu = compute(
+            sycl_train_data, train_labels, sycl_predict_data, "thunder"
         )
-        assert np.allclose(
-            predict_result_cpu.prediction, predict_result_classic.prediction
-        )
+        assert np.allclose(predict_result_cpu, predict_result_classic)
 
-    return (predict_result_classic, predict_labels)
+    return predict_labels, predict_result_classic, decision_function_classic
 
 
 if __name__ == "__main__":
-    (predict_result, predict_labels) = main()
-    print("BF based KNN classification results:")
-    print("Ground truth(observations #30-34):\n", predict_labels[30:35])
+    predict_labels, predict_result, decision_function = main()
+    np.set_printoptions(precision=0)
     print(
-        "Classification results(observations #30-34):\n", predict_result.prediction[30:35]
+        "\nSVM classification decision function (first 10 observations):\n",
+        decision_function[0:10],
     )
+    print(
+        "\nSVM classification predict result (first 10 observations):\n",
+        predict_result[0:10],
+    )
+    print("\nGround truth (first 10 observations):\n", predict_labels[0:10])
+    print("All looks good!")
