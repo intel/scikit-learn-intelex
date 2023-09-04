@@ -248,7 +248,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
         )
 
         # The splitter is recognized here for proper dispatching.
-        self.n_features_in_ = None
         self._estimator = estimator  # TODO: Verify if this is done in older verions
         if self._estimator.__class__ == DecisionTreeClassifier:
             self._onedal_classifier = onedal_RandomForestClassifier
@@ -780,7 +779,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
         )
 
         # The splitter is recognized here for proper dispatching.
-        self.n_features_in_ = None
         self._estimator = estimator  # TODO: Verify if this is done in older verions
         if self._estimator.__class__ == DecisionTreeRegressor:
             self._onedal_regressor = onedal_RandomForestRegressor
