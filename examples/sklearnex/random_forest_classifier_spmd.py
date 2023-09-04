@@ -36,7 +36,8 @@ def generate_X_y(par, seed):
     return data, resp
 
 
-params_train = {"ns": 10000, "nf": 8}
+# TODO: Investigate out of resources error with train ns > 1000
+params_train = {"ns": 100, "nf": 8}
 params_test = {"ns": 100, "nf": 8}
 
 comm = MPI.COMM_WORLD
