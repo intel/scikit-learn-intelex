@@ -68,11 +68,15 @@ class BaseRandomForest(ABC):
 
     def _save_attributes(self):
         self._onedal_model = self._onedal_estimator._onedal_model
-        # TODO:
-        # update for regression
+
         if self.oob_score:
             self.oob_score_ = self._onedal_estimator.oob_score_
-            self.oob_prediction_ = self._onedal_estimator.oob_prediction_
+            if hasattr(self._onedal_estimator, "oob_prediction_"):
+                self.oob_prediction_ = self._onedal_estimator.oob_prediction_
+            if hasattr(self._onedal_estimator, "oob_decision_function_"):
+                self.oob_decision_function_ = (
+                    self._onedal_estimator.oob_decision_function_
+                )
         return self
 
     def _onedal_classifier(self, **onedal_params):
