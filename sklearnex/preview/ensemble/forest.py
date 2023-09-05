@@ -48,6 +48,7 @@ from onedal.utils import _num_features, _num_samples
 
 from ..._config import get_config
 from ..._device_offload import dispatch, wrap_output_data
+from ..._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
@@ -426,7 +427,7 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         )
         return self
 
-    def _onedal_ready(self, X, y, sample_weight):
+    def _onedal_ready(self, patching_status, X, y, sample_weight):
         if sp.issparse(y):
             raise ValueError("sparse multilabel-indicator for y is not supported.")
         if not self.bootstrap and self.max_samples is not None:
@@ -442,12 +443,41 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         else:
             self._check_parameters()
 
-        correct_sparsity = not sp.issparse(X)
-        correct_ccp_alpha = self.ccp_alpha == 0.0
-        correct_criterion = self.criterion == "gini"
-        correct_warm_start = self.warm_start is False
-        correct_monotonic_cst = getattr(self, "monotonic_cst", None) is None
-        if correct_sparsity and sklearn_check_version("1.4"):
+        patching_status.and_conditions(
+            [
+                (
+                    self.oob_score
+                    and daal_check_version((2021, "P", 500))
+                    or not self.oob_score,
+                    "OOB score is only supported starting from 2021.5 version of oneDAL.",
+                ),
+                (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                (
+                    self.ccp_alpha == 0.0,
+                    f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
+                ),
+                (
+                    self.criterion == "gini",
+                    f"'{self.criterion}' criterion is not supported. "
+                    "Only 'gini' criterion is supported.",
+                ),
+                (self.warm_start is False, "Warm start is not supported."),
+                (
+                    self.n_estimators <= 6024,
+                    "More than 6024 estimators is not supported.",
+                ),
+                (
+                    getattr(self, "monotonic_cst", None) is None,
+                    "Monitonic constrains are not supported.",
+                ),
+                (
+                    self.class_weight != "balanced_subsample",
+                    f"'{self.class_weight}' `class_weight` is not supported. ",
+                ),
+            ]
+        )
+
+        if sklearn_check_version("1.4"):
             try:
                 _assert_all_finite(X)
                 correct_finiteness = True
@@ -456,24 +486,16 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         else:
             correct_finiteness = True
 
-        if daal_check_version((2021, "P", 500)):
-            correct_oob_score = not self.oob_score
-        else:
-            correct_oob_score = self.oob_score
-
-        ready = all(
+        patching_status.and_conditions(
             [
-                correct_oob_score,
-                correct_sparsity,
-                correct_ccp_alpha,
-                correct_criterion,
-                correct_warm_start,
-                correct_monotonic_cst,
-                correct_finiteness,
-                self.class_weight != "balanced_subsample",
+                (
+                    correct_finiteness,
+                    f"Non-correct X finiteness for sklearn v1.4.",
+                ),
             ]
         )
-        if ready:
+
+        if patching_status.get_status():
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             X = check_array(X, dtype=[np.float32, np.float64])
@@ -491,11 +513,21 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
 
             y = make2d(y)
             self.n_outputs_ = y.shape[1]
-            ready = ready and self.n_outputs_ == 1
             # TODO: Fix to support integers as input
-            ready = ready and (y.dtype in [np.float32, np.float64, np.int32, np.int64])
+            patching_status.and_conditions(
+                [
+                    (
+                        self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                    ),
+                    (
+                        y.dtype in [np.float32, np.float64, np.int32, np.int64],
+                        f"Datatype ({y.dtype}) for y is not supported.",
+                    ),
+                ]
+            )
 
-        return ready, X, y, sample_weight
+        return patching_status, X, y, sample_weight
 
     @wrap_output_data
     def predict(self, X):
@@ -647,10 +679,14 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
         self._cached_estimators_ = estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
-        # TODO:
-        # add patching condition return.
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f"sklearn.ensemble.{class_name}.{method_name}"
+        )
         if method_name == "fit":
-            ready, X, y, sample_weight = self._onedal_ready(*data)
+            patching_status, X, y, sample_weight = self._onedal_ready(
+                patching_status, *data
+            )
             if self.splitter_mode == "random":
                 warnings.warn(
                     "'random' splitter mode supports GPU devices only "
@@ -659,45 +695,76 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     RuntimeWarning,
                 )
                 self.splitter_mode = "best"
-            if not ready:
-                return False
-            elif sp.issparse(X):
-                return False
-            elif sp.issparse(y):
-                return False
-            elif sp.issparse(sample_weight):
-                return False
-            elif not self.ccp_alpha == 0.0:
-                return False
-            elif self.warm_start:
-                return False
-            elif self.oob_score and not daal_check_version((2023, "P", 101)):
-                return False
-            elif not self.n_outputs_ == 1:
-                return False
-            else:
-                return True
-        if method_name in ["predict", "predict_proba"]:
+
+            patching_status.and_conditions(
+                [
+                    (
+                        self.oob_score
+                        and daal_check_version((2023, "P", 101))
+                        or not self.oob_score,
+                        "OOB score is only supported starting from 2023.1.1 version of oneDAL.",
+                    ),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (not sp.issparse(y), "y is sparse. Sparse input is not supported."),
+                    (
+                        not sp.issparse(sample_weight),
+                        "`sample_weight` is sparse. Sparse input is not supported.",
+                    ),
+                    (
+                        self.ccp_alpha == 0.0,
+                        f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
+                    ),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        self.n_estimators <= 6024,
+                        "More than 6024 estimators is not supported.",
+                    ),
+                    (
+                        self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                    ),
+                ]
+            )
+
+        elif method_name in ["predict", "predict_proba"]:
             X = data[0]
-            if not hasattr(self, "_onedal_model"):
-                return False
-            elif sp.issparse(X):
-                return False
-            elif not (hasattr(self, "n_outputs_") and self.n_outputs_ == 1):
-                return False
-            elif not daal_check_version((2021, "P", 400)):
-                return False
-            elif self.warm_start:
-                return False
-            else:
-                return True
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+
+            patching_status.and_conditions(
+                [
+                    (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        daal_check_version((2021, "P", 400)),
+                        "RandomForestClassifier inference only supported starting from oneDAL version 2021.4",
+                    ),
+                ]
+            )
+            if hasattr(self, "n_outputs_"):
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.n_outputs_ == 1,
+                            f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        ),
+                    ]
+                )
+
+        else:
+            raise RuntimeError(
+                f"Unknown method {method_name} in {self.__class__.__name__}"
+            )
+        return patching_status
 
     def _onedal_gpu_supported(self, method_name, *data):
-        # TODO:
-        # add patching condition return.
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f"sklearn.ensemble.{class_name}.{method_name}"
+        )
         if method_name == "fit":
-            ready, X, y, sample_weight = self._onedal_ready(*data)
+            patching_status, X, y, sample_weight = self._onedal_ready(
+                patching_status, *data
+            )
             if self.splitter_mode == "random" and not daal_check_version(
                 (2023, "P", 101)
             ):
@@ -707,41 +774,61 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     RuntimeWarning,
                 )
                 self.splitter_mode = "best"
-            if not ready:
-                return False
-            elif sp.issparse(X):
-                return False
-            elif sp.issparse(y):
-                return False
-            elif sp.issparse(sample_weight):
-                return False
-            elif sample_weight is not None:  # `sample_weight` is not supported.
-                return False
-            elif not self.ccp_alpha == 0.0:
-                return False
-            elif self.warm_start:
-                return False
-            elif self.oob_score:
-                return False
-            elif not self.n_outputs_ == 1:
-                return False
-            else:
-                return True
-        if method_name in ["predict", "predict_proba"]:
+
+            patching_status.and_conditions(
+                [
+                    (
+                        not self.oob_score,
+                        "OOB score is not supported.",
+                    ),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (not sp.issparse(y), "y is sparse. Sparse input is not supported."),
+                    (not sample_weight, "`sample_weight` is not supported."),
+                    (
+                        self.ccp_alpha == 0.0,
+                        f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
+                    ),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        self.n_estimators <= 6024,
+                        "More than 6024 estimators is not supported.",
+                    ),
+                    (
+                        self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                    ),
+                ]
+            )
+        elif method_name in ["predict", "predict_proba"]:
             X = data[0]
-            if not hasattr(self, "_onedal_model"):
-                return False
-            elif sp.issparse(X):
-                return False
-            elif not (hasattr(self, "n_outputs_") and self.n_outputs_ == 1):
-                return False
-            elif not daal_check_version((2021, "P", 400)):
-                return False
-            elif self.warm_start:
-                return False
-            else:
-                return True
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+
+            patching_status.and_conditions(
+                [
+                    (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        daal_check_version((2021, "P", 400)),
+                        "RandomForestClassifier inference only supported starting from oneDAL version 2021.4",
+                    ),
+                ]
+            )
+            if hasattr(self, "n_outputs_"):
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.n_outputs_ == 1,
+                            f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        ),
+                    ]
+                )
+
+        else:
+            raise RuntimeError(
+                f"Unknown method {method_name} in {self.__class__.__name__}"
+            )
+
+        return patching_status
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sklearn_check_version("1.2"):
@@ -1085,7 +1172,7 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             estimators_.append(est_i)
         self._cached_estimators_ = estimators_
 
-    def _onedal_ready(self, X, y, sample_weight):
+    def _onedal_ready(self, patching_status, X, y, sample_weight):
         # TODO:
         # move some common checks for both devices here.
 
@@ -1098,20 +1185,41 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
         self.n_outputs_ = y.shape[1]
-        ready = self.n_outputs_ == 1
-        if not sp.issparse(X) and sklearn_check_version("1.4"):
+        patching_status.and_conditions(
+            [
+                (
+                    self.n_outputs_ == 1,
+                    f"Number of outputs ({self.n_outputs_}) is not 1.",
+                ),
+                (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+            ]
+        )
+
+        if sklearn_check_version("1.4"):
             try:
                 _assert_all_finite(X)
-                ready &= True
+                correct_finiteness = True
             except ValueError:
-                ready &= False
-        return ready, X, y, sample_weight
+                correct_finiteness = False
+            patching_status.and_conditions(
+                [
+                    (
+                        correct_finiteness,
+                        f"Non-correct X finiteness for sklearn v1.4.",
+                    ),
+                ]
+            )
+        return patching_status, X, y, sample_weight
 
     def _onedal_cpu_supported(self, method_name, *data):
-        # TODO:
-        # add patching condition return.
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f"sklearn.ensemble.{class_name}.{method_name}"
+        )
         if method_name == "fit":
-            ready, X, y, sample_weight = self._onedal_ready(*data)
+            patching_status, X, y, sample_weight = self._onedal_ready(
+                patching_status, *data
+            )
             if self.splitter_mode == "random":
                 warnings.warn(
                     "'random' splitter mode supports GPU devices only "
@@ -1120,54 +1228,83 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                     RuntimeWarning,
                 )
                 self.splitter_mode = "best"
-            if not ready:
-                return False
-            elif not (
-                self.oob_score
-                and daal_check_version((2021, "P", 500))
-                or not self.oob_score
-            ):
-                return False
-            elif self.criterion not in ["mse", "squared_error"]:
-                return False
-            elif sp.issparse(X):
-                return False
-            elif sp.issparse(y):
-                return False
-            elif sp.issparse(sample_weight):
-                return False
-            elif not self.ccp_alpha == 0.0:
-                return False
-            elif self.warm_start:
-                return False
-            elif self.oob_score and not daal_check_version((2023, "P", 101)):
-                return False
-            elif not self.n_outputs_ == 1:
-                return False
-            elif sklearn_check_version("1.4") and self.monotonic_cst is not None:
-                return False
-            else:
-                return True
-        if method_name == "predict":
-            if not hasattr(self, "_onedal_model"):
-                return False
-            elif sp.issparse(data[0]):
-                return False
-            elif not (hasattr(self, "n_outputs_") and self.n_outputs_ == 1):
-                return False
-            elif not daal_check_version((2021, "P", 400)):
-                return False
-            elif self.warm_start:
-                return False
-            else:
-                return True
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+
+            patching_status.and_conditions(
+                [
+                    (
+                        self.oob_score
+                        and daal_check_version((2023, "P", 101))
+                        or not self.oob_score,
+                        "OOB score is only supported starting from 2023.1.1 version of oneDAL.",
+                    ),
+                    (
+                        self.criterion in ["mse", "squared_error"],
+                        f"'{self.criterion}' criterion is not supported. "
+                        "Only 'mse' and 'squared_error' criterions are supported.",
+                    ),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (not sp.issparse(y), "y is sparse. Sparse input is not supported."),
+                    (
+                        not sp.issparse(sample_weight),
+                        "`sample_weight` is sparse. Sparse input is not supported.",
+                    ),
+                    (
+                        self.ccp_alpha == 0.0,
+                        f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
+                    ),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        self.n_estimators <= 6024,
+                        "More than 6024 estimators is not supported.",
+                    ),
+                    (
+                        self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                    ),
+                    (
+                        getattr(self, "monotonic_cst", None) is None,
+                        "Monotonic constrains are not supported.",
+                    ),
+                ]
+            )
+        elif method_name == "predict":
+            X = data[0]
+
+            patching_status.and_conditions(
+                [
+                    (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        daal_check_version((2021, "P", 400)),
+                        "RandomForestRegressor inference only supported starting from oneDAL version 2021.4",
+                    ),
+                ]
+            )
+            if hasattr(self, "n_outputs_"):
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.n_outputs_ == 1,
+                            f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        ),
+                    ]
+                )
+        else:
+            raise RuntimeError(
+                f"Unknown method {method_name} in {self.__class__.__name__}"
+            )
+        return patching_status
 
     def _onedal_gpu_supported(self, method_name, *data):
-        # TODO:
-        # add patching condition return.
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f"sklearn.ensemble.{class_name}.{method_name}"
+        )
         if method_name == "fit":
-            ready, X, y, sample_weight = self._onedal_ready(*data)
+            patching_status, X, y, sample_weight = self._onedal_ready(
+                patching_status, *data
+            )
             if self.splitter_mode == "random" and not daal_check_version(
                 (2023, "P", 101)
             ):
@@ -1177,47 +1314,70 @@ class RandomForestRegressor(sklearn_RandomForestRegressor, BaseRandomForest):
                     RuntimeWarning,
                 )
                 self.splitter_mode = "best"
-            if not ready:
-                return False
-            elif not (
-                self.oob_score
-                and daal_check_version((2021, "P", 500))
-                or not self.oob_score
-            ):
-                return False
-            elif self.criterion not in ["mse", "squared_error"]:
-                return False
-            elif sp.issparse(X):
-                return False
-            elif sp.issparse(y):
-                return False
-            elif sample_weight is not None:  # `sample_weight` is not supported.
-                return False
-            elif not self.ccp_alpha == 0.0:
-                return False
-            elif self.warm_start:
-                return False
-            elif self.oob_score:
-                return False
-            elif sklearn_check_version("1.4") and self.monotonic_cst is not None:
-                return False
-            else:
-                return True
-        if method_name == "predict":
+
+            patching_status.and_conditions(
+                [
+                    (
+                        self.oob_score,
+                        "OOB score is not supported.",
+                    ),
+                    (
+                        self.criterion in ["mse", "squared_error"],
+                        f"'{self.criterion}' criterion is not supported. "
+                        "Only 'mse' and 'squared_error' criterions are supported.",
+                    ),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (not sp.issparse(y), "y is sparse. Sparse input is not supported."),
+                    (
+                        not sp.issparse(sample_weight),
+                        "`sample_weight` is sparse. Sparse input is not supported.",
+                    ),
+                    (
+                        self.ccp_alpha == 0.0,
+                        f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
+                    ),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        self.n_estimators <= 6024,
+                        "More than 6024 estimators is not supported.",
+                    ),
+                    (
+                        self.n_outputs_ == 1,
+                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                    ),
+                    (
+                        getattr(self, "monotonic_cst", None) is None,
+                        "Monotonic constrains are not supported.",
+                    ),
+                ]
+            )
+        elif method_name == "predict":
             X = data[0]
-            if not hasattr(self, "_onedal_model"):
-                return False
-            elif sp.issparse(X):
-                return False
-            elif not (hasattr(self, "n_outputs_") and self.n_outputs_ == 1):
-                return False
-            elif not daal_check_version((2021, "P", 400)):
-                return False
-            elif self.warm_start:
-                return False
-            else:
-                return True
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+            patching_status.and_conditions(
+                [
+                    (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                    (self.warm_start is False, "Warm start is not supported."),
+                    (
+                        daal_check_version((2021, "P", 400)),
+                        "RandomForestRegressor inference only supported starting from oneDAL version 2021.4",
+                    ),
+                ]
+            )
+            if hasattr(self, "n_outputs_"):
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.n_outputs_ == 1,
+                            f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        ),
+                    ]
+                )
+        else:
+            raise RuntimeError(
+                f"Unknown method {method_name} in {self.__class__.__name__}"
+            )
+        return patching_status
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sp.issparse(y):
