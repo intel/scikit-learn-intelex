@@ -141,7 +141,7 @@ if d4p.__has_dist__:
         ("covariance_spmd", "covariance.csv", "covariance"),
         (
             "low_order_moms_spmd",
-            "low_order_moms_dense_batch.csv",
+            "low_order_moms_dense.csv",
             lambda r: np.vstack(
                 (
                     r.minimum,
