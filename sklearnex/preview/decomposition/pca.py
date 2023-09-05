@@ -28,6 +28,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array
 
 from ..._device_offload import dispatch
+from ..._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -192,19 +193,39 @@ class PCA(sklearn_PCA):
         else:
             raise ValueError("Unrecognized svd_solver='{0}'".format(self._fit_svd_solver))
 
-    def _onedal_gpu_supported(self, method_name, *data):
+    def _onedal_supported(self, method_name, *data):
+        class_name = self.__class__.__name__
         if method_name == "fit":
-            return self._fit_svd_solver == "full"
+            patching_status = PatchingConditionsChain(
+                f"sklearn.decomposition.{class_name}.{method_name}"
+            )
+            patching_status.and_conditions(
+                [
+                    (
+                        self._fit_svd_solver == "full",
+                        f"'{self._fit_svd_solver}' SVD solver is not supported. "
+                        "Only 'full' solver is supported.",
+                    ),
+                ]
+            )
+            return patching_status
         elif method_name == "transform":
-            return hasattr(self, "_onedal_estimator")
+            patching_status = PatchingConditionsChain(
+                f"sklearn.decomposition.{class_name}.{method_name}"
+            )
+            patching_status.and_conditions(
+                [
+                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained"),
+                ]
+            )
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == "fit":
-            return self._fit_svd_solver == "full"
-        elif method_name == "transform":
-            return hasattr(self, "_onedal_estimator")
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+        return self._onedal_supported(method_name, *data)
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        return self._onedal_supported(method_name, *data)
 
     def _onedal_fit(self, X, y=None, queue=None):
         if self.n_components == "mle" or self.n_components is None:
