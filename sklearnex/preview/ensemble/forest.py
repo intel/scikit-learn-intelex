@@ -477,55 +477,55 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
             ]
         )
 
-        if sklearn_check_version("1.4"):
-            try:
-                _assert_all_finite(X)
-                correct_finiteness = True
-            except ValueError:
-                correct_finiteness = False
-        else:
-            correct_finiteness = True
-
-        patching_status.and_conditions(
-            [
-                (
-                    correct_finiteness,
-                    f"Non-correct X finiteness for sklearn v1.4.",
-                ),
-            ]
-        )
-
         if patching_status.get_status():
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            X = check_array(X, dtype=[np.float32, np.float64])
-            y = np.asarray(y)
-            y = np.atleast_1d(y)
-            if y.ndim == 2 and y.shape[1] == 1:
-                warnings.warn(
-                    "A column-vector y was passed when a 1d array was"
-                    " expected. Please change the shape of y to "
-                    "(n_samples,), for example using ravel().",
-                    DataConversionWarning,
-                    stacklevel=2,
-                )
-            check_consistent_length(X, y)
+            if sklearn_check_version("1.4"):
+                try:
+                    _assert_all_finite(X)
+                    correct_finiteness = True
+                except ValueError:
+                    correct_finiteness = False
+            else:
+                correct_finiteness = True
 
-            y = make2d(y)
-            self.n_outputs_ = y.shape[1]
-            # TODO: Fix to support integers as input
             patching_status.and_conditions(
                 [
                     (
-                        self.n_outputs_ == 1,
-                        f"Number of outputs ({self.n_outputs_}) is not 1.",
-                    ),
-                    (
-                        y.dtype in [np.float32, np.float64, np.int32, np.int64],
-                        f"Datatype ({y.dtype}) for y is not supported.",
+                        correct_finiteness,
+                        f"Non-correct X finiteness for sklearn v1.4.",
                     ),
                 ]
             )
+
+            if patching_status.get_status():
+                if sklearn_check_version("1.0"):
+                    self._check_feature_names(X, reset=True)
+                X = check_array(X, dtype=[np.float32, np.float64])
+                y = np.asarray(y)
+                y = np.atleast_1d(y)
+                if y.ndim == 2 and y.shape[1] == 1:
+                    warnings.warn(
+                        "A column-vector y was passed when a 1d array was"
+                        " expected. Please change the shape of y to "
+                        "(n_samples,), for example using ravel().",
+                        DataConversionWarning,
+                        stacklevel=2,
+                    )
+                check_consistent_length(X, y)
+                y = make2d(y)
+                self.n_outputs_ = y.shape[1]
+                # TODO: Fix to support integers as input
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.n_outputs_ == 1,
+                            f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        ),
+                        (
+                            y.dtype in [np.float32, np.float64, np.int32, np.int64],
+                            f"Datatype ({y.dtype}) for y is not supported.",
+                        ),
+                    ]
+                )
 
         return patching_status, X, y, sample_weight
 
@@ -695,36 +695,42 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                     RuntimeWarning,
                 )
                 self.splitter_mode = "best"
-
-            patching_status.and_conditions(
-                [
-                    (
-                        self.oob_score
-                        and daal_check_version((2023, "P", 101))
-                        or not self.oob_score,
-                        "OOB score is only supported starting from 2023.1.1 version of oneDAL.",
-                    ),
-                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-                    (not sp.issparse(y), "y is sparse. Sparse input is not supported."),
-                    (
-                        not sp.issparse(sample_weight),
-                        "`sample_weight` is sparse. Sparse input is not supported.",
-                    ),
-                    (
-                        self.ccp_alpha == 0.0,
-                        f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
-                    ),
-                    (self.warm_start is False, "Warm start is not supported."),
-                    (
-                        self.n_estimators <= 6024,
-                        "More than 6024 estimators is not supported.",
-                    ),
-                    (
-                        self.n_outputs_ == 1,
-                        f"Number of outputs ({self.n_outputs_}) is not 1.",
-                    ),
-                ]
-            )
+            if patching_status.get_status():
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.oob_score
+                            and daal_check_version((2023, "P", 101))
+                            or not self.oob_score,
+                            "OOB score is only supported starting from 2023.1.1 version of oneDAL.",
+                        ),
+                        (
+                            not sp.issparse(X),
+                            "X is sparse. Sparse input is not supported.",
+                        ),
+                        (
+                            not sp.issparse(y),
+                            "y is sparse. Sparse input is not supported.",
+                        ),
+                        (
+                            not sp.issparse(sample_weight),
+                            "`sample_weight` is sparse. Sparse input is not supported.",
+                        ),
+                        (
+                            self.ccp_alpha == 0.0,
+                            f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
+                        ),
+                        (self.warm_start is False, "Warm start is not supported."),
+                        (
+                            self.n_estimators <= 6024,
+                            "More than 6024 estimators is not supported.",
+                        ),
+                        (
+                            self.n_outputs_ == 1,
+                            f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        ),
+                    ]
+                )
 
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
@@ -775,30 +781,37 @@ class RandomForestClassifier(sklearn_RandomForestClassifier, BaseRandomForest):
                 )
                 self.splitter_mode = "best"
 
-            patching_status.and_conditions(
-                [
-                    (
-                        not self.oob_score,
-                        "OOB score is not supported.",
-                    ),
-                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-                    (not sp.issparse(y), "y is sparse. Sparse input is not supported."),
-                    (not sample_weight, "`sample_weight` is not supported."),
-                    (
-                        self.ccp_alpha == 0.0,
-                        f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
-                    ),
-                    (self.warm_start is False, "Warm start is not supported."),
-                    (
-                        self.n_estimators <= 6024,
-                        "More than 6024 estimators is not supported.",
-                    ),
-                    (
-                        self.n_outputs_ == 1,
-                        f"Number of outputs ({self.n_outputs_}) is not 1.",
-                    ),
-                ]
-            )
+            if patching_status.get_status():
+                patching_status.and_conditions(
+                    [
+                        (
+                            not self.oob_score,
+                            "OOB score is not supported.",
+                        ),
+                        (
+                            not sp.issparse(X),
+                            "X is sparse. Sparse input is not supported.",
+                        ),
+                        (
+                            not sp.issparse(y),
+                            "y is sparse. Sparse input is not supported.",
+                        ),
+                        (not sample_weight, "`sample_weight` is not supported."),
+                        (
+                            self.ccp_alpha == 0.0,
+                            f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
+                        ),
+                        (self.warm_start is False, "Warm start is not supported."),
+                        (
+                            self.n_estimators <= 6024,
+                            "More than 6024 estimators is not supported.",
+                        ),
+                        (
+                            self.n_outputs_ == 1,
+                            f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        ),
+                    ]
+                )
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
 
