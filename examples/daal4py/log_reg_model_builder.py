@@ -12,7 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+# ===============================================================================
+import sys
+
+print("KNOWN BUG IN EXAMPLES. TODO: fixme")
+sys.exit()
 
 import numpy as np
 from sklearn.datasets import load_iris

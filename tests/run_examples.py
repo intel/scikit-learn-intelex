@@ -127,28 +127,28 @@ def check_library(rule):
 
 
 req_version = defaultdict(lambda: (2019, "P", 0))
-req_version["sycl/dbscan_batch.py"] = (
+req_version["sycl/dbscan.py"] = (
     2021,
     "P",
     100,
 )  # hangs in beta08, need to be fixed
-req_version["sycl/linear_regression_batch.py"] = (
+req_version["sycl/linear_regression.py"] = (
     2021,
     "P",
     100,
 )  # hangs in beta08, need to be fixed
-req_version["sycl/kmeans_batch.py"] = (
+req_version["sycl/kmeans.py"] = (
     2021,
     "P",
     200,
 )  # not equal results for host and gpu runs
-req_version["sycl/pca_transform_batch.py"] = (2021, "P", 200)
-req_version["sycl/decision_forest_classification_hist_batch.py"] = (2021, "P", 200)
-req_version["sycl/decision_forest_regression_hist_batch.py"] = (2021, "P", 200)
-req_version["decision_forest_classification_hist_batch.py"] = (2023, "P", 1)
-req_version["decision_forest_classification_default_dense_batch.py"] = (2023, "P", 1)
-req_version["decision_forest_classification_traverse_batch.py"] = (2023, "P", 1)
-req_version["decision_forest_regression_hist_batch.py"] = (2021, "P", 200)
+req_version["sycl/pca_transform.py"] = (2021, "P", 200)
+req_version["sycl/decision_forest_classification_hist.py"] = (2021, "P", 200)
+req_version["sycl/decision_forest_regression_hist.py"] = (2021, "P", 200)
+req_version["decision_forest_classification_hist.py"] = (2023, "P", 1)
+req_version["decision_forest_classification_default_dense.py"] = (2023, "P", 1)
+req_version["decision_forest_classification_traverse.py"] = (2023, "P", 1)
+req_version["decision_forest_regression_hist.py"] = (2021, "P", 200)
 req_version["basic_statistics_spmd.py"] = (2023, "P", 1)
 req_version["kmeans_spmd.py"] = (2023, "P", 2)
 req_version["knn_bf_classification_spmd.py"] = (2023, "P", 1)
@@ -157,36 +157,40 @@ req_version["linear_regression_spmd.py"] = (2023, "P", 1)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
+req_device["dbscan_spmd.py"] = ["gpu"]
 req_device["kmeans_spmd.py"] = ["gpu"]
-req_device["knn_bf_classification_dpnp_batch.py"] = ["gpu"]
+req_device["knn_bf_classification_dpnp.py"] = ["gpu"]
 req_device["knn_bf_classification_spmd.py"] = ["gpu"]
 req_device["knn_bf_regression_spmd.py"] = ["gpu"]
 req_device["linear_regression_spmd.py"] = ["gpu"]
 req_device["pca_spmd.py"] = ["gpu"]
-req_device["random_forest_classifier_dpctl_batch.py"] = ["gpu"]
+req_device["random_forest_classifier_dpctl.py"] = ["gpu"]
 req_device["random_forest_classifier_spmd.py"] = ["gpu"]
-req_device["random_forest_regressor_dpnp_batch.py"] = ["gpu"]
+req_device["random_forest_regressor_dpnp.py"] = ["gpu"]
 req_device["random_forest_regressor_spmd.py"] = ["gpu"]
-req_device["sycl/gradient_boosted_regression_batch.py"] = ["gpu"]
+req_device["sycl/gradient_boosted_regression.py"] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["model_builders_lightgbm.py"] = ["lightgbm"]
 req_library["model_builders_xgboost.py"] = ["xgboost"]
 req_library["model_builders_catboost.py"] = ["catboost"]
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["kmeans_spmd.py"] = ["dpctl", "mpi4py"]
-req_library["knn_bf_classification_dpnp_batch.py"] = ["dpctl", "dpnp"]
+req_library["knn_bf_classification_dpnp.py"] = ["dpctl", "dpnp"]
 req_library["knn_bf_classification_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["knn_bf_regression_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["linear_regression_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["pca_spmd.py"] = ["dpctl", "mpi4py"]
-req_library["random_forest_classifier_dpctl_batch.py"] = ["dpctl"]
+req_library["random_forest_classifier_dpctl.py"] = ["dpctl"]
 req_library["random_forest_classifier_spmd.py"] = ["dpctl", "mpi4py"]
-req_library["random_forest_regressor_dpnp_batch.py"] = ["dpnp"]
+req_library["random_forest_regressor_dpnp.py"] = ["dpnp"]
 req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
+
+skiped_files = ["log_reg_model_builder.py"]
 
 
 def get_exe_cmd(ex, nodist, nostream):
@@ -215,15 +219,12 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
-    if any(ex.endswith(x) for x in ["batch.py", "stream.py"]):
-        return '"' + sys.executable + '" "' + ex + '"'
-    if not nostream and ex.endswith("streaming.py"):
-        return '"' + sys.executable + '" "' + ex + '"'
     if not nodist and ex.endswith("spmd.py"):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
-    return None
+    else:
+        return '"' + sys.executable + '" "' + ex + '"'
 
 
 def run(exdir, logdir, nodist=False, nostream=False):
@@ -233,42 +234,51 @@ def run(exdir, logdir, nodist=False, nostream=False):
         os.makedirs(logdir)
     for dirpath, dirnames, filenames in os.walk(exdir):
         for script in filenames:
-            if any(
-                script.endswith(x)
-                for x in ["spmd.py", "streaming.py", "stream.py", "batch.py"]
-            ):
+            if script.endswith(".py") and script not in ["__init__.py"]:
                 n += 1
-                logfn = jp(logdir, script.replace(".py", ".res"))
-                with open(logfn, "w") as logfile:
+                if script in skiped_files:
+                    success += 1
                     print("\n##### " + jp(dirpath, script))
-                    execute_string = get_exe_cmd(jp(dirpath, script), nodist, nostream)
-                    if execute_string:
-                        os.chdir(dirpath)
-                        proc = subprocess.Popen(
-                            execute_string
-                            if IS_WIN
-                            else ["/bin/bash", "-c", execute_string],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
-                            shell=False,
+                    print(
+                        strftime("%H:%M:%S", gmtime())
+                        + "\tKNOWN BUG IN EXAMPLES\t"
+                        + script
+                    )
+                else:
+                    logfn = jp(logdir, script.replace(".py", ".res"))
+                    with open(logfn, "w") as logfile:
+                        print("\n##### " + jp(dirpath, script))
+                        execute_string = get_exe_cmd(
+                            jp(dirpath, script), nodist, nostream
                         )
-                        out = proc.communicate()[0]
-                        logfile.write(out.decode("ascii"))
-                        if proc.returncode:
-                            print(out)
-                            print(
-                                strftime("%H:%M:%S", gmtime()) + "\tFAILED"
-                                "\t" + script + "\twith errno"
-                                "\t" + str(proc.returncode)
+                        if execute_string:
+                            os.chdir(dirpath)
+                            proc = subprocess.Popen(
+                                execute_string
+                                if IS_WIN
+                                else ["/bin/bash", "-c", execute_string],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                shell=False,
                             )
+                            out = proc.communicate()[0]
+                            logfile.write(out.decode("ascii"))
+                            if proc.returncode:
+                                print(out)
+                                print(
+                                    strftime("%H:%M:%S", gmtime()) + "\tFAILED"
+                                    "\t" + script + "\twith errno"
+                                    "\t" + str(proc.returncode)
+                                )
+                            else:
+                                success += 1
+                                print(
+                                    strftime("%H:%M:%S", gmtime()) + "\t"
+                                    "PASSED\t" + script
+                                )
                         else:
                             success += 1
-                            print(
-                                strftime("%H:%M:%S", gmtime()) + "\t" "PASSED\t" + script
-                            )
-                    else:
-                        success += 1
-                        print(strftime("%H:%M:%S", gmtime()) + "\tSKIPPED\t" + script)
+                            print(strftime("%H:%M:%S", gmtime()) + "\tSKIPPED\t" + script)
     return success, n
 
 

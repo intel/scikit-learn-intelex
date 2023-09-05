@@ -60,7 +60,7 @@ def test_generator(file):
 files = [
     f
     for f in os.listdir(examples_path)
-    if f.endswith(".py") and "spmd" not in f and "batch" not in f
+    if f.endswith(".py") and "spmd" not in f and "dpnp" not in f and "dpctl" not in f
 ]
 
 for file in files:

@@ -21,8 +21,10 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 
-from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _column_or_1d
+
+from .._utils import PatchingConditionsChain
 
 
 def get_dual_coef(self):
@@ -53,7 +55,7 @@ class BaseSVM(ABC):
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
         patching_status.and_conditions([(False, "GPU offloading is not supported.")])
-        return patching_status.get_status(logs=True)
+        return patching_status
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -70,7 +72,7 @@ class BaseSVM(ABC):
                     )
                 ]
             )
-            return patching_status.get_status(logs=True)
+            return patching_status
         inference_methods = (
             ["predict"]
             if class_name.endswith("R")
@@ -80,7 +82,7 @@ class BaseSVM(ABC):
             patching_status.and_conditions(
                 [(hasattr(self, "_onedal_estimator"), "oneDAL model was not trained.")]
             )
-            return patching_status.get_status(logs=True)
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
 

@@ -30,10 +30,11 @@ if daal_check_version((2023, "P", 200)):
         check_is_fitted,
     )
 
-    from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+    from daal4py.sklearn._utils import sklearn_check_version
     from onedal.cluster import KMeans as onedal_KMeans
 
     from ..._device_offload import dispatch, wrap_output_data
+    from ..._utils import PatchingConditionsChain
     from ._common import BaseKMeans
 
     class KMeans(sklearn_KMeans, BaseKMeans):
@@ -167,7 +168,7 @@ if daal_check_version((2023, "P", 200)):
                 ]
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         def fit(self, X, y=None, sample_weight=None):
             """Compute k-means clustering.
@@ -251,7 +252,7 @@ if daal_check_version((2023, "P", 200)):
                 ]
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         @wrap_output_data
         def predict(self, X):

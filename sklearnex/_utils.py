@@ -20,7 +20,31 @@ import os
 import sys
 import warnings
 
+from daal4py.sklearn._utils import (
+    PatchingConditionsChain as daal4py_PatchingConditionsChain,
+)
 from daal4py.sklearn._utils import daal_check_version
+
+
+class PatchingConditionsChain(daal4py_PatchingConditionsChain):
+    def get_status(self):
+        return self.patching_is_enabled
+
+    def write_log(self, queue=None):
+        if self.patching_is_enabled:
+            self.logger.info(
+                f"{self.scope_name}: {get_patch_message('onedal', queue=queue)}"
+            )
+        else:
+            self.logger.debug(
+                f"{self.scope_name}: debugging for the patch is enabled to track"
+                " the usage of Intel® oneAPI Data Analytics Library (oneDAL)"
+            )
+            for message in self.messages:
+                self.logger.debug(
+                    f"{self.scope_name}: patching failed with cause - {message}"
+                )
+            self.logger.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
 
 
 def set_sklearn_ex_verbose():
@@ -43,7 +67,7 @@ def set_sklearn_ex_verbose():
         )
 
 
-def get_patch_message(s, queue=None, cpu_fallback=False):
+def get_patch_message(s, queue=None):
     if s == "onedal":
         message = "running accelerated version on "
         if queue is not None:
@@ -53,29 +77,10 @@ def get_patch_message(s, queue=None, cpu_fallback=False):
                 message += "CPU"
             else:
                 raise RuntimeError("Unsupported device")
-
-        elif "daal4py.oneapi" in sys.modules:
-            from daal4py.oneapi import _get_device_name_sycl_ctxt
-
-            dev = _get_device_name_sycl_ctxt()
-            if dev == "cpu" or dev is None:
-                message += "CPU"
-            elif dev == "gpu":
-                if cpu_fallback:
-                    message += "CPU"
-                else:
-                    message += "GPU"
-            else:
-                raise ValueError(
-                    f"Unexpected device name {dev}." " Supported types are cpu and gpu"
-                )
         else:
             message += "CPU"
-
     elif s == "sklearn":
         message = "fallback to original Scikit-learn"
-    elif s == "sklearn_after_onedal":
-        message = "failed to run accelerated version, fallback to original Scikit-learn"
     else:
         raise ValueError(
             f"Invalid input - expected one of 'onedal','sklearn',"
