@@ -27,9 +27,7 @@ from daal4py.sklearn._utils import daal_check_version
 
 
 class PatchingConditionsChain(daal4py_PatchingConditionsChain):
-    def get_status(self, logs=False, queue=None):
-        if logs:
-            self.write_log(queue)
+    def get_status(self, queue=None):
         return self.patching_is_enabled
 
     def write_log(self, queue=None):
