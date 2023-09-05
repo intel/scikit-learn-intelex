@@ -239,14 +239,14 @@ if sklearn_check_version("1.0"):
         def _onedal_gpu_supported(self, method_name, *data):
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
-                f"sklearn.cluster.{class_name}.{method_name}"
+                f"sklearn.neighbors.{class_name}.{method_name}"
             )
             return patching_status
 
         def _onedal_cpu_supported(self, method_name, *data):
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
-                f"sklearn.cluster.{class_name}.{method_name}"
+                f"sklearn.neighbors.{class_name}.{method_name}"
             )
             return patching_status
 
