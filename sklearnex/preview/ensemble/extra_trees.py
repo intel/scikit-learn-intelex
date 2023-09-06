@@ -721,8 +721,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
         self._onedal_estimator.fit(X, np.squeeze(y), sample_weight, queue=queue)
 
         self._save_attributes()
-        if sklearn_check_version("1.2"):
-            self._estimator = ExtraTreeClassifier()
 
         # Decapsulate classes_ attributes
         self.n_classes_ = self.n_classes_[0]
@@ -1150,8 +1148,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
-        if sklearn_check_version("1.2"):
-            self._estimator = ExtraTreeRegressor()
 
         return self
 
