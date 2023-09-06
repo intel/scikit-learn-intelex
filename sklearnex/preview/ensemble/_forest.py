@@ -205,7 +205,7 @@ class BaseForest(ABC):
     @property
     def estimators_(self):
         if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_ is None and self._onedal_estimator:
+            if self._cached_estimators_ is None:
                 self._estimators_()
             return self._cached_estimators_
         else:
