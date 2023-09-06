@@ -23,7 +23,6 @@ if daal_check_version((2023, "P", 100)):
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
     from daal4py.sklearn._utils import (
-        PatchingConditionsChain,
         get_dtype,
         make2d,
         sklearn_check_version,
@@ -31,6 +30,7 @@ if daal_check_version((2023, "P", 100)):
 
     from ..._device_offload import dispatch, wrap_output_data
     from ...utils.validation import _assert_all_finite
+    from ..._utils import PatchingConditionsChain
     from ._common import BaseLinearRegression
 
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -217,18 +217,18 @@ if daal_check_version((2023, "P", 100)):
                 ]
             )
             if not dal_ready:
-                return patching_status.get_status(logs=True)
+                return patching_status
 
             if not patching_status.and_condition(
                 self._test_type_and_finiteness(X), "Input X is not supported."
             ):
-                return patching_status.get_status(logs=True)
+                return patching_status
 
             patching_status.and_condition(
                 self._test_type_and_finiteness(y), "Input y is not supported."
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         def _onedal_predict_supported(self, method_name, *data):
             assert method_name == "predict"
@@ -252,13 +252,13 @@ if daal_check_version((2023, "P", 100)):
                 ]
             )
             if not dal_ready:
-                return patching_status.get_status(logs=True)
+                return patching_status
 
             patching_status.and_condition(
                 self._test_type_and_finiteness(*data), "Input X is not supported."
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         def _onedal_supported(self, method_name, *data):
             if method_name == "fit":
