@@ -1,4 +1,4 @@
-Cython==0.29.34
+Cython==0.29.36
 Jinja2==3.1.2
 numpy==1.19.5 ; python_version <= '3.9'
 numpy==1.21.6 ; python_version == '3.10'
