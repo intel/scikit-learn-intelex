@@ -79,7 +79,6 @@ class BaseForest(ABC):
         cfg["target_offload"] = queue
 
     def _save_attributes(self):
-
         if self.oob_score:
             self.oob_score_ = self._onedal_estimator.oob_score_
             if hasattr(self._onedal_estimator, "oob_prediction_"):
@@ -504,7 +503,9 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
-            tree_i_state_class = get_tree_state_cls(self._onedal_estimator._onedal_model, i, n_classes_)
+            tree_i_state_class = get_tree_state_cls(
+                self._onedal_estimator._onedal_model, i, n_classes_
+            )
             tree_i_state_dict = {
                 "max_depth": tree_i_state_class.max_depth,
                 "node_count": tree_i_state_class.node_count,
@@ -863,7 +864,9 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 est_i.n_features_ = self.n_features_in_
             est_i.n_classes_ = 1
             est_i.n_outputs_ = self.n_outputs_
-            tree_i_state_class = get_tree_state_reg(self._onedal_estimator._onedal_model, i)
+            tree_i_state_class = get_tree_state_reg(
+                self._onedal_estimator._onedal_model, i
+            )
             tree_i_state_dict = {
                 "max_depth": tree_i_state_class.max_depth,
                 "node_count": tree_i_state_class.node_count,
