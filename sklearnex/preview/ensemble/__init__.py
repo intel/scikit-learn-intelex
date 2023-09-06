@@ -15,7 +15,7 @@
 # limitations under the License.
 # ===============================================================================
 
-from .extra_trees import (
+from ._forest import (
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     RandomForestClassifier,
