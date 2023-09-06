@@ -24,6 +24,8 @@ from scipy import sparse as sp
 from sklearn.base import clone
 from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifier
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
+from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
 from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
@@ -299,12 +301,12 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
                     or not self.oob_score,
                     "OOB score is only supported starting from 2021.5 version of oneDAL.",
                 ),
-                (self.warm_start is False, "Warm start is not supported."), 
+                (self.warm_start is False, "Warm start is not supported."),
                 (
                     self.criterion == "gini",
                     f"'{self.criterion}' criterion is not supported. "
                     "Only 'gini' criterion is supported.",
-                ),               
+                ),
                 (
                     self.ccp_alpha == 0.0,
                     f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
@@ -331,7 +333,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
                     ),
                     (
                         self.monotonic_cst is None,
-                        "Monotonicity constrains are not supported."
+                        "Monotonicity constrains are not supported.",
                     ),
                 ]
             )
@@ -339,9 +341,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
         if patching_status.get_status():
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X, 
-                            dtype=[np.float32, np.float64],
-                            force_all_finite=not sklearn_check_version("1.4"))
+            X = check_array(
+                X,
+                dtype=[np.float32, np.float64],
+                force_all_finite=not sklearn_check_version("1.4"),
+            )
             y = np.asarray(y)
             y = np.atleast_1d(y)
             if y.ndim == 2 and y.shape[1] == 1:
@@ -570,9 +574,15 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
                 ]
             )
 
-            if method_name == 'predict_proba':
-                patching_status.and_conditions([(daal_check_version(2021, "P", 400),"oneDAL version is lower than 2021.4.")])
-
+            if method_name == "predict_proba":
+                patching_status.and_conditions(
+                    [
+                        (
+                            daal_check_version(2021, "P", 400),
+                            "oneDAL version is lower than 2021.4.",
+                        )
+                    ]
+                )
 
             if hasattr(self, "n_outputs_"):
                 patching_status.and_conditions(
@@ -924,23 +934,22 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
                 input_is_finite = False
             patching_status.and_conditions(
                 [
-                    (
-                        input_is_finite,
-                        "Non-finite input is not supported."
-                    ),
+                    (input_is_finite, "Non-finite input is not supported."),
                     (
                         self.monotonic_cst is None,
-                        "Monotonicity constraints are not supported."
-                    )
+                        "Monotonicity constraints are not supported.",
+                    ),
                 ]
             )
 
         if patching_status.get_status():
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X,
-                            dtype=[np.float64, np.float32],
-                            force_all_finite=not sklearn_check_version("1.4"))
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=not sklearn_check_version("1.4"),
+            )
             y = np.asarray(y)
             y = np.atleast_1d(y)
 
@@ -1252,6 +1261,413 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
             return self.n_features_in_
 
 
+class RandomForestClassifier(ForestClassifier):
+    __doc__ = sklearn_RandomForestClassifier.__doc__
+
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {
+            **sklearn_RandomForestClassifier._parameter_constraints,
+            "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+        }
+
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="gini",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="sqrt",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            class_weight=None,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                DecisionTreeClassifier(),
+                n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "random_state",
+                    "ccp_alpha",
+                    "monotonic_cst",
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+            self.monotonic_cst = monotonic_cst
+
+    elif sklearn_check_version("1.0"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="gini",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="sqrt" if sklearn_check_version("1.1") else "auto",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            class_weight=None,
+            ccp_alpha=0.0,
+            max_samples=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                DecisionTreeClassifier(),
+                n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "random_state",
+                    "ccp_alpha",
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+
+    else:
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="gini",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="auto",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            min_impurity_split=None,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            class_weight=None,
+            ccp_alpha=0.0,
+            max_samples=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                DecisionTreeClassifier(),
+                n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "min_impurity_split",
+                    "random_state",
+                    "ccp_alpha",
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.min_impurity_split = min_impurity_split
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+
+
+class RandomForestRegressor(ForestRegressor):
+    __doc__ = sklearn_RandomForestRegressor.__doc__
+
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {
+            **sklearn_RandomForestRegressor._parameter_constraints,
+            "max_bins": [Interval(numbers.Integral, 2, None, closed="left")],
+            "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
+        }
+
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="squared_error",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features=1.0,
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                DecisionTreeRegressor(),
+                n_estimators=n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "random_state",
+                    "ccp_alpha",
+                    "monotonic_cst",
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+            self.monotonic_cst = monotonic_cst
+
+    elif sklearn_check_version("1.0"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="squared_error",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features=1.0 if sklearn_check_version("1.1") else "auto",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            ccp_alpha=0.0,
+            max_samples=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                DecisionTreeRegressor(),
+                n_estimators=n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "random_state",
+                    "ccp_alpha",
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+
+    else:
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="mse",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="auto",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            min_impurity_split=None,
+            bootstrap=True,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            ccp_alpha=0.0,
+            max_samples=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                DecisionTreeRegressor(),
+                n_estimators=n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "min_impurity_split" "random_state",
+                    "ccp_alpha",
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.min_impurity_split = min_impurity_split
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+
+
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
 
@@ -1303,7 +1719,7 @@ class ExtraTreesClassifier(ForestClassifier):
                     "min_impurity_decrease",
                     "random_state",
                     "ccp_alpha",
-                    "monotonic_cst"
+                    "monotonic_cst",
                 ),
                 bootstrap=bootstrap,
                 oob_score=oob_score,
@@ -1497,7 +1913,7 @@ class ExtraTreesRegressor(ForestRegressor):
             min_bin_size=1,
         ):
             super().__init__(
-                estimator=ExtraTreeRegressor(),
+                ExtraTreeRegressor(),
                 n_estimators=n_estimators,
                 estimator_params=(
                     "criterion",
@@ -1560,7 +1976,7 @@ class ExtraTreesRegressor(ForestRegressor):
             min_bin_size=1,
         ):
             super().__init__(
-                estimator=ExtraTreeRegressor(),
+                ExtraTreeRegressor(),
                 n_estimators=n_estimators,
                 estimator_params=(
                     "criterion",
@@ -1622,7 +2038,7 @@ class ExtraTreesRegressor(ForestRegressor):
             min_bin_size=1,
         ):
             super().__init__(
-                estimator=ExtraTreeRegressor(),
+                ExtraTreeRegressor(),
                 n_estimators=n_estimators,
                 estimator_params=(
                     "criterion",
