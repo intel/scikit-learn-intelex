@@ -62,6 +62,8 @@ from ..._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
+if sklearn_check_version("1.4"):
+    from daal4py.sklearn.utils import _assert_all_finite
 
 
 class BaseTree(ABC):
@@ -85,6 +87,11 @@ class BaseTree(ABC):
                 self.oob_decision_function_ = (
                     self._onedal_estimator.oob_decision_function_
                 )
+
+        if sklearn_check_version("1.2"):
+            self.estimator_ = self._estimator
+        else:
+            self.base_estimator_ = self._estimator
         return self
 
     # TODO:
@@ -211,6 +218,10 @@ class BaseTree(ABC):
         # Needed to allow for proper sklearn operation in fallback mode
         self._cached_estimators_ = estimators
 
+    if not sklearn_check_version("1.2"):
+        @property
+        def base_estim
+
 
 class ForestClassifier(sklearn_ForestClassifier, BaseTree):
     # Surprisingly, even though scikit-learn warns against using
@@ -248,7 +259,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
         )
 
         # The splitter is recognized here for proper dispatching.
-        self._estimator = estimator  # TODO: Verify if this is done in older verions
+        self._estimator = estimator
         if self._estimator.__class__ == DecisionTreeClassifier:
             self._onedal_classifier = onedal_RandomForestClassifier
         elif self._estimator.__class__ == ExtraTreeClassifier:
@@ -292,17 +303,17 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
                     or not self.oob_score,
                     "OOB score is only supported starting from 2021.5 version of oneDAL.",
                 ),
-                (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
-                (
-                    self.ccp_alpha == 0.0,
-                    f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
-                ),
+                (self.warm_start is False, "Warm start is not supported."), 
                 (
                     self.criterion == "gini",
                     f"'{self.criterion}' criterion is not supported. "
                     "Only 'gini' criterion is supported.",
+                ),               
+                (
+                    self.ccp_alpha == 0.0,
+                    f"Non-zero 'ccp_alpha' ({self.ccp_alpha}) is not supported.",
                 ),
-                (self.warm_start is False, "Warm start is not supported."),
+                (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 (
                     self.n_estimators <= 6024,
                     "More than 6024 estimators is not supported.",
@@ -310,10 +321,31 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
             ]
         )
 
+        if patching_status.get_status() and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                input_is_finite = True
+            except ValueError:
+                input_is_finite = False
+            patching_status.and_conditions(
+                [
+                    (
+                        input_is_finite,
+                        "Non-finite input is not suppored.",
+                    ),
+                    (
+                        self.monotonic_cst is None,
+                        "Monotonicity constrains are not supported."
+                    ),
+                ]
+            )
+
         if patching_status.get_status():
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X, dtype=[np.float32, np.float64])
+            X = check_array(X, 
+                            dtype=[np.float32, np.float64],
+                            force_all_finite=not sklearn_check_version("1.4"))
             y = np.asarray(y)
             y = np.atleast_1d(y)
             if y.ndim == 2 and y.shape[1] == 1:
@@ -541,6 +573,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
                     ),
                 ]
             )
+
+            if method_name == 'predict_proba':
+                patching_status.and_conditions([(daal_check_version(2021, "P", 400),"oneDAL version is lower than 2021.4.")])
+
+
             if hasattr(self, "n_outputs_"):
                 patching_status.and_conditions(
                     [
@@ -777,7 +814,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
         )
 
         # The splitter is recognized here for proper dispatching.
-        self._estimator = estimator  # TODO: Verify if this is done in older verions
+        self._estimator = estimator
         if self._estimator.__class__ == DecisionTreeRegressor:
             self._onedal_regressor = onedal_RandomForestRegressor
         elif self._estimator.__class__ == ExtraTreeRegressor:
@@ -883,10 +920,31 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
             ]
         )
 
+        if patching_status.get_status() and sklearn_check_version("1.4"):
+            try:
+                _assert_all_finite(X)
+                input_is_finite = True
+            except ValueError:
+                input_is_finite = False
+            patching_status.and_conditions(
+                [
+                    (
+                        input_is_finite,
+                        "Non-finite input is not supported."
+                    ),
+                    (
+                        self.monotonic_cst is None,
+                        "Monotonicity constraints are not supported."
+                    )
+                ]
+            )
+
         if patching_status.get_status():
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
-            X = check_array(X, dtype=[np.float64, np.float32])
+            X = check_array(X,
+                            dtype=[np.float64, np.float32],
+                            force_all_finite=not sklearn_check_version("1.4"))
             y = np.asarray(y)
             y = np.atleast_1d(y)
 
@@ -987,7 +1045,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
                     RuntimeWarning,
                 )
 
-        elif method_name in ["predict", "predict_proba"]:
+        elif method_name == "predict":
             X = data[0]
 
             patching_status.and_conditions(
@@ -1011,8 +1069,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseTree):
                         ),
                     ]
                 )
-            else:
-                dal_ready = False
 
         else:
             raise RuntimeError(
@@ -1210,7 +1266,73 @@ class ExtraTreesClassifier(ForestClassifier):
             "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="gini",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features="sqrt",
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=False,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            class_weight=None,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                ExtraTreeClassifier(),
+                n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "random_state",
+                    "ccp_alpha",
+                    "monotonic_cst"
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                class_weight=class_weight,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+            self.monotonic_cst = monotonic_cst
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
@@ -1352,7 +1474,71 @@ class ExtraTreesRegressor(ForestRegressor):
             "min_bin_size": [Interval(numbers.Integral, 1, None, closed="left")],
         }
 
-    if sklearn_check_version("1.0"):
+    if sklearn_check_version("1.4"):
+
+        def __init__(
+            self,
+            n_estimators=100,
+            *,
+            criterion="squared_error",
+            max_depth=None,
+            min_samples_split=2,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.0,
+            max_features=1.0,
+            max_leaf_nodes=None,
+            min_impurity_decrease=0.0,
+            bootstrap=False,
+            oob_score=False,
+            n_jobs=None,
+            random_state=None,
+            verbose=0,
+            warm_start=False,
+            ccp_alpha=0.0,
+            max_samples=None,
+            monotonic_cst=None,
+            max_bins=256,
+            min_bin_size=1,
+        ):
+            super().__init__(
+                estimator=ExtraTreeRegressor(),
+                n_estimators=n_estimators,
+                estimator_params=(
+                    "criterion",
+                    "max_depth",
+                    "min_samples_split",
+                    "min_samples_leaf",
+                    "min_weight_fraction_leaf",
+                    "max_features",
+                    "max_leaf_nodes",
+                    "min_impurity_decrease",
+                    "random_state",
+                    "ccp_alpha",
+                    "monotonic_cst",
+                ),
+                bootstrap=bootstrap,
+                oob_score=oob_score,
+                n_jobs=n_jobs,
+                random_state=random_state,
+                verbose=verbose,
+                warm_start=warm_start,
+                max_samples=max_samples,
+            )
+
+            self.criterion = criterion
+            self.max_depth = max_depth
+            self.min_samples_split = min_samples_split
+            self.min_samples_leaf = min_samples_leaf
+            self.min_weight_fraction_leaf = min_weight_fraction_leaf
+            self.max_features = max_features
+            self.max_leaf_nodes = max_leaf_nodes
+            self.min_impurity_decrease = min_impurity_decrease
+            self.ccp_alpha = ccp_alpha
+            self.max_bins = max_bins
+            self.min_bin_size = min_bin_size
+            self.monotonic_cst = monotonic_cst
+
+    elif sklearn_check_version("1.0"):
 
         def __init__(
             self,
