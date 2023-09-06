@@ -68,7 +68,7 @@ if sklearn_check_version("1.4"):
     from daal4py.sklearn.utils import _assert_all_finite
 
 
-class BaseTree(ABC):
+class BaseForest(ABC):
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
         params = self.get_params()
         self.__class__(**params)
@@ -221,7 +221,7 @@ class BaseTree(ABC):
         self._cached_estimators_ = estimators
 
 
-class ForestClassifier(sklearn_ForestClassifier, BaseTree):
+class ForestClassifier(sklearn_ForestClassifier, BaseForest):
     # Surprisingly, even though scikit-learn warns against using
     # their ForestClassifier directly, it actually has a more stable
     # API than the user-facing objects (over time). If they change it
@@ -791,7 +791,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseTree):
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
 
-class ForestRegressor(sklearn_ForestRegressor, BaseTree):
+class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     def __init__(
         self,
         estimator,
