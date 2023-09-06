@@ -317,6 +317,14 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             ]
         )
 
+        if self.bootstrap:
+            patching_status.and_conditions(
+                [
+                    (self.class_weight != "balanced_subsample",
+                    "'balanced_subsample' for class_weight is not supported")
+                ]
+            )
+
         if patching_status.get_status() and sklearn_check_version("1.4"):
             try:
                 _assert_all_finite(X)
