@@ -79,7 +79,6 @@ class BaseForest(ABC):
         cfg["target_offload"] = queue
 
     def _save_attributes(self):
-        self._onedal_model = self._onedal_estimator._onedal_model
 
         if self.oob_score:
             self.oob_score_ = self._onedal_estimator.oob_score_
@@ -207,7 +206,7 @@ class BaseForest(ABC):
     @property
     def estimators_(self):
         if hasattr(self, "_cached_estimators_"):
-            if self._cached_estimators_ is None and self._onedal_model:
+            if self._cached_estimators_ is None and self._onedal_estimator:
                 self._estimators_()
             return self._cached_estimators_
         else:
@@ -466,8 +465,8 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             return self.n_features_in_
 
     def _estimators_(self):
-        # _estimators_ should only be called if _onedal_model exists
-        check_is_fitted(self, "_onedal_model")
+        # _estimators_ should only be called if _onedal_estimator exists
+        check_is_fitted(self, "_onedal_estimator")
         classes_ = self.classes_[0]
         n_classes_ = (
             self.n_classes_ if isinstance(self.n_classes_, int) else self.n_classes_[0]
@@ -505,7 +504,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             est_i.n_outputs_ = self.n_outputs_
             est_i.classes_ = classes_
             est_i.n_classes_ = n_classes_
-            tree_i_state_class = get_tree_state_cls(self._onedal_model, i, n_classes_)
+            tree_i_state_class = get_tree_state_cls(self._onedal_estimator._onedal_model, i, n_classes_)
             tree_i_state_dict = {
                 "max_depth": tree_i_state_class.max_depth,
                 "node_count": tree_i_state_class.node_count,
@@ -563,7 +562,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
             patching_status.and_conditions(
                 [
-                    (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
+                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
                     (
@@ -772,7 +771,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
-        check_is_fitted(self, "_onedal_model")
+        check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
@@ -782,7 +781,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32])
-        check_is_fitted(self, "_onedal_model")
+        check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("0.23"):
             self._check_n_features(X, reset=False)
@@ -831,8 +830,8 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             )
 
     def _estimators_(self):
-        # _estimators_ should only be called if _onedal_model exists
-        check_is_fitted(self, "_onedal_model")
+        # _estimators_ should only be called if _onedal_estimator exists
+        check_is_fitted(self, "_onedal_estimator")
         # convert model to estimators
         params = {
             "criterion": self.criterion,
@@ -864,7 +863,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 est_i.n_features_ = self.n_features_in_
             est_i.n_classes_ = 1
             est_i.n_outputs_ = self.n_outputs_
-            tree_i_state_class = get_tree_state_reg(self._onedal_model, i)
+            tree_i_state_class = get_tree_state_reg(self._onedal_estimator._onedal_model, i)
             tree_i_state_dict = {
                 "max_depth": tree_i_state_class.max_depth,
                 "node_count": tree_i_state_class.node_count,
@@ -1055,7 +1054,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
             patching_status.and_conditions(
                 [
-                    (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
+                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
                     (
@@ -1120,7 +1119,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
             patching_status.and_conditions(
                 [
-                    (hasattr(self, "_onedal_model"), "oneDAL model was not trained."),
+                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                     (self.warm_start is False, "Warm start is not supported."),
                     (
@@ -1214,7 +1213,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
-        check_is_fitted(self, "_onedal_model")
+        check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
