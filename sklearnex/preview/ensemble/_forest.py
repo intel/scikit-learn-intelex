@@ -578,7 +578,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 patching_status.and_conditions(
                     [
                         (
-                            daal_check_version(2021, "P", 400),
+                            daal_check_version((2021, "P", 400)),
                             "oneDAL version is lower than 2021.4.",
                         )
                     ]
