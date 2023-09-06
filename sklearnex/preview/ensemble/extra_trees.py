@@ -218,10 +218,6 @@ class BaseTree(ABC):
         # Needed to allow for proper sklearn operation in fallback mode
         self._cached_estimators_ = estimators
 
-    if not sklearn_check_version("1.2"):
-        @property
-        def base_estim
-
 
 class ForestClassifier(sklearn_ForestClassifier, BaseTree):
     # Surprisingly, even though scikit-learn warns against using
