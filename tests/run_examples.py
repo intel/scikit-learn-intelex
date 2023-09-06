@@ -85,15 +85,7 @@ if sycl_extention_available:
             gpu_available = True
             availabe_devices.append("gpu")
     except RuntimeError:
-        try:
-            import dpctl
-            if dpctl.__version__ >= "0.14" and dpctl.has_gpu_devices:
-                gpu_available = True
-                availabe_devices.append("gpu")
-            else:
-                gpu_available = False
-        except ModuleNotFoundError:
-            gpu_available = False
+        gpu_available = False
     availabe_devices.append("cpu")
     # validate that host and cpu devices avaialbe for logging reasons. Examples and
     # vaidaton logic assumes that host and cpu devices are always available

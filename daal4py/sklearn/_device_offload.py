@@ -63,19 +63,11 @@ def _run_on_device(func, queue, obj=None, *args, **kwargs):
         if _get_in_sycl_ctxt() is False:
             host_offload = get_config()["allow_fallback_to_host"]
 
-            try:
-                with sycl_context(
-                    "gpu" if queue.sycl_device.is_gpu else "cpu",
-                    host_offload_on_fail=host_offload,
-                ):
-                    return dispatch_by_obj(obj, func, *args, **kwargs)
-            except RuntimeError as r:
-                from sklearnex._config import config_context
-                with config_context(
-                    target_offload="gpu" if queue.sycl_device.is_gpu else "cpu",
-                    allow_fallback_to_host=host_offload,
-                ):
-                    return dispatch_by_obj(obj, func, *args, **kwargs)
+            with sycl_context(
+                "gpu" if queue.sycl_device.is_gpu else "cpu",
+                host_offload_on_fail=host_offload,
+            ):
+                return dispatch_by_obj(obj, func, *args, **kwargs)
     return dispatch_by_obj(obj, func, *args, **kwargs)
 
 

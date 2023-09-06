@@ -23,10 +23,12 @@ static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 
 #include "oneapi_backend.h"
 
-    PySyclExecutionContext::PySyclExecutionContext(const std::string & dev)
+    PySyclExecutionContext::PySyclExecutionContext(const std::string & dev, const bool from_python)
     : m_ctxt(NULL)
 {
-    if (dev == "cpu")
+    if (dev == "gpu")
+        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()), from_python);
+    else if (dev == "cpu")
         m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
     else if (dev == "host")
         m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));
