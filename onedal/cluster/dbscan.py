@@ -18,6 +18,10 @@ import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.utils import check_array
 
+import dpctl
+import dpctl.tensor as dpt
+import dpnp
+
 from daal4py.sklearn._utils import get_dtype, make2d
 from onedal import _backend
 
@@ -61,10 +65,16 @@ class BaseDBSCAN(ClusterMixin):
         }
 
     def _fit(self, X, y, sample_weight, module, queue):
+        numpy_input = isinstance(X, np.ndarray)
         policy = self._get_policy(queue, X)
-        X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
-        sample_weight = make2d(sample_weight) if sample_weight is not None else None
-        X = make2d(X)
+        if numpy_input:
+            X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+            sample_weight = make2d(sample_weight) if sample_weight is not None else None
+            X = make2d(X)
+        # else:
+        # TODO:
+        # update primitives
+        # for dpnp/dpctl inputs.
 
         types = [np.float32, np.float64]
         if get_dtype(X) not in types:
@@ -74,14 +84,27 @@ class BaseDBSCAN(ClusterMixin):
         params = self._get_onedal_params(dtype)
         result = module.compute(policy, params, to_table(X), to_table(sample_weight))
 
-        self.labels_ = from_table(result.responses).ravel()
-        if result.core_observation_indices is not None:
-            self.core_sample_indices_ = from_table(
-                result.core_observation_indices
-            ).ravel()
+        if numpy_input:
+            self.labels_ = from_table(result.responses).ravel()
         else:
-            self.core_sample_indices_ = np.array([], dtype=np.intc)
-        self.components_ = np.take(X, self.core_sample_indices_, axis=0)
+            self.labels_ = dpnp.ravel(dpnp_ndarray_from_table(result.responses))
+
+        if result.core_observation_indices is not None:
+            if numpy_input:
+                self.core_sample_indices_ = from_table(result.core_observation_indices).ravel()
+            else:
+                self.labels_ = dpnp.ravel(dpnp_ndarray_from_table(result.core_observation_indices))
+        else:
+            if numpy_input:
+                self.core_sample_indices_ = np.array([], dtype=np.intc)
+            else:
+                self.core_sample_indices_ = dpnp.array([], dtype=np.intc)
+        # TODO:
+        # take will be added into 
+        if numpy_input:
+            self.components_ = np.take(X, self.core_sample_indices_, axis=0)
+        else:
+            self.components_ = dpnp.take(X, self.core_sample_indices_, axis=0)
         self.n_features_in_ = X.shape[1]
         return self
 

@@ -22,6 +22,12 @@ from sklearn.cluster.tests.common import generate_clustered_data
 from onedal.cluster import DBSCAN as ONEDAL_DBSCAN
 from onedal.tests.utils._device_selection import get_queues
 
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
+
 
 def generate_data(
     low: int, high: int, samples_number: int, sample_dimension: tuple
@@ -50,6 +56,7 @@ def check_labels_equals(left_labels: np.ndarray, right_labels: np.ndarray) -> bo
 
 
 def _test_dbscan_big_data_numpy_gen(
+    dataframe,
     queue,
     eps: float,
     min_samples: int,
@@ -66,16 +73,18 @@ def _test_dbscan_big_data_numpy_gen(
         samples_number=samples_number,
         sample_dimension=sample_dimension,
     )
+    df_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
+    df_weights = _convert_to_dataframe(weights, sycl_queue=queue, target_df=dataframe)
     if use_weights is False:
         weights = None
-    initialized_daal_dbscan = ONEDAL_DBSCAN(
+    initialized_onedal_dbscan = ONEDAL_DBSCAN(
         eps=eps, min_samples=min_samples, metric=metric
-    ).fit(X=data, sample_weight=weights, queue=queue)
+    ).fit(X=df_data, sample_weight=df_weights, queue=queue)
     initialized_sklearn_dbscan = DBSCAN_SKLEARN(
         metric=metric, eps=eps, min_samples=min_samples
     ).fit(X=data, sample_weight=weights)
     check_labels_equals(
-        initialized_daal_dbscan.labels_, initialized_sklearn_dbscan.labels_
+        _as_numpy(initialized_onedal_dbscan.labels_), initialized_sklearn_dbscan.labels_
     )
 
 
@@ -86,12 +95,17 @@ def _test_dbscan_big_data_numpy_gen(
     ],
 )
 @pytest.mark.parametrize("use_weights", [True, False])
-@pytest.mark.parametrize("queue", get_queues())
-def test_dbscan_big_data_numpy_gen(queue, metric, use_weights: bool):
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_dbscan_big_data_numpy_gen(dataframe, queue, metric, use_weights: bool):
     eps = 35.0
     min_samples = 6
     _test_dbscan_big_data_numpy_gen(
-        queue, eps=eps, min_samples=min_samples, metric=metric, use_weights=use_weights
+        dataframe,
+        queue,
+        eps=eps,
+        min_samples=min_samples,
+        metric=metric,
+        use_weights=use_weights,
     )
 
 

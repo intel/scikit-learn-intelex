@@ -14,6 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
+
 try:
     import dpnp
 
@@ -49,3 +51,12 @@ def _as_numpy(obj, *args, **kwargs):
     if dpctl_available and isinstance(obj, dpt.usm_ndarray):
         return dpt.to_numpy(obj, *args, **kwargs)
     return np.asarray(obj, *args, **kwargs)
+
+
+def ndarray_take(obj, *args, **kwargs):
+    if (
+        isinstance(X, np.ndarray)
+        or (dpnp_available and isinstance(obj, dpnp.ndarray))
+        or (dpctl_available and isinstance(obj, dpt.usm_ndarray))
+    ):
+        return obj.take(*args, **kwargs)
