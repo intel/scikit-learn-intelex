@@ -320,8 +320,10 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         if self.bootstrap:
             patching_status.and_conditions(
                 [
-                    (self.class_weight != "balanced_subsample",
-                    "'balanced_subsample' for class_weight is not supported")
+                    (
+                        self.class_weight != "balanced_subsample",
+                        "'balanced_subsample' for class_weight is not supported",
+                    )
                 ]
             )
 
@@ -2080,6 +2082,7 @@ class ExtraTreesRegressor(ForestRegressor):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+
 
 # Allow for isinstance calls without inheritance changes using ABCMeta
 sklearn_RandomForestClassifier.register(RandomForestClassifier)
