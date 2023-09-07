@@ -320,8 +320,10 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         if self.bootstrap:
             patching_status.and_conditions(
                 [
-                    (self.class_weight != "balanced_subsample",
-                    "'balanced_subsample' for class_weight is not supported")
+                    (
+                        self.class_weight != "balanced_subsample",
+                        "'balanced_subsample' for class_weight is not supported",
+                    )
                 ]
             )
 
@@ -1268,7 +1270,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             return self.n_features_in_
 
 
-class RandomForestClassifier(ForestClassifier):
+class RandomForestClassifier(ForestClassifier, sklearn_RandomForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
 
     if sklearn_check_version("1.2"):
@@ -1476,7 +1478,7 @@ class RandomForestClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
 
 
-class RandomForestRegressor(ForestRegressor):
+class RandomForestRegressor(ForestRegressor, sklearn_RandomForestRegressor):
     __doc__ = sklearn_RandomForestRegressor.__doc__
 
     if sklearn_check_version("1.2"):
@@ -1675,7 +1677,7 @@ class RandomForestRegressor(ForestRegressor):
             self.min_bin_size = min_bin_size
 
 
-class ExtraTreesClassifier(ForestClassifier):
+class ExtraTreesClassifier(ForestClassifier, sklearn_ExtraTreesClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
 
     if sklearn_check_version("1.2"):
@@ -1883,7 +1885,7 @@ class ExtraTreesClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
 
 
-class ExtraTreesRegressor(ForestRegressor):
+class ExtraTreesRegressor(ForestRegressor, sklearn_ExtraTreesRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
 
     if sklearn_check_version("1.2"):
