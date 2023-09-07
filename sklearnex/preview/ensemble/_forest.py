@@ -2087,5 +2087,5 @@ class ExtraTreesRegressor(ForestRegressor):
 # Allow for isinstance calls without inheritance changes using ABCMeta
 sklearn_RandomForestClassifier.register(RandomForestClassifier)
 sklearn_RandomForestRegressor.register(RandomForestRegressor)
-sklearn_ExtraTreesClassifier.register(ExtraTreeClassifier)
-sklearn_ExtraTreesRegressor.register(ExtraTreeRegressor)
+sklearn_ExtraTreesClassifier.register(ExtraTreesClassifier)
+sklearn_ExtraTreesRegressor.register(ExtraTreesRegressor)
