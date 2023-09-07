@@ -757,8 +757,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             "min_bin_size": self.min_bin_size,
             "max_samples": self.max_samples,
         }
-        if daal_check_version((2023, "P", 101)):
-            onedal_params["splitter_mode"] = "random"
+
         if not sklearn_check_version("1.0"):
             onedal_params["min_impurity_split"] = self.min_impurity_split
         else:
@@ -1209,8 +1208,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             "variable_importance_mode": "mdi",
             "max_samples": self.max_samples,
         }
-        if daal_check_version((2023, "P", 101)):
-            onedal_params["splitter_mode"] = "random"
 
         # Lazy evaluation of estimators_
         self._cached_estimators_ = None
