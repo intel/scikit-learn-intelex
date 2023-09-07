@@ -320,10 +320,8 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         if self.bootstrap:
             patching_status.and_conditions(
                 [
-                    (
-                        self.class_weight != "balanced_subsample",
-                        "'balanced_subsample' for class_weight is not supported",
-                    )
+                    (self.class_weight != "balanced_subsample",
+                    "'balanced_subsample' for class_weight is not supported")
                 ]
             )
 
@@ -1270,7 +1268,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             return self.n_features_in_
 
 
-class RandomForestClassifier(ForestClassifier, sklearn_RandomForestClassifier):
+class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
 
     if sklearn_check_version("1.2"):
@@ -1478,7 +1476,7 @@ class RandomForestClassifier(ForestClassifier, sklearn_RandomForestClassifier):
             self.min_bin_size = min_bin_size
 
 
-class RandomForestRegressor(ForestRegressor, sklearn_RandomForestRegressor):
+class RandomForestRegressor(ForestRegressor):
     __doc__ = sklearn_RandomForestRegressor.__doc__
 
     if sklearn_check_version("1.2"):
@@ -1677,7 +1675,7 @@ class RandomForestRegressor(ForestRegressor, sklearn_RandomForestRegressor):
             self.min_bin_size = min_bin_size
 
 
-class ExtraTreesClassifier(ForestClassifier, sklearn_ExtraTreesClassifier):
+class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
 
     if sklearn_check_version("1.2"):
@@ -1885,7 +1883,7 @@ class ExtraTreesClassifier(ForestClassifier, sklearn_ExtraTreesClassifier):
             self.min_bin_size = min_bin_size
 
 
-class ExtraTreesRegressor(ForestRegressor, sklearn_ExtraTreesRegressor):
+class ExtraTreesRegressor(ForestRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
 
     if sklearn_check_version("1.2"):
@@ -2082,3 +2080,9 @@ class ExtraTreesRegressor(ForestRegressor, sklearn_ExtraTreesRegressor):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+
+# Allow for isinstance calls without inheritance changes using ABCMeta
+sklearn_RandomForestClassifier.register(RandomForestClassifier)
+sklearn_RandomForestRegressor.register(RandomForestRegressor)
+sklearn_ExtraTreesClassifier.register(ExtraTreeClassifier)
+sklearn_ExtraTreesRegressor.register(ExtraTreeRegressor)
