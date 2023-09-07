@@ -93,7 +93,16 @@ def to_numpy(data):
 
 
 def main(readcsv=None, method="defaultDense"):
-    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "covcormoments_dense.csv")
+    infile = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "covcormoments_dense.csv",
+    )
 
     # Using of the classic way (computations on CPU)
     # configure a covariance object

@@ -83,7 +83,9 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="randomDense"):
-    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "kmeans_dense.csv")
+    infile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "kmeans_dense.csv"
+    )
     nClusters = 20
     maxIter = 5
 

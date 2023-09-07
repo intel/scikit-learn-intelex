@@ -94,7 +94,16 @@ def to_numpy(data):
 
 def main(readcsv=None, method="defaultDense"):
     # read data from file
-    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "covcormoments_dense.csv")
+    infile = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "covcormoments_dense.csv",
+    )
 
     # Using of the classic way (computations on CPU)
     # Configure a low order moments object for streaming

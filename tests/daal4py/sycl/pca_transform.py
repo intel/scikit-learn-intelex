@@ -77,7 +77,9 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="svdDense"):
-    dataFileName = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "pca_transform.csv")
+    dataFileName = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "pca_transform.csv"
+    )
     nComponents = 2
 
     # read data

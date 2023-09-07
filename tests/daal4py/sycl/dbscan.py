@@ -80,7 +80,9 @@ def compute(data, minObservations, epsilon):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "dbscan_dense.csv")
+    infile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "dbscan_dense.csv"
+    )
     epsilon = 0.04
     minObservations = 45
 

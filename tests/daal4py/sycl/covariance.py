@@ -72,7 +72,16 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "covcormoments_dense.csv")
+    infile = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "covcormoments_dense.csv",
+    )
 
     # Load the data
     data = readcsv(infile, range(10), t=np.float32)

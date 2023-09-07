@@ -80,7 +80,9 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="svdDense"):
-    infile = os.path.join("..", "..", "..", "examples", "daal4py", "data", "batch", "pca_normalized.csv")
+    infile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "pca_normalized.csv"
+    )
 
     # Load the data
     data = readcsv(infile, t=np.float32)
