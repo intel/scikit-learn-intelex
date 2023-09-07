@@ -40,9 +40,9 @@ def main():
         nClasses=n_classes, resultsToEvaluate="computeClassLabels"
     )
     # set parameters and compute predictions
-    daal4py_predictions = predict_alg.compute(X, builder.model).prediction
+    daal4py_prediction = predict_alg.compute(X, builder.model).prediction
     predict_result_sklearn = clf.predict(X)
-    assert np.allclose(daal4py_predictions.flatten(), predict_result_sklearn)
+    assert np.allclose(daal4py_prediction.flatten(), predict_result_sklearn)
 
     # set parameters and compute predictions
     predict_alg = d4p.logistic_regression_prediction(
@@ -62,21 +62,21 @@ def main():
     predict_result_sklearn = clf.predict_log_proba(X)
     assert np.allclose(daal4py_logProbabilities, predict_result_sklearn)
 
-    return (builder, daal4py_predictions, daal4py_probabilities, daal4py_logProbabilities)
+    return (builder, daal4py_prediction, daal4py_probabilities, daal4py_logProbabilities)
 
 
 if __name__ == "__main__":
     if daal_check_version(((2021, "P", 1))):
         (
             builder,
-            daal4py_predictions,
+            daal4py_prediction,
             daal4py_probabilities,
             daal4py_logProbabilities,
         ) = main()
         print("\nLogistic Regression coefficients:\n", builder.model)
         print(
             "\nLogistic regression prediction results (first 10 rows):\n",
-            daal4py_predictions[0:10],
+            daal4py_prediction[0:10],
         )
         print(
             "\nLogistic regression prediction probabilities (first 10 rows):\n",
