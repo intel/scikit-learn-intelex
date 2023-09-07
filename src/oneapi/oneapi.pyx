@@ -24,7 +24,7 @@ from libcpp.string cimport string as std_string
 
 cdef extern from "oneapi/oneapi.h":
     cdef cppclass PySyclExecutionContext:
-        PySyclExecutionContext(const std_string & dev, const bool from_python=True) except +
+        PySyclExecutionContext(const std_string & dev, const bool from_python) except +
         void apply() except +
     void * to_device(void *, int, int*)
     void * to_daal_sycl_nt(void*, int, int*)

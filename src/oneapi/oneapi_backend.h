@@ -29,7 +29,7 @@ class _ONEAPI_BACKEND_EXPORT PySyclExecutionContext
 {
 public:
     // Construct from given device provided as string
-    PySyclExecutionContext(const std::string & dev, const bool from_python = true);
+    PySyclExecutionContext(const std::string & dev, const bool from_python);
     ~PySyclExecutionContext();
 
     void apply();
