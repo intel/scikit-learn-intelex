@@ -39,7 +39,7 @@ def main():
     predict_alg = d4p.logistic_regression_prediction(
         nClasses=n_classes, resultsToEvaluate="computeClassLabels"
     )
-     # set parameters and compute predictions
+    # set parameters and compute predictions
     daal4py_prediction = predict_alg.compute(X, builder.model).prediction
     predict_result_sklearn = clf.predict(X)
     assert np.allclose(daal4py_prediction.flatten(), predict_result_sklearn)
