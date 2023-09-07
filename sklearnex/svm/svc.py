@@ -20,9 +20,10 @@ from sklearn.exceptions import NotFittedError
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
+from .._utils import PatchingConditionsChain
 from ._common import BaseSVC
 
 if sklearn_check_version("1.0"):
@@ -247,13 +248,13 @@ class SVC(sklearn_SVC, BaseSVC):
         ]
         if method_name == "fit":
             patching_status.and_conditions(conditions)
-            return patching_status.get_status(logs=True)
+            return patching_status
         if method_name in ["predict", "predict_proba", "decision_function"]:
             conditions.append(
                 (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained")
             )
             patching_status.and_conditions(conditions)
-            return patching_status.get_status(logs=True)
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
