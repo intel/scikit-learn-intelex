@@ -1357,7 +1357,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if isinstance(self.min_samples_leaf, numbers.Integral):
             parameters["minObservationsInLeafNode"] = self.min_samples_leaf
         else:
-            int(ceil(self.min_samples_leaf * X.shape[0]))
+            parameters["minObservationsInLeafNode"] = int(
+                ceil(self.min_samples_leaf * X.shape[0])
+            )
 
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
