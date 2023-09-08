@@ -83,6 +83,16 @@ You can also use the scikit-learn-style classes ``GBTDAALClassifier`` and ``GBTD
   reg.fit(X, y)
   d4p_predt = GBTDAALRegressor.convert_model(reg).predict(X)
 
+
+Limitations
+------------------
+Model Builders support only base inference with prediction and probabilities prediction. The functionality is to be extended.
+Therefore, there are the following limitations:
+- The categorical features are not supported for conversion and prediction. 
+- The multioutput models are not supported for conversion and prediction.
+- The tree SHAP calculations are not supported.
+
+
 Examples
 ---------------------------------
 Model Builders models conversion
