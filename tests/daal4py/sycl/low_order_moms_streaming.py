@@ -33,7 +33,7 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 try:
@@ -44,7 +44,7 @@ try:
             f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
         )
 
-except:
+except Exception:
     # fall back to numpy genfromtxt
     def read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max):
         a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
