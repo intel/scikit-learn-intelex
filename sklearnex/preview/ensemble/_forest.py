@@ -482,18 +482,18 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         )
         # convert model to estimators
         params = {
-            "criterion": self.criterion,
-            "max_depth": self.max_depth,
-            "min_samples_split": self.min_samples_split,
-            "min_samples_leaf": self.min_samples_leaf,
-            "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
-            "max_features": self.max_features,
-            "max_leaf_nodes": self.max_leaf_nodes,
-            "min_impurity_decrease": self.min_impurity_decrease,
+            "criterion": self._onedal_estimator.criterion,
+            "max_depth": self._onedal_estimator.max_depth,
+            "min_samples_split": self._onedal_estimator.min_samples_split,
+            "min_samples_leaf": self._onedal_estimator.min_samples_leaf,
+            "min_weight_fraction_leaf": self._onedal_estimator.min_weight_fraction_leaf,
+            "max_features": self._onedal_estimator.max_features,
+            "max_leaf_nodes": self._onedal_estimator.max_leaf_nodes,
+            "min_impurity_decrease": self._onedal_estimator.min_impurity_decrease,
             "random_state": None,
         }
         if not sklearn_check_version("1.0"):
-            params["min_impurity_split"] = self.min_impurity_split
+            params["min_impurity_split"] = self._onedal_estimator.min_impurity_split
         est = self._estimator.__class__(**params)
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
@@ -501,7 +501,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         random_state_checked = check_random_state(self.random_state)
 
-        for i in range(self.n_estimators):
+        for i in range(self._onedal_estimator.n_estimators):
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max)
@@ -844,25 +844,25 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
         check_is_fitted(self, "_onedal_estimator")
         # convert model to estimators
         params = {
-            "criterion": self.criterion,
-            "max_depth": self.max_depth,
-            "min_samples_split": self.min_samples_split,
-            "min_samples_leaf": self.min_samples_leaf,
-            "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
-            "max_features": self.max_features,
-            "max_leaf_nodes": self.max_leaf_nodes,
-            "min_impurity_decrease": self.min_impurity_decrease,
+            "criterion": self._onedal_estimator.criterion,
+            "max_depth": self._onedal_estimator.max_depth,
+            "min_samples_split": self._onedal_estimator.min_samples_split,
+            "min_samples_leaf": self._onedal_estimator.min_samples_leaf,
+            "min_weight_fraction_leaf": self._onedal_estimator.min_weight_fraction_leaf,
+            "max_features": self._onedal_estimator.max_features,
+            "max_leaf_nodes": self._onedal_estimator.max_leaf_nodes,
+            "min_impurity_decrease": self._onedal_estimator.min_impurity_decrease,
             "random_state": None,
         }
         if not sklearn_check_version("1.0"):
-            params["min_impurity_split"] = self.min_impurity_split
+            params["min_impurity_split"] = self._onedal_estimator.min_impurity_split
         est = self._estimator.__class__(**params)
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
         random_state_checked = check_random_state(self.random_state)
 
-        for i in range(self.n_estimators):
+        for i in range(self._onedal_estimator.n_estimators):
             est_i = clone(est)
             est_i.set_params(
                 random_state=random_state_checked.randint(np.iinfo(np.int32).max)
