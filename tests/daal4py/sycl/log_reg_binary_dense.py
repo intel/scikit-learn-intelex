@@ -113,7 +113,6 @@ def main(readcsv=read_csv, method="defaultDense"):
                 sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses
             )
 
-        # TODO: When LogisticRegression run2run instability will be replace on np.equal
         assert np.mean(result_classic.prediction != result_gpu.prediction) < 0.2
 
     # It is possible to specify to make the computations on GPU
@@ -131,7 +130,6 @@ def main(readcsv=read_csv, method="defaultDense"):
         train_labels.shape[1],
     )
 
-    # TODO: When LogisticRegression run2run instability will be replace on np.equal
     assert np.mean(result_classic.prediction != result_cpu.prediction) < 0.2
     return (train_result, result_classic, predict_labels)
 
