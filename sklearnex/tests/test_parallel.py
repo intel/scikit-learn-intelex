@@ -19,7 +19,6 @@ from sklearnex import config_context, patch_sklearn
 
 patch_sklearn()
 
-from joblib import parallel_config
 from sklearn.datasets import make_classification
 from sklearn.ensemble import BaggingClassifier
 from sklearn.svm import SVC
@@ -42,9 +41,8 @@ except (ImportError, ModuleNotFoundError):
 def test_config_context_in_parallel():
     x, y = make_classification(random_state=42)
     try:
-        with parallel_config(backend="threading"):
-            with config_context(target_offload="gpu", allow_fallback_to_host=False):
-                BaggingClassifier(SVC(), n_jobs=2).fit(x, y)
+        with config_context(target_offload="gpu", allow_fallback_to_host=False):
+            BaggingClassifier(SVC(), n_jobs=2).fit(x, y)
         raise ValueError(
             "'SyclQueueCreationError' wasn't raised " "for non-existing 'gpu' device"
         )
