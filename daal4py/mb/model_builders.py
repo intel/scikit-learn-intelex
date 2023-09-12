@@ -222,7 +222,12 @@ class GBTDAALBaseModel:
         )
         predict_result = predict_algo.compute(X, self.daal_model_)
 
-        return predict_result.prediction.ravel()
+        if pred_interactions:
+            return predict_result.prediction.ravel().reshape(
+                (-1, X.shape[1] + 1, X.shape[1] + 1)
+            )
+        else:
+            return predict_result.prediction.ravel()
 
 
 class GBTDAALModel(GBTDAALBaseModel):
