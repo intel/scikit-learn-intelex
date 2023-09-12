@@ -223,13 +223,13 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_backend_respected
 
   # scikit-learn-intelex does not support accessing trees through the result variable
-  #- ensemble/tests/test_forest.py::test_warm_start
+  - ensemble/tests/test_forest.py::test_warm_start
   - inspection/tests/test_partial_dependence.py::test_recursion_decision_tree_vs_forest_and_gbdt[0] >=0.23
 
   # scikit-learn-intelex implementation builds different trees compared to scikit-learn
   # Comparison of tree forest will fail
-  #- ensemble/tests/test_forest.py::test_class_weights
-  #- ensemble/tests/test_forest.py::test_poisson_vs_mse
+  - ensemble/tests/test_forest.py::test_class_weights
+  - ensemble/tests/test_forest.py::test_poisson_vs_mse
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
   #- tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train]
   #- tests/test_common.py::test_estimators[RandomForestClassifier()-check_classifiers_train(readonly_memmap=True)]
@@ -265,9 +265,9 @@ deselected_tests:
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   #- ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
   #- ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]
-  #- ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-ExtraTreesRegressor]
-  #- ensemble/tests/test_forest.py::test_warm_start_oob[RandomForestClassifier]
-  #- ensemble/tests/test_forest.py::test_distribution
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-ExtraTreesRegressor]
+  - ensemble/tests/test_forest.py::test_warm_start_oob
+  - ensemble/tests/test_forest.py::test_distribution
 
   # Inability to set RNG state causes comparisons of multiple fits from same estimator to fail
   #- tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_supervised_y_2d]
@@ -282,8 +282,8 @@ deselected_tests:
   - feature_selection/tests/test_rfe.py::test_rfe_cv_groups
 
   # few-percent numerical differences in ExtraTreesRegressor, but 6 digits are checked
-  #- ensemble/tests/test_forest.py::test_memory_layout[float64-ExtraTreesRegressor]
-  #- ensemble/tests/test_forest.py::test_memory_layout[float32-ExtraTreesRegressor]
+  - ensemble/tests/test_forest.py::test_memory_layout[float64-ExtraTreesRegressor]
+  - ensemble/tests/test_forest.py::test_memory_layout[float32-ExtraTreesRegressor]
 
   # The bugs are fixed in 2021.2 release
   #- ensemble/tests/test_forest.py::test_regression >=0.24 # pass for defaultDense method only
