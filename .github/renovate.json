@@ -15,7 +15,7 @@
       "groupName": "Doc packages",
       "matchUpdateTypes": ["patch", "minor"],
       "schedule": ["before 2am on monday"],
-      "matchFileNames": ["(^|/)requirements-doc.txt$"]
+      "matchFileNames": ["requirements-doc.txt"]
     }
   ]
 }

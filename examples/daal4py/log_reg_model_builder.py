@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-import sys
-
-print("KNOWN BUG IN EXAMPLES. TODO: fixme")
-sys.exit()
 
 import numpy as np
 from sklearn.datasets import load_iris
@@ -44,26 +40,50 @@ def main():
         nClasses=n_classes, resultsToEvaluate="computeClassLabels"
     )
     # set parameters and compute predictions
-    predict_result_daal = predict_alg.compute(X, builder.model)
+    daal4py_prediction = predict_alg.compute(X, builder.model).prediction
     predict_result_sklearn = clf.predict(X)
-    assert np.allclose(predict_result_daal.prediction.flatten(), predict_result_sklearn)
-    return (builder, predict_result_daal)
+    assert np.allclose(daal4py_prediction.flatten(), predict_result_sklearn)
+
+    # set parameters and compute predictions
+    predict_alg = d4p.logistic_regression_prediction(
+        nClasses=n_classes, resultsToEvaluate="computeClassProbabilities"
+    )
+    # set parameters and compute predictions
+    daal4py_probabilities = predict_alg.compute(X, builder.model).probabilities
+    predict_result_sklearn = clf.predict_proba(X)
+    assert np.allclose(daal4py_probabilities, predict_result_sklearn)
+
+    # set parameters and compute predictions
+    predict_alg = d4p.logistic_regression_prediction(
+        nClasses=n_classes, resultsToEvaluate="computeClassLogProbabilities"
+    )
+    # set parameters and compute predictions
+    daal4py_logProbabilities = predict_alg.compute(X, builder.model).logProbabilities
+    predict_result_sklearn = clf.predict_log_proba(X)
+    assert np.allclose(daal4py_logProbabilities, predict_result_sklearn)
+
+    return (builder, daal4py_prediction, daal4py_probabilities, daal4py_logProbabilities)
 
 
 if __name__ == "__main__":
     if daal_check_version(((2021, "P", 1))):
-        (builder, predict_result_daal) = main()
+        (
+            builder,
+            daal4py_prediction,
+            daal4py_probabilities,
+            daal4py_logProbabilities,
+        ) = main()
         print("\nLogistic Regression coefficients:\n", builder.model)
         print(
             "\nLogistic regression prediction results (first 10 rows):\n",
-            predict_result_daal.prediction[0:10],
+            daal4py_prediction[0:10],
         )
         print(
             "\nLogistic regression prediction probabilities (first 10 rows):\n",
-            predict_result_daal.probabilities[0:10],
+            daal4py_probabilities[0:10],
         )
         print(
             "\nLogistic regression prediction log probabilities (first 10 rows):\n",
-            predict_result_daal.logProbabilities[0:10],
+            daal4py_logProbabilities[0:10],
         )
         print("All looks good!")
