@@ -39,5 +39,10 @@ if [ -n "${OCL_ICD_FILENAMES}" ]; then
     echo "OCL_ICD_FILENAMES is set to ${OCL_ICD_FILENAMES}"
 fi
 
+# Show devices listed by dpctl
+if [ -n "$(pip list | grep dpctl)" ]; then
+    python -c "import dpctl; print(dpctl.get_devices())"
+fi
+
 python scripts/run_sklearn_tests.py -d ${1:-none}
 exit $?

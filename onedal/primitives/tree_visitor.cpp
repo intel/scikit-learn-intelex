@@ -65,7 +65,7 @@ public:
             : left_child(ONEDAL_PY_TERMINAL_NODE),
               right_child(ONEDAL_PY_TERMINAL_NODE),
               feature(ONEDAL_PY_NO_FEATURE),
-              threshold(get_nan64()),
+              threshold(ONEDAL_PY_NO_FEATURE),
               impurity(get_nan64()),
               n_node_samples(0),
               weighted_n_node_samples(0.0),
