@@ -728,7 +728,6 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-50-500-l2-1000-5-100]
   - neighbors/tests/test_neighbors.py::test_neigh_predictions_algorithm_agnosticity[float64-KNeighborsRegressor-100-1000-l2-1000-5-100]
   # failing due to numeric/code error
-  - ensemble/tests/test_bagging.py::test_parallel_classification
   - linear_model/tests/test_common.py::test_balance_property[42-False-LogisticRegressionCV]
   - sklearn/manifold/tests/test_t_sne.py::test_n_iter_without_progress
   - model_selection/tests/test_search.py::test_searchcv_raise_warning_with_non_finite_score[RandomizedSearchCV-specialized_params1-False]
