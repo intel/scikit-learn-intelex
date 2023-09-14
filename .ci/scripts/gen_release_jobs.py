@@ -24,10 +24,9 @@ args = parser.parse_args()
 
 CHANNELS = args.channels
 PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11"]
-SYSTEMS = ["ubuntu-latest", "macos-latest", "windows-latest"]
+SYSTEMS = ["ubuntu-latest", "windows-latest"]
 ACTIVATE = {
     "ubuntu-latest": "conda activate",
-    "macos-latest": "source activate",
     "windows-latest": "call activate",
 }
 
