@@ -28,7 +28,9 @@ from daal4py.sklearn._utils import (
     get_patch_message,
     getFPType,
     make2d,
+    run_with_n_jobs,
     sklearn_check_version,
+    support_init_with_n_jobs,
 )
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -237,6 +239,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     return self
 
 
+@run_with_n_jobs
 def _daal4py_predict_enet(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -403,6 +406,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     return self
 
 
+@run_with_n_jobs
 def _daal4py_predict_lasso(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -426,6 +430,7 @@ def _daal4py_predict_lasso(self, X):
     return res
 
 
+@run_with_n_jobs
 def _fit(self, X, y, sample_weight=None, check_input=True):
     if sklearn_check_version("1.0"):
         self._check_feature_names(X, reset=True)
@@ -622,6 +627,7 @@ class ElasticNet(ElasticNet_original):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**ElasticNet_original._parameter_constraints}
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -652,6 +658,7 @@ class ElasticNet(ElasticNet_original):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -818,6 +825,7 @@ class Lasso(Lasso_original):
 
     if sklearn_check_version("1.2"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -847,6 +855,7 @@ class Lasso(Lasso_original):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,

@@ -33,7 +33,13 @@ from sklearn.utils.extmath import row_norms
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import PatchingConditionsChain, daal_check_version, getFPType
+from .._utils import (
+    PatchingConditionsChain,
+    daal_check_version,
+    getFPType,
+    run_with_n_jobs,
+    support_init_with_n_jobs,
+)
 
 
 def _tolerance(X, rtol):
@@ -369,6 +375,7 @@ def _predict(self, X, sample_weight=None):
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
+    @support_init_with_n_jobs
     def __init__(
         self,
         n_clusters=8,
@@ -398,6 +405,7 @@ class KMeans(KMeans_original):
         )
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def fit(self, X, y=None, sample_weight=None):
         """
         Compute k-means clustering.
@@ -428,6 +436,7 @@ class KMeans(KMeans_original):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def predict(self, X, sample_weight=None):
         """
         Predict the closest cluster each sample in X belongs to.

@@ -46,7 +46,9 @@ from sklearn.utils.validation import (
 from daal4py.sklearn._utils import (
     check_tree_nodes,
     daal_check_version,
+    run_with_n_jobs,
     sklearn_check_version,
+    support_init_with_n_jobs,
 )
 from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
@@ -1610,6 +1612,7 @@ class ExtraTreesClassifier(ForestClassifier):
 
     elif sklearn_check_version("1.0"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1673,6 +1676,7 @@ class ExtraTreesClassifier(ForestClassifier):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1817,6 +1821,7 @@ class ExtraTreesRegressor(ForestRegressor):
 
     elif sklearn_check_version("1.0"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1878,6 +1883,7 @@ class ExtraTreesRegressor(ForestRegressor):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,

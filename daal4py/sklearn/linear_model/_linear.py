@@ -43,9 +43,12 @@ from .._utils import (
     getFPType,
     is_DataFrame,
     make2d,
+    run_with_n_jobs,
+    support_init_with_n_jobs,
 )
 
 
+@run_with_n_jobs
 def _daal4py_fit(self, X, y_):
     y = make2d(y_)
     X_fptype = getFPType(X)
@@ -83,6 +86,7 @@ def _daal4py_fit(self, X, y_):
     return self
 
 
+@run_with_n_jobs
 def _daal4py_predict(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -262,6 +266,7 @@ class LinearRegression(LinearRegression_original):
             **LinearRegression_original._parameter_constraints
         }
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             fit_intercept=True,
@@ -278,6 +283,7 @@ class LinearRegression(LinearRegression_original):
 
     elif sklearn_check_version("0.24"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             fit_intercept=True,
@@ -296,6 +302,7 @@ class LinearRegression(LinearRegression_original):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             fit_intercept=True,

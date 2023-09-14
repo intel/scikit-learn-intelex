@@ -31,7 +31,9 @@ from .._utils import (
     get_patch_message,
     getFPType,
     make2d,
+    run_with_n_jobs,
     sklearn_check_version,
+    support_init_with_n_jobs,
 )
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -40,6 +42,7 @@ if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
 
 
+@run_with_n_jobs
 def _daal4py_fit(self, X, y_):
     X = make2d(X)
     y = make2d(y_)
@@ -79,6 +82,7 @@ def _daal4py_fit(self, X, y_):
     return self
 
 
+@run_with_n_jobs
 def _daal4py_predict(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -259,6 +263,7 @@ class Ridge(Ridge_original, _BaseRidge):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**Ridge_original._parameter_constraints}
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -281,6 +286,7 @@ class Ridge(Ridge_original, _BaseRidge):
 
     elif sklearn_check_version("1.0"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -305,6 +311,7 @@ class Ridge(Ridge_original, _BaseRidge):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,

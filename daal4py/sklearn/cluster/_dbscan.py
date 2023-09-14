@@ -26,7 +26,7 @@ import daal4py
 from daal4py.sklearn._utils import PatchingConditionsChain, getFPType, make2d
 
 from .._device_offload import support_usm_ndarray
-from .._utils import sklearn_check_version
+from .._utils import run_with_n_jobs, sklearn_check_version, support_init_with_n_jobs
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -191,6 +191,7 @@ class DBSCAN(DBSCAN_original):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**DBSCAN_original._parameter_constraints}
 
+    @support_init_with_n_jobs
     def __init__(
         self,
         eps=0.5,
@@ -212,6 +213,7 @@ class DBSCAN(DBSCAN_original):
         self.n_jobs = n_jobs
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def fit(self, X, y=None, sample_weight=None):
         """Perform DBSCAN clustering from features, or distance matrix.
 

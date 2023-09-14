@@ -17,12 +17,18 @@
 import os
 import sys
 import warnings
+from functools import wraps
+from inspect import Parameter, signature
+from numbers import Integral
 
 import numpy as np
+import threadpoolctl
 from numpy.lib.recfunctions import require_fields
 from sklearn import __version__ as sklearn_version
 
 from daal4py import _get__daal_link_version__ as dv
+from daal4py import daalinit as set_n_threads
+from daal4py import num_threads as get_n_threads
 
 try:
     from packaging.version import Version
@@ -257,3 +263,48 @@ class PatchingConditionsChain:
         if logs:
             self.write_log()
         return self.patching_is_enabled
+
+
+# decorator for addition of "n_jobs" parameter to estimator's init
+def support_init_with_n_jobs(init_function):
+    @wraps(init_function)
+    def init_with_n_jobs(self, *args, n_jobs=None, **kwargs):
+        self.n_jobs = n_jobs
+        if sklearn_check_version("1.2") and hasattr(self, "_parameter_constraints"):
+            parameter_constraints = self._parameter_constraints
+            if "n_jobs" not in parameter_constraints:
+                parameter_constraints["n_jobs"] = [Integral, None]
+        init_function(self, *args, **kwargs)
+
+    # add "n_jobs" parameter to signature of wrapped init if it's not listed
+    sig = signature(init_function)
+    original_params = list(sig.parameters.values())
+    if "n_jobs" not in list(map(lambda param: param.name, original_params)):
+        original_params.append(Parameter("n_jobs", Parameter.KEYWORD_ONLY, default=None))
+        init_with_n_jobs.__signature__ = sig.replace(parameters=original_params)
+
+    return init_with_n_jobs
+
+
+# decorator for running of methods containing oneDAL kernels with "n_jobs"
+def run_with_n_jobs(method):
+    @wraps(method)
+    def method_wrapper(self, *args, **kwargs):
+        # get new and old numbers of threads
+        n_jobs = self.n_jobs
+        old_n_threads = get_n_threads()
+        # receive n_threads limitation from higher parallel context
+        # using `threadpoolctl.threadpool_info`
+        num_threads = threadpoolctl.threadpool_info()[0]["num_threads"]
+        if n_jobs is None:
+            n_jobs = num_threads
+        # set number of threads
+        set_n_threads(n_jobs)
+        # run method
+        result = method(self, *args, **kwargs)
+        # reset number of threads to old one
+        if n_jobs is not None:
+            set_n_threads(old_n_threads)
+        return result
+
+    return method_wrapper

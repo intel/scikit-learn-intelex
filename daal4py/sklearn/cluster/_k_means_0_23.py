@@ -35,7 +35,13 @@ from sklearn.utils.validation import (
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
+from .._utils import (
+    PatchingConditionsChain,
+    getFPType,
+    run_with_n_jobs,
+    sklearn_check_version,
+    support_init_with_n_jobs,
+)
 
 if sklearn_check_version("1.1"):
     from sklearn.utils.validation import _check_sample_weight, _is_arraylike_not_scalar
@@ -520,6 +526,7 @@ class KMeans(KMeans_original):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KMeans_original._parameter_constraints}
 
+        @support_init_with_n_jobs
         @_deprecate_positional_args
         def __init__(
             self,
@@ -548,6 +555,7 @@ class KMeans(KMeans_original):
 
     elif sklearn_check_version("1.0"):
 
+        @support_init_with_n_jobs
         @_deprecate_positional_args
         def __init__(
             self,
@@ -576,6 +584,7 @@ class KMeans(KMeans_original):
 
     else:
 
+        @support_init_with_n_jobs
         @_deprecate_positional_args
         def __init__(
             self,
@@ -607,6 +616,7 @@ class KMeans(KMeans_original):
             )
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def fit(self, X, y=None, sample_weight=None):
         """
         Compute k-means clustering.
@@ -637,6 +647,7 @@ class KMeans(KMeans_original):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def predict(self, X, sample_weight=None):
         """
         Predict the closest cluster each sample in X belongs to.

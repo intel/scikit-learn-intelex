@@ -32,7 +32,13 @@ from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
 import daal4py as d4p
 
-from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
+from .._utils import (
+    PatchingConditionsChain,
+    getFPType,
+    run_with_n_jobs,
+    sklearn_check_version,
+    support_init_with_n_jobs,
+)
 from .logistic_loss import (
     _daal4py_cross_entropy_loss_extra_args,
     _daal4py_grad_,
@@ -775,6 +781,7 @@ def __logistic_regression_path(
     return np.array(coefs), np.array(Cs), n_iter
 
 
+@run_with_n_jobs
 def daal4py_predict(self, X, resultsToEvaluate):
     check_is_fitted(self)
     if sklearn_check_version("1.0"):
@@ -952,6 +959,7 @@ if sklearn_check_version("0.24"):
                 **LogisticRegression_original._parameter_constraints
             }
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             penalty="l2",
@@ -1147,6 +1155,7 @@ else:
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             penalty="l2",

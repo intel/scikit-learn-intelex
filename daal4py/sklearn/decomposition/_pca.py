@@ -26,7 +26,13 @@ from sklearn.utils.validation import check_is_fitted
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
+from .._utils import (
+    PatchingConditionsChain,
+    getFPType,
+    run_with_n_jobs,
+    sklearn_check_version,
+    support_init_with_n_jobs,
+)
 
 if sklearn_check_version("0.22"):
     from sklearn.decomposition._pca import PCA as PCA_original
@@ -44,6 +50,7 @@ else:
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 
+    @support_init_with_n_jobs
     def __init__(
         self,
         n_components=None,
@@ -86,6 +93,7 @@ class PCA(PCA_original):
                     "was of type=%r" % (n_components, type(n_components))
                 )
 
+    @run_with_n_jobs
     def _fit_full_daal4py(self, X, n_components):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -294,6 +302,7 @@ class PCA(PCA_original):
         _patching_status.write_log()
         return result
 
+    @run_with_n_jobs
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
         if sklearn_check_version("0.22"):
             check_is_fitted(self)

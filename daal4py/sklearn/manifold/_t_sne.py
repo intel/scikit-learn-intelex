@@ -31,6 +31,7 @@ import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
     daal_check_version,
+    run_with_n_jobs,
     sklearn_check_version,
 )
 
@@ -94,6 +95,7 @@ class TSNE(BaseTSNE):
         """
         return super().fit(X, y)
 
+    @run_with_n_jobs
     def _daal_tsne(self, P, n_samples, X_embedded):
         """Runs t-SNE."""
         # t-SNE minimizes the Kullback-Leiber divergence of the Gaussians P
