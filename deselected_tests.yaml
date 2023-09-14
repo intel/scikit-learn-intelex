@@ -37,7 +37,7 @@ deselected_tests:
   - ensemble/_forest.py::sklearn.ensemble._forest.RandomForestRegressor
   - ensemble/_voting.py::sklearn.ensemble._voting.VotingRegressor
 
-  # Non-critical, but there are significant differences due to different implementations\
+  # Non-critical, but there are significant differences due to different implementations
   - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float64]
   - ensemble/tests/test_voting.py::test_set_estimator_drop
   - linear_model/tests/test_common.py::test_balance_property[42-True-LinearRegression]
