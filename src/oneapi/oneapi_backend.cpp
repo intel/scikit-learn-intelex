@@ -27,7 +27,11 @@ static_assert(false, "DAAL_SYCL_INTERFACE not defined")
     : m_ctxt(NULL)
 {
     if (dev == "gpu")
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
         m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()), from_python);
+#else // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     else if (dev == "cpu")
         m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
     else if (dev == "host")
