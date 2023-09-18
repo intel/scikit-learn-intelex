@@ -740,6 +740,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         self._cached_estimators_ = estimators_
         return estimators_
 
+    @run_with_n_jobs
     def _daal_predict_proba(self, X):
         X_fptype = getFPType(X)
         dfc_algorithm = daal4py.decision_forest_classification_prediction(

@@ -16,10 +16,13 @@
 
 import os
 import sys
+import threading
 import warnings
 from functools import wraps
 from inspect import Parameter, signature
+from multiprocessing import cpu_count
 from numbers import Integral
+from warnings import warn
 
 import numpy as np
 import threadpoolctl
@@ -269,12 +272,12 @@ class PatchingConditionsChain:
 def support_init_with_n_jobs(init_function):
     @wraps(init_function)
     def init_with_n_jobs(self, *args, n_jobs=None, **kwargs):
-        self.n_jobs = n_jobs
         if sklearn_check_version("1.2") and hasattr(self, "_parameter_constraints"):
             parameter_constraints = self._parameter_constraints
             if "n_jobs" not in parameter_constraints:
                 parameter_constraints["n_jobs"] = [Integral, None]
         init_function(self, *args, **kwargs)
+        self.n_jobs = n_jobs
 
     # add "n_jobs" parameter to signature of wrapped init if it's not listed
     sig = signature(init_function)
@@ -290,21 +293,45 @@ def support_init_with_n_jobs(init_function):
 def run_with_n_jobs(method):
     @wraps(method)
     def method_wrapper(self, *args, **kwargs):
+        method_name = f"{self.__class__.__name__}.{method.__name__}"
+        logger = logging.getLogger("sklearnex")
         # get new and old numbers of threads
         n_jobs = self.n_jobs
         old_n_threads = get_n_threads()
-        # receive n_threads limitation from higher parallel context
+        n_cpus = cpu_count()
+        # receive n_threads limitation from upper context
         # using `threadpoolctl.threadpool_info`
-        num_threads = threadpoolctl.threadpool_info()[0]["num_threads"]
-        if n_jobs is None:
-            n_jobs = num_threads
+        n_threads_map = {
+            backend["internal_api"]: backend["num_threads"]
+            for backend in threadpoolctl.threadpool_info()
+        }
+        # openBLAS is limited by 128 threads by default.
+        # thus, 128 threads from openBLAS is uninformative
+        if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
+            del n_threads_map["openblas"]
+        n_threads = (
+            max(n_threads_map.values()) if len(n_threads_map) > 0 else old_n_threads
+        )
+        if not isinstance(threading.current_thread(), threading._MainThread):
+            warn(
+                "'Threading' parallel backend is not supported by "
+                "Intel(R) Extension for Scikit-learn*"
+            )
+            n_jobs = old_n_threads
+        if n_jobs is None or n_jobs == 0:
+            if n_threads == n_cpus:
+                n_jobs = old_n_threads
+            else:
+                n_jobs = n_threads
+        elif n_jobs < 0:
+            n_jobs = max(1, n_threads + n_jobs + 1)
+        logger.debug(f"{method_name}: using {n_jobs} threads (previous: {old_n_threads})")
         # set number of threads
         set_n_threads(n_jobs)
         # run method
         result = method(self, *args, **kwargs)
         # reset number of threads to old one
-        if n_jobs is not None:
-            set_n_threads(old_n_threads)
+        set_n_threads(old_n_threads)
         return result
 
     return method_wrapper
