@@ -24,7 +24,7 @@ from libcpp.string cimport string as std_string
 
 cdef extern from "oneapi/oneapi.h":
     cdef cppclass PySyclExecutionContext:
-        PySyclExecutionContext(const std_string & dev) except +
+        PySyclExecutionContext(const std_string & dev, const bool from_python) except +
         void apply() except +
     void * to_device(void *, int, int*)
     void * to_daal_sycl_nt(void*, int, int*)
@@ -41,9 +41,9 @@ cdef class sycl_execution_context:
     cdef PySyclExecutionContext * c_ptr
     cdef object dev
 
-    def __cinit__(self, dev):
+    def __cinit__(self, dev, from_python=True):
         self.dev = dev
-        self.c_ptr = new PySyclExecutionContext(to_std_string(<PyObject *>dev))
+        self.c_ptr = new PySyclExecutionContext(to_std_string(<PyObject *>dev), from_python)
 
     def __dealloc__(self):
         del self.c_ptr
@@ -111,11 +111,11 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def sycl_context(dev='host', host_offload_on_fail=False):
+def sycl_context(dev='host', host_offload_on_fail=False, from_python=True):
     # Code to acquire resource
     prev_ctxt = _get_sycl_ctxt()
     prev_params = _get_sycl_ctxt_params()
-    ctxt = sycl_execution_context(dev)
+    ctxt = sycl_execution_context(dev, from_python=from_python)
     _set_in_sycl_ctxt(ctxt, host_offload_on_fail=host_offload_on_fail)
     try:
         yield ctxt

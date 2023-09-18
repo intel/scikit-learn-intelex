@@ -36,6 +36,9 @@ runner_dir = os.path.dirname(runner_path)
 examples_rootdir = jp(
     os.path.dirname(os.path.abspath(os.path.join(runner_path, os.pardir))), "examples"
 )
+tests_rootdir = jp(
+    os.path.dirname(os.path.abspath(os.path.join(runner_path, os.pardir))), "tests"
+)
 
 IS_WIN = False
 IS_MAC = False
@@ -63,6 +66,7 @@ else:
 ex_log_dirs = [
     (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
     (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
+    (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
 availabe_devices = []

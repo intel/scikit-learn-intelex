@@ -14,28 +14,41 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py low order moments example for streaming on shared memory systems
+# daal4py low order moments example for shared memory systems
 
 import os
-
-# let's use a generator for getting stream from file (defined in stream.py)
-import sys
 
 import numpy as np
 
 import daal4py as d4p
 from daal4py.oneapi import sycl_buffer
 
-sys.path.insert(0, "..")
-from stream import read_next
+# let's try to use pandas' fast csv reader
+try:
+    import pandas
+
+    def read_csv(f, c, t=np.float64):
+        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
+except ImportError:
+    # fall back to numpy loadtxt
+    def read_csv(f, c, t=np.float64):
+        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
+
 
 try:
     from daal4py.oneapi import sycl_context
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
+
+
+# Commone code for both CPU and GPU computations
+def compute(data, method):
+    alg = d4p.low_order_moments(method=method, fptype="float")
+    return alg.compute(data)
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -57,34 +70,30 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=None, method="defaultDense"):
+def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
-    infile = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
+    file = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "covcormoments_dense.csv",
+    )
+    data = readcsv(file, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    # Configure a low order moments object for streaming
-    algo = d4p.low_order_moments(streaming=True, fptype="float")
-    # get the generator (defined in stream.py)...
-    rn = read_next(infile, 55, readcsv)
-    # ... and iterate through chunks/stream
-    for chunk in rn:
-        algo.compute(chunk)
-    # finalize computation
-    result_classic = algo.finalize()
+    result_classic = compute(data, method)
+
+    data = to_numpy(data)
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
         with sycl_context("gpu"):
-            # Configure a low order moments object for streaming
-            algo = d4p.low_order_moments(streaming=True, fptype="float")
-            # get the generator (defined in stream.py)...
-            rn = read_next(infile, 55, readcsv)
-            # ... and iterate through chunks/stream
-            for chunk in rn:
-                sycl_chunk = sycl_buffer(to_numpy(chunk))
-                algo.compute(sycl_chunk)
-            # finalize computation
-            result_gpu = algo.finalize()
+            sycl_data = sycl_buffer(data)
+            result_gpu = compute(sycl_data, "defaultDense")
         for name in [
             "minimum",
             "maximum",
@@ -101,19 +110,27 @@ def main(readcsv=None, method="defaultDense"):
 
     # It is possible to specify to make the computations on CPU
     with sycl_context("cpu"):
-        # Configure a low order moments object for streaming
-        algo = d4p.low_order_moments(streaming=True, fptype="float")
-        # get the generator (defined in stream.py)...
-        rn = read_next(infile, 55, readcsv)
-        # ... and iterate through chunks/stream
-        for chunk in rn:
-            sycl_chunk = sycl_buffer(to_numpy(chunk))
-            algo.compute(sycl_chunk)
-        # finalize computation
-        result_cpu = algo.finalize()
+        sycl_data = sycl_buffer(data)
+        result_cpu = compute(sycl_data, "defaultDense")
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
+    assert all(
+        getattr(result_classic, name).shape == (1, data.shape[1])
+        for name in [
+            "minimum",
+            "maximum",
+            "sum",
+            "sumSquares",
+            "sumSquaresCentered",
+            "mean",
+            "secondOrderRawMoment",
+            "variance",
+            "standardDeviation",
+            "variation",
+        ]
+    )
+
     for name in [
         "minimum",
         "maximum",

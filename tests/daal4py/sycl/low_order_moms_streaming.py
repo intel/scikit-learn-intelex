@@ -14,41 +14,63 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py low order moments example for shared memory systems
+# daal4py low order moments example for streaming on shared memory systems
 
 import os
+
+# let's use a generator for getting stream from file (defined in stream.py)
+import sys
 
 import numpy as np
 
 import daal4py as d4p
 from daal4py.oneapi import sycl_buffer
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
-
+sys.path.insert(0, "..")
 
 try:
     from daal4py.oneapi import sycl_context
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
+try:
+    import pandas
 
-# Commone code for both CPU and GPU computations
-def compute(data, method):
-    alg = d4p.low_order_moments(method=method, fptype="float")
-    return alg.compute(data)
+    def read_csv(f, c=None, s=0, n=None, t=np.float64):
+        return pandas.read_csv(
+            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
+        )
+
+except Exception:
+    # fall back to numpy genfromtxt
+    def read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max):
+        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
+        if a.shape[0] == 0:
+            raise Exception("done")
+        if a.ndim == 1:
+            return a[:, np.newaxis]
+        return a
+
+
+# a generator which reads a file in chunks
+def read_next(file, chunksize, readcsv=read_csv):
+    assert os.path.isfile(file)
+    s = 0
+    while True:
+        # if found a smaller chunk we set s to < 0 to indicate eof
+        if s < 0:
+            return
+        a = read_csv(file, s=s, n=chunksize)
+        # last chunk is usually smaller, if not,
+        # numpy will print warning in next iteration
+        if chunksize > a.shape[0]:
+            s = -1
+        else:
+            s += a.shape[0]
+        yield a
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -70,21 +92,43 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=None, method="defaultDense"):
     # read data from file
-    file = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
-    data = readcsv(file, range(10), t=np.float32)
+    infile = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "covcormoments_dense.csv",
+    )
 
     # Using of the classic way (computations on CPU)
-    result_classic = compute(data, method)
-
-    data = to_numpy(data)
+    # Configure a low order moments object for streaming
+    algo = d4p.low_order_moments(streaming=True, fptype="float")
+    # get the generator (defined in stream.py)...
+    rn = read_next(infile, 55, readcsv)
+    # ... and iterate through chunks/stream
+    for chunk in rn:
+        algo.compute(chunk)
+    # finalize computation
+    result_classic = algo.finalize()
 
     # It is possible to specify to make the computations on GPU
     if gpu_available:
         with sycl_context("gpu"):
-            sycl_data = sycl_buffer(data)
-            result_gpu = compute(sycl_data, "defaultDense")
+            # Configure a low order moments object for streaming
+            algo = d4p.low_order_moments(streaming=True, fptype="float")
+            # get the generator (defined in stream.py)...
+            rn = read_next(infile, 55, readcsv)
+            # ... and iterate through chunks/stream
+            for chunk in rn:
+                sycl_chunk = sycl_buffer(to_numpy(chunk))
+                algo.compute(sycl_chunk)
+            # finalize computation
+            result_gpu = algo.finalize()
         for name in [
             "minimum",
             "maximum",
@@ -101,27 +145,19 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # It is possible to specify to make the computations on CPU
     with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, "defaultDense")
+        # Configure a low order moments object for streaming
+        algo = d4p.low_order_moments(streaming=True, fptype="float")
+        # get the generator (defined in stream.py)...
+        rn = read_next(infile, 55, readcsv)
+        # ... and iterate through chunks/stream
+        for chunk in rn:
+            sycl_chunk = sycl_buffer(to_numpy(chunk))
+            algo.compute(sycl_chunk)
+        # finalize computation
+        result_cpu = algo.finalize()
 
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    assert all(
-        getattr(result_classic, name).shape == (1, data.shape[1])
-        for name in [
-            "minimum",
-            "maximum",
-            "sum",
-            "sumSquares",
-            "sumSquaresCentered",
-            "mean",
-            "secondOrderRawMoment",
-            "variance",
-            "standardDeviation",
-            "variation",
-        ]
-    )
-
     for name in [
         "minimum",
         "maximum",

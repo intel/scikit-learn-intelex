@@ -41,7 +41,7 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
@@ -80,7 +80,9 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="svdDense"):
-    infile = os.path.join("..", "data", "batch", "pca_normalized.csv")
+    infile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "pca_normalized.csv"
+    )
 
     # Load the data
     data = readcsv(infile, t=np.float32)

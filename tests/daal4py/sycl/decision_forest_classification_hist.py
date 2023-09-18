@@ -102,8 +102,26 @@ def to_numpy(data):
 def main(readcsv=read_csv):
     nFeatures = 3
     # input data file
-    train_file = os.path.join("..", "data", "batch", "df_classification_train.csv")
-    predict_file = os.path.join("..", "data", "batch", "df_classification_test.csv")
+    train_file = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "df_classification_train.csv",
+    )
+    predict_file = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "df_classification_test.csv",
+    )
 
     # Read train data. Let's use 3 features per observation
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)

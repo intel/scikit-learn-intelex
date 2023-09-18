@@ -41,7 +41,7 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
@@ -92,8 +92,26 @@ def to_numpy(data):
 
 def main(readcsv=read_csv):
     # input data file
-    train_file = os.path.join("..", "data", "batch", "svm_two_class_train_dense.csv")
-    predict_file = os.path.join("..", "data", "batch", "svm_two_class_test_dense.csv")
+    train_file = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "svm_two_class_train_dense.csv",
+    )
+    predict_file = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "svm_two_class_test_dense.csv",
+    )
 
     nFeatures = 20
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
