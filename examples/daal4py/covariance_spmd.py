@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,14 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py covariance example for distributed memory systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./covariance_spmd.py
 
-# let's use a reading of file in chunks (defined in spmd_utils.py)
-from spmd_utils import get_chunk_params, read_csv
+# let's use a reading of file in chunks (defined in spmd_chunks_read.py)
+from spmd_chunks_read import get_chunk_params, read_csv
 
 import daal4py as d4p
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import logging
 
@@ -30,10 +30,11 @@ if daal_check_version((2023, "P", 200)):
         check_is_fitted,
     )
 
-    from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+    from daal4py.sklearn._utils import sklearn_check_version
     from onedal.cluster import KMeans as onedal_KMeans
 
     from ..._device_offload import dispatch, wrap_output_data
+    from ..._utils import PatchingConditionsChain
     from ._common import BaseKMeans
 
     class KMeans(sklearn_KMeans, BaseKMeans):
@@ -167,7 +168,7 @@ if daal_check_version((2023, "P", 200)):
                 ]
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         def fit(self, X, y=None, sample_weight=None):
             """Compute k-means clustering.
@@ -216,7 +217,10 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            self._check_params_vs_input(X)
+            if sklearn_check_version("1.2"):
+                self._check_params_vs_input(X)
+            else:
+                self._check_params(X)
 
             self._n_features_out = self.n_clusters
             self._n_threads = _openmp_effective_n_threads()
@@ -248,7 +252,7 @@ if daal_check_version((2023, "P", 200)):
                 ]
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         @wrap_output_data
         def predict(self, X):

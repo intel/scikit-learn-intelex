@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py Gradient Bossting Classification model creation from LightGBM example
 
@@ -59,7 +59,9 @@ def main(readcsv=pd_read_csv):
     }
 
     # Training
-    lgb_model = lgb.train(params, lgb_train, valid_sets=lgb_train, verbose_eval=False)
+    lgb_model = lgb.train(
+        params, lgb_train, valid_sets=lgb_train, callbacks=[lgb.log_evaluation(0)]
+    )
 
     # LightGBM prediction
     lgb_prediction = np.argmax(lgb_model.predict(X_test), axis=1)

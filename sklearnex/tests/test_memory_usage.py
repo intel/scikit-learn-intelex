@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import gc
 import logging
@@ -90,7 +90,7 @@ def get_patched_estimators(ban_list, output_list):
         estimator, name = listing[0][0][2], listing[0][0][1]
         if not isinstance(estimator, types.FunctionType):
             if name not in ban_list:
-                if isinstance(estimator(), BaseEstimator):
+                if issubclass(estimator, BaseEstimator):
                     if hasattr(estimator, "fit"):
                         output_list.append(estimator)
 

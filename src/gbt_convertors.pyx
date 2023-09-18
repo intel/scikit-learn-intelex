@@ -14,12 +14,13 @@
 # limitations under the License.
 #===============================================================================
 
-from typing import List, Deque, Dict, Any
-from collections import deque
-from os import remove, getpid
 import json
 import re
+from collections import deque
+from os import getpid, remove
 from time import time
+from typing import Any, Deque, Dict, List
+
 
 def get_lightgbm_params(booster):
     return booster.dump_model()
@@ -175,8 +176,11 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
     else:
         is_regression = True
 
-    n_iterations = booster.best_iteration + 1
-    trees_arr = trees_arr[: n_iterations * (n_classes if n_classes > 2 else 1)]
+    if hasattr(booster, "best_iteration"):
+        n_iterations = booster.best_iteration + 1
+        trees_arr = trees_arr[: n_iterations * (n_classes if n_classes > 2 else 1)]
+    else:
+        n_iterations = int(len(trees_arr) / (n_classes if n_classes > 2 else 1))
 
     # Create + base iteration
     if is_regression:

@@ -188,7 +188,7 @@ struct params2desc {
                         .set_bootstrap(params["bootstrap"].cast<bool>())
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
                         .set_splitter_mode(get_splitter_mode(params))
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20230101
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230101
                         .set_error_metric_mode(get_error_metric_mode(params))
                         .set_variable_importance_mode(get_variable_importance_mode(params));
 
@@ -197,6 +197,10 @@ struct params2desc {
             desc.set_infer_mode(get_infer_mode(params));
             desc.set_voting_mode(get_voting_mode(params));
         }
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+        desc.set_seed(params["seed"].cast<std::int64_t>());
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
         return desc;
     }
@@ -214,6 +218,17 @@ void init_train_ops(py::module_& m) {
               using input_t = train_input<Task>;
 
               train_ops ops(policy, input_t{ data, responses, weights }, params2desc{});
+              return fptype2t{ method2t{ Task{}, ops } }(params);
+          });
+    m.def("train",
+          [](const Policy& policy,
+             const py::dict& params,
+             const table& data,
+             const table& responses) {
+              using namespace decision_forest;
+              using input_t = train_input<Task>;
+
+              train_ops ops(policy, input_t{ data, responses}, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }

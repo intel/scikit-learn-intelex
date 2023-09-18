@@ -26,11 +26,6 @@ if [ ! -z "${DPCPPROOT}" ]; then
     source ${DPCPPROOT}/env/vars.sh
 fi
 
-# if DAALROOT not exists then provide PREFIX
-if [ "${DAALROOT}" != "" ] && [ "${DALROOT}" == "" ] ; then
-    export DALROOT="${DAALROOT}"
-fi
-
 if [ -z "${DALROOT}" ]; then
     export DALROOT=${PREFIX}
 fi

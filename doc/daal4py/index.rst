@@ -19,6 +19,9 @@
 #####################################################
 Fast, Scalable and Easy Machine Learning With DAAL4PY
 #####################################################
+
+.. include:: note.rst
+
 Daal4py makes your Machine Learning algorithms in Python lightning fast and easy to use. It provides
 highly configurable Machine Learning kernels, some of which support streaming input data and/or can
 be easily and efficiently scaled out to clusters of workstations.  Internally it uses Intel(R)

@@ -42,7 +42,7 @@ struct skl_tree_node {
         : left_child(TERMINAL_NODE),
           right_child(TERMINAL_NODE),
           feature(NO_FEATURE),
-          threshold(get_nan64()),
+          threshold(NO_FEATURE),
           impurity(get_nan64()),
           n_node_samples(0),
           weighted_n_node_samples(0.0),

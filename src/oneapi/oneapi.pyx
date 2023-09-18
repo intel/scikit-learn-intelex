@@ -17,14 +17,14 @@
 # distutils: language = c++
 # cython: language_level=2
 
-from libcpp.string cimport string as std_string
-from cpython.ref cimport PyObject, Py_INCREF
+from cpython.ref cimport Py_INCREF, PyObject
 from libcpp cimport bool
+from libcpp.string cimport string as std_string
 
 
 cdef extern from "oneapi/oneapi.h":
     cdef cppclass PySyclExecutionContext:
-        PySyclExecutionContext(const std_string & dev) except +
+        PySyclExecutionContext(const std_string & dev, const bool from_python) except +
         void apply() except +
     void * to_device(void *, int, int*)
     void * to_daal_sycl_nt(void*, int, int*)
@@ -41,9 +41,9 @@ cdef class sycl_execution_context:
     cdef PySyclExecutionContext * c_ptr
     cdef object dev
 
-    def __cinit__(self, dev):
+    def __cinit__(self, dev, from_python=True):
         self.dev = dev
-        self.c_ptr = new PySyclExecutionContext(to_std_string(<PyObject *>dev))
+        self.c_ptr = new PySyclExecutionContext(to_std_string(<PyObject *>dev), from_python)
 
     def __dealloc__(self):
         del self.c_ptr
@@ -56,7 +56,9 @@ cdef class sycl_execution_context:
 
 
 # thread-local storage
+
 from threading import local as threading_local
+
 _tls = threading_local()
 
 def _is_tls_initialized():
@@ -107,12 +109,13 @@ def is_in_sycl_ctxt():
 
 from contextlib import contextmanager
 
+
 @contextmanager
-def sycl_context(dev='host', host_offload_on_fail=False):
+def sycl_context(dev='host', host_offload_on_fail=False, from_python=True):
     # Code to acquire resource
     prev_ctxt = _get_sycl_ctxt()
     prev_params = _get_sycl_ctxt_params()
-    ctxt = sycl_execution_context(dev)
+    ctxt = sycl_execution_context(dev, from_python=from_python)
     _set_in_sycl_ctxt(ctxt, host_offload_on_fail=host_offload_on_fail)
     try:
         yield ctxt
@@ -123,8 +126,11 @@ def sycl_context(dev='host', host_offload_on_fail=False):
 
 
 cimport numpy as np
+
 import numpy as np
+
 from cpython.pycapsule cimport PyCapsule_New
+
 
 cdef class sycl_buffer:
     'Sycl buffer for DAAL. A generic implementation needs to do much more.'

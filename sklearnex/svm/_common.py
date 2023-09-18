@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 from abc import ABC
 
@@ -21,8 +21,10 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 
-from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _column_or_1d
+
+from .._utils import PatchingConditionsChain
 
 
 def get_dual_coef(self):
@@ -53,7 +55,7 @@ class BaseSVM(ABC):
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
         patching_status.and_conditions([(False, "GPU offloading is not supported.")])
-        return patching_status.get_status(logs=True)
+        return patching_status
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -70,7 +72,7 @@ class BaseSVM(ABC):
                     )
                 ]
             )
-            return patching_status.get_status(logs=True)
+            return patching_status
         inference_methods = (
             ["predict"]
             if class_name.endswith("R")
@@ -80,7 +82,7 @@ class BaseSVM(ABC):
             patching_status.and_conditions(
                 [(hasattr(self, "_onedal_estimator"), "oneDAL model was not trained.")]
             )
-            return patching_status.get_status(logs=True)
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
 
@@ -98,39 +100,30 @@ class BaseSVC(BaseSVM):
         return recip_freq[le.transform(classes)]
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
-        from .._config import config_context, get_config
-
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
         clf_base = self.__class__(**params)
 
-        # We use stock metaestimators below, so the only way
-        # to pass a queue is using config_context.
-        cfg = get_config()
-        cfg["target_offload"] = queue
-        with config_context(**cfg):
-            try:
-                n_splits = 5
-                n_jobs = n_splits if queue is None or queue.sycl_device.is_cpu else 1
-                cv = StratifiedKFold(
-                    n_splits=n_splits, shuffle=True, random_state=self.random_state
-                )
-                if sklearn_check_version("0.24"):
-                    self.clf_prob = CalibratedClassifierCV(
-                        clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_jobs
-                    )
-                else:
-                    self.clf_prob = CalibratedClassifierCV(
-                        clf_base, cv=cv, method="sigmoid"
-                    )
-                self.clf_prob.fit(X, y, sample_weight)
-            except ValueError:
-                clf_base = clf_base.fit(X, y, sample_weight)
+        try:
+            n_splits = 5
+            n_jobs = n_splits if queue is None or queue.sycl_device.is_cpu else 1
+            cv = StratifiedKFold(
+                n_splits=n_splits, shuffle=True, random_state=self.random_state
+            )
+            if sklearn_check_version("0.24"):
                 self.clf_prob = CalibratedClassifierCV(
-                    clf_base, cv="prefit", method="sigmoid"
+                    clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_jobs
                 )
-                self.clf_prob.fit(X, y, sample_weight)
+            else:
+                self.clf_prob = CalibratedClassifierCV(clf_base, cv=cv, method="sigmoid")
+            self.clf_prob.fit(X, y, sample_weight)
+        except ValueError:
+            clf_base = clf_base.fit(X, y, sample_weight)
+            self.clf_prob = CalibratedClassifierCV(
+                clf_base, cv="prefit", method="sigmoid"
+            )
+            self.clf_prob.fit(X, y, sample_weight)
 
     def _save_attributes(self):
         self.support_vectors_ = self._onedal_estimator.support_vectors_

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import os
 import sys
@@ -48,10 +48,23 @@ def get_patch_map():
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
 
+        if sklearn_check_version("1.2.1"):
+            import sklearn.utils.parallel as parallel_module
+        else:
+            import sklearn.utils.fixes as parallel_module
+
         # Classes and functions for patching
         from ._config import config_context as config_context_sklearnex
         from ._config import get_config as get_config_sklearnex
         from ._config import set_config as set_config_sklearnex
+
+        if sklearn_check_version("1.2.1"):
+            from .utils.parallel import _FuncWrapper as _FuncWrapper_sklearnex
+        else:
+            from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
+
+        from .cluster import DBSCAN as DBSCAN_sklearnex
+
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -160,6 +173,10 @@ def get_patch_map():
                 ]
             ]
 
+        # DBSCAN
+        mapping.pop("dbscan")
+        mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
+
         # SVM
         mapping.pop("svm")
         mapping.pop("svc")
@@ -220,6 +237,14 @@ def get_patch_map():
         ]
         mapping["config_context"] = [
             [(base_module, "config_context", config_context_sklearnex), None]
+        ]
+
+        # Necessary for proper work with multiple threads
+        mapping["parallel.get_config"] = [
+            [(parallel_module, "get_config", get_config_sklearnex), None]
+        ]
+        mapping["_funcwrapper"] = [
+            [(parallel_module, "_FuncWrapper", _FuncWrapper_sklearnex), None]
         ]
     return mapping
 

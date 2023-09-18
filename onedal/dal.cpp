@@ -40,6 +40,7 @@ ONEDAL_PY_INIT_MODULE(polynomial_kernel);
 ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
+ONEDAL_PY_INIT_MODULE(dbscan);
 ONEDAL_PY_INIT_MODULE(ensemble);
 ONEDAL_PY_INIT_MODULE(decomposition);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
@@ -73,6 +74,7 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_sigmoid_kernel(m);
     init_get_tree(m);
 
+    init_dbscan(m);
     init_decomposition(m);
     init_ensemble(m);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100

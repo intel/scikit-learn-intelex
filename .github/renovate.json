@@ -12,17 +12,10 @@
   },
   "packageRules": [
     {
-      "fileMatch": [
-        "(^|/)requirements-doc.txt$"
-      ],
       "groupName": "Doc packages",
       "matchUpdateTypes": ["patch", "minor"],
-      "schedule": ["before 2am on monday"]
-    },
-    {
-      "ignorePaths": ["(^|/)requirements-doc.txt$"],
-      "groupName": null,
-      "schedule": "at any time"
+      "schedule": ["before 2am on monday"],
+      "matchFileNames": ["requirements-doc.txt"]
     }
   ]
 }
