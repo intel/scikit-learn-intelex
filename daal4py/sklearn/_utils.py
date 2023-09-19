@@ -31,6 +31,7 @@ from sklearn import __version__ as sklearn_version
 
 from daal4py import _get__daal_link_version__ as dv
 from daal4py import daalinit as set_n_threads
+from daal4py import enable_thread_pinning
 from daal4py import num_threads as get_n_threads
 
 try:
@@ -293,7 +294,20 @@ def support_init_with_n_jobs(init_function):
 def run_with_n_jobs(method):
     @wraps(method)
     def method_wrapper(self, *args, **kwargs):
-        method_name = f"{self.__class__.__name__}.{method.__name__}"
+        enable_thread_pinning(True)
+        # threading parallel backend branch
+        if not isinstance(threading.current_thread(), threading._MainThread):
+            warn(
+                "'Threading' parallel backend is not supported by "
+                "Intel(R) Extension for Scikit-learn*. "
+                "Falling back to usage of all available threads."
+            )
+            result = method(self, *args, **kwargs)
+            return result
+        # multiprocess parallel backends branch
+        method_name = (
+            f"{self.__class__.__module__}.{self.__class__.__name__}.{method.__name__}"
+        )
         logger = logging.getLogger("sklearnex")
         # get new and old numbers of threads
         n_jobs = self.n_jobs
@@ -309,24 +323,21 @@ def run_with_n_jobs(method):
         # thus, 128 threads from openBLAS is uninformative
         if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
             del n_threads_map["openblas"]
-        n_threads = (
-            max(n_threads_map.values()) if len(n_threads_map) > 0 else old_n_threads
-        )
-        if not isinstance(threading.current_thread(), threading._MainThread):
-            warn(
-                "'Threading' parallel backend is not supported by "
-                "Intel(R) Extension for Scikit-learn*"
-            )
-            n_jobs = old_n_threads
+        # remove default values equal to n_cpus
+        for backend in list(n_threads_map.keys()):
+            if n_threads_map[backend] == n_cpus:
+                del n_threads_map[backend]
+        # 0 threads for oneDAL is equal to non-set/default number
+        n_threads_map["onedal"] = 0
+        n_threads = max(n_threads_map.values())
         if n_jobs is None or n_jobs == 0:
-            if n_threads == n_cpus:
-                n_jobs = old_n_threads
-            else:
-                n_jobs = n_threads
+            n_jobs = n_threads
         elif n_jobs < 0:
             n_jobs = max(1, n_threads + n_jobs + 1)
-        logger.debug(f"{method_name}: using {n_jobs} threads (previous: {old_n_threads})")
         # set number of threads
+        logger.debug(
+            f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
+        )
         set_n_threads(n_jobs)
         # run method
         result = method(self, *args, **kwargs)
