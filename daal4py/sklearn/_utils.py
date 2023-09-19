@@ -294,7 +294,10 @@ def support_init_with_n_jobs(init_function):
 def run_with_n_jobs(method):
     @wraps(method)
     def method_wrapper(self, *args, **kwargs):
-        enable_thread_pinning(True)
+        # explicitly disabled thread pinning is required for oneDAL to
+        # receive correct default number of threads
+        # TODO: investigate reason of this behavior
+        enable_thread_pinning(False)
         # threading parallel backend branch
         if not isinstance(threading.current_thread(), threading._MainThread):
             warn(
@@ -327,8 +330,7 @@ def run_with_n_jobs(method):
         for backend in list(n_threads_map.keys()):
             if n_threads_map[backend] == n_cpus:
                 del n_threads_map[backend]
-        # 0 threads for oneDAL is equal to non-set/default number
-        n_threads_map["onedal"] = 0
+        n_threads_map["onedal"] = old_n_threads
         n_threads = max(n_threads_map.values())
         if n_jobs is None or n_jobs == 0:
             n_jobs = n_threads
