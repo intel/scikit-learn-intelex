@@ -20,6 +20,7 @@ import os
 import sys
 import warnings
 
+from daal4py import get_cpu_id
 from daal4py.sklearn._utils import (
     PatchingConditionsChain as daal4py_PatchingConditionsChain,
 )
@@ -93,3 +94,23 @@ def get_patch_message(s, queue=None):
 
 def get_sklearnex_version(rule):
     return daal_check_version(rule)
+
+
+def get_current_instruction_set():
+    cpu_id = get_cpu_id()
+    if cpu_id == 0:
+        return "SSE2"
+    elif cpu_id == 2:
+        return "SSE4.2"
+    elif cpu_id == 4:
+        return "AVX2"
+    elif cpu_id == 6:
+        return "AVX-512"
+    return "unidentified"
+
+
+def log_current_instruction_set(level="DEBUG"):
+    logger = logging.getLogger("sklearnex")
+    logging_level = getattr(logging, level)
+    message = f"Intel(R) Extension for Scikit-learn* is using {get_current_instruction_set()} instruction set"
+    logger.log(logging_level, message)
