@@ -326,7 +326,7 @@ def run_with_n_jobs(method):
             if n_threads_map[backend] == n_cpus:
                 del n_threads_map[backend]
         n_threads_map["onedal"] = old_n_threads
-        n_threads = max(n_threads_map.values())
+        n_threads = min(n_threads_map.values())
         if n_jobs is None or n_jobs == 0:
             n_jobs = n_threads
         elif n_jobs < 0:
