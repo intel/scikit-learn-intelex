@@ -141,7 +141,7 @@ We recommend this installation for the users of Intel® Distribution for Python.
 
 #### Install via Anaconda Cloud from Main channel
 
-NOTE: Anaconda Main channel is usually lag behind on versions deployed. You likely will not find latest version there
+NOTE: Anaconda Main channel usually lags behind on versions deployed. You likely will not find latest version there.
 
 - Install into a newly created environment (recommended):
 
