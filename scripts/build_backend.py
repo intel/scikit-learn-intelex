@@ -124,17 +124,18 @@ def custom_build_cmake_clib(
 ):
     import pybind11
 
-    try:
-        import dpctl
+    # try:
+    #     import dpctl
 
-        dpctl_available = dpctl.__version__ >= "0.14"
-    except ImportError:
-        dpctl_available = False
+    #     dpctl_available = dpctl.__version__ >= "0.14"
+    # except ImportError:
+    #     dpctl_available = False
 
-    log.info(f"Is DPCTL available: {str(dpctl_available)}")
+    # log.info(f"Is DPCTL available: {str(dpctl_available)}")
 
-    if dpctl_available:
-        dpctl_include = dpctl.get_include()
+    # if dpctl_available:
+    import importlib.util
+    dpctl_include = os.path.join(importlib.util.find_spec('dpctl').submodule_search_locations[0], "include")
 
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")

@@ -88,14 +88,14 @@ dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
-try:
-    import dpctl
+# try:
+#     import dpctl
 
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
+#     dpctl_available = dpctl.__version__ >= "0.14"
+# except ImportError:
+#     dpctl_available = False
 
-build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
+build_distribute = dpcpp and not no_dist and IS_LIN
 
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
