@@ -130,7 +130,8 @@ def check_library(rule):
     return True
 
 
-execution_timeout = 120
+#Examples timeout in seconds
+execution_timeout = 1
 
 req_version = defaultdict(lambda: (2019, "P", 0))
 req_version["decision_forest_classification_hist.py"] = (2023, "P", 1)
