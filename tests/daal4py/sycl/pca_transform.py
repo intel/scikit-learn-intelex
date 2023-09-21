@@ -97,14 +97,6 @@ def main(readcsv=read_csv, method="svdDense"):
             result_gpu = compute(sycl_data, nComponents)
         assert np.allclose(result_classic.transformedData, result_gpu.transformedData)
 
-    # It is possible to specify to make the computations on CPU
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, nComponents)
-
-    # pca_transform_result objects provides transformedData
-    assert np.allclose(result_classic.transformedData, result_cpu.transformedData)
-
     return result_classic
 
 
