@@ -204,7 +204,7 @@ def custom_build_cmake_clib(
         "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_arg,
     ]
 
-    if dpctl_include:
+    if dpctl_available:
         cmake_args += [
             "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
             "-DONEDAL_DPCTL_INTEGRATION:BOOL=ON",
