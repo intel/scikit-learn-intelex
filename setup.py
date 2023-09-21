@@ -94,10 +94,10 @@ try:
     dpctl_available = dpctl.__version__ >= "0.14"
 except ImportError:
     import importlib.util
-    dpctl_include = os.path.join(importlib.util.find_spec('dpctl').submodule_search_locations[0], "include")
-    if dpctl_include:
-        dpctl_available = True
-    else:
+    try:
+        dpctl_include = os.path.join(importlib.util.find_spec('dpctl').submodule_search_locations[0], "include")
+        dpctl_available = (dpctl_include is not None)
+    except AttributeError:
         dpctl_available = False
 
 build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN

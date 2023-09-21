@@ -131,10 +131,10 @@ def custom_build_cmake_clib(
         dpctl_include = dpctl.get_include()
     except ImportError:
         import importlib.util
-        dpctl_include = os.path.join(importlib.util.find_spec('dpctl').submodule_search_locations[0], "include")
-        if dpctl_include:
-            dpctl_available = True
-        else:
+        try:
+            dpctl_include = os.path.join(importlib.util.find_spec('dpctl').submodule_search_locations[0], "include")
+            dpctl_available = (dpctl_include is not None)
+        except AttributeError:
             dpctl_available = False
 
     log.info(f"Is DPCTL available: {str(dpctl_available)}")
