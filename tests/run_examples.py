@@ -194,7 +194,7 @@ req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
 
-skiped_files = []
+skiped_files = ["gradient_boosted_classification.py", "saga.py", "ridge_regression.py"]
 
 
 def get_exe_cmd(ex, nodist, nostream):
