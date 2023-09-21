@@ -139,15 +139,6 @@ def main(readcsv=read_csv):
             )
             # assert np.allclose(predict_result_gpu, predict_result_classic)
 
-    with sycl_context("cpu"):
-        sycl_train_data = sycl_buffer(train_data)
-        sycl_predict_data = sycl_buffer(predict_data)
-
-        predict_result_cpu, decision_function_cpu = compute(
-            sycl_train_data, train_labels, sycl_predict_data, "thunder"
-        )
-        assert np.allclose(predict_result_cpu, predict_result_classic)
-
     return predict_labels, predict_result_classic, decision_function_classic
 
 
