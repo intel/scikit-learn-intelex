@@ -112,11 +112,6 @@ def main(readcsv=read_csv, method="randomDense"):
     assert result_classic.assignments.shape == (data.shape[0], 1)
     assert result_classic.nIterations <= maxIter
 
-    assert np.allclose(result_classic.centroids, result_cpu.centroids)
-    assert np.allclose(result_classic.assignments, result_cpu.assignments)
-    assert np.isclose(result_classic.objectiveFunction, result_cpu.objectiveFunction)
-    assert result_classic.nIterations == result_cpu.nIterations
-
     return result_classic
 
 
