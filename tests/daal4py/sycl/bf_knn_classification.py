@@ -129,6 +129,18 @@ def main(readcsv=read_csv, method="defaultDense"):
                 predict_result_gpu.prediction, predict_result_classic.prediction
             )
 
+    with sycl_context("cpu"):
+        sycl_train_data = sycl_buffer(train_data)
+        sycl_train_labels = sycl_buffer(train_labels)
+        sycl_predict_data = sycl_buffer(predict_data)
+
+        predict_result_cpu = compute(
+            sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses
+        )
+        assert np.allclose(
+            predict_result_cpu.prediction, predict_result_classic.prediction
+        )
+
     return (predict_result_classic, predict_labels)
 
 

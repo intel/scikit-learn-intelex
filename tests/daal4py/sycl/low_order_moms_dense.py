@@ -108,6 +108,11 @@ def main(readcsv=read_csv, method="defaultDense"):
         ]:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
 
+    # It is possible to specify to make the computations on CPU
+    with sycl_context("cpu"):
+        sycl_data = sycl_buffer(data)
+        result_cpu = compute(sycl_data, "defaultDense")
+
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
     assert all(
@@ -125,6 +130,20 @@ def main(readcsv=read_csv, method="defaultDense"):
             "variation",
         ]
     )
+
+    for name in [
+        "minimum",
+        "maximum",
+        "sum",
+        "sumSquares",
+        "sumSquaresCentered",
+        "mean",
+        "secondOrderRawMoment",
+        "variance",
+        "standardDeviation",
+        "variation",
+    ]:
+        assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
 
     return result_classic
 

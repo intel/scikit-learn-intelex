@@ -128,6 +128,15 @@ def main(readcsv=read_csv, method="defaultDense"):
             result_classic.logProbabilities, result_gpu.logProbabilities, atol=1e-2
         )
 
+    # It is possible to specify to make the computations on CPU
+    with sycl_context("cpu"):
+        sycl_train_data = sycl_buffer(train_data)
+        sycl_train_labels = sycl_buffer(train_labels)
+        sycl_predict_data = sycl_buffer(predict_data)
+        result_cpu, _ = compute(
+            sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses
+        )
+
     # the prediction result provides prediction, probabilities and logProbabilities
     assert result_classic.probabilities.shape == (predict_data.shape[0], nClasses)
     assert result_classic.logProbabilities.shape == (predict_data.shape[0], nClasses)
@@ -139,6 +148,10 @@ def main(readcsv=read_csv, method="defaultDense"):
         / predict_labels.shape[0]
         < 0.025
     )
+
+    assert np.allclose(result_classic.prediction, result_cpu.prediction)
+    assert np.allclose(result_classic.probabilities, result_cpu.probabilities)
+    assert np.allclose(result_classic.logProbabilities, result_cpu.logProbabilities)
 
     return (train_result, result_classic, predict_labels)
 

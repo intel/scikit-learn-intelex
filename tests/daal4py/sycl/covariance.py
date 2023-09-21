@@ -101,6 +101,16 @@ def main(readcsv=read_csv, method="defaultDense"):
             assert np.allclose(result_classic.mean, result_gpu.mean)
             assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
+    # It is possible to specify to make the computations on CPU
+    with sycl_context("cpu"):
+        sycl_data = sycl_buffer(data)
+        result_cpu = compute(sycl_data, "defaultDense")
+
+    # covariance result objects provide correlation, covariance and mean
+    assert np.allclose(result_classic.covariance, result_cpu.covariance)
+    assert np.allclose(result_classic.mean, result_cpu.mean)
+    assert np.allclose(result_classic.correlation, result_cpu.correlation)
+
     return result_classic
 
 

@@ -132,6 +132,25 @@ def main(readcsv=None, method="defaultDense"):
         assert np.allclose(result_classic.mean, result_gpu.mean)
         assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
+    # It is possible to specify to make the computations on CPU
+    with sycl_context("cpu"):
+        # configure a covariance object
+        algo = d4p.covariance(streaming=True, fptype="float")
+        # get the generator (defined in stream.py)...
+        rn = read_next(infile, 112, readcsv)
+        # ... and iterate through chunks/stream
+        for chunk in rn:
+            sycl_chunk = sycl_buffer(to_numpy(chunk))
+            algo.compute(sycl_chunk)
+        # finalize computation
+        result_cpu = algo.finalize()
+
+    # covariance result objects provide correlation, covariance and mean
+
+    assert np.allclose(result_classic.covariance, result_cpu.covariance)
+    assert np.allclose(result_classic.mean, result_cpu.mean)
+    assert np.allclose(result_classic.correlation, result_cpu.correlation)
+
     return result_classic
 
 
