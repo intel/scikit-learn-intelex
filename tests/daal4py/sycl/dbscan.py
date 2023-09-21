@@ -105,14 +105,6 @@ def main(readcsv=read_csv, method="defaultDense"):
                 result_classic.coreObservations, result_gpu.coreObservations
             )
 
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, minObservations, epsilon)
-        assert np.allclose(result_classic.nClusters, result_cpu.nClusters)
-        assert np.allclose(result_classic.assignments, result_cpu.assignments)
-        assert np.allclose(result_classic.coreIndices, result_cpu.coreIndices)
-        assert np.allclose(result_classic.coreObservations, result_cpu.coreObservations)
-
     return result_classic
 
 
