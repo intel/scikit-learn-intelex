@@ -102,7 +102,10 @@ except ImportError:
         dpctl_available = dpctl_include is not None
     except AttributeError:
         dpctl_available = False
-
+print("dpcpp:", dpcpp)
+print("dpctl_available:", dpctl_available)
+print("dpctl_include", dpctl_include)
+print("no_dist, lin, win, mac", no_dist, IS_LIN, IS_WIN, IS_MAC)
 build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
 
 
