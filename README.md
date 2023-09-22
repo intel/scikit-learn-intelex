@@ -49,14 +49,14 @@ One of the ways to patch scikit-learn is by modifying the code. First, you impor
         clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     ```
 
-👀 Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage) and [other methods for offloading to GPU devices](https://intel.github.io/scikit-learn-intelex/oneapi-gpu.html).
+👀 Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage) and [other methods for offloading to GPU devices](https://intel.github.io/scikit-learn-intelex/latest/oneapi-gpu.html).
 Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
 
 This software acceleration is achieved through the use of vector instructions, IA hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel platforms at launch time.
 
 ## Supported Algorithms
 
-❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
+❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
 
 You may still use algorithms and parameters not supported by Intel(R) Extension for Scikit-learn in your code. You will not get an error if you do this. When you use algorithms or parameters not supported by the extension, the package fallbacks into original stock version of scikit-learn.
 
@@ -71,7 +71,7 @@ Configurations:
 
 ## 🛠 Installation
 
-[System Requirements](https://intel.github.io/scikit-learn-intelex/system-requirements.html)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; [Install via pip or conda](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Build from sources](INSTALL.md#build-from-sources)
+[System Requirements](https://intel.github.io/scikit-learn-intelex/latest/system-requirements.html)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; [Install via pip or conda](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Build from sources](INSTALL.md#build-from-sources)
 
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex). You can also build the extension from [sources](INSTALL.md#build-from-sources).
@@ -87,7 +87,7 @@ pip install scikit-learn-intelex
 ## 🔗 Important Links
 - [Notebook examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)
 - [Documentation](https://intel.github.io/scikit-learn-intelex/)
-- [Supported algorithms and parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html)
+- [Supported algorithms and parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html)
 - [Machine Learning Benchmarks](https://github.com/IntelPython/scikit-learn_bench)
 
 ## 👀 Follow us on Medium
@@ -111,7 +111,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 
 ### ❓ Are all algorithms affected by patching?
 
-> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
+> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
 
 ### ❓ What happens if I use parameters not supported by the extension?
 
@@ -123,7 +123,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 
 ### ❓ Can I see which implementation of the algorithm is currently used?
 
-> Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/verbose.html).
+> Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/latest/verbose.html).
 
 ### ❓ How much faster scikit-learn is after the patching?
 
