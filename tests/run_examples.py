@@ -130,7 +130,7 @@ def check_library(rule):
     return True
 
 
-#Examples timeout in seconds
+# Examples timeout in seconds
 execution_timeout = 60
 
 req_version = defaultdict(lambda: (2019, "P", 0))
