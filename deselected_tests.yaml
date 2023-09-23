@@ -1105,6 +1105,8 @@ gpu:
   - tests/test_common.py::test_estimators[RFECV(estimator=LogisticRegression(C=1))-
   - tests/test_common.py::test_estimators[SelfTrainingClassifier(base_estimator=LogisticRegression(C=1))-
   - tests/test_common.py::test_estimators[SequentialFeatureSelector(estimator=LogisticRegression(C=1))-
+  # Sporadic failures on Max series with 2024.0 toolchain update that require deeper investigation
+  - tests/test_multiclass.py::test_ovo_consistent_binary_classification
 
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
