@@ -138,7 +138,7 @@ req_version["decision_forest_classification_hist.py"] = (2023, "P", 1)
 req_version["decision_forest_classification_default_dense.py"] = (2023, "P", 1)
 req_version["decision_forest_classification_traverse.py"] = (2023, "P", 1)
 req_version["basic_statistics_spmd.py"] = (2023, "P", 1)
-req_version["kmeans_spmd.py"] = (2023, "P", 2)
+req_version["kmeans_spmd.py"] = (2024, "P", 1)
 req_version["knn_bf_classification_spmd.py"] = (2023, "P", 1)
 req_version["knn_bf_regression_spmd.py"] = (2023, "P", 1)
 req_version["linear_regression_spmd.py"] = (2023, "P", 1)
@@ -178,7 +178,7 @@ req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
 
-skiped_files = ["kmeans_spmd.py"]
+skiped_files = []
 
 
 def get_exe_cmd(ex, nodist, nostream):
