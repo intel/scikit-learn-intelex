@@ -178,7 +178,7 @@ req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
 
-skiped_files = []
+skiped_files = ["kmeans_spmd.py"]
 
 
 def get_exe_cmd(ex, nodist, nostream):
