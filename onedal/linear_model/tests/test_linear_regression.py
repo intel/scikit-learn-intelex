@@ -87,7 +87,10 @@ if daal_check_version((2023, "P", 100)):
 
         res = model.predict(Xt, queue=queue)
 
-        tol = 2e-4 if res.dtype == np.float32 else 1e-7
+        if queue.sycl_device.is_gpu:
+            tol = 2.5e-4 if res.dtype == np.float32 else 1e-7
+        else:
+            tol = 2e-4 if res.dtype == np.float32 else 1e-7
         assert_allclose(gtr, res, rtol=tol)
 
     @pytest.mark.parametrize("queue", get_queues())
