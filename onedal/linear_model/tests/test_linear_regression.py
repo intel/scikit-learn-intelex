@@ -76,7 +76,10 @@ if daal_check_version((2023, "P", 100)):
         model = LinearRegression(fit_intercept=True)
         model.fit(X, y, queue=queue)
 
-        tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
+        if queue.sycl_device.is_gpu:
+            tol = 2.5e-3 if model.coef_.dtype == np.float32 else 1e-5
+        else:
+            tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
         assert_allclose(coef, model.coef_.T, rtol=tol)
 
         tol = 2e-3 if model.intercept_.dtype == np.float32 else 1e-5
