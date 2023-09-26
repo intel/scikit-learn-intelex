@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py Decision Forest Classification example for shared memory systems
+# daal4py Decision Forest Regression example for shared memory systems
 
 import os
 
@@ -47,17 +47,14 @@ except Exception:
 
 # Commone code for both CPU and GPU computations
 def compute(train_data, train_labels, predict_data, method="defaultDense"):
-    # Configure a training object (5 classes)
-    train_algo = d4p.decision_forest_classification_training(
-        5,
+    # Configure a training object
+    train_algo = d4p.decision_forest_regression_training(
+        nTrees=100,
         fptype="float",
-        nTrees=10,
-        minObservationsInLeafNode=8,
-        featuresPerNode=3,
-        engine=d4p.engines_mt19937(seed=777),
-        varImportance="MDI",
+        engine=d4p.engines_mt2203(seed=777),
+        varImportance="MDA_Raw",
         bootstrap=True,
-        resultsToCompute="computeOutOfBagError",
+        resultsToCompute="computeOutOfBagError|computeOutOfBagErrorPerObservation",
         method=method,
     )
     # Training result provides (depending on parameters) model,
@@ -65,12 +62,7 @@ def compute(train_data, train_labels, predict_data, method="defaultDense"):
     train_result = train_algo.compute(train_data, train_labels)
 
     # now predict using the model from the training above
-    predict_algo = d4p.decision_forest_classification_prediction(
-        nClasses=5,
-        fptype="float",
-        resultsToEvaluate="computeClassLabels|computeClassProbabilities",
-        votingMethod="unweighted",
-    )
+    predict_algo = d4p.decision_forest_regression_prediction(fptype="float")
 
     predict_result = predict_algo.compute(predict_data, train_result.model)
 
@@ -97,10 +89,21 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    nFeatures = 3
+    nFeatures = 13
     # input data file
-    train_file = os.path.join("..", "data", "batch", "df_classification_train.csv")
-    predict_file = os.path.join("..", "data", "batch", "df_classification_test.csv")
+    train_file = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "df_regression_train.csv",
+    )
+    predict_file = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "df_regression_test.csv"
+    )
 
     # Read train data. Let's use 3 features per observation
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
@@ -114,7 +117,7 @@ def main(readcsv=read_csv, method="defaultDense"):
         train_data, train_labels, predict_data, "defaultDense"
     )
     assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-    assert (np.mean(predict_result.prediction != predict_labels) < 0.03).any()
+    assert (np.square(predict_result.prediction - predict_labels).mean() < 18).any()
 
     train_data = to_numpy(train_data)
     train_labels = to_numpy(train_labels)
@@ -130,7 +133,9 @@ def main(readcsv=read_csv, method="defaultDense"):
                 sycl_train_data, sycl_train_labels, sycl_predict_data, "hist"
             )
             assert predict_result.prediction.shape == (predict_labels.shape[0], 1)
-            assert (np.mean(predict_result.prediction != predict_labels) < 0.03).any()
+            assert (
+                np.square(predict_result.prediction - predict_labels).mean() < 18
+            ).any()
 
     return (train_result, predict_result, predict_labels)
 
@@ -142,10 +147,6 @@ if __name__ == "__main__":
     print(
         "\nDecision forest prediction results (first 10 rows):\n",
         predict_result.prediction[0:10],
-    )
-    print(
-        "\nDecision forest probabilities results (first 10 rows):\n",
-        predict_result.probabilities[0:10],
     )
     print("\nGround truth (first 10 rows):\n", plabels[0:10])
     print("All looks good!")

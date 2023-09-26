@@ -27,12 +27,12 @@ from daal4py.oneapi import sycl_buffer
 try:
     import pandas
 
-    def read_csv(f, c=None, t=np.float64):
+    def read_csv(f, c, t=np.float64):
         return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
 
 except ImportError:
     # fall back to numpy loadtxt
-    def read_csv(f, c=None, t=np.float64):
+    def read_csv(f, c, t=np.float64):
         return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
 
 
@@ -41,23 +41,20 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
 # Commone code for both CPU and GPU computations
-def compute(data):
-    # 'normalization' is an optional parameter to PCA;
-    # we use z-score which could be configured differently
-    zscore = d4p.normalization_zscore(fptype="float")
-    # configure a PCA object
-    algo = d4p.pca(
-        fptype="float",
-        resultsToCompute="mean|variance|eigenvalue",
-        isDeterministic=True,
-        normalization=zscore,
+def compute(data, nComponents):
+    # configure a PCA object and perform PCA
+    pca_algo = d4p.pca(
+        isDeterministic=True, fptype="float", resultsToCompute="mean|variance|eigenvalue"
     )
-    return algo.compute(data)
+    pca_res = pca_algo.compute(data)
+    # Apply transform with whitening because means and eigenvalues are provided
+    pcatrans_algo = d4p.pca_transform(fptype="float", nComponents=nComponents)
+    return pcatrans_algo.compute(data, pca_res.eigenvectors, pca_res.dataForTransform)
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -80,13 +77,16 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="svdDense"):
-    infile = os.path.join("..", "data", "batch", "pca_normalized.csv")
+    dataFileName = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "pca_transform.csv"
+    )
+    nComponents = 2
 
-    # Load the data
-    data = readcsv(infile, t=np.float32)
+    # read data
+    data = readcsv(dataFileName, range(3), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    result_classic = compute(data)
+    result_classic = compute(data, nComponents)
 
     data = to_numpy(data)
 
@@ -94,37 +94,14 @@ def main(readcsv=read_csv, method="svdDense"):
     if gpu_available:
         with sycl_context("gpu"):
             sycl_data = sycl_buffer(data)
-            result_gpu = compute(sycl_data)
-        assert np.allclose(result_classic.eigenvalues, result_gpu.eigenvalues, atol=1e-5)
-        assert np.allclose(
-            result_classic.eigenvectors, result_gpu.eigenvectors, atol=1e-5
-        )
-        assert np.allclose(result_classic.means, result_gpu.means, atol=1e-5)
-        assert np.allclose(result_classic.variances, result_gpu.variances, atol=1e-5)
-
-    # It is possible to specify to make the computations on CPU
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data)
-
-    # PCA result objects provide eigenvalues, eigenvectors, means and variances
-    assert result_classic.eigenvalues.shape == (1, data.shape[1])
-    assert result_classic.eigenvectors.shape == (data.shape[1], data.shape[1])
-    assert result_classic.means.shape == (1, data.shape[1])
-    assert result_classic.variances.shape == (1, data.shape[1])
-
-    assert np.allclose(result_classic.eigenvalues, result_cpu.eigenvalues)
-    assert np.allclose(result_classic.eigenvectors, result_cpu.eigenvectors)
-    assert np.allclose(result_classic.means, result_cpu.means, atol=1e-7)
-    assert np.allclose(result_classic.variances, result_cpu.variances)
+            result_gpu = compute(sycl_data, nComponents)
+        assert np.allclose(result_classic.transformedData, result_gpu.transformedData)
 
     return result_classic
 
 
 if __name__ == "__main__":
-    result = main()
-    print("\nEigenvalues:\n", result.eigenvalues)
-    print("\nEigenvectors:\n", result.eigenvectors)
-    print("\nMeans:\n", result.means)
-    print("\nVariances:\n", result.variances)
+    pcatrans_res = main()
+    # print results of tranform
+    print(pcatrans_res)
     print("All looks good!")

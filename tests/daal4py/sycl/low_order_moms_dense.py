@@ -41,7 +41,7 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
@@ -72,7 +72,16 @@ def to_numpy(data):
 
 def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
-    file = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
+    file = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "covcormoments_dense.csv",
+    )
     data = readcsv(file, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)
@@ -99,11 +108,6 @@ def main(readcsv=read_csv, method="defaultDense"):
         ]:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
 
-    # It is possible to specify to make the computations on CPU
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, "defaultDense")
-
     # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
     # mean, secondOrderRawMoment, variance, standardDeviation, variation
     assert all(
@@ -121,20 +125,6 @@ def main(readcsv=read_csv, method="defaultDense"):
             "variation",
         ]
     )
-
-    for name in [
-        "minimum",
-        "maximum",
-        "sum",
-        "sumSquares",
-        "sumSquaresCentered",
-        "mean",
-        "secondOrderRawMoment",
-        "variance",
-        "standardDeviation",
-        "variation",
-    ]:
-        assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
 
     return result_classic
 

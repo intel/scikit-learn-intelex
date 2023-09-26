@@ -41,7 +41,7 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
@@ -79,8 +79,19 @@ def main(readcsv=read_csv, method="defaultDense"):
     maxIterations = 200
 
     # input data file
-    infile = os.path.join("..", "data", "batch", "df_regression_train.csv")
-    testfile = os.path.join("..", "data", "batch", "df_regression_test.csv")
+    infile = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "df_regression_train.csv",
+    )
+    testfile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "df_regression_test.csv"
+    )
 
     # Read data. Let's use 13 features per observation
     train_indep_data = readcsv(infile, range(13), t=np.float32)

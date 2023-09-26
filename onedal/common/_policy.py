@@ -45,11 +45,8 @@ def _get_queue(*data):
 class _Daal4PyContextReset:
     def __init__(self):
         self._d4p_context = None
-        self._host_context = None
         if oneapi_is_available:
             self._d4p_context = _get_sycl_ctxt()
-            self._host_context = sycl_execution_context("cpu")
-            self._host_context.apply()
 
     def __del__(self):
         if self._d4p_context:

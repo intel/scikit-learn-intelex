@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py covariance example for shared memory systems
+# daal4py K-Means example for shared memory systems
 
 import os
 
@@ -41,15 +41,26 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
-# Common code for both CPU and GPU computations
-def compute(data, method):
-    # configure a covariance object
-    algo = d4p.covariance(method=method, fptype="float")
-    return algo.compute(data)
+# Commone code for both CPU and GPU computations
+def compute(data, nClusters, maxIter, method):
+    # configure kmeans init object
+    initrain_algo = d4p.kmeans_init(nClusters, method=method, fptype="float")
+    # compute initial centroids
+    initrain_result = initrain_algo.compute(data)
+
+    # configure kmeans main object: we also request the cluster assignments
+    algo = d4p.kmeans(nClusters, maxIter, assignFlag=True, fptype="float")
+    # compute the clusters/centroids
+    return algo.compute(data, initrain_result.centroids)
+
+    # Note: we could have done this in just one line:
+    # return d4p.kmeans(nClusters, maxIter, assignFlag=True).compute(
+    #     data, d4p.kmeans_init(nClusters, method=method).compute(data).centroids
+    # )
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -71,14 +82,18 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv, method="defaultDense"):
-    infile = os.path.join("..", "data", "batch", "covcormoments_dense.csv")
+def main(readcsv=read_csv, method="randomDense"):
+    infile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "kmeans_dense.csv"
+    )
+    nClusters = 20
+    maxIter = 5
 
     # Load the data
-    data = readcsv(infile, range(10), t=np.float32)
+    data = readcsv(infile, range(20), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    result_classic = compute(data, method)
+    result_classic = compute(data, nClusters, maxIter, method)
 
     data = to_numpy(data)
 
@@ -86,27 +101,23 @@ def main(readcsv=read_csv, method="defaultDense"):
     if gpu_available:
         with sycl_context("gpu"):
             sycl_data = sycl_buffer(data)
-            result_gpu = compute(sycl_data, "defaultDense")
+            result_gpu = compute(sycl_data, nClusters, maxIter, method)
+        assert np.allclose(result_classic.centroids, result_gpu.centroids)
+        assert np.allclose(result_classic.assignments, result_gpu.assignments)
+        assert np.isclose(result_classic.objectiveFunction, result_gpu.objectiveFunction)
 
-            assert np.allclose(result_classic.covariance, result_gpu.covariance)
-            assert np.allclose(result_classic.mean, result_gpu.mean)
-            assert np.allclose(result_classic.correlation, result_gpu.correlation)
-
-    # It is possible to specify to make the computations on CPU
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, "defaultDense")
-
-    # covariance result objects provide correlation, covariance and mean
-    assert np.allclose(result_classic.covariance, result_cpu.covariance)
-    assert np.allclose(result_classic.mean, result_cpu.mean)
-    assert np.allclose(result_classic.correlation, result_cpu.correlation)
+    # Kmeans result objects provide assignments (if requested),
+    # centroids, goalFunction, nIterations and objectiveFunction
+    assert result_classic.centroids.shape[0] == nClusters
+    assert result_classic.assignments.shape == (data.shape[0], 1)
+    assert result_classic.nIterations <= maxIter
 
     return result_classic
 
 
 if __name__ == "__main__":
-    res = main()
-    print("Covariance matrix:\n", res.covariance)
-    print("Mean vector:\n", res.mean)
+    result = main()
+    print("\nFirst 10 cluster assignments:\n", result.assignments[0:10])
+    print("\nFirst 10 dimensions of centroids:\n", result.centroids[:, 0:10])
+    print("\nObjective function value:\n", result.objectiveFunction)
     print("All looks good!")

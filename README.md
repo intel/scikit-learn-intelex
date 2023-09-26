@@ -8,7 +8,7 @@
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
 [![python version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
-[![scikit-learn supported versions](https://img.shields.io/badge/sklearn-0.24%20%7C%201.0%20%7C%201.1%20%7C%201.2-blue)](https://img.shields.io/badge/sklearn-0.24%20%7C%201.0%20%7C%201.1%20%7C%201.2-blue)
+[![scikit-learn supported versions](https://img.shields.io/badge/sklearn-1.0%20%7C%201.1%20%7C%201.2%20%7C%201.3-blue)](https://img.shields.io/badge/sklearn-01.0%20%7C%201.1%20%7C%201.2%20%7C%201.3-blue)
 
 With Intel(R) Extension for Scikit-learn you can accelerate your Scikit-learn applications and still have full conformance with all Scikit-Learn APIs and algorithms. This is a **free software AI accelerator** that brings over **10-100X** acceleration across a variety of applications. And you do not even need to change the existing code!
 
@@ -49,14 +49,14 @@ One of the ways to patch scikit-learn is by modifying the code. First, you impor
         clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     ```
 
-👀 Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage) and [other methods for offloading to GPU devices](https://intel.github.io/scikit-learn-intelex/oneapi-gpu.html).
+👀 Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage) and [other methods for offloading to GPU devices](https://intel.github.io/scikit-learn-intelex/latest/oneapi-gpu.html).
 Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
 
 This software acceleration is achieved through the use of vector instructions, IA hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel platforms at launch time.
 
 ## Supported Algorithms
 
-❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
+❗ The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
 
 You may still use algorithms and parameters not supported by Intel(R) Extension for Scikit-learn in your code. You will not get an error if you do this. When you use algorithms or parameters not supported by the extension, the package fallbacks into original stock version of scikit-learn.
 
@@ -71,7 +71,7 @@ Configurations:
 
 ## 🛠 Installation
 
-[System Requirements](https://intel.github.io/scikit-learn-intelex/system-requirements.html)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; [Install via pip or conda](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Build from sources](INSTALL.md#build-from-sources)
+[System Requirements](https://intel.github.io/scikit-learn-intelex/latest/system-requirements.html)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; [Install via pip or conda](https://github.com/intel/scikit-learn-intelex/blob/master/INSTALL.md)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Build from sources](INSTALL.md#build-from-sources)
 
 Intel(R) Extension for Scikit-learn is available at the [Python Package Index](https://pypi.org/project/scikit-learn-intelex/),
 on Anaconda Cloud in [Conda-Forge channel](https://anaconda.org/conda-forge/scikit-learn-intelex) and in [Intel channel](https://anaconda.org/intel/scikit-learn-intelex). You can also build the extension from [sources](INSTALL.md#build-from-sources).
@@ -87,7 +87,7 @@ pip install scikit-learn-intelex
 ## 🔗 Important Links
 - [Notebook examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)
 - [Documentation](https://intel.github.io/scikit-learn-intelex/)
-- [Supported algorithms and parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html)
+- [Supported algorithms and parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html)
 - [Machine Learning Benchmarks](https://github.com/IntelPython/scikit-learn_bench)
 
 ## 👀 Follow us on Medium
@@ -95,11 +95,12 @@ pip install scikit-learn-intelex
 We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-software/tagged/machine-learning) to learn tips and tricks for more efficient data analysis with the help of Intel(R) Extension for Scikit-learn. Here are our latest blogs:
 
 - [Save Time and Money with Intel Extension for Scikit-learn](https://medium.com/intel-analytics-software/save-time-and-money-with-intel-extension-for-scikit-learn-33627425ae4)
+- [Improve the Performance of XGBoost and LightGBM Inference](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
+- [Why Pay More for Machine Learning?](https://medium.com/intel-analytics-software/why-pay-more-for-machine-learning-893683bd78e4)
 - [Superior Machine Learning Performance on the Latest Intel Xeon Scalable Processors](https://medium.com/intel-analytics-software/superior-machine-learning-performance-on-the-latest-intel-xeon-scalable-processor-efdec279f5a3)
 - [Leverage Intel Optimizations in Scikit-Learn](https://medium.com/intel-analytics-software/leverage-intel-optimizations-in-scikit-learn-f562cb9d5544)
 - [Intel Gives Scikit-Learn the Performance Boost Data Scientists Need](https://medium.com/intel-analytics-software/intel-gives-scikit-learn-the-performance-boost-data-scientists-need-42eb47c80b18)
 - [From Hours to Minutes: 600x Faster SVM](https://medium.com/intel-analytics-software/from-hours-to-minutes-600x-faster-svm-647f904c31ae)
-- [Improve the Performance of XGBoost and LightGBM Inference](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
 - [Accelerate Kaggle Challenges Using Intel AI Analytics Toolkit](https://medium.com/intel-analytics-software/accelerate-kaggle-challenges-using-intel-ai-analytics-toolkit-beb148f66d5a)
 - [Accelerate Your scikit-learn Applications](https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e)
 - [Accelerate Linear Models for Machine Learning](https://medium.com/intel-analytics-software/accelerating-linear-models-for-machine-learning-5a75ff50a0fe)
@@ -111,7 +112,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 
 ### ❓ Are all algorithms affected by patching?
 
-> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/algorithms.html).
+> No. The patching only affects [selected algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
 
 ### ❓ What happens if I use parameters not supported by the extension?
 
@@ -123,7 +124,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 
 ### ❓ Can I see which implementation of the algorithm is currently used?
 
-> Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/verbose.html).
+> Yes. To find out which implementation of the algorithm is currently used (Intel(R) Extension for Scikit-learn or original Scikit-learn), use the [verbose mode](https://intel.github.io/scikit-learn-intelex/latest/verbose.html).
 
 ### ❓ How much faster scikit-learn is after the patching?
 

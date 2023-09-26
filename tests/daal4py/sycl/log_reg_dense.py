@@ -41,7 +41,7 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
@@ -49,11 +49,20 @@ except:
 def compute(train_data, train_labels, predict_data, nClasses):
     # set parameters and train
     train_alg = d4p.logistic_regression_training(
-        nClasses=nClasses, interceptFlag=True, fptype="float"
+        nClasses=nClasses,
+        fptype="float",
+        penaltyL1=0.1,
+        penaltyL2=0.1,
+        interceptFlag=True,
     )
     train_result = train_alg.compute(train_data, train_labels)
     # set parameters and compute predictions
-    predict_alg = d4p.logistic_regression_prediction(nClasses=nClasses, fptype="float")
+    predict_alg = d4p.logistic_regression_prediction(
+        nClasses=nClasses,
+        fptype="float",
+        resultsToEvaluate="computeClassLabels|computeClassProbabilities|"
+        "computeClassLogProbabilities",
+    )
     return predict_alg.compute(predict_data, train_result.model), train_result
 
 
@@ -77,18 +86,21 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    nClasses = 2
-    nFeatures = 20
+    nClasses = 5
+    nFeatures = 6
 
-    # read training data from file with 20 features per observation and 1 class label
-    trainfile = os.path.join("..", "data", "batch", "binary_cls_train.csv")
+    # read training data from file with 6 features per observation and 1 class label
+    trainfile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "logreg_train.csv"
+    )
     train_data = readcsv(trainfile, range(nFeatures), t=np.float32)
     train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1), t=np.float32)
 
-    # read testing data from file with 20 features per observation
-    testfile = os.path.join("..", "data", "batch", "binary_cls_test.csv")
+    # read testing data from file with 6 features per observation
+    testfile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "logreg_test.csv"
+    )
     predict_data = readcsv(testfile, range(nFeatures), t=np.float32)
-    predict_labels = readcsv(testfile, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # Using of the classic way (computations on CPU)
     result_classic, train_result = compute(
@@ -108,27 +120,26 @@ def main(readcsv=read_csv, method="defaultDense"):
             result_gpu, _ = compute(
                 sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses
             )
-
-        # TODO: When LogisticRegression run2run instability will be replace on np.equal
-        assert np.mean(result_classic.prediction != result_gpu.prediction) < 0.2
-
-    # It is possible to specify to make the computations on GPU
-    with sycl_context("cpu"):
-        sycl_train_data = sycl_buffer(train_data)
-        sycl_train_labels = sycl_buffer(train_labels)
-        sycl_predict_data = sycl_buffer(predict_data)
-        result_cpu, _ = compute(
-            sycl_train_data, sycl_train_labels, sycl_predict_data, nClasses
+        assert np.allclose(result_classic.prediction, result_gpu.prediction)
+        assert np.allclose(
+            result_classic.probabilities, result_gpu.probabilities, atol=1e-3
+        )
+        assert np.allclose(
+            result_classic.logProbabilities, result_gpu.logProbabilities, atol=1e-2
         )
 
-    # the prediction result provides prediction
-    assert result_classic.prediction.shape == (
-        predict_data.shape[0],
-        train_labels.shape[1],
+    # the prediction result provides prediction, probabilities and logProbabilities
+    assert result_classic.probabilities.shape == (predict_data.shape[0], nClasses)
+    assert result_classic.logProbabilities.shape == (predict_data.shape[0], nClasses)
+    predict_labels = np.loadtxt(
+        testfile, usecols=range(nFeatures, nFeatures + 1), delimiter=",", ndmin=2
+    )
+    assert (
+        np.count_nonzero(result_classic.prediction - predict_labels)
+        / predict_labels.shape[0]
+        < 0.025
     )
 
-    # TODO: When LogisticRegression run2run instability will be replace on np.equal
-    assert np.mean(result_classic.prediction != result_cpu.prediction) < 0.2
     return (train_result, result_classic, predict_labels)
 
 
@@ -140,4 +151,12 @@ if __name__ == "__main__":
         predict_result.prediction[0:10],
     )
     print("\nGround truth (first 10 rows):\n", predict_labels[0:10])
+    print(
+        "\nLogistic regression prediction probabilities (first 10 rows):\n",
+        predict_result.probabilities[0:10],
+    )
+    print(
+        "\nLogistic regression prediction log probabilities (first 10 rows):\n",
+        predict_result.logProbabilities[0:10],
+    )
     print("All looks good!")
