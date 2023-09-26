@@ -35,7 +35,7 @@ ONEDAL_PY_INIT_MODULE(policy) {
             return detail::data_parallel_policy(*queue);
         }))
         .def(py::init([](const std::string& filter_string) {
-            sycl::queue q { sycl::ext::oneapi::filter_selector(filter_string) };
+            sycl::_V1::queue q { sycl::ext::oneapi::filter_selector(filter_string) };
             return detail::data_parallel_policy(q);
         }))
         .def("get_device_name", [](const detail::data_parallel_policy& self) {
