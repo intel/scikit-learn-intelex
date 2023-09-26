@@ -1121,11 +1121,10 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_knn_forcing_backend
   - neighbors/tests/test_neighbors.py::test_auto_algorithm
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend
-  - svm/tests/test_svm.py::test_consistent_proba
+  - svm/tests/test_sparse.py::test_consistent_proba
   - svm/tests/test_svm.py::test_libsvm_parameters
   - svm/tests/test_svm.py::test_negative_weight_equal_coeffs
   - svm/tests/test_svm.py::test_unicode_kernel
-  - svm/tests/test_svm.py::test_consistent_proba
   - svm/tests/test_svm.py::test_gamma_scale
   - svm/tests/test_svm.py::test_svc_raises_error_internal_representation
   - svm/tests/test_svm.py::test_n_iter_libsvm[dataset0-SVC-ndarray]
@@ -1146,6 +1145,7 @@ gpu:
   - tests/test_common.py::test_estimators[DBSCAN()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[DBSCAN()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[DBSCAN()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[DBSCAN()-check_estimators_fit_returns_self(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[DBSCAN()-check_clustering]
   - tests/test_common.py::test_estimators[DBSCAN()-check_clustering(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[DBSCAN()-check_methods_sample_order_invariance]
@@ -1162,11 +1162,13 @@ gpu:
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_dtypes]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit_score_takes_y]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_fit_returns_self]
+  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_fit_returns_self(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_dtype_object]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_pipeline_consistency]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_methods_sample_order_invariance]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit2d_1sample]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit2d_1feature]
