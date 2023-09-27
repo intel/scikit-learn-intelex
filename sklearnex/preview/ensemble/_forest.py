@@ -509,10 +509,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 input_is_finite = False
             patching_status.and_conditions(
                 [
-                    (
-                        input_is_finite,
-                        "Non-finite input is not supported.",
-                    ),
+                    (input_is_finite, "Non-finite input is not supported."),
                     (
                         self.monotonic_cst is None,
                         "Monotonicity constraints are not supported.",
