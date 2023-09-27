@@ -51,10 +51,10 @@ static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_bu
     return RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
 }
 
-c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, double cover, int defaultLeft)
+c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft, double cover)
 {
 #if (_gbt_inference_api_version == 2)
-    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, cover, defaultLeft);
+    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, defaultLeft, cover);
 #elif (_gbt_inference_api_version == 1)
     return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, defaultLeft);
 #else
@@ -62,10 +62,10 @@ c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_
 #endif
 }
 
-c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, double cover, int defaultLeft)
+c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft, double cover)
 {
 #if (_gbt_inference_api_version == 2)
-    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, cover, defaultLeft);
+    return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, defaultLeft, cover);
 #elif (_gbt_inference_api_version == 1)
     return c_ptr->addSplitNode(treeId, parentId, position, featureIndex, featureValue, defaultLeft);
 #else
