@@ -567,6 +567,17 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     "`max_sample=None`."
                 )
 
+            if (
+                patching_status.get_status()
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
+                warnings.warn(
+                    "Setting 'random_state' value is not supported. "
+                    "State set by oneDAL to default value (777).",
+                    RuntimeWarning,
+                )
+
         return patching_status, X, y, sample_weight
 
     @wrap_output_data
@@ -640,17 +651,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 ]
             )
 
-            if (
-                patching_status.get_status()
-                and (self.random_state is not None)
-                and (not daal_check_version((2024, "P", 0)))
-            ):
-                warnings.warn(
-                    "Setting 'random_state' value is not supported. "
-                    "State set by oneDAL to default value (777).",
-                    RuntimeWarning,
-                )
-
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
 
@@ -715,17 +715,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     (sample_weight is not None, "sample_weight is not supported."),
                 ]
             )
-
-            if (
-                patching_status.get_status()
-                and (self.random_state is not None)
-                and (not daal_check_version((2024, "P", 0)))
-            ):
-                warnings.warn(
-                    "Setting 'random_state' value is not supported. "
-                    "State set by oneDAL to default value (777).",
-                    RuntimeWarning,
-                )
 
         elif method_name in ["predict", "predict_proba"]:
             X = data[0]
@@ -932,6 +921,17 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     "Either switch to `bootstrap=True` or set "
                     "`max_sample=None`."
                 )
+            
+            if (
+                patching_status.get_status()
+                and (self.random_state is not None)
+                and (not daal_check_version((2024, "P", 0)))
+            ):
+                warnings.warn(
+                    "Setting 'random_state' value is not supported. "
+                    "State set by oneDAL to default value (777).",
+                    RuntimeWarning,
+                )
 
         return patching_status, X, y, sample_weight
 
@@ -959,17 +959,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     ),
                 ]
             )
-
-            if (
-                patching_status.get_status()
-                and (self.random_state is not None)
-                and (not daal_check_version((2024, "P", 0)))
-            ):
-                warnings.warn(
-                    "Setting 'random_state' value is not supported. "
-                    "State set by oneDAL to default value (777).",
-                    RuntimeWarning,
-                )
 
         elif method_name == "predict":
             X = data[0]
@@ -1024,17 +1013,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     (sample_weight is not None, "sample_weight is not supported."),
                 ]
             )
-
-            if (
-                patching_status.get_status()
-                and (self.random_state is not None)
-                and (not daal_check_version((2024, "P", 0)))
-            ):
-                warnings.warn(
-                    "Setting 'random_state' value is not supported. "
-                    "State set by oneDAL to default value (777).",
-                    RuntimeWarning,
-                )
 
         elif method_name == "predict":
             X = data[0]
