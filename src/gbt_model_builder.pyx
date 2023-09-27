@@ -33,14 +33,14 @@ cdef extern from "gbt_model_builder.h":
     cdef cppclass c_gbt_classification_model_builder:
         c_gbt_classification_model_builder(size_t nFeatures, size_t nIterations, size_t nClasses) except +
         c_gbt_clf_tree_id createTree(size_t nNodes, size_t classLabel)
-        c_gbt_clf_node_id addLeafNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, double response)
+        c_gbt_clf_node_id addLeafNode(c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, double response, double cover)
 
     cdef cppclass c_gbt_regression_model_builder:
         c_gbt_regression_model_builder(size_t nFeatures, size_t nIterations) except +
         c_gbt_reg_tree_id createTree(size_t nNodes)
         c_gbt_reg_node_id addLeafNode(c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, double response, double cover)
 
-    cdef c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft)
+    cdef c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, double cover, int defaultLeft)
     cdef c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder     * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, double cover, int defaultLeft)
 
 cdef class gbt_classification_model_builder:
@@ -76,8 +76,7 @@ cdef class gbt_classification_model_builder:
         :param double cover: cover (sum_hess) of the leaf node
         :rtype: node identifier
         '''
-        # TODO: Forward cover to oneDAL
-        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response)
+        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response, cover)
 
     def add_split(self, c_gbt_clf_tree_id tree_id, size_t feature_index, double feature_value, double cover, int default_left, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
         '''
@@ -92,8 +91,7 @@ cdef class gbt_classification_model_builder:
         :param int default_left: default behaviour in case of missing value
         :rtype: node identifier
         '''
-        # TODO: Forward cover to oneDAL
-        return clfAddSplitNodeWrapper(self.c_ptr, tree_id, parent_id, position, feature_index, feature_value, default_left)
+        return clfAddSplitNodeWrapper(self.c_ptr, tree_id, parent_id, position, feature_index, feature_value, cover, default_left)
 
     def model(self):
         '''
