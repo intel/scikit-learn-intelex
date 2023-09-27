@@ -26,7 +26,7 @@ from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifie
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
-from sklearn.ensemble import _get_n_samples_bootstrap
+from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
