@@ -790,7 +790,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
-    @support_init_with_n_jobs
+    @run_with_n_jobs
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
         check_is_fitted(self, "_onedal_estimator")
