@@ -558,8 +558,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             )
             # TODO: Fix to support integers as input
 
-            n_samples = X.shape[0]
-            # Return value is unused as internal checks are more important
             _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
             if not self.bootstrap and self.max_samples is not None:
