@@ -790,6 +790,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
+    @support_init_with_n_jobs
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
         check_is_fitted(self, "_onedal_estimator")
@@ -1137,6 +1138,7 @@ class RandomForestClassifier(ForestClassifier):
 
     if sklearn_check_version("1.4"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1203,6 +1205,7 @@ class RandomForestClassifier(ForestClassifier):
 
     elif sklearn_check_version("1.0"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1266,6 +1269,7 @@ class RandomForestClassifier(ForestClassifier):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1346,6 +1350,7 @@ class RandomForestRegressor(ForestRegressor):
 
     if sklearn_check_version("1.4"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1410,6 +1415,7 @@ class RandomForestRegressor(ForestRegressor):
 
     elif sklearn_check_version("1.0"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1471,6 +1477,7 @@ class RandomForestRegressor(ForestRegressor):
 
     else:
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1546,6 +1553,7 @@ class ExtraTreesClassifier(ForestClassifier):
 
     if sklearn_check_version("1.4"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1757,6 +1765,7 @@ class ExtraTreesRegressor(ForestRegressor):
 
     if sklearn_check_version("1.4"):
 
+        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
