@@ -26,6 +26,7 @@ from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifie
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
+from sklearn.ensemble import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
@@ -69,6 +70,98 @@ if sklearn_check_version("1.4"):
 
 
 class BaseForest(ABC):
+    def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        if sklearn_check_version("0.24"):
+            X, y = self._validate_data(
+                X,
+                y,
+                multi_output=False,
+                accept_sparse=False,
+                dtype=[np.float64, np.float32],
+            )
+        else:
+            X, y = check_X_y(
+                X,
+                y,
+                accept_sparse=False,
+                dtype=[np.float64, np.float32],
+                multi_output=False,
+            )
+
+        if sample_weight is not None:
+            sample_weight = self.check_sample_weight(sample_weight, X)
+
+        y = np.atleast_1d(y)
+        if y.ndim == 2 and y.shape[1] == 1:
+            warnings.warn(
+                "A column-vector y was passed when a 1d array was"
+                " expected. Please change the shape of y to "
+                "(n_samples,), for example using ravel().",
+                DataConversionWarning,
+                stacklevel=2,
+            )
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = np.reshape(y, (-1, 1))
+
+        y, expanded_class_weight = self._validate_y_class_weight(y)
+
+        self.n_features_in_ = X.shape[1]
+
+        if expanded_class_weight is not None:
+            if sample_weight is not None:
+                sample_weight = sample_weight * expanded_class_weight
+            else:
+                sample_weight = expanded_class_weight
+        if sample_weight is not None:
+            sample_weight = [sample_weight]
+
+        onedal_params = {
+            "n_estimators": self.n_estimators,
+            "criterion": self.criterion,
+            "max_depth": self.max_depth,
+            "min_samples_split": self.min_samples_split,
+            "min_samples_leaf": self.min_samples_leaf,
+            "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
+            "max_features": self.max_features,
+            "max_leaf_nodes": self.max_leaf_nodes,
+            "min_impurity_decrease": self.min_impurity_decrease,
+            "bootstrap": self.bootstrap,
+            "oob_score": self.oob_score,
+            "n_jobs": self.n_jobs,
+            "random_state": self.random_state,
+            "verbose": self.verbose,
+            "warm_start": self.warm_start,
+            "error_metric_mode": self._err if self.oob_score else "none",
+            "variable_importance_mode": "mdi",
+            "class_weight": self.class_weight,
+            "max_bins": self.max_bins,
+            "min_bin_size": self.min_bin_size,
+            "max_samples": self.max_samples,
+        }
+
+        if not sklearn_check_version("1.0"):
+            onedal_params["min_impurity_split"] = self.min_impurity_split
+        else:
+            onedal_params["min_impurity_split"] = None
+
+        # Lazy evaluation of estimators_
+        self._cached_estimators_ = None
+
+        # Compute
+        self._onedal_estimator = self._onedal_factory(**onedal_params)
+        self._onedal_estimator.fit(X, np.squeeze(y), sample_weight, queue=queue)
+
+        self._save_attributes()
+
+        # Decapsulate classes_ attributes
+        if hasattr(self, "classes_") and self.n_outputs_ == 1:
+            self.n_classes_ = self.n_classes_[0]
+            self.classes_ = self.classes_[0]
+
+        return self
+
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
         params = self.get_params()
         self.__class__(**params)
@@ -218,12 +311,88 @@ class BaseForest(ABC):
         # Needed to allow for proper sklearn operation in fallback mode
         self._cached_estimators_ = estimators
 
+    def _estimators_(self):
+        # _estimators_ should only be called if _onedal_estimator exists
+        check_is_fitted(self, "_onedal_estimator")
+        if hasattr(self, "n_classes_"):
+            n_classes_ = (
+                self.n_classes_
+                if isinstance(self.n_classes_, int)
+                else self.n_classes_[0]
+            )
+        else:
+            n_classes_ = 1
+
+        # convert model to estimators
+        params = {
+            "criterion": self._onedal_estimator.criterion,
+            "max_depth": self._onedal_estimator.max_depth,
+            "min_samples_split": self._onedal_estimator.min_samples_split,
+            "min_samples_leaf": self._onedal_estimator.min_samples_leaf,
+            "min_weight_fraction_leaf": self._onedal_estimator.min_weight_fraction_leaf,
+            "max_features": self._onedal_estimator.max_features,
+            "max_leaf_nodes": self._onedal_estimator.max_leaf_nodes,
+            "min_impurity_decrease": self._onedal_estimator.min_impurity_decrease,
+            "random_state": None,
+        }
+        if not sklearn_check_version("1.0"):
+            params["min_impurity_split"] = self._onedal_estimator.min_impurity_split
+        est = self._estimator.__class__(**params)
+        # we need to set est.tree_ field with Trees constructed from Intel(R)
+        # oneAPI Data Analytics Library solution
+        estimators_ = []
+
+        random_state_checked = check_random_state(self.random_state)
+
+        for i in range(self._onedal_estimator.n_estimators):
+            est_i = clone(est)
+            est_i.set_params(
+                random_state=random_state_checked.randint(np.iinfo(np.int32).max)
+            )
+            if sklearn_check_version("1.0"):
+                est_i.n_features_in_ = self.n_features_in_
+            else:
+                est_i.n_features_ = self.n_features_in_
+            est_i.n_outputs_ = self.n_outputs_
+            est_i.n_classes_ = n_classes_
+            tree_i_state_class = self._get_tree_state(
+                self._onedal_estimator._onedal_model, i, n_classes_
+            )
+            tree_i_state_dict = {
+                "max_depth": tree_i_state_class.max_depth,
+                "node_count": tree_i_state_class.node_count,
+                "nodes": check_tree_nodes(tree_i_state_class.node_ar),
+                "values": tree_i_state_class.value_ar,
+            }
+            est_i.tree_ = Tree(
+                self.n_features_in_,
+                np.array([n_classes_], dtype=np.intp),
+                self.n_outputs_,
+            )
+            est_i.tree_.__setstate__(tree_i_state_dict)
+            estimators_.append(est_i)
+
+        self._cached_estimators_ = estimators_
+
+    if sklearn_check_version("1.0"):
+
+        @deprecated(
+            "Attribute `n_features_` was deprecated in version 1.0 and will be "
+            "removed in 1.2. Use `n_features_in_` instead."
+        )
+        @property
+        def n_features_(self):
+            return self.n_features_in_
+
 
 class ForestClassifier(sklearn_ForestClassifier, BaseForest):
     # Surprisingly, even though scikit-learn warns against using
     # their ForestClassifier directly, it actually has a more stable
     # API than the user-facing objects (over time). If they change it
     # significantly at some point then this may need to be versioned.
+
+    _err = "out_of_bag_error_accuracy|out_of_bag_error_decision_function"
+    _get_tree_state = get_tree_state_cls
 
     def __init__(
         self,
@@ -257,13 +426,19 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         # The splitter is recognized here for proper dispatching.
         self._estimator = estimator
         if self._estimator.__class__ == DecisionTreeClassifier:
-            self._onedal_classifier = onedal_RandomForestClassifier
+            self._onedal_factory = onedal_RandomForestClassifier
         elif self._estimator.__class__ == ExtraTreeClassifier:
-            self._onedal_classifier = onedal_ExtraTreesClassifier
+            self._onedal_factory = onedal_ExtraTreesClassifier
         else:
             raise TypeError(
                 f"{estimator.__class__.__name__} is not a supported tree classifier"
             )
+
+    def _estimators_():
+        super()._estimators_()
+        classes_ = self.classes_[0]
+        for est in self._cached_estimators:
+            est.classes_ = classes_
 
     def fit(self, X, y, sample_weight=None):
         dispatch(
@@ -384,29 +559,8 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             # TODO: Fix to support integers as input
 
             n_samples = X.shape[0]
-            if isinstance(self.max_samples, numbers.Integral):
-                if not sklearn_check_version("1.2"):
-                    if not (1 <= self.max_samples <= n_samples):
-                        msg = "`max_samples` must be in range 1 to {} but got value {}"
-                        raise ValueError(msg.format(n_samples, self.max_samples))
-                else:
-                    if self.max_samples > n_samples:
-                        msg = "`max_samples` must be <= n_samples={} but got value {}"
-                        raise ValueError(msg.format(n_samples, self.max_samples))
-            elif isinstance(self.max_samples, numbers.Real):
-                if sklearn_check_version("1.2"):
-                    pass
-                elif sklearn_check_version("1.0"):
-                    if not (0 < float(self.max_samples) <= 1):
-                        msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
-                        raise ValueError(msg.format(self.max_samples))
-                else:
-                    if not (0 < float(self.max_samples) < 1):
-                        msg = "`max_samples` must be in range (0, 1) but got value {}"
-                        raise ValueError(msg.format(self.max_samples))
-            elif self.max_samples is not None:
-                msg = "`max_samples` should be int or float, but got type '{}'"
-                raise TypeError(msg.format(type(self.max_samples)))
+            # Return value is unused as internal checks are more important
+            _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
@@ -462,75 +616,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
     fit.__doc__ = sklearn_ForestClassifier.fit.__doc__
     predict.__doc__ = sklearn_ForestClassifier.predict.__doc__
     predict_proba.__doc__ = sklearn_ForestClassifier.predict_proba.__doc__
-
-    if sklearn_check_version("1.0"):
-
-        @deprecated(
-            "Attribute `n_features_` was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use `n_features_in_` instead."
-        )
-        @property
-        def n_features_(self):
-            return self.n_features_in_
-
-    def _estimators_(self):
-        # _estimators_ should only be called if _onedal_estimator exists
-        check_is_fitted(self, "_onedal_estimator")
-        classes_ = self.classes_[0]
-        n_classes_ = (
-            self.n_classes_ if isinstance(self.n_classes_, int) else self.n_classes_[0]
-        )
-        # convert model to estimators
-        params = {
-            "criterion": self._onedal_estimator.criterion,
-            "max_depth": self._onedal_estimator.max_depth,
-            "min_samples_split": self._onedal_estimator.min_samples_split,
-            "min_samples_leaf": self._onedal_estimator.min_samples_leaf,
-            "min_weight_fraction_leaf": self._onedal_estimator.min_weight_fraction_leaf,
-            "max_features": self._onedal_estimator.max_features,
-            "max_leaf_nodes": self._onedal_estimator.max_leaf_nodes,
-            "min_impurity_decrease": self._onedal_estimator.min_impurity_decrease,
-            "random_state": None,
-        }
-        if not sklearn_check_version("1.0"):
-            params["min_impurity_split"] = self._onedal_estimator.min_impurity_split
-        est = self._estimator.__class__(**params)
-        # we need to set est.tree_ field with Trees constructed from Intel(R)
-        # oneAPI Data Analytics Library solution
-        estimators_ = []
-
-        random_state_checked = check_random_state(self.random_state)
-
-        for i in range(self._onedal_estimator.n_estimators):
-            est_i = clone(est)
-            est_i.set_params(
-                random_state=random_state_checked.randint(np.iinfo(np.int32).max)
-            )
-            if sklearn_check_version("1.0"):
-                est_i.n_features_in_ = self.n_features_in_
-            else:
-                est_i.n_features_ = self.n_features_in_
-            est_i.n_outputs_ = self.n_outputs_
-            est_i.classes_ = classes_
-            est_i.n_classes_ = n_classes_
-            tree_i_state_class = get_tree_state_cls(
-                self._onedal_estimator._onedal_model, i, n_classes_
-            )
-            tree_i_state_dict = {
-                "max_depth": tree_i_state_class.max_depth,
-                "node_count": tree_i_state_class.node_count,
-                "nodes": check_tree_nodes(tree_i_state_class.node_ar),
-                "values": tree_i_state_class.value_ar,
-            }
-            est_i.tree_ = Tree(
-                self.n_features_in_,
-                np.array([n_classes_], dtype=np.intp),
-                self.n_outputs_,
-            )
-            est_i.tree_.__setstate__(tree_i_state_dict)
-            estimators_.append(est_i)
-
-        self._cached_estimators_ = estimators_
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -678,107 +763,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         return patching_status
 
-    def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sklearn_check_version("1.2"):
-            X, y = self._validate_data(
-                X,
-                y,
-                multi_output=False,
-                accept_sparse=False,
-                dtype=[np.float64, np.float32],
-            )
-        else:
-            X, y = check_X_y(
-                X,
-                y,
-                accept_sparse=False,
-                dtype=[np.float64, np.float32],
-                multi_output=False,
-            )
-
-        if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
-
-        y = np.atleast_1d(y)
-        if y.ndim == 2 and y.shape[1] == 1:
-            warnings.warn(
-                "A column-vector y was passed when a 1d array was"
-                " expected. Please change the shape of y to "
-                "(n_samples,), for example using ravel().",
-                DataConversionWarning,
-                stacklevel=2,
-            )
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = np.reshape(y, (-1, 1))
-
-        y, expanded_class_weight = self._validate_y_class_weight(y)
-
-        n_classes_ = self.n_classes_[0]
-        self.n_features_in_ = X.shape[1]
-        if not sklearn_check_version("1.0"):
-            self.n_features_ = self.n_features_in_
-
-        if expanded_class_weight is not None:
-            if sample_weight is not None:
-                sample_weight = sample_weight * expanded_class_weight
-            else:
-                sample_weight = expanded_class_weight
-        if sample_weight is not None:
-            sample_weight = [sample_weight]
-
-        if n_classes_ < 2:
-            raise ValueError("Training data only contain information about one class.")
-
-        if self.oob_score:
-            err = "out_of_bag_error_accuracy|out_of_bag_error_decision_function"
-        else:
-            err = "none"
-
-        onedal_params = {
-            "n_estimators": self.n_estimators,
-            "criterion": self.criterion,
-            "max_depth": self.max_depth,
-            "min_samples_split": self.min_samples_split,
-            "min_samples_leaf": self.min_samples_leaf,
-            "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
-            "max_features": self.max_features,
-            "max_leaf_nodes": self.max_leaf_nodes,
-            "min_impurity_decrease": self.min_impurity_decrease,
-            "bootstrap": self.bootstrap,
-            "oob_score": self.oob_score,
-            "n_jobs": self.n_jobs,
-            "random_state": self.random_state,
-            "verbose": self.verbose,
-            "warm_start": self.warm_start,
-            "error_metric_mode": err,
-            "variable_importance_mode": "mdi",
-            "class_weight": self.class_weight,
-            "max_bins": self.max_bins,
-            "min_bin_size": self.min_bin_size,
-            "max_samples": self.max_samples,
-        }
-
-        if not sklearn_check_version("1.0"):
-            onedal_params["min_impurity_split"] = self.min_impurity_split
-        else:
-            onedal_params["min_impurity_split"] = None
-
-        # Lazy evaluation of estimators_
-        self._cached_estimators_ = None
-
-        # Compute
-        self._onedal_estimator = self._onedal_classifier(**onedal_params)
-        self._onedal_estimator.fit(X, np.squeeze(y), sample_weight, queue=queue)
-
-        self._save_attributes()
-
-        # Decapsulate classes_ attributes
-        self.n_classes_ = self.n_classes_[0]
-        self.classes_ = self.classes_[0]
-        return self
-
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
         check_is_fitted(self, "_onedal_estimator")
@@ -801,6 +785,9 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
 
 class ForestRegressor(sklearn_ForestRegressor, BaseForest):
+    _err = "out_of_bag_error_r2|out_of_bag_error_prediction"
+    _get_tree_state = get_tree_state_reg
+
     def __init__(
         self,
         estimator,
@@ -831,65 +818,13 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
         # The splitter is recognized here for proper dispatching.
         self._estimator = estimator
         if self._estimator.__class__ == DecisionTreeRegressor:
-            self._onedal_regressor = onedal_RandomForestRegressor
+            self._onedal_factory = onedal_RandomForestRegressor
         elif self._estimator.__class__ == ExtraTreeRegressor:
-            self._onedal_regressor = onedal_ExtraTreesRegressor
+            self._onedal_factory = onedal_ExtraTreesRegressor
         else:
             raise TypeError(
                 f"{estimator.__class__.__name__} is not a supported tree regressor"
             )
-
-    def _estimators_(self):
-        # _estimators_ should only be called if _onedal_estimator exists
-        check_is_fitted(self, "_onedal_estimator")
-        # convert model to estimators
-        params = {
-            "criterion": self._onedal_estimator.criterion,
-            "max_depth": self._onedal_estimator.max_depth,
-            "min_samples_split": self._onedal_estimator.min_samples_split,
-            "min_samples_leaf": self._onedal_estimator.min_samples_leaf,
-            "min_weight_fraction_leaf": self._onedal_estimator.min_weight_fraction_leaf,
-            "max_features": self._onedal_estimator.max_features,
-            "max_leaf_nodes": self._onedal_estimator.max_leaf_nodes,
-            "min_impurity_decrease": self._onedal_estimator.min_impurity_decrease,
-            "random_state": None,
-        }
-        if not sklearn_check_version("1.0"):
-            params["min_impurity_split"] = self._onedal_estimator.min_impurity_split
-        est = self._estimator.__class__(**params)
-        # we need to set est.tree_ field with Trees constructed from Intel(R)
-        # oneAPI Data Analytics Library solution
-        estimators_ = []
-        random_state_checked = check_random_state(self.random_state)
-
-        for i in range(self._onedal_estimator.n_estimators):
-            est_i = clone(est)
-            est_i.set_params(
-                random_state=random_state_checked.randint(np.iinfo(np.int32).max)
-            )
-            if sklearn_check_version("1.0"):
-                est_i.n_features_in_ = self.n_features_in_
-            else:
-                est_i.n_features_ = self.n_features_in_
-            est_i.n_classes_ = 1
-            est_i.n_outputs_ = self.n_outputs_
-            tree_i_state_class = get_tree_state_reg(
-                self._onedal_estimator._onedal_model, i
-            )
-            tree_i_state_dict = {
-                "max_depth": tree_i_state_class.max_depth,
-                "node_count": tree_i_state_class.node_count,
-                "nodes": check_tree_nodes(tree_i_state_class.node_ar),
-                "values": tree_i_state_class.value_ar,
-            }
-
-            est_i.tree_ = Tree(
-                self.n_features_in_, np.array([1], dtype=np.intp), self.n_outputs_
-            )
-            est_i.tree_.__setstate__(tree_i_state_dict)
-            estimators_.append(est_i)
-
-        self._cached_estimators_ = estimators_
 
     def _onedal_fit_ready(self, patching_status, X, y, sample_weight):
         if sp.issparse(y):
@@ -1158,69 +1093,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         return patching_status
 
-    def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sp.issparse(y):
-            raise ValueError("sparse multilabel-indicator for y is not supported.")
-        if sklearn_check_version("1.2"):
-            self._validate_params()
-        else:
-            self._check_parameters()
-        if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
-        X = check_array(X, dtype=[np.float64, np.float32])
-        y = np.atleast_1d(np.asarray(y))
-        if y.ndim == 2 and y.shape[1] == 1:
-            warnings.warn(
-                "A column-vector y was passed when a 1d array was"
-                " expected. Please change the shape of y to "
-                "(n_samples,), for example using ravel().",
-                DataConversionWarning,
-                stacklevel=2,
-            )
-        y = check_array(y, ensure_2d=False, dtype=X.dtype)
-        check_consistent_length(X, y)
-        self.n_features_in_ = X.shape[1]
-        if not sklearn_check_version("1.0"):
-            self.n_features_ = self.n_features_in_
-
-        if self.oob_score:
-            err = "out_of_bag_error_r2|out_of_bag_error_prediction"
-        else:
-            err = "none"
-
-        onedal_params = {
-            "n_estimators": self.n_estimators,
-            "criterion": self.criterion,
-            "max_depth": self.max_depth,
-            "min_samples_split": self.min_samples_split,
-            "min_samples_leaf": self.min_samples_leaf,
-            "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
-            "max_features": self.max_features,
-            "max_leaf_nodes": self.max_leaf_nodes,
-            "min_impurity_decrease": self.min_impurity_decrease,
-            "bootstrap": self.bootstrap,
-            "oob_score": self.oob_score,
-            "n_jobs": self.n_jobs,
-            "random_state": self.random_state,
-            "verbose": self.verbose,
-            "warm_start": self.warm_start,
-            "error_metric_mode": err,
-            "variable_importance_mode": "mdi",
-            "max_samples": self.max_samples,
-        }
-
-        # Lazy evaluation of estimators_
-        self._cached_estimators_ = None
-
-        self._onedal_estimator = self._onedal_regressor(**onedal_params)
-        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
-
-        self._save_attributes()
-
-        return self
-
     def _onedal_predict(self, X, queue=None):
         X = check_array(X, dtype=[np.float32, np.float64])
         check_is_fitted(self, "_onedal_estimator")
@@ -1258,16 +1130,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
     fit.__doc__ = sklearn_ForestRegressor.fit.__doc__
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
-
-    if sklearn_check_version("1.0"):
-
-        @deprecated(
-            "Attribute `n_features_` was deprecated in version 1.0 and will be "
-            "removed in 1.2. Use `n_features_in_` instead."
-        )
-        @property
-        def n_features_(self):
-            return self.n_features_in_
 
 
 class RandomForestClassifier(ForestClassifier):
