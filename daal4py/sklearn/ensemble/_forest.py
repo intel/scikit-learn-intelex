@@ -814,14 +814,16 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if isinstance(self.min_samples_split, numbers.Integral):
             parameters["minObservationsInSplitNode"] = self.min_samples_split
         else:
-            parameters["minObservationsInSplitNode"] = int(
-                ceil(self.min_samples_split * X.shape[0])
+            parameters["minObservationsInSplitNode"] = ceil(
+                self.min_samples_split * X.shape[0]
             )
 
         if isinstance(self.min_samples_leaf, numbers.Integral):
             parameters["minObservationsInLeafNode"] = self.min_samples_leaf
         else:
-            int(ceil(self.min_samples_leaf * X.shape[0]))
+            parameters["minObservationsInLeafNode"] = ceil(
+                self.min_samples_leaf * X.shape[0]
+            )
 
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
@@ -1348,14 +1350,16 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if isinstance(self.min_samples_split, numbers.Integral):
             parameters["minObservationsInSplitNode"] = self.min_samples_split
         else:
-            parameters["minObservationsInSplitNode"] = int(
-                ceil(self.min_samples_split * X.shape[0])
+            parameters["minObservationsInSplitNode"] = ceil(
+                self.min_samples_split * X.shape[0]
             )
 
         if isinstance(self.min_samples_leaf, numbers.Integral):
             parameters["minObservationsInLeafNode"] = self.min_samples_leaf
         else:
-            int(ceil(self.min_samples_leaf * X.shape[0]))
+            parameters["minObservationsInLeafNode"] = ceil(
+                self.min_samples_leaf * X.shape[0]
+            )
 
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
