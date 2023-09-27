@@ -34,7 +34,6 @@ from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
 from sklearn.utils.validation import (
     check_array,
-    check_consistent_length,
     check_is_fitted,
     check_X_y,
 )
@@ -512,11 +511,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 [
                     (
                         input_is_finite,
-                        "Non-finite input is not suppored.",
+                        "Non-finite input is not supported.",
                     ),
                     (
                         self.monotonic_cst is None,
-                        "Monotonicity constrains are not supported.",
+                        "Monotonicity constraints are not supported.",
                     ),
                 ]
             )
@@ -539,7 +538,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     DataConversionWarning,
                     stacklevel=2,
                 )
-            check_consistent_length(X, y)
 
             if y.ndim == 1:
                 y = np.reshape(y, (-1, 1))
@@ -896,7 +894,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 )
 
             y = check_array(y, ensure_2d=False, dtype=X.dtype)
-            check_consistent_length(X, y)
 
             if y.ndim == 1:
                 # reshape is necessary to preserve the data contiguity against vs
