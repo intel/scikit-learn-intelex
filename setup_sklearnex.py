@@ -102,7 +102,7 @@ packages_with_tests = [
     "sklearnex.utils",
 ]
 
-if build_distribute:
+if build_distribute and sys.version_info.minor > 8:
     packages_with_tests += [
         "sklearnex.spmd",
         "sklearnex.spmd.decomposition",

@@ -207,13 +207,13 @@ def custom_build_cmake_clib(
         "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_arg,
     ]
 
-    if dpctl_available:
+    if dpctl_available and sys.version_info.minor > 8:
         cmake_args += [
             "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
             "-DONEDAL_DPCTL_INTEGRATION:BOOL=ON",
         ]
 
-    if build_distribute:
+    if build_distribute and sys.version_info.minor > 8:
         cmake_args += [
             "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,

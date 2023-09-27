@@ -550,7 +550,7 @@ if ONEDAL_VERSION >= 20230100:
 if ONEDAL_VERSION >= 20230200:
     packages_with_tests += ["onedal.cluster"]
 
-if build_distribute:
+if build_distribute and sys.version_info.minor > 8:
     packages_with_tests += [
         "onedal.spmd",
         "onedal.spmd.decomposition",

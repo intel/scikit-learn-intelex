@@ -181,6 +181,20 @@ req_os = defaultdict(lambda: [])
 
 skiped_files = []
 
+# Workaroud for dpctl issues on python 3.8.
+if not (sys.version_info.minor > 8):
+    skiped_files.extend([
+        "basic_statistics_spmd.py",
+        "dbscan_spmd.py",
+        "kmeans_spmd.py",
+        "knn_bf_classification_spmd.py",
+        "knn_bf_regression_spmd.py",
+        "linear_regression_spmd.py",
+        "pca_spmd.py",
+        "random_forest_classifier_spmd.py",
+        "random_forest_regressor_spmd.py",
+    ])
+
 
 def get_exe_cmd(ex, nodist, nostream):
     if os.path.dirname(ex).endswith("sycl"):
@@ -230,7 +244,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
                     print("\n##### " + jp(dirpath, script))
                     print(
                         strftime("%H:%M:%S", gmtime())
-                        + "\tKNOWN BUG IN EXAMPLES\t"
+                        + "\tSKIPPED\t"
                         + script
                     )
                 else:
