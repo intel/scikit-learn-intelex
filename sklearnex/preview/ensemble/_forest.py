@@ -391,7 +391,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
     # significantly at some point then this may need to be versioned.
 
     _err = "out_of_bag_error_accuracy|out_of_bag_error_decision_function"
-    _get_tree_state = get_tree_state_cls
 
     def __init__(
         self,
@@ -433,11 +432,14 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 f"{estimator.__class__.__name__} is not a supported tree classifier"
             )
 
-    def _estimators_():
+    def _estimators_(self):
         super()._estimators_()
         classes_ = self.classes_[0]
-        for est in self._cached_estimators:
+        for est in self._cached_estimators_:
             est.classes_ = classes_
+
+    def _get_tree_state(self ,model, iTree, n_classes):
+        return get_tree_state_cls(model, iTree, n_classes)
 
     def fit(self, X, y, sample_weight=None):
         dispatch(
@@ -768,7 +770,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
 class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     _err = "out_of_bag_error_r2|out_of_bag_error_prediction"
-    _get_tree_state = get_tree_state_reg
 
     def __init__(
         self,
@@ -807,6 +808,9 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             raise TypeError(
                 f"{estimator.__class__.__name__} is not a supported tree regressor"
             )
+
+    def _get_tree_state(self, model, iTree, n_classes):
+        return get_tree_state_reg(model, iTree, n_classes)
 
     def _onedal_fit_ready(self, patching_status, X, y, sample_weight):
         if sp.issparse(y):
