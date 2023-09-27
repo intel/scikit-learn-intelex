@@ -918,7 +918,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     "Either switch to `bootstrap=True` or set "
                     "`max_sample=None`."
                 )
-            
+
             if (
                 patching_status.get_status()
                 and (self.random_state is not None)
