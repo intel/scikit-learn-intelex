@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# ==============================================================================
-# Copyright 2021 Intel Corporation
+# ===============================================================================
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,17 +13,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+# ===============================================================================
 
-import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_classification, make_regression
 
 from daal4py.sklearn._utils import daal_check_version
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 
 
-def test_sklearnex_import_rf_classifier():
-    from sklearnex.ensemble import RandomForestClassifier
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_sklearnex_import_rf_classifier(dataframe, queue):
+    from sklearnex.preview.ensemble import RandomForestClassifier
 
     X, y = make_classification(
         n_samples=1000,
@@ -33,22 +39,77 @@ def test_sklearnex_import_rf_classifier():
         random_state=0,
         shuffle=False,
     )
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    assert "daal4py" in rf.__module__
-    assert_allclose([1], rf.predict([[0, 0, 0, 0]]))
+    assert "sklearnex.preview" in rf.__module__
+    assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-def test_sklearnex_import_rf_regression():
-    from sklearnex.ensemble import RandomForestRegressor
+# TODO:
+# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
+)
+def test_sklearnex_import_rf_regression(dataframe, queue):
+    from sklearnex.preview.ensemble import RandomForestRegressor
 
     X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
-    assert "daal4py" in rf.__module__
-    pred = rf.predict([[0, 0, 0, 0]])
-    if daal_check_version((2021, "P", 400)):
-        # random engine work was changed in sklearnex 2023.1
-        assert np.allclose([-6.97], pred, atol=1e-2) or np.allclose(
-            [-8.36], pred, atol=1e-2
-        )
+    assert "sklearnex.preview" in rf.__module__
+    pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
+    if daal_check_version((2024, "P", 0)):
+        assert_allclose([-6.971], pred, atol=1e-2)
     else:
-        assert_allclose([-6.66], pred, atol=1e-2)
+        assert_allclose([-6.839], pred, atol=1e-2)
+
+
+# TODO:
+# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
+)
+def test_sklearnex_import_et_classifier(dataframe, queue):
+    from sklearnex.preview.ensemble import ExtraTreesClassifier
+
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=4,
+        n_informative=2,
+        n_redundant=0,
+        random_state=0,
+        shuffle=False,
+    )
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    # For the 2023.2 release, random_state is not supported
+    # defaults to seed=777, although it is set to 0
+    rf = ExtraTreesClassifier(max_depth=2, random_state=0).fit(X, y)
+    assert "sklearnex" in rf.__module__
+    assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
+
+
+# TODO:
+# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
+)
+def test_sklearnex_import_et_regression(dataframe, queue):
+    from sklearnex.preview.ensemble import ExtraTreesRegressor
+
+    X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    # For the 2023.2 release, random_state is not supported
+    # defaults to seed=777, although it is set to 0
+    rf = ExtraTreesRegressor(max_depth=2, random_state=0).fit(X, y)
+    assert "sklearnex" in rf.__module__
+    pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
+    if daal_check_version((2024, "P", 0)):
+        assert_allclose([5.372], pred, atol=1e-2)
+    elif daal_check_version((2023, "P", 200)):
+        assert_allclose([27.138], pred, atol=1e-2)
+    else:
+        assert_allclose([-2.826], pred, atol=1e-2)
