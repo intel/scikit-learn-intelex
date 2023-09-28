@@ -42,7 +42,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    assert "sklearnex.preview" in rf.__module__
+    assert "sklearnex" in rf.__module__
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
@@ -58,7 +58,7 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
-    assert "sklearnex.preview" in rf.__module__
+    assert "sklearnex" in rf.__module__
     pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
     if daal_check_version((2024, "P", 0)):
         assert_allclose([-6.971], pred, atol=1e-2)
