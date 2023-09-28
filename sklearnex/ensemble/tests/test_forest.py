@@ -29,7 +29,7 @@ from onedal.tests.utils._dataframes_support import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_rf_classifier(dataframe, queue):
-    from sklearnex.preview.ensemble import RandomForestClassifier
+    from sklearnex.ensemble import RandomForestClassifier
 
     X, y = make_classification(
         n_samples=1000,
@@ -52,7 +52,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
     "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_rf_regression(dataframe, queue):
-    from sklearnex.preview.ensemble import RandomForestRegressor
+    from sklearnex.ensemble import RandomForestRegressor
 
     X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
@@ -72,7 +72,7 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
     "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_et_classifier(dataframe, queue):
-    from sklearnex.preview.ensemble import ExtraTreesClassifier
+    from sklearnex.ensemble import ExtraTreesClassifier
 
     X, y = make_classification(
         n_samples=1000,
@@ -97,7 +97,7 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
     "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_import_et_regression(dataframe, queue):
-    from sklearnex.preview.ensemble import ExtraTreesRegressor
+    from sklearnex.ensemble import ExtraTreesRegressor
 
     X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)

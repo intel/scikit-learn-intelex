@@ -19,10 +19,10 @@ from abc import ABC
 from onedal.spmd.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.spmd.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 
-from ...preview.ensemble import (
+from ...ensemble import (
     RandomForestClassifier as RandomForestClassifier_Batch,
 )
-from ...preview.ensemble import (
+from ...ensemble import (
     RandomForestRegressor as RandomForestRegressor_Batch,
 )
 

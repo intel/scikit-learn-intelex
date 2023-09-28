@@ -70,20 +70,16 @@ def get_patch_map():
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
+        from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
+        from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
+        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
+        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+
         # Preview classes for patching
         from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.decomposition import PCA as PCA_sklearnex
-        from .preview.ensemble import (
-            ExtraTreesClassifier as ExtraTreesClassifier_sklearnex,
-        )
-        from .preview.ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
-        from .preview.ensemble import (
-            RandomForestClassifier as RandomForestClassifier_sklearnex,
-        )
-        from .preview.ensemble import (
-            RandomForestRegressor as RandomForestRegressor_sklearnex,
-        )
         from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
+        
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
@@ -91,56 +87,6 @@ def get_patch_map():
 
         # Patch for mapping
         if _is_preview_enabled():
-            # Ensemble
-            mapping["extra_trees_classifier"] = [
-                [
-                    (
-                        ensemble_module,
-                        "ExtraTreesClassifier",
-                        ExtraTreesClassifier_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["extra_trees_regressor"] = [
-                [
-                    (
-                        ensemble_module,
-                        "ExtraTreesRegressor",
-                        ExtraTreesRegressor_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["extratreesclassifier"] = mapping["extra_trees_classifier"]
-            mapping["extratreesregressor"] = mapping["extra_trees_regressor"]
-            mapping.pop("random_forest_classifier")
-            mapping.pop("random_forest_regressor")
-            mapping.pop("randomforestclassifier")
-            mapping.pop("randomforestregressor")
-            mapping["random_forest_classifier"] = [
-                [
-                    (
-                        ensemble_module,
-                        "RandomForestClassifier",
-                        RandomForestClassifier_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["random_forest_regressor"] = [
-                [
-                    (
-                        ensemble_module,
-                        "RandomForestRegressor",
-                        RandomForestRegressor_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
-            mapping["randomforestregressor"] = mapping["random_forest_regressor"]
-
             # PCA
             mapping.pop("pca")
             mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
@@ -218,6 +164,56 @@ def get_patch_map():
         mapping["kneighborsclassifier"] = mapping["knn_classifier"]
         mapping["kneighborsregressor"] = mapping["knn_regressor"]
         mapping["nearestneighbors"] = mapping["nearest_neighbors"]
+
+        # Ensemble
+        mapping["extra_trees_classifier"] = [
+            [
+                (
+                    ensemble_module,
+                    "ExtraTreesClassifier",
+                    ExtraTreesClassifier_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["extra_trees_regressor"] = [
+            [
+                (
+                    ensemble_module,
+                    "ExtraTreesRegressor",
+                    ExtraTreesRegressor_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["extratreesclassifier"] = mapping["extra_trees_classifier"]
+        mapping["extratreesregressor"] = mapping["extra_trees_regressor"]
+        mapping.pop("random_forest_classifier")
+        mapping.pop("random_forest_regressor")
+        mapping.pop("randomforestclassifier")
+        mapping.pop("randomforestregressor")
+        mapping["random_forest_classifier"] = [
+            [
+                (
+                    ensemble_module,
+                    "RandomForestClassifier",
+                    RandomForestClassifier_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["random_forest_regressor"] = [
+            [
+                (
+                    ensemble_module,
+                    "RandomForestRegressor",
+                    RandomForestRegressor_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
+        mapping["randomforestregressor"] = mapping["random_forest_regressor"]
 
         # LocalOutlierFactor
         mapping["lof"] = [
