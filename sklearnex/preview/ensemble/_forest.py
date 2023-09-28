@@ -91,7 +91,6 @@ class BaseForest(ABC):
         if sample_weight is not None:
             sample_weight = self.check_sample_weight(sample_weight, X)
 
-        y = np.atleast_1d(y)
         if y.ndim == 2 and y.shape[1] == 1:
             warnings.warn(
                 "A column-vector y was passed when a 1d array was"
@@ -100,6 +99,7 @@ class BaseForest(ABC):
                 DataConversionWarning,
                 stacklevel=2,
             )
+
         if y.ndim == 1:
             # reshape is necessary to preserve the data contiguity against vs
             # [:, np.newaxis] that does not.
@@ -439,7 +439,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         for est in self._cached_estimators_:
             est.classes_ = classes_
 
-    def _get_tree_state(self ,model, iTree, n_classes):
+    def _get_tree_state(self, model, iTree, n_classes):
         return get_tree_state_cls(model, iTree, n_classes)
 
     def fit(self, X, y, sample_weight=None):
@@ -521,21 +521,18 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             )
 
         if patching_status.get_status():
-            if sklearn_check_version("1.0"):
-                X, y = self._validate_data(X,
+            if sklearn_check_version("0.24"):
+                X, y = self._validate_data(
+                    X,
                     y,
                     multi_output=True,
                     accept_sparse=True,
                     dtype=[np.float64, np.float32],
-                    )
-            else:
-                X = check_array(
-                    X,
-                    dtype=[np.float64, np.float32],
                     force_all_finite=not sklearn_check_version("1.4"),
                 )
+            else:
+                X = check_array(X, dtype=[np.float64, np.float32])
                 y = check_array(y, ensure_2d=False, dtype=X.dtype)
-
 
             if y.ndim == 2 and y.shape[1] == 1:
                 warnings.warn(
@@ -545,10 +542,12 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     DataConversionWarning,
                     stacklevel=2,
                 )
-            #check_consistent_length(X, y)
+
             if y.ndim == 1:
                 y = np.reshape(y, (-1, 1))
+
             self.n_outputs_ = y.shape[1]
+
             patching_status.and_conditions(
                 [
                     (
@@ -883,19 +882,17 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             )
 
         if patching_status.get_status():
-            if sklearn_check_version("1.0"):
-                X, y = self._validate_data(X,
+            if sklearn_check_version("0.24"):
+                X, y = self._validate_data(
+                    X,
                     y,
                     multi_output=True,
                     accept_sparse=True,
                     dtype=[np.float64, np.float32],
-                    )
-            else:
-                X = check_array(
-                    X,
-                    dtype=[np.float64, np.float32],
                     force_all_finite=not sklearn_check_version("1.4"),
                 )
+            else:
+                X = check_array(X, dtype=[np.float64, np.float32])
                 y = check_array(y, ensure_2d=False, dtype=X.dtype)
 
             if y.ndim == 2 and y.shape[1] == 1:
@@ -906,7 +903,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     DataConversionWarning,
                     stacklevel=2,
                 )
-            #check_consistent_length(X, y)
 
             if y.ndim == 1:
                 # reshape is necessary to preserve the data contiguity against vs
