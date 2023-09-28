@@ -383,6 +383,16 @@ class BaseForest(ABC):
         def n_features_(self):
             return self.n_features_in_
 
+    if not sklearn_check_version("1.2"):
+
+        @property
+        def base_estimator(self):
+            return self.estimator
+
+        @base_estimator.setter
+        def base_estimator(self, estimator):
+            self.estimator = estimator
+
 
 class ForestClassifier(sklearn_ForestClassifier, BaseForest):
     # Surprisingly, even though scikit-learn warns against using
