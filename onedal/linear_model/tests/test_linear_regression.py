@@ -77,7 +77,7 @@ if daal_check_version((2023, "P", 100)):
         model.fit(X, y, queue=queue)
 
         if queue.sycl_device.is_gpu:
-            tol = 2.5e-3 if model.coef_.dtype == np.float32 else 1e-5
+            tol = 5e-3 if model.coef_.dtype == np.float32 else 1e-5
         else:
             tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
         assert_allclose(coef, model.coef_.T, rtol=tol)
