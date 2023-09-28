@@ -1122,6 +1122,7 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_auto_algorithm
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend
   - svm/tests/test_sparse.py::test_consistent_proba
+  - svm/tests/test_svm.py::test_consistent_proba 
   - svm/tests/test_svm.py::test_libsvm_parameters
   - svm/tests/test_svm.py::test_negative_weight_equal_coeffs
   - svm/tests/test_svm.py::test_unicode_kernel
