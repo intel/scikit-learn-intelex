@@ -22,15 +22,11 @@ if daal_check_version((2023, "P", 100)):
     import numpy as np
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
-    from daal4py.sklearn._utils import (
-        get_dtype,
-        make2d,
-        sklearn_check_version,
-    )
+    from daal4py.sklearn._utils import get_dtype, make2d, sklearn_check_version
 
     from ..._device_offload import dispatch, wrap_output_data
-    from ...utils.validation import _assert_all_finite
     from ..._utils import PatchingConditionsChain
+    from ...utils.validation import _assert_all_finite
     from ._common import BaseLinearRegression
 
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
