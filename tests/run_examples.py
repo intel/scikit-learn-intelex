@@ -183,17 +183,19 @@ skiped_files = []
 
 # Workaroud for dpctl issues on python 3.8.
 if not (sys.version_info.minor > 8):
-    skiped_files.extend([
-        "basic_statistics_spmd.py",
-        "dbscan_spmd.py",
-        "kmeans_spmd.py",
-        "knn_bf_classification_spmd.py",
-        "knn_bf_regression_spmd.py",
-        "linear_regression_spmd.py",
-        "pca_spmd.py",
-        "random_forest_classifier_spmd.py",
-        "random_forest_regressor_spmd.py",
-    ])
+    skiped_files.extend(
+        [
+            "basic_statistics_spmd.py",
+            "dbscan_spmd.py",
+            "kmeans_spmd.py",
+            "knn_bf_classification_spmd.py",
+            "knn_bf_regression_spmd.py",
+            "linear_regression_spmd.py",
+            "pca_spmd.py",
+            "random_forest_classifier_spmd.py",
+            "random_forest_regressor_spmd.py",
+        ]
+    )
 
 
 def get_exe_cmd(ex, nodist, nostream):
@@ -242,11 +244,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
                 if script in skiped_files:
                     success += 1
                     print("\n##### " + jp(dirpath, script))
-                    print(
-                        strftime("%H:%M:%S", gmtime())
-                        + "\tSKIPPED\t"
-                        + script
-                    )
+                    print(strftime("%H:%M:%S", gmtime()) + "\tSKIPPED\t" + script)
                 else:
                     logfn = jp(logdir, script.replace(".py", ".res"))
                     with open(logfn, "w") as logfile:
