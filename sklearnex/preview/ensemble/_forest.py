@@ -435,9 +435,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             self._onedal_factory = onedal_ExtraTreesClassifier
 
         if self._onedal_factory is None:
-            raise TypeError(
-                f" oneDAL estimator has not been set."
-            )
+            raise TypeError(f" oneDAL estimator has not been set.")
 
     def _estimators_(self):
         super()._estimators_()
@@ -825,9 +823,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             self._onedal_factory = onedal_ExtraTreesRegressor
 
         if self._onedal_factory is None:
-            raise TypeError(
-                f" oneDAL estimator has not been set."
-            )
+            raise TypeError(f" oneDAL estimator has not been set.")
 
     def _get_tree_state(self, model, iTree, n_classes):
         return get_tree_state_reg(model, iTree, n_classes)
