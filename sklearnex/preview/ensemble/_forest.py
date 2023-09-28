@@ -34,6 +34,7 @@ from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
 from sklearn.utils.validation import (
     check_array,
+    check_consistent_length,
     check_is_fitted,
     check_X_y,
 )
@@ -150,7 +151,7 @@ class BaseForest(ABC):
 
         # Compute
         self._onedal_estimator = self._onedal_factory(**onedal_params)
-        self._onedal_estimator.fit(X, np.squeeze(y), sample_weight, queue=queue)
+        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         self._save_attributes()
 
@@ -521,14 +522,21 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         if patching_status.get_status():
             if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            X = check_array(
-                X,
-                dtype=[np.float32, np.float64],
-                force_all_finite=not sklearn_check_version("1.4"),
-            )
-            y = np.asarray(y)
-            y = np.atleast_1d(y)
+                X, y = self._validate_data(X,
+                    y,
+                    multi_output=True,
+                    accept_sparse=True,
+                    dtype=[np.float64, np.float32],
+                    )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                    force_all_finite=not sklearn_check_version("1.4"),
+                )
+                y = check_array(y, ensure_2d=False, dtype=X.dtype)
+
+
             if y.ndim == 2 and y.shape[1] == 1:
                 warnings.warn(
                     "A column-vector y was passed when a 1d array was"
@@ -537,7 +545,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     DataConversionWarning,
                     stacklevel=2,
                 )
-
+            #check_consistent_length(X, y)
             if y.ndim == 1:
                 y = np.reshape(y, (-1, 1))
             self.n_outputs_ = y.shape[1]
@@ -876,14 +884,19 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         if patching_status.get_status():
             if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=not sklearn_check_version("1.4"),
-            )
-            y = np.asarray(y)
-            y = np.atleast_1d(y)
+                X, y = self._validate_data(X,
+                    y,
+                    multi_output=True,
+                    accept_sparse=True,
+                    dtype=[np.float64, np.float32],
+                    )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                    force_all_finite=not sklearn_check_version("1.4"),
+                )
+                y = check_array(y, ensure_2d=False, dtype=X.dtype)
 
             if y.ndim == 2 and y.shape[1] == 1:
                 warnings.warn(
@@ -893,8 +906,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     DataConversionWarning,
                     stacklevel=2,
                 )
-
-            y = check_array(y, ensure_2d=False, dtype=X.dtype)
+            #check_consistent_length(X, y)
 
             if y.ndim == 1:
                 # reshape is necessary to preserve the data contiguity against vs
@@ -902,6 +914,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 y = np.reshape(y, (-1, 1))
 
             self.n_outputs_ = y.shape[1]
+
             patching_status.and_conditions(
                 [
                     (
@@ -911,6 +924,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
+            # Sklearn function used for doing checks on max_samples attribute
             _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
             if not self.bootstrap and self.max_samples is not None:
