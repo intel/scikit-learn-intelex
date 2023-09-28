@@ -70,6 +70,8 @@ if sklearn_check_version("1.4"):
 
 
 class BaseForest(ABC):
+    _onedal_factory = None
+
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sklearn_check_version("0.24"):
             X, y = self._validate_data(
@@ -181,10 +183,7 @@ class BaseForest(ABC):
                     self._onedal_estimator.oob_decision_function_
                 )
 
-        if sklearn_check_version("1.2"):
-            self.estimator_ = self._estimator
-        else:
-            self.base_estimator_ = self._estimator
+        self._validate_estimator()
         return self
 
     # TODO:
@@ -337,7 +336,7 @@ class BaseForest(ABC):
         }
         if not sklearn_check_version("1.0"):
             params["min_impurity_split"] = self._onedal_estimator.min_impurity_split
-        est = self._estimator.__class__(**params)
+        est = self.estimator.__class__(**params)
         # we need to set est.tree_ field with Trees constructed from Intel(R)
         # oneAPI Data Analytics Library solution
         estimators_ = []
@@ -422,11 +421,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             max_samples=max_samples,
         )
 
-        # The splitter is recognized here for proper dispatching.
-        self._estimator = estimator
-        if self._estimator.__class__ == DecisionTreeClassifier:
+        # The estimator is checked against the class attribute for conformance.
+        # This should only trigger if the user uses this class directly.
+        if self.estimator.__class__ == DecisionTreeClassifier and self._onedal_factory != onedal_RandomForestClassifier:
             self._onedal_factory = onedal_RandomForestClassifier
-        elif self._estimator.__class__ == ExtraTreeClassifier:
+        elif self.estimator.__class__ == ExtraTreeClassifier and self._onedal_factory != onedal_ExtraTreesClassifier:
             self._onedal_factory = onedal_ExtraTreesClassifier
         else:
             raise TypeError(
@@ -645,7 +644,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 [
                     (
                         daal_check_version((2023, "P", 200))
-                        or self._estimator.__class__ == DecisionTreeClassifier,
+                        or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                     (
@@ -665,7 +664,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     (self.warm_start is False, "Warm start is not supported."),
                     (
                         daal_check_version((2023, "P", 100))
-                        or self._estimator.__class__ == DecisionTreeClassifier,
+                        or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                 ]
@@ -713,7 +712,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 [
                     (
                         daal_check_version((2023, "P", 100))
-                        or self._estimator.__class__ == DecisionTreeClassifier,
+                        or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
                     (sample_weight is not None, "sample_weight is not supported."),
@@ -805,11 +804,11 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             max_samples=max_samples,
         )
 
-        # The splitter is recognized here for proper dispatching.
-        self._estimator = estimator
-        if self._estimator.__class__ == DecisionTreeRegressor:
+        # The splitter is checked against the class attribute for conformance
+        # This should only trigger if the user uses this class directly.
+        if self.estimator.__class__ == DecisionTreeRegressor and self._onedal_factory != onedal_RandomForestRegressor:
             self._onedal_factory = onedal_RandomForestRegressor
-        elif self._estimator.__class__ == ExtraTreeRegressor:
+        elif self.estimator.__class__ == ExtraTreeRegressor and self._onedal_factory != onedal_ExtraTreesRegressor:
             self._onedal_factory = onedal_ExtraTreesRegressor
         else:
             raise TypeError(
@@ -958,7 +957,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 [
                     (
                         daal_check_version((2023, "P", 200))
-                        or self._estimator.__class__ == DecisionTreeClassifier,
+                        or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                     (
@@ -978,7 +977,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     (self.warm_start is False, "Warm start is not supported."),
                     (
                         daal_check_version((2023, "P", 200))
-                        or self._estimator.__class__ == DecisionTreeClassifier,
+                        or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.2",
                     ),
                 ]
@@ -1015,7 +1014,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 [
                     (
                         daal_check_version((2023, "P", 100))
-                        or self._estimator.__class__ == DecisionTreeClassifier,
+                        or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
                     (sample_weight is not None, "sample_weight is not supported."),
@@ -1032,7 +1031,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     (self.warm_start is False, "Warm start is not supported."),
                     (
                         daal_check_version((2023, "P", 100))
-                        or self._estimator.__class__ == DecisionTreeClassifier,
+                        or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
                 ]
@@ -1095,6 +1094,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
 class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
+    _onedal_factory = onedal_RandomForestClassifier
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -1303,6 +1303,7 @@ class RandomForestClassifier(ForestClassifier):
 
 class RandomForestRegressor(ForestRegressor):
     __doc__ = sklearn_RandomForestRegressor.__doc__
+    _onedal_factory = onedal_RandomForestRegressor
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -1502,6 +1503,7 @@ class RandomForestRegressor(ForestRegressor):
 
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
+    _onedal_factory = onedal_ExtraTreesClassifier
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -1710,6 +1712,7 @@ class ExtraTreesClassifier(ForestClassifier):
 
 class ExtraTreesRegressor(ForestRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
+    _onedal_factory = onedal_ExtraTreesRegressor
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
