@@ -21,7 +21,6 @@ from time import time
 from typing import Any, Deque, Dict, Generator, List, Optional, Tuple
 
 import numpy as np
-import xgboost as xgb
 
 
 class CatBoostNode:
@@ -152,7 +151,12 @@ class TreeList(list):
     model builders from an XGBoost.Booster object"""
 
     @staticmethod
-    def from_booster(booster: xgb.Booster) -> "TreeList":
+    def from_booster(booster) -> "TreeList":
+        """
+        Load a TreeList from an xgb.Booster object
+        Note: We cannot type-hint the xgb.Booster without loading xgb as dependency in pyx code,
+              therefore not type hint is added.
+        """
         tl = TreeList()
         dump = booster.get_dump(dump_format="json", with_stats=True)
         for tree_id, raw_tree in enumerate(dump):
