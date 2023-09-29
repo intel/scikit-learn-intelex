@@ -774,7 +774,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
-        X = check_array(X, dtype=[np.float32, np.float64])
+        X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
@@ -1079,7 +1079,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
-        X = check_array(X, dtype=[np.float32, np.float64])
+        X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
