@@ -37,19 +37,11 @@ class CatBoostNode:
         self.left = left
 
 
-class LightGbmNode:
-    def __init__(self, tree: Dict[str, Any], parent_id: int, position: int) -> None:
-        self.tree = tree
-        self.parent_id = parent_id
-        self.position = position
-
-
 class Node:
     """Helper class holding Tree Node information"""
 
     def __init__(
         self,
-        node_id: int,
         cover: float,
         is_leaf: bool,
         default_left: bool,
@@ -61,7 +53,6 @@ class Node:
         parent_id: Optional[int] = -1,
         position: Optional[int] = -1,
     ) -> None:
-        self.node_id = node_id
         self.cover = cover
         self.is_leaf = is_leaf
         self.default_left = default_left
@@ -74,10 +65,10 @@ class Node:
         self.position = position
 
     @staticmethod
-    def from_dict(input_dict: Dict[str, Any]) -> "Node":
+    def from_xgb_dict(input_dict: Dict[str, Any]) -> "Node":
         if "children" in input_dict:
-            left_child = Node.from_dict(input_dict["children"][0])
-            right_child = Node.from_dict(input_dict["children"][1])
+            left_child = Node.from_xgb_dict(input_dict["children"][0])
+            right_child = Node.from_xgb_dict(input_dict["children"][1])
             n_children = 2 + left_child.n_children + right_child.n_children
         else:
             left_child = None
@@ -86,12 +77,47 @@ class Node:
         is_leaf = "leaf" in input_dict
         default_left = "yes" in input_dict and input_dict["yes"] == input_dict["missing"]
         return Node(
-            node_id=input_dict["nodeid"],
             cover=input_dict["cover"],
             is_leaf=is_leaf,
             default_left=default_left,
             feature=input_dict.get("split"),
             value=input_dict["leaf"] if is_leaf else input_dict["split_condition"],
+            n_children=n_children,
+            left_child=left_child,
+            right_child=right_child,
+        )
+
+    @staticmethod
+    def from_lightgbm_dict(input_dict: Dict[str, Any]) -> "Node":
+        if "tree_structure" in input_dict:
+            tree = input_dict["tree_structure"]
+        else:
+            tree = input_dict
+
+        n_children = 0
+        if "left_child" in tree:
+            left_child = Node.from_lightgbm_dict(tree["left_child"])
+            n_children += 1 + left_child.n_children
+        else:
+            left_child = None
+        if "right_child" in tree:
+            right_child = Node.from_lightgbm_dict(tree["right_child"])
+            n_children += 1 + right_child.n_children
+        else:
+            right_child = None
+
+        is_leaf = "leaf_value" in tree
+        empty_leaf = is_leaf and "leaf_count" not in tree
+        if is_leaf:
+            cover = tree["leaf_count"]
+        else:
+            cover = tree["internal_count"]
+        return Node(
+            cover=cover,
+            is_leaf=is_leaf,
+            default_left=is_leaf or tree["default_left"],
+            feature=tree.get("split_feature"),
+            value=tree["leaf_value"] if is_leaf else tree["threshold"],
             n_children=n_children,
             left_child=left_child,
             right_child=right_child,
@@ -109,11 +135,13 @@ class Node:
 
     @property
     def feature(self) -> int:
-        if not (isinstance(self.__feature, str) and self.__feature.isnumeric()):
-            raise ValueError(
-                f"Feature names must be integers (got ({type(self.__feature)}){self.__feature})"
-            )
-        return int(self.__feature)
+        if isinstance(self.__feature, int):
+            return self.__feature
+        if isinstance(self.__feature, str) and self.__feature.isnumeric():
+            return int(self.__feature)
+        raise ValueError(
+            f"Feature names must be integers (got ({type(self.__feature)}){self.__feature})"
+        )
 
 
 class TreeView:
@@ -151,7 +179,7 @@ class TreeList(list):
     model builders from an XGBoost.Booster object"""
 
     @staticmethod
-    def from_booster(booster) -> "TreeList":
+    def from_xgb_booster(booster) -> "TreeList":
         """
         Load a TreeList from an xgb.Booster object
         Note: We cannot type-hint the xgb.Booster without loading xgb as dependency in pyx code,
@@ -161,193 +189,58 @@ class TreeList(list):
         dump = booster.get_dump(dump_format="json", with_stats=True)
         for tree_id, raw_tree in enumerate(dump):
             raw_tree_parsed = json.loads(raw_tree)
-            root_node = Node.from_dict(raw_tree_parsed)
+            root_node = Node.from_xgb_dict(raw_tree_parsed)
+            tl.append(TreeView(tree_id=tree_id, root_node=root_node))
+
+        return tl
+
+    @staticmethod
+    def from_lightgbm_booster_dump(dump: Dict[str, Any]) -> "TreeList":
+        """
+        Load a TreeList from a lgbm.Model object
+        Note: We cannot type-hint the the Model without loading lightgbm as dependency in pyx code,
+              therefore not type hint is added.
+        """
+        tl = TreeList()
+        for tree_id, tree_dict in enumerate(dump["tree_info"]):
+            root_node = Node.from_lightgbm_dict(tree_dict)
             tl.append(TreeView(tree_id=tree_id, root_node=root_node))
 
         return tl
 
     def __setitem__(self):
-        raise NotImplementedError("Use TreeList.from_booster() to initialize a TreeList")
+        raise NotImplementedError(
+            "Use TreeList.from_*() methods to initialize a TreeList"
+        )
 
 
-def get_lightgbm_params(booster):
-    return booster.dump_model()
-
-
-def get_xgboost_params(booster):
-    return json.loads(booster.save_config())
-
-
-def get_catboost_params(booster):
-    dump_filename = f"catboost_model_{getpid()}_{time()}"
-
-    # Dump model in file
-    booster.save_model(dump_filename, "json")
-
-    # Read json with model
-    with open(dump_filename) as file:
-        model_data = json.load(file)
-
-    # Delete dump file
-    remove(dump_filename)
-    return model_data
-
-
-def get_gbt_model_from_lightgbm(model: Any, lgb_model=None) -> Any:
-    if lgb_model is None:
-        lgb_model = get_lightgbm_params(model)
-
-    n_features = lgb_model["max_feature_idx"] + 1
-    n_iterations = len(lgb_model["tree_info"]) / lgb_model["num_tree_per_iteration"]
-    n_classes = lgb_model["num_tree_per_iteration"]
-
-    is_regression = False
-    objective_fun = lgb_model["objective"]
-    if n_classes > 2:
-        if "multiclass" not in objective_fun:
-            raise TypeError(
-                "multiclass (softmax) objective is only supported for multiclass classification"
-            )
-    elif "binary" in objective_fun:  # nClasses == 1
-        n_classes = 2
-    else:
-        is_regression = True
+def get_gbt_model_from_tree_list(
+    tree_list: TreeList,
+    n_iterations: int,
+    is_regression: bool,
+    n_features: int,
+    n_classes: int,
+    base_score: float,
+    add_base_score_as_tree: bool,
+):
+    """Return a GBT Model from TreeList"""
 
     if is_regression:
-        mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
+        if add_base_score_as_tree:
+            mb = gbt_reg_model_builder(
+                n_features=n_features, n_iterations=n_iterations + 1
+            )
+            tree_id = mb.create_tree(1)
+            mb.add_leaf(tree_id=tree_id, response=base_score, cover=1)
+        else:
+            mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
     else:
         mb = gbt_clf_model_builder(
             n_features=n_features, n_iterations=n_iterations, n_classes=n_classes
         )
 
     class_label = 0
-    iterations_counter = 0
-    for tree in lgb_model["tree_info"]:
-        if is_regression:
-            tree_id = mb.create_tree(tree["num_leaves"] * 2 - 1)
-        else:
-            tree_id = mb.create_tree(
-                n_nodes=tree["num_leaves"] * 2 - 1, class_label=class_label
-            )
-
-        iterations_counter += 1
-        if iterations_counter == n_iterations:
-            iterations_counter = 0
-            class_label += 1
-        sub_tree = tree["tree_structure"]
-
-        # root is leaf
-        if "leaf_value" in sub_tree:
-            mb.add_leaf(tree_id=tree_id, response=sub_tree["leaf_value"])
-            continue
-
-        # add root
-        feat_val = sub_tree["threshold"]
-        if isinstance(feat_val, str):
-            raise NotImplementedError(
-                "Categorical features are not supported in daal4py Gradient Boosting Trees"
-            )
-        default_left = int(sub_tree["default_left"])
-        parent_id = mb.add_split(
-            tree_id=tree_id,
-            feature_index=sub_tree["split_feature"],
-            feature_value=feat_val,
-            default_left=default_left,
-        )
-
-        # create stack
-        node_stack: List[LightGbmNode] = [
-            LightGbmNode(sub_tree["left_child"], parent_id, 0),
-            LightGbmNode(sub_tree["right_child"], parent_id, 1),
-        ]
-
-        # dfs through it
-        while node_stack:
-            sub_tree = node_stack[-1].tree
-            parent_id = node_stack[-1].parent_id
-            position = node_stack[-1].position
-            node_stack.pop()
-
-            # current node is leaf
-            if "leaf_index" in sub_tree:
-                mb.add_leaf(
-                    tree_id=tree_id,
-                    response=sub_tree["leaf_value"],
-                    parent_id=parent_id,
-                    position=position,
-                )
-                continue
-
-            # current node is split
-            feat_val = sub_tree["threshold"]
-            if isinstance(feat_val, str):
-                raise NotImplementedError(
-                    "Categorical features are not supported in daal4py Gradient Boosting Trees"
-                )
-            default_left = int(sub_tree["default_left"])
-            parent_id = mb.add_split(
-                tree_id=tree_id,
-                feature_index=sub_tree["split_feature"],
-                feature_value=feat_val,
-                default_left=default_left,
-                parent_id=parent_id,
-                position=position,
-            )
-
-            # append children
-            node_stack.append(LightGbmNode(sub_tree["left_child"], parent_id, 0))
-            node_stack.append(LightGbmNode(sub_tree["right_child"], parent_id, 1))
-
-    return mb.model()
-
-
-def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
-    # Release Note for XGBoost 1.5.0: Python interface now supports configuring
-    # constraints using feature names instead of feature indices. This also
-    # helps with pandas input with set feature names.
-    booster.feature_names = [str(i) for i in range(booster.num_features())]
-
-    if xgb_config is None:
-        xgb_config = get_xgboost_params(booster)
-
-    n_features = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
-    n_classes = int(xgb_config["learner"]["learner_model_param"]["num_class"])
-    base_score = float(xgb_config["learner"]["learner_model_param"]["base_score"])
-
-    is_regression = False
-    objective_fun = xgb_config["learner"]["learner_train_param"]["objective"]
-    if n_classes > 2:
-        if objective_fun not in ["multi:softprob", "multi:softmax"]:
-            raise TypeError(
-                "multi:softprob and multi:softmax are only supported for multiclass classification"
-            )
-    elif objective_fun.find("binary:") == 0:
-        if objective_fun in ["binary:logistic", "binary:logitraw"]:
-            n_classes = 2
-        else:
-            raise TypeError(
-                "binary:logistic and binary:logitraw are only supported for binary classification"
-            )
-    else:
-        is_regression = True
-
-    n_iterations = booster.best_iteration + 1
-
-    # Create
-    if is_regression:
-        mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations + 1)
-
-        # add base score as the first tree
-        tree_id = mb.create_tree(1)
-        mb.add_leaf(tree_id=tree_id, response=base_score, cover=1)
-    else:
-        mb = gbt_clf_model_builder(
-            n_features=n_features, n_iterations=n_iterations, n_classes=n_classes
-        )
-
-    class_label = 0
-    node_list = TreeList.from_booster(booster)
-    for counter, tree in enumerate(node_list, start=1):
+    for counter, tree in enumerate(tree_list, start=1):
         # find out the number of nodes in the tree
         if is_regression:
             tree_id = mb.create_tree(tree.n_nodes)
@@ -410,7 +303,101 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
                     child.position = position
                     node_queue.append(child)
 
+    print("return model")
     return mb.model()
+
+
+def get_gbt_model_from_lightgbm(model: Any, booster=None) -> Any:
+    if booster is None:
+        booster = model.dump_model()
+
+    n_features = booster["max_feature_idx"] + 1
+    n_iterations = len(booster["tree_info"]) / booster["num_tree_per_iteration"]
+    n_classes = booster["num_tree_per_iteration"]
+
+    is_regression = False
+    objective_fun = booster["objective"]
+    if n_classes > 2:
+        if "multiclass" not in objective_fun:
+            raise TypeError(
+                "multiclass (softmax) objective is only supported for multiclass classification"
+            )
+    elif "binary" in objective_fun:  # nClasses == 1
+        n_classes = 2
+    else:
+        is_regression = True
+
+    tree_list = TreeList.from_lightgbm_booster_dump(booster)
+
+    return get_gbt_model_from_tree_list(
+        tree_list,
+        n_iterations=n_iterations,
+        is_regression=is_regression,
+        n_features=n_features,
+        n_classes=n_classes,
+        base_score=0,
+        add_base_score_as_tree=False,
+    )
+
+
+def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
+    # Release Note for XGBoost 1.5.0: Python interface now supports configuring
+    # constraints using feature names instead of feature indices. This also
+    # helps with pandas input with set feature names.
+    booster.feature_names = [str(i) for i in range(booster.num_features())]
+
+    if xgb_config is None:
+        xgb_config = json.loads(booster.save_config())
+
+    n_features = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
+    n_classes = int(xgb_config["learner"]["learner_model_param"]["num_class"])
+    base_score = float(xgb_config["learner"]["learner_model_param"]["base_score"])
+
+    is_regression = False
+    objective_fun = xgb_config["learner"]["learner_train_param"]["objective"]
+    if n_classes > 2:
+        if objective_fun not in ["multi:softprob", "multi:softmax"]:
+            raise TypeError(
+                "multi:softprob and multi:softmax are only supported for multiclass classification"
+            )
+    elif objective_fun.find("binary:") == 0:
+        if objective_fun in ["binary:logistic", "binary:logitraw"]:
+            n_classes = 2
+        else:
+            raise TypeError(
+                "binary:logistic and binary:logitraw are only supported for binary classification"
+            )
+    else:
+        is_regression = True
+
+    n_iterations = booster.best_iteration + 1
+
+    tree_list = TreeList.from_xgb_booster(booster)
+
+    return get_gbt_model_from_tree_list(
+        tree_list,
+        n_iterations=n_iterations,
+        is_regression=is_regression,
+        n_features=n_features,
+        n_classes=n_classes,
+        base_score=base_score,
+        add_base_score_as_tree=True,
+    )
+
+
+def get_catboost_params(booster):
+    dump_filename = f"catboost_model_{getpid()}_{time()}"
+
+    # Dump model in file
+    booster.save_model(dump_filename, "json")
+
+    # Read json with model
+    with open(dump_filename) as file:
+        model_data = json.load(file)
+
+    # Delete dump file
+    remove(dump_filename)
+    return model_data
 
 
 def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
