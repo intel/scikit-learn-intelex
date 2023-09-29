@@ -20,9 +20,9 @@ import glob
 
 # System imports
 import os
-import pathlib
 import sys
 import time
+import pathlib
 from concurrent.futures import ThreadPoolExecutor
 from distutils.sysconfig import get_config_vars
 from os.path import join as jp
