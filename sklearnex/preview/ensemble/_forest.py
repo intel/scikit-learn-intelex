@@ -28,8 +28,12 @@ from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClass
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
 from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.tree import ExtraTreeClassifier, ExtraTreeRegressor
+from sklearn.tree import (
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
+    ExtraTreeClassifier,
+    ExtraTreeRegressor,
+)
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
 from sklearn.utils.validation import (
@@ -56,6 +60,7 @@ try:
 except ModuleNotFoundError:
     from sklearn.ensemble.forest import ForestClassifier as sklearn_ForestClassifier
     from sklearn.ensemble.forest import ForestRegressor as sklearn_ForestRegressor
+
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
