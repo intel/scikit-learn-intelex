@@ -782,7 +782,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
 
-        return self._onedal_estimator.predict(X, queue=queue)
+        res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
