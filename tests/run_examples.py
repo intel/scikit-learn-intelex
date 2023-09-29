@@ -135,8 +135,7 @@ execution_timeout = 120
 
 req_version = defaultdict(lambda: (2019, "P", 0))
 req_version["decision_forest_classification_hist.py"] = (2023, "P", 100)
-req_version["decision_forest_classification_default_dense.py"] = (
-    2023, "P", 100)
+req_version["decision_forest_classification_default_dense.py"] = (2023, "P", 100)
 req_version["decision_forest_classification_traverse.py"] = (2023, "P", 100)
 req_version["basic_statistics_spmd.py"] = (2023, "P", 100)
 # Temporary disabling due to sporadict timeout on PVC
