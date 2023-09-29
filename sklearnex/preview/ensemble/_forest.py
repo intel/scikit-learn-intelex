@@ -169,17 +169,6 @@ class BaseForest(ABC):
 
         return self
 
-    def _onedal_predict(self, X, queue=None):
-        X = check_array(
-            X, dtype=[np.float64, np.float32]
-        )  # Warning, order of dtype matters
-        check_is_fitted(self, "_onedal_estimator")
-
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-
-        return self._onedal_estimator.predict(X, queue=queue)
-
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
         params = self.get_params()
         self.__class__(**params)
@@ -558,7 +547,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     multi_output=True,
                     accept_sparse=True,
                     dtype=[np.float64, np.float32],
-                    force_all_finite=not sklearn_check_version("1.4"),
+                    force_all_finite=False,
                 )
             else:
                 X = check_array(X, dtype=[np.float64, np.float32])
@@ -785,7 +774,15 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
-        res = super()._onedal_estimator.predict(X, queue=queue)
+        X = check_array(
+            X, dtype=[np.float64, np.float32]
+        )  # Warning, order of dtype matters
+        check_is_fitted(self, "_onedal_estimator")
+
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+
+        return self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
@@ -1082,6 +1079,17 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             )
 
         return patching_status
+
+    def _onedal_predict(self, X, queue=None):
+        X = check_array(
+            X, dtype=[np.float64, np.float32]
+        )  # Warning, order of dtype matters
+        check_is_fitted(self, "_onedal_estimator")
+
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+
+        return self._onedal_estimator.predict(X, queue=queue)
 
     def fit(self, X, y, sample_weight=None):
         dispatch(
