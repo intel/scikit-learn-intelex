@@ -28,20 +28,9 @@ from daal4py.sklearn._utils import daal_check_version
 # second is minor+patch - 0110,
 # third item is status - B
 daal_version = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
-reason = str(((2021, "P", 1))) + " not supported in this library version "
-reason += str(daal_version)
 
 
 class LogRegModelBuilder(unittest.TestCase):
-    @unittest.skipUnless(
-        all(
-            [
-                hasattr(d4p, "logistic_regression_model_builder"),
-                daal_check_version(((2021, "P", 1))),
-            ]
-        ),
-        reason,
-    )
     def test_iris_with_intercept(self):
         X, y = load_iris(return_X_y=True)
         n_classes = 3
@@ -59,15 +48,6 @@ class LogRegModelBuilder(unittest.TestCase):
         pred_sklearn = clf.predict(X)
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
-    @unittest.skipUnless(
-        all(
-            [
-                hasattr(d4p, "logistic_regression_model_builder"),
-                daal_check_version(((2021, "P", 1))),
-            ]
-        ),
-        reason,
-    )
     def test_iris_without_intercept(self):
         X, y = load_iris(return_X_y=True)
         n_classes = 3
@@ -85,15 +65,6 @@ class LogRegModelBuilder(unittest.TestCase):
         pred_sklearn = clf.predict(X)
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
-    @unittest.skipUnless(
-        all(
-            [
-                hasattr(d4p, "logistic_regression_model_builder"),
-                daal_check_version(((2021, "P", 1))),
-            ]
-        ),
-        reason,
-    )
     def test_breast_cancer_with_intercept(self):
         X, y = load_breast_cancer(return_X_y=True)
         n_classes = 2
@@ -111,15 +82,6 @@ class LogRegModelBuilder(unittest.TestCase):
         pred_sklearn = clf.predict(X)
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
-    @unittest.skipUnless(
-        all(
-            [
-                hasattr(d4p, "logistic_regression_model_builder"),
-                daal_check_version(((2021, "P", 1))),
-            ]
-        ),
-        reason,
-    )
     def test_breast_cancer_without_intercept(self):
         X, y = load_breast_cancer(return_X_y=True)
         n_classes = 2
