@@ -15,10 +15,10 @@
 # ===============================================================================
 
 import json
+import logging
 from collections import deque
-from os import getpid, remove
-from time import time
-from typing import Any, Deque, Dict, Generator, List, Optional, Tuple
+from tempfile import NamedTemporaryFile
+from typing import Any, Deque, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -30,11 +30,13 @@ class CatBoostNode:
         value: Optional[List[float]] = None,
         right: Optional[int] = None,
         left: Optional[float] = None,
+        cover: Optional[float] = None,
     ) -> None:
         self.split = split
         self.value = value
         self.right = right
         self.left = left
+        self.cover = cover
 
 
 class Node:
@@ -107,13 +109,8 @@ class Node:
             right_child = None
 
         is_leaf = "leaf_value" in tree
-        empty_leaf = is_leaf and "leaf_count" not in tree
-        if is_leaf:
-            cover = tree["leaf_count"]
-        else:
-            cover = tree["internal_count"]
         return Node(
-            cover=cover,
+            cover=tree["leaf_count"] if is_leaf else tree["internal_count"],
             is_leaf=is_leaf,
             default_left=is_leaf or tree["default_left"],
             feature=tree.get("split_feature"),
@@ -159,7 +156,7 @@ class TreeView:
     def value(self) -> float:
         if not self.is_leaf:
             raise ValueError("Tree is not a leaf-only tree")
-        if not self.root_node.value:
+        if self.root_node.value is None:
             raise ValueError("Tree is leaf-only but leaf node has no value")
         return self.root_node.value
 
@@ -212,6 +209,22 @@ class TreeList(list):
         raise NotImplementedError(
             "Use TreeList.from_*() methods to initialize a TreeList"
         )
+
+
+def get_lightgbm_params(booster):
+    return booster.dump_model()
+
+
+def get_xgboost_params(booster):
+    return json.loads(booster.save_config())
+
+
+def get_catboost_params(booster):
+    with NamedTemporaryFile() as fp:
+        booster.save_model(fp.name, "json")
+        fp.seek(0)
+        model_data = json.load(fp)
+    return model_data
 
 
 def get_gbt_model_from_tree_list(
@@ -303,7 +316,6 @@ def get_gbt_model_from_tree_list(
                     child.position = position
                     node_queue.append(child)
 
-    print("return model")
     return mb.model()
 
 
@@ -347,7 +359,7 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
     booster.feature_names = [str(i) for i in range(booster.num_features())]
 
     if xgb_config is None:
-        xgb_config = json.loads(booster.save_config())
+        xgb_config = get_xgboost_params(booster)
 
     n_features = int(xgb_config["learner"]["learner_model_param"]["num_feature"])
     n_classes = int(xgb_config["learner"]["learner_model_param"]["num_class"])
@@ -383,21 +395,6 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
         base_score=base_score,
         add_base_score_as_tree=True,
     )
-
-
-def get_catboost_params(booster):
-    dump_filename = f"catboost_model_{getpid()}_{time()}"
-
-    # Dump model in file
-    booster.save_model(dump_filename, "json")
-
-    # Read json with model
-    with open(dump_filename) as file:
-        model_data = json.load(file)
-
-    # Delete dump file
-    remove(dump_filename)
-    return model_data
 
 
 def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
@@ -566,6 +563,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                         feature_index=cur_level_split["feature_index"],
                         feature_value=cur_level_split["value"],
                         default_left=default_left,
+                        cover=0.0,
                     )
                     prev_level_nodes = [root_id]
 
@@ -583,6 +581,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 feature_index=cur_level_split["feature_index"],
                                 feature_value=cur_level_split["value"],
                                 default_left=default_left,
+                                cover=0.0,
                             )
                             cur_right_node = mb.add_split(
                                 tree_id=cur_tree_id,
@@ -591,6 +590,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 feature_index=cur_level_split["feature_index"],
                                 feature_value=cur_level_split["value"],
                                 default_left=default_left,
+                                cover=0.0,
                             )
                             cur_level_nodes.append(cur_left_node)
                             cur_level_nodes.append(cur_right_node)
@@ -606,6 +606,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 + bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=0,
+                                cover=0.0,
                             )
                             mb.add_leaf(
                                 tree_id=cur_tree_id,
@@ -614,6 +615,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 + bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=1,
+                                cover=0.0,
                             )
                     else:
                         for last_level_node_num in range(len(prev_level_nodes)):
@@ -628,12 +630,14 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 response=cur_tree_leaf_val[left_index] * scale + bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=0,
+                                cover=0.0,
                             )
                             mb.add_leaf(
                                 tree_id=cur_tree_id,
                                 response=cur_tree_leaf_val[right_index] * scale + bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=1,
+                                cover=0.0,
                             )
     else:
         for class_label in range(n_tree_each_iter):
@@ -648,6 +652,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                         feature_index=root_node.split["feature_index"],
                         feature_value=root_node.split["value"],
                         default_left=default_left,
+                        cover=0.0,
                     )
                     nodes_queue = [(root_node, root_id)]
                     while nodes_queue:
@@ -662,6 +667,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 feature_index=left_node.split["feature_index"],
                                 feature_value=left_node.split["value"],
                                 default_left=default_left,
+                                cover=0.0,
                             )
                             nodes_queue.append((left_node, left_node_id))
                         else:
@@ -670,6 +676,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 response=left_node.value[class_label],
                                 parent_id=cur_node_id,
                                 position=0,
+                                cover=0.0,
                             )
                         right_node = cur_node.right
                         # Check if node is a leaf
@@ -681,6 +688,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 feature_index=right_node.split["feature_index"],
                                 feature_value=right_node.split["value"],
                                 default_left=default_left,
+                                cover=0.0,
                             )
                             nodes_queue.append((right_node, right_node_id))
                         else:
@@ -689,12 +697,18 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 response=cur_node.right.value[class_label],
                                 parent_id=cur_node_id,
                                 position=1,
+                                cover=0.0,
                             )
 
                 else:
                     # Tree has only one node
                     mb.add_leaf(
-                        tree_id=cur_tree_id, response=root_node.value[class_label]
+                        tree_id=cur_tree_id,
+                        response=root_node.value[class_label],
+                        cover=0.0,
                     )
 
+    logging.warning(
+        "Models converted from CatBoost cannot be used for SHAP value calculation"
+    )
     return mb.model()

@@ -155,7 +155,12 @@ class TreeList:
         self.tree_views: List[TreeView] = []
 
     @staticmethod
-    def from_booster(booster: xgb.Booster) -> "TreeList":
+    def from_booster(booster) -> "TreeList":
+    """
+    Load a TreeList from an xgb.Booster object
+    Note: We cannot type-hint the xgb.Booster without loading xgb as dependency in pyx code,
+            therefore not type hint is added.
+    """
         tl = TreeList()
         dump = booster.get_dump(dump_format="json", with_stats=True)
         for tree_id, raw_tree in enumerate(dump):
@@ -220,92 +225,11 @@ def get_gbt_model_from_lightgbm(model: Any, lgb_model=None) -> Any:
     else:
         is_regression = True
 
-    if is_regression:
-        mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
-    else:
-        mb = gbt_clf_model_builder(
-            n_features=n_features, n_iterations=n_iterations, n_classes=n_classes
-        )
-
     class_label = 0
-    iterations_counter = 0
-    for tree in lgb_model["tree_info"]:
-        if is_regression:
-            tree_id = mb.create_tree(tree["num_leaves"] * 2 - 1)
-        else:
-            tree_id = mb.create_tree(
-                n_nodes=tree["num_leaves"] * 2 - 1, class_label=class_label
-            )
 
-        iterations_counter += 1
-        if iterations_counter == n_iterations:
-            iterations_counter = 0
-            class_label += 1
-        sub_tree = tree["tree_structure"]
+    tree_list = ...
 
-        # root is leaf
-        if "leaf_value" in sub_tree:
-            mb.add_leaf(tree_id=tree_id, response=sub_tree["leaf_value"])
-            continue
-
-        # add root
-        feat_val = sub_tree["threshold"]
-        if isinstance(feat_val, str):
-            raise NotImplementedError(
-                "Categorical features are not supported in daal4py Gradient Boosting Trees"
-            )
-        default_left = int(sub_tree["default_left"])
-        parent_id = mb.add_split(
-            tree_id=tree_id,
-            feature_index=sub_tree["split_feature"],
-            feature_value=feat_val,
-            default_left=default_left,
-        )
-
-        # create stack
-        node_stack: List[LightGbmNode] = [
-            LightGbmNode(sub_tree["left_child"], parent_id, 0),
-            LightGbmNode(sub_tree["right_child"], parent_id, 1),
-        ]
-
-        # dfs through it
-        while node_stack:
-            sub_tree = node_stack[-1].tree
-            parent_id = node_stack[-1].parent_id
-            position = node_stack[-1].position
-            node_stack.pop()
-
-            # current node is leaf
-            if "leaf_index" in sub_tree:
-                mb.add_leaf(
-                    tree_id=tree_id,
-                    response=sub_tree["leaf_value"],
-                    parent_id=parent_id,
-                    position=position,
-                )
-                continue
-
-            # current node is split
-            feat_val = sub_tree["threshold"]
-            if isinstance(feat_val, str):
-                raise NotImplementedError(
-                    "Categorical features are not supported in daal4py Gradient Boosting Trees"
-                )
-            default_left = int(sub_tree["default_left"])
-            parent_id = mb.add_split(
-                tree_id=tree_id,
-                feature_index=sub_tree["split_feature"],
-                feature_value=feat_val,
-                default_left=default_left,
-                parent_id=parent_id,
-                position=position,
-            )
-
-            # append children
-            node_stack.append(LightGbmNode(sub_tree["left_child"], parent_id, 0))
-            node_stack.append(LightGbmNode(sub_tree["right_child"], parent_id, 1))
-
-    return mb.model()
+    return get_gbt_model_from_tree_list(tree_list, n_iterations=n_iterations, is_regression=is_regression, n_features=n_features, n_classes=n_classes, base_score=base_score, add_base_score_as_tree=False)
 
 
 def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
@@ -340,21 +264,28 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
 
     n_iterations = booster.best_iteration + 1
 
-    # Create
-    if is_regression:
-        mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations + 1)
+    tree_list = TreeList.from_booster(booster)
 
-        # add base score as the first tree
-        tree_id = mb.create_tree(1)
-        mb.add_leaf(tree_id=tree_id, response=base_score, cover=1)
+    return get_gbt_model_from_tree_list(tree_list, n_iterations=n_iterations, is_regression=is_regression, n_features=n_features, n_classes=n_classes, base_score=base_score, add_base_score_as_tree=True)
+
+
+def get_gbt_model_from_tree_list(tree_list: TreeList, n_iterations: int, is_regression: bool, n_features: int, n_classes: int, base_score: float, add_base_score_as_tree: bool)
+    """Return a GBT Model from TreeList"""
+
+    if is_regression:
+        if add_base_score_as_tree:
+            mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations + 1)
+            tree_id = mb.create_tree(1)
+            mb.add_leaf(tree_id=tree_id, response=base_score, cover=1)
+        else:
+            mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
     else:
         mb = gbt_clf_model_builder(
             n_features=n_features, n_iterations=n_iterations, n_classes=n_classes
         )
 
     class_label = 0
-    node_list = TreeList.from_booster(booster)
-    for counter, tree in enumerate(node_list, start=1):
+    for counter, tree in enumerate(tree_list, start=1):
         # find out the number of nodes in the tree
         if is_regression:
             tree_id = mb.create_tree(tree.n_nodes)
@@ -367,41 +298,6 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
         if tree.is_leaf:
             mb.add_leaf(tree_id=tree_id, response=tree.value, cover=tree.cover)
             continue
-
-        # def append(node: Node):
-        #     if node.is_leaf:
-        #         assert node.parent_id != -1, "node.parent_id must not be -1"
-        #         assert node.position != -1, "node.position must not be -1"
-
-        #         mb.add_leaf(
-        #             tree_id=tree_id,
-        #             response=node.value,
-        #             cover=node.cover,
-        #             parent_id=node.parent_id,
-        #             position=node.position,
-        #         )
-
-        #     else:
-        #         assert node.left_child, "Split node must have left child"
-        #         assert node.right_child, "Split node must have right child"
-
-        #         parent_id = mb.add_split(
-        #                 tree_id=tree_id,
-        #                 feature_index=node.feature,
-        #                 feature_value=node.get_value_closest_float_downward(),<<
-        #                 cover=node.cover,
-        #                 default_left=node.default_left,
-        #             )
-
-        #         node.left_child.parent_id = parent_id
-        #         node.left_child.position = 0
-        #         append(node.left_child)
-
-        #         node.right_child.parent_id = parent_id
-        #         node.right_child.position = 1
-        #         append(node.right_child)
-
-        # append(tree.root_node)
 
         root_node = tree.root_node
         parent_id = mb.add_split(
