@@ -15,10 +15,10 @@
 # ===============================================================================
 
 import json
-import logging
 from collections import deque
 from tempfile import NamedTemporaryFile
 from typing import Any, Deque, Dict, List, Optional, Tuple
+from warnings import warn
 
 import numpy as np
 
@@ -173,10 +173,10 @@ class TreeView:
 
 class TreeList(list):
     """Helper class that is able to extract all information required by the
-    model builders from an XGBoost.Booster object"""
+    model builders from various objects"""
 
     @staticmethod
-    def from_xgb_booster(booster) -> "TreeList":
+    def from_xgb_booster(booster, max_trees: int) -> "TreeList":
         """
         Load a TreeList from an xgb.Booster object
         Note: We cannot type-hint the xgb.Booster without loading xgb as dependency in pyx code,
@@ -185,6 +185,8 @@ class TreeList(list):
         tl = TreeList()
         dump = booster.get_dump(dump_format="json", with_stats=True)
         for tree_id, raw_tree in enumerate(dump):
+            if max_trees > 0 and tree_id == max_trees:
+                break
             raw_tree_parsed = json.loads(raw_tree)
             root_node = Node.from_xgb_dict(raw_tree_parsed)
             tl.append(TreeView(tree_id=tree_id, root_node=root_node))
@@ -194,7 +196,7 @@ class TreeList(list):
     @staticmethod
     def from_lightgbm_booster_dump(dump: Dict[str, Any]) -> "TreeList":
         """
-        Load a TreeList from a lgbm.Model object
+        Load a TreeList from a lgbm Booster dump
         Note: We cannot type-hint the the Model without loading lightgbm as dependency in pyx code,
               therefore not type hint is added.
         """
@@ -382,9 +384,17 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
     else:
         is_regression = True
 
-    n_iterations = booster.best_iteration + 1
+    max_trees = (
+        getattr(booster, "best_iteration", -1) + 1
+    )  # 0 if best_iteration does not exist
+    if n_classes > 2:
+        max_trees *= n_classes
+    tree_list = TreeList.from_xgb_booster(booster, max_trees)
 
-    tree_list = TreeList.from_xgb_booster(booster)
+    if hasattr(booster, "best_iteration"):
+        n_iterations = booster.best_iteration + 1
+    else:
+        n_iterations = len(tree_list) // (n_classes if n_classes > 2 else 1)
 
     return get_gbt_model_from_tree_list(
         tree_list,
@@ -708,7 +718,5 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                         cover=0.0,
                     )
 
-    logging.warning(
-        "Models converted from CatBoost cannot be used for SHAP value calculation"
-    )
+    warn("Models converted from CatBoost cannot be used for SHAP value calculation")
     return mb.model()
