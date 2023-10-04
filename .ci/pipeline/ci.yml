@@ -53,8 +53,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip setuptools
       pip install isort black[jupyter]
-      isort --check .
-      black --check .
+      isort --check . && black --check .
     displayName: 'Linting'
 - job: Linux
   timeoutInMinutes: 120
