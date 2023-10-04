@@ -28,6 +28,7 @@ from sklearn.datasets import (
     make_regression,
 )
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 
 import daal4py as d4p
 
@@ -463,6 +464,123 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
             "Models converted from CatBoost cannot be used for SHAP value calculation",
         ):
             d4p.mb.convert_model(self.cb_model)
+
+
+class XGBoostEarlyStopping(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        num_classes = 3
+        X, y = make_classification(
+            n_samples=1500,
+            n_features=10,
+            n_informative=3,
+            n_classes=num_classes,
+            random_state=42,
+        )
+        X_train, cls.X_test, y_train, cls.y_test = train_test_split(
+            X, y, test_size=0.5, random_state=42
+        )
+
+        # training parameters setting
+        params = {
+            "n_estimators": 100,
+            "max_bin": 256,
+            "scale_pos_weight": 2,
+            "lambda_l2": 1,
+            "alpha": 0.9,
+            "max_depth": 8,
+            "num_leaves": 2**8,
+            "verbosity": 0,
+            "objective": "multi:softproba",
+            "learning_rate": 0.3,
+            "num_class": num_classes,
+            "early_stopping_rounds": 5,
+        }
+
+        cls.xgb_clf = xgb.XGBClassifier(**params)
+        cls.xgb_clf.fit(X_train, y_train, eval_set=[(cls.X_test, cls.y_test)])
+
+    def test_early_stopping(self):
+        xgb_prediction = self.xgb_clf.predict(self.X_test)
+        xgb_proba = self.xgb_clf.predict_proba(self.X_test)
+        xgb_errors_count = np.count_nonzero(xgb_prediction - np.ravel(self.y_test))
+
+        booster = self.xgb_clf.get_booster()
+        daal_model = d4p.mb.convert_model(booster)
+        daal_prediction = daal_model.predict(self.X_test)
+        daal_proba = daal_model.predict_proba(self.X_test)
+        daal_errors_count = np.count_nonzero(daal_prediction - np.ravel(self.y_test))
+
+        self.assertTrue(np.absolute(xgb_errors_count - daal_errors_count) == 0)
+        max_diff = np.absolute(xgb_proba - daal_proba).reshape(1, -1).max()
+        self.assertLess(max_diff, 1e-7)
+
+
+class ModelBuilderTreeView(unittest.TestCase):
+    def test_model_from_booster(self):
+        class MockBooster:
+            def get_dump(self, *_, **kwargs):
+                # raw dump of 2 trees with a max depth of 1
+                return [
+                    '  { "nodeid": 0, "depth": 0, "split": "1", "split_condition": 2, "yes": 1, "no": 2, "missing": 1 , "gain": 3, "cover": 4, "children": [\n    { "nodeid": 1, "leaf": 5 , "cover": 6 }, \n    { "nodeid": 2, "leaf": 7 , "cover":8 }\n  ]}',
+                    '  { "nodeid": 0, "leaf": 0.2 , "cover": 42 }',
+                ]
+
+        mock = MockBooster()
+        result = d4p.TreeList.from_booster(mock)
+        self.assertEqual(len(result), 2)
+
+        tree0 = result[0]
+        self.assertIsInstance(tree0, d4p.TreeView)
+        self.assertFalse(tree0.is_leaf)
+        with self.assertRaises(ValueError):
+            tree0.cover
+        with self.assertRaises(ValueError):
+            tree0.value
+
+        self.assertIsInstance(tree0.root_node, d4p.Node)
+
+        self.assertEqual(tree0.root_node.node_id, 0)
+        self.assertEqual(tree0.root_node.left_child.node_id, 1)
+        self.assertEqual(tree0.root_node.right_child.node_id, 2)
+
+        self.assertEqual(tree0.root_node.cover, 4)
+        self.assertEqual(tree0.root_node.left_child.cover, 6)
+        self.assertEqual(tree0.root_node.right_child.cover, 8)
+
+        self.assertFalse(tree0.root_node.is_leaf)
+        self.assertTrue(tree0.root_node.left_child.is_leaf)
+        self.assertTrue(tree0.root_node.right_child.is_leaf)
+
+        self.assertTrue(tree0.root_node.default_left)
+        self.assertFalse(tree0.root_node.left_child.default_left)
+        self.assertFalse(tree0.root_node.right_child.default_left)
+
+        self.assertEqual(tree0.root_node.feature, 1)
+        with self.assertRaises(ValueError):
+            tree0.root_node.left_child.feature
+        with self.assertRaises(ValueError):
+            tree0.root_node.right_child.feature
+
+        self.assertEqual(tree0.root_node.value, 2)
+        self.assertEqual(tree0.root_node.left_child.value, 5)
+        self.assertEqual(tree0.root_node.right_child.value, 7)
+
+        self.assertEqual(tree0.root_node.n_children, 2)
+        self.assertEqual(tree0.root_node.left_child.n_children, 0)
+        self.assertEqual(tree0.root_node.right_child.n_children, 0)
+
+        self.assertIsNone(tree0.root_node.left_child.left_child)
+        self.assertIsNone(tree0.root_node.left_child.right_child)
+        self.assertIsNone(tree0.root_node.right_child.left_child)
+        self.assertIsNone(tree0.root_node.right_child.right_child)
+
+        tree1 = result[1]
+        self.assertIsInstance(tree1, d4p.TreeView)
+        self.assertTrue(tree1.is_leaf)
+        self.assertEqual(tree1.n_nodes, 1)
+        self.assertEqual(tree1.cover, 42)
+        self.assertEqual(tree1.value, 0.2)
 
 
 if __name__ == "__main__":
