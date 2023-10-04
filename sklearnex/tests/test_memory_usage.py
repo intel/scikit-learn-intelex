@@ -28,13 +28,15 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
 from sklearnex import get_patch_map
+from sklearnex.ensemble import (
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
+    RandomForestClassifier,
+    RandomForestRegressor,
+)
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.model_selection import train_test_split
 from sklearnex.preview.decomposition import PCA as PreviewPCA
-from sklearnex.ensemble import ExtraTreesClassifier
-from sklearnex.ensemble import ExtraTreesRegressor
-from sklearnex.ensemble import RandomForestClassifier
-from sklearnex.ensemble import RandomForestRegressor
 from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
 from sklearnex.utils import _assert_all_finite
 

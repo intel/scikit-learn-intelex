@@ -64,21 +64,19 @@ def get_patch_map():
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
+        from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
+        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
+        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
-        from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
-        from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
-        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
-        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
-
         # Preview classes for patching
         from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.decomposition import PCA as PCA_sklearnex
         from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
-        
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
