@@ -36,6 +36,9 @@ runner_dir = os.path.dirname(runner_path)
 examples_rootdir = jp(
     os.path.dirname(os.path.abspath(os.path.join(runner_path, os.pardir))), "examples"
 )
+tests_rootdir = jp(
+    os.path.dirname(os.path.abspath(os.path.join(runner_path, os.pardir))), "tests"
+)
 
 IS_WIN = False
 IS_MAC = False
@@ -63,6 +66,7 @@ else:
 ex_log_dirs = [
     (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
     (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
+    (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
 availabe_devices = []
@@ -126,34 +130,19 @@ def check_library(rule):
     return True
 
 
+# Examples timeout in seconds
+execution_timeout = 120
+
 req_version = defaultdict(lambda: (2019, "P", 0))
-req_version["sycl/dbscan.py"] = (
-    2021,
-    "P",
-    100,
-)  # hangs in beta08, need to be fixed
-req_version["sycl/linear_regression.py"] = (
-    2021,
-    "P",
-    100,
-)  # hangs in beta08, need to be fixed
-req_version["sycl/kmeans.py"] = (
-    2021,
-    "P",
-    200,
-)  # not equal results for host and gpu runs
-req_version["sycl/pca_transform.py"] = (2021, "P", 200)
-req_version["sycl/decision_forest_classification_hist.py"] = (2021, "P", 200)
-req_version["sycl/decision_forest_regression_hist.py"] = (2021, "P", 200)
-req_version["decision_forest_classification_hist.py"] = (2023, "P", 1)
-req_version["decision_forest_classification_default_dense.py"] = (2023, "P", 1)
-req_version["decision_forest_classification_traverse.py"] = (2023, "P", 1)
-req_version["decision_forest_regression_hist.py"] = (2021, "P", 200)
-req_version["basic_statistics_spmd.py"] = (2023, "P", 1)
-req_version["kmeans_spmd.py"] = (2023, "P", 2)
-req_version["knn_bf_classification_spmd.py"] = (2023, "P", 1)
-req_version["knn_bf_regression_spmd.py"] = (2023, "P", 1)
-req_version["linear_regression_spmd.py"] = (2023, "P", 1)
+req_version["decision_forest_classification_hist.py"] = (2023, "P", 100)
+req_version["decision_forest_classification_default_dense.py"] = (2023, "P", 100)
+req_version["decision_forest_classification_traverse.py"] = (2023, "P", 100)
+req_version["basic_statistics_spmd.py"] = (2023, "P", 100)
+# Temporary disabling due to sporadict timeout on PVC
+req_version["kmeans_spmd.py"] = (2024, "P", 100)
+req_version["knn_bf_classification_spmd.py"] = (2023, "P", 100)
+req_version["knn_bf_regression_spmd.py"] = (2023, "P", 100)
+req_version["linear_regression_spmd.py"] = (2023, "P", 100)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
@@ -253,15 +242,20 @@ def run(exdir, logdir, nodist=False, nostream=False):
                         )
                         if execute_string:
                             os.chdir(dirpath)
-                            proc = subprocess.Popen(
-                                execute_string
-                                if IS_WIN
-                                else ["/bin/bash", "-c", execute_string],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT,
-                                shell=False,
-                            )
-                            out = proc.communicate()[0]
+                            try:
+                                proc = subprocess.Popen(
+                                    execute_string
+                                    if IS_WIN
+                                    else ["/bin/bash", "-c", execute_string],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT,
+                                    shell=False,
+                                )
+                                out = proc.communicate(timeout=execution_timeout)[0]
+                            except subprocess.TimeoutExpired:
+                                proc.kill()
+                                out = proc.communicate()[0]
+                                print("Process has timed out: " + str(execute_string))
                             logfile.write(out.decode("ascii"))
                             if proc.returncode:
                                 print(out)

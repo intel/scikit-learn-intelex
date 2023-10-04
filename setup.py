@@ -93,7 +93,15 @@ try:
 
     dpctl_available = dpctl.__version__ >= "0.14"
 except ImportError:
-    dpctl_available = False
+    import importlib.util
+
+    try:
+        dpctl_include = os.path.join(
+            importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
+        )
+        dpctl_available = dpctl_include is not None
+    except AttributeError:
+        dpctl_available = False
 
 build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
 
@@ -577,11 +585,9 @@ setup(
         "Intended Audience :: Other Audience",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
-        "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -590,9 +596,9 @@ setup(
         "Topic :: System",
         "Topic :: Software Development",
     ],
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     install_requires=[
-        "scikit-learn>=0.24",
+        "scikit-learn>=1.0",
         "numpy>=1.19.5 ; python_version <= '3.9'",
         "numpy>=1.21.6 ; python_version == '3.10'",
         "numpy>=1.23.5 ; python_version >= '3.11'",

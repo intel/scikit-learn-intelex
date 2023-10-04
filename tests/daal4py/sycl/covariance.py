@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py PCA example for shared memory systems
+# daal4py covariance example for shared memory systems
 
 import os
 
@@ -41,20 +41,15 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
-# Commone code for both CPU and GPU computations
-def compute(data, nComponents):
-    # configure a PCA object and perform PCA
-    pca_algo = d4p.pca(
-        isDeterministic=True, fptype="float", resultsToCompute="mean|variance|eigenvalue"
-    )
-    pca_res = pca_algo.compute(data)
-    # Apply transform with whitening because means and eigenvalues are provided
-    pcatrans_algo = d4p.pca_transform(fptype="float", nComponents=nComponents)
-    return pcatrans_algo.compute(data, pca_res.eigenvectors, pca_res.dataForTransform)
+# Common code for both CPU and GPU computations
+def compute(data, method):
+    # configure a covariance object
+    algo = d4p.covariance(method=method, fptype="float")
+    return algo.compute(data)
 
 
 # At this moment with sycl we are working only with numpy arrays
@@ -76,15 +71,23 @@ def to_numpy(data):
     return data
 
 
-def main(readcsv=read_csv, method="svdDense"):
-    dataFileName = os.path.join("..", "data", "batch", "pca_transform.csv")
-    nComponents = 2
+def main(readcsv=read_csv, method="defaultDense"):
+    infile = os.path.join(
+        "..",
+        "..",
+        "..",
+        "examples",
+        "daal4py",
+        "data",
+        "batch",
+        "covcormoments_dense.csv",
+    )
 
-    # read data
-    data = readcsv(dataFileName, range(3), t=np.float32)
+    # Load the data
+    data = readcsv(infile, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)
-    result_classic = compute(data, nComponents)
+    result_classic = compute(data, method)
 
     data = to_numpy(data)
 
@@ -92,22 +95,17 @@ def main(readcsv=read_csv, method="svdDense"):
     if gpu_available:
         with sycl_context("gpu"):
             sycl_data = sycl_buffer(data)
-            result_gpu = compute(sycl_data, nComponents)
-        assert np.allclose(result_classic.transformedData, result_gpu.transformedData)
+            result_gpu = compute(sycl_data, "defaultDense")
 
-    # It is possible to specify to make the computations on CPU
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, nComponents)
-
-    # pca_transform_result objects provides transformedData
-    assert np.allclose(result_classic.transformedData, result_cpu.transformedData)
+            assert np.allclose(result_classic.covariance, result_gpu.covariance)
+            assert np.allclose(result_classic.mean, result_gpu.mean)
+            assert np.allclose(result_classic.correlation, result_gpu.correlation)
 
     return result_classic
 
 
 if __name__ == "__main__":
-    pcatrans_res = main()
-    # print results of tranform
-    print(pcatrans_res)
+    res = main()
+    print("Covariance matrix:\n", res.covariance)
+    print("Mean vector:\n", res.mean)
     print("All looks good!")

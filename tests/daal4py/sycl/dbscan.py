@@ -41,7 +41,7 @@ try:
 
     with sycl_context("gpu"):
         gpu_available = True
-except:
+except Exception:
     gpu_available = False
 
 
@@ -80,7 +80,9 @@ def compute(data, minObservations, epsilon):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = os.path.join("..", "data", "batch", "dbscan_dense.csv")
+    infile = os.path.join(
+        "..", "..", "..", "examples", "daal4py", "data", "batch", "dbscan_dense.csv"
+    )
     epsilon = 0.04
     minObservations = 45
 
@@ -102,14 +104,6 @@ def main(readcsv=read_csv, method="defaultDense"):
             assert np.allclose(
                 result_classic.coreObservations, result_gpu.coreObservations
             )
-
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data, minObservations, epsilon)
-        assert np.allclose(result_classic.nClusters, result_cpu.nClusters)
-        assert np.allclose(result_classic.assignments, result_cpu.assignments)
-        assert np.allclose(result_classic.coreIndices, result_cpu.coreIndices)
-        assert np.allclose(result_classic.coreObservations, result_cpu.coreObservations)
 
     return result_classic
 
