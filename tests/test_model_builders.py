@@ -495,20 +495,22 @@ class XGBoostEarlyStopping(unittest.TestCase):
             "learning_rate": 0.3,
             "num_class": num_classes,
             "early_stopping_rounds": 5,
+            "verbose_eval": False,
         }
 
         cls.xgb_clf = xgb.XGBClassifier(**params)
-        cls.xgb_clf.fit(X_train, y_train, eval_set=[(cls.X_test, cls.y_test)])
+        cls.xgb_clf.fit(
+            X_train, y_train, eval_set=[(cls.X_test, cls.y_test)], verbose=False
+        )
+        cls.daal_model = d4p.mb.convert_model(cls.xgb_clf.get_booster())
 
     def test_early_stopping(self):
         xgb_prediction = self.xgb_clf.predict(self.X_test)
         xgb_proba = self.xgb_clf.predict_proba(self.X_test)
         xgb_errors_count = np.count_nonzero(xgb_prediction - np.ravel(self.y_test))
 
-        booster = self.xgb_clf.get_booster()
-        daal_model = d4p.mb.convert_model(booster)
-        daal_prediction = daal_model.predict(self.X_test)
-        daal_proba = daal_model.predict_proba(self.X_test)
+        daal_prediction = self.daal_model.predict(self.X_test)
+        daal_proba = self.daal_model.predict_proba(self.X_test)
         daal_errors_count = np.count_nonzero(daal_prediction - np.ravel(self.y_test))
 
         self.assertTrue(np.absolute(xgb_errors_count - daal_errors_count) == 0)
