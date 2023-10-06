@@ -38,6 +38,7 @@ def parse_tests_tree(entry, prefix=""):
 tests_map = {
     "cluster/tests": ["test_dbscan.py", "test_k_means.py"],
     "decomposition/tests": "test_pca.py",
+    "preprocessing/tests": "test_discretization.py",
     "ensemble/tests": "test_forest.py",
     "linear_model/tests": ["test_base.py", "test_coordinate_descent.py", "test_ridge.py"],
     "manifold/tests": "test_t_sne.py",
