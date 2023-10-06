@@ -25,7 +25,7 @@ if daal_check_version((2023, "P", 100)):
     from daal4py.sklearn._utils import get_dtype, make2d, sklearn_check_version
 
     from ..._device_offload import dispatch, wrap_output_data
-    from ..._utils import PatchingConditionsChain
+    from ..._utils import get_patch_message, PatchingConditionsChain
     from ...utils.validation import _assert_all_finite
     from ._common import BaseLinearRegression
 
@@ -302,9 +302,11 @@ if daal_check_version((2023, "P", 100)):
             self._initialize_onedal_estimator()
             try:
                 self._onedal_estimator.fit(X, y, queue=queue)
-
                 self._save_attributes()
+
             except RuntimeError:
+                logging.warning(get_patch_message('sklearn_after_daal'))
+
                 del self._onedal_estimator
                 super().fit(X, y)
 
