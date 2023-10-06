@@ -305,7 +305,7 @@ if daal_check_version((2023, "P", 100)):
                 self._save_attributes()
 
             except RuntimeError:
-                logging.getlogger("sklearnex").info(
+                logging.getLogger("sklearnex").info(
                     f"{self.__class__.__name__}.fit "
                     + get_patch_message("sklearn_after_onedal")
                 )
