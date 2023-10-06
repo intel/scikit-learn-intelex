@@ -300,9 +300,13 @@ if daal_check_version((2023, "P", 100)):
                 )
 
             self._initialize_onedal_estimator()
-            self._onedal_estimator.fit(X, y, queue=queue)
+            try:
+                self._onedal_estimator.fit(X, y, queue=queue)
 
-            self._save_attributes()
+                self._save_attributes()
+            except RuntimeError:
+                del self._onedal_estimator
+                super().fit(X, y)
 
         def _onedal_predict(self, X, queue=None):
             X = self._validate_data(X, accept_sparse=False, reset=False)
