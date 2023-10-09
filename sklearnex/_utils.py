@@ -81,6 +81,8 @@ def get_patch_message(s, queue=None):
             message += "CPU"
     elif s == "sklearn":
         message = "fallback to original Scikit-learn"
+    elif s == "sklearn_after_onedal":
+        message = "failed to run accelerated version, fallback to original Scikit-learn"
     else:
         raise ValueError(
             f"Invalid input - expected one of 'onedal','sklearn',"
