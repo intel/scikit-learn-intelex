@@ -289,6 +289,18 @@ def support_init_with_n_jobs(init_function):
     return init_with_n_jobs
 
 
+# Note: getting controller in global scope of this module is required
+# to avoid overheads by its initialization per each function call
+threadpool_controller = threadpoolctl.ThreadpoolController()
+
+
+def get_suggested_n_threads():
+    return {
+        lib_ctl.internal_api: lib_ctl.get_num_threads()
+        for lib_ctl in threadpool_controller.lib_controllers
+    }
+
+
 # decorator for running of methods containing oneDAL kernels with "n_jobs"
 def run_with_n_jobs(method):
     @wraps(method)
@@ -313,10 +325,7 @@ def run_with_n_jobs(method):
         n_cpus = cpu_count()
         # receive n_threads limitation from upper context
         # using `threadpoolctl.threadpool_info`
-        n_threads_map = {
-            backend["internal_api"]: backend["num_threads"]
-            for backend in threadpoolctl.threadpool_info()
-        }
+        n_threads_map = get_suggested_n_threads()
         # openBLAS is limited by 128 threads by default.
         # thus, 128 threads from openBLAS is uninformative
         if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
@@ -335,11 +344,13 @@ def run_with_n_jobs(method):
         logger.debug(
             f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
         )
-        set_n_threads(n_jobs)
+        if n_jobs != old_n_threads:
+            set_n_threads(n_jobs)
         # run method
         result = method(self, *args, **kwargs)
         # reset number of threads to old one
-        set_n_threads(old_n_threads)
+        if n_jobs != old_n_threads:
+            set_n_threads(old_n_threads)
         return result
 
     return method_wrapper
