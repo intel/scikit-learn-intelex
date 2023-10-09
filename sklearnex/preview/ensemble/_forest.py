@@ -79,6 +79,7 @@ if sklearn_check_version("1.4"):
 class BaseForest(ABC):
     _onedal_factory = None
 
+    @run_with_n_jobs
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sklearn_check_version("0.24"):
             X, y = self._validate_data(
@@ -776,6 +777,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         return patching_status
 
+    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         X = check_array(
             X,
@@ -1084,6 +1086,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         return patching_status
 
+    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         X = check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=False
