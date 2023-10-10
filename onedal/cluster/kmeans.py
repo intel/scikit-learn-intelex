@@ -38,7 +38,7 @@ from sklearn.utils.validation import check_is_fitted
 from onedal.basic_statistics import BasicStatistics
 
 from ..common._policy import _get_policy
-from ..utils import _is_arraylike_not_scalar
+from ..utils import _check_array, _is_arraylike_not_scalar
 
 
 class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
@@ -151,10 +151,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         }
 
     def _get_params_and_input(self, X, policy):
-        X_loc = np.asarray(X)
-        types = [np.float32, np.float64]
-        if get_dtype(X_loc) not in types:
-            X_loc = X_loc.astype(np.float64)
+        X_loc = _check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
 
         X_loc = _convert_to_supported(policy, X_loc)
 

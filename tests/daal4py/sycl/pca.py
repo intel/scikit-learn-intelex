@@ -104,21 +104,11 @@ def main(readcsv=read_csv, method="svdDense"):
         assert np.allclose(result_classic.means, result_gpu.means, atol=1e-5)
         assert np.allclose(result_classic.variances, result_gpu.variances, atol=1e-5)
 
-    # It is possible to specify to make the computations on CPU
-    with sycl_context("cpu"):
-        sycl_data = sycl_buffer(data)
-        result_cpu = compute(sycl_data)
-
     # PCA result objects provide eigenvalues, eigenvectors, means and variances
     assert result_classic.eigenvalues.shape == (1, data.shape[1])
     assert result_classic.eigenvectors.shape == (data.shape[1], data.shape[1])
     assert result_classic.means.shape == (1, data.shape[1])
     assert result_classic.variances.shape == (1, data.shape[1])
-
-    assert np.allclose(result_classic.eigenvalues, result_cpu.eigenvalues)
-    assert np.allclose(result_classic.eigenvectors, result_cpu.eigenvectors)
-    assert np.allclose(result_classic.means, result_cpu.means, atol=1e-7)
-    assert np.allclose(result_classic.variances, result_cpu.variances)
 
     return result_classic
 

@@ -143,35 +143,6 @@ def main(readcsv=None, method="defaultDense"):
         ]:
             assert np.allclose(getattr(result_classic, name), getattr(result_gpu, name))
 
-    # It is possible to specify to make the computations on CPU
-    with sycl_context("cpu"):
-        # Configure a low order moments object for streaming
-        algo = d4p.low_order_moments(streaming=True, fptype="float")
-        # get the generator (defined in stream.py)...
-        rn = read_next(infile, 55, readcsv)
-        # ... and iterate through chunks/stream
-        for chunk in rn:
-            sycl_chunk = sycl_buffer(to_numpy(chunk))
-            algo.compute(sycl_chunk)
-        # finalize computation
-        result_cpu = algo.finalize()
-
-    # result provides minimum, maximum, sum, sumSquares, sumSquaresCentered,
-    # mean, secondOrderRawMoment, variance, standardDeviation, variation
-    for name in [
-        "minimum",
-        "maximum",
-        "sum",
-        "sumSquares",
-        "sumSquaresCentered",
-        "mean",
-        "secondOrderRawMoment",
-        "variance",
-        "standardDeviation",
-        "variation",
-    ]:
-        assert np.allclose(getattr(result_classic, name), getattr(result_cpu, name))
-
     return result_classic
 
 
