@@ -22,7 +22,7 @@
 #include <daal.h>
 #include "onedal/version.hpp"
 
-#if (((MAJOR_VERSION == 2024) && (MINOR_VERSION >= 1)) || (MAJOR_VERSION > 2024))
+#if (((MAJOR_VERSION == 2024) && (MINOR_VERSION == 0) && (UPDATE_VERSION >= 1)) || ((MAJOR_VERSION > 2024) && (MINOR_VERSION >= 1)))
     #define _gbt_inference_api_version 2
 #elif (((MAJOR_VERSION == 2023) && (MINOR_VERSION >= 2)) || (MAJOR_VERSION > 2023))
     #define _gbt_inference_api_version 1
