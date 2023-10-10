@@ -358,7 +358,7 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
     def test_model_predict_shap_interactions(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         with self.assertRaises(NotImplementedError):
-            m.predict(self.X_test, pred_interactions == True)
+            m.predict(self.X_test, pred_interactions=True)
 
     def test_model_predict_shap_contribs_missing_values(self):
         m = d4p.mb.convert_model(self.lgbm_model)
@@ -529,7 +529,7 @@ class ModelBuilderTreeView(unittest.TestCase):
                 ]
 
         mock = MockBooster()
-        result = d4p.TreeList.from_booster(mock)
+        result = d4p.TreeList.from_xgb_booster(mock)
         self.assertEqual(len(result), 2)
 
         tree0 = result[0]
