@@ -112,7 +112,7 @@ class Node:
         return Node(
             cover=tree["leaf_count"] if is_leaf else tree["internal_count"],
             is_leaf=is_leaf,
-            default_left=is_leaf or tree["default_left"],
+            default_left=tree.get("default_left", 0),
             feature=tree.get("split_feature"),
             value=tree["leaf_value"] if is_leaf else tree["threshold"],
             n_children=n_children,
@@ -301,6 +301,7 @@ def get_gbt_model_from_tree_list(
                     position=node.position,
                 )
             else:
+                print(f"add split, {node.default_left=}")
                 parent_id = mb.add_split(
                     tree_id=tree_id,
                     feature_index=node.feature,
