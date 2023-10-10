@@ -95,7 +95,6 @@ class TSNE(BaseTSNE):
         """
         return super().fit(X, y)
 
-    @run_with_n_jobs
     def _daal_tsne(self, P, n_samples, X_embedded):
         """Runs t-SNE."""
         # t-SNE minimizes the Kullback-Leiber divergence of the Gaussians P
@@ -143,6 +142,7 @@ class TSNE(BaseTSNE):
 
         return X_embedded
 
+    @run_with_n_jobs
     def _fit(self, X, skip_num_points=0):
         """Private function to fit the model using X as training data."""
         if isinstance(self.init, str) and self.init == "warn":
