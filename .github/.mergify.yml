@@ -43,4 +43,4 @@ pull_request_rules:
         add: [infra]
       request_reviews:
         users:
-          - alexandraepan
+          - aepanchi
