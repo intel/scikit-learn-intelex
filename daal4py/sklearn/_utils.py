@@ -31,7 +31,6 @@ from sklearn import __version__ as sklearn_version
 
 from daal4py import _get__daal_link_version__ as dv
 from daal4py import daalinit as set_n_threads
-from daal4py import enable_thread_pinning
 from daal4py import num_threads as get_n_threads
 
 try:
@@ -306,10 +305,6 @@ def get_suggested_n_threads():
 def run_with_n_jobs(method):
     @wraps(method)
     def method_wrapper(self, *args, **kwargs):
-        # explicitly disabled thread pinning is required for oneDAL to
-        # receive correct default number of threads
-        # TODO: investigate reason of this behavior
-        enable_thread_pinning(False)
         # threading parallel backend branch
         if not isinstance(threading.current_thread(), threading._MainThread):
             warn(

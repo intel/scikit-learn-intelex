@@ -56,6 +56,8 @@ if _is_dpc_backend:
     __all__.append("spmd")
 
 
+from daal4py import daalinit
 from ._utils import set_sklearn_ex_verbose
 
+daalinit()
 set_sklearn_ex_verbose()
