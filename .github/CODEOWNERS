@@ -23,6 +23,7 @@ conda-recipe/                 @napetrov @Alexsandruss
 
 # Model builders
 *model_builders*              @razdoburdin @ahuber21 @avolkov-intel
+requirements-test-optional.txt  @razdoburdin @ahuber21 @avolkov-intel
 
 # Forests
 *ensemble*                    @ahuber21 @icfaust
