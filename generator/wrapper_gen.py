@@ -162,7 +162,6 @@ cdef extern from "daal4py_cpp.h":
     cdef size_t c_num_procs() except +
     cdef size_t c_my_procid() except +
     cdef void c_enable_thread_pinning(bool enabled) except +
-    cdef int c_get_cpu_id() except +
 
 
 def daalinit(nthreads = -1):
@@ -183,9 +182,6 @@ def my_procid():
 def enable_thread_pinning(enabled=True):
     c_enable_thread_pinning(enabled)
 
-def get_cpu_id():
-    return c_get_cpu_id()
-    
 def get_data(x):
     if isinstance(x, pdDataFrame):
         x_dtypes = x.dtypes.values

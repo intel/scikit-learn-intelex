@@ -56,7 +56,6 @@ if _is_dpc_backend:
     __all__.append("spmd")
 
 
-from ._utils import log_current_instruction_set, set_sklearn_ex_verbose
+from ._utils import set_sklearn_ex_verbose
 
 set_sklearn_ex_verbose()
-log_current_instruction_set()

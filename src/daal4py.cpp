@@ -831,11 +831,6 @@ extern "C"
     {
         daal::services::Environment::getInstance()->enableThreadPinning(enabled);
     }
-
-    int c_get_cpu_id()
-    {
-        return daal::services::Environment::getInstance()->getCpuId();
-    }
 } // extern "C"
 
 bool c_assert_all_finite(const data_or_file & t, bool allowNaN, char dtype)

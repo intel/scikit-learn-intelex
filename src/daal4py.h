@@ -67,7 +67,6 @@ size_t c_num_threads();
 size_t c_num_procs();
 size_t c_my_procid();
 void c_enable_thread_pinning(bool enabled=true);
-int c_get_cpu_id();
 }
 
 using daal::data_management::NumericTablePtr;
