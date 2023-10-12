@@ -235,20 +235,12 @@ def get_gbt_model_from_tree_list(
     is_regression: bool,
     n_features: int,
     n_classes: int,
-    base_score: float,
-    add_base_score_as_tree: bool,
+    base_score: Optional[float] = None,
 ):
     """Return a GBT Model from TreeList"""
 
     if is_regression:
-        if add_base_score_as_tree:
-            mb = gbt_reg_model_builder(
-                n_features=n_features, n_iterations=n_iterations + 1
-            )
-            tree_id = mb.create_tree(1)
-            mb.add_leaf(tree_id=tree_id, response=base_score, cover=1)
-        else:
-            mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
+        mb = gbt_reg_model_builder(n_features=n_features, n_iterations=n_iterations)
     else:
         mb = gbt_clf_model_builder(
             n_features=n_features, n_iterations=n_iterations, n_classes=n_classes
@@ -301,7 +293,6 @@ def get_gbt_model_from_tree_list(
                     position=node.position,
                 )
             else:
-                print(f"add split, {node.default_left=}")
                 parent_id = mb.add_split(
                     tree_id=tree_id,
                     feature_index=node.feature,
@@ -319,7 +310,7 @@ def get_gbt_model_from_tree_list(
                     child.position = position
                     node_queue.append(child)
 
-    return mb.model()
+    return mb.model(base_score=base_score)
 
 
 def get_gbt_model_from_lightgbm(model: Any, booster=None) -> Any:
@@ -350,8 +341,6 @@ def get_gbt_model_from_lightgbm(model: Any, booster=None) -> Any:
         is_regression=is_regression,
         n_features=n_features,
         n_classes=n_classes,
-        base_score=0,
-        add_base_score_as_tree=False,
     )
 
 
@@ -375,19 +364,28 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
             raise TypeError(
                 "multi:softprob and multi:softmax are only supported for multiclass classification"
             )
-    elif objective_fun.find("binary:") == 0:
-        if objective_fun in ["binary:logistic", "binary:logitraw"]:
-            n_classes = 2
-        else:
+    elif objective_fun.startswith("binary:"):
+        if objective_fun not in ["binary:logistic", "binary:logitraw"]:
             raise TypeError(
-                "binary:logistic and binary:logitraw are only supported for binary classification"
+                "only binary:logistic and binary:logitraw are supported for binary classification"
             )
+        n_classes = 2
+        if objective_fun == "binary:logitraw":
+            # daal4py always applies a sigmoid for pred_proba, wheres XGBoost
+            # returns raw predictions with logitraw
+            warn(
+                "objective='binary:logitraw' selected\n"
+                "XGBoost returns raw class scores when calling pred_proba()\n"
+                "whilst scikit-learn-intelex always uses binary:logistic\n"
+            )
+            if base_score != 0.5:
+                warn("objective='binary:logitraw' ignores base_score, fixing base_score to 0.5")
+                base_score = 0.5
     else:
         is_regression = True
 
-    max_trees = (
-        getattr(booster, "best_iteration", -1) + 1
-    )  # 0 if best_iteration does not exist
+    # max_trees=0 if best_iteration does not exist
+    max_trees = getattr(booster, "best_iteration", -1) + 1
     if n_classes > 2:
         max_trees *= n_classes
     tree_list = TreeList.from_xgb_booster(booster, max_trees)
@@ -404,7 +402,6 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
         n_features=n_features,
         n_classes=n_classes,
         base_score=base_score,
-        add_base_score_as_tree=True,
     )
 
 
@@ -720,4 +717,4 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                     )
 
     warn("Models converted from CatBoost cannot be used for SHAP value calculation")
-    return mb.model()
+    return mb.model(0.0)

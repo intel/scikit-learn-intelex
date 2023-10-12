@@ -25,6 +25,7 @@
 #if (((MAJOR_VERSION == 2024) && (MINOR_VERSION == 0) && (UPDATE_VERSION >= 1)) || ((MAJOR_VERSION > 2024) && (MINOR_VERSION >= 1)))
     // added missing value support to GBT regression
     // added SHAP value support
+    // added base_score parameter
     #define _gbt_inference_api_version 2
 #elif (((MAJOR_VERSION == 2023) && (MINOR_VERSION >= 2)) || (MAJOR_VERSION > 2023))
     // added missing value support to GBT classification
@@ -44,6 +45,20 @@ typedef c_gbt_regression_model_builder::TreeId c_gbt_reg_tree_id;
 #define c_gbt_clf_no_parent c_gbt_classification_model_builder::noParent
 #define c_gbt_reg_no_parent c_gbt_regression_model_builder::noParent
 
+#if (_gbt_inference_api_version == 2)
+static daal::algorithms::gbt::classification::ModelPtr * get_gbt_classification_model_builder_model(daal::algorithms::gbt::classification::ModelBuilder * obj_, double base_score)
+{
+    daal::algorithms::gbt::classification::ModelPtr * ptr = RAW<daal::algorithms::gbt::classification::ModelPtr>()(obj_->getModel());
+    ptr->get()->setPredictionBias(base_score);
+    return ptr;
+}
+static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_builder_model(daal::algorithms::gbt::regression::ModelBuilder * obj_, double base_score)
+{
+    daal::algorithms::gbt::regression::ModelPtr * ptr = RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
+    ptr->get()->setPredictionBias(base_score);
+    return ptr;
+}
+#else
 static daal::algorithms::gbt::classification::ModelPtr * get_gbt_classification_model_builder_model(daal::algorithms::gbt::classification::ModelBuilder * obj_)
 {
     return RAW<daal::algorithms::gbt::classification::ModelPtr>()(obj_->getModel());
@@ -53,6 +68,7 @@ static daal::algorithms::gbt::regression::ModelPtr * get_gbt_regression_model_bu
 {
     return RAW<daal::algorithms::gbt::regression::ModelPtr>()(obj_->getModel());
 }
+#endif
 
 c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft, double cover)
 {

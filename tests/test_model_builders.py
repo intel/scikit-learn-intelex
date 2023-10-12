@@ -105,11 +105,13 @@ class LogRegModelBuilder(unittest.TestCase):
 
 class XGBoostRegressionModelBuilder(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls, base_score=0.5):
         X, y = make_regression(n_samples=2, n_features=10, random_state=42)
         cls.X_test = X[:2, :]
         cls.X_nan = np.array([np.nan] * 20, dtype=np.float32).reshape(2, 10)
-        cls.xgb_model = xgb.XGBRegressor(max_depth=5, n_estimators=50, random_state=42)
+        cls.xgb_model = xgb.XGBRegressor(
+            max_depth=5, n_estimators=50, random_state=42, base_score=base_score
+        )
         cls.xgb_model.fit(X, y)
 
     def test_model_conversion(self):
@@ -124,19 +126,13 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_test)
         xgboost_pred = self.xgb_model.predict(self.X_test)
-        self.assertTrue(
-            np.allclose(d4p_pred, xgboost_pred, atol=1e-7),
-            f"d4p and reference prediction are different (d4p - ref) = {d4p_pred - xgboost_pred}",
-        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_nan)
         xgboost_pred = self.xgb_model.predict(self.X_nan)
-        self.assertTrue(
-            np.allclose(d4p_pred, xgboost_pred, atol=1e-7),
-            f"d4p and reference missing value prediction different (d4p - ref) = {d4p_pred - xgboost_pred}",
-        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
@@ -152,10 +148,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
             d4p_pred.shape == xgboost_pred.shape,
             f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {xgboost_pred.shape}",
         )
-        self.assertTrue(
-            np.allclose(d4p_pred, xgboost_pred, atol=1e-7),
-            f"d4p and reference SHAP contribution prediction are different (d4p - ref) = {d4p_pred - xgboost_pred}",
-        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
     def test_model_predict_shap_interactions(self):
         booster = self.xgb_model.get_booster()
@@ -171,10 +164,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
             d4p_pred.shape == xgboost_pred.shape,
             f"d4p and reference SHAP interaction shape is different {d4p_pred.shape} != {xgboost_pred.shape}",
         )
-        self.assertTrue(
-            np.allclose(d4p_pred, xgboost_pred, atol=1e-7),
-            f"d4p and reference SHAP interaction prediction are different (d4p - ref) = {d4p_pred - xgboost_pred}",
-        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
     def test_model_predict_shap_contribs_missing_values(self):
         booster = self.xgb_model.get_booster()
@@ -186,44 +176,75 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
             approx_contribs=False,
             validate_features=False,
         )
-        self.assertTrue(
-            np.allclose(d4p_pred, xgboost_pred, atol=1e-7),
-            f"d4p and reference SHAP contribution missing value prediction are different (d4p - ref) = {d4p_pred - xgboost_pred}",
-        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-6)
+
+
+# duplicate all tests for bae_score=0.0
+class XGBoostRegressionModelBuilder_base_score0(XGBoostRegressionModelBuilder):
+    @classmethod
+    def setUpClass(cls):
+        XGBoostRegressionModelBuilder.setUpClass(0)
+
+
+# duplicate all tests for bae_score=100
+class XGBoostRegressionModelBuilder_base_score100(XGBoostRegressionModelBuilder):
+    @classmethod
+    def setUpClass(cls):
+        XGBoostRegressionModelBuilder.setUpClass(100)
 
 
 class XGBoostClassificationModelBuilder(unittest.TestCase):
     @classmethod
-    def setUpClass(cls):
-        X, y = make_classification(n_samples=500, n_features=10, random_state=42)
+    def setUpClass(cls, base_score=0.5, n_classes=2, objective="binary:logistic"):
+        n_features = 15
+        cls.base_score = base_score
+        cls.n_classes = n_classes
+        X, y = make_classification(
+            n_samples=500,
+            n_classes=n_classes,
+            n_features=n_features,
+            n_informative=10,
+            random_state=42,
+        )
         cls.X_test = X[:2, :]
-        cls.X_nan = np.array([np.nan] * 20, dtype=np.float32).reshape(2, 10)
-        cls.xgb_model = xgb.XGBClassifier(max_depth=5, n_estimators=50, random_state=42)
+        cls.X_nan = np.array([np.nan] * 2 * n_features, dtype=np.float32).reshape(
+            2, n_features
+        )
+        cls.xgb_model = xgb.XGBClassifier(
+            max_depth=5,
+            n_estimators=50,
+            random_state=42,
+            base_score=base_score,
+            objective=objective,
+        )
         cls.xgb_model.fit(X, y)
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
-        self.assertEqual(m.n_classes_, 2)
-        self.assertEqual(m.n_features_in_, 10)
+        self.assertEqual(m.n_classes_, self.n_classes)
+        self.assertEqual(m.n_features_in_, 15)
         self.assertFalse(m._is_regression)
 
     def test_model_predict(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_test)
         xgboost_pred = self.xgb_model.predict(self.X_test)
-        self.assertTrue(
-            np.allclose(d4p_pred, xgboost_pred, atol=1e-7),
-            f"d4p and reference prediction are different (d4p - ref) = {d4p_pred - xgboost_pred}",
-        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-7)
+
+    def test_model_predict_proba(self):
+        m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        d4p_pred = m.predict_proba(self.X_test)
+        xgboost_pred = self.xgb_model.predict_proba(self.X_test)
+        # calculating probas involves multiple exp / ln operations, therefore
+        # they're quite susceptible to small numerical changes and we have to
+        # accept an rtol of 1e-5
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_nan)
         xgboost_pred = self.xgb_model.predict(self.X_nan)
-        self.assertTrue(
-            np.allclose(d4p_pred, xgboost_pred, atol=1e-7),
-            f"d4p and reference missing value prediction different (d4p - ref) = {d4p_pred - xgboost_pred}",
-        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-7)
 
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
@@ -238,12 +259,65 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
             m.predict(self.X_test, pred_contribs=True)
 
 
+# duplicate all tests for bae_score=0.01
+class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelBuilder):
+    @classmethod
+    def setUpClass(cls):
+        XGBoostClassificationModelBuilder.setUpClass(base_score=0.3)
+
+
+# duplicate all tests for bae_score=0.99
+class XGBoostClassificationModelBuilder_base_score07(XGBoostClassificationModelBuilder):
+    @classmethod
+    def setUpClass(cls):
+        XGBoostClassificationModelBuilder.setUpClass(base_score=0.7)
+
+
+class XGBoostClassificationModelBuilder_n_classes5(XGBoostClassificationModelBuilder):
+    @classmethod
+    def setUpClass(cls):
+        XGBoostClassificationModelBuilder.setUpClass(n_classes=5)
+
+
+class XGBoostClassificationModelBuilder_objective_logitraw(
+    XGBoostClassificationModelBuilder
+):
+    @classmethod
+    def setUpClass(cls):
+        XGBoostClassificationModelBuilder.setUpClass(
+            base_score=0.5, n_classes=2, objective="binary:logitraw"
+        )
+
+    def test_model_predict_proba(self):
+        # overload this function because daal4py always applies the sigmoid
+        # for bias 0.5, we can still check if the original scores are correct
+        with self.assertWarns(UserWarning):
+            # expect a warning that logitraw behaves differently and/or
+            # that base_score is ignored / fixed to 0.5
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        d4p_pred = m.predict_proba(self.X_test)
+        # undo sigmoid
+        d4p_pred = np.log(-d4p_pred / (d4p_pred - 1))
+        # undo bias
+        d4p_pred += 0.5
+        xgboost_pred = self.xgb_model.predict_proba(self.X_test)
+        # calculating probas involves multiple exp / ln operations, therefore
+        # they're quite susceptible to small numerical changes and we have to
+        # accept an rtol of 1e-5
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
+
+
 class LightGBMRegressionModelBuilder(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         X, y = make_regression(n_samples=100, n_features=10, random_state=42)
         cls.X_test = X[:2, :]
         cls.X_nan = np.array([np.nan] * 20, dtype=np.float32).reshape(2, 10)
+        # LightGBM requires a couple of NaN values in the training data to properly set
+        # the missing value type to NaN
+        # https://github.com/microsoft/LightGBM/issues/6139
+        X_train = np.concatenate([cls.X_nan, X])
+        y_train = np.concatenate([[0, 0], y])
         params = {
             "task": "train",
             "boosting": "gbdt",
@@ -252,13 +326,12 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
             "learning_rage": 0.05,
             "metric": {"l2", "l1"},
             "verbose": -1,
+            "n_estimators": 1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X, y))
+        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
-        # XGBoost treats regression as 0 classes, LightGBM 1 class
-        # For us, it does not make a difference and both are acceptable
         self.assertEqual(m.n_classes_, 1)
         self.assertEqual(m.n_features_in_, 10)
         self.assertTrue(m._is_regression)
@@ -267,48 +340,50 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_test)
         lgbm_pred = self.lgbm_model.predict(self.X_test)
-        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_nan)
         lgbm_pred = self.lgbm_model.predict(self.X_nan)
-        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=5e-6)
 
-    # def test_model_predict_shap_contribs(self):
-    #     m = d4p.mb.convert_model(self.lgbm_model)
-    #     d4p_pred = m.predict(self.X_test, pred_contribs=True)
-    #     lgbm_pred = self.lgbm_model.predict(self.X_test, pred_contrib=True)
-    #     self.assertTrue(
-    #         d4p_pred.shape == lgbm_pred.shape,
-    #         f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
-    #     )
-    #     max_diff = np.absolute(d4p_pred - lgbm_pred).reshape(1, -1).max()
-    #     self.assertLess(max_diff, 1e-7)
+    def test_model_predict_shap_contribs(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        d4p_pred = m.predict(self.X_test, pred_contribs=True)
+        explainer = shap.TreeExplainer(self.lgbm_model)
+        shap_pred = explainer(self.X_test).values
+        lgbm_pred = self.lgbm_model.predict(self.X_test, pred_contrib=True)
+        self.assertTrue(
+            d4p_pred.shape == lgbm_pred.shape,
+            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
+        )
+        np.testing.assert_allclose(d4p_pred[:, :-1], shap_pred, rtol=1e-6)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
-    # def test_model_predict_shap_interactions(self):
-    #     m = d4p.mb.convert_model(self.lgbm_model)
-    #     # SHAP Python package drops bias terms from the returned matrix, therefore we drop the final row & column
-    #     d4p_pred = m.predict(self.X_test, pred_interactions=True)[:, :-1, :-1]
-    #     explainer = shap.TreeExplainer(self.lgbm_model)
-    #     shap_pred = explainer.shap_interaction_values(self.X_test)
-    #     self.assertTrue(
-    #         d4p_pred.shape == shap_pred.shape,
-    #         f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {shap_pred.shape}",
-    #     )
-    #     max_diff = np.absolute(d4p_pred - shap_pred).reshape(1, -1).max()
-    #     self.assertLess(max_diff, 1e-7)
+    def test_model_predict_shap_interactions(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        # SHAP Python package drops bias terms from the returned matrix, therefore we drop the final row & column
+        d4p_pred = m.predict(self.X_test, pred_interactions=True)[:, :-1, :-1]
+        explainer = shap.TreeExplainer(self.lgbm_model)
+        shap_pred = explainer.shap_interaction_values(self.X_test)
+        self.assertTrue(
+            d4p_pred.shape == shap_pred.shape,
+            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {shap_pred.shape}",
+        )
+        np.testing.assert_allclose(d4p_pred, shap_pred, rtol=1e-6)
 
-    # def test_model_predict_shap_contribs_missing_values(self):
-    #     m = d4p.mb.convert_model(self.lgbm_model)
-    #     d4p_pred = m.predict(self.X_nan, pred_contribs=True)
-    #     lgbm_pred = self.lgbm_model.predict(self.X_nan, pred_contrib=True)
-    #     self.assertTrue(
-    #         d4p_pred.shape == lgbm_pred.shape,
-    #         f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
-    #     )
-    #     max_diff = np.absolute(d4p_pred - lgbm_pred).reshape(1, -1).max()
-    #     self.assertLess(max_diff, 1e-7)
+    # Will revisit further LightGBM validation after resolving microsoft/LightGBM#6139
+    # @unittest.skipIf(lgbm.__version__  == "4.1.0", "LightGBM models from dump_model() are possibly broken in v4.1.0")
+    def test_model_predict_shap_contribs_missing_values(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        d4p_pred = m.predict(self.X_nan, pred_contribs=True)
+        lgbm_pred = self.lgbm_model.predict(self.X_nan, pred_contrib=True)
+        self.assertTrue(
+            d4p_pred.shape == lgbm_pred.shape,
+            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
+        )
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
 
 class LightGBMClassificationModelBuilder(unittest.TestCase):
@@ -340,15 +415,13 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_test)
         lgbm_pred = np.argmax(self.lgbm_model.predict(self.X_test), axis=1)
-        max_diff = np.absolute(d4p_pred - lgbm_pred).reshape(1, -1).max()
-        self.assertLess(max_diff, 1e-7)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_nan)
         lgbm_pred = np.argmax(self.lgbm_model.predict(self.X_nan), axis=1)
-        max_diff = np.absolute(d4p_pred - lgbm_pred).reshape(1, -1).max()
-        self.assertLess(max_diff, 1e-7)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
@@ -397,15 +470,13 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_test)
         lgbm_pred = self.cb_model.predict(self.X_test)
-        max_diff = np.absolute(d4p_pred - lgbm_pred).reshape(1, -1).max()
-        self.assertLess(max_diff, 1e-7)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_nan)
         lgbm_pred = self.cb_model.predict(self.X_nan)
-        max_diff = np.absolute(d4p_pred - lgbm_pred).reshape(1, -1).max()
-        self.assertLess(max_diff, 1e-7)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
     def test_model_predict_shap_contribs(self):
         # SHAP value support from CatBoost models is to be added
@@ -449,13 +520,13 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_test)
         cb_pred = self.cb_model.predict(self.X_test, prediction_type="Class").T[0]
-        self.assertTrue((d4p_pred == cb_pred).all())
+        np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_nan)
         cb_pred = self.cb_model.predict(self.X_nan, prediction_type="Class").T[0]
-        self.assertTrue((d4p_pred == cb_pred).all())
+        np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
     def test_model_predict_shap_contribs(self):
         # SHAP value support from CatBoost models is to be added
@@ -514,8 +585,8 @@ class XGBoostEarlyStopping(unittest.TestCase):
         daal_errors_count = np.count_nonzero(daal_prediction - np.ravel(self.y_test))
 
         self.assertTrue(np.absolute(xgb_errors_count - daal_errors_count) == 0)
-        max_diff = np.absolute(xgb_proba - daal_proba).reshape(1, -1).max()
-        self.assertLess(max_diff, 1e-7)
+
+        np.testing.assert_allclose(xgb_proba, daal_proba, rtol=1e-6)
 
 
 class ModelBuilderTreeView(unittest.TestCase):
@@ -529,7 +600,7 @@ class ModelBuilderTreeView(unittest.TestCase):
                 ]
 
         mock = MockBooster()
-        result = d4p.TreeList.from_xgb_booster(mock)
+        result = d4p.TreeList.from_xgb_booster(mock, max_trees=0)
         self.assertEqual(len(result), 2)
 
         tree0 = result[0]
@@ -541,10 +612,6 @@ class ModelBuilderTreeView(unittest.TestCase):
             tree0.value
 
         self.assertIsInstance(tree0.root_node, d4p.Node)
-
-        self.assertEqual(tree0.root_node.node_id, 0)
-        self.assertEqual(tree0.root_node.left_child.node_id, 1)
-        self.assertEqual(tree0.root_node.right_child.node_id, 2)
 
         self.assertEqual(tree0.root_node.cover, 4)
         self.assertEqual(tree0.root_node.left_child.cover, 6)

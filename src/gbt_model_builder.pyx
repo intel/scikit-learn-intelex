@@ -27,8 +27,8 @@ cdef extern from "gbt_model_builder.h":
     cdef size_t c_gbt_clf_no_parent
     cdef size_t c_gbt_reg_no_parent
 
-    cdef gbt_classification_ModelPtr * get_gbt_classification_model_builder_model(c_gbt_classification_model_builder *)
-    cdef gbt_regression_ModelPtr * get_gbt_regression_model_builder_model(c_gbt_regression_model_builder *)
+    cdef gbt_classification_ModelPtr * get_gbt_classification_model_builder_model(c_gbt_classification_model_builder *, double base_score)
+    cdef gbt_regression_ModelPtr * get_gbt_regression_model_builder_model(c_gbt_regression_model_builder *, double base_score)
 
     cdef cppclass c_gbt_classification_model_builder:
         c_gbt_classification_model_builder(size_t nFeatures, size_t nIterations, size_t nClasses) except +
@@ -93,14 +93,15 @@ cdef class gbt_classification_model_builder:
         '''
         return clfAddSplitNodeWrapper(self.c_ptr, tree_id, parent_id, position, feature_index, feature_value, default_left, cover)
 
-    def model(self):
+    def model(self, base_score):
         '''
         Get built model
 
+        :param double base_score: global prediction bias (used e.g. in XGBoost)
         :rtype: gbt_classification_model
         '''
         cdef gbt_classification_model res = gbt_classification_model.__new__(gbt_classification_model)
-        res.c_ptr = get_gbt_classification_model_builder_model(self.c_ptr)
+        res.c_ptr = get_gbt_classification_model_builder_model(self.c_ptr, base_score or 0.0)
         return res
 
 
@@ -153,14 +154,15 @@ cdef class gbt_regression_model_builder:
         '''
         return regAddSplitNodeWrapper(self.c_ptr, tree_id, parent_id, position, feature_index, feature_value, default_left, cover)
 
-    def model(self):
+    def model(self, base_score):
         '''
         Get built model
 
+        :param double base_score: global prediction bias (used e.g. in XGBoost)
         :rtype: gbt_regression_model
         '''
         cdef gbt_regression_model res = gbt_regression_model.__new__(gbt_regression_model)
-        res.c_ptr = get_gbt_regression_model_builder_model(self.c_ptr)
+        res.c_ptr = get_gbt_regression_model_builder_model(self.c_ptr, base_score or 0.0)
         return res
 
 
