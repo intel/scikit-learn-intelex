@@ -298,7 +298,7 @@ threadpool_controller = threadpoolctl.ThreadpoolController()
 def get_suggested_n_threads():
     return {
         lib_ctl.internal_api: lib_ctl.get_num_threads()
-        for lib_ctl in threadpool_controller.lib_controllers
+        for lib_ctl in threadpool_controller.lib_controllers if lib_ctl.internal_api != "mkl"
     }
 
 
