@@ -797,14 +797,7 @@ extern "C"
 {
     void c_daalinit(int nthreads)
     {
-        if (nthreads > 0)
-        {
-            daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
-        }
-        else
-        {
-            daal::services::Environment::getInstance()->initNumberOfThreads();
-        }
+        if (nthreads > 0) daal::services::Environment::getInstance()->setNumberOfThreads(nthreads);
     }
 
     void c_daalfini()
