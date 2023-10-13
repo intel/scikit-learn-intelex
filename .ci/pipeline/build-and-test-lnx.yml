@@ -24,8 +24,8 @@ steps:
     displayName: 'System info'
   - script: |
       conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep -e "3.11|3.12") ]]; then export DPCPP_PACKAGE="dpcpp-cpp-rt>=2023.2.0"; else export DPCPP_PACKAGE="dpctl>=0.14 dpcpp-cpp-rt>=2023.2.0"; fi
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE
+      if [ $(echo $(PYTHON_VERSION) | grep '3.8\|3.9\|3.10') ]; then export DPCPP_PACKAGE="dpctl>=0.14 "; else export DPCPP_PACKAGE=""; fi
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE dpcpp-cpp-rt>=2023.2.0
     displayName: 'Conda create'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
