@@ -32,3 +32,15 @@ pull_request_rules:
         users:
           - napetrov
           - Alexsandruss
+          - ethanglaser
+  - name: Review assigment for renovate documentation requests
+    conditions:
+      - author=renovate[bot]
+      - title~="update doc packages"
+      - -closed
+    actions:
+      label:
+        add: [infra]
+      request_reviews:
+        users:
+          - aepanchi
