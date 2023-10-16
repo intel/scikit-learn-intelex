@@ -319,9 +319,8 @@ def run_with_n_jobs(method):
         method_name = (
             f"{self.__class__.__module__}.{self.__class__.__name__}.{method.__name__}"
         )
-        # get new and old numbers of threads
+        # search for specified n_jobs
         n_jobs = self.n_jobs
-        old_n_threads = get_n_threads()
         n_cpus = cpu_count()
         # receive n_threads limitation from upper context
         # using `threadpoolctl.threadpool_info`
@@ -334,24 +333,32 @@ def run_with_n_jobs(method):
         for backend in list(n_threads_map.keys()):
             if n_threads_map[backend] == n_cpus:
                 del n_threads_map[backend]
-        n_threads_map["onedal"] = old_n_threads
-        n_threads = min(n_threads_map.values())
+        if len(n_threads_map) > 0:
+            n_threads = min(n_threads_map.values())
+        else:
+            n_threads = None
         if n_jobs is None or n_jobs == 0:
             n_jobs = n_threads
         elif n_jobs < 0:
-            n_jobs = max(1, n_threads + n_jobs + 1)
+            if n_threads is None:
+                n_jobs = max(1, n_cpus + n_jobs + 1)
+            else:
+                n_jobs = max(1, n_threads + n_jobs + 1)
         # set number of threads
-        if n_jobs != old_n_threads:
+        if n_jobs is not None:
+            old_n_threads = get_n_threads()
             logger = logging.getLogger("sklearnex")
             logger.debug(
                 f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
             )
-            set_n_threads(n_jobs)
+            if n_jobs != old_n_threads:
+                set_n_threads(n_jobs)
         # run method
         result = method(self, *args, **kwargs)
         # reset number of threads to old one
-        if n_jobs != old_n_threads:
-            set_n_threads(old_n_threads)
+        if n_jobs is not None:
+            if n_jobs != old_n_threads:
+                set_n_threads(old_n_threads)
         return result
 
     return method_wrapper
