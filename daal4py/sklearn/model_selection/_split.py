@@ -189,7 +189,7 @@ def train_test_split(*arrays, **options):
         if dtypes is not None:
             incorrect_dtype = None
             for i, dtype in enumerate(dtypes):
-                if "float" not in str(dtype) and "int" not in str(dtype):
+                if str(dtype) not in ["float32", "float64"] and "int" not in str(dtype):
                     incorrect_dtype = str(dtype)
                     break
             _dal_ready = _patching_status.and_conditions(
@@ -197,7 +197,7 @@ def train_test_split(*arrays, **options):
                     (
                         incorrect_dtype is None,
                         f"Input has incorrect data type '{incorrect_dtype}'. "
-                        "Only integer and floating point types are supported.",
+                        "Only integer and 32/64-bits floating point types are supported.",
                     )
                 ]
             )
