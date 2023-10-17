@@ -347,11 +347,11 @@ def run_with_n_jobs(method):
         # set number of threads
         if n_jobs is not None:
             old_n_threads = get_n_threads()
-            logger = logging.getLogger("sklearnex")
-            logger.debug(
-                f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
-            )
             if n_jobs != old_n_threads:
+                logger = logging.getLogger("sklearnex")
+                logger.debug(
+                    f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
+                )
                 set_n_threads(n_jobs)
         # run method
         result = method(self, *args, **kwargs)
