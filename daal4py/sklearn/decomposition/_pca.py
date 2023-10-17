@@ -358,7 +358,8 @@ class PCA(PCA_original):
         self : object
             Returns the instance itself.
         """
-        return self._fit(X)
+        self._fit(X)
+        return self
 
     @support_usm_ndarray()
     def transform(self, X):
