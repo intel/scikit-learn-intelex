@@ -341,6 +341,26 @@ class PCA(PCA_original):
         return tr_res.transformedData
 
     @support_usm_ndarray()
+    def fit(self, X, y=None):
+        """Fit the model with X.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples
+            and `n_features` is the number of features.
+
+        y : Ignored
+            Ignored.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
+        return self._fit(X)
+
+    @support_usm_ndarray()
     def transform(self, X):
         """
         Apply dimensionality reduction to X.
