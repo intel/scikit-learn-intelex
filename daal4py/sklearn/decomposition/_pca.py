@@ -19,6 +19,7 @@ from math import sqrt
 
 import numpy as np
 from scipy.sparse import issparse
+from sklearn.base import _fit_context
 from sklearn.utils import check_array
 from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_is_fitted
@@ -341,6 +342,7 @@ class PCA(PCA_original):
         return tr_res.transformedData
 
     @support_usm_ndarray()
+    @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y=None):
         """Fit the model with X.
 
