@@ -402,6 +402,8 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
         )
         cls.X_test = X[:2, :]
         cls.X_nan = np.array([np.nan] * 20, dtype=np.float32).reshape(2, 10)
+        X_train = np.concatenate([cls.X_nan, X])
+        y_train = np.concatenate([[0, 0], y])
         params = {
             "n_estimators": 10,
             "task": "train",
@@ -411,7 +413,7 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
             "num_class": 3,
             "verbose": -1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X, y))
+        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
@@ -425,10 +427,85 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
         lgbm_pred = np.argmax(self.lgbm_model.predict(self.X_test), axis=1)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
+    def test_model_predict_proba(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        d4p_pred = m.predict_proba(self.X_test)
+        lgbm_pred = self.lgbm_model.predict(self.X_test)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_nan)
         lgbm_pred = np.argmax(self.lgbm_model.predict(self.X_nan), axis=1)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+
+    def test_model_predict_shap_contribs(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        with self.assertRaises(NotImplementedError):
+            m.predict(self.X_test, pred_contribs=True)
+
+    def test_model_predict_shap_interactions(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        with self.assertRaises(NotImplementedError):
+            m.predict(self.X_test, pred_interactions=True)
+
+    def test_model_predict_shap_contribs_missing_values(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        with self.assertRaises(NotImplementedError):
+            m.predict(self.X_nan, pred_contribs=True)
+
+
+class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        X, y = make_classification(
+            random_state=3, n_classes=2, n_informative=3, n_features=10
+        )
+        cls.X_test = X[:2, :]
+        cls.X_nan = np.array([np.nan] * 20, dtype=np.float32).reshape(2, 10)
+        X_train = np.concatenate([cls.X_nan, X])
+        y_train = np.concatenate([[0, 0], y])
+        params = {
+            "n_estimators": 10,
+            "task": "train",
+            "boosting": "gbdt",
+            "objective": "binary",
+            "metric": "binary_logloss",
+            "num_leaves": 4,
+            "verbose": -1,
+        }
+        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
+
+    def test_model_conversion(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        self.assertEqual(m.n_classes_, 2)
+        self.assertEqual(m.n_features_in_, 10)
+        self.assertFalse(m._is_regression)
+
+    def test_model_predict(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        d4p_pred = m.predict(self.X_test)
+        lgbm_pred = np.round(self.lgbm_model.predict(self.X_test)).astype(int)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+
+    def test_model_predict_proba(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        # predict proba of being class 1
+        d4p_pred = m.predict_proba(self.X_test)[:, 1]
+        lgbm_pred = self.lgbm_model.predict(self.X_test)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+
+    def test_missing_value_support(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        d4p_pred = m.predict(self.X_nan)
+        lgbm_pred = np.round(self.lgbm_model.predict(self.X_nan)).astype(int)
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+
+    def test_model_predict_proba_missing_values(self):
+        m = d4p.mb.convert_model(self.lgbm_model)
+        # predict proba of being class 1
+        d4p_pred = m.predict_proba(self.X_nan)[:, 1]
+        lgbm_pred = self.lgbm_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
     def test_model_predict_shap_contribs(self):
