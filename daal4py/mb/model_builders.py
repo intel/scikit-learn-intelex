@@ -215,10 +215,14 @@ class GBTDAALBaseModel:
             )
 
         # Prediction
+        resultsToCompute = ""
+        if pred_contribs:
+            resultsToCompute = "shapContributions"
+        elif pred_interactions:
+            resultsToCompute = "shapInteractions"
+
         predict_algo = d4p.gbt_regression_prediction(
-            fptype=fptype,
-            predShapContributions=pred_contribs,
-            predShapInteractions=pred_interactions,
+            fptype=fptype, resultsToCompute=resultsToCompute
         )
         predict_result = predict_algo.compute(X, self.daal_model_)
 
