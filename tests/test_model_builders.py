@@ -259,14 +259,14 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
             m.predict(self.X_test, pred_contribs=True)
 
 
-# duplicate all tests for bae_score=0.01
+# duplicate all tests for bae_score=0.3
 class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelBuilder):
     @classmethod
     def setUpClass(cls):
         XGBoostClassificationModelBuilder.setUpClass(base_score=0.3)
 
 
-# duplicate all tests for bae_score=0.99
+# duplicate all tests for bae_score=0.7
 class XGBoostClassificationModelBuilder_base_score07(XGBoostClassificationModelBuilder):
     @classmethod
     def setUpClass(cls):
@@ -277,6 +277,14 @@ class XGBoostClassificationModelBuilder_n_classes5(XGBoostClassificationModelBui
     @classmethod
     def setUpClass(cls):
         XGBoostClassificationModelBuilder.setUpClass(n_classes=5)
+
+
+class XGBoostClassificationModelBuilder_n_classes5_base_score03(
+    XGBoostClassificationModelBuilder
+):
+    @classmethod
+    def setUpClass(cls):
+        XGBoostClassificationModelBuilder.setUpClass(n_classes=5, base_score=0.3)
 
 
 class XGBoostClassificationModelBuilder_objective_logitraw(
