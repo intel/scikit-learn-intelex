@@ -130,9 +130,7 @@ def _check_array(
             if hasattr(array, "data"):
                 _assert_all_finite(array.data)
                 force_all_finite = False
-        else:
-            _assert_all_finite(array)
-            force_all_finite = False
+
     array = check_array(
         array=array,
         dtype=dtype,
