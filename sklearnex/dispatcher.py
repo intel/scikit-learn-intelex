@@ -89,7 +89,7 @@ def get_patch_map():
         from .svm import NuSVR as NuSVR_sklearnex
 
         # Patch for mapping
-        if True:
+        if _is_preview_enabled():
             # Ensemble
             mapping["extra_trees_classifier"] = [
                 [
