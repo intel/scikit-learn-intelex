@@ -125,11 +125,6 @@ def _check_array(
     ensure_2d=True,
     accept_large_sparse=True,
 ):
-    if force_all_finite:
-        if sp.issparse(array):
-            if hasattr(array, "data"):
-                _assert_all_finite(array.data)
-                force_all_finite = False
 
     array = check_array(
         array=array,
