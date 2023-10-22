@@ -125,7 +125,6 @@ def _check_array(
     ensure_2d=True,
     accept_large_sparse=True,
 ):
-
     array = check_array(
         array=array,
         dtype=dtype,
