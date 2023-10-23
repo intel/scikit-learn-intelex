@@ -82,8 +82,8 @@ For these models, the ``predict()`` method takes additional keyword arguments.
       d4p_model.predict(test_data, pred_contribs=True)      # for SHAP contributions
       d4p_model.predict(test_data, pred_interactions=True)  # for SHAP interactions
 
-The returned prediction will have shape ``(n_rows, n_features + 1)`` and ``n_rows, n_features + 1, n_features + 1`` for
-SHAP contributions and interactions, respectively. Here, ``n_rows`` is the number of rows (i.e., observations) in
+The returned prediction will have shape ``(n_rows, n_features + 1)`` and ``(n_rows, n_features + 1, n_features + 1)``
+for SHAP contributions and interactions, respectively. Here, ``n_rows`` is the number of rows (i.e., observations) in
 ``test_data``, and ``n_features`` is the number of features in the dataset.
 
 The prediction result for SHAP contributions comprises one feature attribution value per feature and a bias term for
@@ -123,7 +123,7 @@ Examples
 Model Builders models conversion
 
 - `XGBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_xgboost.py>`_
-- `SHAP value prediction from an XGBoost model <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_xgboost_shap.py>`
+- `SHAP value prediction from an XGBoost model <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_xgboost_shap.py>`_
 - `LightGBM model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_lightgbm.py>`_
 - `CatBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_catboost.py>`_
 
