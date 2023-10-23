@@ -19,7 +19,6 @@
 
 import numpy as np
 import xgboost as xgb
-from scipy.stats import chisquare
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 
