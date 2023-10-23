@@ -26,7 +26,7 @@ import numpy as np
 class CatBoostNode:
     def __init__(
         self,
-        split: Optional[float] = None,
+        split: Optional[Dict] = None,
         value: Optional[List[float]] = None,
         right: Optional[int] = None,
         left: Optional[float] = None,
