@@ -24,17 +24,17 @@ Model Builders for the Gradient Boosting Frameworks
 
 Introduction
 ------------------
-Gradient boosting on decision trees is one of the most accurate and efficient 
-machine learning algorithms for classification and regression. 
-The most popular implementations of it are: 
+Gradient boosting on decision trees is one of the most accurate and efficient
+machine learning algorithms for classification and regression.
+The most popular implementations of it are:
 
 * XGBoost*
 * LightGBM*
 * CatBoost*
 
 daal4py Model Builders deliver the accelerated
-models inference of those frameworks. The inference is performed by the oneDAL GBT implementation tuned 
-for the best performance on the Intel(R) Architecture. 
+models inference of those frameworks. The inference is performed by the oneDAL GBT implementation tuned
+for the best performance on the Intel(R) Architecture.
 
 Conversion
 ---------
@@ -61,22 +61,47 @@ CatBoost::
 Classification and Regression Inference
 ----------------------------------------
 
-The API is the same for classification and regression inference. 
-Based on the original model passed to the ``convert_model``, ``d4p_prediction`` is either the classification or regression output. 
-    
+The API is the same for classification and regression inference.
+Based on the original model passed to the ``convert_model()``, ``d4p_prediction`` is either the classification or regression output.
+
     ::
-      
+
       d4p_prediction = d4p_model.predict(test_data)
 
 Here, the ``predict()`` method of ``d4p_model`` is being used to make predictions on the ``test_data`` dataset.
-The ``d4p_prediction`` variable stores the predictions made by the ``predict()`` method. 
+The ``d4p_prediction`` variable stores the predictions made by the ``predict()`` method.
+
+SHAP Value Calculation for Regression Models
+----------------------------------------
+
+SHAP contribution and interaction value calculation is natively supported by models created with daal4py Model Builders.
+For these models, the ``predict()`` method takes additional keyword arguments.
+
+    ::
+
+      d4p_model.predict(test_data, pred_contribs=True)      # for SHAP contributions
+      d4p_model.predict(test_data, pred_interactions=True)  # for SHAP interactions
+
+The returned prediction will have shape ``(n_rows, n_features + 1)`` and ``n_rows, n_features + 1, n_features + 1`` for
+SHAP contributions and interactions, respectively. Here, ``n_rows`` is the number of rows (i.e., observations) in
+``test_data``, and ``n_features`` is the number of features in the dataset.
+
+The prediction result for SHAP contributions comprises one feature attribution value per feature and a bias term for
+each observation.
+
+The prediction result for SHAP interactions comprises ``(n_features + 1) x (n_features + 1)`` values for all possible
+feature combinations, as well as the accompanying bias terms.
+
+.. note:: The shapes of SHAP contributions and interactions are consistent with XGBoost's* results.
+  In contrast, the popular `SHAP Python package* <https://shap.readthedocs.io/en/latest/>`_ drops bias terms, resulting
+  in SHAP contributions (SHAP interactions) with one fewer column (one fewer column and row) per observation.
 
 Scikit-learn-style Estimators
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can also use the scikit-learn-style classes ``GBTDAALClassifier`` and ``GBTDAALRegressor`` to convert and infer your models. For example:
 
-:: 
+::
 
   from daal4py.sklearn.ensemble import GBTDAALRegressor
   reg = xgb.XGBRegressor()
@@ -88,9 +113,9 @@ Limitations
 ------------------
 Model Builders support only base inference with prediction and probabilities prediction. The functionality is to be extended.
 Therefore, there are the following limitations:
-- The categorical features are not supported for conversion and prediction. 
+- The categorical features are not supported for conversion and prediction.
 - The multioutput models are not supported for conversion and prediction.
-- The tree SHAP calculations are not supported.
+- SHAP values can only be calculated for regression models.
 
 
 Examples
@@ -98,6 +123,7 @@ Examples
 Model Builders models conversion
 
 - `XGBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_xgboost.py>`_
+- `SHAP value prediction from an XGBoost model <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_xgboost_shap.py>`
 - `LightGBM model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_lightgbm.py>`_
 - `CatBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_catboost.py>`_
 
