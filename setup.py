@@ -23,7 +23,7 @@ import os
 import pathlib
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from distutils.sysconfig import get_config_vars
 from os.path import join as jp
 
@@ -47,6 +47,7 @@ IS_MAC = False
 IS_LIN = False
 
 dal_root = os.environ.get("DALROOT")
+n_threads = int(os.environ.get("NTHREADS", os.cpu_count() or 1))
 
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
@@ -326,7 +327,7 @@ def getpyexts():
         library_dirs=ONEDAL_LIBDIRS,
         language="c++",
     )
-    exts.extend(cythonize(ext))
+    exts.extend(cythonize(ext, nthreads=n_threads))
 
     if dpcpp:
         if IS_LIN or IS_MAC:
@@ -349,7 +350,7 @@ def getpyexts():
             runtime_library_dirs=runtime_oneapi_dirs,
             language="c++",
         )
-        exts.extend(cythonize(ext))
+        exts.extend(cythonize(ext, nthreads=n_threads))
 
     if not no_dist:
         mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
@@ -444,10 +445,13 @@ def get_onedal_py_libs():
 
 class parallel_build_ext(_build_ext):
     def build_extensions(self):
-        num_threads = os.cpu_count()
-        with ThreadPoolExecutor(max_workers=num_threads) as executor:
-            for ext in self.extensions:
-                executor.submit(self.build_extension, ext)
+        with ThreadPoolExecutor(max_workers=n_threads) as executor:
+            result_list = [
+                executor.submit(self.build_extension, ext) for ext in self.extensions
+            ]
+        assert all(
+            f.exception() is None for f in result_list
+        ), "There were errors building the extensions"
 
 
 class custom_build:
