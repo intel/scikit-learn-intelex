@@ -72,28 +72,30 @@ Here, the ``predict()`` method of ``d4p_model`` is being used to make prediction
 The ``d4p_prediction`` variable stores the predictions made by the ``predict()`` method.
 
 SHAP Value Calculation for Regression Models
-----------------------------------------
+------------------------------------------------------------
 
-SHAP contribution and interaction value calculation is natively supported by models created with daal4py Model Builders.
-For these models, the ``predict()`` method takes additional keyword arguments.
+SHAP contribution and interaction value calculation are natively supported by models created with daal4py Model Builders.
+For these models, the ``predict()`` method takes additional keyword arguments:
 
     ::
 
       d4p_model.predict(test_data, pred_contribs=True)      # for SHAP contributions
       d4p_model.predict(test_data, pred_interactions=True)  # for SHAP interactions
 
-The returned prediction will have shape ``(n_rows, n_features + 1)`` and ``(n_rows, n_features + 1, n_features + 1)``
-for SHAP contributions and interactions, respectively. Here, ``n_rows`` is the number of rows (i.e., observations) in
+The returned prediction has the shape:
+
+   * ``(n_rows, n_features + 1)``  for SHAP contributions 
+   * ``(n_rows, n_features + 1, n_features + 1)`` for SHAP interactions
+Here, ``n_rows`` is the number of rows (i.e., observations) in
 ``test_data``, and ``n_features`` is the number of features in the dataset.
 
-The prediction result for SHAP contributions comprises one feature attribution value per feature and a bias term for
-each observation.
+The prediction result for SHAP contributions includes a feature attribution value for each feature and a bias term for each observation.
 
 The prediction result for SHAP interactions comprises ``(n_features + 1) x (n_features + 1)`` values for all possible
-feature combinations, as well as the accompanying bias terms.
+feature combinations, along with their corresponding bias terms.
 
-.. note:: The shapes of SHAP contributions and interactions are consistent with XGBoost's* results.
-  In contrast, the popular `SHAP Python package* <https://shap.readthedocs.io/en/latest/>`_ drops bias terms, resulting
+.. note:: The shapes of SHAP contributions and interactions are consistent with the XGBoost results.
+  In contrast, the `SHAP Python package <https://shap.readthedocs.io/en/latest/>`_ drops bias terms, resulting
   in SHAP contributions (SHAP interactions) with one fewer column (one fewer column and row) per observation.
 
 Scikit-learn-style Estimators
@@ -115,7 +117,7 @@ Model Builders support only base inference with prediction and probabilities pre
 Therefore, there are the following limitations:
 - The categorical features are not supported for conversion and prediction.
 - The multioutput models are not supported for conversion and prediction.
-- SHAP values can only be calculated for regression models.
+- SHAP values can be calculated for regression models only.
 
 
 Examples
