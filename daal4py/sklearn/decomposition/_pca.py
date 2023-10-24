@@ -19,7 +19,9 @@ from math import sqrt
 
 import numpy as np
 from scipy.sparse import issparse
-from sklearn.base import _fit_context
+
+if sklearn_check_version("1.3"):
+    from sklearn.base import _fit_context
 from sklearn.utils import check_array
 from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_is_fitted
@@ -341,27 +343,52 @@ class PCA(PCA_original):
 
         return tr_res.transformedData
 
-    @support_usm_ndarray()
-    @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y=None):
-        """Fit the model with X.
+    if sklearn_check_version("1.3"):
 
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples
-            and `n_features` is the number of features.
+        @support_usm_ndarray()
+        @_fit_context(prefer_skip_nested_validation=True)
+        def fit(self, X, y=None):
+            """Fit the model with X.
 
-        y : Ignored
-            Ignored.
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Training data, where `n_samples` is the number of samples
+                and `n_features` is the number of features.
 
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
-        self._fit(X)
-        return self
+            y : Ignored
+                Ignored.
+
+            Returns
+            -------
+            self : object
+                Returns the instance itself.
+            """
+            self._fit(X)
+            return self
+
+    else:
+
+        @support_usm_ndarray()
+        def fit(self, X, y=None):
+            """Fit the model with X.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Training data, where `n_samples` is the number of samples
+                and `n_features` is the number of features.
+
+            y : Ignored
+                Ignored.
+
+            Returns
+            -------
+            self : object
+                Returns the instance itself.
+            """
+            self._fit(X)
+            return self
 
     @support_usm_ndarray()
     def transform(self, X):
