@@ -17,52 +17,52 @@ steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
   - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml
-    displayName: 'Create Anaconda environment'
+    displayName: "Create Anaconda environment"
   - script: |
-      call activate CB
-      pip install --upgrade setuptools
-      pip install cpufeature
-      pip install -r dependencies-dev
+      call activate CB && ^
+      pip install --upgrade setuptools && ^
+      pip install cpufeature && ^
+      pip install -r dependencies-dev && ^
       pip list
-    displayName: 'Install develop requirements'
+    displayName: "Install develop requirements"
   - script: |
-      set PATH=C:\msys64\usr\bin;%PATH%
-      call activate CB
+      set PATH=C:\msys64\usr\bin;%PATH% && ^
+      call activate CB && ^
       bash .ci/scripts/describe_system.sh
-    displayName: 'System info'
+    displayName: "System info"
   - script: |
-      call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-      call activate CB
-      set PREFIX=%CONDA_PREFIX%
-      set PYTHON=python
-      call conda-recipe\bld.bat
-      set DALROOT=%CONDA_PREFIX%
+      call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64 && ^
+      call activate CB && ^
+      set PREFIX=%CONDA_PREFIX% && ^
+      set PYTHON=python && ^
+      call conda-recipe\bld.bat && ^
+      set DALROOT=%CONDA_PREFIX% && ^
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: 'Build daal4py/sklearnex'
+    displayName: "Build daal4py/sklearnex"
   - script: |
-      set PATH=C:\msys64\usr\bin;%PATH%
-      call activate CB
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
-      cd ..
-      for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
-      pip install %SCIPY_VERSION%
+      set PATH=C:\msys64\usr\bin;%PATH% && ^
+      call activate CB && ^
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION) && ^
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt && ^
+      cd .. && ^
+      for /f "delims=" %%c in ('python s\.ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c && ^
+      pip install %SCIPY_VERSION% && ^
       pip list
-    displayName: 'Install testing requirements'
+    displayName: "Install testing requirements"
   - script: |
-      call activate CB
-      cd ..
+      call activate CB && ^
+      cd .. && ^
       call s\conda-recipe\run_test.bat s
-    displayName: 'Sklearnex testing'
+    displayName: "Sklearnex testing"
   - script: |
-      call activate CB
+      call activate CB && ^
       bash .ci/scripts/run_sklearn_tests.sh
-    displayName: 'Sklearn testing'
+    displayName: "Sklearn testing"
     condition: succeededOrFailed()
   - script: |
-      call activate CB
+      call activate CB && ^
       bash .ci/scripts/run_sklearn_tests.sh
     env:
       SKLEARNEX_PREVIEW: "YES"
-    displayName: 'Sklearn testing [preview]'
+    displayName: "Sklearn testing [preview]"
     condition: succeededOrFailed()
