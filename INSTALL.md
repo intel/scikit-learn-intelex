@@ -41,8 +41,8 @@ The extension is also available as a part of [Intel® AI Analytics Toolkit](http
 
 Next steps after installation:
 
-- [Learn what patching is and how to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/what-is-patching.html)
-- [Start using scikit-learn-intelex](https://intel.github.io/scikit-learn-intelex/quick-start.html)
+- [Learn what patching is and how to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/latest/what-is-patching.html)
+- [Start using scikit-learn-intelex](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
 
 ## Install via pip or conda
 
