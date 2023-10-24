@@ -92,4 +92,22 @@ c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder * c_ptr,
 #endif
 }
 
+c_gbt_clf_node_id clfAddLeafNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, double response, double cover)
+{
+#if (_gbt_inference_api_version == 2)
+    return c_ptr->addLeafNode(treeId, parentId, position, response, cover);
+#else
+    return c_ptr->addLeafNode(treeId, parentId, position, response);
+#endif
+}
+
+c_gbt_reg_node_id regAddLeafNodeWrapper(c_gbt_regression_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, double response, double cover)
+{
+#if (_gbt_inference_api_version == 2)
+    return c_ptr->addLeafNode(treeId, parentId, position, response, cover);
+#else
+    return c_ptr->addLeafNode(treeId, parentId, position, response);
+#endif
+}
+
 #endif // _GBT_MODEL_BUILDER_INCLUDED_

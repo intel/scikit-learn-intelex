@@ -43,6 +43,9 @@ cdef extern from "gbt_model_builder.h":
     cdef c_gbt_clf_node_id clfAddSplitNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft, double cover)
     cdef c_gbt_reg_node_id regAddSplitNodeWrapper(c_gbt_regression_model_builder     * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, size_t featureIndex, double featureValue, int defaultLeft, double cover)
 
+    cdef c_gbt_clf_node_id clfAddLeafNodeWrapper(c_gbt_classification_model_builder * c_ptr, c_gbt_clf_tree_id treeId, c_gbt_clf_node_id parentId, size_t position, double response, double cover)
+    cdef c_gbt_clf_node_id regAddLeafNodeWrapper(c_gbt_regression_model_builder     * c_ptr, c_gbt_reg_tree_id treeId, c_gbt_reg_node_id parentId, size_t position, double response, double cover)
+
 cdef class gbt_classification_model_builder:
     '''
     Model Builder for gradient boosted trees.
@@ -76,7 +79,7 @@ cdef class gbt_classification_model_builder:
         :param double cover: cover (sum_hess) of the leaf node
         :rtype: node identifier
         '''
-        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response, cover)
+        return clfAddLeafNodeWrapper(self.c_ptr, tree_id, parent_id, position, response, cover)
 
     def add_split(self, c_gbt_clf_tree_id tree_id, size_t feature_index, double feature_value, int default_left, double cover, c_gbt_clf_node_id parent_id=c_gbt_clf_no_parent, size_t position=0):
         '''
@@ -137,7 +140,7 @@ cdef class gbt_regression_model_builder:
         :param double cover: cover (sum_hess) of the leaf node
         :rtype: node identifier
         '''
-        return self.c_ptr.addLeafNode(tree_id, parent_id, position, response, cover)
+        return regAddLeafNodeWrapper(self.c_ptr, tree_id, parent_id, position, response, cover)
 
     def add_split(self, c_gbt_reg_tree_id tree_id, size_t feature_index, double feature_value, int default_left, double cover, c_gbt_reg_node_id parent_id=c_gbt_reg_no_parent, size_t position=0):
         '''
