@@ -19,9 +19,6 @@ from math import sqrt
 
 import numpy as np
 from scipy.sparse import issparse
-
-if sklearn_check_version("1.3"):
-    from sklearn.base import _fit_context
 from sklearn.utils import check_array
 from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_is_fitted
@@ -30,6 +27,9 @@ import daal4py
 
 from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
+
+if sklearn_check_version("1.3"):
+    from sklearn.base import _fit_context
 
 if sklearn_check_version("0.22"):
     from sklearn.decomposition._pca import PCA as PCA_original
