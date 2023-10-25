@@ -313,12 +313,24 @@ def support_init_with_n_jobs(init_function):
 threadpool_controller = threadpoolctl.ThreadpoolController()
 
 
-def get_suggested_n_threads():
-    return {
+def get_suggested_n_threads(n_cpus):
+    n_threads_map = {
         lib_ctl.internal_api: lib_ctl.get_num_threads()
         for lib_ctl in threadpool_controller.lib_controllers
         if lib_ctl.internal_api != "mkl"
     }
+    # openBLAS is limited by 128 threads by default.
+    # thus, 128 threads from openBLAS is uninformative
+    if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
+        del n_threads_map["openblas"]
+    # remove default values equal to n_cpus
+    for backend in list(n_threads_map.keys()):
+        if n_threads_map[backend] == n_cpus:
+            del n_threads_map[backend]
+    if len(n_threads_map) > 0:
+        return min(n_threads_map.values())
+    else:
+        return None
 
 
 # decorator for running of methods containing oneDAL kernels with "n_jobs"
@@ -341,21 +353,11 @@ def run_with_n_jobs(method):
         # search for specified n_jobs
         n_jobs = self.n_jobs
         n_cpus = cpu_count()
-        # receive n_threads limitation from upper context
-        # using `threadpoolctl.threadpool_info`
-        n_threads_map = get_suggested_n_threads()
-        # openBLAS is limited by 128 threads by default.
-        # thus, 128 threads from openBLAS is uninformative
-        if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
-            del n_threads_map["openblas"]
-        # remove default values equal to n_cpus
-        for backend in list(n_threads_map.keys()):
-            if n_threads_map[backend] == n_cpus:
-                del n_threads_map[backend]
-        if len(n_threads_map) > 0:
-            n_threads = min(n_threads_map.values())
-        else:
-            n_threads = None
+        # receive n_threads limitation from upper parallelism context
+        # using `threadpoolctl.ThreadpoolController`
+        n_threads = get_suggested_n_threads(n_cpus)
+        # get real `n_jobs` number of threads for oneDAL
+        # using sklearn rules and `n_threads` from upper parallelism context
         if n_jobs is None or n_jobs == 0:
             n_jobs = n_threads
         elif n_jobs < 0:
