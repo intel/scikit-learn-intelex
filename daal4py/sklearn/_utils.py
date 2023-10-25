@@ -278,7 +278,11 @@ def support_init_with_n_jobs(init_function):
                 parameter_constraints["n_jobs"] = [Integral, None]
         init_function(self, *args, **kwargs)
         # add n_jobs to __doc__ string if needed
-        if "n_jobs : int" not in self.__doc__:
+        if (
+            hasattr(self, "__doc__")
+            and isinstance(self.__doc__, str)
+            and "n_jobs : int" not in self.__doc__
+        ):
             parameters_doc_tail = "\n    Attributes"
             n_jobs_doc = """
     n_jobs : int, default=None
