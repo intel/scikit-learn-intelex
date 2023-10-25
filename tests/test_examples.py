@@ -272,6 +272,13 @@ gen_examples = [
         ((2020, "P", 2), (2021, "B", 109)),
         ["xgboost"],
     ),
+    (
+        "model_builders_xgboost_shap",
+        None,
+        None,
+        (2023, "P", 1),
+        ["xgboost"],
+    ),
     ("model_builders_catboost", None, None, (2021, "P", 4), ["catboost"]),
     ("gradient_boosted_classification",),
     ("gradient_boosted_regression",),
