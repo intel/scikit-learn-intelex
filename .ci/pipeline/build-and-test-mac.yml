@@ -15,47 +15,47 @@
 #===============================================================================
 steps:
   - script: |
-      echo "##vso[task.prependpath]$CONDA/bin" && \
-      sudo chown -R $USER $CONDA && \
-      conda config --set always_yes yes --set changeps1 no && \
-      conda update -q conda && \
+      echo "##vso[task.prependpath]$CONDA/bin"
+      sudo chown -R $USER $CONDA
+      conda config --set always_yes yes --set changeps1 no
+      conda update -q conda
       conda create -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich clang-format pyyaml
     displayName: Create Anaconda environment
   - script: |
-      source activate CB && \
-      pip install -q cpufeature && \
+      source activate CB
+      pip install -q cpufeature
       bash .ci/scripts/describe_system.sh
     displayName: "System info"
   - script: |
-      source activate CB && \
-      pip install -r dependencies-dev && \
+      source activate CB
+      pip install -r dependencies-dev
       pip list
     displayName: 'Install develop requirements'
   - script: |
-      source activate CB && \
-      export DALROOT=$CONDA_PREFIX && \
-      ./conda-recipe/build.sh && \
+      source activate CB
+      export DALROOT=$CONDA_PREFIX
+      ./conda-recipe/build.sh
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: Conda build
   - script: |
-      source activate CB && \
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION) && \
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt && \
-      pip install $(python .ci/scripts/get_compatible_scipy_version.py) && \
+      source activate CB
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
+      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
       pip list
     displayName: 'Install testing requirements'
   - script: |
-      source activate CB && \
-      cd .. && \
+      source activate CB
+      cd ..
       ./s/conda-recipe/run_test.sh
     displayName: 'Sklearnex testing'
   - script: |
-      source activate CB && \
+      source activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
     condition: succeededOrFailed()
   - script: |
-      source activate CB && \
+      source activate CB
       bash .ci/scripts/run_sklearn_tests.sh
     env:
       SKLEARNEX_PREVIEW: "YES"
