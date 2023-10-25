@@ -277,9 +277,24 @@ def support_init_with_n_jobs(init_function):
             if "n_jobs" not in parameter_constraints:
                 parameter_constraints["n_jobs"] = [Integral, None]
         init_function(self, *args, **kwargs)
+        # add n_jobs to __doc__ string if needed
+        if "n_jobs : int" not in self.__doc__:
+            parameters_doc_tail = "\n    Attributes"
+            n_jobs_doc = """
+    n_jobs : int, default=None
+        The number of jobs to run in parallel. :meth:`fit`, :meth:`predict`,
+        :meth:`decision_path` and :meth:`apply` are all parallelized over the
+        trees. ``None`` means 1 unless in a :obj:`joblib.parallel_backend`
+        context. ``-1`` means using all processors. See :term:`Glossary
+        <n_jobs>` for more details.
+"""
+            self.__doc__ = self.__doc__.replace(
+                parameters_doc_tail, n_jobs_doc + parameters_doc_tail
+            )
         self.n_jobs = n_jobs
 
-    # add "n_jobs" parameter to signature of wrapped init if it's not listed
+    # add "n_jobs" parameter to signature of wrapped init
+    # if estimator doesn't originally support it
     sig = signature(init_function)
     original_params = list(sig.parameters.values())
     if "n_jobs" not in list(map(lambda param: param.name, original_params)):
