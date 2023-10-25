@@ -26,21 +26,21 @@ steps:
       pip list
     displayName: "Install develop requirements"
   - script: |
-      set PATH=C:\msys64\usr\bin;%PATH% && ^
+      set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB && ^
       bash .ci/scripts/describe_system.sh
     displayName: "System info"
   - script: |
+      set PREFIX=%CONDA_PREFIX%
+      set DALROOT=%CONDA_PREFIX%
+      set PYTHON=python
       call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64 && ^
       call activate CB && ^
-      set PREFIX=%CONDA_PREFIX% && ^
-      set PYTHON=python && ^
       call conda-recipe\bld.bat && ^
-      set DALROOT=%CONDA_PREFIX% && ^
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: "Build daal4py/sklearnex"
   - script: |
-      set PATH=C:\msys64\usr\bin;%PATH% && ^
+      set PATH=C:\msys64\usr\bin;%PATH%
       call activate CB && ^
       bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION) && ^
       pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt && ^
