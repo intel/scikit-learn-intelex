@@ -19,6 +19,7 @@ import unittest
 import catboost as cb
 import lightgbm as lgbm
 import numpy as np
+import pytest
 import shap
 import xgboost as xgb
 from sklearn.datasets import (
@@ -31,6 +32,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
 import daal4py as d4p
+from daal4py.sklearn._utils import daal_check_version
+
+shap_required_version = (2024, "P", 1)
+shap_supported = daal_check_version(shap_required_version)
+shap_not_supported_str = (
+    f"SHAP value calculation only supported for version {shap_required_version} or later"
+)
 
 
 class LogRegModelBuilder(unittest.TestCase):
@@ -134,6 +142,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
         xgboost_pred = self.xgb_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
@@ -150,6 +159,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
         )
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_interactions(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
@@ -166,6 +176,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
         )
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs_missing_values(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
@@ -246,12 +257,14 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         xgboost_pred = self.xgb_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-7)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
         with self.assertRaises(NotImplementedError):
             m.predict(self.X_test, pred_contribs=True)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_interactions(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
@@ -356,6 +369,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         lgbm_pred = self.lgbm_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=5e-6)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_test, pred_contribs=True)
@@ -369,6 +383,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred[:, :-1], shap_pred, rtol=1e-6)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_interactions(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         # SHAP Python package drops bias terms from the returned matrix, therefore we drop the final row & column
@@ -381,8 +396,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         )
         np.testing.assert_allclose(d4p_pred, shap_pred, rtol=1e-6)
 
-    # Will revisit further LightGBM validation after resolving microsoft/LightGBM#6139
-    # @unittest.skipIf(lgbm.__version__  == "4.1.0", "LightGBM models from dump_model() are possibly broken in v4.1.0")
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs_missing_values(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_nan, pred_contribs=True)
@@ -439,16 +453,19 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
         lgbm_pred = np.argmax(self.lgbm_model.predict(self.X_nan), axis=1)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         with self.assertRaises(NotImplementedError):
             m.predict(self.X_test, pred_contribs=True)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_interactions(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         with self.assertRaises(NotImplementedError):
             m.predict(self.X_test, pred_interactions=True)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs_missing_values(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         with self.assertRaises(NotImplementedError):
@@ -508,16 +525,19 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
         lgbm_pred = self.lgbm_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         with self.assertRaises(NotImplementedError):
             m.predict(self.X_test, pred_contribs=True)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_interactions(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         with self.assertRaises(NotImplementedError):
             m.predict(self.X_test, pred_interactions=True)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs_missing_values(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         with self.assertRaises(NotImplementedError):
@@ -563,6 +583,7 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
         lgbm_pred = self.cb_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs(self):
         # SHAP value support from CatBoost models is to be added
         with self.assertWarnsRegex(
@@ -613,6 +634,7 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
         cb_pred = self.cb_model.predict(self.X_nan, prediction_type="Class").T[0]
         np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
+    @pytest.mark.skipif(shap_supported, reason=shap_not_supported_str)
     def test_model_predict_shap_contribs(self):
         # SHAP value support from CatBoost models is to be added
         with self.assertWarnsRegex(
