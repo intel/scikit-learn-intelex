@@ -28,7 +28,6 @@ steps:
     displayName: "System info"
   - script: |
       source activate CB
-      python -c "import sys; sys.exit(-1)"
       pip install -r dependencies-dev
       pip list
     displayName: 'Install develop requirements'
