@@ -15,58 +15,58 @@
 #===============================================================================
 steps:
   - script: sudo apt-get update && sudo apt-get install -y clang-format
-    displayName: 'apt-get'
+    displayName: "apt-get"
   - script: |
       bash .ci/scripts/install_dpcpp.sh
-    displayName: 'dpcpp installation'
+    displayName: "dpcpp installation"
   - script: |
       bash .ci/scripts/describe_system.sh
-    displayName: 'System info'
+    displayName: "System info"
   - script: |
-      conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep '3.8\|3.9\|3.10') ]; then export DPCPP_PACKAGE="dpctl>=0.14 "; else export DPCPP_PACKAGE=""; fi
+      conda update -y -q conda && \
+      if [ $(echo $(PYTHON_VERSION) | grep '3.8\|3.9\|3.10') ]; then export DPCPP_PACKAGE="dpctl>=0.14 "; else export DPCPP_PACKAGE=""; fi && \
       conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE dpcpp-cpp-rt>=2023.2.0
-    displayName: 'Conda create'
+    displayName: "Conda create"
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      pip install -r dependencies-dev
+      . /usr/share/miniconda/etc/profile.d/conda.sh && \
+      conda activate CB && \
+      pip install -r dependencies-dev && \
       pip list
-    displayName: 'Install develop requirements'
+    displayName: "Install develop requirements"
   - script: |
-      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      export DALROOT=$CONDA_PREFIX
-      ./conda-recipe/build.sh
+      export DPCPPROOT=/opt/intel/oneapi/compiler/latest && \
+      . /usr/share/miniconda/etc/profile.d/conda.sh && \
+      conda activate CB && \
+      export DALROOT=$CONDA_PREFIX && \
+      ./conda-recipe/build.sh && \
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
-    displayName: 'Build daal4py/sklearnex'
+    displayName: "Build daal4py/sklearnex"
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
-      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt
-      pip install $(python .ci/scripts/get_compatible_scipy_version.py)
-      if [ $(echo $(PYTHON_VERSION) | grep '3.8\|3.9\|3.10') ]; then conda install -q -y -c intel dpnp; fi
+      . /usr/share/miniconda/etc/profile.d/conda.sh && \
+      conda activate CB && \
+      bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION) && \
+      pip install --upgrade -r requirements-test.txt -r requirements-test-optional.txt && \
+      pip install $(python .ci/scripts/get_compatible_scipy_version.py) && \
+      if [ $(echo $(PYTHON_VERSION) | grep '3.8\|3.9\|3.10') ]; then conda install -q -y -c intel dpnp; fi && \
       pip list
-    displayName: 'Install testing requirements'
+    displayName: "Install testing requirements"
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
-      cd ..
+      . /usr/share/miniconda/etc/profile.d/conda.sh && \
+      conda activate CB && \
+      cd .. && \
       ./s/conda-recipe/run_test.sh
-    displayName: 'Sklearnex testing'
+    displayName: "Sklearnex testing"
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
+      . /usr/share/miniconda/etc/profile.d/conda.sh && \
+      conda activate CB && \
       bash .ci/scripts/run_sklearn_tests.sh cpu
-    displayName: 'Sklearn testing'
+    displayName: "Sklearn testing"
     condition: succeededOrFailed()
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
-      conda activate CB
+      . /usr/share/miniconda/etc/profile.d/conda.sh && \
+      conda activate CB && \
       bash .ci/scripts/run_sklearn_tests.sh cpu
     env:
       SKLEARNEX_PREVIEW: "YES"
-    displayName: 'Sklearn testing [preview]'
+    displayName: "Sklearn testing [preview]"
     condition: succeededOrFailed()
