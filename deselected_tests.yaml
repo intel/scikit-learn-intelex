@@ -32,10 +32,19 @@ deselected_tests:
   # test for KMeans FutureWarning is not removed from sklearn tests suit yet
   - cluster/tests/test_k_means.py::test_change_n_init_future_warning[KMeans-10] ==1.4.dev0
 
-  # sklearn doesn't expect KMeans, Lasso and ElasticNet to support n_jobs
+  # sklearn doesn't expect some estimators to support n_jobs
   - tests/test_common.py::test_check_param_validation[KMeans()]
   - tests/test_common.py::test_check_param_validation[Lasso()]
   - tests/test_common.py::test_check_param_validation[ElasticNet()]
+  - test_estimators[PCA()-check_no_attributes_set_in_init]
+  - test_estimators[KMeans()-check_no_attributes_set_in_init]
+  - test_estimators[Lasso()-check_no_attributes_set_in_init]
+  - test_estimators[Ridge()-check_no_attributes_set_in_init]
+  - test_estimators[ElasticNet()-check_no_attributes_set_in_init]
+  - test_estimators[NuSVC()-check_no_attributes_set_in_init]
+  - test_estimators[NuSVR()-check_no_attributes_set_in_init]
+  - test_estimators[SVC()-check_no_attributes_set_in_init]
+  - test_estimators[SVR()-check_no_attributes_set_in_init]
 
   # Non-critical, but there are significant numerical differences in doctest results
   - pipeline.py::sklearn.pipeline.FeatureUnion
