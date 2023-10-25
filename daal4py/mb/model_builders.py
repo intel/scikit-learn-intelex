@@ -224,7 +224,7 @@ class GBTDAALBaseModel:
                     # SHAP values requested, but not supported by this version
                     raise TypeError(
                         f"{'pred_contribs' if pred_contribs else 'pred_interactions'} not supported by this version of daalp4y"
-                    )
+                    ) from e
             else:
                 # unknown type error
                 raise
