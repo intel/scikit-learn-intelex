@@ -276,7 +276,7 @@ gen_examples = [
         "model_builders_xgboost_shap",
         None,
         None,
-        (2023, "P", 1),
+        (2024, "P", 1),
         ["xgboost"],
     ),
     ("model_builders_catboost", None, None, (2021, "P", 4), ["catboost"]),
