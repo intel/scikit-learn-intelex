@@ -25,7 +25,7 @@ from sklearn.model_selection import train_test_split
 import daal4py as d4p
 
 
-def main():
+def main(*ars, **kwargs):
     # create data
     X, y = make_regression(n_samples=10000, n_features=10, random_state=42)
     X_train, X_test, y_train, _ = train_test_split(X, y, random_state=42)
