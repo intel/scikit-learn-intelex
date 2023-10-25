@@ -214,7 +214,30 @@ class GBTDAALBaseModel:
                 ).format(type(self).__name__)
             )
 
-        # Prediction
+        try:
+            return self._predict_regression_with_results_to_compute(
+                X, fptype, pred_contribs, pred_interactions
+            )
+        except TypeError as e:
+            if "unexpected keyword argument 'resultsToCompute'" in str(e):
+                if pred_contribs or pred_interactions:
+                    # SHAP values requested, but not supported by this version
+                    raise TypeError(
+                        f"{'pred_contribs' if pred_contribs else 'pred_interactions'} not supported by this version of daalp4y"
+                    )
+            else:
+                # unknown type error
+                raise
+
+        # fallback to calculation without `resultsToCompute`
+        predict_algo = d4p.gbt_regression_prediction(fptype=fptype)
+        predict_result = predict_algo.compute(X, self.daal_model_)
+        return predict_result.prediction.ravel()
+
+    def _predict_regression_with_results_to_compute(
+        self, X, fptype, pred_contribs=False, pred_interactions=False
+    ):
+        """Assume daal4py supports the resultsToCompute kwarg"""
         resultsToCompute = ""
         if pred_contribs:
             resultsToCompute = "shapContributions"
