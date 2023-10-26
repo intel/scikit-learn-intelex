@@ -85,6 +85,7 @@ class BaseForest(ABC):
                 multi_output=False,
                 accept_sparse=False,
                 dtype=[np.float64, np.float32],
+                force_all_finite=False,
             )
         else:
             X, y = check_X_y(
@@ -93,6 +94,7 @@ class BaseForest(ABC):
                 accept_sparse=False,
                 dtype=[np.float64, np.float32],
                 multi_output=False,
+                force_all_finite=False,
             )
 
         if sample_weight is not None:
@@ -287,6 +289,7 @@ class BaseForest(ABC):
                 ensure_2d=False,
                 dtype=dtype,
                 order="C",
+                force_all_finite=False,
             )
             if sample_weight.ndim != 1:
                 raise ValueError("Sample weights must be 1D array or scalar")
@@ -406,6 +409,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
     # significantly at some point then this may need to be versioned.
 
     _err = "out_of_bag_error_accuracy|out_of_bag_error_decision_function"
+    _get_tree_state = staticmethod(get_tree_state_cls)
 
     def __init__(
         self,
@@ -457,9 +461,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         classes_ = self.classes_[0]
         for est in self._cached_estimators_:
             est.classes_ = classes_
-
-    def _get_tree_state(self, model, iTree, n_classes):
-        return get_tree_state_cls(model, iTree, n_classes)
 
     def fit(self, X, y, sample_weight=None):
         dispatch(
@@ -550,8 +551,8 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                     force_all_finite=False,
                 )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
-                y = check_array(y, ensure_2d=False, dtype=X.dtype)
+                X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
+                y = check_array(y, ensure_2d=False, dtype=X.dtype, force_all_finite=False)
 
             if y.ndim == 2 and y.shape[1] == 1:
                 warnings.warn(
@@ -775,7 +776,9 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(
-            X, dtype=[np.float64, np.float32]
+            X,
+            dtype=[np.float64, np.float32],
+            force_all_finite=False,
         )  # Warning, order of dtype matters
         check_is_fitted(self, "_onedal_estimator")
 
@@ -786,7 +789,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
-        X = check_array(X, dtype=[np.float64, np.float32])
+        X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("0.23"):
@@ -798,6 +801,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
 class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     _err = "out_of_bag_error_r2|out_of_bag_error_prediction"
+    _get_tree_state = staticmethod(get_tree_state_reg)
 
     def __init__(
         self,
@@ -841,9 +845,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         if self._onedal_factory is None:
             raise TypeError(f" oneDAL estimator has not been set.")
-
-    def _get_tree_state(self, model, iTree, n_classes):
-        return get_tree_state_reg(model, iTree, n_classes)
 
     def _onedal_fit_ready(self, patching_status, X, y, sample_weight):
         if sp.issparse(y):
@@ -915,11 +916,11 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                     multi_output=True,
                     accept_sparse=True,
                     dtype=[np.float64, np.float32],
-                    force_all_finite=not sklearn_check_version("1.4"),
+                    force_all_finite=False,
                 )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
-                y = check_array(y, ensure_2d=False, dtype=X.dtype)
+                X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
+                y = check_array(y, ensure_2d=False, dtype=X.dtype, force_all_finite=False)
 
             if y.ndim == 2 and y.shape[1] == 1:
                 warnings.warn(
@@ -1082,7 +1083,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
     def _onedal_predict(self, X, queue=None):
         X = check_array(
-            X, dtype=[np.float64, np.float32]
+            X, dtype=[np.float64, np.float32], force_all_finite=False
         )  # Warning, order of dtype matters
         check_is_fitted(self, "_onedal_estimator")
 
