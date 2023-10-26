@@ -31,6 +31,9 @@ from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 if sklearn_check_version("1.3"):
     from sklearn.base import _fit_context
 
+if sklearn_check_version("1.1"):
+    from sklearn.utils import check_scalar
+
 if sklearn_check_version("0.22"):
     from sklearn.decomposition._pca import PCA as PCA_original
 else:
@@ -387,6 +390,16 @@ class PCA(PCA_original):
             self : object
                 Returns the instance itself.
             """
+            if sklearn_check_version("1.1"):
+                check_scalar(
+                    self.n_oversamples,
+                    "n_oversamples",
+                    min_val=1,
+                    target_type=numbers.Integral,
+                )
+            elif sklearn_check_version("1.2"):
+                self._validate_params()
+
             self._fit(X)
             return self
 
