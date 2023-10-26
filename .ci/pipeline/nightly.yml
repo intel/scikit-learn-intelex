@@ -21,6 +21,7 @@ variables:
   PYTHON: 'python'
   ARGS: '1'
   SELECTED_TESTS: 'all'
+  SHELLOPTS: 'errexit:pipefail'
 
 jobs:
 - job: Coverity
