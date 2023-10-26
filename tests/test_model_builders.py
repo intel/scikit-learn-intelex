@@ -16,16 +16,8 @@
 
 import unittest
 
-import catboost as cb
 import lightgbm as lgbm
 import numpy as np
-
-try:
-    import shap
-
-    shap_available = True
-except ImportError:
-    shap_available = False
 import xgboost as xgb
 from sklearn.datasets import (
     load_breast_cancer,
@@ -39,12 +31,28 @@ from sklearn.model_selection import train_test_split
 import daal4py as d4p
 from daal4py.sklearn._utils import daal_check_version
 
+try:
+    import catboost as cb
+
+    cb_available = True
+except ImportError:
+    cb_available = False
+
+try:
+    import shap
+
+    shap_available = True
+except ImportError:
+    shap_available = False
+
+
 shap_required_version = (2024, "P", 1)
-shap_not_supported = not daal_check_version(shap_required_version)
+shap_supported = daal_check_version(shap_required_version)
 shap_not_supported_str = (
     f"SHAP value calculation only supported for version {shap_required_version} or later"
 )
-shap_unavailable_str = f"SHAP Python package not available"
+shap_unavailable_str = "SHAP Python package not available"
+cb_unavailable_str = "CatBoost not available"
 
 
 class LogRegModelBuilder(unittest.TestCase):
@@ -117,7 +125,7 @@ class LogRegModelBuilder(unittest.TestCase):
         self.assertTrue(np.allclose(pred_daal, pred_sklearn))
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostRegressionModelBuilder(unittest.TestCase):
     @classmethod
     def setUpClass(cls, base_score=0.5):
@@ -195,7 +203,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
 
 
 # duplicate all tests for bae_score=0.0
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostRegressionModelBuilder_base_score0(XGBoostRegressionModelBuilder):
     @classmethod
     def setUpClass(cls):
@@ -203,14 +211,14 @@ class XGBoostRegressionModelBuilder_base_score0(XGBoostRegressionModelBuilder):
 
 
 # duplicate all tests for bae_score=100
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostRegressionModelBuilder_base_score100(XGBoostRegressionModelBuilder):
     @classmethod
     def setUpClass(cls):
         XGBoostRegressionModelBuilder.setUpClass(100)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder(unittest.TestCase):
     @classmethod
     def setUpClass(cls, base_score=0.5, n_classes=2, objective="binary:logistic"):
@@ -278,7 +286,7 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
 
 
 # duplicate all tests for bae_score=0.3
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelBuilder):
     @classmethod
     def setUpClass(cls):
@@ -286,21 +294,21 @@ class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelB
 
 
 # duplicate all tests for bae_score=0.7
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_base_score07(XGBoostClassificationModelBuilder):
     @classmethod
     def setUpClass(cls):
         XGBoostClassificationModelBuilder.setUpClass(base_score=0.7)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_n_classes5(XGBoostClassificationModelBuilder):
     @classmethod
     def setUpClass(cls):
         XGBoostClassificationModelBuilder.setUpClass(n_classes=5)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_n_classes5_base_score03(
     XGBoostClassificationModelBuilder
 ):
@@ -309,7 +317,7 @@ class XGBoostClassificationModelBuilder_n_classes5_base_score03(
         XGBoostClassificationModelBuilder.setUpClass(n_classes=5, base_score=0.3)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_objective_logitraw(
     XGBoostClassificationModelBuilder
 ):
@@ -338,7 +346,7 @@ class XGBoostClassificationModelBuilder_objective_logitraw(
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class LightGBMRegressionModelBuilder(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -418,7 +426,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class LightGBMClassificationModelBuilder(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -480,7 +488,7 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
             m.predict(self.X_nan, pred_contribs=True)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -550,7 +558,8 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
             m.predict(self.X_nan, pred_contribs=True)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(cb_available, reason=cb_unavailable_str)
 class CatBoostRegressionModelBuilder(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -599,7 +608,8 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
             d4p.mb.convert_model(self.cb_model)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(cb_available, reason=cb_unavailable_str)
 class CatBoostClassificationModelBuilder(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -650,7 +660,7 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
             d4p.mb.convert_model(self.cb_model)
 
 
-@unittest.skipIf(shap_not_supported, reason=shap_not_supported_str)
+@unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostEarlyStopping(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

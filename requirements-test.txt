@@ -9,5 +9,5 @@ pandas==2.1.1 ; python_version >= '3.9'
 xgboost==1.7.6; python_version <= '3.9'
 xgboost==2.0.0; python_version >= '3.10'
 lightgbm==4.1.0
-catboost==1.2.2
-shap==0.42.1; python_version < '3.12' # FIXME: some dependencies do not yet support 3.12
+catboost==1.2.2; python_version <= '3.11'
+shap==0.42.1; python_version <= '3.11'
