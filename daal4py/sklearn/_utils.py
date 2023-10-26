@@ -286,11 +286,10 @@ def support_init_with_n_jobs(init_function):
             parameters_doc_tail = "\n    Attributes"
             n_jobs_doc = """
     n_jobs : int, default=None
-        The number of jobs to run in parallel. :meth:`fit`, :meth:`predict`,
-        :meth:`decision_path` and :meth:`apply` are all parallelized over the
-        trees. ``None`` means 1 unless in a :obj:`joblib.parallel_backend`
-        context. ``-1`` means using all processors. See :term:`Glossary
-        <n_jobs>` for more details.
+        The number of jobs to use in parallel for the computation.
+        ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
+        ``-1`` means using all processors.
+        See :term:`Glossary <n_jobs>` for more details.
 """
             self.__doc__ = self.__doc__.replace(
                 parameters_doc_tail, n_jobs_doc + parameters_doc_tail
