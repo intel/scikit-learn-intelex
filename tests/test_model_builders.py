@@ -19,7 +19,13 @@ import unittest
 import catboost as cb
 import lightgbm as lgbm
 import numpy as np
-import shap
+
+try:
+    import shap
+
+    shap_available = True
+except ImportError:
+    shap_available = False
 import xgboost as xgb
 from sklearn.datasets import (
     load_breast_cancer,
@@ -38,6 +44,7 @@ shap_not_supported = not daal_check_version(shap_required_version)
 shap_not_supported_str = (
     f"SHAP value calculation only supported for version {shap_required_version} or later"
 )
+shap_unavailable_str = f"SHAP Python package not available"
 
 
 class LogRegModelBuilder(unittest.TestCase):
@@ -373,6 +380,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         lgbm_pred = self.lgbm_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=5e-6)
 
+    @unittest.skipUnless(shap_available, reason=shap_unavailable_str)
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_test, pred_contribs=True)
@@ -386,6 +394,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred[:, :-1], shap_pred, rtol=1e-6)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
+    @unittest.skipUnless(shap_available, reason=shap_unavailable_str)
     def test_model_predict_shap_interactions(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         # SHAP Python package drops bias terms from the returned matrix, therefore we drop the final row & column
