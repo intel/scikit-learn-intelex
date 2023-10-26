@@ -14,13 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-# sklearnex doesn't have interface for threading configuration and not following
-# scikit-learn n_jobs yet. Thus it's requered to use daal4py package to set this.
-# nthreads parameter define number of threads used by sklearnex.
-# Without this code sklearnex would be using all system cores
-import daal4py
-
-daal4py.daalinit(nthreads=2)
+# sklearnex support `n_jobs` parameter for all patched estimators
+# even if original sklearn estimator doesn't
 
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn
@@ -39,15 +34,23 @@ X, labels_true = make_blobs(
 
 X = StandardScaler().fit_transform(X)
 
-from sklearn import metrics
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 
-db = DBSCAN(eps=0.3, min_samples=10).fit(X)
+# DBSCAN originally supports `n_jobs`
+db = DBSCAN(eps=0.3, min_samples=10, n_jobs=2).fit(X)
 labels = db.labels_
 
 # Number of clusters in labels, ignoring noise if present.
 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 n_noise_ = list(labels).count(-1)
 
-print("Estimated number of clusters: %d" % n_clusters_)
-print("Estimated number of noise points: %d" % n_noise_)
+print("DBSCAN - Estimated number of clusters: %d" % n_clusters_)
+print("DBSCAN - Estimated number of noise points: %d" % n_noise_)
+
+# KMeans doesn't originally support `n_jobs`
+km = KMeans(n_clusters=2, init="k-means++", n_init=5, n_jobs=2).fit(X)
+inertia_ = km.inertia_
+n_iter_ = km.n_iter_
+
+print("KMeans - Estimated number of iterations: %d" % n_iter_)
+print("KMeans - Estimated inertia: %f" % inertia_)
