@@ -14,4 +14,4 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn.linear_model import LinearRegression
+from sklearnex.preview.linear_model import LinearRegression
