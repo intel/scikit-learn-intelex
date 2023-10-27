@@ -13,17 +13,16 @@ requirements-doc.txt          @maria-Petrova @napetrov @aepanchi @Alexsandruss
 onedal/                       @Alexsandruss @samir-nasibli @KulikovNikita
 sklearnex/                    @Alexsandruss @samir-nasibli @KulikovNikita
 
-# Examples 
+# Examples
 examples/                     @maria-Petrova @Alexsandruss @samir-nasibli @napetrov
 
 # Dependencies
 setup.py                      @napetrov @Alexsandruss @samir-nasibli
 requirements*                 @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
-conda-recipe/                 @napetrov @Alexsandruss 
+conda-recipe/                 @napetrov @Alexsandruss
 
 # Model builders
 *model_builders*              @razdoburdin @ahuber21 @avolkov-intel
-requirements-test-optional.txt  @razdoburdin @ahuber21 @avolkov-intel
 
 # Forests
 *ensemble*                    @ahuber21 @icfaust

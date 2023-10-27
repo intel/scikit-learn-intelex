@@ -6,3 +6,8 @@ scikit-learn==1.2.2 ; python_version == '3.8'
 scikit-learn==1.3.1 ; python_version >= '3.9'
 pandas==2.0.1 ; python_version == '3.8'
 pandas==2.1.1 ; python_version >= '3.9'
+xgboost==1.7.6; python_version <= '3.9'
+xgboost==2.0.0; python_version >= '3.10'
+lightgbm==4.1.0
+catboost==1.2.2; python_version <= '3.11' # FIXME: Add as soon as 3.12 is supported
+shap==0.42.1; python_version <= '3.11' # FIXME: Add as soon as 3.12 is supported
