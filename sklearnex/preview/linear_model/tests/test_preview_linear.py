@@ -37,6 +37,11 @@ def test_sklearnex_import_linear(dataframe, queue):
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg = LinearRegression().fit(X, y)
+    if daal_check_version((2023, "P", 100)):
+        assert "sklearnex" in linreg.__module__
+        assert hasattr(linreg, "_onedal_estimator")
+    else:
+        assert "sklearnex" in linreg.__module__
     assert linreg.n_features_in_ == 2
     assert_allclose(_as_numpy(linreg.intercept_), 3.0)
     assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0])
