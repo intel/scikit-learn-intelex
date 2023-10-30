@@ -39,7 +39,6 @@ from sklearnex.preview.ensemble import (
 from sklearnex.preview.ensemble import (
     RandomForestRegressor as PreviewRandomForestRegressor,
 )
-from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
 from sklearnex.utils import _assert_all_finite
 
 
@@ -109,7 +108,6 @@ BANNED_ESTIMATORS = (
 )
 estimators = [
     PreviewPCA,
-    PreviewLinearRegression,
     PreviewRandomForestClassifier,
     PreviewRandomForestRegressor,
     PreviewExtraTreesClassifier,
