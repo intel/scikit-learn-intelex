@@ -29,7 +29,7 @@ from onedal.tests.utils._dataframes_support import (
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import_linear():
+def test_sklearnex_import_linear(dataframe, queue):
     from sklearnex.linear_model import LinearRegression
 
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
