@@ -14,8 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
-from abc import ABC
 import logging
+from abc import ABC
 
 from daal4py.sklearn._utils import daal_check_version
 
