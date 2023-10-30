@@ -368,6 +368,6 @@ else:
     from daal4py.sklearn.linear_model import LinearRegression
 
     logging.warning(
-        "Preview LinearRegression requires oneDAL version >= 2023.1 "
+        "Sklearnex LinearRegression requires oneDAL version >= 2023.1 "
         "but it was not found"
     )

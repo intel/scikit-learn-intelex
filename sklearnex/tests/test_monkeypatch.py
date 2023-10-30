@@ -177,7 +177,7 @@ def test_preview_namespace():
     assert "sklearnex.preview" in rfc.__module__
 
     if daal_check_version((2023, "P", 100)):
-        assert "sklearnex.preview" in lr.__module__
+        assert "sklearnex" in lr.__module__
     else:
         assert "daal4py" in lr.__module__
 
@@ -199,7 +199,10 @@ def test_preview_namespace():
     assert not sklearnex.dispatcher._is_preview_enabled()
 
     lr, pca, dbscan, svc, rfc = get_estimators()
-    assert "daal4py" in lr.__module__
+    if daal_check_version((2023, "P", 100)):
+        assert "sklearnex" in lr.__module__
+    else:
+        assert "daal4py" in lr.__module__
     assert "daal4py" in pca.__module__
     assert "daal4py" in rfc.__module__
     assert "sklearnex" in dbscan.__module__

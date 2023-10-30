@@ -144,21 +144,6 @@ def get_patch_map():
             mapping.pop("pca")
             mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
 
-            # Linear Regression
-            mapping.pop("linear")
-            mapping.pop("linearregression")
-            mapping["linear"] = [
-                [
-                    (
-                        linear_model_module,
-                        "LinearRegression",
-                        LinearRegression_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["linearregression"] = mapping["linear"]
-
             # KMeans
             mapping.pop("kmeans")
             mapping["kmeans"] = [
@@ -183,6 +168,21 @@ def get_patch_map():
         mapping["svc"] = [[(svm_module, "SVC", SVC_sklearnex), None]]
         mapping["nusvr"] = [[(svm_module, "NuSVR", NuSVR_sklearnex), None]]
         mapping["nusvc"] = [[(svm_module, "NuSVC", NuSVC_sklearnex), None]]
+
+        # Linear Regression
+        mapping.pop("linear")
+        mapping.pop("linearregression")
+        mapping["linear"] = [
+            [
+                (
+                    linear_model_module,
+                    "LinearRegression",
+                    LinearRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["linearregression"] = mapping["linear"]
 
         # kNN
         mapping.pop("knn_classifier")
