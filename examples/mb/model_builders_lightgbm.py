@@ -16,7 +16,10 @@
 
 # daal4py Gradient Boosting Classification model creation from LightGBM example
 
+import sys
+from functools import wraps
 from pathlib import Path
+from time import time
 
 import lightgbm as lgb
 import numpy as np
@@ -27,6 +30,17 @@ import daal4py as d4p
 
 def pd_read_csv(f, c=None, t=np.float64):
     return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+
+
+def timeit(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time()
+        retval = func(*args, **kwargs)
+        print(f"{func.__name__}(...) took {time() - t:.2f} s", file=sys.stderr)
+        return retval
+
+    return wrapper
 
 
 def main(readcsv=pd_read_csv):
@@ -41,7 +55,7 @@ def main(readcsv=pd_read_csv):
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
     # Datasets creation
-    lgb_train = lgb.Dataset(
+    lgb_train = timeit(lgb.Dataset)(
         X_train, np.array(y_train).reshape(X_train.shape[0]), free_raw_data=False
     )
 
@@ -61,7 +75,7 @@ def main(readcsv=pd_read_csv):
     }
 
     # Training
-    lgb_model = lgb.train(
+    lgb_model = timeit(lgb.train)(
         params, lgb_train, valid_sets=lgb_train, callbacks=[lgb.log_evaluation(0)]
     )
 
@@ -70,10 +84,10 @@ def main(readcsv=pd_read_csv):
     lgb_errors_count = np.count_nonzero(lgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = d4p.mb.convert_model(lgb_model)
+    daal_model = timeit(d4p.mb.convert_model)(lgb_model)
 
     # daal4py prediction
-    daal_prediction = daal_model.predict(X_test)
+    daal_prediction = timeit(daal_model.predict)(X_test)
     daal_errors_count = np.count_nonzero(daal_prediction - np.ravel(y_test))
     assert np.absolute(lgb_errors_count - daal_errors_count) == 0
 
