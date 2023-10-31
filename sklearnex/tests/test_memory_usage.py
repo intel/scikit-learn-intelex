@@ -109,7 +109,6 @@ BANNED_ESTIMATORS = (
 )
 estimators = [
     PreviewPCA,
-    LinearRegression,
     PreviewRandomForestClassifier,
     PreviewRandomForestRegressor,
     PreviewExtraTreesClassifier,
