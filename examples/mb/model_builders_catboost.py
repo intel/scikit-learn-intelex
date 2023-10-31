@@ -16,6 +16,8 @@
 
 # daal4py Gradient Bossting Classification model creation from Catboost example
 
+from pathlib import Path
+
 import catboost as cb
 import numpy as np
 import pandas as pd
@@ -28,9 +30,9 @@ def pd_read_csv(f, c=None, t=np.float64):
 
 
 def main(readcsv=pd_read_csv):
-    # Path to data
-    train_file = "./data/batch/df_classification_train.csv"
-    test_file = "./data/batch/df_classification_test.csv"
+    data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
+    train_file = data_path / "df_classification_train.csv"
+    test_file = data_path / "df_classification_test.csv"
 
     # Data reading
     X_train = readcsv(train_file, range(3), t=np.float32)
