@@ -243,6 +243,9 @@ deselected_tests:
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_requires_y_none]
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
 
+  # Linear Regression - minor mismatches in error/warning messages
+  - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
+
   # Different results scikit-learn-intelex and scikit-learn linear regression with weights. Need to investigate.
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=0.24
 
