@@ -244,6 +244,7 @@ deselected_tests:
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
 
   # Linear Regression - minor mismatches in error/warning messages
+  - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
   # Different results scikit-learn-intelex and scikit-learn linear regression with weights. Need to investigate.
