@@ -28,8 +28,8 @@ import pandas as pd
 import daal4py as d4p
 
 
-def pd_read_csv(f, c=None, t=np.float64):
-    return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+def pd_read_csv(f, c=None, t=np.float64, **kwargs):
+    return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t, **kwargs)
 
 
 def timeit(func):
