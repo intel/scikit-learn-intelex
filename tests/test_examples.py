@@ -63,7 +63,8 @@ def check_libraries(rule):
 
 
 # function reading file and returning numpy array
-def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
+def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64, **kwargs):
+    n = kwargs.get("nrows") or n
     if s == 0 and n == np.iinfo(np.int64).max:
         return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
     a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n, dtype=t)
@@ -75,15 +76,15 @@ def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
 
 
 # function reading file and returning pandas DataFrame
-def pd_read_csv(f, c=None, s=0, n=None, t=np.float64, **kwargs):
+def pd_read_csv(f, c=None, s=0, t=np.float64, **kwargs):
     return pd.read_csv(
-        f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t, **kwargs
+        f, usecols=c, delimiter=",", header=None, skiprows=s, dtype=t, **kwargs
     )
 
 
 # function reading file and returning scipy.sparse.csr_matrix
-def csr_read_csv(f, c=None, s=0, n=None, t=np.float64):
-    return csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
+def csr_read_csv(f, c=None, s=0, t=np.float64):
+    return csr_matrix(pd_read_csv(f, c, s=s, t=t))
 
 
 def add_test(cls, e, f=None, attr=None, ver=(0, 0), req_libs=[]):
