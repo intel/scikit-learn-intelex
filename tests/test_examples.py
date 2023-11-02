@@ -75,9 +75,9 @@ def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
 
 
 # function reading file and returning pandas DataFrame
-def pd_read_csv(f, c=None, s=0, n=None, t=np.float64):
+def pd_read_csv(f, c=None, s=0, n=None, t=np.float64, **kwargs):
     return pd.read_csv(
-        f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
+        f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t, **kwargs
     )
 
 
