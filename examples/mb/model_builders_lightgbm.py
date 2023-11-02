@@ -43,14 +43,14 @@ def timeit(func):
     return wrapper
 
 
-def main(readcsv=pd_read_csv):
+def main(readcsv=pd_read_csv, nrows=5_000):
     data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
     train_file = data_path / "df_classification_train.csv"
     test_file = data_path / "df_classification_test.csv"
 
     # Data reading
-    X_train = readcsv(train_file, range(3), t=np.float32)
-    y_train = readcsv(train_file, range(3, 4), t=np.float32)
+    X_train = readcsv(train_file, range(3), t=np.float32, nrows=nrows)
+    y_train = readcsv(train_file, range(3, 4), t=np.float32, nrows=nrows)
     X_test = readcsv(test_file, range(3), t=np.float32)
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
@@ -75,7 +75,9 @@ def main(readcsv=pd_read_csv):
     }
 
     # Training
-    lgb_model = timeit(lgb.train)(params, lgb_train)
+    lgb_model = timeit(lgb.train)(
+        params, lgb_train, valid_sets=lgb_train, callbacks=[lgb.log_evaluation(0)]
+    )
 
     # LightGBM prediction
     lgb_prediction = np.argmax(lgb_model.predict(X_test), axis=1)
@@ -105,7 +107,7 @@ if __name__ == "__main__":
         daal_prediction,
         daal_errors_count,
         y_test,
-    ) = main()
+    ) = main(nrows=None)
     print("\nLightGBM prediction results (first 10 rows):\n", lgb_prediction[0:10])
     print("\ndaal4py prediction results (first 10 rows):\n", daal_prediction[0:10])
     print("\nGround truth (first 10 rows):\n", y_test[0:10])
