@@ -23,7 +23,8 @@ import daal4py as d4p
 
 def main(*args, **kwargs):
     infiles = [
-        Path(__file__).parent / "data" "distributed" / f"svd_{i}.csv" for i in range(1, 5)
+        Path(__file__).parent / "data" / "distributed" / f"svd_{i}.csv"
+        for i in range(1, 5)
     ]
 
     # configure a SVD object
