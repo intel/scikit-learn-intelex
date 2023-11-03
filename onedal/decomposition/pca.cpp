@@ -70,7 +70,9 @@ void init_model(py::module_& m) {
                        [](const py::bytes& bytes) {
                            return deserialize<model_t>(bytes);
                        }))
-                   .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t);
+                   .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t)
+                   .DEF_ONEDAL_PY_PROPERTY(means, model_t)
+                   .DEF_ONEDAL_PY_PROPERTY(eigenvalues, model_t);
 }
 
 template <typename Task>

@@ -25,11 +25,17 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 
 class PCA:
     def __init__(
-        self, n_components=None, is_deterministic=True, method="precomputed", copy=True
+        self,
+        n_components=None,
+        is_deterministic=True,
+        method="precomputed",
+        copy=True,
+        whiten = False,
     ):
         self.n_components = n_components
         self.method = method
         self.is_deterministic = is_deterministic
+        self.whiten = whiten
 
     def get_onedal_params(self, data):
         return {
@@ -89,6 +95,9 @@ class PCA:
     def _create_model(self):
         m = _backend.decomposition.dim_reduction.model()
         m.eigenvectors = to_table(self.components_)
+        m.means = to_table(self.mean_)
+        if self.whiten:
+            m.eigenvalues = to_table(self.explained_variance_)
         self._onedal_model = m
         return m
 

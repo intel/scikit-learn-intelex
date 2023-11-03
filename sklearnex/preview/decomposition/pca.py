@@ -239,6 +239,7 @@ class PCA(sklearn_PCA):
             "n_components": onedal_n_components,
             "is_deterministic": True,
             "method": "precomputed",
+            "whiten": self.whiten,
         }
         self._onedal_estimator = onedal_PCA(**onedal_params)
         self._onedal_estimator.fit(X, queue=queue)
@@ -271,8 +272,6 @@ class PCA(sklearn_PCA):
                     f"{self.n_features_} features as input"
                 )
 
-        # Mean center
-        X_centered = X - self.mean_
         return dispatch(
             self,
             "transform",
@@ -280,18 +279,15 @@ class PCA(sklearn_PCA):
                 "onedal": self.__class__._onedal_predict,
                 "sklearn": sklearn_PCA.transform,
             },
-            X_centered,
+            X,
         )
 
     def transform(self, X):
         check_is_fitted(self)
         if hasattr(self, "_onedal_estimator"):
-            X_new = self._onedal_transform(X)[:, : self.n_components_]
-            if self.whiten:
-                X_new /= np.sqrt(self.explained_variance_)
+            return self._onedal_transform(X)
         else:
             return sklearn_PCA.transform(self, X)
-        return X_new
 
     def fit_transform(self, X, y=None):
         """Fit the model with X and apply the dimensionality reduction on X.
@@ -312,10 +308,7 @@ class PCA(sklearn_PCA):
         else:
             self.fit(X)
             if hasattr(self, "_onedal_estimator"):
-                X_new = self._onedal_transform(X)[:, : self.n_components_]
-                if self.whiten:
-                    X_new /= np.sqrt(self.explained_variance_)
-                return X_new
+               return self._onedal_transform(X)
             else:
                 return sklearn_PCA.transform(self, X)
 
