@@ -17,7 +17,6 @@
 # daal4py Decision Forest Classification Tree Traversal example
 
 import math
-from pathlib import Path
 
 from decision_forest_classification_default_dense import main as df_classification
 

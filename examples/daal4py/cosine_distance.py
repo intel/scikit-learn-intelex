@@ -17,7 +17,6 @@
 # daal4py cosine distance example for shared memory systems
 
 import os
-from pathlib import Path
 
 import numpy as np
 

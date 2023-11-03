@@ -16,7 +16,6 @@
 
 # daal4py normal distribution example for shared memory systems
 
-from pathlib import Path
 
 import numpy as np
 

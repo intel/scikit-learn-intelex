@@ -17,7 +17,6 @@
 # daal4py Gradient Boosting Classification Tree Traversal example
 
 import math
-from pathlib import Path
 
 from gradient_boosted_classification import main as gbt_classification
 

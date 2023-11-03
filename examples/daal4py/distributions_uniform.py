@@ -16,7 +16,6 @@
 
 # daal4py uniform distribution example for shared memory systems
 
-from pathlib import Path
 
 import numpy as np
 
