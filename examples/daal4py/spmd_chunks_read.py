@@ -16,6 +16,8 @@
 
 # Example showing reading of file in few chunks, this reader is used in SPMD examples
 
+from pathlib import Path
+
 import numpy as np
 
 # let's try to use pandas' fast csv reader
