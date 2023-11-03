@@ -43,7 +43,7 @@ def timeit(func):
     return wrapper
 
 
-def main(readcsv=pd_read_csv, nrows=5_000):
+def main(readcsv=pd_read_csv, nrows=1_000):
     data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
     train_file = data_path / "df_classification_train.csv"
     test_file = data_path / "df_classification_test.csv"
