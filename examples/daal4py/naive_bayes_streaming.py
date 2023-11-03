@@ -16,6 +16,8 @@
 
 # daal4py Naive Bayes Classification example for streaming on shared memory systems
 
+from pathlib import Path
+
 from stream import EndOfFileError, read_csv
 
 import daal4py as d4p
@@ -23,8 +25,9 @@ import daal4py as d4p
 
 def main(readcsv=read_csv, *args, **kwargs):
     # input data file
-    infile = "./data/batch/naivebayes_train_dense.csv"
-    testfile = "./data/batch/naivebayes_test_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "naivebayes_train_dense.csv"
+    testfile = data_path / "naivebayes_test_dense.csv"
 
     # Configure a training object (20 classes)
     train_algo = d4p.multinomial_naive_bayes_training(20, streaming=True, method=method)

@@ -17,6 +17,7 @@
 # daal4py KD-Tree KNN example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 

@@ -16,6 +16,8 @@
 
 # daal4py covariance example for streaming on shared memory systems
 
+from pathlib import Path
+
 # let's use a generator for getting stream from file (defined in stream.py)
 from stream import read_next
 
@@ -23,7 +25,8 @@ import daal4py as d4p
 
 
 def main(readcsv=None, *args, **kwargs):
-    infile = "./data/batch/covcormoments_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "covcormoments_dense.csv"
 
     # configure a covariance object
     algo = d4p.covariance(streaming=True)

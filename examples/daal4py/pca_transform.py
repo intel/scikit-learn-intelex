@@ -16,6 +16,8 @@
 
 # daal4py PCA example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p

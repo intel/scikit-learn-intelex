@@ -18,6 +18,8 @@
 # run like this:
 #    mpirun -n 4 python ./pca_spmd.py
 
+from pathlib import Path
+
 from numpy import allclose, loadtxt
 
 import daal4py as d4p
@@ -27,7 +29,8 @@ if __name__ == "__main__":
     d4p.daalinit()
 
     # Each process gets its own data
-    infile = "./data/distributed/pca_normalized_" + str(d4p.my_procid() + 1) + ".csv"
+    data_path = Path(__file__).parent / "data" / "distributed"
+    infile = data_path / "pca_normalized_" + str(d4p.my_procid() + 1) + ".csv"
 
     # configure a PCA object to use svd instead of default correlation
     algo = d4p.pca(method="svdDense", distributed=True)

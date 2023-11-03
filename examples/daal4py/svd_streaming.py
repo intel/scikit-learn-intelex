@@ -16,6 +16,8 @@
 
 # daal4py SVD example for streaming on shared memory systems
 
+from pathlib import Path
+
 import daal4py as d4p
 
 

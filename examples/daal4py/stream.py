@@ -17,6 +17,7 @@
 # Example showing daal4py's operation on streams using a generator
 
 import os
+from pathlib import Path
 
 import numpy as np
 

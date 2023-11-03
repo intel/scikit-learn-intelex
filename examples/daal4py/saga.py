@@ -16,6 +16,8 @@
 
 # daal4py Saga example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -34,7 +36,8 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/XM.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "XM.csv"
     # Read the data, let's have 3 independent variables
     data = readcsv(infile, range(1))
     dep_data = readcsv(infile, range(1, 2))

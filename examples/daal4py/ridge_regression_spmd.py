@@ -18,6 +18,8 @@
 # run like this:
 #    mpirun -n 4 python ./ridge_regression_spmd.py
 
+from pathlib import Path
+
 from numpy import loadtxt
 
 import daal4py as d4p

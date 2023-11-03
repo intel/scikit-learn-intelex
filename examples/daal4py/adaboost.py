@@ -16,6 +16,8 @@
 
 # daal4py Adaboost example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -34,8 +36,9 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/adaboost_train.csv"
-    testfile = "./data/batch/adaboost_test.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "adaboost_train.csv"
+    testfile = data_path / "adaboost_test.csv"
     nClasses = 2
 
     # Configure a adaboost training object

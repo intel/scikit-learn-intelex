@@ -18,6 +18,8 @@
 # run like this:
 #    mpirun -n 4 python ./low_order_moms_spmd.py
 
+from pathlib import Path
+
 # let's use a reading of file in chunks (defined in spmd_chunks_read.py)
 from spmd_chunks_read import get_chunk_params, read_csv
 
@@ -25,7 +27,8 @@ import daal4py as d4p
 
 
 def main():
-    infile = "./data/batch/covcormoments_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "covcormoments_dense.csv"
 
     # We know the number of lines in the file
     # and use this to separate data between processes

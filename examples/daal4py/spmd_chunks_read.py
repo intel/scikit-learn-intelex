@@ -49,7 +49,8 @@ def get_chunk_params(lines_count, chunks_count, chunk_number):
 
 
 if __name__ == "__main__":
-    infile = "./data/batch/covcormoments_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "covcormoments_dense.csv"
     chunks_count = 6
     print('Reading file "{}" in {} chunks'.format(infile, chunks_count))
 

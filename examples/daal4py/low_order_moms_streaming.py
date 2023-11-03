@@ -17,6 +17,8 @@
 # daal4py low order moments example for streaming on shared memory systems
 
 
+from pathlib import Path
+
 from stream import EndOfFileError, read_csv
 
 import daal4py as d4p
@@ -24,7 +26,8 @@ import daal4py as d4p
 
 def main(readcsv=read_csv, *args, **kwargs):
     # read data from file
-    file = "./data/batch/covcormoments_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    file = data_path / "covcormoments_dense.csv"
 
     # Configure a low order moments object for streaming
     algo = d4p.low_order_moments(streaming=True)

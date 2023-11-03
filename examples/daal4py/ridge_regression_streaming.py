@@ -16,14 +16,17 @@
 
 # daal4py Ridge Regression example for streaming on shared memory systems
 
+from pathlib import Path
+
 from stream import EndOfFileError, read_csv
 
 import daal4py as d4p
 
 
 def main(readcsv=read_csv, *args, **kwargs):
-    infile = "./data/batch/linear_regression_train.csv"
-    testfile = "./data/batch/linear_regression_test.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "linear_regression_train.csv"
+    testfile = data_path / "linear_regression_test.csv"
 
     # Configure a Ridge regression training object for streaming
     train_algo = d4p.ridge_regression_training(interceptFlag=True, streaming=True)

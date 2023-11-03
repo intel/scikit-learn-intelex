@@ -17,6 +17,7 @@
 # daal4py Decision Tree Regression example for shared memory systems
 
 import math
+from pathlib import Path
 
 from decision_tree_classification import main as dt_classification
 

@@ -16,6 +16,8 @@
 
 # daal4py sorting example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -34,7 +36,8 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/sorting.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "sorting.csv"
 
     # configure a sorting object
     algo = d4p.sorting()
