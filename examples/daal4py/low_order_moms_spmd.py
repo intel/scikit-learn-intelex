@@ -37,7 +37,7 @@ def main():
     )
 
     # Each process reads its chunk of the file
-    data = read_csv(infile, sr=skiprows, nr=nrows)
+    data = read_csv(infile, s=skiprows, n=nrows)
 
     # Create algorithm with distributed mode
     alg = d4p.low_order_moments(method="defaultDense", distributed=True)

@@ -38,8 +38,8 @@ def main(readcsv=read_csv, *args, **kwargs):
         # Read data in chunks
         # Let's have 10 independent, and 2 dependent variables (for each observation)
         try:
-            indep_data = readcsv(infile, range(10), lines_read, chunk_size)
-            dep_data = readcsv(infile, range(10, 12), lines_read, chunk_size)
+            indep_data = readcsv(infile, range(10), s=lines_read, n=chunk_size)
+            dep_data = readcsv(infile, range(10, 12), s=lines_read, n=chunk_size)
         except Exception as e:
             if lines_read > 0:
                 break

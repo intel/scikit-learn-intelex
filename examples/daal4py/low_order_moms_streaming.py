@@ -38,7 +38,7 @@ def main(readcsv=read_csv, *args, **kwargs):
     while True:
         # Read data in chunks
         try:
-            data = readcsv(file, range(10), lines_read, chunk_size)
+            data = readcsv(file, range(10), s=lines_read, n=chunk_size)
         except Exception as e:
             if lines_read > 0:
                 break

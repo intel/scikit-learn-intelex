@@ -23,7 +23,7 @@ from stream import read_csv
 import daal4py as d4p
 
 
-def main(readcsv=read_csv, *args, **kwargs):
+def main(readcsv=read_csv, method="defaultDense"):
     # input data file
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "naivebayes_train_dense.csv"
@@ -39,8 +39,8 @@ def main(readcsv=read_csv, *args, **kwargs):
         # Read data in chunks
         # Read data. Let's use 20 features per observation
         try:
-            data = readcsv(infile, range(20), lines_read, chunk_size)
-            labels = readcsv(infile, range(20, 21), lines_read, chunk_size)
+            data = readcsv(infile, range(20), s=lines_read, n=chunk_size)
+            labels = readcsv(infile, range(20, 21), s=lines_read, n=chunk_size)
         except Exception as e:
             if lines_read > 0:
                 break
