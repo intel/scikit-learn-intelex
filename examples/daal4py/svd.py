@@ -43,7 +43,7 @@ def main(readcsv=read_csv, method="defaultDense"):
     algo = d4p.svd()
 
     # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+    result1 = algo.compute(str(infile))
 
     # We can also load the data ourselfs and provide the numpy array
     algo = d4p.svd()

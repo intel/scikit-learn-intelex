@@ -33,7 +33,7 @@ def main():
     algo = d4p.qr(distributed=True)
 
     # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+    result1 = algo.compute(str(infile))
 
     # We can also load the data ourselfs and provide the numpy array
     data = loadtxt(infile, delimiter=",")

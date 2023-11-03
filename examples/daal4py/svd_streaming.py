@@ -30,7 +30,7 @@ def main(*args, **kwargs):
     # let's provide files directly, not a tables/arrays
     # Feed file by file
     for infile in infiles:
-        algo.compute(infile)
+        algo.compute(str(infile))
 
     # All files are done, now finalize the computation
     result = algo.finalize()

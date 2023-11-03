@@ -43,7 +43,7 @@ def main(readcsv=read_csv, method="defaultDense"):
     algo = d4p.cholesky()
 
     # let's provide a file directly, not a table/array
-    return algo.compute(infile)
+    return algo.compute(str(infile))
     # cholesky result objects provide choleskyFactor
 
 
