@@ -76,9 +76,10 @@ def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64, **kwargs
 
 
 # function reading file and returning pandas DataFrame
-def pd_read_csv(f, c=None, s=0, t=np.float64, **kwargs):
+def pd_read_csv(f, c=None, s=0, t=np.float64, n=None, **kwargs):
+    n = kwargs.get("nrows") or n
     return pd.read_csv(
-        f, usecols=c, delimiter=",", header=None, skiprows=s, dtype=t, **kwargs
+        f, usecols=c, delimiter=",", header=None, skiprows=s, dtype=t, nrows=n
     )
 
 
