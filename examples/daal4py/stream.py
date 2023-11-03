@@ -32,7 +32,7 @@ try:
     import pandas
     from pandas.errors import EmptyDataError
 
-    def read_csv(f, c, s=0, n=None, t=np.float64):
+    def read_csv(f, c=None, s=0, n=None, t=np.float64):
         try:
             return pandas.read_csv(
                 f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
@@ -42,7 +42,7 @@ try:
 
 except ImportError:
     # fall back to numpy genfromtxt
-    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
+    def read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max):
         a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
         if a.shape[0] == 0:
             raise EndOfFileError
