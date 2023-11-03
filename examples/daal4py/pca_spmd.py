@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     # Each process gets its own data
     data_path = Path(__file__).parent / "data" / "distributed"
-    infile = data_path / "pca_normalized_" + str(d4p.my_procid() + 1) + ".csv"
+    infile = data_path / f"pca_normalized_{d4p.my_procid() + 1}.csv"
 
     # configure a PCA object to use svd instead of default correlation
     algo = d4p.pca(method="svdDense", distributed=True)
