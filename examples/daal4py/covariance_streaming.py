@@ -22,7 +22,7 @@ from stream import read_next
 import daal4py as d4p
 
 
-def main(readcsv=None, method="defaultDense"):
+def main(readcsv=None, *args, **kwargs):
     infile = "./data/batch/covcormoments_dense.csv"
 
     # configure a covariance object

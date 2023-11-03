@@ -22,20 +22,29 @@ import numpy as np
 
 import daal4py as d4p
 
+
+class EndOfFileError(Exception):
+    ...
+
+
 try:
     import pandas
+    from pandas.errors import EmptyDataError
 
-    def read_csv(f, c=None, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
-        )
+    def read_csv(f, c, s=0, n=None, t=np.float64):
+        try:
+            return pandas.read_csv(
+                f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
+            )
+        except EmptyDataError as e:
+            raise EndOfFileError from e
 
-except:
+except ImportError:
     # fall back to numpy genfromtxt
-    def read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max):
+    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
         a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
         if a.shape[0] == 0:
-            raise Exception("done")
+            raise EndOfFileError
         if a.ndim == 1:
             return a[:, np.newaxis]
         return a
@@ -49,7 +58,7 @@ def read_next(file, chunksize, readcsv=read_csv):
         # if found a smaller chunk we set s to < 0 to indicate eof
         if s < 0:
             return
-        a = read_csv(file, s=s, n=chunksize)
+        a = readcsv(file, s=s, n=chunksize)
         # last chunk is usually smaller, if not,
         # numpy will print warning in next iteration
         if chunksize > a.shape[0]:

@@ -16,31 +16,12 @@
 
 # daal4py Ridge Regression example for streaming on shared memory systems
 
-import numpy as np
+from stream import EndOfFileError, read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
-        )
-
-except:
-    # fall back to numpy genfromtxt
-    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
-        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
-        if a.shape[0] == 0:
-            raise Exception("done")
-        if a.ndim == 1:
-            return a[:, np.newaxis]
-        return a
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=read_csv, *args, **kwargs):
     infile = "./data/batch/linear_regression_train.csv"
     testfile = "./data/batch/linear_regression_test.csv"
 
@@ -56,11 +37,13 @@ def main(readcsv=read_csv, method="defaultDense"):
         try:
             indep_data = readcsv(infile, range(10), lines_read, chunk_size)
             dep_data = readcsv(infile, range(10, 12), lines_read, chunk_size)
-        except:
+        except EndOfFileError:
             break
         # Now feed chunk
         train_algo.compute(indep_data, dep_data)
         lines_read += indep_data.shape[0]
+
+    assert lines_read > 0, "No training data was read - empty input file?"
 
     # All chunks are done, now finalize the computation
     train_result = train_algo.finalize()

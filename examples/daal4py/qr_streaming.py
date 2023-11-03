@@ -22,7 +22,7 @@ from stream import read_next
 import daal4py as d4p
 
 
-def main(readcsv=None, method="svdDense"):
+def main(readcsv=None, *args, **kwargs):
     infile = "./data/batch/qr.csv"
 
     # configure a QR object
