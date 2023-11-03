@@ -40,6 +40,7 @@ variables:
   MACOSX_DEPLOYMENT_TARGET: '10.15'
   PYTHON: 'python'
   ARGS: '1'
+  SHELLOPTS: 'errexit:pipefail'
 
 jobs:
 - job: Lint

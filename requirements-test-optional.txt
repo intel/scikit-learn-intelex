@@ -1,4 +1,0 @@
-xgboost==1.7.6; python_version <= '3.9'
-xgboost==2.0.0; python_version >= '3.10'
-lightgbm==4.1.0
-catboost==1.2.2; python_version <= '3.11'
