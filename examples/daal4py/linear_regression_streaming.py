@@ -18,7 +18,7 @@
 
 from pathlib import Path
 
-from stream import EndOfFileError, read_csv
+from stream import read_csv
 
 import daal4py as d4p
 
@@ -40,13 +40,14 @@ def main(readcsv=read_csv, *args, **kwargs):
         try:
             indep_data = readcsv(infile, range(10), s=lines_read, n=chunk_size)
             dep_data = readcsv(infile, range(10, 12), s=lines_read, n=chunk_size)
-        except EndOfFileError:
-            break
+        except Exception as e:
+            if lines_read > 0:
+                break
+            else:
+                raise ValueError("No training data was read - empty input file?") from e
         # Now feed chunk
         train_algo.compute(indep_data, dep_data)
         lines_read += indep_data.shape[0]
-
-    assert lines_read > 0, "No training data was read - empty input file?"
 
     # All chunks are done, now finalize the computation
     train_result = train_algo.finalize()

@@ -27,7 +27,7 @@ try:
             f, usecols=c, skiprows=sr, nrows=nr, delimiter=",", header=None, dtype=t
         )
 
-except:
+except ImportError:
     # fall back to numpy loadtxt
     def read_csv(f, c=None, sr=0, nr=np.iinfo(np.int64).max, t=np.float64):
         res = np.genfromtxt(
