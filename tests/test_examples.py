@@ -83,8 +83,8 @@ def pd_read_csv(f, c=None, s=0, t=np.float64, **kwargs):
 
 
 # function reading file and returning scipy.sparse.csr_matrix
-def csr_read_csv(f, c=None, s=0, t=np.float64):
-    return csr_matrix(pd_read_csv(f, c, s=s, t=t))
+def csr_read_csv(f, c=None, s=0, t=np.float64, n=None):
+    return csr_matrix(pd_read_csv(f, c, s=s, t=t, n=n))
 
 
 def add_test(cls, e, f=None, attr=None, ver=(0, 0), req_libs=[]):
