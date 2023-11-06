@@ -71,6 +71,7 @@ else:
 ex_log_dirs = [
     (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
     (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
+    (jp(examples_rootdir, "mb"), jp(logdir, "mb")),
     (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
