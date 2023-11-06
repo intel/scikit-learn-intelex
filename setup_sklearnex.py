@@ -85,6 +85,7 @@ with open("README.md", "r", encoding="utf8") as f:
 packages_with_tests = [
     "sklearnex",
     "sklearnex.cluster",
+    "sklearnex.covariance",
     "sklearnex.decomposition",
     "sklearnex.ensemble",
     "sklearnex.glob",

@@ -32,6 +32,7 @@ __all__ = [
     "basic_statistics",
     "cluster",
     "config_context",
+    "covariance",
     "decomposition",
     "ensemble",
     "get_config",
