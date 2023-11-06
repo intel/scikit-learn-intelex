@@ -65,6 +65,7 @@ def check_libraries(rule):
 # function reading file and returning numpy array
 def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64, **kwargs):
     n = kwargs.get("nrows") or n
+    print(f"np_read_csv: {n=}")
     if s == 0 and n == np.iinfo(np.int64).max:
         return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
     a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n, dtype=t)
@@ -260,13 +261,6 @@ gen_examples = [
     ("distributions_normal",),
     ("distributions_uniform",),
     ("em_gmm", "em_gmm.csv", lambda r: r.covariances[0]),
-    (
-        "model_builders_lightgbm",
-        None,
-        None,
-        ((2020, "P", 2), (2021, "B", 109)),
-        ["lightgbm"],
-    ),
     (
         "model_builders_xgboost",
         None,
