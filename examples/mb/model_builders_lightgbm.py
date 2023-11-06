@@ -16,10 +16,7 @@
 
 # daal4py Gradient Boosting Classification model creation from LightGBM example
 
-import sys
-from functools import wraps
 from pathlib import Path
-from time import time
 from typing import Optional
 
 import lightgbm as lgb
@@ -33,18 +30,7 @@ def pd_read_csv(f, c=None, t=np.float64, **kwargs):
     return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t, **kwargs)
 
 
-def timeit(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        t = time()
-        retval = func(*args, **kwargs)
-        print(f"{func.__name__}(...) took {time() - t:.2f} s", file=sys.stderr)
-        return retval
-
-    return wrapper
-
-
-def main(readcsv=pd_read_csv, nrows: Optional[int] = 100):
+def main(readcsv=pd_read_csv, nrows: Optional[int] = 300):
     data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
     train_file = data_path / "df_classification_train.csv"
     test_file = data_path / "df_classification_test.csv"
@@ -56,27 +42,25 @@ def main(readcsv=pd_read_csv, nrows: Optional[int] = 100):
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
     # Datasets creation
-    lgb_train = timeit(lgb.Dataset)(
+    lgb_train = lgb.Dataset(
         X_train, np.array(y_train).reshape(X_train.shape[0]), free_raw_data=False
     )
 
     # training parameters setting
     params = {
         "max_bin": 256,
-        "scale_pos_weight": 2,
-        "lambda_l2": 1,
-        "alpha": 0.9,
-        "max_depth": 6,
-        "num_leaves": 2**6,
+        "max_depth": 4,
+        "num_leaves": 48,
         "verbose": -1,
         "objective": "multiclass",
         "learning_rate": 0.3,
         "num_class": 5,
         "n_estimators": 25,
+        "min_data_in_leaf": 100,
     }
 
     # Training
-    lgb_model = timeit(lgb.train)(
+    lgb_model = lgb.train(
         params, lgb_train, valid_sets=lgb_train, callbacks=[lgb.log_evaluation(0)]
     )
 
@@ -85,10 +69,10 @@ def main(readcsv=pd_read_csv, nrows: Optional[int] = 100):
     lgb_errors_count = np.count_nonzero(lgb_prediction - np.ravel(y_test))
 
     # Conversion to daal4py
-    daal_model = timeit(d4p.mb.convert_model)(lgb_model)
+    daal_model = d4p.mb.convert_model(lgb_model)
 
     # daal4py prediction
-    daal_prediction = timeit(daal_model.predict)(X_test)
+    daal_prediction = daal_model.predict(X_test)
     daal_errors_count = np.count_nonzero(daal_prediction - np.ravel(y_test))
     assert np.absolute(lgb_errors_count - daal_errors_count) == 0
 
