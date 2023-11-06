@@ -20,6 +20,7 @@ import sys
 from functools import wraps
 from pathlib import Path
 from time import time
+from typing import Optional
 
 import lightgbm as lgb
 import numpy as np
@@ -43,7 +44,7 @@ def timeit(func):
     return wrapper
 
 
-def main(readcsv=pd_read_csv, nrows=1_000):
+def main(readcsv=pd_read_csv, nrows: Optional[int] = 100):
     data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
     train_file = data_path / "df_classification_train.csv"
     test_file = data_path / "df_classification_test.csv"
