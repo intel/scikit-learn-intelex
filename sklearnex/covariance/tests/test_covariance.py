@@ -18,6 +18,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
+
 def test_sklearnex_import_covariance():
     from sklearnex.covariance import Covariance
 

@@ -15,13 +15,14 @@
 # ===============================================================================
 
 import numpy as np
-from ..common._policy import _get_policy
 from sklearn.utils import check_array
 
+from daal4py.sklearn._utils import get_dtype, make2d
 from onedal import _backend
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
+
 
 class BaseCovariance:
     def __init__(self):
