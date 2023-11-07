@@ -17,4 +17,4 @@
 
 from .covariance import Covariance
 
-__all__ = ['Covariance']
+__all__ = ["Covariance"]

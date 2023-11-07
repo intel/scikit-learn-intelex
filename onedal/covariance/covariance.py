@@ -30,7 +30,7 @@ class BaseCovariance:
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
-    
+
     def _get_onedal_params(self, dtype=np.float32):
         return {
             "fptype": "float" if dtype == np.float32 else "double",
@@ -52,6 +52,7 @@ class BaseCovariance:
         self.location_ = from_table(result.means).ravel()
 
         return self
+
 
 class Covariance(BaseCovariance):
     def __init__(self):
