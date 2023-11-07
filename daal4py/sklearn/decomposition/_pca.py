@@ -390,15 +390,15 @@ class PCA(PCA_original):
             self : object
                 Returns the instance itself.
             """
-            if sklearn_check_version("1.1"):
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+            elif sklearn_check_version("1.1"):
                 check_scalar(
                     self.n_oversamples,
                     "n_oversamples",
                     min_val=1,
                     target_type=numbers.Integral,
                 )
-            elif sklearn_check_version("1.2"):
-                self._validate_params()
 
             self._fit(X)
             return self
