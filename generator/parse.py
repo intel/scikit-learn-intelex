@@ -283,8 +283,14 @@ class enum_parser(object):
                 ctxt.enum = False
                 return True
             regex = (
-                r"^\s*(\w+)(?:\s*=\s*((\(int\))?\w(\w|:|\s|\+)*))?"
-                + r"(\s*,)?\s*((/\*|//).*)?$"
+                # capture group for value name
+                r"^\s*(\w+)"
+                # capture group for value (different possible formats, 123, 0x1, (1 << 5), etc.)
+                + r"(?:\s*=\s*((\(int\))?(\w|:|\s|\+|\(?\d+\s*<<\s*\d+\)?)*))?"
+                # comma after the value, plus possible comments
+                + r"(\s*,)?\s*((/\*|//).*)?"
+                # EOL
+                + r"$"
             )
             me = re.match(regex, elem)
             if me and not me.group(1).startswith("last"):
