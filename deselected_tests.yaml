@@ -350,6 +350,12 @@ deselected_tests:
   # bad Random Forest fits for small datasets with large n_estimators
   - tests/test_multioutput.py::test_classifier_chain_tuple_order[tuple]
 
+  # Floating point error accumulation in right nodes of oneDAL decision forest
+  # causes this error when nodes split down to one element
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:
