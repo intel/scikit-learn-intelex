@@ -619,3 +619,5 @@ setup(
     },
     ext_modules=getpyexts(),
 )
+
+import onedal._onedal_py_dpc as _backend
