@@ -55,8 +55,42 @@ class BaseCovariance:
 
 
 class Covariance(BaseCovariance):
+    """Covariance estimator.
+
+    Computes sample covariance matrix.
+
+    Parameters
+    ----------
+    method : string, default="dense"
+        Specifies computation method. Available methods: "dense".
+
+    Attributes
+    ----------
+    location_ : ndarray of shape (n_features,)
+        Estimated location, i.e. the estimated mean.
+
+    covariance_ : ndarray of shape (n_features, n_features)
+        Estimated covariance matrix
+    """
+
     def __init__(self, method="dense"):
         super().__init__(method)
 
     def fit(self, X, queue=None):
+        """Fit the sample covariance matrix of X.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        queue : dpctl.SyclQueue
+            If not None then use this queue for computations.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         return super()._fit(X, _backend.covariance, queue)
