@@ -25,8 +25,8 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 
 
 class BaseCovariance:
-    def __init__(self):
-        pass
+    def __init__(self, method):
+        self.method = method
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -34,7 +34,7 @@ class BaseCovariance:
     def _get_onedal_params(self, dtype=np.float32):
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": "dense",
+            "method": self.method,
         }
 
     def _fit(self, X, module, queue):
@@ -55,8 +55,8 @@ class BaseCovariance:
 
 
 class Covariance(BaseCovariance):
-    def __init__(self):
-        pass
+    def __init__(self, method="dense"):
+        super().__init__(method)
 
     def fit(self, X, queue=None):
         return super()._fit(X, _backend.covariance, queue)
