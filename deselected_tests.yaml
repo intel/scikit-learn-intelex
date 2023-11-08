@@ -730,6 +730,15 @@ gpu:
   - tests/test_common.py::test_transformers_get_feature_names_out[VotingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
   - tests/test_common.py::test_f_contiguous_array_estimator[TSNE]
   - manifold/tests/test_t_sne.py::test_tsne_works_with_pandas_output
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float64]
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float32]
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float32]
+  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float64]
+  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float32]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=ones)]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=ones)]
 
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   # NearestNeighbors

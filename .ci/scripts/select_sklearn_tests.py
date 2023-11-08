@@ -40,6 +40,7 @@ tests_map = {
     "decomposition/tests": "test_pca.py",
     "ensemble/tests": "test_forest.py",
     "linear_model/tests": ["test_base.py", "test_coordinate_descent.py", "test_ridge.py"],
+    "tests/": "test_common.py",
     "manifold/tests": "test_t_sne.py",
     "model_selection/tests": ["test_split.py", "test_validation.py"],
     "neighbors/tests": ["test_lof.py", "test_neighbors.py", "test_neighbors_pipeline.py"],
