@@ -64,6 +64,7 @@ def get_patch_map():
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .decomposition import PCA as PCA_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -71,7 +72,6 @@ def get_patch_map():
 
         # Preview classes for patching
         from .preview.cluster import KMeans as KMeans_sklearnex
-        from .preview.decomposition import PCA as PCA_sklearnex
         from .preview.ensemble import (
             ExtraTreesClassifier as ExtraTreesClassifier_sklearnex,
         )
@@ -89,8 +89,7 @@ def get_patch_map():
         from .svm import NuSVR as NuSVR_sklearnex
 
         # Patch for mapping
-        # if _is_preview_enabled():
-        if True:
+        if _is_preview_enabled():
             # Ensemble
             mapping["extra_trees_classifier"] = [
                 [
@@ -141,9 +140,6 @@ def get_patch_map():
             mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
             mapping["randomforestregressor"] = mapping["random_forest_regressor"]
 
-            # PCA
-            mapping.pop("pca")
-            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
 
             # Linear Regression
             mapping.pop("linear")
@@ -176,6 +172,10 @@ def get_patch_map():
         # DBSCAN
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
+
+        # PCA
+            mapping.pop("pca")
+            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
 
         # SVM
         mapping.pop("svm")
