@@ -140,7 +140,6 @@ def get_patch_map():
             mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
             mapping["randomforestregressor"] = mapping["random_forest_regressor"]
 
-
             # Linear Regression
             mapping.pop("linear")
             mapping.pop("linearregression")
@@ -174,8 +173,8 @@ def get_patch_map():
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
 
         # PCA
-            mapping.pop("pca")
-            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
+        mapping.pop("pca")
+        mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
 
         # SVM
         mapping.pop("svm")
