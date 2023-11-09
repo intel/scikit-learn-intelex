@@ -64,3 +64,6 @@ if daal_check_version((2023, "P", 200)):
 
     if _is_dpc_backend:
         __all__ += ["spmd.cluster"]
+
+    
+__all__ += ["logistic_regression"]
