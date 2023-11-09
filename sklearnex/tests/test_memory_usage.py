@@ -30,7 +30,7 @@ from sklearn.model_selection import KFold
 from sklearnex import get_patch_map
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.model_selection import train_test_split
-from sklearnex.preview.decomposition import PCA as PreviewPCA
+from sklearnex.decomposition import PCA as PCA
 from sklearnex.preview.ensemble import ExtraTreesClassifier as PreviewExtraTreesClassifier
 from sklearnex.preview.ensemble import ExtraTreesRegressor as PreviewExtraTreesRegressor
 from sklearnex.preview.ensemble import (
@@ -108,7 +108,7 @@ BANNED_ESTIMATORS = (
     "TSNE",  # too slow for using in testing on common data size
 )
 estimators = [
-    PreviewPCA,
+    PCA,
     PreviewLinearRegression,
     PreviewRandomForestClassifier,
     PreviewRandomForestRegressor,
