@@ -22,7 +22,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
 
 from sklearn.linear_model import LogisticRegression as sklearn_logreg
-from onedal.logistic_regression import LogisticRegression as onedal_logreg
+from onedal.linear_model import LogisticRegression as onedal_logreg
 
 from sklearnex import patch_sklearn
 
@@ -45,7 +45,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.8, random
 X, y = X.astype(dtype), y.astype(dtype)
 '''
 
-prefix = "/export/users/anatolyv/scikit-learn_bench/data/" + "airline_"
+prefix = "/export/users/anatolyv/scikit-learn_bench/data/" + "a9a_"
 
 X_train = np.load(prefix + "x_train.npy")
 X_test = np.load(prefix + "x_test.npy")
@@ -59,7 +59,7 @@ NUM_ITER = 20
 X_train, y_train = X_train.astype(dtype), y_train.astype(dtype).reshape(-1)
 X_test, y_test = X_test.astype(dtype), y_test.astype(dtype).reshape(-1)
 
-'''
+
 model1 = onedal_logreg(solver='newton-cg', max_iter=NUM_ITER)
 tm1 = time.time()
 model1.fit(X_train, y_train, queue)
@@ -69,17 +69,17 @@ y_pred1 = model1.predict(X_test, queue)
 
 print("oneDAL accuracy:", (y_pred1 == y_test).mean())
 
-'''
-patch_sklearn()
-from sklearn.linear_model import LogisticRegression as sklearn_logreg
+
+#patch_sklearn()
+#from sklearn.linear_model import LogisticRegression as sklearn_logreg
 
 model2 = sklearn_logreg(solver='newton-cg', max_iter=NUM_ITER)
 tm3 = time.time()
 model2.fit(X_train, y_train)
 tm4 = time.time()
-print("sklearnex fit time", tm4 - tm3)
+print("sklearn fit time", tm4 - tm3)
 y_pred2 = model2.predict(X_test)
-print("sklearnex accuracy:", (y_pred2 == y_test).mean())
+print("sklearn accuracy:", (y_pred2 == y_test).mean())
 
 
 
