@@ -30,7 +30,7 @@ class PCA:
         is_deterministic=True,
         method="precomputed",
         copy=True,
-        whiten = False,
+        whiten=False,
     ):
         self.n_components = n_components
         self.method = method

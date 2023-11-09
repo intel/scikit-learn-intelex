@@ -38,6 +38,7 @@ else:
     from sklearn.decomposition._pca import _infer_dimension_
 
 from sklearn.decomposition import PCA as sklearn_PCA
+
 from onedal.decomposition import PCA as onedal_PCA
 
 
@@ -70,7 +71,6 @@ class PCA(sklearn_PCA):
 
     # @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y=None):
-
         return dispatch(
             self,
             "fit",
@@ -79,26 +79,22 @@ class PCA(sklearn_PCA):
                 "sklearn": sklearn_PCA._fit,
             },
             X,
-            y,
         )
         # return self
 
-    def transform(self, X, y = None):
-
+    def transform(self, X, y=None):
         return dispatch(
-                self,
-                "transform",
-                {
-                    "onedal": self.__class__._onedal_transform,
-                    "sklearn": sklearn_PCA.transform,
-                },
-                X,
-                y,
-            )
+            self,
+            "transform",
+            {
+                "onedal": self.__class__._onedal_transform,
+                "sklearn": sklearn_PCA.transform,
+            },
+            X,
+        )
 
     # @_fit_context(prefer_skip_nested_validation=True)
     def fit_transform(self, X, y=None):
-
         self.fit(X, y)
         return self.transform(X, y)
 
@@ -123,9 +119,15 @@ class PCA(sklearn_PCA):
                     # Refer to daal4py
                     regression_coefs = np.array(
                         [
-                            [9.779873e-11, shape_tuple[0] * shape_tuple[1] * n_components],
-                            [-1.122062e-11, shape_tuple[0] * shape_tuple[1] * shape_tuple[1]],
-                            [1.127905e-09, shape_tuple[0]**2],
+                            [
+                                9.779873e-11,
+                                shape_tuple[0] * shape_tuple[1] * n_components,
+                            ],
+                            [
+                                -1.122062e-11,
+                                shape_tuple[0] * shape_tuple[1] * shape_tuple[1],
+                            ],
+                            [1.127905e-09, shape_tuple[0] ** 2],
                         ]
                     )
                     if (
@@ -143,7 +145,7 @@ class PCA(sklearn_PCA):
             return False
 
     def _onedal_supported(self, method_name, *data):
-        X , y = data
+        (X,) = data
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.decomposition.{class_name}.{method_name}"
@@ -163,10 +165,7 @@ class PCA(sklearn_PCA):
         if method_name == "transform":
             patching_status.and_conditions(
                 [
-                    (
-                        hasattr(self, "_onedal_estimator"),
-                        "oneDAL model was not trained"
-                    ),
+                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained"),
                 ]
             )
             return patching_status
@@ -179,12 +178,15 @@ class PCA(sklearn_PCA):
         return self._onedal_supported(method_name, *data)
 
     def _set_n_components_for_onedal(self, shape_tuple):
-        n_samples, n_features, = shape_tuple
+        (
+            n_samples,
+            n_features,
+        ) = shape_tuple
         if self.n_components is None:
             n_components = min(shape_tuple)
         else:
             n_components = self.n_components
-       
+
         if n_components == "mle":
             if n_samples < n_features:
                 raise ValueError(
@@ -268,7 +270,7 @@ class PCA(sklearn_PCA):
         self.components_ = self._onedal_estimator.components_[: self.n_components_]
         self.singular_values_ = self.singular_values_[: self.n_components_]
 
-    def _onedal_fit(self, X, y=None, queue=None):
+    def _onedal_fit(self, X, queue=None):
         if issparse(X):
             raise TypeError(
                 "PCA does not support sparse input. See "
@@ -283,7 +285,7 @@ class PCA(sklearn_PCA):
         # #         min_val=1,
         # #         target_type=numbers.Integral,
         # #     )
-        
+
         if sklearn_check_version("0.23"):
             X = self._validate_data(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
@@ -322,7 +324,7 @@ class PCA(sklearn_PCA):
                     f"{self.n_features_} features as input"
                 )
 
-    def _onedal_transform(self, X, y = None, queue = None):
+    def _onedal_transform(self, X, queue=None):
         check_is_fitted(self)
         self._validate_n_features_in(X)
         if sklearn_check_version("0.23"):
@@ -333,7 +335,7 @@ class PCA(sklearn_PCA):
             X = _check_array(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
             )
-        return self._onedal_estimator.predict(X, queue)
+        return self._onedal_estimator.predict(X, queue=queue)
 
     fit.__doc__ = sklearn_PCA.fit.__doc__
     transform.__doc__ = sklearn_PCA.transform.__doc__
