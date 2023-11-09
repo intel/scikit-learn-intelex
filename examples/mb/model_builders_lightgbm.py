@@ -14,10 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py Gradient Boosting Classification model creation from LightGBM example
-
-from pathlib import Path
-from typing import Optional
+# daal4py Gradient Bossting Classification model creation from LightGBM example
 
 import lightgbm as lgb
 import numpy as np
@@ -26,18 +23,18 @@ import pandas as pd
 import daal4py as d4p
 
 
-def pd_read_csv(f, c=None, t=np.float64, **kwargs):
-    return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t, **kwargs)
+def pd_read_csv(f, c=None, t=np.float64):
+    return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
 
 
-def main(readcsv=pd_read_csv, nrows: Optional[int] = 300):
-    data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
-    train_file = data_path / "df_classification_train.csv"
-    test_file = data_path / "df_classification_test.csv"
+def main(readcsv=pd_read_csv):
+    # Path to data
+    train_file = "./data/batch/df_classification_train.csv"
+    test_file = "./data/batch/df_classification_test.csv"
 
     # Data reading
-    X_train = readcsv(train_file, range(3), t=np.float32, nrows=nrows)
-    y_train = readcsv(train_file, range(3, 4), t=np.float32, nrows=nrows)
+    X_train = readcsv(train_file, range(3), t=np.float32)
+    y_train = readcsv(train_file, range(3, 4), t=np.float32)
     X_test = readcsv(test_file, range(3), t=np.float32)
     y_test = readcsv(test_file, range(3, 4), t=np.float32)
 
@@ -49,14 +46,16 @@ def main(readcsv=pd_read_csv, nrows: Optional[int] = 300):
     # training parameters setting
     params = {
         "max_bin": 256,
-        "max_depth": 4,
-        "num_leaves": 48,
+        "scale_pos_weight": 2,
+        "lambda_l2": 1,
+        "alpha": 0.9,
+        "max_depth": 6,
+        "num_leaves": 2**6,
         "verbose": -1,
         "objective": "multiclass",
         "learning_rate": 0.3,
         "num_class": 5,
         "n_estimators": 25,
-        "min_data_in_leaf": 100,
     }
 
     # Training
@@ -92,7 +91,7 @@ if __name__ == "__main__":
         daal_prediction,
         daal_errors_count,
         y_test,
-    ) = main(nrows=None)
+    ) = main()
     print("\nLightGBM prediction results (first 10 rows):\n", lgb_prediction[0:10])
     print("\ndaal4py prediction results (first 10 rows):\n", daal_prediction[0:10])
     print("\nGround truth (first 10 rows):\n", y_test[0:10])

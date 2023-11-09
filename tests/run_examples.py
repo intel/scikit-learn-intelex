@@ -71,7 +71,6 @@ else:
 ex_log_dirs = [
     (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
     (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
-    (jp(examples_rootdir, "mb"), jp(logdir, "mb")),
     (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
@@ -171,9 +170,6 @@ req_device["sycl/gradient_boosted_regression.py"] = ["gpu"]
 req_library = defaultdict(lambda: [])
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
-req_library["model_builders_lightgbm.py"] = ["lightgbm"]
-req_library["model_builders_xgboost.py"] = ["xgboost"]
-req_library["model_builders_catboost.py"] = ["catboost"]
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["kmeans_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["knn_bf_classification_dpnp.py"] = ["dpctl", "dpnp"]

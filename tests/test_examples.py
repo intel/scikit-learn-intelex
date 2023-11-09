@@ -20,9 +20,7 @@ import sys
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
 daal4py_examples_path = os.path.join(os.path.dirname(test_path), "examples", "daal4py")
-mb_examples_path = os.path.join(os.path.dirname(test_path), "examples", "mb")
 sys.path.insert(0, daal4py_examples_path)
-sys.path.insert(0, mb_examples_path)
 os.chdir(daal4py_examples_path)
 
 import unittest
@@ -261,21 +259,6 @@ gen_examples = [
     ("distributions_normal",),
     ("distributions_uniform",),
     ("em_gmm", "em_gmm.csv", lambda r: r.covariances[0]),
-    (
-        "model_builders_xgboost",
-        None,
-        None,
-        ((2020, "P", 2), (2021, "B", 109)),
-        ["xgboost"],
-    ),
-    (
-        "model_builders_xgboost_shap",
-        None,
-        None,
-        (2024, "P", 1),
-        ["xgboost"],
-    ),
-    ("model_builders_catboost", None, None, (2021, "P", 4), ["catboost"]),
     ("gradient_boosted_classification",),
     ("gradient_boosted_regression",),
     ("implicit_als", "implicit_als.csv", "prediction"),
@@ -392,7 +375,6 @@ class TestExCSRMatrix(Base, unittest.TestCase):
                 "adaboost",
                 "brownboost",
                 "stump_classification",
-                "model_builders",
                 "decision_forest",
             ]
         ):
