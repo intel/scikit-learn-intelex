@@ -67,7 +67,7 @@ class Covariance(BaseCovariance):
     Attributes
     ----------
     location_ : ndarray of shape (n_features,)
-        Estimated location, i.e. the estimated mean.
+        Estimated location, i.e., the estimated mean.
 
     covariance_ : ndarray of shape (n_features, n_features)
         Estimated covariance matrix
@@ -82,11 +82,11 @@ class Covariance(BaseCovariance):
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
+            Training data, where `n_samples` is the number of samples, and
             `n_features` is the number of features.
 
         queue : dpctl.SyclQueue
-            If not None then use this queue for computations.
+            If not None, use this queue for computations.
 
         Returns
         -------
