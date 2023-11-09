@@ -43,7 +43,7 @@ class PCA:
         self.whiten = whiten
 
     def get_onedal_params(self, data):
-        n_components = self._resolve_n_components(self, data.shape)
+        n_components = self._resolve_n_components(data.shape)
         return {
             "fptype": "float" if data.dtype == np.float32 else "double",
             "method": self.method,

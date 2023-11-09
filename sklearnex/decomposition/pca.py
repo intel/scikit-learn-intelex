@@ -25,7 +25,7 @@ from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal.utils import _check_array
+# from onedal.utils import _check_array
 
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
@@ -67,7 +67,7 @@ class PCA(sklearn_PCA):
 
     # @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y=None):
-        return dispatch(
+        dispatch(
             self,
             "fit",
             {
@@ -76,6 +76,7 @@ class PCA(sklearn_PCA):
             },
             X,
         )
+        return self
 
     def transform(self, X, y=None):
         return dispatch(
@@ -140,6 +141,10 @@ class PCA(sklearn_PCA):
             return False
 
     def _onedal_supported(self, method_name, X):
+        if isinstance(X, list):
+            shape_tuple = (len(X), len(X[0]))
+        else:
+            shape_tuple = X.shape
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.decomposition.{class_name}.{method_name}"
@@ -148,7 +153,7 @@ class PCA(sklearn_PCA):
             patching_status.and_conditions(
                 [
                     (
-                        self._is_onedal_compatible(X.shape),
+                        self._is_onedal_compatible(shape_tuple),
                         f"Only 'full' svd solver and data with shape "
                         "X.shape[1] < 2 * X.shape[0] are supported.",
                     ),
@@ -172,6 +177,8 @@ class PCA(sklearn_PCA):
         return self._onedal_supported(method_name, *data)
 
     def _validate_n_components(self, n_components, n_samples, n_features):
+        if n_components is None:
+            n_components = min(n_samples, n_features)
         if n_components == "mle":
             if n_samples < n_features:
                 raise ValueError(
@@ -183,7 +190,7 @@ class PCA(sklearn_PCA):
                 "min(n_samples, n_features)=%r with "
                 "svd_solver='full'" % (n_components, min(n_samples, n_features))
             )
-        # elif n_components >= 1:
+        # elif n_components >= 1:v
         #     if not isinstance(n_components, numbers.Integral):
         #         raise ValueError(
         #             "n_components=%r must be of type int "
@@ -229,7 +236,7 @@ class PCA(sklearn_PCA):
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
             )
         else:
-            X = _check_array(
+            X = check_array(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
             )
 
@@ -244,7 +251,6 @@ class PCA(sklearn_PCA):
         self._onedal_estimator = onedal_PCA(**onedal_params)
         self._onedal_estimator.fit(X, queue=queue)
         self._save_attributes()
-        return self
 
     def _validate_n_features_in(self, X):
         if hasattr(self, "n_features_in_"):
@@ -270,7 +276,7 @@ class PCA(sklearn_PCA):
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
             )
         else:
-            X = _check_array(
+            X = check_array(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
             )
         return self._onedal_estimator.predict(X, queue=queue)
