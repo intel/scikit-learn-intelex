@@ -32,10 +32,6 @@ from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
-if sklearn_check_version("0.23"):
-    from sklearn.decomposition._pca import _infer_dimension
-else:
-    from sklearn.decomposition._pca import _infer_dimension_
 
 from sklearn.decomposition import PCA as sklearn_PCA
 
@@ -80,7 +76,6 @@ class PCA(sklearn_PCA):
             },
             X,
         )
-        # return self
 
     def transform(self, X, y=None):
         return dispatch(
@@ -144,8 +139,7 @@ class PCA(sklearn_PCA):
         else:
             return False
 
-    def _onedal_supported(self, method_name, *data):
-        X = data[0]
+    def _onedal_supported(self, method_name, X):
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.decomposition.{class_name}.{method_name}"
@@ -177,26 +171,17 @@ class PCA(sklearn_PCA):
     def _onedal_gpu_supported(self, method_name, *data):
         return self._onedal_supported(method_name, *data)
 
-    def _set_n_components_for_onedal(self, shape_tuple):
-        (
-            n_samples,
-            n_features,
-        ) = shape_tuple
-        if self.n_components is None:
-            n_components = min(shape_tuple)
-        else:
-            n_components = self.n_components
-
+    def _validate_n_components(self, n_components, n_samples, n_features):
         if n_components == "mle":
             if n_samples < n_features:
                 raise ValueError(
                     "n_components='mle' is only supported if n_samples >= n_features"
                 )
-        elif not 0 <= n_components <= min(shape_tuple):
+        elif not 0 <= n_components <= min(n_samples, n_features):
             raise ValueError(
                 "n_components=%r must be between 0 and "
                 "min(n_samples, n_features)=%r with "
-                "svd_solver='full'" % (n_components, min(shape_tuple))
+                "svd_solver='full'" % (n_components, min(n_samples, n_features))
             )
         # elif n_components >= 1:
         #     if not isinstance(n_components, numbers.Integral):
@@ -206,69 +191,22 @@ class PCA(sklearn_PCA):
         #             "was of type=%r" % (n_components, type(n_components))
         #         )
 
-        if n_components == "mle":
-            onedal_n_components = min(shape_tuple)
-        elif 0 < n_components < 1:
-            onedal_n_components = min(shape_tuple)
-        else:
-            onedal_n_components = n_components
-        return onedal_n_components
-
     def _save_attributes(self):
-        self.n_samples_ = self._onedal_estimator.n_samples_
-
+        self.n_samples_ = self._onedal_estimator.n_samples
         if sklearn_check_version("1.2"):
-            self.n_features_in_ = self._onedal_estimator.n_features_in_
-            n_features = self.n_features_in_
+            self.n_features_in_ = self._onedal_estimator.n_features
         elif sklearn_check_version("0.24"):
-            self.n_features_ = self._onedal_estimator.n_features_
-            self.n_features_in_ = self._onedal_estimator.n_features_in_
-            n_features = self.n_features_in_
+            self.n_features_ = self._onedal_estimator.n_features
+            self.n_features_in_ = self._onedal_estimator.n_features
         else:
-            self.n_features_ = self._onedal_estimator.n_features_
-            n_features = self.n_features_
-        n_sf_min = min(self.n_samples_, n_features)
+            self.n_features_ = self._onedal_estimator.n_features
 
-        self.mean_ = self._onedal_estimator.mean_
-        self.singular_values_ = self._onedal_estimator.singular_values_
-        self.explained_variance_ = self._onedal_estimator.explained_variance_
-        self.explained_variance_ratio_ = self._onedal_estimator.explained_variance_ratio_
-
-        if self.n_components is None:
-            self.n_components_ = self._onedal_estimator.n_components_
-        elif self.n_components == "mle":
-            if sklearn_check_version("0.23"):
-                self.n_components_ = _infer_dimension(
-                    self.explained_variance_, self.n_samples_
-                )
-            else:
-                self.n_components_ = _infer_dimension_(
-                    self.explained_variance_, self.n_samples_, n_features
-                )
-        elif 0 < self.n_components < 1.0:
-            ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
-            self.n_components_ = (
-                np.searchsorted(ratio_cumsum, self.n_components, side="right") + 1
-            )
-        else:
-            self.n_components_ = self._onedal_estimator.n_components_
-
-        if self.n_components_ < n_sf_min:
-            if self.explained_variance_.shape[0] == n_sf_min:
-                self.noise_variance_ = self.explained_variance_[
-                    self.n_components_ :
-                ].mean()
-            else:
-                self.noise_variance_ = self._onedal_estimator.noise_variance_
-        else:
-            self.noise_variance_ = 0.0
-
-        self.explained_variance_ = self.explained_variance_[: self.n_components_]
-        self.explained_variance_ratio_ = self.explained_variance_ratio_[
-            : self.n_components_
-        ]
-        self.components_ = self._onedal_estimator.components_[: self.n_components_]
-        self.singular_values_ = self.singular_values_[: self.n_components_]
+        self.n_components_ = self._onedal_estimator.n_components_
+        self.mean_ = self._onedal_estimator.mean
+        self.singular_values_ = self._onedal_estimator.singular_values
+        self.explained_variance_ = self._onedal_estimator.explained_variance
+        self.explained_variance_ratio_ = self._onedal_estimator.explained_variance_ratio
+        self.noise_variance_ = self._onedal_estimator.noise_variance
 
     def _onedal_fit(self, X, queue=None):
         if issparse(X):
@@ -295,10 +233,10 @@ class PCA(sklearn_PCA):
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
             )
 
-        onedal_n_components = self._set_n_components_for_onedal(X.shape)
+        self._validate_n_components(self.n_components, X.shape[0], X.shape[1])
 
         onedal_params = {
-            "n_components": onedal_n_components,
+            "n_components": self.n_components,
             "is_deterministic": True,
             "method": "precomputed",
             "whiten": self.whiten,

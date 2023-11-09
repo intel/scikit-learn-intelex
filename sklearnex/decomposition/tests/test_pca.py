@@ -30,7 +30,7 @@ from onedal.tests.utils._dataframes_support import (
 def test_sklearnex_import(dataframe, queue):
     from sklearnex.decomposition import PCA
 
-    X = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
+    X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     pca = PCA(n_components=2, svd_solver="full").fit(X)
     assert "sklearnex" in pca.__module__

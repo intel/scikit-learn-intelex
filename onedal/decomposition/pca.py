@@ -22,6 +22,11 @@ from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 
+if sklearn_check_version("0.23"):
+    from sklearn.decomposition._pca import _infer_dimension
+else:
+    from sklearn.decomposition._pca import _infer_dimension_
+
 
 class PCA:
     def __init__(
@@ -38,15 +43,24 @@ class PCA:
         self.whiten = whiten
 
     def get_onedal_params(self, data):
+        n_components = self._resolve_n_components(self, data.shape)
         return {
             "fptype": "float" if data.dtype == np.float32 else "double",
             "method": self.method,
-            "n_components": self.n_components,
+            "n_components": n_components,
             "is_deterministic": self.is_deterministic,
         }
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
+
+    def _resolve_n_components(self, shape_tuple):
+        if self.n_components is None or self.n_components == "mle":
+            return min(shape_tuple)
+        elif 0 < self.n_components < 1:
+            return min(shape_tuple)
+        else:
+            return self.n_components
 
     def fit(self, X, queue):
         n_samples, n_features = X.shape
@@ -64,32 +78,53 @@ class PCA:
             policy, {"fptype": params["fptype"], "method": "dense"}, to_table(X)
         )
         covariance_matrix = from_table(cov_result.cov_matrix)
-        self.mean_ = from_table(cov_result.means)
-        result = _backend.decomposition.dim_reduction.train(
+        self.mean = from_table(cov_result.means)
+        pca_result = _backend.decomposition.dim_reduction.train(
             policy, params, to_table(covariance_matrix)
         )
 
-        self.n_components_ = self.n_components
-        self.variances_ = from_table(result.variances)
-        self.components_ = from_table(result.eigenvectors)
-        self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
-        tot_var = covariance_matrix.trace()
-        self.explained_variance_ratio_ = self.explained_variance_ / tot_var
-        self.singular_values_ = np.sqrt((n_samples - 1) * self.explained_variance_)
+        self.variances = from_table(pca_result.variances)
+        self.components = from_table(pca_result.eigenvectors)
+        self.explained_variance = np.maximum(
+            from_table(pca_result.eigenvalues).ravel(), 0
+        )
+        total_variance = covariance_matrix.trace()
+        self.singular_values = np.sqrt((n_samples - 1) * self.explained_variance)
+        self.n_samples = n_samples
+        self.n_features = n_features
 
-        if sklearn_check_version("1.2"):
-            self.n_features_in_ = n_features
-        elif sklearn_check_version("0.24"):
-            self.n_features_in_ = n_features
-            self.n_features_ = n_features
+        if self.n_components is None:
+            self.n_components_ = params["n_components"]
+        elif self.n_components == "mle":
+            if sklearn_check_version("0.23"):
+                self.n_components_ = _infer_dimension(
+                    self.explained_variance_, self.n_samples_
+                )
+            else:
+                self.n_components_ = _infer_dimension_(
+                    self.explained_variance_, self.n_samples_, n_features
+                )
+        elif 0 < self.n_components < 1.0:
+            ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
+            self.n_components_ = (
+                np.searchsorted(ratio_cumsum, self.n_components, side="right") + 1
+            )
         else:
-            self.n_features_ = n_features
+            self.n_components_ = params["n_components"]
 
-        self.n_samples_ = n_samples
-        if self.n_components < n_sf_min:
-            if self.explained_variance_.shape[0] < n_sf_min:
-                resid_var_ = tot_var - self.explained_variance_[: self.n_components].sum()
-                self.noise_variance_ = resid_var_ / (n_sf_min - self.n_components)
+        if self.n_components_ < n_sf_min:
+            if self.explained_variance.shape[0] == n_sf_min:
+                self.noise_variance = self.explained_variance[self.n_components_ :].mean()
+            elif self.explained_variance.shape[0] < n_sf_min:
+                resid_var = tot_var - self.explained_variance[: self.n_components_].sum()
+                self.noise_variance = resid_var / (n_sf_min - self.n_components_)
+            else:
+                self.noise_variance = 0.0
+
+        self.explained_variance = self.explained_variance[: self.n_components_]
+        self.explained_variance_ratio = self.explained_variance / total_variance
+        self.components = self.components_[: self.n_components_]
+        self.singular_values = self.singular_values[: self.n_components_]
         return self
 
     def _create_model(self):
