@@ -145,7 +145,7 @@ class PCA(sklearn_PCA):
             return False
 
     def _onedal_supported(self, method_name, *data):
-        (X,) = data
+        X = data[0]
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.decomposition.{class_name}.{method_name}"
