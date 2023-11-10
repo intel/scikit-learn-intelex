@@ -151,10 +151,13 @@ class PCA(sklearn_PCA):
             return False
 
     def _onedal_supported(self, method_name, X):
-        if isinstance(X, list):
+        if isinstance(X, list) and isinstance(X[0], list):
             shape_tuple = (len(X), len(X[0]))
-        else:
+        elif isinstance(X, pandas.DataFrame) or (isinstance(X, np.array) and len(X.shape)==2):
             shape_tuple = X.shape
+        else:
+            raise RuntimeError(f"Unsupported data object {type(X)} or data dimension passed.")
+
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.decomposition.{class_name}.{method_name}"
@@ -280,7 +283,6 @@ class PCA(sklearn_PCA):
 
     def _onedal_transform(self, X, queue=None):
         check_is_fitted(self)
-        self._validate_n_features_in(X)
         if sklearn_check_version("0.23"):
             X = self._validate_data(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
@@ -289,6 +291,8 @@ class PCA(sklearn_PCA):
             X = check_array(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
             )
+
+        self._validate_n_features_in(X)
         return self._onedal_estimator.predict(X, queue=queue)
 
     fit.__doc__ = sklearn_PCA.fit.__doc__
