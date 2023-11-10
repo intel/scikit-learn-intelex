@@ -24,11 +24,12 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._utils import sklearn_check_version
-# from onedal.utils import _check_array
 
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 
+if sklearn_check_version("1.1"):
+    from sklearn.utils import check_scalar
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
 
@@ -66,6 +67,16 @@ class PCA(sklearn_PCA):
 
     # @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+        elif sklearn_check_version("1.1"):
+            check_scalar(
+                self.n_oversamples,
+                "n_oversamples",
+                min_val=1,
+                target_type=numbers.Integral,
+            )
+
         dispatch(
             self,
             "fit",

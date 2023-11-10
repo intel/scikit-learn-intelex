@@ -119,8 +119,8 @@ class PCA:
             elif self.explained_variance.shape[0] < n_sf_min:
                 resid_var = total_variance - self.explained_variance[: self.n_components_].sum()
                 self.noise_variance = resid_var / (n_sf_min - self.n_components_)
-            else:
-                self.noise_variance = 0.0
+        else:
+            self.noise_variance = 0.0
 
         self.explained_variance = self.explained_variance[: self.n_components_]
         self.explained_variance_ratio = self.explained_variance / total_variance
@@ -130,10 +130,10 @@ class PCA:
 
     def _create_model(self):
         m = _backend.decomposition.dim_reduction.model()
-        m.eigenvectors = to_table(self.components_)
-        m.means = to_table(self.mean_)
+        m.eigenvectors = to_table(self.components)
+        m.means = to_table(self.mean)
         if self.whiten:
-            m.eigenvalues = to_table(self.explained_variance_)
+            m.eigenvalues = to_table(self.explained_variance)
         self._onedal_model = m
         return m
 
