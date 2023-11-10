@@ -212,21 +212,21 @@ class PCA(sklearn_PCA):
         #         )
 
     def _save_attributes(self):
-        self.n_samples_ = self._onedal_estimator.n_samples
+        self.n_samples_ = self._onedal_estimator.n_samples_
         if sklearn_check_version("1.2"):
-            self.n_features_in_ = self._onedal_estimator.n_features
+            self.n_features_in_ = self._onedal_estimator.n_features_
         elif sklearn_check_version("0.24"):
-            self.n_features_ = self._onedal_estimator.n_features
-            self.n_features_in_ = self._onedal_estimator.n_features
+            self.n_features_ = self._onedal_estimator.n_features_
+            self.n_features_in_ = self._onedal_estimator.n_features_
         else:
-            self.n_features_ = self._onedal_estimator.n_features
+            self.n_features_ = self._onedal_estimator.n_features_
 
         self.n_components_ = self._onedal_estimator.n_components_
-        self.mean_ = self._onedal_estimator.mean
-        self.singular_values_ = self._onedal_estimator.singular_values
-        self.explained_variance_ = self._onedal_estimator.explained_variance
-        self.explained_variance_ratio_ = self._onedal_estimator.explained_variance_ratio
-        self.noise_variance_ = self._onedal_estimator.noise_variance
+        self.mean_ = self._onedal_estimator.mean_
+        self.singular_values_ = self._onedal_estimator.singular_values_
+        self.explained_variance_ = self._onedal_estimator.explained_variance_
+        self.explained_variance_ratio_ = self._onedal_estimator.explained_variance_ratio_
+        self.noise_variance_ = self._onedal_estimator.noise_variance_
 
     def _onedal_fit(self, X, queue=None):
         if issparse(X):
