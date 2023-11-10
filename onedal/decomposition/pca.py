@@ -21,6 +21,7 @@ from onedal import _backend
 
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
+from sklearn.utils.extmath import stable_cumsum
 
 if sklearn_check_version("0.23"):
     from sklearn.decomposition._pca import _infer_dimension
@@ -98,11 +99,11 @@ class PCA:
         elif self.n_components == "mle":
             if sklearn_check_version("0.23"):
                 self.n_components_ = _infer_dimension(
-                    self.explained_variance_, self.n_samples_
+                    self.explained_variance, n_samples
                 )
             else:
                 self.n_components_ = _infer_dimension_(
-                    self.explained_variance_, self.n_samples_, n_features
+                    self.explained_variance, n_samples, n_features
                 )
         elif 0 < self.n_components < 1.0:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
@@ -116,14 +117,14 @@ class PCA:
             if self.explained_variance.shape[0] == n_sf_min:
                 self.noise_variance = self.explained_variance[self.n_components_ :].mean()
             elif self.explained_variance.shape[0] < n_sf_min:
-                resid_var = tot_var - self.explained_variance[: self.n_components_].sum()
+                resid_var = total_variance - self.explained_variance[: self.n_components_].sum()
                 self.noise_variance = resid_var / (n_sf_min - self.n_components_)
             else:
                 self.noise_variance = 0.0
 
         self.explained_variance = self.explained_variance[: self.n_components_]
         self.explained_variance_ratio = self.explained_variance / total_variance
-        self.components = self.components_[: self.n_components_]
+        self.components = self.components[: self.n_components_]
         self.singular_values = self.singular_values[: self.n_components_]
         return self
 

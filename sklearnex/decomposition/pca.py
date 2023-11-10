@@ -21,7 +21,6 @@ from math import sqrt
 import numpy as np
 from scipy.sparse import issparse
 from sklearn.base import BaseEstimator
-from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._utils import sklearn_check_version
@@ -91,8 +90,8 @@ class PCA(sklearn_PCA):
 
     # @_fit_context(prefer_skip_nested_validation=True)
     def fit_transform(self, X, y=None):
-        self.fit(X, y)
-        return self.transform(X, y)
+        m = self.fit(X, y)
+        return m.transform(X, y)
 
     def _is_onedal_compatible(self, shape_tuple):
         self._fit_svd_solver = self.svd_solver
