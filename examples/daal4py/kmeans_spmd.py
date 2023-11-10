@@ -18,13 +18,16 @@
 # run like this:
 #    mpirun -n 4 python ./kmeans_spmd.py
 
+from pathlib import Path
+
 from numpy import loadtxt
 
 import daal4py as d4p
 
 
 def main(method="plusPlusDense"):
-    infile = "./data/distributed/kmeans_dense.csv"
+    data_path = Path(__file__).parent / "data" / "distributed"
+    infile = data_path / "kmeans_dense.csv"
     nClusters = 10
     maxIter = 25
 

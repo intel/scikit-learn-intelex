@@ -16,6 +16,8 @@
 
 # daal4py DBSCAN example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -34,7 +36,8 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/dbscan_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "dbscan_dense.csv"
     epsilon = 0.04
     minObservations = 45
 

@@ -16,6 +16,8 @@
 
 # daal4py normalization zscore example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -34,7 +36,8 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/normalization.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "normalization.csv"
 
     # configure a covariance object
     try:
@@ -43,7 +46,7 @@ def main(readcsv=read_csv, method="defaultDense"):
         algo = d4p.normalization_zscore()
 
     # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+    result1 = algo.compute(str(infile))
 
     # We can also load the data ourselfs and provide the numpy array
     data = readcsv(infile)

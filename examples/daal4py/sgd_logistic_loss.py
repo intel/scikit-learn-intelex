@@ -17,6 +17,8 @@
 # daal4py SGD (Stochastic Gradient Descent) example for shared memory systems
 # using Logisitc Loss objective function
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -35,7 +37,8 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/custom.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "custom.csv"
     # Read the data, let's have 4 independent variables
     data = readcsv(infile, range(4))
     dep_data = readcsv(infile, range(4, 5))
