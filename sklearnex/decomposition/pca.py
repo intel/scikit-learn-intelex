@@ -151,10 +151,10 @@ class PCA(sklearn_PCA):
             return False
 
     def _onedal_supported(self, method_name, X):
-        if isinstance(X, list) and isinstance(X[0], list):
-            shape_tuple = (len(X), len(X[0]))
-        elif isinstance(X, pandas.DataFrame) or (isinstance(X, np.array) and len(X.shape)==2):
+        if hasattr(X, "shape"):
             shape_tuple = X.shape
+        elif isinstance(X, list) and isinstance(X[0], list):
+            shape_tuple = (len(X), len(X[0]))
         else:
             raise RuntimeError(f"Unsupported data object {type(X)} or data dimension passed.")
 
