@@ -14,9 +14,6 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "oneapi/dal/algo/logistic_regression.hpp"
-#include "onedal/primitives/optimizers.hpp"
-
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
 
@@ -27,6 +24,10 @@ namespace py = pybind11;
 namespace oneapi::dal::python {
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+
+#include "oneapi/dal/algo/logistic_regression.hpp"
+#include "onedal/primitives/optimizers.hpp"
+
 namespace linear_model {
 
 namespace logistic_regression {
