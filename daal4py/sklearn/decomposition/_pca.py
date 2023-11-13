@@ -28,6 +28,12 @@ import daal4py
 from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
+if sklearn_check_version("1.3"):
+    from sklearn.base import _fit_context
+
+if sklearn_check_version("1.1"):
+    from sklearn.utils import check_scalar
+
 if sklearn_check_version("0.22"):
     from sklearn.decomposition._pca import PCA as PCA_original
 else:
@@ -339,6 +345,63 @@ class PCA(PCA_original):
         )
 
         return tr_res.transformedData
+
+    if sklearn_check_version("1.3"):
+
+        @support_usm_ndarray()
+        @_fit_context(prefer_skip_nested_validation=True)
+        def fit(self, X, y=None):
+            """Fit the model with X.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Training data, where `n_samples` is the number of samples
+                and `n_features` is the number of features.
+
+            y : Ignored
+                Ignored.
+
+            Returns
+            -------
+            self : object
+                Returns the instance itself.
+            """
+            self._fit(X)
+            return self
+
+    else:
+
+        @support_usm_ndarray()
+        def fit(self, X, y=None):
+            """Fit the model with X.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Training data, where `n_samples` is the number of samples
+                and `n_features` is the number of features.
+
+            y : Ignored
+                Ignored.
+
+            Returns
+            -------
+            self : object
+                Returns the instance itself.
+            """
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+            elif sklearn_check_version("1.1"):
+                check_scalar(
+                    self.n_oversamples,
+                    "n_oversamples",
+                    min_val=1,
+                    target_type=numbers.Integral,
+                )
+
+            self._fit(X)
+            return self
 
     @support_usm_ndarray()
     def transform(self, X):

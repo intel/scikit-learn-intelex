@@ -18,6 +18,8 @@
 # run like this:
 #    mpirun -n 4 python ./naive_bayes_spmd.py
 
+from pathlib import Path
+
 from numpy import loadtxt
 
 import daal4py as d4p
@@ -27,7 +29,8 @@ if __name__ == "__main__":
     d4p.daalinit()
 
     # Each process gets its own data
-    infile = "./data/batch/naivebayes_train_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "naivebayes_train_dense.csv"
 
     # Configure a training object (20 classes)
     talgo = d4p.multinomial_naive_bayes_training(20, distributed=True)

@@ -16,6 +16,8 @@
 
 # daal4py Naive Bayes Classification example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -35,8 +37,9 @@ except ImportError:
 
 def main(readcsv=read_csv, method="defaultDense"):
     # input data file
-    infile = "./data/batch/naivebayes_train_dense.csv"
-    testfile = "./data/batch/naivebayes_test_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "naivebayes_train_dense.csv"
+    testfile = data_path / "naivebayes_test_dense.csv"
 
     # Configure a training object (20 classes)
     talgo = d4p.multinomial_naive_bayes_training(20, method=method)

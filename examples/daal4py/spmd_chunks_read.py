@@ -16,22 +16,24 @@
 
 # Example showing reading of file in few chunks, this reader is used in SPMD examples
 
+from pathlib import Path
+
 import numpy as np
 
 # let's try to use pandas' fast csv reader
 try:
     import pandas
 
-    def read_csv(f, c=None, sr=0, nr=None, t=np.float64):
+    def read_csv(f, c=None, s=0, n=None, t=np.float64):
         return pandas.read_csv(
-            f, usecols=c, skiprows=sr, nrows=nr, delimiter=",", header=None, dtype=t
+            f, usecols=c, skiprows=s, nrows=n, delimiter=",", header=None, dtype=t
         )
 
-except:
+except ImportError:
     # fall back to numpy loadtxt
-    def read_csv(f, c=None, sr=0, nr=np.iinfo(np.int64).max, t=np.float64):
+    def read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
         res = np.genfromtxt(
-            f, usecols=c, delimiter=",", skip_header=sr, max_rows=nr, dtype=t
+            f, usecols=c, delimiter=",", skip_header=s, max_rows=n, dtype=t
         )
         if res.ndim == 1:
             return res[:, np.newaxis]
@@ -49,7 +51,8 @@ def get_chunk_params(lines_count, chunks_count, chunk_number):
 
 
 if __name__ == "__main__":
-    infile = "./data/batch/covcormoments_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "covcormoments_dense.csv"
     chunks_count = 6
     print('Reading file "{}" in {} chunks'.format(infile, chunks_count))
 
@@ -63,7 +66,7 @@ if __name__ == "__main__":
     chunks_stack = np.empty([0, whole_file.shape[1]])
     for chunk_number in range(chunks_count):
         skiprows, nrows = get_chunk_params(lines_in_file, chunks_count, chunk_number)
-        chunk = read_csv(infile, sr=skiprows, nr=nrows)
+        chunk = read_csv(infile, s=skiprows, n=nrows)
         print("The shape of chunk number {} is {}".format(chunk_number, chunk.shape))
         chunks_stack = np.vstack((chunks_stack, chunk))
 

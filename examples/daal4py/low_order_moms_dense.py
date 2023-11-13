@@ -16,6 +16,8 @@
 
 # daal4py low order moments example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -35,7 +37,8 @@ except ImportError:
 
 def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
-    file = "./data/batch/covcormoments_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    file = data_path / "covcormoments_dense.csv"
     data = readcsv(file, range(10))
 
     # compute

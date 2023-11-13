@@ -16,6 +16,8 @@
 
 # daal4py implicit_als example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -35,7 +37,8 @@ except ImportError:
 
 def main(readcsv=read_csv, method="defaultDense"):
     nFactors = 2
-    infile = "./data/batch/implicit_als_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "implicit_als_dense.csv"
     # We load the data
     data = readcsv(infile)
 

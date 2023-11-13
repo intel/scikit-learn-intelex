@@ -16,6 +16,7 @@
 
 # daal4py uniform distribution example for shared memory systems
 
+
 import numpy as np
 
 import daal4py as d4p
