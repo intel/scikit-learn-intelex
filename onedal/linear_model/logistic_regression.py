@@ -38,14 +38,13 @@ from ..utils import (
 
 class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
-    def __init__(self, tol, C, fit_intercept, solver, max_iter, copy_X, algorithm):
+    def __init__(self, tol, C, fit_intercept, solver, max_iter, algorithm):
         self.tol = tol
         self.C = C
         self.fit_intercept = fit_intercept
         self.solver = solver
         self.max_iter = max_iter
         self.algorithm = algorithm
-        self.copy_X = copy_X
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -72,7 +71,7 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
             dtype = np.float64
-            X = X.astype(dtype, copy=self.copy_X)
+            X = X.astype(dtype)
 
         # Finiteness is checked in the sklearnex wrapper
         X, y = _check_X_y(
@@ -210,7 +209,6 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
         fit_intercept=True,
         solver="newton-cg",
         max_iter=100,
-        copy_X=False,
         *,
         algorithm="dense_batch",
         **kwargs,
@@ -221,7 +219,6 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
             fit_intercept=fit_intercept,
             solver=solver,
             max_iter=max_iter,
-            copy_X=copy_X,
             algorithm=algorithm,
         )
 
