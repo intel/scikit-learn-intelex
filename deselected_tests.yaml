@@ -1162,7 +1162,9 @@ gpu:
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_dont_overwrite_parameters]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit2d_predict1d]
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
-  - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]   
+  - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
+  # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
+  - test_pca_n_components_mostly_explained_variance_ratio
 
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
