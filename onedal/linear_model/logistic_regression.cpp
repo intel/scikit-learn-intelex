@@ -26,7 +26,7 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-//#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 namespace linear_model {
 
 namespace logistic_regression {
@@ -251,6 +251,6 @@ ONEDAL_PY_INIT_MODULE(logistic_regression) {
 
 ONEDAL_PY_TYPE2STR(dal::logistic_regression::task::classification, "classification");
 
-//#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240100
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240001
 
 } // namespace oneapi::dal::python

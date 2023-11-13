@@ -50,9 +50,9 @@ ONEDAL_PY_INIT_MODULE(linear_model);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
 ONEDAL_PY_INIT_MODULE(kmeans_init);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-//#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 ONEDAL_PY_INIT_MODULE(logistic_regression);
-//#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 ONEDAL_PY_INIT_MODULE(kmeans);
 ONEDAL_PY_INIT_MODULE(kmeans_common);
 ONEDAL_PY_INIT_MODULE(neighbors);
@@ -88,9 +88,9 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_kmeans_init(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
 
-//#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
     init_logistic_regression(m);
-//#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 
     init_kmeans(m);
     init_kmeans_common(m);

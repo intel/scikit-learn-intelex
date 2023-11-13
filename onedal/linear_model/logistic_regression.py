@@ -27,7 +27,13 @@ from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_array, _check_n_features, _check_X_y, _num_features, _type_of_target
+from ..utils import (
+    _check_array,
+    _check_n_features,
+    _check_X_y,
+    _num_features,
+    _type_of_target,
+)
 
 
 class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
@@ -52,7 +58,7 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
             "intercept": self.fit_intercept,
             "tol": self.tol,
             "max_iter": self.max_iter,
-            "C" : self.C,
+            "C": self.C,
             "optimizer": self.solver,
             "result_option": (intercept + "coefficients|iterations_count"),
         }
@@ -60,27 +66,27 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
     def _fit(self, X, y, module, queue):
         policy = self._get_policy(queue, X, y)
 
-        X_loc, y_loc = X, y
-        if not isinstance(X, np.ndarray):
-            X_loc = np.asarray(X)
+        X = np.asarray(X)
+        y = np.asarray(y)
 
-        dtype = get_dtype(X_loc)
+        dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
             dtype = np.float64
-            X_loc = X_loc.astype(dtype, copy=self.copy_X)
-        y_loc = np.asarray(y_loc)
+            X = X.astype(dtype, copy=self.copy_X)
 
         # Finiteness is checked in the sklearnex wrapper
-        X_loc, y_loc = _check_X_y(X_loc, y_loc, accept_sparse=False, force_all_finite=False, accept_2d_y=True)
-        y_loc = y_loc.astype(dtype=np.int32)
-        
-        self.n_features_in_ = _num_features(X_loc, fallback_1d=True)
-        if (_type_of_target(y_loc) != "binary"):
+        X, y = _check_X_y(
+            X, y, accept_sparse=False, force_all_finite=False, accept_2d_y=True
+        )
+        y = y.astype(dtype=np.int32)
+
+        self.n_features_in_ = _num_features(X, fallback_1d=True)
+        if _type_of_target(y) != "binary":
             raise ValueError("Only binary classification is supported")
 
-        X_loc, y_loc = _convert_to_supported(policy, X_loc, y_loc)
-        params = self._get_onedal_params(get_dtype(X_loc))
-        X_table, y_table = to_table(X_loc, y_loc)
+        X, y = _convert_to_supported(policy, X, y)
+        params = self._get_onedal_params(get_dtype(X))
+        X_table, y_table = to_table(X, y)
 
         result = module.train(policy, params, X_table, y_table)
 
@@ -90,7 +96,7 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         coeff = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = coeff[:, 1:], coeff[:, 0]
 
-        if self.coef_.shape[0] == 1 and y_loc.ndim == 1:
+        if self.coef_.shape[0] == 1 and y.ndim == 1:
             self.coef_ = self.coef_.ravel()
             self.intercept_ = self.intercept_[0]
 
@@ -101,23 +107,18 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
 
         coefficients = self.coef_
         dtype = get_dtype(coefficients)
-        if not isinstance(coefficients, np.ndarray):
-            coefficients = np.asarray(coefficients, dtype=dtype)
+        coefficients = np.asarray(coefficients, dtype=dtype)
 
         if coefficients.ndim == 2:
             n_features_in = coefficients.shape[1]
-            n_targets_in = coefficients.shape[0]
+            assert coefficients.shape[0] == 1
         else:
             n_features_in = coefficients.size
-            n_targets_in = 1
 
         intercept = self.intercept_
-        if isinstance(intercept, Number):
-            assert n_targets_in == 1
-        else:
-            if not isinstance(intercept, np.ndarray):
-                intercept = np.asarray(intercept, dtype=dtype)
-            assert n_targets_in == intercept.size
+        if not isinstance(intercept, Number):
+            intercept = np.asarray(intercept, dtype=dtype)
+            assert intercept.size == 1
 
         intercept = _check_array(
             intercept,
@@ -133,12 +134,12 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         )
 
         coefficients, intercept = make2d(coefficients), make2d(intercept)
-        coefficients = coefficients.T if n_targets_in == 1 else coefficients
+        coefficients = coefficients.T
 
-        assert coefficients.shape == (n_targets_in, n_features_in)
-        assert intercept.shape == (n_targets_in, 1)
+        assert coefficients.shape == (1, n_features_in)
+        assert intercept.shape == (1, 1)
 
-        desired_shape = (n_targets_in, n_features_in + 1)
+        desired_shape = (1, n_features_in + 1)
         packed_coefficients = np.zeros(desired_shape, dtype=dtype)
 
         packed_coefficients[:, 1:] = coefficients
@@ -153,63 +154,90 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
 
         return m
 
-    def _predict(self, X, module, queue):
+    def _infer(self, X, module, queue):
         _check_is_fitted(self)
 
         policy = self._get_policy(queue, X)
 
-        if isinstance(X, np.ndarray):
-            X_loc = np.asarray(X)
-        else:
-            X_loc = X
+        X = np.asarray(X)
 
         # Finiteness is checked in the sklearnex wrapper
-        X_loc = _check_array(
-            X_loc, dtype=[np.float64, np.float32], force_all_finite=False, ensure_2d=False
+        X = _check_array(
+            X, dtype=[np.float64, np.float32], force_all_finite=False, ensure_2d=False
         )
-        _check_n_features(self, X_loc, False)
+        _check_n_features(self, X, False)
 
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
             model = self._create_model(module, policy)
 
-        X_loc = make2d(X_loc)
-        X_loc = _convert_to_supported(policy, X_loc)
-        params = self._get_onedal_params(get_dtype(X_loc))
+        X = make2d(X)
+        X = _convert_to_supported(policy, X)
+        params = self._get_onedal_params(get_dtype(X))
 
-        X_table = to_table(X_loc)
+        X_table = to_table(X)
         result = module.infer(policy, params, model, X_table)
+        return result
+
+    def _predict(self, X, module, queue):
+        result = self._infer(X, module, queue)
         y = from_table(result.responses)
 
-        if not isinstance(self.coef_, np.ndarray):
-            coefficients = np.asarray(self.coef_)
-        else:
-            coefficients = self.coef_
+        return y.ravel()
 
-        if y.shape[1] == 1 and coefficients.ndim == 1:
-            return y.ravel()
-        else:
-            return y
+    def _predict_proba(self, X, module, queue):
+        result = self._infer(X, module, queue)
+
+        y = from_table(result.probabilities)
+        y = y.reshape(-1, 1)
+        return np.hstack([1 - y, y])
+
+    def _predict_log_proba(self, X, module, queue):
+        y_proba = self._predict_proba(X, module, queue)
+        return np.log(y_proba)
 
 
 class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
     """
     Logistic Regression oneDAL implementation.
     """
+
     def __init__(
-        self, 
-        tol=1e-4, 
-        C = 1.0,
-        fit_intercept=True, 
+        self,
+        tol=1e-4,
+        C=1.0,
+        fit_intercept=True,
         solver="newton-cg",
         max_iter=100,
-        copy_X=False, *, algorithm="dense_batch", **kwargs):
-        super().__init__(tol=tol, C=C, fit_intercept=fit_intercept, solver=solver, max_iter=max_iter, copy_X=copy_X, algorithm=algorithm)
+        copy_X=False,
+        *,
+        algorithm="dense_batch",
+        **kwargs,
+    ):
+        super().__init__(
+            tol=tol,
+            C=C,
+            fit_intercept=fit_intercept,
+            solver=solver,
+            max_iter=max_iter,
+            copy_X=copy_X,
+            algorithm=algorithm,
+        )
 
     def fit(self, X, y, queue=None):
         return super()._fit(X, y, _backend.logistic_regression.classification, queue)
 
     def predict(self, X, queue=None):
         y = super()._predict(X, _backend.logistic_regression.classification, queue)
+        return y
+
+    def predict_proba(self, X, queue=None):
+        y = super()._predict_proba(X, _backend.logistic_regression.classification, queue)
+        return y
+
+    def predict_log_proba(self, X, queue=None):
+        y = super()._predict_log_proba(
+            X, _backend.logistic_regression.classification, queue
+        )
         return y
