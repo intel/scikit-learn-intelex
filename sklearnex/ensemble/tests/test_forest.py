@@ -104,7 +104,7 @@ def test_sklearnex_import_et_regression(dataframe, queue):
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     # For the 2023.2 release, random_state is not supported
     # defaults to seed=777, although it is set to 0
-    rf = ExtraTreesRegressor(max_depth=2, random_state=0).fit(X, y)
+    rf = ExtraTreesRegressor(random_state=0).fit(X, y)
     assert "sklearnex" in rf.__module__
     pred = _as_numpy(rf.predict([[0,]]))
     assert_allclose([0.445], pred, atol=1e-2)
