@@ -106,5 +106,13 @@ def test_sklearnex_import_et_regression(dataframe, queue):
     # defaults to seed=777, although it is set to 0
     rf = ExtraTreesRegressor(random_state=0).fit(X, y)
     assert "sklearnex" in rf.__module__
-    pred = _as_numpy(rf.predict([[0,]]))
+    pred = _as_numpy(
+        rf.predict(
+            [
+                [
+                    0,
+                ]
+            ]
+        )
+    )
     assert_allclose([0.445], pred, atol=1e-2)
