@@ -31,14 +31,6 @@ from sklearnex import get_patch_map
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.model_selection import train_test_split
 from sklearnex.preview.decomposition import PCA as PreviewPCA
-from sklearnex.preview.ensemble import ExtraTreesClassifier as PreviewExtraTreesClassifier
-from sklearnex.preview.ensemble import ExtraTreesRegressor as PreviewExtraTreesRegressor
-from sklearnex.preview.ensemble import (
-    RandomForestClassifier as PreviewRandomForestClassifier,
-)
-from sklearnex.preview.ensemble import (
-    RandomForestRegressor as PreviewRandomForestRegressor,
-)
 from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
 from sklearnex.utils import _assert_all_finite
 
@@ -110,10 +102,6 @@ BANNED_ESTIMATORS = (
 estimators = [
     PreviewPCA,
     PreviewLinearRegression,
-    PreviewRandomForestClassifier,
-    PreviewRandomForestRegressor,
-    PreviewExtraTreesClassifier,
-    PreviewExtraTreesRegressor,
     TrainTestSplitEstimator,
     FiniteCheckEstimator,
     CosineDistancesEstimator,
