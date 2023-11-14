@@ -16,17 +16,18 @@
 
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
-
 #include <regex>
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+#include "oneapi/dal/algo/logistic_regression.hpp"
+#include "onedal/primitives/optimizers.hpp"
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240001
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
-
-#include "oneapi/dal/algo/logistic_regression.hpp"
-#include "onedal/primitives/optimizers.hpp"
 
 namespace linear_model {
 
