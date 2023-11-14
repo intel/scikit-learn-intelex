@@ -23,7 +23,7 @@ import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 
-from sklearnex.preview.ensemble import RandomForestClassifier
+from sklearnex.ensemble import RandomForestClassifier
 
 # Make sure that all DPCtl tensors using the same device.
 q = dpctl.SyclQueue("gpu")  # GPU
