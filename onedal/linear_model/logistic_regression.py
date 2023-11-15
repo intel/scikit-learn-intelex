@@ -75,13 +75,16 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
 
         # Finiteness is checked in the sklearnex wrapper
         X, y = _check_X_y(
-            X, y, accept_sparse=False, force_all_finite=False, accept_2d_y=True
+            X, y, accept_sparse=False, force_all_finite=False, accept_2d_y=False
         )
-        y = y.astype(dtype=np.int32)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
+
         if _type_of_target(y) != "binary":
             raise ValueError("Only binary classification is supported")
+
+        self.classes_, y = np.unique(y, return_inverse=True)
+        y = y.astype(dtype=np.int32)
 
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(get_dtype(X))
@@ -90,14 +93,10 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         result = module.train(policy, params, X_table, y_table)
 
         self._onedal_model = result.model
-        self.n_iter_ = result.iterations_count
+        self.n_iter_ = np.array([result.iterations_count])
 
         coeff = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = coeff[:, 1:], coeff[:, 0]
-
-        if self.coef_.shape[0] == 1 and y.ndim == 1:
-            self.coef_ = self.coef_.ravel()
-            self.intercept_ = self.intercept_[0]
 
         return self
 
@@ -182,8 +181,8 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
     def _predict(self, X, module, queue):
         result = self._infer(X, module, queue)
         y = from_table(result.responses)
-
-        return y.ravel()
+        y = np.take(self.classes_, y.ravel(), axis=0)
+        return y
 
     def _predict_proba(self, X, module, queue):
         result = self._infer(X, module, queue)
