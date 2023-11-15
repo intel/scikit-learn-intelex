@@ -239,13 +239,10 @@ deselected_tests:
   - tests/test_multioutput.py::test_multi_output_classification
 
   # Linear Regression - badly defined equation system
-  - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_requires_y_none]
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
-  - tests/test_common.py::test_estimators[LinearRegression()-check_requires_y_none]
 
   # Linear Regression - minor mismatches in error/warning messages
-  - tree/tests/test_export.py::test_precision
   - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
@@ -1192,7 +1189,7 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
   # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
-  - test_pca_n_components_mostly_explained_variance_ratio
+  - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
 
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results

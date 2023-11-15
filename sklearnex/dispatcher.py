@@ -68,6 +68,7 @@ def get_patch_map():
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -76,7 +77,6 @@ def get_patch_map():
         # Preview classes for patching
         from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.decomposition import PCA as PCA_sklearnex
-        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
@@ -87,21 +87,6 @@ def get_patch_map():
             # PCA
             mapping.pop("pca")
             mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
-
-            # Linear Regression
-            mapping.pop("linear")
-            mapping.pop("linearregression")
-            mapping["linear"] = [
-                [
-                    (
-                        linear_model_module,
-                        "LinearRegression",
-                        LinearRegression_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["linearregression"] = mapping["linear"]
 
             # KMeans
             mapping.pop("kmeans")
@@ -127,6 +112,21 @@ def get_patch_map():
         mapping["svc"] = [[(svm_module, "SVC", SVC_sklearnex), None]]
         mapping["nusvr"] = [[(svm_module, "NuSVR", NuSVR_sklearnex), None]]
         mapping["nusvc"] = [[(svm_module, "NuSVC", NuSVC_sklearnex), None]]
+
+        # Linear Regression
+        mapping.pop("linear")
+        mapping.pop("linearregression")
+        mapping["linear"] = [
+            [
+                (
+                    linear_model_module,
+                    "LinearRegression",
+                    LinearRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["linearregression"] = mapping["linear"]
 
         # kNN
         mapping.pop("knn_classifier")
