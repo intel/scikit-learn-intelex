@@ -63,19 +63,17 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
-        policy = self._get_policy(queue, X, y)
-
-        X = np.asarray(X)
-        y = np.asarray(y)
-
         dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
             dtype = np.float64
-            X = X.astype(dtype)
 
-        # Finiteness is checked in the sklearnex wrapper
         X, y = _check_X_y(
-            X, y, accept_sparse=False, force_all_finite=False, accept_2d_y=False
+            X,
+            y,
+            accept_sparse=False,
+            force_all_finite=True,
+            accept_2d_y=False,
+            dtype=dtype,
         )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
@@ -86,6 +84,7 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         self.classes_, y = np.unique(y, return_inverse=True)
         y = y.astype(dtype=np.int32)
 
+        policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(get_dtype(X))
         X_table, y_table = to_table(X, y)
@@ -155,13 +154,8 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
     def _infer(self, X, module, queue):
         _check_is_fitted(self)
 
-        policy = self._get_policy(queue, X)
-
-        X = np.asarray(X)
-
-        # Finiteness is checked in the sklearnex wrapper
         X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=False, ensure_2d=False
+            X, dtype=[np.float64, np.float32], force_all_finite=True, ensure_2d=False
         )
         _check_n_features(self, X, False)
 
@@ -171,6 +165,7 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
             model = self._create_model(module, policy)
 
         X = make2d(X)
+        policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(get_dtype(X))
 
