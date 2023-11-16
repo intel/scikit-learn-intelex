@@ -18,6 +18,8 @@
 # example for shared memory systems
 # using cross entropy loss function
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -41,7 +43,8 @@ def main(readcsv=read_csv, method="defaultDense"):
     nIterations = 1000
     stepLength = 1.0e-4
 
-    infile = "./data/batch/logreg_train.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "logreg_train.csv"
 
     # Read the data
     data = readcsv(infile, range(nFeatures))

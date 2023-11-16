@@ -16,6 +16,8 @@
 
 # daal4py Decision Forest Classification example of Hist method for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -35,8 +37,9 @@ except ImportError:
 
 def main(readcsv=read_csv, method="hist"):
     # input data file
-    infile = "./data/batch/df_classification_train.csv"
-    testfile = "./data/batch/df_classification_test.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "df_classification_train.csv"
+    testfile = data_path / "df_classification_test.csv"
 
     # Configure a training object (5 classes)
     train_algo = d4p.decision_forest_classification_training(

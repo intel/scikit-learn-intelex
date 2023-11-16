@@ -16,6 +16,8 @@
 
 # daal4py QR example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -34,13 +36,14 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="svdDense"):
-    infile = "./data/batch/qr.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "qr.csv"
 
     # configure a QR object
     algo = d4p.qr()
 
     # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+    result1 = algo.compute(str(infile))
 
     # We can also load the data ourselfs and provide the numpy array
     data = readcsv(infile)

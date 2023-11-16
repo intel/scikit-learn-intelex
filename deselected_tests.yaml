@@ -237,16 +237,12 @@ deselected_tests:
   - tests/test_common.py::test_estimators[NuSVR()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[NuSVC()-check_class_weight_classifiers] <1.0
   - tests/test_multioutput.py::test_multi_output_classification
-  - tests/test_multioutput.py::test_classifier_chain_tuple_order >=0.24,<=1.1
 
   # Linear Regression - badly defined equation system
-  - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
   - tests/test_common.py::test_estimators[RandomForestClassifier()-check_requires_y_none]
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
-  - tests/test_common.py::test_estimators[LinearRegression()-check_requires_y_none]
 
   # Linear Regression - minor mismatches in error/warning messages
-  - tree/tests/test_export.py::test_precision
   - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
   - linear_model/tests/test_base.py::test_linear_regression_pd_sparse_dataframe_warning
 
@@ -257,7 +253,12 @@ deselected_tests:
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]  
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X1-y1-0.65-array-ExtraTreesClassifier] >=1.3
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[True-X0-y0-0.7-array-ExtraTreesRegressor] >=1.3
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor] >=1.2 darwin
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[True-X0-y0-0.7-array-RandomForestRegressor] >=1.3 darwin
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64] >=0.23 darwin
   - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-ExtraTreesRegressor]
   - ensemble/tests/test_forest.py::test_warm_start_oob
   - ensemble/tests/test_forest.py::test_distribution
@@ -307,9 +308,6 @@ deselected_tests:
   # Assertion error in check_estimator (PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator >=0.24
 
-  # Need to fix for next release
-  - tests/test_multioutput.py::test_classifier_chain_tuple_order >=0.24, <=1.0
-
   # RandomForestRegressor sum(y_pred)!=sum(y_true)
   - ensemble/tests/test_forest.py::test_balance_property_random_forest[squared_error] >=1.0
 
@@ -340,6 +338,17 @@ deselected_tests:
   - ensemble/_hist_gradient_boosting/tests/test_compare_lightgbm.py::test_same_predictions_multiclass_classification >=0.24,<1.0
   - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=0.24,<1.0
   - utils/tests/test_validation.py::test_check_array_pandas_dtype_casting >=1.0,<1.2
+
+  # Failure due to non-uniformity in the MT2203 engine causing
+  # bad Random Forest fits for small datasets with large n_estimators
+  # Had been solved by using MT19937, but oneDAL forces use of MT2203
+  - tests/test_multioutput.py::test_classifier_chain_tuple_order
+
+  # Floating point error accumulation in right nodes of oneDAL decision forest
+  # causes this error when nodes split down to one element
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
 
   # --------------------------------------------------------
   # No need to test daal4py patching
@@ -725,6 +734,22 @@ gpu:
   - tests/test_common.py::test_transformers_get_feature_names_out[VotingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
   - tests/test_common.py::test_f_contiguous_array_estimator[TSNE]
   - manifold/tests/test_t_sne.py::test_tsne_works_with_pandas_output
+
+  # GPU ensemble (Random Forest and Extra Trees) algorithms have a different
+  # implementation compared to CPU and require further validation
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float64]
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float32]
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float32]
+  - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float32]
+  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float64]
+  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float32]
+
+  # GPU implementation of Extra Trees doesn't support sample_weights
+  # comparisons to GPU with sample weights will use different algorithms
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=ones)]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=ones)]
 
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   # NearestNeighbors
@@ -1162,14 +1187,12 @@ gpu:
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_dont_overwrite_parameters]
   - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit2d_predict1d]
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
-  - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]   
+  - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
+  # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
+  - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
 
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
   - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
   - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
   - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X1-y1-0.65-array-ExtraTreesClassifier] >=1.3
-  - ensemble/tests/test_forest.py::test_forest_regressor_oob[True-X0-y0-0.7-array-ExtraTreesRegressor] >=1.3
-  - ensemble/tests/test_forest.py::test_forest_regressor_oob[True-X0-y0-0.7-array-RandomForestRegressor] >=1.3 darwin
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64] >=0.23 darwin

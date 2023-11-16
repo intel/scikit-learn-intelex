@@ -22,7 +22,7 @@ import numpy as np
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 
-from sklearnex.preview.ensemble import RandomForestRegressor
+from sklearnex.ensemble import RandomForestRegressor
 
 sycl_device = "gpu:0"
 

@@ -16,6 +16,8 @@
 
 # daal4py Stump regression example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -34,8 +36,9 @@ except ImportError:
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/stump_train.csv"
-    testfile = "./data/batch/stump_test.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "stump_train.csv"
+    testfile = data_path / "stump_test.csv"
 
     # Configure a stump regression training object
     train_algo = d4p.stump_regression_training()

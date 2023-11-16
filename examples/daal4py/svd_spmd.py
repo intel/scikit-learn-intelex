@@ -18,6 +18,8 @@
 # run like this:
 #    mpirun -n 4 python ./svd_spmd.py
 
+from pathlib import Path
+
 from numpy import allclose, loadtxt
 
 import daal4py as d4p
@@ -31,7 +33,7 @@ def main():
     algo = d4p.svd(distributed=True)
 
     # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+    result1 = algo.compute(str(infile))
 
     # We can also load the data ourselfs and provide the numpy array
     data = loadtxt(infile, delimiter=",")
