@@ -19,15 +19,13 @@
 #include <regex>
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+
 #include "oneapi/dal/algo/logistic_regression.hpp"
 #include "onedal/primitives/optimizers.hpp"
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240001
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
-
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 
 namespace linear_model {
 
@@ -253,6 +251,6 @@ ONEDAL_PY_INIT_MODULE(logistic_regression) {
 
 ONEDAL_PY_TYPE2STR(dal::logistic_regression::task::classification, "classification");
 
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240001
-
 } // namespace oneapi::dal::python
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240001
