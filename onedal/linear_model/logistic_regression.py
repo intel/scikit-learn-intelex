@@ -63,17 +63,13 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
-        dtype = get_dtype(X)
-        if dtype not in [np.float32, np.float64]:
-            dtype = np.float64
-
         X, y = _check_X_y(
             X,
             y,
             accept_sparse=False,
             force_all_finite=True,
             accept_2d_y=False,
-            dtype=dtype,
+            dtype=[np.float64, np.float32],
         )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
