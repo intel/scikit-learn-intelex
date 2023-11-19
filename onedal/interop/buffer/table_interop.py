@@ -25,14 +25,17 @@ homogen_table = onedal._backend.data_management.homogen_table
 wrap_to_homogen_table = onedal._backend.interop.buffer.wrap_to_homogen_table
 wrap_from_homogen_table = onedal._backend.interop.buffer.wrap_from_homogen_table
 
+
 def is_buffer_table(entity) -> bool:
     if is_buffer_entity(entity):
-        return is_nd(entity, n = 2)
+        return is_nd(entity, n=2)
     return False
-    
+
+
 def to_homogen_table(entity):
     assert is_buffer_table(entity)
     return wrap_to_homogen_table(entity)
+
 
 def from_homogen_table(table) -> np.ndarray:
     assert table.get_kind() == table_kind.homogen

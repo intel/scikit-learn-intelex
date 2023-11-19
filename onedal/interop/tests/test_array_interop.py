@@ -33,10 +33,12 @@ try:
 except ImportError:
     dpctl_available = False
 
+
 def check_strides(value, truth):
     value = (1,) if value is None else value
     truth = (1,) if truth is None else truth
     return value == truth
+
 
 @pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
@@ -45,7 +47,7 @@ def check_strides(value, truth):
 @pytest.mark.parametrize("dtype", get_dtype_list())
 def test_device_array_functionality(queue, backend, count, dtype):
     generator = np.random.Generator(np.random.MT19937(count**2))
-    numpy_array = generator.integers(0, 777, count).astype(dtype = dtype)
+    numpy_array = generator.integers(0, 777, count).astype(dtype=dtype)
     dpctl_tensor = dpt.asarray(numpy_array, usm_type="device", sycl_queue=queue)
     dpctl_sua = dpctl_tensor.__sycl_usm_array_interface__
     tensor_device = dpctl_tensor.__dlpack_device__()
@@ -74,6 +76,7 @@ def test_device_array_functionality(queue, backend, count, dtype):
     else:
         np.testing.assert_equal(numpy_array, return_array)
 
+
 def check_by_sampling(generator, numpy_array, onedal_array):
     count = len(onedal_array)
     assert count == len(numpy_array)
@@ -82,12 +85,13 @@ def check_by_sampling(generator, numpy_array, onedal_array):
     onedal_samples = [int(onedal_array[s]) for s in sample_indices]
     np.testing.assert_equal(onedal_samples, numpy_array[sample_indices])
 
+
 @pytest.mark.parametrize("backend", ["dlpack", "native", "buffer"])
 @pytest.mark.parametrize("count", [1, 5, 10, 50, 1000, 4999, 100001])
 @pytest.mark.parametrize("dtype", get_dtype_list())
 def test_host_array_functionality(backend, count, dtype):
     generator = np.random.Generator(np.random.MT19937(count))
-    numpy_array = generator.integers(0, 888, count).astype(dtype = dtype)
+    numpy_array = generator.integers(0, 888, count).astype(dtype=dtype)
     numpy_device = numpy_array.__dlpack_device__()
     numpy_iface = numpy_array.__array_interface__
 

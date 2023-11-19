@@ -19,7 +19,8 @@ import onedal
 host_policy = onedal._backend.host_policy
 default_host_policy = onedal._backend.default_host_policy
 
-def check_attr(obj, name: str, checker = None) -> bool:
+
+def check_attr(obj, name: str, checker=None) -> bool:
     if checker is None:
         check = lambda x: True
     else:
@@ -32,7 +33,7 @@ def check_attr(obj, name: str, checker = None) -> bool:
         return check(attr)
     except Exception:
         return False
-    
+
 
 def is_host_policy(policy):
     is_host = isinstance(policy, host_policy)

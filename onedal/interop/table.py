@@ -22,9 +22,11 @@ from .csr_table import is_csr_entity, from_csr_table, to_csr_table
 from .empty_table import is_empty_entity, from_empty_table, to_empty_table
 from .homogen_table import is_homogen_entity, from_homogen_table, to_homogen_table
 
+
 def is_table_entity(entity) -> bool:
     conditions = [is_empty_entity, is_csr_entity, is_homogen_entity]
     return any(map(lambda check: check(entity), conditions))
+
 
 def to_table(entity):
     assert is_table_entity(entity)
@@ -39,6 +41,7 @@ def to_table(entity):
     result = onedal_table(result)
     assert is_table_entity(result)
     return result
+
 
 # TODO: Make sure that it will return
 # SYCL-native entity in the future

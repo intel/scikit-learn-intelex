@@ -23,9 +23,11 @@ from onedal.interop.utils import is_host_policy
 
 make_array = onedal._backend.data_management.make_array
 
+
 def is_python_array(entity) -> bool:
     conditions = [sua.is_sua_array, dlpack.is_dlpack_array, buffer.is_buffer_array]
     return any(map(lambda check: check(entity), conditions))
+
 
 def is_native_array(entity) -> bool:
     attr: str = "__is_onedal_array__"
@@ -33,9 +35,11 @@ def is_native_array(entity) -> bool:
         return getattr(entity, attr)
     return False
 
+
 def is_array_entity(entity) -> bool:
     conditions = [is_python_array, is_native_array]
     return any(map(lambda check: check(entity), conditions))
+
 
 def to_array_python(entity):
     assert is_python_array(entity)
@@ -49,10 +53,12 @@ def to_array_python(entity):
         raise ValueError("Unable to convert to array from python")
     assert is_native_array(result)
     return result
-    
+
+
 def to_array_native(entity):
     assert is_native_array(entity)
     return make_array(entity)
+
 
 def to_array(entity):
     assert is_array_entity(entity)
@@ -64,6 +70,7 @@ def to_array(entity):
         raise ValueError("Not able to convert to array")
     assert is_native_array(result)
     return result
+
 
 def from_array_native(array):
     assert is_native_array(array)
@@ -77,10 +84,12 @@ def from_array_native(array):
         raise ValueError("Unable to convert from array to python")
     assert is_python_array(result)
     return result
-    
+
+
 def from_array_python(array):
     assert is_python_array(array)
     return array
+
 
 def from_array(array):
     assert is_array_entity(array)

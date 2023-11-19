@@ -23,7 +23,11 @@ from .wrappers import wrap_entity, get_dtype_list
 from onedal.tests.utils._device_selection import get_queues
 
 from onedal.interop.sua import is_sua_entity
-from onedal.interop.homogen_table import to_homogen_table, from_homogen_table, is_homogen_entity
+from onedal.interop.homogen_table import (
+    to_homogen_table,
+    from_homogen_table,
+    is_homogen_entity,
+)
 
 try:
     import dpctl
@@ -33,8 +37,18 @@ try:
 except ImportError:
     dpctl_available = False
 
-table_dimensions = [(1, 1), (1, 10), (11, 1), (3, 9), (21, 17),
-                    (1001, 1), (999, 1), (888, 777), (123, 999)]
+table_dimensions = [
+    (1, 1),
+    (1, 10),
+    (11, 1),
+    (3, 9),
+    (21, 17),
+    (1001, 1),
+    (999, 1),
+    (888, 777),
+    (123, 999),
+]
+
 
 @pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
@@ -44,7 +58,7 @@ table_dimensions = [(1, 1), (1, 10), (11, 1), (3, 9), (21, 17),
 @pytest.mark.parametrize("dtype", get_dtype_list())
 def test_device_array_functionality(queue, backend, transpose, shape, dtype):
     generator = np.random.Generator(np.random.MT19937(min(shape)))
-    numpy_array = generator.integers(0, 555, shape).astype(dtype = dtype)
+    numpy_array = generator.integers(0, 555, shape).astype(dtype=dtype)
     numpy_array = numpy_array.T if transpose else numpy_array
     dpctl_tensor = dpt.asarray(numpy_array, usm_type="device", sycl_queue=queue)
     dpctl_sua = dpctl_tensor.__sycl_usm_array_interface__
@@ -71,13 +85,14 @@ def test_device_array_functionality(queue, backend, transpose, shape, dtype):
     else:
         np.testing.assert_equal(numpy_array, return_table)
 
+
 @pytest.mark.parametrize("backend", ["dlpack", "native"])
 @pytest.mark.parametrize("transpose", [True, False])
 @pytest.mark.parametrize("shape", table_dimensions)
 @pytest.mark.parametrize("dtype", get_dtype_list())
 def test_host_homogen_table_functionality(backend, transpose, shape, dtype):
     generator = np.random.Generator(np.random.MT19937(sum(shape)))
-    numpy_array = generator.integers(0, 999, shape).astype(dtype = dtype)
+    numpy_array = generator.integers(0, 999, shape).astype(dtype=dtype)
     numpy_array = numpy_array.T if transpose else numpy_array
 
     numpy_device = numpy_array.__dlpack_device__()

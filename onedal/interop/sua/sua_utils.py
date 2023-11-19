@@ -27,7 +27,7 @@ try:
     def __convert_sua_impl(sua):
         result = dpt.asarray(sua)
         return dpt.asnumpy(result)
-    
+
     if convert_sua_impl is None:
         convert_sua_impl = __convert_sua_impl
 except ImportError:
@@ -41,12 +41,13 @@ try:
     def __convert_sua_impl(sua):
         result = dpnp.asarray(sua)
         return dpnp.asnumpy(result)
-    
+
     if convert_sua_impl is None:
         convert_sua_impl = __convert_sua_impl
 
 except ImportError:
     logging.info("Unable to load DPNP")
+
 
 # TODO: Check supported versions of iface
 def is_valid_sua_iface(iface: dict) -> bool:
@@ -55,6 +56,7 @@ def is_valid_sua_iface(iface: dict) -> bool:
         return check_attr(iface, "version", check_version)
     return False
 
+
 def is_sua_entity(entity) -> bool:
     iface_attr: str = "__sycl_usm_array_interface__"
     if hasattr(entity, iface_attr):
@@ -62,9 +64,11 @@ def is_sua_entity(entity) -> bool:
         return is_valid_sua_iface(iface)
     return False
 
+
 def get_sua_iface(entity) -> dict:
     assert is_sua_entity(entity)
     return entity.__sycl_usm_array_interface__
+
 
 # TODO: Make sure that it will return
 # SYCL-native entity in the future
@@ -73,6 +77,7 @@ def convert_sua(sua):
     if convert_sua_impl is not None:
         return convert_sua_impl(sua)
     return None
+
 
 def is_nd(entity, n: int = 1) -> bool:
     if is_sua_entity(entity):

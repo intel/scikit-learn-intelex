@@ -18,21 +18,23 @@ from array import array
 from functools import lru_cache
 
 dtype_map = {
-    'int8': 'b',
-    'uint8': 'B',
-    'int16': 'h',
-    'uint16': 'H',
-    'int32': 'i',
-    'uint32': 'I',
-    'int64': 'q',
-    'uint64': 'Q',
-    'float32': 'f',
-    'float64': 'd'
+    "int8": "b",
+    "uint8": "B",
+    "int16": "h",
+    "uint16": "H",
+    "int32": "i",
+    "uint32": "I",
+    "int64": "q",
+    "uint64": "Q",
+    "float32": "f",
+    "float64": "d",
 }
+
 
 @lru_cache
 def get_dtype_list():
     return list(dtype_map.keys())
+
 
 class only_sua_wrapper:
     def __init__(self, body):
@@ -41,6 +43,7 @@ class only_sua_wrapper:
     @property
     def __sycl_usm_array_interface__(self):
         return self.body.__sycl_usm_array_interface__
+
 
 class only_dlpack_wrapper:
     def __init__(self, body):
@@ -52,6 +55,7 @@ class only_dlpack_wrapper:
     def __dlpack_device__(self):
         return self.body.__dlpack_device__()
 
+
 # It is sthe easiest way to get a purely
 # buffer entity. It may (or may not)
 # preserve pointers and also don't
@@ -61,6 +65,7 @@ def only_buffer_wrapper(body):
     dtype = body.dtype.name
     dtype = dtype_map[dtype]
     return array(dtype, data)
+
 
 def wrap_entity(entity, backend):
     if backend == "sua":

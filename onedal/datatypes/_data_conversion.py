@@ -50,6 +50,7 @@ def from_table(*args):
 def to_table_one(table):
     return interop.to_table(table)
 
+
 def convert_one_to_table(arg):
     return to_table_one(make2d(arg))
 

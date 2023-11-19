@@ -28,19 +28,23 @@ table = onedal._backend.data_management.table
 homogen_table = onedal._backend.data_management.homogen_table
 homogen_kind = onedal._backend.data_management.table_kind.homogen
 
+
 def is_native_homogen(entity) -> bool:
     if isinstance(entity, table):
         kind = entity.get_kind()
         return kind == homogen_kind
     return isinstance(entity, homogen_table)
 
+
 def is_python_homogen(entity) -> bool:
     conditions = [sua.is_sua_table, dlpack.is_dlpack_table, buffer.is_buffer_table]
     return any(map(lambda check: check(entity), conditions))
 
+
 def is_homogen_entity(entity) -> bool:
     conditions = [is_native_homogen, is_python_homogen, is_array_entity]
     return any(map(lambda check: check(entity), conditions))
+
 
 def to_homogen_table_array(entity) -> homogen_table:
     assert is_array_entity(entity)
@@ -48,9 +52,11 @@ def to_homogen_table_array(entity) -> homogen_table:
     count = entity.get_count()
     return homogen_table(entity, count, 1)
 
+
 def to_homogen_table_native(entity) -> homogen_table:
     assert is_native_homogen(entity)
     return homogen_table(entity)
+
 
 def to_homogen_table_python(entity) -> homogen_table:
     assert is_python_homogen(entity)
@@ -62,7 +68,8 @@ def to_homogen_table_python(entity) -> homogen_table:
         return buffer.to_homogen_table(entity)
     else:
         raise ValueError("Not a python homogen table")
-  
+
+
 def to_homogen_table(entity) -> homogen_table:
     assert is_homogen_entity(entity)
     if is_array_entity(entity):
@@ -75,7 +82,8 @@ def to_homogen_table(entity) -> homogen_table:
         raise ValueError("Not a homogen table")
     assert is_native_homogen(result)
     return result
-    
+
+
 def from_homogen_table_native(table):
     assert is_native_homogen(table)
     data = table.get_data()
@@ -88,9 +96,11 @@ def from_homogen_table_native(table):
     else:
         raise ValueError("unknown device")
 
+
 def from_homogen_table_python(table):
     assert is_python_homogen(table)
     return table
+
 
 def from_homogen_table(table):
     assert is_homogen_entity(table)

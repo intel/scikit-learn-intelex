@@ -33,6 +33,7 @@ import onedal
 
 homogen_table = onedal._backend.data_management.homogen_table
 
+
 def get_table_policy(table):
     casted_table = homogen_table(table)
     print("Homogen table:", casted_table)
@@ -41,6 +42,7 @@ def get_table_policy(table):
     data_policy = data.get_policy()
     print("Data policy:", data_policy)
     print("Device name:", data_policy.get_device_name())
+
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod

@@ -23,15 +23,18 @@ homogen_table = onedal._backend.data_management.homogen_table
 wrap_to_homogen_table = onedal._backend.interop.sua.wrap_to_homogen_table
 wrap_from_homogen_table = onedal._backend.interop.sua.wrap_from_homogen_table
 
+
 def is_sua_table(entity) -> bool:
     if is_sua_entity(entity):
-        return is_nd(entity, n = 2)
+        return is_nd(entity, n=2)
     else:
         return False
-    
+
+
 def to_homogen_table(entity):
     assert is_sua_table(entity)
     return wrap_to_homogen_table(entity)
+
 
 class fake_sua_table:
     def __init__(self, table):
@@ -42,6 +45,7 @@ class fake_sua_table:
         if not hasattr(self, "sua") or self.sua is None:
             self.sua: dict = wrap_from_homogen_table(self.table)
         return self.sua
+
 
 def from_homogen_table(table):
     assert table.get_kind() == table_kind.homogen

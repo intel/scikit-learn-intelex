@@ -2,6 +2,7 @@ import onedal
 
 get_shape = onedal._backend.interop.dlpack.get_shape
 
+
 def is_valid_dlpack_capsule(caps) -> bool:
     caps_repr: str = str(caps)
     type_repr: str = str(type(caps))
@@ -10,12 +11,14 @@ def is_valid_dlpack_capsule(caps) -> bool:
             return True
     return False
 
+
 def get_dlpack_capsule(entity):
     iface_attr: str = "__dlpack__"
     if hasattr(entity, iface_attr):
         gen = getattr(entity, iface_attr)
         return gen()
-    return None 
+    return None
+
 
 def is_dlpack_entity(entity) -> bool:
     caps = get_dlpack_capsule(entity)
@@ -23,6 +26,7 @@ def is_dlpack_entity(entity) -> bool:
         return is_valid_dlpack_capsule(caps)
     else:
         return False
+
 
 def is_nd(entity, n: int = 1) -> bool:
     if is_dlpack_entity(entity):

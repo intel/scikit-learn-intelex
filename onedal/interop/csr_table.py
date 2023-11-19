@@ -26,16 +26,19 @@ csr_table = onedal._backend.data_management.csr_table
 csr_kind = onedal._backend.data_management.table_kind.csr
 sparse_indexing = onedal._backend.data_management.sparse_indexing
 
+
 def is_native_csr(entity) -> bool:
     if isinstance(entity, table):
         kind = entity.get_kind()
         return kind == csr_kind
     return isinstance(entity, csr_table)
 
+
 def is_csr_entity(entity) -> bool:
     is_native = is_native_csr(entity)
     is_scipy = isspmatrix_csr(entity)
     return is_native or is_scipy
+
 
 def assert_table(table, matrix):
     assert is_csr_entity(matrix)
@@ -44,17 +47,20 @@ def assert_table(table, matrix):
     assert table.get_column_count() == col_count
     assert table.get_row_count() == row_count
 
+
 # Passing throw native entity
 def to_csr_table_native(entity) -> csr_table:
     assert is_native_csr(entity)
     return csr_table(entity)
 
-def to_typed_array(x, dtypes = [np.int64]):
+
+def to_typed_array(x, dtypes=[np.int64]):
     result = x
     if x.dtype not in list(dtypes):
         result = x.astype(dtypes[0])
     assert result.dtype in dtypes
     return to_array(result)
+
 
 # Converting python entity to table
 # TODO: Implement smarter logic
@@ -67,10 +73,10 @@ def to_csr_table_python(entity) -> csr_table:
     print(ofs.get_policy())
     nz = to_array(entity.data)
     print(nz.get_policy())
-    result = csr_table(nz, ids, ofs, \
-        col_count, sparse_indexing.zero_based)
+    result = csr_table(nz, ids, ofs, col_count, sparse_indexing.zero_based)
     assert_table(result, entity)
     return result
+
 
 def to_csr_table(entity) -> csr_table:
     assert is_csr_entity(entity)
@@ -82,6 +88,7 @@ def to_csr_table(entity) -> csr_table:
         raise ValueError("Not able to convert")
     assert is_native_csr(result)
     return result
+
 
 # Converting onedal entity to python
 def from_csr_table_native(entity) -> csr_matrix:
@@ -98,10 +105,12 @@ def from_csr_table_native(entity) -> csr_matrix:
     assert_table(table, result)
     return result
 
+
 # Passing matrix that is already in correct format
 def from_csr_table_python(entity) -> csr_matrix:
     assert isspmatrix_csr(entity)
     return entity
+
 
 def from_csr_table(table) -> csr_matrix:
     if is_native_csr(table):
