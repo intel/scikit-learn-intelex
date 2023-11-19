@@ -39,19 +39,22 @@ inline void instantiate_homogen_constructor_impl(py::class_<Table>& py_table) {
     py_table.def(py::init([](const array<Type>& arr, std::int64_t rc, std::int64_t cc) {
         return homogen_table::wrap<Type>(arr, rc, cc);
     }));
-    py_table.def(py::init([](const array<Type>& arr, std::int64_t rc, std::int64_t cc, data_layout dl) {
-        return homogen_table::wrap<Type>(arr, rc, cc, dl);
-    }));
+    py_table.def(
+        py::init([](const array<Type>& arr, std::int64_t rc, std::int64_t cc, data_layout dl) {
+            return homogen_table::wrap<Type>(arr, rc, cc, dl);
+        }));
 }
 
 template <typename Table, typename... Types>
 inline void instantiate_homogen_constructor(py::class_<Table>& py_table,
-        const std::tuple<Types...>* const = nullptr) {
+                                            const std::tuple<Types...>* const = nullptr) {
     static_assert(std::is_same_v<Table, homogen_table>);
-    return detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        instantiate_homogen_constructor_impl<type_t>(py_table);
-    }, Types{}...);
+    return detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            instantiate_homogen_constructor_impl<type_t>(py_table);
+        },
+        Types{}...);
 }
 
 inline std::int64_t get_count(const dal::homogen_table& t) {
@@ -69,7 +72,7 @@ dal::array<Type> get_data(const dal::homogen_table& table) {
     const std::int64_t count = get_count(table);
 
     dal::array<dal::byte_t> data = impl->get_data();
-    
+
     const std::int64_t size = //
         detail::check_mul_overflow(count, elem_size);
 
@@ -83,7 +86,7 @@ dal::array<Type> get_data(const dal::homogen_table& table) {
         return dal::array<Type>(data, ptr, count);
     }
     else {
-        const dal::byte_t* raw_ptr = data.get_data(); 
+        const dal::byte_t* raw_ptr = data.get_data();
         const Type* ptr = reinterpret_cast<const Type*>(raw_ptr);
         return dal::array<Type>(data, ptr, count);
     }
@@ -93,8 +96,7 @@ py::object get_data_array(const dal::homogen_table& table) {
     const table_metadata& meta = table.get_metadata();
     const data_type dtype = meta.get_data_type(0l);
 
-    return detail::dispatch_by_data_type(dtype, 
-            [&](auto type_tag) -> py::object {
+    return detail::dispatch_by_data_type(dtype, [&](auto type_tag) -> py::object {
         using type_t = std::decay_t<decltype(type_tag)>;
         auto array = get_data<type_t>(table);
         return py::cast(std::move(array));

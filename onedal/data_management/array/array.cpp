@@ -54,7 +54,8 @@ inline auto get_policy(const dal::array<T>& arr) {
 
 template <typename Policy>
 constexpr inline bool is_host_policy_v = dal::detail::is_one_of_v<Policy, //
-                        detail::default_host_policy, detail::host_policy>;
+                                                                  detail::default_host_policy,
+                                                                  detail::host_policy>;
 
 template <typename InpPolicy, typename OutPolicy>
 inline bool need_copy(const InpPolicy& inp, const OutPolicy& out) {
@@ -69,14 +70,16 @@ inline bool need_copy(const InpPolicy& inp, const OutPolicy& out) {
 // TODO: Check for the same policy
 template <typename Policy, typename T>
 inline dal::array<T> to_policy(const Policy& out, const dal::array<T>& source) {
-    return std::visit([&](const auto& inp) -> dal::array<T> {
-        if (need_copy(inp, out)) {
-            return detail::copy(out, source); 
-        }
-        else {
-            return dal::array<T>{ source };
-        }
-    }, get_policy(source));
+    return std::visit(
+        [&](const auto& inp) -> dal::array<T> {
+            if (need_copy(inp, out)) {
+                return detail::copy(out, source);
+            }
+            else {
+                return dal::array<T>{ source };
+            }
+        },
+        get_policy(source));
 }
 
 template <typename Policy, typename Array>
@@ -84,7 +87,7 @@ inline void instantiate_to_policy(py::class_<Array>& py_array) {
     constexpr const char name[] = "to_policy";
     py_array.def(name, [](const Array& source, const Policy& policy) {
         auto result = to_policy(policy, source);
-        return py::cast( std::move(result) );
+        return py::cast(std::move(result));
     });
 }
 
@@ -104,22 +107,21 @@ void instantiate_array_by_type(py::module& pm) {
         },
         [](const py::bytes& bytes) -> array_t {
             return deserialize<array_t>(bytes);
-        })
-    );
+        }));
     py_array.def("__len__", &array_t::get_count);
     py_array.def("get_count", &array_t::get_count);
     py_array.def("has_mutable_data", &array_t::has_mutable_data);
     py_array.def("has_data", [](const array_t& array) -> bool {
         return array.get_count() > std::int64_t(0l);
     });
-    py_array.def("get_slice", [](const array_t& array, 
-            std::int64_t first, std::int64_t last) -> array_t {
-        constexpr std::int64_t zero = 0l;
-        const range<std::int64_t> outer{zero, array.get_count()};
-        const range<std::int64_t> inner{first, last};
-        check_in_range<std::int64_t>(inner , outer);
-        return array.get_slice(first, last);
-    });
+    py_array.def("get_slice",
+                 [](const array_t& array, std::int64_t first, std::int64_t last) -> array_t {
+                     constexpr std::int64_t zero = 0l;
+                     const range<std::int64_t> outer{ zero, array.get_count() };
+                     const range<std::int64_t> inner{ first, last };
+                     check_in_range<std::int64_t>(inner, outer);
+                     return array.get_slice(first, last);
+                 });
     py_array.def("get_data", [](const array_t& array) -> std::uintptr_t {
         const Type* const raw = array.get_data();
         return reinterpret_cast<std::uintptr_t>(raw);
@@ -135,9 +137,11 @@ void instantiate_array_by_type(py::module& pm) {
         return dtype;
     });
     py_array.def("get_policy", [](const array_t& arr) -> py::object {
-        return std::visit([](const auto& policy) -> py::object {
-            return py::cast( policy );
-        }, get_policy(arr));
+        return std::visit(
+            [](const auto& policy) -> py::object {
+                return py::cast(policy);
+            },
+            get_policy(arr));
     });
     py_array.def("__getitem__", [](const array_t& arr, std::int64_t idx) -> Type {
         check_access<Type, false>(arr, idx);
@@ -158,8 +162,7 @@ void instantiate_array_by_type(py::module& pm) {
 }
 
 template <typename... Types>
-inline void instantiate_array_impl(py::module& pm, 
-        const std::tuple<Types...>* const = nullptr) {
+inline void instantiate_array_impl(py::module& pm, const std::tuple<Types...>* const = nullptr) {
     auto instantiate = [&](auto type_tag) -> void {
         using type_t = std::decay_t<decltype(type_tag)>;
         return instantiate_array_by_type<type_t>(pm);
@@ -168,8 +171,7 @@ inline void instantiate_array_impl(py::module& pm,
 }
 
 template <typename... Types>
-inline void instantiate_make_array(py::module& pm,
-        const std::tuple<Types...>* const = nullptr) {
+inline void instantiate_make_array(py::module& pm, const std::tuple<Types...>* const = nullptr) {
     constexpr const char name[] = "make_array";
     auto instantiate = [&](auto type_tag) -> void {
         using type_t = std::decay_t<decltype(type_tag)>;
@@ -178,13 +180,13 @@ inline void instantiate_make_array(py::module& pm,
             return array_t{ arr };
         });
     };
-    return detail::apply(instantiate, Types{}...); 
+    return detail::apply(instantiate, Types{}...);
 }
 
 void instantiate_array(py::module& pm) {
     constexpr const supported_types_t* types = nullptr;
-    (void) instantiate_array_impl(pm, types);
-    (void) instantiate_make_array(pm, types);
+    (void)instantiate_array_impl(pm, types);
+    (void)instantiate_make_array(pm, types);
 }
 
 } // namespace oneapi::dal::python::data_management

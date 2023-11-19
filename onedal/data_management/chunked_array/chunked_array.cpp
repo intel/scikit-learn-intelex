@@ -49,8 +49,7 @@ void instantiate_chunked_array_by_type(py::module& m) {
         },
         [](const py::bytes& bytes) -> chunked_array_t {
             return deserialize<chunked_array_t>(bytes);
-        })
-    );
+        }));
     py_array.def(py::init<std::int64_t>());
     py_array.def("validate", &chunked_array_t::validate);
     py_array.def("get_count", &chunked_array_t::get_count);
@@ -67,17 +66,20 @@ void instantiate_chunked_array_by_type(py::module& m) {
     py_array.def("get_chunk", [](const chunked_array_t& chunked, std::int64_t chunk) -> array_t {
         return chunked.get_chunk(chunk);
     });
-    py_array.def("get_slice", [](const chunked_array_t& chunked, 
-            std::int64_t first, std::int64_t last) -> chunked_array_t {
-        constexpr std::int64_t zero = 0l;
-        const range<std::int64_t> outer{zero, chunked.get_count()};
-        const range<std::int64_t> inner{first, last};
-        check_in_range<std::int64_t>(inner , outer);
-        return chunked.get_slice(first, last);
-    });
-    py_array.def("set_chunk", [](chunked_array_t& chunked, std::int64_t chunk, const array_t& array) {
-        chunked.set_chunk(chunk, array);
-    });
+    py_array.def("get_slice",
+                 [](const chunked_array_t& chunked,
+                    std::int64_t first,
+                    std::int64_t last) -> chunked_array_t {
+                     constexpr std::int64_t zero = 0l;
+                     const range<std::int64_t> outer{ zero, chunked.get_count() };
+                     const range<std::int64_t> inner{ first, last };
+                     check_in_range<std::int64_t>(inner, outer);
+                     return chunked.get_slice(first, last);
+                 });
+    py_array.def("set_chunk",
+                 [](chunked_array_t& chunked, std::int64_t chunk, const array_t& array) {
+                     chunked.set_chunk(chunk, array);
+                 });
     py_array.def("get_dtype", [](const chunked_array_t&) -> dal::data_type {
         constexpr auto dtype = detail::make_data_type<Type>();
         return dtype;
@@ -85,8 +87,8 @@ void instantiate_chunked_array_by_type(py::module& m) {
 }
 
 template <typename... Types>
-inline void instantiate_chunked_array_impl(py::module& pm, 
-            const std::tuple<Types...>* const = nullptr) {
+inline void instantiate_chunked_array_impl(py::module& pm,
+                                           const std::tuple<Types...>* const = nullptr) {
     auto instantiate = [&](auto type_tag) -> void {
         using type_t = std::decay_t<decltype(type_tag)>;
         return instantiate_chunked_array_by_type<type_t>(pm);

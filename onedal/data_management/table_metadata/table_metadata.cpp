@@ -40,8 +40,7 @@ void instantiate_table_metadata(py::module& pm) {
         },
         [](const py::bytes& bytes) -> table_metadata {
             return deserialize<table_metadata>(bytes);
-        })
-    );
+        }));
     py_metadata.def("get_data_type", &table_metadata::get_data_type);
     py_metadata.def("get_data_types", &table_metadata::get_data_types);
     py_metadata.def("get_feature_type", &table_metadata::get_feature_type);

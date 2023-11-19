@@ -23,14 +23,14 @@ namespace oneapi::dal::python {
 
 template <typename Type>
 struct range {
-    range(Type l, Type r) noexcept(false) 
-                : left{ l }, right{ r } {
+    range(Type l, Type r) noexcept(false) : left{ l }, right{ r } {
         this->check_correctness();
     }
 
     void check_correctness() const noexcept(false) {
         const std::string msg = "Boundaries are unordered";
-        if (right < left) throw std::range_error(msg);
+        if (right < left)
+            throw std::range_error(msg);
     }
 
     const Type left, right;
@@ -43,7 +43,7 @@ inline void check_in_range(const Range& inner, const Range& outer) {
     const auto& [l_o, r_o] = outer;
     inner.check_correctness();
     outer.check_correctness();
-    if (l_i < l_o || r_o < r_i) 
+    if (l_i < l_o || r_o < r_i)
         throw std::range_error(msg);
 }
 

@@ -54,13 +54,14 @@ inline void make_chunked_array_setter(py::class_<dal::heterogen_table>& table) {
 }
 
 template <typename Table, typename... Types>
-void instantiate_setters(py::class_<Table>& table, 
-            const std::tuple<Types...>* const = nullptr) {
-    return detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        make_chunked_array_setter<type_t>(table);
-        make_array_setter<type_t>(table);
-    }, Types{}...);
+void instantiate_setters(py::class_<Table>& table, const std::tuple<Types...>* const = nullptr) {
+    return detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            make_chunked_array_setter<type_t>(table);
+            make_array_setter<type_t>(table);
+        },
+        Types{}...);
 }
 
 void instantiate_heterogen_table(py::module& pm) {
@@ -68,8 +69,7 @@ void instantiate_heterogen_table(py::module& pm) {
     py::class_<dal::heterogen_table> py_heterogen_table(pm, name);
 
     py_heterogen_table.def(py::init<dal::table>());
-    py_heterogen_table.def(py::init(
-            [](const dal::table_metadata& meta) -> dal::heterogen_table {
+    py_heterogen_table.def(py::init([](const dal::table_metadata& meta) -> dal::heterogen_table {
         return dal::heterogen_table::empty(meta);
     }));
 
@@ -80,4 +80,3 @@ void instantiate_heterogen_table(py::module& pm) {
 }
 
 } // namespace oneapi::dal::python::data_management
-
