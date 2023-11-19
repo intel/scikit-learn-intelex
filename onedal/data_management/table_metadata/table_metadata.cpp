@@ -30,9 +30,9 @@ void instantiate_table_metadata(py::module& pm) {
     using dtype_arr_t = dal::array<dal::data_type>;
     using ftype_arr_t = dal::array<dal::feature_type>;
 
-    py::class_<table_metadata> py_metadata(pm, name);
+    py::class_<dal::table_metadata> py_metadata(pm, name);
     py_metadata.def(py::init());
-    py_metadata.def(py::init<dtype_arr_t>());
+    py_metadata.def(py::init<dal::table_metadata>());
     py_metadata.def(py::init<dtype_arr_t, ftype_arr_t>());
     py_metadata.def(py::pickle(
         [](const table_metadata& m) -> py::bytes {

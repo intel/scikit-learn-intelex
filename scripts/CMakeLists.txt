@@ -105,11 +105,11 @@ elseif(IFACE STREQUAL "dpc")
     set(TARGET "_onedal_py_dpc")
 
     if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
-        set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS} -flink-huge-device-code")
+        set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
     endif()
 
     if(CMAKE_C_COMPILER MATCHES ".*icpx" OR CMAKE_C_COMPILER MATCHES ".*icx")
-        set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS} -flink-huge-device-code")
+        set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS}")
     endif()
 
     set(ONEDAL_LIBRARIES "")
