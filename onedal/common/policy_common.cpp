@@ -52,12 +52,12 @@ sycl::context extract_context(py::capsule capsule) {
 
 sycl::queue extract_from_capsule(py::capsule capsule) {
     const char* const name = capsule.name();
-    if(std::strncmp(name, context_capsule_name, sizeof(context_capsule_name)) == 0) {
-        const auto ctx = extract_context( std::move(capsule) );
+    if (std::strncmp(name, context_capsule_name, sizeof(context_capsule_name)) == 0) {
+        const auto ctx = extract_context(std::move(capsule));
         return sycl::queue{ ctx, sycl::default_selector_v };
     }
-    else if(std::strncmp(name, queue_capsule_name, sizeof(queue_capsule_name)) == 0) {
-        return extract_queue( std::move(capsule) );
+    else if (std::strncmp(name, queue_capsule_name, sizeof(queue_capsule_name)) == 0) {
+        return extract_queue(std::move(capsule));
     }
     else {
         throw std::runtime_error("Capsule should contain \"SyclQueueRef\" or \"SyclContextRef\"");
@@ -77,7 +77,7 @@ sycl::queue get_queue_from_python(const py::object& syclobj) {
     }
     else if (py::isinstance(syclobj, pycapsule)) {
         const auto caps = syclobj.cast<py::capsule>();
-        return extract_from_capsule( std::move(caps) );
+        return extract_from_capsule(std::move(caps));
     }
     else {
         throw std::runtime_error("Unable to interpret \"syclobj\"");
@@ -102,7 +102,7 @@ std::string get_device_name(const sycl::queue& queue) {
     const auto& device = queue.get_device();
     if (device.is_gpu()) {
         return { "gpu" };
-    } 
+    }
     else if (device.is_cpu()) {
         return { "cpu" };
     }
@@ -121,7 +121,7 @@ std::uint32_t get_device_id(const sycl::queue& queue) {
     }
 }
 
-dp_policy_t make_dp_policy(std::uint32_t id)  {
+dp_policy_t make_dp_policy(std::uint32_t id) {
     sycl::queue queue = get_queue_by_device_id(id);
     return dp_policy_t{ std::move(queue) };
 }

@@ -47,13 +47,13 @@ void instantiate_data_parallel_policy(py::module& m) {
     constexpr const char name[] = "data_parallel_policy";
     py::class_<data_parallel_policy_t> policy(m, name);
     policy.def(py::init<data_parallel_policy_t>());
-    policy.def(py::init( [](std::uint32_t id) {
+    policy.def(py::init([](std::uint32_t id) {
         return make_dp_policy(id);
     }));
-    policy.def(py::init( [](const std::string& filter) {
+    policy.def(py::init([](const std::string& filter) {
         return make_dp_policy(filter);
     }));
-    policy.def(py::init( [](const py::object& syclobj) {
+    policy.def(py::init([](const py::object& syclobj) {
         return make_dp_policy(syclobj);
     }));
     policy.def("get_device_id", [](const data_parallel_policy_t& policy) {

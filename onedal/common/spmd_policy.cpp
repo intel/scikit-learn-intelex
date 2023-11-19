@@ -39,7 +39,7 @@ inline spmd_policy_t make_spmd_policy(dp_policy_t&& local) {
 template <typename... Args>
 inline spmd_policy_t make_spmd_policy(Args&&... args) {
     auto local = make_dp_policy(std::forward<Args>(args)...);
-    return make_spmd_policy( std::move(local) );
+    return make_spmd_policy(std::move(local));
 }
 
 template <typename Arg, typename Policy = spmd_policy_t>
@@ -53,16 +53,16 @@ void instantiate_spmd_policy(py::module& m) {
     constexpr const char name[] = "spmd_data_parallel_policy";
     py::class_<spmd_policy_t> policy(m, name);
     policy.def(py::init<spmd_policy_t>());
-    policy.def(py::init( [](const dp_policy_t& local) {
+    policy.def(py::init([](const dp_policy_t& local) {
         return make_spmd_policy(local);
     }));
-    policy.def(py::init( [](std::uint32_t id) {
+    policy.def(py::init([](std::uint32_t id) {
         return make_spmd_policy(id);
     }));
-    policy.def(py::init( [](const std::string& filter) {
+    policy.def(py::init([](const std::string& filter) {
         return make_spmd_policy(filter);
     }));
-    policy.def(py::init( [](const py::object& syclobj) {
+    policy.def(py::init([](const py::object& syclobj) {
         return make_spmd_policy(syclobj);
     }));
     policy.def("get_device_id", [](const spmd_policy_t& policy) {

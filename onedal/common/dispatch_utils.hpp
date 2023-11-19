@@ -31,7 +31,6 @@
 #define ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(name) \
     { throw std::runtime_error("Invalid value for parameter <" #name ">"); }
 
-
 namespace oneapi::dal::python {
 
 template <typename Ops>
@@ -53,9 +52,9 @@ struct compute_ops {
     using Task = typename Input::task_t;
 
     compute_ops(const Policy& policy, const Input& input, const Ops& ops)
-        : policy(policy),
-          input(input),
-          ops(ops) {}
+            : policy(policy),
+              input(input),
+              ops(ops) {}
 
     template <typename Float, typename Method, typename... Args>
     auto operator()(const pybind11::dict& params) {
@@ -73,9 +72,9 @@ struct train_ops {
     using Task = typename Input::task_t;
 
     train_ops(const Policy& policy, const Input& input, const Ops& ops)
-        : policy(policy),
-          input(input),
-          ops(ops) {}
+            : policy(policy),
+              input(input),
+              ops(ops) {}
 
     template <typename Float, typename Method, typename... Args>
     auto operator()(const pybind11::dict& params) {
@@ -93,9 +92,9 @@ struct infer_ops {
     using Task = typename Input::task_t;
 
     infer_ops(const Policy& policy, const Input& input, const Ops& ops)
-        : policy(policy),
-          input(input),
-          ops(ops) {}
+            : policy(policy),
+              input(input),
+              ops(ops) {}
 
     template <typename Float, typename Method, typename... Args>
     auto operator()(const pybind11::dict& params) {
