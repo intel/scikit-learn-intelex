@@ -22,7 +22,7 @@ from onedal import _is_dpc_backend
 
 from daal4py.sklearn._utils import make2d
 
-import onedal.interoperability as interop
+import onedal.interop as interop
 
 try:
     import dpctl

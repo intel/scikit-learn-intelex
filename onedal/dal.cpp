@@ -29,7 +29,7 @@ ONEDAL_PY_INIT_MODULE(spmd_policy);
 
 // New data management module
 ONEDAL_PY_INIT_MODULE(data_management);
-ONEDAL_PY_INIT_MODULE(interoperability);
+ONEDAL_PY_INIT_MODULE(interop);
 ONEDAL_PY_INIT_MODULE(dtype_dispatcher);
 
 /* primitives */
@@ -67,7 +67,7 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_policy(m);
 
     init_data_management(m);
-    init_interoperability(m);
+    init_interop(m);
     init_dtype_dispatcher(m);
 
     init_covariance(m);
