@@ -68,8 +68,9 @@ auto get_onedal_result_options(const py::dict& params) {
             else if (match.str() == "coefficients") {
                 onedal_options = onedal_options | result_options::coefficients;
             }
-            else
+            else {
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
+            }
         }
     }
     catch (std::regex_error& e) {

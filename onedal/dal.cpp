@@ -27,9 +27,10 @@ ONEDAL_PY_INIT_MODULE(policy);
 ONEDAL_PY_INIT_MODULE(spmd_policy);
 #endif
 
-/* datatypes*/
-ONEDAL_PY_INIT_MODULE(table);
-ONEDAL_PY_INIT_MODULE(table_metadata);
+// New data management module
+ONEDAL_PY_INIT_MODULE(data_management);
+ONEDAL_PY_INIT_MODULE(interoperability);
+ONEDAL_PY_INIT_MODULE(dtype_dispatcher);
 
 /* primitives */
 ONEDAL_PY_INIT_MODULE(get_tree);
@@ -64,8 +65,10 @@ PYBIND11_MODULE(_onedal_py_dpc, m) {
 PYBIND11_MODULE(_onedal_py_host, m) {
 #endif
     init_policy(m);
-    init_table(m);
-    init_table_metadata(m);
+
+    init_data_management(m);
+    init_interoperability(m);
+    init_dtype_dispatcher(m);
 
     init_covariance(m);
     init_linear_kernel(m);

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2021 Intel Corporation
+* Copyright 2023 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -16,17 +16,14 @@
 
 #pragma once
 
-#define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
+#include <pybind11/pybind11.h>
 
-#include <Python.h>
-#include <numpy/arrayobject.h>
+namespace py = pybind11;
 
-#include "oneapi/dal/table/common.hpp"
+namespace oneapi::dal::python::interoperability::buffer {
 
-namespace oneapi::dal::python {
+void instantiate_wrap_to_homogen_table(py::module& pm);
+void instantiate_wrap_from_homogen_table(py::module& pm);
+void instantiate_buffer_and_table(py::module& pm);
 
-PyObject *convert_to_pyobject(const dal::table &input);
-dal::table convert_to_table(PyObject *obj);
-
-} // namespace oneapi::dal::python
-
+} // namespace oneapi::dal::python::interoperability::buffer

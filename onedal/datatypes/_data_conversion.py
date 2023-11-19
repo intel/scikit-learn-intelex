@@ -18,8 +18,11 @@ import warnings
 
 import numpy as np
 
+from onedal import _is_dpc_backend
+
 from daal4py.sklearn._utils import make2d
-from onedal import _backend, _is_dpc_backend
+
+import onedal.interoperability as interop
 
 try:
     import dpctl
@@ -36,16 +39,19 @@ def _apply_and_pass(func, *args):
     return tuple(map(func, args))
 
 
-def from_table(*args):
-    return _apply_and_pass(_backend.from_table, *args)
+def from_table_one(table):
+    return interop.from_table(table)
 
+
+def from_table(*args):
+    return _apply_and_pass(from_table_one, *args)
+
+
+def to_table_one(table):
+    return interop.to_table(table)
 
 def convert_one_to_table(arg):
-    if dpctl_available:
-        if isinstance(arg, dpt.usm_ndarray):
-            return _backend.dpctl_to_table(arg)
-    arg = make2d(arg)
-    return _backend.to_table(arg)
+    return to_table_one(make2d(arg))
 
 
 def to_table(*args):
