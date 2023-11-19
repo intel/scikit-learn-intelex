@@ -21,6 +21,8 @@ import numpy as np
 from .wrappers import wrap_entity, get_dtype_list
 
 from onedal.tests.utils._device_selection import get_queues
+
+from onedal.interoperability.sua import is_sua_entity
 from onedal.interoperability import to_array, from_array, is_array_entity
 
 try:
@@ -58,13 +60,19 @@ def test_device_array_functionality(queue, backend, count, dtype):
     assert onedal_array.get_count() == dpctl_sua["shape"][0]
 
     return_array = from_array(onedal_array)
-    return_sua = return_array.__sycl_usm_array_interface__
 
-    assert return_sua["shape"] == dpctl_sua["shape"]
-    assert return_sua["typestr"] == dpctl_sua["typestr"]
-    assert return_sua["data"][0] == dpctl_sua["data"][0]
-    assert return_array.__dlpack_device__() == tensor_device
-    assert check_strides(return_sua["strides"], dpctl_sua["strides"])
+    # Should be the main branch when dpnp and/or dpctl
+    # output will be enabled
+    if is_sua_entity(return_array):
+        return_sua = return_array.__sycl_usm_array_interface__
+
+        assert return_sua["shape"] == dpctl_sua["shape"]
+        assert return_sua["typestr"] == dpctl_sua["typestr"]
+        assert return_sua["data"][0] == dpctl_sua["data"][0]
+        assert return_array.__dlpack_device__() == tensor_device
+        assert check_strides(return_sua["strides"], dpctl_sua["strides"])
+    else:
+        np.testing.assert_equal(numpy_array, return_array)
 
 def check_by_sampling(generator, numpy_array, onedal_array):
     count = len(onedal_array)
