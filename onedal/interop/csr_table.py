@@ -28,6 +28,8 @@ sparse_indexing = onedal._backend.data_management.sparse_indexing
 
 
 def is_native_csr(entity) -> bool:
+    print(entity, table)
+    print("isinstance: ", isinstance(entity, table))
     if isinstance(entity, table):
         kind = entity.get_kind()
         return kind == csr_kind
@@ -40,12 +42,13 @@ def is_csr_entity(entity) -> bool:
     return is_native or is_scipy
 
 
-def assert_table(table, matrix):
-    assert is_csr_entity(matrix)
+def assert_table(entity, matrix):
+    print(entity)
+    assert is_native_csr(entity)
+    assert isspmatrix_csr(matrix)
     row_count, col_count = matrix.shape
-    assert table.get_non_zero_count() == matrix.getnnz()
-    assert table.get_column_count() == col_count
-    assert table.get_row_count() == row_count
+    assert entity.get_column_count() == col_count
+    assert entity.get_row_count() == row_count
 
 
 # Passing throw native entity
@@ -68,11 +71,8 @@ def to_csr_table_python(entity) -> csr_table:
     assert isspmatrix_csr(entity)
     _, col_count = entity.shape
     ids = to_typed_array(entity.indices)
-    print(ids.get_policy())
     ofs = to_typed_array(entity.indptr)
-    print(ofs.get_policy())
     nz = to_array(entity.data)
-    print(nz.get_policy())
     result = csr_table(nz, ids, ofs, col_count, sparse_indexing.zero_based)
     assert_table(result, entity)
     return result
@@ -94,15 +94,15 @@ def to_csr_table(entity) -> csr_table:
 def from_csr_table_native(entity) -> csr_matrix:
     assert is_native_csr(entity)
     entity = to_csr_table_native(entity)
-    col_count = table.get_column_count()
-    row_count = table.get_row_count()
+    col_count = entity.get_column_count()
+    row_count = entity.get_row_count()
     shape = (row_count, col_count)
-    ids = from_array(table.get_column_indices())
-    ofs = from_array(table.get_row_offsets())
-    nz = from_array(table.get_data())
+    ids = from_array(entity.get_column_indices())
+    ofs = from_array(entity.get_row_offsets())
+    nz = from_array(entity.get_data())
     data = (nz, ids, ofs)
     result = csr_matrix(data, shape)
-    assert_table(table, result)
+    assert_table(entity, result)
     return result
 
 

@@ -94,23 +94,29 @@ def test_host_array_functionality(backend, count, dtype):
     numpy_iface = numpy_array.__array_interface__
 
     wrapped_tensor = wrap_entity(numpy_array, backend)
+
+    # Writing something to array results
+    # in data copy. Wrapper specific
+    # and doesn't affect user
+    if backend == "buffer":
+        ptr = wrapped_tensor.buffer_info()[0]
+    else:
+        ptr = numpy_iface["data"][0]
+
     onedal_array = to_array(wrapped_tensor)
     assert is_array_entity(onedal_array)
     del wrapped_tensor
 
+    assert onedal_array.get_data() == ptr
     assert onedal_array.get_count() == numpy_iface["shape"][0]
-    if backend != "buffer":
-        assert onedal_array.get_data() == numpy_iface["data"][0]
 
     check_by_sampling(generator, numpy_array, onedal_array)
 
     return_array = from_array(onedal_array)
     return_iface = return_array.__array_interface__
 
+    assert return_iface["data"][0] == ptr
     assert return_iface["shape"] == numpy_iface["shape"]
     assert return_array.__dlpack_device__() == numpy_device
     assert return_iface["typestr"] == numpy_iface["typestr"]
     assert check_strides(return_iface["strides"], numpy_iface["strides"])
-
-    if backend != "buffer":
-        assert return_iface["data"][0] == numpy_iface["data"][0]
