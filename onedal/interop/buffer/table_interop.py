@@ -14,8 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
-import onedal
 import numpy as np
+
+import onedal
 
 from .buffer_utils import is_buffer_entity, is_nd
 

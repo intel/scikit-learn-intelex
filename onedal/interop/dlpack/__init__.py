@@ -14,9 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+from .array_interop import is_dlpack_array, to_array
 from .dlpack_utils import is_dlpack_entity
-from .array_interop import to_array, is_dlpack_array
-from .table_interop import to_homogen_table, is_dlpack_table
+from .table_interop import is_dlpack_table, to_homogen_table
 
 __all__ = ["is_dlpack_entity"]
 __all__ += ["to_array", "is_dlpack_array"]

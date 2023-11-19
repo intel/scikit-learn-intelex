@@ -14,8 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from .table import is_table_entity, to_table, from_table
-from .array import is_array_entity, to_array, from_array
+from .array import from_array, is_array_entity, to_array
+from .table import from_table, is_table_entity, to_table
 
 __all__ = []
 __all__ += ["is_table_entity", "to_table", "from_table"]

@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import logging
+
 from onedal.interop.utils import check_attr
 
 convert_sua_impl = None

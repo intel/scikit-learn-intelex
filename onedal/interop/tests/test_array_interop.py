@@ -14,16 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from .wrappers import wrap_entity, get_dtype_list
-
+from onedal.interop import from_array, is_array_entity, to_array
+from onedal.interop.sua import is_sua_entity
 from onedal.tests.utils._device_selection import get_queues
 
-from onedal.interop.sua import is_sua_entity
-from onedal.interop import to_array, from_array, is_array_entity
+from .wrappers import get_dtype_list, wrap_entity
 
 try:
     import dpctl

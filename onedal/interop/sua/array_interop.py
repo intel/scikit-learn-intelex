@@ -16,7 +16,7 @@
 
 import onedal
 
-from .sua_utils import is_sua_entity, convert_sua, is_nd
+from .sua_utils import convert_sua, is_nd, is_sua_entity
 
 wrap_to_array = onedal._backend.interop.sua.wrap_to_array
 wrap_from_array = onedal._backend.interop.sua.wrap_from_array

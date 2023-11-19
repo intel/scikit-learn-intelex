@@ -14,9 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
-from .sua_utils import is_sua_entity, is_nd
-from .array_interop import to_array, from_array, is_sua_array
-from .table_interop import to_homogen_table, from_homogen_table, is_sua_table
+from .array_interop import from_array, is_sua_array, to_array
+from .sua_utils import is_nd, is_sua_entity
+from .table_interop import from_homogen_table, is_sua_table, to_homogen_table
 
 __all__ = ["is_sua_entity", "is_nd"]
 __all__ += ["to_array", "from_array", "is_sua_array"]

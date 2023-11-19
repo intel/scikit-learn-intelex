@@ -14,12 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import onedal
 import numpy as np
+from scipy.sparse import csr_matrix, isspmatrix_csr
 
-from .array import to_array, from_array
+import onedal
 
-from scipy.sparse import isspmatrix_csr, csr_matrix
+from .array import from_array, to_array
 
 table = onedal._backend.data_management.table
 csr_table = onedal._backend.data_management.csr_table

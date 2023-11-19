@@ -18,9 +18,9 @@ import onedal
 
 onedal_table = onedal._backend.data_management.table
 
-from .csr_table import is_csr_entity, from_csr_table, to_csr_table
-from .empty_table import is_empty_entity, from_empty_table, to_empty_table
-from .homogen_table import is_homogen_entity, from_homogen_table, to_homogen_table
+from .csr_table import from_csr_table, is_csr_entity, to_csr_table
+from .empty_table import from_empty_table, is_empty_entity, to_empty_table
+from .homogen_table import from_homogen_table, is_homogen_entity, to_homogen_table
 
 
 def is_table_entity(entity) -> bool:

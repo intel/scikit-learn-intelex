@@ -14,20 +14,18 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from .wrappers import wrap_entity, get_dtype_list
-
-from onedal.tests.utils._device_selection import get_queues
-
-from onedal.interop.sua import is_sua_entity
 from onedal.interop.homogen_table import (
-    to_homogen_table,
     from_homogen_table,
     is_homogen_entity,
+    to_homogen_table,
 )
+from onedal.interop.sua import is_sua_entity
+from onedal.tests.utils._device_selection import get_queues
+
+from .wrappers import get_dtype_list, wrap_entity
 
 try:
     import dpctl

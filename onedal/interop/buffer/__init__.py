@@ -14,9 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+from .array_interop import from_array, is_buffer_array, to_array
 from .buffer_utils import is_buffer_entity, is_nd
-from .array_interop import to_array, from_array, is_buffer_array
-from .table_interop import to_homogen_table, from_homogen_table, is_buffer_table
+from .table_interop import from_homogen_table, is_buffer_table, to_homogen_table
 
 __all__ = ["is_buffer_entity", "is_nd"]
 __all__ += ["is_buffer_array", "to_array", "from_array"]

@@ -15,14 +15,12 @@
 # ==============================================================================
 
 import onedal
+import onedal.interop.buffer as buffer
+import onedal.interop.dlpack as dlpack
+import onedal.interop.sua as sua
+from onedal.interop.utils import is_host_policy
 
 from .array import is_array_entity, to_array
-
-import onedal.interop.sua as sua
-import onedal.interop.dlpack as dlpack
-import onedal.interop.buffer as buffer
-
-from onedal.interop.utils import is_host_policy
 
 table = onedal._backend.data_management.table
 homogen_table = onedal._backend.data_management.homogen_table

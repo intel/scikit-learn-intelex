@@ -20,6 +20,7 @@ from numbers import Number
 import numpy as np
 from sklearn.base import BaseEstimator
 
+import onedal
 from daal4py.sklearn._utils import get_dtype, make2d
 from onedal import _backend
 
@@ -28,8 +29,6 @@ from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
-
-import onedal
 
 homogen_table = onedal._backend.data_management.homogen_table
 

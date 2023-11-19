@@ -16,7 +16,7 @@
 
 import onedal
 
-from .sua_utils import is_sua_entity, convert_sua, is_nd
+from .sua_utils import convert_sua, is_nd, is_sua_entity
 
 table_kind = onedal._backend.data_management.table_kind
 homogen_table = onedal._backend.data_management.homogen_table

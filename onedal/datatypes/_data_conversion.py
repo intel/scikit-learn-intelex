@@ -18,11 +18,9 @@ import warnings
 
 import numpy as np
 
-from onedal import _is_dpc_backend
-
-from daal4py.sklearn._utils import make2d
-
 import onedal.interop as interop
+from daal4py.sklearn._utils import make2d
+from onedal import _is_dpc_backend
 
 try:
     import dpctl

@@ -1,5 +1,6 @@
-import onedal
 import numpy as np
+
+import onedal
 
 onedal_table = onedal._backend.data_management.table
 

@@ -15,10 +15,9 @@
 # ==============================================================================
 
 import onedal
-
-import onedal.interop.sua as sua
-import onedal.interop.dlpack as dlpack
 import onedal.interop.buffer as buffer
+import onedal.interop.dlpack as dlpack
+import onedal.interop.sua as sua
 from onedal.interop.utils import is_host_policy
 
 make_array = onedal._backend.data_management.make_array
