@@ -17,6 +17,7 @@
 
 import re
 from os.path import join as jp
+from os.path import isfile
 
 
 def find_defines(defines: list, file_obj):
@@ -36,7 +37,10 @@ def get_onedal_version(dal_root, version_type="release"):
     if version_type not in ["release", "binary"]:
         raise ValueError(f'Incorrect version type "{version_type}"')
 
-    header_version = jp(dal_root, "include", "services", "library_version_info.h")
+    header_version = jp(dal_root, "include", "dal", "services", "library_version_info.h")
+    if not isfile(header_version):
+        # pre-2024.0 release header path
+        header_version = jp(dal_root, "include", "services", "library_version_info.h")
     version = ""
 
     with open(header_version, "r") as header:
