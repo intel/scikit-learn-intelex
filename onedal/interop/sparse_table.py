@@ -18,15 +18,18 @@ import scipy.sparse as sp
 
 from .csr_table import from_csr_table, is_csr_entity, to_csr_table
 
+
 def is_sparse_entity(entity) -> bool:
     conditions = [is_csr_entity, sp.isspmatrix]
     return any(map(lambda check: check(entity), conditions))
+
 
 def to_sparse_table(entity):
     assert is_sparse_entity(entity)
     if sp.isspmatrix(entity):
         entity = entity.tocsr()
     return to_csr_table(entity)
+
 
 def from_sparse_table(table):
     assert is_sparse_entity(table)
