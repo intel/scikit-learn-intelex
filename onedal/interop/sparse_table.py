@@ -14,15 +14,27 @@
 # limitations under the License.
 # ==============================================================================
 
-from .array import from_array, is_array_entity, to_array
-from .csr_table import from_csr_table, is_csr_entity, to_csr_table
-from .homogen_table import from_homogen_table, is_homogen_entity, to_homogen_table
-from .sparse_table import from_sparse_table, is_sparse_entity, to_sparse_table
-from .table import from_table, is_table_entity, to_table
+import scipy.sparse as sp
 
-__all__ = []
-__all__ += ["is_table_entity", "to_table", "from_table"]
-__all__ += ["is_array_entity", "to_array", "from_array"]
-__all__ += ["is_csr_entity", "to_csr_table", "from_csr_table"]
-__all__ += ["is_sparse_entity", "to_sparse_table", "from_sparse_table"]
-__all__ += ["is_homogen_entity", "to_homogen_table", "from_homogen_table"]
+from .csr_table import from_csr_table, is_csr_entity, to_csr_table
+
+def is_sparse_entity(entity) -> bool:
+    conditions = [is_csr_entity, sp.isspmatrix]
+    return any(map(lambda check: check(entity), conditions))
+
+def to_sparse_table(entity):
+    assert is_sparse_entity(entity)
+    if sp.isspmatrix(entity):
+        entity = entity.tocsr()
+    return to_csr_table(entity)
+
+def from_sparse_table(table):
+    assert is_sparse_entity(table)
+    if is_csr_entity(table):
+        result = from_csr_table(table)
+    elif sp.isspmatrix(table):
+        result = table.to_csr()
+    else:
+        raise ValueError("Not able to convert from CSR table")
+    assert is_csr_entity(table)
+    return result

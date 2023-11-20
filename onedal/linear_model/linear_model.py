@@ -20,7 +20,6 @@ from numbers import Number
 import numpy as np
 from sklearn.base import BaseEstimator
 
-import onedal
 from daal4py.sklearn._utils import get_dtype, make2d
 from onedal import _backend
 
@@ -29,18 +28,6 @@ from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
-
-homogen_table = onedal._backend.data_management.homogen_table
-
-
-def get_table_policy(table):
-    casted_table = homogen_table(table)
-    print("Homogen table:", casted_table)
-    data = casted_table.get_data()
-    print("Data:", data)
-    data_policy = data.get_policy()
-    print("Data policy:", data_policy)
-    print("Device name:", data_policy.get_device_name())
 
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
@@ -63,11 +50,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
-        print("Before obtaining policy")
         policy = self._get_policy(queue, X, y)
-        print("After obtaining policy")
-
-        print(type(policy), type(X), type(y))
 
         X_loc, y_loc = X, y
         if not isinstance(X, np.ndarray):
@@ -89,18 +72,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         params = self._get_onedal_params(get_dtype(X_loc))
         X_table, y_table = to_table(X_loc, y_loc)
 
-        print("Module: ", module)
-        print("Policy: ", policy)
-        print("Params: ", params)
-        print("X Table: ", X_table)
-        print("y Table: ", y_table)
-
-        get_table_policy(X_table)
-        get_table_policy(y_table)
-
-        print("Before training")
         result = module.train(policy, params, X_table, y_table)
-        print("After training")
 
         self._onedal_model = result.model
 
@@ -108,7 +80,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         self.coef_, self.intercept_ = coeff[:, 1:], coeff[:, 0]
 
         if self.coef_.shape[0] == 1 and y_loc.ndim == 1:
-            self.coef_ = self.coef_.reshape(-1)
+            self.coef_ = self.coef_.ravel()
             self.intercept_ = self.intercept_[0]
 
         return self

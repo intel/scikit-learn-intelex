@@ -18,13 +18,13 @@ import onedal
 
 onedal_table = onedal._backend.data_management.table
 
-from .csr_table import from_csr_table, is_csr_entity, to_csr_table
 from .empty_table import from_empty_table, is_empty_entity, to_empty_table
 from .homogen_table import from_homogen_table, is_homogen_entity, to_homogen_table
+from .sparse_table import from_sparse_table, is_sparse_entity, to_sparse_table
 
 
 def is_table_entity(entity) -> bool:
-    conditions = [is_empty_entity, is_csr_entity, is_homogen_entity]
+    conditions = [is_empty_entity, is_sparse_entity, is_homogen_entity]
     return any(map(lambda check: check(entity), conditions))
 
 
@@ -32,8 +32,8 @@ def to_table(entity):
     assert is_table_entity(entity)
     if is_empty_entity(entity):
         result = to_empty_table(entity)
-    elif is_csr_entity(entity):
-        result = to_csr_table(entity)
+    elif is_sparse_entity(entity):
+        result = to_sparse_table(entity)
     elif is_homogen_entity(entity):
         result = to_homogen_table(entity)
     else:
@@ -50,8 +50,8 @@ def from_table(table):
     assert is_table_entity(table)
     if is_empty_entity(table):
         result = from_empty_table(table)
-    elif is_csr_entity(table):
-        result = from_csr_table(table)
+    elif is_sparse_entity(table):
+        result = from_sparse_table(table)
     elif is_homogen_entity(table):
         result = from_homogen_table(table)
     else:
