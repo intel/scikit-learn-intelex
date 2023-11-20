@@ -16,24 +16,18 @@
 
 import numpy as np
 import pytest
-
-from scipy.sparse import isspmatrix_csr, csr_matrix, find
-
-from onedal.interop.csr_table import (
-    from_csr_table,
-    is_csr_entity,
-    to_csr_table,
-)
+from scipy.sparse import csr_matrix, find, isspmatrix_csr
 
 from onedal.interop.array import from_array
+from onedal.interop.csr_table import from_csr_table, is_csr_entity, to_csr_table
 
 from .wrappers import get_dtype_list
 
 table_dimensions = [
     (1, 1),
-    (1, 10),
-    (11, 1),
-    (3, 9),
+    (1, 11),
+    (17, 1),
+    (3, 7),
     (21, 47),
     (1001, 1),
     (999, 1),
@@ -41,6 +35,12 @@ table_dimensions = [
     (123, 999),
 ]
 
+
+# Used instead of `scipy.sparse.rand` due to the
+# reasons:
+# 1. Different types of integer indices
+# 2. Zero samples in case of small matrices
+# 3. More checks for the content
 def generate_csr_data(gen, shape, per_row, dtypes):
     row_count, col_count = shape
     data_dtype, index_dtype = dtypes
@@ -93,7 +93,7 @@ def test_host_homogen_table_functionality(shape, dtype, itype):
     scipy_table = csr_matrix(components, shape)
     assert isspmatrix_csr(scipy_table)
     assert is_csr_entity(scipy_table)
-    
+
     onedal_table = to_csr_table(scipy_table)
     assert is_csr_entity(onedal_table)
 
@@ -109,7 +109,6 @@ def test_host_homogen_table_functionality(shape, dtype, itype):
 
     del onedal_indices, onedal_offsets, onedal_data
 
-    print(onedal_table)
     return_table = from_csr_table(onedal_table)
     dv, dr, dc = find(return_table - scipy_table)
     assert len(dv) == 0 and len(dr) == 0 and len(dc) == 0

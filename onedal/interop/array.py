@@ -14,10 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
+
 import onedal
 import onedal.interop.buffer as buffer
 import onedal.interop.dlpack as dlpack
 import onedal.interop.sua as sua
+from onedal.common._policy import _are_equal_devices, _HostInteropPolicy
 from onedal.interop.utils import is_host_policy
 
 make_array = onedal._backend.data_management.make_array
@@ -69,6 +72,24 @@ def to_array(entity):
         raise ValueError("Not able to convert to array")
     assert is_native_array(result)
     return result
+
+
+def to_typed_array(x, dtypes=[np.float32]):
+    result = x
+    if x.dtype not in list(dtypes):
+        result = x.astype(dtypes[0])
+    assert result.dtype in dtypes
+    return to_array(result)
+
+
+# TODO: Implement smarter logic
+# for better performance
+def to_common_policy(*xs) -> tuple:
+    if _are_equal_devices(xs):
+        return xs
+    else:
+        policy = _HostInteropPolicy()
+        return (x.to_policy(policy) for x in xs)
 
 
 def from_array_native(array):

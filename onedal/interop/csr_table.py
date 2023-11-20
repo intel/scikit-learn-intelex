@@ -19,7 +19,7 @@ from scipy.sparse import csr_matrix, isspmatrix_csr
 
 import onedal
 
-from .array import from_array, to_array
+from .array import from_array, to_array, to_common_policy, to_typed_array
 
 table = onedal._backend.data_management.table
 csr_table = onedal._backend.data_management.csr_table
@@ -28,8 +28,6 @@ sparse_indexing = onedal._backend.data_management.sparse_indexing
 
 
 def is_native_csr(entity) -> bool:
-    print(entity, table)
-    print("isinstance: ", isinstance(entity, table))
     if isinstance(entity, table):
         kind = entity.get_kind()
         return kind == csr_kind
@@ -43,7 +41,6 @@ def is_csr_entity(entity) -> bool:
 
 
 def assert_table(entity, matrix):
-    print(entity)
     assert is_native_csr(entity)
     assert isspmatrix_csr(matrix)
     row_count, col_count = matrix.shape
@@ -57,23 +54,23 @@ def to_csr_table_native(entity) -> csr_table:
     return csr_table(entity)
 
 
-def to_typed_array(x, dtypes=[np.int64]):
-    result = x
-    if x.dtype not in list(dtypes):
-        result = x.astype(dtypes[0])
-    assert result.dtype in dtypes
-    return to_array(result)
-
-
 # Converting python entity to table
 # TODO: Implement smarter logic
 def to_csr_table_python(entity) -> csr_table:
     assert isspmatrix_csr(entity)
     _, col_count = entity.shape
-    ids = to_typed_array(entity.indices)
-    ofs = to_typed_array(entity.indptr)
+
+    def to_indices(arr, ids=[np.int64]):
+        return to_typed_array(arr, ids)
+
+    ids = to_indices(entity.indices)
+    ofs = to_indices(entity.indptr)
     nz = to_array(entity.data)
-    result = csr_table(nz, ids, ofs, col_count, sparse_indexing.zero_based)
+
+    zb = sparse_indexing.zero_based
+    ids, ofs, nz = to_common_policy(ids, ofs, nz)
+    result = csr_table(nz, ids, ofs, col_count, zb)
+
     assert_table(result, entity)
     return result
 

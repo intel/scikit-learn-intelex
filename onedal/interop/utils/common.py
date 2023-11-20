@@ -14,6 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+
+import numpy as np
+
 import onedal
 
 host_policy = onedal._backend.host_policy
