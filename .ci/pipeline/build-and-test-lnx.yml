@@ -25,7 +25,7 @@ steps:
   - script: |
       conda update -y -q conda
       if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.10') ]; then export DPCPP_PACKAGE="dpctl>=0.15 "; else export DPCPP_PACKAGE=""; fi
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) dal-devel mpich pyyaml $DPCPP_PACKAGE "dpcpp-cpp-rt>=2024.0.0"
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) intel::dal-devel mpich pyyaml $DPCPP_PACKAGE "dpcpp-cpp-rt>=2024.0.0"
     displayName: "Conda create"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
