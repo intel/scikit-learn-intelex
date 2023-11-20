@@ -97,6 +97,15 @@ def from_csr_table_native(entity) -> csr_matrix:
     ids = from_array(entity.get_column_indices())
     ofs = from_array(entity.get_row_offsets())
     nz = from_array(entity.get_data())
+    indexing = entity.get_indexing()
+    zb = sparse_indexing.zero_based
+    ob = sparse_indexing.one_based
+
+    if indexing == ob:
+        ids, ofs = ids - 1, ofs - 1
+    else:
+        assert indexing == zb
+
     data = (nz, ids, ofs)
     result = csr_matrix(data, shape)
     assert_table(entity, result)

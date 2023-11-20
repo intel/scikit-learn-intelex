@@ -81,7 +81,7 @@ def generate_csr_data(gen, shape, per_row, dtypes):
 @pytest.mark.parametrize("shape", table_dimensions)
 @pytest.mark.parametrize("dtype", get_dtype_list())
 @pytest.mark.parametrize("itype", [np.int32, np.uint32, np.int64])
-def test_host_homogen_table_functionality(shape, dtype, itype):
+def test_host_csr_table_functionality(shape, dtype, itype):
     row_count, col_count = shape
     min_per_row = max(1, col_count // 10)
     max_per_row = min(2 * min_per_row, col_count) + 1
