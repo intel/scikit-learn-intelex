@@ -23,6 +23,7 @@ from inspect import Parameter, signature
 from multiprocessing import cpu_count
 from numbers import Integral
 from warnings import warn
+from typing import Any, Tuple
 
 import numpy as np
 import threadpoolctl
@@ -32,6 +33,8 @@ from sklearn import __version__ as sklearn_version
 from daal4py import _get__daal_link_version__ as dv
 from daal4py import daalinit as set_n_threads
 from daal4py import num_threads as get_n_threads
+
+DaalVersionTuple = Tuple[int, str, int]
 
 try:
     from packaging.version import Version
@@ -77,21 +80,18 @@ def set_idp_sklearn_verbose():
         )
 
 
-def daal_check_version(rule):
+def get_daal_version() -> DaalVersionTuple:
+    return int(dv()[0:4]), str(dv()[10:11]), int(dv()[4:8])
+
+
+def daal_check_version(required_version: Tuple[Any, ...]) -> bool:
     # First item is major version - 2021,
-    # second is minor+patch - 0110,
-    # third item is status - B
-    target = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
-    if not isinstance(rule[0], type(target)):
-        if rule > target:
-            return False
-    else:
-        for rule_item in rule:
-            if rule_item > target:
-                return False
-            if rule_item[0] == target[0]:
-                break
-    return True
+    # Second item is status - B
+    # Third is minor+patch - 0110,
+    if isinstance(required_version[0], (list, tuple)):
+        return any(map(daal_check_version, required_version))
+
+    return required_version <= get_daal_version()
 
 
 sklearn_versions_map = {}
@@ -108,10 +108,6 @@ def sklearn_check_version(ver):
         res = bool(Version(sklearn_version) >= Version(ver))
     sklearn_versions_map[ver] = res
     return res
-
-
-def get_daal_version():
-    return (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
 
 
 def parse_dtype(dt):

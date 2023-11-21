@@ -21,21 +21,10 @@ from pathlib import Path
 import numpy as np
 
 import daal4py as d4p
-
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-
-    def read_csv(f, c=None, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c=None, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
+from daal4py.sklearn.utils import pd_read_csv
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv):
     nFeatures = 3
     nClasses = 5
     maxIterations = 200
@@ -55,8 +44,8 @@ def main(readcsv=read_csv, method="defaultDense"):
     )
 
     # Read data. Let's use 3 features per observation
-    data = readcsv(infile, range(3), t=np.float32)
-    labels = readcsv(infile, range(3, 4), t=np.float32)
+    data = readcsv(infile, usecols=range(3), dtype=np.float32)
+    labels = readcsv(infile, usecols=range(3, 4), dtype=np.float32)
     train_result = train_algo.compute(data, labels)
 
     # Now let's do some prediction
@@ -66,12 +55,12 @@ def main(readcsv=read_csv, method="defaultDense"):
         resultsToEvaluate="computeClassLabels|computeClassProbabilities",
     )
     # read test data (with same #features)
-    pdata = readcsv(testfile, range(3), t=np.float32)
+    pdata = readcsv(testfile, usecols=range(3), dtype=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    plabels = readcsv(testfile, range(3, 4), t=np.float32)
+    plabels = readcsv(testfile, usecols=range(3, 4), dtype=np.float32)
     assert np.count_nonzero(predict_result.prediction - plabels) / pdata.shape[0] < 0.022
 
     return (train_result, predict_result, plabels)

@@ -21,21 +21,10 @@ from pathlib import Path
 import numpy as np
 
 import daal4py as d4p
-
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=np.float32)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=np.float32)
+from daal4py.sklearn.utils import pd_read_csv
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv, method="defaultDense"):
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "df_regression_train.csv"
     testfile = data_path / "df_regression_test.csv"
@@ -52,8 +41,8 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # Read data. Let's have 13 independent,
     # and 1 dependent variables (for each observation)
-    indep_data = readcsv(infile, range(13), t=np.float32)
-    dep_data = readcsv(infile, range(13, 14), t=np.float32)
+    indep_data = readcsv(infile, usecols=range(13), dtype=np.float32)
+    dep_data = readcsv(infile, usecols=range(13, 14), dtype=np.float32)
     # Now train/compute, the result provides the model for prediction
     train_result = train_algo.compute(indep_data, dep_data)
     # Traiing result provides (depending on parameters) model,
@@ -62,8 +51,8 @@ def main(readcsv=read_csv, method="defaultDense"):
     # Now let's do some prediction
     predict_algo = d4p.decision_forest_regression_prediction()
     # read test data (with same #features)
-    pdata = readcsv(testfile, range(13), t=np.float32)
-    ptdata = readcsv(testfile, range(13, 14), t=np.float32)
+    pdata = readcsv(testfile, usecols=range(13), dtype=np.float32)
+    ptdata = readcsv(testfile, usecols=range(13, 14), dtype=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 

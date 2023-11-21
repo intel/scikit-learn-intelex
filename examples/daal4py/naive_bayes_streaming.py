@@ -18,12 +18,11 @@
 
 from pathlib import Path
 
-from stream import read_csv
-
 import daal4py as d4p
+from daal4py.sklearn.utils import pd_read_csv
 
 
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv, method="defaultDense"):
     # input data file
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "naivebayes_train_dense.csv"
@@ -39,9 +38,13 @@ def main(readcsv=read_csv, method="defaultDense"):
         # Read data in chunks
         # Read data. Let's use 20 features per observation
         try:
-            data = readcsv(infile, range(20), s=lines_read, n=chunk_size)
-            labels = readcsv(infile, range(20, 21), s=lines_read, n=chunk_size)
-        except Exception as e:
+            data = readcsv(
+                infile, usecols=range(20), skip_header=lines_read, max_rows=chunk_size
+            )
+            labels = readcsv(
+                infile, usecols=range(20, 21), skip_header=lines_read, max_rows=chunk_size
+            )
+        except StopIteration as e:
             if lines_read > 0:
                 break
             else:

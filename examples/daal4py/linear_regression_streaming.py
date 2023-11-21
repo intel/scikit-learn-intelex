@@ -18,12 +18,11 @@
 
 from pathlib import Path
 
-from stream import read_csv
-
 import daal4py as d4p
+from daal4py.sklearn.utils import pd_read_csv
 
 
-def main(readcsv=read_csv, *args, **kwargs):
+def main(readcsv=pd_read_csv, *args, **kwargs):
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "linear_regression_train.csv"
     testfile = data_path / "linear_regression_test.csv"
@@ -38,8 +37,12 @@ def main(readcsv=read_csv, *args, **kwargs):
         # Read data in chunks
         # Let's have 10 independent, and 2 dependent variables (for each observation)
         try:
-            indep_data = readcsv(infile, range(10), s=lines_read, n=chunk_size)
-            dep_data = readcsv(infile, range(10, 12), s=lines_read, n=chunk_size)
+            indep_data = readcsv(
+                infile, usecols=range(10), skip_header=lines_read, max_rows=chunk_size
+            )
+            dep_data = readcsv(
+                infile, usecols=range(10, 12), skip_header=lines_read, max_rows=chunk_size
+            )
         except Exception as e:
             if lines_read > 0:
                 break

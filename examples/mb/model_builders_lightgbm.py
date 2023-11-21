@@ -16,27 +16,25 @@
 
 # daal4py Gradient Bossting Classification model creation from LightGBM example
 
+from pathlib import Path
+
 import lightgbm as lgb
 import numpy as np
-import pandas as pd
 
 import daal4py as d4p
-
-
-def pd_read_csv(f, c=None, t=np.float64):
-    return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
+from daal4py.sklearn.utils import pd_read_csv
 
 
 def main(readcsv=pd_read_csv):
-    # Path to data
-    train_file = "./data/batch/df_classification_train.csv"
-    test_file = "./data/batch/df_classification_test.csv"
+    data_path = Path(__file__).parent.parent / "daal4py" / "data" / "batch"
+    train_file = data_path / "df_classification_train.csv"
+    test_file = data_path / "df_classification_test.csv"
 
     # Data reading
-    X_train = readcsv(train_file, range(3), t=np.float32)
-    y_train = readcsv(train_file, range(3, 4), t=np.float32)
-    X_test = readcsv(test_file, range(3), t=np.float32)
-    y_test = readcsv(test_file, range(3, 4), t=np.float32)
+    X_train = readcsv(train_file, usecols=range(3), dtype=np.float32)
+    y_train = readcsv(train_file, usecols=range(3, 4), dtype=np.float32)
+    X_test = readcsv(test_file, usecols=range(3), dtype=np.float32)
+    y_test = readcsv(test_file, usecols=range(3, 4), dtype=np.float32)
 
     # Datasets creation
     lgb_train = lgb.Dataset(

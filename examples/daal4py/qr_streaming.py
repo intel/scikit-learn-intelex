@@ -18,13 +18,13 @@
 
 from pathlib import Path
 
-# let's use a generator for getting stream from file (defined in stream.py)
-from stream import read_csv, read_next
-
 import daal4py as d4p
 
+# let's use a generator for getting stream from file (defined in stream.py)
+from daal4py.sklearn.utils import pd_read_csv, read_next
 
-def main(readcsv=read_csv, *args, **kwargs):
+
+def main(readcsv=pd_read_csv, *args, **kwargs):
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "qr.csv"
 

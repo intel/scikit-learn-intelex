@@ -20,24 +20,7 @@ from pathlib import Path
 
 import numpy as np
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-
-    def read_csv(f, c=None, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, skiprows=s, nrows=n, delimiter=",", header=None, dtype=t
-        )
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
-        res = np.genfromtxt(
-            f, usecols=c, delimiter=",", skip_header=s, max_rows=n, dtype=t
-        )
-        if res.ndim == 1:
-            return res[:, np.newaxis]
-        return res
+from daal4py.sklearn.utils import pd_read_csv
 
 
 def get_chunk_params(lines_count, chunks_count, chunk_number):
@@ -57,7 +40,7 @@ if __name__ == "__main__":
     print('Reading file "{}" in {} chunks'.format(infile, chunks_count))
 
     # Read the whole file to be able to compare
-    whole_file = read_csv(infile)
+    whole_file = pd_read_csv(infile)
 
     # Computing chunk-size requires file-size
     lines_in_file = whole_file.shape[0]
@@ -66,7 +49,7 @@ if __name__ == "__main__":
     chunks_stack = np.empty([0, whole_file.shape[1]])
     for chunk_number in range(chunks_count):
         skiprows, nrows = get_chunk_params(lines_in_file, chunks_count, chunk_number)
-        chunk = read_csv(infile, s=skiprows, n=nrows)
+        chunk = pd_read_csv(infile, skip_header=skiprows, max_rows=nrows)
         print("The shape of chunk number {} is {}".format(chunk_number, chunk.shape))
         chunks_stack = np.vstack((chunks_stack, chunk))
 

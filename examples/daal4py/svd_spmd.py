@@ -27,7 +27,8 @@ import daal4py as d4p
 
 def main():
     # Each process gets its own data
-    infile = "./data/distributed/svd_{}.csv".format(d4p.my_procid() + 1)
+    data_path = Path(__file__).parent / "data" / "distributed"
+    infile = data_path / f"svd_{d4p.my_procid()+ 1}.csv"
 
     # configure a SVD object
     algo = d4p.svd(distributed=True)
