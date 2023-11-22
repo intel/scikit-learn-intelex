@@ -55,22 +55,28 @@ def to_csr_table_native(entity) -> csr_table:
 
 
 # Converting python entity to table
-# TODO: Implement smarter logic
+# TODO #1: Implement smarter logic for
+# type conversion & device support
+# TODO #2: Implement with `zero_based`
+# indexing, it is a workaround for now.
+# The glue logic between oneDAL & DAAL is
+# suspicious for having bug with `zero_based`
 def to_csr_table_python(entity) -> csr_table:
     assert isspmatrix_csr(entity)
-    _, col_count = entity.shape
+    row_count, col_count = entity.shape
 
     def to_indices(arr, ids=[np.int64]):
         return to_typed_array(arr, ids)
 
-    ids = to_indices(entity.indices)
-    ofs = to_indices(entity.indptr)
+    ids = to_indices(entity.indices + 1)
+    ofs = to_indices(entity.indptr + 1)
     nz = to_array(entity.data)
 
-    zb = sparse_indexing.zero_based
+    one_based = sparse_indexing.one_based
     ids, ofs, nz = to_common_policy(ids, ofs, nz)
-    result = csr_table(nz, ids, ofs, col_count, zb)
-
+    result = csr_table(nz, ids, ofs, col_count, one_based)
+    assert col_count == result.get_column_count()
+    assert row_count == result.get_row_count()
     assert_table(result, entity)
     return result
 

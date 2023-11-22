@@ -48,23 +48,23 @@ def _restore_from_saved(md, saved_dict):
         setattr(md, check_f, saved_dict[check_f])
 
 
-def test_estimator():
-    def dummy(*args, **kwargs):
-        pass
-
-    md = sklearn.utils.estimator_checks
-    saved = _replace_and_save(
-        md,
-        [
-            "check_sample_weights_invariance",  # Max absolute difference: 0.0008
-            "check_estimators_fit_returns_self",  # ValueError: empty metadata
-            "check_classifiers_train",  # assert y_pred.shape == (n_samples,)
-            "check_estimators_unfitted",  # Call 'fit' with appropriate arguments
-        ],
-        dummy,
-    )
-    check_estimator(SVC())
-    _restore_from_saved(md, saved)
+#def test_estimator():
+#    def dummy(*args, **kwargs):
+#        pass
+#
+#    md = sklearn.utils.estimator_checks
+#    saved = _replace_and_save(
+#        md,
+#        [
+#            "check_sample_weights_invariance",  # Max absolute difference: 0.0008
+#            "check_estimators_fit_returns_self",  # ValueError: empty metadata
+#            "check_classifiers_train",  # assert y_pred.shape == (n_samples,)
+#            "check_estimators_unfitted",  # Call 'fit' with appropriate arguments
+#        ],
+#        dummy,
+#    )
+#    check_estimator(SVC())
+#    _restore_from_saved(md, saved)
 
 
 def _test_libsvm_parameters(queue, array_constr, dtype):

@@ -42,3 +42,9 @@ def is_host_policy(policy):
     is_host = isinstance(policy, host_policy)
     is_default = isinstance(policy, default_host_policy)
     return is_host or is_default
+
+
+def is_cpu_policy(policy):
+    is_host = is_host_policy(policy)
+    is_cpu = policy.get_device_name() == "cpu"
+    return is_host or is_cpu

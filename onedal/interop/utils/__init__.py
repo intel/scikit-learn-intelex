@@ -14,6 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from .common import check_attr, is_host_policy
+from .common import check_attr, is_cpu_policy, is_host_policy
 
-__all__ = ["check_attr", "is_host_policy"]
+__all__ = ["check_attr", "is_host_policy", "is_cpu_policy"]
