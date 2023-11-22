@@ -173,7 +173,7 @@ set(EXTERNAL_INCLUDE_DIRECTORIES
 
 # TODO: remove this workaround when oneDAL CMake config is fixed
 if(WIN32)
-list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${oneDAL_ROOT_DIR}/Library/include/dal ${oneDAL_ROOT_DIR}/include/dal)
+list(APPEND EXTERNAL_INCLUDE_DIRECTORIES $ENV{DALROOT}/Library/include/dal $ENV{DALROOT}/include/dal)
 else()
 list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${oneDAL_INCLUDE_DIRS}/dal)
 endif()

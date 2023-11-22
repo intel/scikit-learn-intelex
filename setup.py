@@ -251,8 +251,14 @@ def get_build_options():
         os.path.abspath("."),
         jp(dal_root, "include"),
     ]
-    if os.path.isdir(jp(dal_root, "include", "dal")):
-        include_dir_plat.append(jp(dal_root, "include", "dal"))
+    include_dir_candidates = [
+        jp(dal_root, "include"),
+        jp(dal_root, "include", "dal"),
+        jp(dal_root, "Library", "include", "dal"),
+    ]
+    for candidate in include_dir_candidates:
+        if os.path.isdir(candidate):
+            include_dir_plat.append(candidate)
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + "/include")
