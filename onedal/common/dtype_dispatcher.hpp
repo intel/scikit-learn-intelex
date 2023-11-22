@@ -68,7 +68,7 @@ inline constexpr ResultType dispatch_by_data_type(data_type dtype, Op&& op) {
 #endif // Version check
 
 // TODO: Using includes should be the primary path
-#if defined(ONEDAL_VERSION) && (ONEDAL_VERSION < 20240200)
+#if defined(ONEDAL_VERSION) && (ONEDAL_VERSION < 20240000)
 
 namespace oneapi::dal::detail {
 
