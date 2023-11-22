@@ -118,6 +118,7 @@ Configurations:
 * [Documentation and Tutorials](https://intel.github.io/scikit-learn-intelex/latest/index.html)
 * [Release Notes](https://github.com/intel/scikit-learn-intelex/releases)
 * [Medium Blogs](https://intel.github.io/scikit-learn-intelex/latest/blogs.html)
+* [Code of Conduct](https://github.com/intel/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
 
 ### daal4py and oneDAL
 
@@ -137,4 +138,4 @@ The acceleration is achieved through the use of the Intel(R) oneAPI Data Analyti
 We welcome community contributions, check our [Contributing Guidelines](https://github.com/intel/scikit-learn-intelex/blob/master/CONTRIBUTING.md) to learn more.
 
 ------------------------------------------------------------------------
-\* All names and brands may be claimed as the property of others.
+\* The Intel logo, and other Intel marks are trademarks of Intel Corporation or its subsidiaries. Other names and brands may be claimed as the property of others. 
