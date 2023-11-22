@@ -20,21 +20,15 @@
 As an open source project, we welcome community contributions to Intel(R) Extension for Scikit-learn. 
 This document explains how to participate in project conversations, log bugs and enhancement requests, and submit code patches.
 
-We welcome community contributions to Intel(R) Extension for Scikit-learn. You can:
-
-- Submit your changes directly with a [pull request](https://github.com/intel/scikit-learn-intelex/pulls).
-- Log a bug or make a feature request with an [issue](https://github.com/intel/scikit-learn-intelex/issues).
-
-Refer to our guidelines on [pull requests](#pull-requests) and [issues](#issues) before you proceed.
-
 ## Licensing 
 
-Intel(R) Extension for Scikit-learn uses the [Apache 2.0 License](LICENSE.txt](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE). 
-By contributing to the project, you agree to the license and copyright terms therein and release your own contributions under these terms. 
+Intel(R) Extension for Scikit-learn uses the [Apache 2.0 License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE). 
+By contributing to the project, you agree to the license and copyright terms and release your own contributions under these terms. 
 
 ## Pull Requests 
 
 No anonymous contributions are accepted. The name in the commit message Signed-off-by line and your email must match the change authorship information. 
+
 Make sure your ``.gitconfig`` is set up correctly so you can use `git commit -s` for signing your patches: 
 
 `git config --global user.name "Kate Developer"`
@@ -47,9 +41,9 @@ Make sure your ``.gitconfig`` is set up correctly so you can use `git commit -s`
 * For a larger feature, provide a relevant test. 
 * Document your code. Our project uses reStructuredText for documentation.  
 * Update the copyright year in the first line of the changing file(s). 
-  For example, if you commit your changes in 2022:
-  * the copyright year should be `2005-2022` for existing files
-  * the copyright year should be `2022` for new files
+  For example, if you commit your changes in 2023:
+  * the copyright year should be `2005-2023` for existing files
+  * the copyright year should be `2023` for new files
 * Submit a pull request into the master branch. 
 
 Continuous Integration (CI) testing is enabled for the repository. Your pull request must pass all checks before it can be merged. We will review your contribution and may provide feedback to guide you if any additional fixes or modifications are necessary. When reviewed and accepted, your pull request will be merged into our GitHub repository. 
