@@ -21,7 +21,7 @@
 ## Overview
 
 Intel(R) Extension for Scikit-learn is a **free software AI accelerator** designed to deliver up to **100X** faster performance for your existing scikit-learn code.
-The software acceleration is achieved through the use of vector instructions, IA hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel(R) platforms at launch time.
+The software acceleration is achieved with vector instructions, IA hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel(R) platforms at launch time.
 
 
 With Intel(R) Extension for Scikit-learn, you can:
@@ -30,7 +30,7 @@ With Intel(R) Extension for Scikit-learn, you can:
 * Benefit from performance improvements across different Intel(R) hardware configurations
 * Integrate the extension into your existing Scikit-learn applications without code modifications
 * Continue to use the open-source scikit-learn API
-* Enable and disable the extension with a couple lines of code or at the command line
+* Enable and disable the extension with a couple of lines of code or at the command line
 
 Intel(R) Extension for Scikit-learn is also a part of [Intel(R) AI Tools](https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html). 
 
@@ -42,16 +42,16 @@ To install Intel(R) Extension for Scikit-learn, run:
 pip install scikit-learn-intelex
 ```
 
-> [!NOTE]
-> See all installation instructions in [Installation Guide](https://intel.github.io/scikit-learn-intelex/latest/installation.html). 
+See all installation instructions in the [Installation Guide](https://intel.github.io/scikit-learn-intelex/latest/installation.html). 
 
 ## Integration
 
 The software acceleration is achieved through patching. It means, replace the stock scikit-learn with their optimized versions provided by the extension.
 
-:exclamation: The patching only affects [supported algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
-You can still use not supported ones in your code. The package simply fallbacks into the stock version of scikit-learn. 
-Enable [verbose mode](https://intel.github.io/scikit-learn-intelex/latest/verbose.html), to see which implementation of the algorithm is currently used. 
+> [!NOTE]
+> The patching only affects [supported algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
+> You can still use not supported ones in your code, the package simply fallbacks into the stock version of scikit-learn. 
+> Enable [verbose mode](https://intel.github.io/scikit-learn-intelex/latest/verbose.html) to see which implementation of the algorithm is currently used.
 
 To patch scikit-learn, you can:
 * Use the following command-line flag:
