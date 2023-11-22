@@ -2,7 +2,7 @@
 
 # Intel(R) Extension for Scikit-learn* 
 
-<h3> Seamlessly speed up your scikit-learn applications for Intel(R) CPUs and GPUs across single- and multi-node configurations. 
+<h3> Seamlessly speed up your scikit-learn applications for Intel(R) CPUs and GPUs across single- and multi-node configurations
 
 [Releases](https://github.com/intel/scikit-learn-intelex/releases)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support]()&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;[License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE)&nbsp;&nbsp;&nbsp;
 
@@ -14,6 +14,7 @@
 [![python version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 [![scikit-learn supported versions](https://img.shields.io/badge/sklearn-1.0%20%7C%201.1%20%7C%201.2%20%7C%201.3-blue)](https://img.shields.io/badge/sklearn-01.0%20%7C%201.1%20%7C%201.2%20%7C%201.3-blue)
 
+</h3>
 ---
 <div align="left">
 
