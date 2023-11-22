@@ -23,7 +23,6 @@ from scipy import sparse as sp
 from sklearn.base import BaseEstimator
 
 from daal4py.sklearn._utils import sklearn_check_version
-
 from onedal import _backend
 from onedal.interop.utils import is_cpu_policy
 
