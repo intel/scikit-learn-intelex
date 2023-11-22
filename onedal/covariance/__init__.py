@@ -14,6 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-from .covariance import Covariance
+from .covariance import EmpiricalCovariance
 
-__all__ = ["Covariance"]
+__all__ = ["EmpiricalCovariance"]

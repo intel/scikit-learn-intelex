@@ -15,4 +15,9 @@
 # limitations under the License.
 # ===============================================================================
 
-from onedal.covariance import Covariance
+from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
+from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+
+class EmpiricalCovariance(onedal_EmpiricalCovariance, sklearn_EmpiricalCovariance):
+    def __init__(self, method="dense", bias=False):
+        super().__init__(method, bias)

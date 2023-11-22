@@ -20,10 +20,10 @@ from numpy.testing import assert_allclose
 
 
 def test_sklearnex_import_covariance():
-    from sklearnex.covariance import Covariance
+    from sklearnex.covariance import EmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
-    result = Covariance().fit(X)
+    result = EmpiricalCovariance().fit(X)
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 

@@ -23,38 +23,9 @@ from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 
+from sklearn.base import BaseEstimator
 
-class BaseCovariance:
-    def __init__(self, method):
-        self.method = method
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
-    def _get_onedal_params(self, dtype=np.float32):
-        return {
-            "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.method,
-        }
-
-    def _fit(self, X, module, queue):
-        policy = self._get_policy(queue, X)
-        X = check_array(X, dtype=[np.float64, np.float32])
-        X = make2d(X)
-        types = [np.float32, np.float64]
-        if get_dtype(X) not in types:
-            X = X.astype(np.float64)
-        X = _convert_to_supported(policy, X)
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
-        result = module.compute(policy, params, to_table(X))
-        self.covariance_ = from_table(result.cov_matrix)
-        self.location_ = from_table(result.means).ravel()
-
-        return self
-
-
-class Covariance(BaseCovariance):
+class EmpiricalCovariance(BaseEstimator):
     """Covariance estimator.
 
     Computes sample covariance matrix.
@@ -63,6 +34,10 @@ class Covariance(BaseCovariance):
     ----------
     method : string, default="dense"
         Specifies computation method. Available methods: "dense".
+
+    bias: bool, default=False
+        If True biased estimation of covariance is computed which equals to
+        the unbiased one multiplied by (n_samples - 1) / n_samples.
 
     Attributes
     ----------
@@ -73,8 +48,19 @@ class Covariance(BaseCovariance):
         Estimated covariance matrix
     """
 
-    def __init__(self, method="dense"):
-        super().__init__(method)
+    def __init__(self, method="dense", bias=False):
+        self.method = method
+        self.bias = bias
+
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
+    def _get_onedal_params(self, dtype=np.float32):
+        return {
+            "fptype": "float" if dtype == np.float32 else "double",
+            "method": self.method,
+            "bias": self.bias
+        }
 
     def fit(self, X, queue=None):
         """Fit the sample covariance matrix of X.
@@ -93,4 +79,19 @@ class Covariance(BaseCovariance):
         self : object
             Returns the instance itself.
         """
-        return super()._fit(X, _backend.covariance, queue)
+        policy = self._get_policy(queue, X)
+        X = check_array(X, dtype=[np.float64, np.float32])
+        X = make2d(X)
+        types = [np.float32, np.float64]
+        if get_dtype(X) not in types:
+            X = X.astype(np.float64)
+        X = _convert_to_supported(policy, X)
+        dtype = get_dtype(X)
+        params = self._get_onedal_params(dtype)
+        module = _backend.covariance
+        table_X = to_table(X)
+        result = module.compute(policy, params, table_X)
+        self.covariance_ = from_table(result.cov_matrix)
+        self.location_ = from_table(result.means).ravel()
+
+        return self

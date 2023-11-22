@@ -24,10 +24,10 @@ from onedal.tests.utils._device_selection import get_queues
 
 @pytest.mark.parametrize("queue", get_queues())
 def test_sklearnex_import_covariance(queue):
-    from sklearnex.covariance import Covariance
+    from sklearnex.covariance import EmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
-    result = Covariance().fit(X, queue=queue)
+    result = EmpiricalCovariance().fit(X, queue=queue)
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 
