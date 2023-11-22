@@ -22,7 +22,7 @@
 ## Overview
 
 Intel(R) Extension for Scikit-learn is a **free software AI accelerator** designed to deliver up to **100X** faster performance for your existing scikit-learn code.
-The software acceleration is achieved with vector instructions, IA hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel(R) platforms at launch time.
+The software acceleration is achieved with vector instructions, AI hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel(R) platforms at launch time.
 
 
 With Intel(R) Extension for Scikit-learn, you can:
@@ -47,7 +47,7 @@ See all installation instructions in the [Installation Guide](https://intel.gith
 
 ## Integration
 
-The software acceleration is achieved through patching. It means, replace the stock scikit-learn with their optimized versions provided by the extension.
+The software acceleration is achieved through patching. It means, replacing the stock scikit-learn algorithms with their optimized versions provided by the extension.
 
 > [!NOTE]
 > The patching only affects [supported algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
