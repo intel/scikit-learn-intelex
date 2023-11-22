@@ -16,8 +16,8 @@
 # ===============================================================================
 
 import re
-from os.path import join as jp
 from os.path import isfile
+from os.path import join as jp
 
 
 def find_defines(defines: list, file_obj):
