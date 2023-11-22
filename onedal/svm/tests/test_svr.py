@@ -49,7 +49,7 @@ def _restore_from_saved(md, saved_dict):
         setattr(md, check_f, saved_dict[check_f])
 
 
-#def test_estimator():
+# def test_estimator():
 #    def dummy(*args, **kwargs):
 #        pass
 #

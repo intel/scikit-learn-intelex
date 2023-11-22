@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 from scipy.sparse import csr_matrix, find, isspmatrix_csr
 
+import onedal
 from onedal.interop.array import from_array
 from onedal.interop.csr_table import from_csr_table, is_csr_entity, to_csr_table
 
@@ -78,6 +79,10 @@ def generate_csr_data(gen, shape, per_row, dtypes):
     return (data, indices, offsets)
 
 
+sp_indexing = onedal._backend.data_management.sparse_indexing
+indexing_offset_map = {sp_indexing.zero_based: 0, sp_indexing.one_based: 1}
+
+
 @pytest.mark.parametrize("shape", table_dimensions)
 @pytest.mark.parametrize("dtype", get_dtype_list())
 @pytest.mark.parametrize("itype", [np.int32, np.uint32, np.int64])
@@ -100,9 +105,16 @@ def test_host_csr_table_functionality(shape, dtype, itype):
     assert onedal_table.get_row_count() == row_count
     assert onedal_table.get_column_count() == col_count
 
-    onedal_indices = from_array(onedal_table.get_column_indices())
+    curr_indexing = onedal_table.get_indexing()
+    offset = indexing_offset_map[curr_indexing]
+
+    def get_indices(array):
+        raw = from_array(array)
+        return raw - offset
+
+    onedal_indices = get_indices(onedal_table.get_column_indices())
     np.testing.assert_equal(scipy_indices, onedal_indices)
-    onedal_offsets = from_array(onedal_table.get_row_offsets())
+    onedal_offsets = get_indices(onedal_table.get_row_offsets())
     np.testing.assert_equal(scipy_offsets, onedal_offsets)
     onedal_data = from_array(onedal_table.get_data())
     np.testing.assert_equal(scipy_data, onedal_data)

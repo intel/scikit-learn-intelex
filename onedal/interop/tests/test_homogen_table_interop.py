@@ -17,6 +17,7 @@
 import numpy as np
 import pytest
 
+import onedal
 from onedal.interop.homogen_table import (
     from_homogen_table,
     is_homogen_entity,
@@ -47,6 +48,24 @@ table_dimensions = [
     (123, 999),
 ]
 
+data_layout = onedal._backend.data_management.data_layout
+
+
+def check_table_dimensions(table, shape, transpose):
+    assert table.get_row_count() == shape[0]
+    assert table.get_column_count() == shape[1]
+
+    is_simple = shape[0] == 1
+    is_simple = is_simple or shape[1] == 1
+
+    curr_layout = table.get_data_layout()
+    if transpose and not is_simple:
+        column_major = data_layout.column_major
+        assert curr_layout == column_major
+    else:
+        row_major = data_layout.row_major
+        assert curr_layout == row_major
+
 
 @pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
@@ -68,8 +87,8 @@ def test_device_array_functionality(queue, backend, transpose, shape, dtype):
     assert is_homogen_entity(onedal_table)
     del dpctl_tensor, wrapped_tensor
 
-    assert onedal_table.get_row_count() == dpctl_sua["shape"][0]
-    assert onedal_table.get_column_count() == dpctl_sua["shape"][1]
+    curr_shape = numpy_array.shape
+    check_table_dimensions(onedal_table, curr_shape, transpose)
 
     return_table = from_homogen_table(onedal_table)
 
@@ -100,8 +119,8 @@ def test_host_homogen_table_functionality(backend, transpose, shape, dtype):
     onedal_table = to_homogen_table(wrapped_tensor)
     assert is_homogen_entity(onedal_table)
 
-    assert onedal_table.get_row_count() == numpy_iface["shape"][0]
-    assert onedal_table.get_column_count() == numpy_iface["shape"][1]
+    curr_shape = numpy_array.shape
+    check_table_dimensions(onedal_table, curr_shape, transpose)
 
     return_table = from_homogen_table(onedal_table)
     return_iface = return_table.__array_interface__
