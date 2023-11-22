@@ -32,8 +32,7 @@ namespace py = pybind11;
 namespace oneapi::dal::python::interop::sua {
 
 template <std::size_t dim>
-inline auto get_strides(const py::dict& sua, 
-        const std::array<std::int64_t, dim>& shape) {
+inline auto get_strides(const py::dict& sua, const std::array<std::int64_t, dim>& shape) {
     const auto raw_strides = sua["strides"];
     if (raw_strides.is_none()) {
         return utils::get_c_strides(shape);
@@ -86,9 +85,9 @@ py::dict get_sua_interface(const sua_interface<dim>& sua) {
     return result;
 }
 
-#define INSTANTIATE_DIM(DIM)                                            \
-template sua_interface<DIM> get_sua_interface<DIM>(const py::dict&);    \
-template py::dict get_sua_interface<DIM>(const sua_interface<DIM>&);
+#define INSTANTIATE_DIM(DIM)                                             \
+    template sua_interface<DIM> get_sua_interface<DIM>(const py::dict&); \
+    template py::dict get_sua_interface<DIM>(const sua_interface<DIM>&);
 
 INSTANTIATE_DIM(1)
 INSTANTIATE_DIM(2)

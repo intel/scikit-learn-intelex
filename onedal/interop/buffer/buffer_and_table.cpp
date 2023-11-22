@@ -61,7 +61,7 @@ inline auto get_strides(const dal::homogen_table& t, const Vec& shape) {
     const auto raw_cc = detail::check_mul_overflow(shape.at(1), size);
 
     if (is_c_like) {
-        return Vec{ raw_cc, size};
+        return Vec{ raw_cc, size };
     }
 
     if (is_f_like) {
@@ -72,8 +72,7 @@ inline auto get_strides(const dal::homogen_table& t, const Vec& shape) {
 }
 
 template <typename Type>
-inline auto get_layout(const py::buffer_info& info, 
-                std::int64_t rc, std::int64_t cc) {
+inline auto get_layout(const py::buffer_info& info, std::int64_t rc, std::int64_t cc) {
     constexpr std::int64_t one = 1l;
     constexpr std::int64_t size = sizeof(Type);
 
@@ -101,7 +100,6 @@ inline auto get_layout(const py::buffer_info& info,
     throw std::runtime_error("Unsupported layout");
 }
 
-
 template <typename Type>
 dal::homogen_table wrap_to_homogen_table(py::buffer_info info) {
     check_buffer<Type>(info, 2ul);
@@ -110,7 +108,7 @@ dal::homogen_table wrap_to_homogen_table(py::buffer_info info) {
     const std::int64_t cc = to_int64(info.shape.at(1));
     const auto dl = get_layout<Type>(info, rc, cc);
 
-    const auto count = detail::check_mul_overflow(rc,cc);
+    const auto count = detail::check_mul_overflow(rc, cc);
 
     dal::array<Type> arr;
     if (info.readonly) {
@@ -119,7 +117,7 @@ dal::homogen_table wrap_to_homogen_table(py::buffer_info info) {
         auto cshared = std::shared_ptr<const Type>(ptr, std::move(deleter));
         dal::array<Type> tmp(std::move(cshared), count);
         arr = std::move(tmp);
-    } 
+    }
     else {
         auto* ptr = reinterpret_cast<Type*>(info.ptr);
         buf_deleter<Type, 2ul> deleter{ std::move(info) };
@@ -149,8 +147,7 @@ inline auto get_buffer_info(const dal::homogen_table& t) {
         /*ndim=*/two,
         /*shape_in=*/shape,
         /*strides_in=*/strides,
-        /*readonly=*/true
-    );
+        /*readonly=*/true);
 }
 
 inline void check_policy(const dal::homogen_table& t) {
@@ -158,7 +155,7 @@ inline void check_policy(const dal::homogen_table& t) {
     const auto iface = detail::get_homogen_table_iface(t);
     return check_policy(iface->get_data());
 #endif // ONEDAL_DATA_PARALLEL
-} 
+}
 
 template <typename Type>
 py::array_t<Type> wrap_from_homogen_table_impl(const dal::homogen_table& t) {
@@ -177,8 +174,8 @@ py::object wrap_to_homogen_table(py::buffer_info info) {
     auto dt = convert_buffer_to_dal_type(info.format);
     auto wrap_buffer = [&](auto type_tag) -> py::object {
         using type_t = std::decay_t<decltype(type_tag)>;
-        auto tab = wrap_to_homogen_table<type_t>( std::move(info) );
-        return py::cast( new dal::homogen_table{ std::move(tab) } );
+        auto tab = wrap_to_homogen_table<type_t>(std::move(info));
+        return py::cast(new dal::homogen_table{ std::move(tab) });
     };
 
     return dal::detail::dispatch_by_data_type(dt, wrap_buffer);
@@ -186,7 +183,7 @@ py::object wrap_to_homogen_table(py::buffer_info info) {
 
 py::object wrap_to_homogen_table(py::buffer buf) {
     py::buffer_info info = buf.request();
-    return wrap_to_homogen_table( std::move(info) );
+    return wrap_to_homogen_table(std::move(info));
 }
 
 void instantiate_wrap_to_homogen_table(py::module& pm) {

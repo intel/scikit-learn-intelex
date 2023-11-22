@@ -70,7 +70,7 @@ template <typename Type>
 inline std::string describe(char e = '<') {
     constexpr auto s = type_size<Type>();
     constexpr auto d = type_desc<Type>();
-    return std::string{{e, d, s}};
+    return std::string{ { e, d, s } };
 }
 
 const char end = is_big_endian() ? '>' : '<';
@@ -79,13 +79,15 @@ template <typename... Types>
 inline auto make_fwd_map(const std::tuple<Types...>* const = nullptr) {
     fwd_map_t result(3ul * sizeof...(Types));
 
-    dal::detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        constexpr auto dal_v = detail::make_data_type<type_t>();
-        result.emplace(describe<type_t>(end), dal_v);
-        result.emplace(describe<type_t>('='), dal_v);
-        result.emplace(describe<type_t>('|'), dal_v);
-    }, Types{}...);
+    dal::detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            constexpr auto dal_v = detail::make_data_type<type_t>();
+            result.emplace(describe<type_t>(end), dal_v);
+            result.emplace(describe<type_t>('='), dal_v);
+            result.emplace(describe<type_t>('|'), dal_v);
+        },
+        Types{}...);
 
     return result;
 }
@@ -94,11 +96,13 @@ template <typename... Types>
 inline auto make_inv_map(const std::tuple<Types...>* const = nullptr) {
     inv_map_t result(sizeof...(Types));
 
-    dal::detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        constexpr auto dal_v = detail::make_data_type<type_t>();
-        result.emplace(dal_v, describe<type_t>('|'));
-    }, Types{}...);
+    dal::detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            constexpr auto dal_v = detail::make_data_type<type_t>();
+            result.emplace(dal_v, describe<type_t>('|'));
+        },
+        Types{}...);
 
     return result;
 }

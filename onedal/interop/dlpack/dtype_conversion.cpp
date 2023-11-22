@@ -44,24 +44,28 @@ union type_hash_union {
 
 struct dlpack_type_hash {
     using type_t = DLDataType;
-    constexpr std::uint32_t operator() (const type_t& type) const {
+    constexpr std::uint32_t operator()(const type_t& type) const {
         return type_hash_union(type).full;
     }
 };
 
 struct dlpack_type_equal {
     using type_t = DLDataType;
-    constexpr bool operator() (const type_t& lhs, const type_t& rhs) const {
+    constexpr bool operator()(const type_t& lhs, const type_t& rhs) const {
         const auto l = type_hash_union(lhs).full;
         const auto r = type_hash_union(rhs).full;
         return l == r;
     }
 };
 
-using fwd_map_t = std::unordered_map<DLDataType, dal::data_type, //
-                            dlpack_type_hash, dlpack_type_equal>;
-using inv_map_t = std::unordered_map<dal::data_type, DLDataType, //
-        std::hash<dal::data_type>, std::equal_to<dal::data_type>>;
+using fwd_map_t = std::unordered_map<DLDataType,
+                                     dal::data_type, //
+                                     dlpack_type_hash,
+                                     dlpack_type_equal>;
+using inv_map_t = std::unordered_map<dal::data_type,
+                                     DLDataType, //
+                                     std::hash<dal::data_type>,
+                                     std::equal_to<dal::data_type>>;
 
 template <typename Type>
 constexpr inline DLDataTypeCode make_dlpack_type_code() {
@@ -95,11 +99,13 @@ template <typename... Types>
 inline auto make_inv_map(const std::tuple<Types...>* const = nullptr) {
     inv_map_t result(1ul * sizeof...(Types));
 
-    dal::detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        constexpr auto dal_v = detail::make_data_type<type_t>();
-        result.emplace(dal_v, make_dlpack_type<type_t>(1));
-    }, Types{}...);
+    dal::detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            constexpr auto dal_v = detail::make_data_type<type_t>();
+            result.emplace(dal_v, make_dlpack_type<type_t>(1));
+        },
+        Types{}...);
 
     return result;
 }
@@ -108,12 +114,14 @@ template <typename... Types>
 inline auto make_fwd_map(const std::tuple<Types...>* const = nullptr) {
     fwd_map_t result(2ul * sizeof...(Types));
 
-    dal::detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        constexpr auto dal_v = detail::make_data_type<type_t>();
-        result.emplace(make_dlpack_type<type_t>(0), dal_v);
-        result.emplace(make_dlpack_type<type_t>(1), dal_v);
-    }, Types{}...);
+    dal::detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            constexpr auto dal_v = detail::make_data_type<type_t>();
+            result.emplace(make_dlpack_type<type_t>(0), dal_v);
+            result.emplace(make_dlpack_type<type_t>(1), dal_v);
+        },
+        Types{}...);
 
     return result;
 }

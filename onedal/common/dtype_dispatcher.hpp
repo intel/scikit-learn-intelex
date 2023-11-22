@@ -24,7 +24,7 @@
 #include "oneapi/dal/detail/common.hpp"
 
 // TODO: Using includes should be the primary path
-#if defined(ONEDAL_VERSION) && (20240000 < ONEDAL_VERSION)
+#if defined(ONEDAL_VERSION) && (20240200 < ONEDAL_VERSION)
 
 #include "oneapi/dal/detail/dtype_dispatcher.hpp"
 
@@ -68,7 +68,7 @@ inline constexpr ResultType dispatch_by_data_type(data_type dtype, Op&& op) {
 #endif // Version check
 
 // TODO: Using includes should be the primary path
-#if defined(ONEDAL_VERSION) && (ONEDAL_VERSION < 20240000)
+#if defined(ONEDAL_VERSION) && (ONEDAL_VERSION < 20240200)
 
 namespace oneapi::dal::detail {
 

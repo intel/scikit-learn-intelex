@@ -22,7 +22,6 @@
 
 #include <pybind11/pybind11.h>
 
-
 #include "onedal/common/device_lookup.hpp"
 #include "onedal/interop/dlpack/api/dlpack.h"
 #include "onedal/interop/dlpack/device_conversion.hpp"
@@ -67,7 +66,7 @@ bool is_unknown_device(DLDevice device) {
 std::optional<sycl::device> convert_to_sycl(DLDevice device) {
     if (is_cpu_device(device)) {
         return sycl::ext::oneapi::detail::select_device( //
-                                    &sycl::cpu_selector_v);
+            &sycl::cpu_selector_v);
     }
     else if (is_oneapi_device(device)) {
         return get_device_by_id(device.device_id);
@@ -93,14 +92,14 @@ std::optional<DLDevice> convert_from_sycl(sycl::device device) {
 py::object to_policy(DLDevice device) {
     if (is_cpu_device(device)) {
         detail::default_host_policy pol{};
-        return py::cast( std::move(pol) );
+        return py::cast(std::move(pol));
     }
 #ifdef ONEDAL_DATA_PARALLEL
     else if (is_oneapi_device(device)) {
         auto dev = convert_to_sycl(device);
         sycl::queue queue{ dev.value() };
         detail::data_parallel_policy pol{ queue };
-        return py::cast( std::move(pol) );
+        return py::cast(std::move(pol));
     }
 #endif // ONEDAL_DATA_PARALLEL
     else {
@@ -140,23 +139,20 @@ std::shared_ptr<sycl::queue> get_queue(DLDevice device) {
 py::object to_policy(py::tuple tp) {
     constexpr const char err[] = "Ill-formed device tuple";
 
-    if (tp.size() != py::ssize_t{2ul}) {
+    if (tp.size() != py::ssize_t{ 2ul }) {
         throw std::runtime_error(err);
     }
 
     auto type = tp[0ul].cast<std::int32_t>();
 
-    DLDevice desc {
-        static_cast<DLDeviceType>(type),
-        tp[1].cast<std::int32_t>()
-    };
+    DLDevice desc{ static_cast<DLDeviceType>(type), tp[1].cast<std::int32_t>() };
 
     return to_policy(std::move(desc));
 }
 
 void instantiate_convert_to_policy(py::module& pm) {
     pm.def("convert_to_policy", [](py::tuple tp) -> py::object {
-        return to_policy( std::move(tp) );
+        return to_policy(std::move(tp));
     });
 }
 

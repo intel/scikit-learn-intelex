@@ -50,7 +50,7 @@ using interface_t = sua_interface<2l>;
 #ifdef ONEDAL_DATA_PARALLEL
 py::object wrap_from_homogen_table(const dal::homogen_table& table) {
     using tensor_t = sua_interface<2l>;
-    auto sua = utils::wrap_from_homogen_table<tensor_t>(table); 
+    auto sua = utils::wrap_from_homogen_table<tensor_t>(table);
     return get_sua_interface(sua);
 }
 
@@ -88,7 +88,8 @@ py::object wrap_object_to_homogen_table(py::object object) {
         object.dec_ref();
     };
     auto result = wrap_to_homogen_table( //
-        std::move(sua), std::move(deleter));
+        std::move(sua),
+        std::move(deleter));
     object.inc_ref();
     return result;
 }

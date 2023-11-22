@@ -74,18 +74,20 @@ void instantiate_wrap_to_array(py::module& pm) {
 }
 
 template <typename... Types>
-inline void instantiate_wrap_from_array_impl(py::module& pm, 
-            const std::tuple<Types...>* const = nullptr) {
+inline void instantiate_wrap_from_array_impl(py::module& pm,
+                                             const std::tuple<Types...>* const = nullptr) {
     constexpr const char name[] = "wrap_from_array";
-    return detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        
-        pm.def(name, [](const dal::array<type_t>& array) -> py::dict {
-            using iface_t = sua_interface<1l>;
-            auto interface = utils::wrap_from_array<iface_t>(array);
-            return get_sua_interface(interface);
-        });
-    }, Types{}...);
+    return detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+
+            pm.def(name, [](const dal::array<type_t>& array) -> py::dict {
+                using iface_t = sua_interface<1l>;
+                auto interface = utils::wrap_from_array<iface_t>(array);
+                return get_sua_interface(interface);
+            });
+        },
+        Types{}...);
 }
 
 void instantiate_wrap_from_array(py::module& pm) {

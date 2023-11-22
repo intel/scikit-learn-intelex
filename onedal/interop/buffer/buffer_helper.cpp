@@ -26,10 +26,10 @@ namespace oneapi::dal::python::interop::buffer {
 
 void instantiate_buffer_helper(py::module& pm) {
     pm.def("get_shape", [](const py::buffer& buf) -> py::tuple {
-        return utils::to_tuple( buf.request().shape );
+        return utils::to_tuple(buf.request().shape);
     });
     pm.def("get_strides", [](const py::buffer& buf) -> py::tuple {
-        return utils::to_tuple( buf.request().strides );
+        return utils::to_tuple(buf.request().strides);
     });
 }
 

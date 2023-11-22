@@ -36,19 +36,21 @@ namespace oneapi::dal::python::interop::dlpack {
 
 py::object wrap_to_array(py::capsule buffer) {
     auto tensor = get_dlpack_interface<1l>(buffer);
-    auto deleter = [tensor](auto* ptr) -> void { return; };
+    auto deleter = [tensor](auto* ptr) -> void {
+        return;
+    };
     return utils::wrap_to_array(*tensor, std::move(deleter));
 }
 
 void instantiate_wrap_to_array(py::module& pm) {
     constexpr const char name[] = "wrap_to_array";
     pm.def(name, [](py::capsule capsule) -> py::object {
-        return wrap_to_array( std::move(capsule) );
+        return wrap_to_array(std::move(capsule));
     });
     pm.def(name, [](py::object object) -> py::object {
         auto dlpack = object.attr("__dlpack__");
         auto capsule = dlpack().cast<py::capsule>();
-        return wrap_to_array( std::move(capsule) );
+        return wrap_to_array(std::move(capsule));
     });
 }
 

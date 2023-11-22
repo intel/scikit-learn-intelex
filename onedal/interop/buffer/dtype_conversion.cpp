@@ -35,12 +35,14 @@ template <typename... Types>
 inline auto make_fwd_map(const std::tuple<Types...>* const = nullptr) {
     fwd_map_t result(sizeof...(Types));
 
-    dal::detail::apply([&](auto type_tag) -> void {
-        using type_t = std::decay_t<decltype(type_tag)>;
-        constexpr auto dal_v = detail::make_data_type<type_t>();
-        auto buf_v = py::format_descriptor<type_t>::format();
-        result.emplace(buf_v, dal_v);
-    }, Types{}...);
+    dal::detail::apply(
+        [&](auto type_tag) -> void {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            constexpr auto dal_v = detail::make_data_type<type_t>();
+            auto buf_v = py::format_descriptor<type_t>::format();
+            result.emplace(buf_v, dal_v);
+        },
+        Types{}...);
 
     return result;
 }

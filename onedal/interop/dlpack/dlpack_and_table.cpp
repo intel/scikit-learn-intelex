@@ -38,19 +38,21 @@ namespace oneapi::dal::python::interop::dlpack {
 
 py::object wrap_to_homogen_table(py::capsule buffer) {
     auto tensor = get_dlpack_interface<2l>(buffer);
-    auto deleter = [tensor](auto* ptr) -> void { return; };
+    auto deleter = [tensor](auto* ptr) -> void {
+        return;
+    };
     return utils::wrap_to_homogen_table(*tensor, std::move(deleter));
 }
 
 void instantiate_wrap_to_homogen_table(py::module& pm) {
     constexpr const char name[] = "wrap_to_homogen_table";
     pm.def(name, [](py::capsule capsule) -> py::object {
-        return wrap_to_homogen_table( std::move(capsule) );
+        return wrap_to_homogen_table(std::move(capsule));
     });
     pm.def(name, [](py::object object) -> py::object {
         auto dlpack = object.attr("__dlpack__");
         auto capsule = dlpack().cast<py::capsule>();
-        return wrap_to_homogen_table( std::move(capsule) );
+        return wrap_to_homogen_table(std::move(capsule));
     });
 }
 

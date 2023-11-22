@@ -31,8 +31,8 @@ void instantiate_dlpack_helper(py::module& pm) {
 
         py::tuple result(dim_count);
 
-        for(std::int64_t i = 0l; i != dim_count; ++i) {
-            result[i] = py::cast( get_count_by_dim(i, caps) );
+        for (std::int64_t i = 0l; i != dim_count; ++i) {
+            result[i] = py::cast(get_count_by_dim(i, caps));
         }
 
         return result;

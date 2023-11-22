@@ -82,7 +82,7 @@ std::int64_t get_sua_count(const py::dict& sua) {
         const py::ssize_t dimension = it->cast<py::size_t>();
         result = detail::check_mul_overflow(result, dimension);
     }
-    return detail::integral_cast<std::int64_t>(result); 
+    return detail::integral_cast<std::int64_t>(result);
 }
 
 dal::data_type get_sua_dtype(const py::dict& sua) {
@@ -99,7 +99,7 @@ sycl::queue get_sua_queue(const py::dict& sua) {
 
 std::shared_ptr<sycl::queue> get_sua_shared_queue(const py::dict& sua) {
     sycl::queue queue = get_sua_queue(sua);
-    return std::make_shared<sycl::queue>( std::move(queue) );
+    return std::make_shared<sycl::queue>(std::move(queue));
 }
 
 py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue) {

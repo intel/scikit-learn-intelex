@@ -42,8 +42,9 @@ DLTensor produce_unmanaged(std::shared_ptr<dlpack_interface<dim>> ptr) {
 }
 
 template <std::int64_t dim, typename Deleter>
-inline std::shared_ptr<dlpack_interface<dim>> convert(const DLManagedTensor& managed, Deleter&& deleter) {
-    auto* const ptr = new dlpack_interface<dim>{}; 
+inline std::shared_ptr<dlpack_interface<dim>> convert(const DLManagedTensor& managed,
+                                                      Deleter&& deleter) {
+    auto* const ptr = new dlpack_interface<dim>{};
     const auto& tensor = managed.dl_tensor;
 
     ptr->data.second = true;
@@ -54,7 +55,7 @@ inline std::shared_ptr<dlpack_interface<dim>> convert(const DLManagedTensor& man
     if (tensor.ndim != static_cast<std::int32_t>(dim)) {
         throw std::runtime_error("Inconsistent dimensions");
     }
-    
+
     for (std::int64_t d = 0l; d < dim; ++d) {
         ptr->shape.at(d) = tensor.shape[d];
     }
@@ -68,8 +69,9 @@ inline std::shared_ptr<dlpack_interface<dim>> convert(const DLManagedTensor& man
         }
     }
 
-    return std::shared_ptr<dlpack_interface<dim>>(//
-                ptr, std::forward<Deleter>(deleter));
+    return std::shared_ptr<dlpack_interface<dim>>( //
+        ptr,
+        std::forward<Deleter>(deleter));
 }
 
 template <std::int64_t dim>
@@ -87,10 +89,9 @@ std::shared_ptr<dlpack_interface<dim>> get_dlpack_interface(py::capsule capsule)
     return convert<dim>(ref, std::move(deleter));
 }
 
-
-#define INSTANTIATE_DIM(DIM)                                                            \
-template DLTensor produce_unmanaged(std::shared_ptr<dlpack_interface<DIM>>);            \
-template std::shared_ptr<dlpack_interface<DIM>> get_dlpack_interface<DIM>(py::capsule);
+#define INSTANTIATE_DIM(DIM)                                                     \
+    template DLTensor produce_unmanaged(std::shared_ptr<dlpack_interface<DIM>>); \
+    template std::shared_ptr<dlpack_interface<DIM>> get_dlpack_interface<DIM>(py::capsule);
 
 INSTANTIATE_DIM(1)
 INSTANTIATE_DIM(2)

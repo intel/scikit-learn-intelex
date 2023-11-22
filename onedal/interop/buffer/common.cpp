@@ -30,8 +30,7 @@ namespace py = pybind11;
 namespace oneapi::dal::python::interop::buffer {
 
 template <typename Type>
-void check_buffer(const py::buffer_info& info, 
-                  std::size_t ndim = 1ul) {
+void check_buffer(const py::buffer_info& info, std::size_t ndim = 1ul) {
     const auto fmt = py::format_descriptor<Type>::format();
     if (info.format != fmt) {
         throw std::domain_error("Wrong type");
@@ -52,7 +51,7 @@ public:
     buf_deleter(const buf_deleter&) = default;
     buf_deleter(py::buffer_info info) : info_{ std::move(info) } {}
 
-    void operator() (Type* const ptr) const {
+    void operator()(Type* const ptr) const {
         return check_buffer<Type>(info_, dim);
     }
 

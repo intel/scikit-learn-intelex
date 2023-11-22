@@ -33,7 +33,7 @@ namespace oneapi::dal::python::interop::buffer {
 
 template <typename Type>
 dal::array<Type> wrap_to_typed_array(py::buffer_info info) {
-    (void) check_buffer<Type>(info);
+    (void)check_buffer<Type>(info);
 
     const std::int64_t casted_count = //
         detail::integral_cast<std::int64_t>(info.size);
@@ -43,7 +43,7 @@ dal::array<Type> wrap_to_typed_array(py::buffer_info info) {
         buf_deleter<const Type> deleter{ std::move(info) };
         auto cshared = std::shared_ptr<const Type>(ptr, std::move(deleter));
         return dal::array<Type>(std::move(cshared), casted_count);
-    } 
+    }
     else {
         auto* ptr = reinterpret_cast<Type*>(info.ptr);
         buf_deleter<Type> deleter{ std::move(info) };
@@ -61,15 +61,13 @@ inline auto get_buffer_info(const dal::array<Type>& arr) {
     auto* raw_ptr = reinterpret_cast<void*>(mut_ptr);
     auto fmt = py::format_descriptor<Type>::format();
     auto immut = !arr.has_mutable_data();
-    return py::buffer_info{
-        /*ptr=*/raw_ptr,
-        /*itemsize=*/size,
-        /*format=*/fmt,
-        /*ndim=*/one,
-        /*shape_in=*/{count},
-        /*strides_in=*/{size},
-        /*readonly=*/immut
-    };
+    return py::buffer_info{ /*ptr=*/raw_ptr,
+                            /*itemsize=*/size,
+                            /*format=*/fmt,
+                            /*ndim=*/one,
+                            /*shape_in=*/{ count },
+                            /*strides_in=*/{ size },
+                            /*readonly=*/immut };
 }
 
 template <typename Type>
@@ -87,8 +85,8 @@ py::object wrap_to_array(py::buffer_info info) {
     auto dt = convert_buffer_to_dal_type(info.format);
     auto wrap_buffer = [&](auto type_tag) -> py::object {
         using type_t = std::decay_t<decltype(type_tag)>;
-        auto arr = wrap_to_typed_array<type_t>( std::move(info) );
-        return py::cast( new dal::array<type_t>( std::move(arr) ) );
+        auto arr = wrap_to_typed_array<type_t>(std::move(info));
+        return py::cast(new dal::array<type_t>(std::move(arr)));
     };
 
     return dal::detail::dispatch_by_data_type(dt, wrap_buffer);
@@ -96,7 +94,7 @@ py::object wrap_to_array(py::buffer_info info) {
 
 py::object wrap_to_array(py::buffer buf) {
     py::buffer_info info = buf.request();
-    return wrap_to_array( std::move(info) );
+    return wrap_to_array(std::move(info));
 }
 
 void instantiate_wrap_to_array(py::module& pm) {
@@ -106,8 +104,7 @@ void instantiate_wrap_to_array(py::module& pm) {
 }
 
 template <typename... Types>
-void instantiate_wrap_from_array_impl(py::module& pm, 
-            const std::tuple<Types...>* const = nullptr) {
+void instantiate_wrap_from_array_impl(py::module& pm, const std::tuple<Types...>* const = nullptr) {
     constexpr const char* name = "wrap_from_array";
     auto wrap = [&](auto type_tag) -> void {
         using type_t = std::decay_t<decltype(type_tag)>;
