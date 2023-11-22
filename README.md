@@ -2,7 +2,7 @@
 
 # Intel(R) Extension for Scikit-learn* 
 
-<h3> Seamlessly speed up your scikit-learn applications for Intel(R) CPUs and GPUs across single- and multi-node configurations
+<h3> Speed up your scikit-learn applications for Intel(R) CPUs and GPUs across single- and multi-node configurations
 
 [Releases](https://github.com/intel/scikit-learn-intelex/releases)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support]()&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;[License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE)&nbsp;&nbsp;&nbsp;
 
