@@ -14,8 +14,9 @@
 [![python version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)
 [![scikit-learn supported versions](https://img.shields.io/badge/sklearn-1.0%20%7C%201.1%20%7C%201.2%20%7C%201.3-blue)](https://img.shields.io/badge/sklearn-01.0%20%7C%201.1%20%7C%201.2%20%7C%201.3-blue)
 
-</h3>
 ---
+</h3>
+
 <div align="left">
 
 ## Overview
