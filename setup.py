@@ -249,9 +249,10 @@ def get_build_options():
     include_dir_plat = [
         os.path.abspath("./src"),
         os.path.abspath("."),
-        dal_root + "/include/dal",
-        dal_root + "/include/oneapi",
+        jp(dal_root, "include"),
     ]
+    if os.path.isdir(jp(dal_root, "include", "dal")):
+        include_dir_plat.append(jp(dal_root, "include", "dal"))
     # FIXME it is a wrong place for this dependency
     if not no_dist:
         include_dir_plat.append(mpi_root + "/include")

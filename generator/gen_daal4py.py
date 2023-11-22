@@ -31,6 +31,7 @@ from os.path import isdir
 from os.path import join as jp
 from shutil import copytree, rmtree
 from subprocess import call
+from sys import platform
 
 from .format import mk_var
 from .parse import parse_header, parse_version
@@ -1197,8 +1198,12 @@ def gen_daal4py(dalroot, outdir, version, warn_all=False, no_dist=False, no_stre
     global no_warn
     if warn_all:
         no_warn = {}
-    orig_path = jp(dalroot, "include", "dal")
+    if platform in ["win32", "cygwin"]:
+        orig_path = jp(dalroot, "Library", "include", "dal")
+    else:
+        orig_path = jp(dalroot, "include", "dal")
     if not isdir(orig_path):
+        # pre-2024.0 release header path
         orig_path = jp(dalroot, "include")
     assert os.path.isfile(jp(orig_path, "algorithms", "algorithm.h")) and os.path.isfile(
         jp(orig_path, "algorithms", "model.h")

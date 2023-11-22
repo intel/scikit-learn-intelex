@@ -167,10 +167,16 @@ pybind11_add_module(${TARGET} ${sources})
 set(EXTERNAL_INCLUDE_DIRECTORIES
     ${PYTHON_ONEDAL}../
     ${oneDAL_INCLUDE_DIRS}
-    ${oneDAL_INCLUDE_DIRS}/dal
     ${PYTHON_INCLUDE_DIR}
     ${NUMPY_INCLUDE_DIRS}
 )
+
+# TODO: remove this workaround when oneDAL CMake config is fixed
+if(WIN32)
+list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${oneDAL_ROOT_DIR}/Library/include/dal ${oneDAL_ROOT_DIR}/include/dal)
+else()
+list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${oneDAL_INCLUDE_DIRS}/dal)
+endif()
 
 set(EXTERNAL_LINK_DIRECTORIES ${PYTHON_LIBRARY_DIR} ${oneDAL_LIBRARY_DIR})
 set(EXTERNAL_LINK_LIBRARIES ${ONEDAL_LIBRARIES})
