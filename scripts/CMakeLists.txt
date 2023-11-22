@@ -167,6 +167,7 @@ pybind11_add_module(${TARGET} ${sources})
 set(EXTERNAL_INCLUDE_DIRECTORIES
     ${PYTHON_ONEDAL}../
     ${oneDAL_INCLUDE_DIRS}
+    ${oneDAL_INCLUDE_DIRS}/dal
     ${PYTHON_INCLUDE_DIR}
     ${NUMPY_INCLUDE_DIRS}
 )
