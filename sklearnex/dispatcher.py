@@ -47,6 +47,7 @@ def get_patch_map():
         import sklearn.linear_model as linear_model_module
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
+        import sklearn.covariance as covariance_module
 
         if sklearn_check_version("1.2.1"):
             import sklearn.utils.parallel as parallel_module
@@ -62,6 +63,8 @@ def get_patch_map():
             from .utils.parallel import _FuncWrapper as _FuncWrapper_sklearnex
         else:
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
+
+        from .covariance import EmpiricalCovariance as EmpiricalCovariance_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
@@ -103,6 +106,18 @@ def get_patch_map():
                     None,
                 ]
             ]
+        
+        # Covariance
+        mapping["covariance"] = [
+            [
+                (
+                    covariance_module,
+                    "EmpiricalCovariance",
+                    EmpiricalCovariance_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
             # LogisticRegression
             mapping.pop("logisticregression")
