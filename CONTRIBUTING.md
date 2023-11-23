@@ -40,10 +40,7 @@ Make sure your ``.gitconfig`` is set up correctly so you can use `git commit -s`
 * Make sure you can build the product and run all the tests with your patch. 
 * For a larger feature, provide a relevant test. 
 * Document your code. Our project uses reStructuredText for documentation.  
-* Update the copyright year in the first line of the changing file(s). 
-  For example, if you commit your changes in 2023:
-  * the copyright year should be `2005-2023` for existing files
-  * the copyright year should be `2023` for new files
+* For new file(s), specify the appropriate copyright year in the first line. 
 * Submit a pull request into the master branch. 
 
 Continuous Integration (CI) testing is enabled for the repository. Your pull request must pass all checks before it can be merged. We will review your contribution and may provide feedback to guide you if any additional fixes or modifications are necessary. When reviewed and accepted, your pull request will be merged into our GitHub repository. 
