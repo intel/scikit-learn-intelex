@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import numpy as np
+from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import get_dtype, make2d
@@ -23,7 +24,6 @@ from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 
-from sklearn.base import BaseEstimator
 
 class EmpiricalCovariance(BaseEstimator):
     """Covariance estimator.
@@ -59,7 +59,7 @@ class EmpiricalCovariance(BaseEstimator):
         return {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": self.method,
-            "bias": self.bias
+            "bias": self.bias,
         }
 
     def fit(self, X, queue=None):

@@ -15,13 +15,15 @@
 # limitations under the License.
 # ===============================================================================
 
-from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
+from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+
+from daal4py.sklearn._utils import sklearn_check_version
+from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
-from daal4py.sklearn._utils import sklearn_check_version
-from scipy import sparse as sp
+
 
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     def __init__(self, *, store_precision=True, assume_centered=False):
@@ -52,12 +54,12 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
             f"sklearn.covariance.{class_name}.{method_name}"
         )
         if method_name == "fit":
-            X, = data
+            (X,) = data
             patching_status.and_conditions(
                 [
                     (
                         self.assume_centered == False,
-                        "assume_centered parameter is not supported on oneDAL side"
+                        "assume_centered parameter is not supported on oneDAL side",
                     ),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 ]
@@ -65,7 +67,6 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
-    
     def _onedal_cpu_supported(self, method_name, *data):
         return self._onedal_supported(method_name, *data)
 
@@ -75,7 +76,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     def fit(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
-        
+
         dispatch(
             self,
             "fit",
