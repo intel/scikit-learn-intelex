@@ -249,7 +249,6 @@ def get_build_options():
     include_dir_plat = [
         os.path.abspath("./src"),
         os.path.abspath("."),
-        jp(dal_root, "include"),
     ]
     include_dir_candidates = [
         jp(dal_root, "include"),

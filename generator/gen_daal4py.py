@@ -1198,13 +1198,15 @@ def gen_daal4py(dalroot, outdir, version, warn_all=False, no_dist=False, no_stre
     global no_warn
     if warn_all:
         no_warn = {}
-    if platform in ["win32", "cygwin"]:
-        orig_path = jp(dalroot, "Library", "include", "dal")
-    else:
-        orig_path = jp(dalroot, "include", "dal")
-    if not isdir(orig_path):
-        # pre-2024.0 release header path
-        orig_path = jp(dalroot, "include")
+    orig_path_candidates = [
+        jp(dalroot, "include", "dal"),
+        jp(dalroot, "Library", "include", "dal"),
+        jp(dalroot, "include"),
+    ]
+    for candidate in orig_path_candidates:
+        if isdir(candidate):
+            orig_path = candidate
+            break
     assert os.path.isfile(jp(orig_path, "algorithms", "algorithm.h")) and os.path.isfile(
         jp(orig_path, "algorithms", "model.h")
     ), (
