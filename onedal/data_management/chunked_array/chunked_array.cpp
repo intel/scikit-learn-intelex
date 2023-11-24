@@ -43,6 +43,7 @@ void instantiate_chunked_array_by_type(py::module& m) {
 
     py::class_<chunked_array_t> py_array(m, c_name);
     py_array.def(py::init<>());
+    py_array.def(py::init<chunked_array_t>());
     py_array.def(py::pickle(
         [](const chunked_array_t& m) -> py::bytes {
             return serialize(m);
@@ -86,19 +87,31 @@ void instantiate_chunked_array_by_type(py::module& m) {
     });
 }
 
+inline void instantiate_make_chunked_array(py::module& pm) {
+    constexpr const char name[] = "make_chunked_array";
+    pm.def(name, [](data_type dtype, std::int64_t chunk_count) -> py::object {
+        return detail::dispatch_by_data_type(dtype, [&](auto type_tag) -> py::object {
+            using type_t = std::decay_t<decltype(type_tag)>;
+            auto result = chunked_array<type_t>(chunk_count);
+            return py::cast(std::move(result));
+        });
+    });
+}
+
 template <typename... Types>
 inline void instantiate_chunked_array_impl(py::module& pm,
                                            const std::tuple<Types...>* const = nullptr) {
     auto instantiate = [&](auto type_tag) -> void {
         using type_t = std::decay_t<decltype(type_tag)>;
-        return instantiate_chunked_array_by_type<type_t>(pm);
+        instantiate_chunked_array_by_type<type_t>(pm);
     };
     return detail::apply(instantiate, Types{}...);
 }
 
 void instantiate_chunked_array(py::module& pm) {
     constexpr const supported_types_t* types = nullptr;
-    return instantiate_chunked_array_impl(pm, types);
+    (void)instantiate_chunked_array_impl(pm, types);
+    (void)instantiate_make_chunked_array(pm);
 }
 
 } // namespace oneapi::dal::python::data_management

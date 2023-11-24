@@ -30,6 +30,9 @@
 #include "oneapi/dal/table/heterogen.hpp"
 #include "oneapi/dal/table/common.hpp"
 
+#include "oneapi/dal/table/detail/table_iface.hpp"
+#include "oneapi/dal/table/detail/table_utils.hpp"
+
 #include "oneapi/dal/detail/common.hpp"
 
 namespace py = pybind11;
@@ -50,6 +53,23 @@ inline void make_chunked_array_setter(py::class_<dal::heterogen_table>& table) {
     using chunked_array_t = dal::chunked_array<Type>;
     table.def("set_column", [](dal::heterogen_table& table, std::int64_t col, chunked_array_t arr) {
         table.set_column(col, std::move(arr));
+    });
+}
+
+inline void instantiate_getter(py::class_<dal::heterogen_table>& table) {
+    constexpr const char name[] = "get_column";
+    table.def(name, [](const dal::heterogen_table& table, std::int64_t col) -> py::object {
+        const auto dtype = table.get_metadata().get_data_type(col);
+        return detail::dispatch_by_data_type(dtype, [&](auto type_tag) -> py::object {
+            using dtype_t = std::decay_t<decltype(type_tag)>;
+            using column_t = dal::chunked_array<dtype_t>;
+            const detail::pimpl_accessor acc{};
+
+            auto iface = detail::get_heterogen_table_iface(table);
+            auto raw_column = iface->get_column(col);
+            auto column = acc.make<column_t>(raw_column);
+            return py::cast(std::move(column));
+        });
     });
 }
 
@@ -75,8 +95,9 @@ void instantiate_heterogen_table(py::module& pm) {
 
     instantiate_table_iface(py_heterogen_table);
 
+    (void)instantiate_getter(py_heterogen_table);
     constexpr const supported_types_t* types = nullptr;
-    instantiate_setters(py_heterogen_table, types);
+    (void)instantiate_setters(py_heterogen_table, types);
 }
 
 } // namespace oneapi::dal::python::data_management

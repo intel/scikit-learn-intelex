@@ -13,10 +13,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-
+#include <iostream>
 #include <pybind11/pybind11.h>
 
 #include "oneapi/dal/common.hpp"
+#include "oneapi/dal/table/common.hpp"
 
 #include "onedal/common.hpp"
 #include "onedal/common/dtype_dispatcher.hpp"
@@ -25,8 +26,8 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-ONEDAL_PY_INIT_MODULE(dtype_dispatcher) {
-    py::enum_<dal::data_type> py_dtype(m, "dtype");
+inline void instantiate_data_type(py::module& pm) {
+    py::enum_<dal::data_type> py_dtype(pm, "dtype");
     py_dtype.value("int8", dal::data_type::int8);
     py_dtype.value("int16", dal::data_type::int16);
     py_dtype.value("int32", dal::data_type::int32);
@@ -38,6 +39,20 @@ ONEDAL_PY_INIT_MODULE(dtype_dispatcher) {
     py_dtype.value("float32", dal::data_type::float32);
     py_dtype.value("float64", dal::data_type::float64);
     py_dtype.export_values();
+}
+
+inline void instantiate_feature_type(py::module& pm) {
+    py::enum_<dal::feature_type> py_ftype(pm, "ftype");
+    py_ftype.value("ratio", dal::feature_type::ratio);
+    py_ftype.value("nominal", dal::feature_type::nominal);
+    py_ftype.value("ordinal", dal::feature_type::ordinal);
+    py_ftype.value("interval", dal::feature_type::interval);
+    py_ftype.export_values();
+}
+
+ONEDAL_PY_INIT_MODULE(dtype_dispatcher) {
+    (void)instantiate_feature_type(m);
+    (void)instantiate_data_type(m);
 } // ONEDAL_PY_INIT_MODULE(dtype_dispatcher)
 
 } // namespace oneapi::dal::python
