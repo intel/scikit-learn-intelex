@@ -21,7 +21,7 @@
 
 ## Overview
 
-Intel(R) Extension for Scikit-learn is a **free software AI accelerator** designed to deliver up to **100X** faster performance for your existing scikit-learn code.
+Intel(R) Extension for Scikit-learn is a ==free software AI accelerator== designed to deliver over ==10-100X== acceleration to your existing scikit-learn code.
 The software acceleration is achieved with vector instructions, AI hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel(R) platforms at launch time.
 
 
@@ -35,41 +35,30 @@ With Intel(R) Extension for Scikit-learn, you can:
 
 Intel(R) Extension for Scikit-learn is also a part of [Intel(R) AI Tools](https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html). 
 
-## Installation
+## Acceleration
 
-To install Intel(R) Extension for Scikit-learn, run:
+![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/sources/_static/scikit-learn-acceleration-2021.2.3.PNG)
+Configurations:
+- HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
+- SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
 
-```
-pip install scikit-learn-intelex
-```
+[Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
 
-See all installation instructions in the [Installation Guide](https://intel.github.io/scikit-learn-intelex/latest/installation.html). 
+## Documentation
 
-## Integration
+* [Quick Start](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
+* [Documentation and Tutorials](https://intel.github.io/scikit-learn-intelex/latest/index.html)
+* [Release Notes](https://github.com/intel/scikit-learn-intelex/releases)
+* [Medium Blogs](https://intel.github.io/scikit-learn-intelex/latest/blogs.html)
+* [Code of Conduct](https://github.com/intel/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
 
-The software acceleration is achieved through patching. It means, replacing the stock scikit-learn algorithms with their optimized versions provided by the extension.
+### daal4py and oneDAL
 
-> [!NOTE]
-> The patching only affects [supported algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
-> You can still use not supported ones in your code, the package simply fallbacks into the stock version of scikit-learn. 
-> Enable [verbose mode](https://intel.github.io/scikit-learn-intelex/latest/verbose.html) to see which implementation of the algorithm is currently used.
+The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
+- [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
+- [About daal4py](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py)
 
-To patch scikit-learn, you can:
-* Use the following command-line flag:
-  ```
-  python -m sklearnex my_application.py
-  ```
-* Add the following lines to the script:
-  ```
-  from sklearnex import patch_sklearn
-  patch_sklearn()
-  ```
-
-:eyes: Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage). 
-
-
-
-### Intel(R) Optimizations
+## Intel(R) Optimizations
 
 - **Enable Intel(R) CPU optimizations**
 
@@ -102,29 +91,38 @@ To patch scikit-learn, you can:
     ```
 :eyes: Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
 
+## Installation
 
-## Acceleration
+To install Intel(R) Extension for Scikit-learn, run:
 
-![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/sources/_static/scikit-learn-acceleration-2021.2.3.PNG)
-Configurations:
-- HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
-- SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
+```
+pip install scikit-learn-intelex
+```
 
-[Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
+See all installation instructions in the [Installation Guide](https://intel.github.io/scikit-learn-intelex/latest/installation.html). 
 
-## Documentation
+## Integration
 
-* [Quick Start](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
-* [Documentation and Tutorials](https://intel.github.io/scikit-learn-intelex/latest/index.html)
-* [Release Notes](https://github.com/intel/scikit-learn-intelex/releases)
-* [Medium Blogs](https://intel.github.io/scikit-learn-intelex/latest/blogs.html)
-* [Code of Conduct](https://github.com/intel/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
+The software acceleration is achieved through patching. It means, replacing the stock scikit-learn algorithms with their optimized versions provided by the extension.
 
-### daal4py and oneDAL
+The patching only affects [supported algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
+You can still use not supported ones in your code, the package simply fallbacks into the stock version of scikit-learn. 
 
-The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
-- [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
-- [About daal4py](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py)
+> **_TIP:_** Enable [verbose mode](https://intel.github.io/scikit-learn-intelex/latest/verbose.html) to see which implementation of the algorithm is currently used.
+
+To patch scikit-learn, you can:
+* Use the following command-line flag:
+  ```
+  python -m sklearnex my_application.py
+  ```
+* Add the following lines to the script:
+  ```
+  from sklearnex import patch_sklearn
+  patch_sklearn()
+  ```
+
+
+:eyes: Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage). 
 
 ## Samples & Examples
 
