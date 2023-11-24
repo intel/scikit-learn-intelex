@@ -21,7 +21,7 @@
 
 ## Overview
 
-Intel(R) Extension for Scikit-learn is a ==free software AI accelerator== designed to deliver over ==10-100X== acceleration to your existing scikit-learn code.
+Intel(R) Extension for Scikit-learn is a **free software AI accelerator** designed to deliver over **10-100X** acceleration to your existing scikit-learn code.
 The software acceleration is achieved with vector instructions, AI hardware-specific memory optimizations, threading, and optimizations for all upcoming Intel(R) platforms at launch time.
 
 
@@ -43,20 +43,6 @@ Configurations:
 - SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
 
 [Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
-
-## Documentation
-
-* [Quick Start](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
-* [Documentation and Tutorials](https://intel.github.io/scikit-learn-intelex/latest/index.html)
-* [Release Notes](https://github.com/intel/scikit-learn-intelex/releases)
-* [Medium Blogs](https://intel.github.io/scikit-learn-intelex/latest/blogs.html)
-* [Code of Conduct](https://github.com/intel/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
-
-### daal4py and oneDAL
-
-The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
-- [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
-- [About daal4py](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py)
 
 ## Intel(R) Optimizations
 
@@ -91,6 +77,7 @@ The acceleration is achieved through the use of the Intel(R) oneAPI Data Analyti
     ```
 :eyes: Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
 
+
 ## Installation
 
 To install Intel(R) Extension for Scikit-learn, run:
@@ -123,6 +110,20 @@ To patch scikit-learn, you can:
 
 
 :eyes: Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage). 
+
+## Documentation
+
+* [Quick Start](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
+* [Documentation and Tutorials](https://intel.github.io/scikit-learn-intelex/latest/index.html)
+* [Release Notes](https://github.com/intel/scikit-learn-intelex/releases)
+* [Medium Blogs](https://intel.github.io/scikit-learn-intelex/latest/blogs.html)
+* [Code of Conduct](https://github.com/intel/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
+
+### daal4py and oneDAL
+
+The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
+- [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
+- [About daal4py](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py)
 
 ## Samples & Examples
 
