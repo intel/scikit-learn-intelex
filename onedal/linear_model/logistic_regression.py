@@ -127,7 +127,7 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         )
 
         coefficients, intercept = make2d(coefficients), make2d(intercept)
-        coefficients = coefficients.T
+        #coefficients = coefficients.T
 
         assert coefficients.shape == (1, n_features_in)
         assert intercept.shape == (1, 1)
@@ -155,13 +155,14 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         )
         _check_n_features(self, X, False)
 
+        X = make2d(X)
+        policy = self._get_policy(queue, X)
+
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
             model = self._create_model(module, policy)
 
-        X = make2d(X)
-        policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(get_dtype(X))
 
