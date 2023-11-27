@@ -21,16 +21,20 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import load_breast_cancer
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from sklearnex import config_context
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from sklearnex import config_context
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
 def test_sklearnex_import(dataframe, queue):
     from sklearnex.preview.linear_model import LogisticRegression
 
@@ -41,7 +45,7 @@ def test_sklearnex_import(dataframe, queue):
     X_train = _convert_to_dataframe(X_train, sycl_queue=queue, target_df=dataframe)
     y_train = _convert_to_dataframe(y_train, sycl_queue=queue, target_df=dataframe)
     X_test = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
-    
+
     model = LogisticRegression(fit_intercept=True, solver="newton-cg")
     model.fit(X_train, y_train)
     y_pred = _as_numpy(model.predict(X_test))
@@ -49,6 +53,6 @@ def test_sklearnex_import(dataframe, queue):
     assert "sklearnex" in model.__module__
     # in case dataframe='numpy' algorithm should fallback to sklearn
     # as cpu method is not implemented in onedal
-    if (dataframe != 'numpy'):
+    if dataframe != "numpy" and daal_check_version((2024, "P", 1)):
         assert hasattr(model, "_onedal_estimator")
     assert accuracy_score(y_test, y_pred) > 0.95
