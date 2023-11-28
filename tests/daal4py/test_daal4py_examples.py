@@ -66,7 +66,7 @@ class Config:
     result_attribute: Union[str, Callable[..., Any]] = ""
     required_version: Tuple[Any, ...] = daal_version
     req_libs: List[str] = field(default_factory=list)
-    timeout_cpu_seconds: int = 90
+    timeout_cpu_seconds: int = 60
     suspended_on: Optional[Tuple[int, int, int]] = None
     suspended_for_n_days: int = 30
 
