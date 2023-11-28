@@ -79,6 +79,19 @@ auto get_onedal_result_options(const py::dict& params) {
     return onedal_options;
 }
 
+auto get_hyperparameters(const py::dict& hyperparams_dict) {
+    using namespace dal::linear_regression::detail;
+
+    train_parameters hyperparams{};
+    if (hyperparams_dict.contains("cpu_macro_block")) {
+        hyperparams.set_cpu_macro_block(hyperparams_dict["cpu_macro_block"].cast<int64_t>());
+    }
+    if (hyperparams_dict.contains("gpu_macro_block")) {
+        hyperparams.set_gpu_macro_block(hyperparams_dict["gpu_macro_block"].cast<int64_t>());
+    }
+    return hyperparams;
+}
+
 template <typename Float, typename Method, typename Task>
 struct descriptor_creator;
 
@@ -116,12 +129,17 @@ struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
         m.def("train",
               [](const Policy& policy,
                  const py::dict& params,
+                 const py::dict& hyperparams_dict,
                  const table& data,
                  const table& responses) {
                   using namespace dal::linear_regression;
+                  using namespace dal::linear_regression::detail;
                   using input_t = train_input<Task>;
 
-                  train_ops ops(policy, input_t{ data, responses }, params2desc{});
+                  auto hyperparams = get_hyperparameters(hyperparams_dict);
+
+                  train_ops_with_hyperparams ops(
+                      policy, input_t{ data, responses }, params2desc{}, hyperparams);
                   return fptype2t{ method2t{ Task{}, ops } }(params);
               });
     }

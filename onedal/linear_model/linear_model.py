@@ -26,6 +26,7 @@ from onedal import _backend
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
+from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
@@ -70,9 +71,10 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         X_loc, y_loc = _convert_to_supported(policy, X_loc, y_loc)
         params = self._get_onedal_params(get_dtype(X_loc))
+        hyperparams = get_hyperparameters("linear_regression", "train")
         X_table, y_table = to_table(X_loc, y_loc)
 
-        result = module.train(policy, params, X_table, y_table)
+        result = module.train(policy, params, hyperparams, X_table, y_table)
 
         self._onedal_model = result.model
 
