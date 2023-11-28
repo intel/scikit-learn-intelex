@@ -16,13 +16,21 @@
 # ===============================================================================
 
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 
-def test_sklearnex_import_covariance():
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_sklearnex_import_covariance(dataframe, queue):
     from sklearnex.covariance import EmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     result = EmpiricalCovariance().fit(X)
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
