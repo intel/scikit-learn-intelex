@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2014 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,102 +14,82 @@
 # limitations under the License.
 # ==============================================================================
 
-import os
+import importlib
+import inspect
 import sys
-
-test_path = os.path.abspath(os.path.dirname(__file__))
-unittest_data_path = os.path.join(test_path, "unittest_data")
-daal4py_examples_path = os.path.join(os.path.dirname(test_path), "examples", "daal4py")
-sys.path.insert(0, daal4py_examples_path)
-os.chdir(daal4py_examples_path)
-
+import time
 import unittest
+from dataclasses import dataclass, field
+from datetime import datetime
+from importlib import import_module
+from pathlib import Path
+from types import ModuleType
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import numpy as np
-import pandas as pd
-from scipy.sparse import csr_matrix
+import numpy.typing as npt
 
-from daal4py.sklearn._utils import get_daal_version
+from daal4py.sklearn._utils import daal_check_version, get_daal_version
+from daal4py.sklearn.utils import csr_read_csv, np_read_csv, pd_read_csv
 
-# First item is major version - 2021,
-# second is minor+patch - 0110,
-# third item is status - B
 daal_version = get_daal_version()
-print("DAAL version:", daal_version)
+
+project_path = Path(__file__).parent.parent.parent
+example_path = project_path / "examples" / "daal4py"
+distributed_data_path = example_path / "data" / "distributed"
+example_data_path = project_path / "tests" / "unittest_data"
 
 
-def check_version(rule, target):
-    if not isinstance(rule[0], type(target)):
-        if rule > target:
+def np_load_distributed(
+    path: Path, file_name: str, parts: range, delimiter: str = ","
+) -> npt.NDArray[np.float64]:
+    data = None
+    for i in parts:
+        new_data = np.loadtxt(str(path / file_name.format(i=i)), delimiter=delimiter)
+        data = new_data if data is None else np.append(data, new_data, axis=0)
+    assert data is not None, "Empty range is not supported"
+    return data
+
+
+def import_module_any_path(path: Path) -> ModuleType:
+    """Import a module from any path"""
+    import_path = str(path.parent)
+    if import_path not in sys.path:
+        sys.path.insert(0, import_path)
+    return importlib.import_module(path.stem)
+
+
+@dataclass
+class Config:
+    module_name: str
+    result_file_name: str = ""
+    result_attribute: Union[str, Callable[..., Any]] = ""
+    required_version: Tuple[Any, ...] = daal_version
+    req_libs: List[str] = field(default_factory=list)
+    timeout_cpu_seconds: int = 90
+    suspended_on: Optional[Tuple[int, int, int]] = None
+    suspended_for_n_days: int = 30
+
+    def is_suspended(self):
+        if self.suspended_on is None:
             return False
-    else:
-        for rule_item in rule:
-            if rule_item > target:
-                return False
-            if rule_item[0] == target[0]:
-                break
-    return True
 
+        suspended_date = datetime(*self.suspended_on)
+        time_delta = datetime.now() - suspended_date
+        days_passed = time_delta.days
 
-def check_libraries(rule):
-    for rule_item in rule:
-        try:
-            __import__(rule_item, fromlist=[""])
-        except ImportError:
-            return False
-    return True
+        return days_passed < self.suspended_for_n_days
 
+    def get_missing_dep(self) -> Optional[str]:
+        """Returns the name of the missing lib"""
+        for module_name in self.req_libs:
+            try:
+                import_module(module_name)
+            except ImportError:
+                return module_name
 
-# function reading file and returning numpy array
-def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64, **kwargs):
-    n = kwargs.get("nrows") or n
-    if s == 0 and n == np.iinfo(np.int64).max:
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
-    a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n, dtype=t)
-    if a.shape[0] == 0:
-        raise Exception("done")
-    if a.ndim == 1:
-        return a[:, np.newaxis]
-    return a
-
-
-# function reading file and returning pandas DataFrame
-def pd_read_csv(f, c=None, s=0, t=np.float64, n=None, **kwargs):
-    n = kwargs.get("nrows") or n
-    return pd.read_csv(
-        f, usecols=c, delimiter=",", header=None, skiprows=s, dtype=t, nrows=n
-    )
-
-
-# function reading file and returning scipy.sparse.csr_matrix
-def csr_read_csv(f, c=None, s=0, t=np.float64, n=None):
-    return csr_matrix(pd_read_csv(f, c=c, s=s, t=t, n=n))
-
-
-def add_test(cls, e, f=None, attr=None, ver=(0, 0), req_libs=[]):
-    import importlib
-
-    @unittest.skipUnless(
-        check_version(ver, daal_version),
-        str(ver) + " not supported in this library version " + str(daal_version),
-    )
-    @unittest.skipUnless(
-        check_libraries(req_libs), "cannot import required libraries " + str(req_libs)
-    )
-    def testit(self):
-        ex = importlib.import_module(e)
-        result = self.call(ex)
-        if f and attr:
-            testdata = np_read_csv(os.path.join(unittest_data_path, f))
-            actual = attr(result) if callable(attr) else getattr(result, attr)
-            self.assertTrue(
-                np.allclose(actual, testdata, atol=1e-05),
-                msg="Discrepancy found: {}".format(np.abs(actual - testdata).max()),
-            )
-        else:
-            self.assertTrue(True)
-
-    setattr(cls, "test_" + e, testit)
+    def check_version(self):
+        return daal_check_version(self.required_version)
 
 
 class Base:
@@ -117,224 +97,233 @@ class Base:
     We also use generic functions to test these, they get added later.
     """
 
-    def test_svd(self):
-        import svd as ex
+    def call_main(self, module: ModuleType) -> Any:
+        """To be implemented by inheriting classes"""
+        ...
 
-        (data, result) = self.call(ex)
-        self.assertTrue(
-            np.allclose(
-                data,
-                np.matmul(
-                    np.matmul(
-                        result.leftSingularMatrix, np.diag(result.singularValues[0])
-                    ),
-                    result.rightSingularMatrix,
-                ),
-            )
+    @classmethod
+    def add_test(cls, config: Config):
+        """Add a test to the class"""
+        missing_dep = config.get_missing_dep()
+
+        @unittest.skipUnless(
+            config.check_version(),
+            f"Minimum required version {config.required_version} (have {daal_version})",
         )
+        @unittest.skipUnless(missing_dep is None, f"Missing dependency: {missing_dep}")
+        @unittest.skipIf(
+            config.is_suspended(),
+            f"Test was suspended for {config.suspended_for_n_days} days on {config.suspended_on}",
+        )
+        def run_test(self):  # type: ignore
+            start = time.process_time()
+
+            ex = import_module_any_path(example_path / config.module_name)
+            result: Any = self.call_main(ex)  # type: ignore
+            if config.result_file_name and config.result_attribute:
+                testdata = np_read_csv(example_data_path / config.result_file_name)
+                ra = config.result_attribute
+                actual = ra(result) if callable(ra) else getattr(result, ra)
+                np.testing.assert_allclose(actual, testdata, atol=1e-05)
+
+            duration_seconds = time.process_time() - start
+            self.assertLessEqual(duration_seconds, config.timeout_cpu_seconds)
+
+        setattr(cls, "test_" + config.module_name, run_test)
+
+    def test_svd(self):
+        ex = import_module_any_path(example_path / "svd")
+
+        reference, intermediate = self.call_main(ex)  # type: ignore
+        result = np.matmul(
+            np.matmul(
+                intermediate.leftSingularMatrix, np.diag(intermediate.singularValues[0])
+            ),
+            intermediate.rightSingularMatrix,
+        )
+
+        np.testing.assert_allclose(reference, result)
 
     def test_svd_stream(self):
-        import svd_streaming as ex
+        ex = import_module_any_path(example_path / "svd_streaming")
 
-        result = self.call(ex)
-        data = np.loadtxt("./data/distributed/svd_1.csv", delimiter=",")
-        for f in ["./data/distributed/svd_{}.csv".format(i) for i in range(2, 5)]:
-            data = np.append(data, np.loadtxt(f, delimiter=","), axis=0)
-        self.assertTrue(
-            np.allclose(
-                data,
-                np.matmul(
-                    np.matmul(
-                        result.leftSingularMatrix, np.diag(result.singularValues[0])
-                    ),
-                    result.rightSingularMatrix,
-                ),
-            )
+        intermediate = self.call_main(ex)
+        result = np.matmul(
+            np.matmul(
+                intermediate.leftSingularMatrix,
+                np.diag(intermediate.singularValues[0]),
+            ),
+            intermediate.rightSingularMatrix,
         )
 
-    def test_qr(self):
-        import qr as ex
+        reference = np_load_distributed(distributed_data_path, "svd_{i}.csv", range(1, 5))
 
-        (data, result) = self.call(ex)
-        self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
+        np.testing.assert_allclose(reference, result)
+
+    def test_qr(self):
+        ex = import_module_any_path(example_path / "qr")
+
+        data, result = self.call_main(ex)
+        np.testing.assert_allclose(data, np.matmul(result.matrixQ, result.matrixR))
 
     def test_qr_stream(self):
-        import qr_streaming as ex
+        ex = import_module_any_path(example_path / "qr_streaming")
 
-        result = self.call(ex)
-        data = np.loadtxt("./data/distributed/qr_1.csv", delimiter=",")
-        for f in ["./data/distributed/qr_{}.csv".format(i) for i in range(2, 5)]:
-            data = np.append(data, np.loadtxt(f, delimiter=","), axis=0)
-        self.assertTrue(np.allclose(data, np.matmul(result.matrixQ, result.matrixR)))
+        result = self.call_main(ex)
+        data = np_load_distributed(distributed_data_path, "qr_{i}.csv", range(1, 5))
+        np.testing.assert_allclose(data, np.matmul(result.matrixQ, result.matrixR))
 
     def test_svm(self):
-        testdata = np_read_csv(os.path.join(unittest_data_path, "svm.csv"), range(1))
-        import svm as ex
+        ex = import_module_any_path(example_path / "svm")
+        testdata = np_read_csv(example_data_path / "svm.csv", range(1))
 
-        (decision_result, _, _) = self.call(ex)
+        decision_result, _, _ = self.call_main(ex)
         left = np.absolute(decision_result - testdata).max()
         right = np.absolute(decision_result.max() - decision_result.min()) * 0.05
-        self.assertTrue(left < right)
+        self.assertLess(left, right)
 
 
-gen_examples = [
-    ("adaboost", None, None, (2020, "P", 0)),
-    ("adagrad_mse", "adagrad_mse.csv", "minimum"),
-    ("association_rules", "association_rules.csv", "confidence"),
-    ("bacon_outlier", "multivariate_outlier.csv", lambda r: r[1].weights),
-    ("brownboost", None, None, (2020, "P", 0)),
-    (
-        "correlation_distance",
-        "correlation_distance.csv",
-        lambda r: [
-            [np.amin(r.correlationDistance)],
-            [np.amax(r.correlationDistance)],
-            [np.mean(r.correlationDistance)],
-            [np.average(r.correlationDistance)],
-        ],
+def correlation_distance_getter(result):
+    return [
+        [np.amin(result.correlationDistance)],
+        [np.amax(result.correlationDistance)],
+        [np.mean(result.correlationDistance)],
+        [np.average(result.correlationDistance)],
+    ]
+
+
+def cosine_distance_getter(result):
+    return [
+        [np.amin(result.cosineDistance)],
+        [np.amax(result.cosineDistance)],
+        [np.mean(result.cosineDistance)],
+        [np.average(result.cosineDistance)],
+    ]
+
+
+def low_order_moms_getter(result):
+    return np.vstack(
+        (
+            result.minimum,
+            result.maximum,
+            result.sum,
+            result.sumSquares,
+            result.sumSquaresCentered,
+            result.mean,
+            result.secondOrderRawMoment,
+            result.variance,
+            result.standardDeviation,
+            result.variation,
+        )
+    )
+
+
+examples = [
+    Config("adaboost", required_version=(2020, "P", 0)),
+    Config("adagrad_mse", "adagrad_mse.csv", "minimum"),
+    Config("association_rules", "association_rules.csv", "confidence"),
+    Config("bacon_outlier", "multivariate_outlier.csv", lambda r: r[1].weights),
+    Config("brownboost", required_version=(2020, "P", 0)),
+    Config(
+        "correlation_distance", "correlation_distance.csv", correlation_distance_getter
     ),
-    (
-        "cosine_distance",
-        "cosine_distance.csv",
-        lambda r: [
-            [np.amin(r.cosineDistance)],
-            [np.amax(r.cosineDistance)],
-            [np.mean(r.cosineDistance)],
-            [np.average(r.cosineDistance)],
-        ],
-    ),
-    # ('gradient_boosted_regression', 'gradient_boosted_regression.csv',
-    #  lambda x: x[1].prediction),
-    ("cholesky", "cholesky.csv", "choleskyFactor"),
-    ("covariance", "covariance.csv", "covariance"),
-    ("covariance_streaming", "covariance.csv", "covariance"),
-    (
+    Config("cosine_distance", "cosine_distance.csv", cosine_distance_getter),
+    Config("cholesky", "cholesky.csv", "choleskyFactor"),
+    Config("covariance", "covariance.csv", "covariance"),
+    Config("covariance_streaming", "covariance.csv", "covariance"),
+    Config(
         "decision_forest_classification_default_dense",
-        None,
-        lambda r: r[1].prediction,
-        (2023, "P", 1),
+        result_attribute=lambda r: r[1].prediction,
+        required_version=(2023, "P", 1),
     ),
-    (
+    Config(
         "decision_forest_classification_hist",
-        None,
-        lambda r: r[1].prediction,
-        (2023, "P", 1),
+        result_attribute=lambda r: r[1].prediction,
+        required_version=(2023, "P", 1),
     ),
-    (
+    Config(
         "decision_forest_regression_default_dense",
         "decision_forest_regression.csv",
-        lambda r: r[1].prediction,
-        (2023, "P", 1),
+        result_attribute=lambda r: r[1].prediction,
+        required_version=(2023, "P", 1),
     ),
-    (
+    Config(
         "decision_forest_regression_hist",
         "decision_forest_regression.csv",
-        lambda r: r[1].prediction,
-        (2023, "P", 1),
+        result_attribute=lambda r: r[1].prediction,
+        required_version=(2023, "P", 1),
     ),
-    (
+    Config(
         "decision_forest_regression_default_dense",
         "decision_forest_regression_20230101.csv",
-        lambda r: r[1].prediction,
-        (2023, "P", 101),
+        result_attribute=lambda r: r[1].prediction,
+        required_version=(2023, "P", 101),
     ),
-    (
+    Config(
         "decision_forest_regression_hist",
         "decision_forest_regression_20230101.csv",
-        lambda r: r[1].prediction,
-        (2023, "P", 101),
+        result_attribute=lambda r: r[1].prediction,
+        required_version=(2023, "P", 101),
     ),
-    (
+    Config(
         "decision_tree_classification",
         "decision_tree_classification.csv",
-        lambda r: r[1].prediction,
+        result_attribute=lambda r: r[1].prediction,
     ),
-    (
+    Config(
         "decision_tree_regression",
         "decision_tree_regression.csv",
-        lambda r: r[1].prediction,
+        result_attribute=lambda r: r[1].prediction,
     ),
-    ("distributions_bernoulli",),
-    ("distributions_normal",),
-    ("distributions_uniform",),
-    ("em_gmm", "em_gmm.csv", lambda r: r.covariances[0]),
-    ("gradient_boosted_classification",),
-    ("gradient_boosted_regression",),
-    ("implicit_als", "implicit_als.csv", "prediction"),
-    ("kdtree_knn_classification", None, None),
-    ("kmeans", "kmeans.csv", "centroids"),
-    ("lbfgs_cr_entr_loss", "lbfgs_cr_entr_loss.csv", "minimum"),
-    ("lbfgs_mse", "lbfgs_mse.csv", "minimum"),
-    ("linear_regression", "linear_regression.csv", lambda r: r[1].prediction),
-    ("linear_regression_streaming", "linear_regression.csv", lambda r: r[1].prediction),
-    # return when Logistic Regression will be fixed
-    # ('log_reg_binary_dense', 'log_reg_binary_dense.csv',
-    #  lambda r: r[1].prediction),
-    ("log_reg_binary_dense", None, None),
-    ("log_reg_dense",),
-    ("logitboost", None, None, (2020, "P", 0)),
-    (
-        "low_order_moms_dense",
-        "low_order_moms_dense.csv",
-        lambda r: np.vstack(
-            (
-                r.minimum,
-                r.maximum,
-                r.sum,
-                r.sumSquares,
-                r.sumSquaresCentered,
-                r.mean,
-                r.secondOrderRawMoment,
-                r.variance,
-                r.standardDeviation,
-                r.variation,
-            )
-        ),
+    Config("distributions_bernoulli"),
+    Config("distributions_normal"),
+    Config("distributions_uniform"),
+    Config("em_gmm", "em_gmm.csv", lambda r: r.covariances[0]),
+    Config("gradient_boosted_classification"),
+    Config("gradient_boosted_regression"),
+    Config("implicit_als", "implicit_als.csv", "prediction"),
+    Config("kdtree_knn_classification"),
+    Config("kmeans", "kmeans.csv", "centroids"),
+    Config("lbfgs_cr_entr_loss", "lbfgs_cr_entr_loss.csv", "minimum"),
+    Config("lbfgs_mse", "lbfgs_mse.csv", "minimum"),
+    Config("linear_regression", "linear_regression.csv", lambda r: r[1].prediction),
+    Config(
+        "linear_regression_streaming", "linear_regression.csv", lambda r: r[1].prediction
     ),
-    (
-        "low_order_moms_streaming",
-        "low_order_moms_dense.csv",
-        lambda r: np.vstack(
-            (
-                r.minimum,
-                r.maximum,
-                r.sum,
-                r.sumSquares,
-                r.sumSquaresCentered,
-                r.mean,
-                r.secondOrderRawMoment,
-                r.variance,
-                r.standardDeviation,
-                r.variation,
-            )
-        ),
+    Config("log_reg_binary_dense", "log_reg_binary_dense.csv", lambda r: r[1].prediction),
+    Config("log_reg_binary_dense"),
+    Config("log_reg_dense"),
+    Config("logitboost", required_version=(2020, "P", 0)),
+    Config("low_order_moms_dense", "low_order_moms_dense.csv", low_order_moms_getter),
+    Config("low_order_moms_streaming", "low_order_moms_dense.csv", low_order_moms_getter),
+    Config("multivariate_outlier", "multivariate_outlier.csv", lambda r: r[1].weights),
+    Config("naive_bayes", "naive_bayes.csv", lambda r: r[0].prediction),
+    Config("naive_bayes_streaming", "naive_bayes.csv", lambda r: r[0].prediction),
+    Config("normalization_minmax", "normalization_minmax.csv", "normalizedData"),
+    Config("normalization_zscore", "normalization_zscore.csv", "normalizedData"),
+    Config("pca", "pca.csv", "eigenvectors"),
+    Config("pca_transform", "pca_transform.csv", lambda r: r[1].transformedData),
+    Config("pivoted_qr", "pivoted_qr.csv", "matrixR"),
+    Config("quantiles", "quantiles.csv", "quantiles"),
+    Config("ridge_regression", "ridge_regression.csv", lambda r: r[0].prediction),
+    Config(
+        "ridge_regression_streaming", "ridge_regression.csv", lambda r: r[0].prediction
     ),
-    ("multivariate_outlier", "multivariate_outlier.csv", lambda r: r[1].weights),
-    ("naive_bayes", "naive_bayes.csv", lambda r: r[0].prediction),
-    ("naive_bayes_streaming", "naive_bayes.csv", lambda r: r[0].prediction),
-    ("normalization_minmax", "normalization_minmax.csv", "normalizedData"),
-    ("normalization_zscore", "normalization_zscore.csv", "normalizedData"),
-    ("pca", "pca.csv", "eigenvectors"),
-    ("pca_transform", "pca_transform.csv", lambda r: r[1].transformedData),
-    ("pivoted_qr", "pivoted_qr.csv", "matrixR"),
-    ("quantiles", "quantiles.csv", "quantiles"),
-    ("ridge_regression", "ridge_regression.csv", lambda r: r[0].prediction),
-    ("ridge_regression_streaming", "ridge_regression.csv", lambda r: r[0].prediction),
-    ("saga", None, None, (2019, "P", 3)),
-    ("sgd_logistic_loss", "sgd_logistic_loss.csv", "minimum"),
-    ("sgd_mse", "sgd_mse.csv", "minimum"),
-    ("sorting",),
-    ("stump_classification", None, None, (2020, "P", 0)),
-    ("stump_regression", None, None, (2020, "P", 0)),
-    ("svm_multiclass", "svm_multiclass.csv", lambda r: r[0].prediction),
-    ("univariate_outlier", "univariate_outlier.csv", lambda r: r[1].weights),
-    ("dbscan", "dbscan.csv", "assignments", (2019, "P", 5)),
-    ("lasso_regression", None, None, (2019, "P", 5)),
-    ("elastic_net", None, None, ((2020, "P", 1), (2021, "B", 105))),
+    Config("saga", required_version=(2019, "P", 3)),
+    Config("sgd_logistic_loss", "sgd_logistic_loss.csv", "minimum"),
+    Config("sgd_mse", "sgd_mse.csv", "minimum"),
+    Config("sorting"),
+    Config("stump_classification", required_version=(2020, "P", 0)),
+    Config("stump_regression", required_version=(2020, "P", 0)),
+    Config("svm_multiclass", "svm_multiclass.csv", lambda r: r[0].prediction),
+    Config("univariate_outlier", "univariate_outlier.csv", lambda r: r[1].weights),
+    Config("dbscan", "dbscan.csv", "assignments", (2019, "P", 5)),
+    Config("lasso_regression", required_version=(2019, "P", 5)),
+    Config("elastic_net", required_version=((2020, "P", 1), (2021, "B", 105))),
 ]
 
-for example in gen_examples:
-    add_test(Base, *example)
+for cfg in examples:
+    Base.add_test(cfg)
 
 
 class TestExNpyArray(Base, unittest.TestCase):
@@ -343,8 +332,12 @@ class TestExNpyArray(Base, unittest.TestCase):
     so working natively on a numpy arrays.
     """
 
-    def call(self, ex):
-        return ex.main(readcsv=np_read_csv)
+    def call_main(self, module: ModuleType):
+        signature = inspect.signature(module.main)
+        if "readcsv" in list(signature.parameters):
+            return module.main(readcsv=np_read_csv)
+        else:
+            return module.main()
 
 
 class TestExPandasDF(Base, unittest.TestCase):
@@ -353,8 +346,12 @@ class TestExPandasDF(Base, unittest.TestCase):
     so working natively on a pandas DataFrame
     """
 
-    def call(self, ex):
-        return ex.main(readcsv=pd_read_csv)
+    def call_main(self, module: ModuleType):
+        signature = inspect.signature(module.main)
+        if "readcsv" not in list(signature.parameters):
+            self.skipTest("Missing readcsv kwarg support")
+
+        return module.main(readcsv=pd_read_csv)
 
 
 class TestExCSRMatrix(Base, unittest.TestCase):
@@ -364,36 +361,39 @@ class TestExCSRMatrix(Base, unittest.TestCase):
     do not specifically support CSR).
     """
 
-    def call(self, ex):
-        # some algos do not support CSR matrices
-        if ex.__name__.startswith("sorting"):
-            self.skipTest("not supporting CSR")
+    def call_main(self, module: ModuleType):
         if any(
-            ex.__name__.startswith(x)
+            module.__name__.startswith(x)
             for x in [
                 "adaboost",
                 "brownboost",
-                "stump_classification",
                 "decision_forest",
+                "sorting",
+                "stump_classification",
             ]
         ):
-            self.skipTest("not supporting CSR")
-        method = (
-            "singlePassCSR"
-            if any(x in ex.__name__ for x in ["low_order_moms", "covariance"])
-            else "fastCSR"
-        )
-        # cannot use fastCSR ofr implicit als
-        if "implicit_als" in ex.__name__:
-            method = "defaultDense"
-        # kmeans have no special method for CSR
-        if "kmeans" in ex.__name__:
-            method = "randomDense"
-        if hasattr(ex, "dflt_method"):
-            method = ex.dflt_method.replace("defaultDense", "fastCSR").replace(
-                "Dense", "CSR"
-            )
-        return ex.main(readcsv=csr_read_csv, method=method)
+            self.skipTest("Missing CSR support")
+
+        signature = inspect.signature(module.main)
+        parameters = list(signature.parameters)
+        if "readcsv" not in parameters:
+            self.skipTest("Missing readcsv kwarg support")
+
+        if "method" in parameters:
+            method = "fastCSR"
+            if any(x in module.__name__ for x in ["low_order_moms", "covariance"]):
+                method = "singlePassCSR"
+            if "implicit_als" in module.__name__:
+                method = "defaultDense"
+            if "kmeans" in module.__name__:
+                method = "randomDense"
+            if hasattr(module, "dflt_method"):
+                method = module.dflt_method.replace("defaultDense", "fastCSR").replace(
+                    "Dense", "CSR"
+                )
+            return module.main(readcsv=csr_read_csv, method=method)
+        else:
+            return module.main(readcsv=csr_read_csv)
 
 
 if __name__ == "__main__":
