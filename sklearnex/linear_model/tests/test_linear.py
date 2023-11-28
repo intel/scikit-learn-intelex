@@ -26,12 +26,14 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from sklearnex import set_hyperparameter
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_linear(dataframe, queue):
     from sklearnex.linear_model import LinearRegression
 
+    set_hyperparameter("linear_regression", "train", "cpu_block_size", 8192)
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
     y = np.dot(X, np.array([1, 2])) + 3
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
