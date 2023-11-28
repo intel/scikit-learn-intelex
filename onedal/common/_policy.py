@@ -32,7 +32,9 @@ def _get_policy(queue, *data):
             return _DataParallelInteropPolicy(data_queue)
         return _DataParallelInteropPolicy(queue)
     if not (data_queue is None and queue is None):
-        raise RuntimeError("Operation using the requested SYCL queue requires the DPC backend")
+        raise RuntimeError(
+            "Operation using the requested SYCL queue requires the DPC backend"
+        )
     return _HostInteropPolicy()
 
 
