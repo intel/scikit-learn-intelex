@@ -79,6 +79,8 @@ auto get_onedal_result_options(const py::dict& params) {
     return onedal_options;
 }
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
 auto get_hyperparameters(const py::dict& hyperparams_dict) {
     using namespace dal::linear_regression::detail;
 
@@ -91,6 +93,8 @@ auto get_hyperparameters(const py::dict& hyperparams_dict) {
     }
     return hyperparams;
 }
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 
 template <typename Float, typename Method, typename Task>
 struct descriptor_creator;
@@ -136,10 +140,14 @@ struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
                   using namespace dal::linear_regression::detail;
                   using input_t = train_input<Task>;
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
                   auto hyperparams = get_hyperparameters(hyperparams_dict);
 
                   train_ops_with_hyperparams ops(
                       policy, input_t{ data, responses }, params2desc{}, hyperparams);
+#else
+                  train_ops ops(policy, input_t{ data, responses }, params2desc{});
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
                   return fptype2t{ method2t{ Task{}, ops } }(params);
               });
     }

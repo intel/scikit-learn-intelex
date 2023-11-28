@@ -18,6 +18,8 @@
 
 #include <pybind11/pybind11.h>
 
+#include "onedal/version.hpp"
+
 #include "oneapi/dal/train.hpp"
 #include "oneapi/dal/infer.hpp"
 #include "oneapi/dal/compute.hpp"
@@ -88,6 +90,8 @@ struct train_ops {
     Ops ops;
 };
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
 template <typename Policy, typename Input, typename Ops, typename Hyperparams>
 struct train_ops_with_hyperparams {
     using Task = typename Input::task_t;
@@ -111,6 +115,8 @@ struct train_ops_with_hyperparams {
     Ops ops;
     Hyperparams hyperparams;
 };
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 template <typename Policy, typename Input, typename Ops>
 struct infer_ops {
