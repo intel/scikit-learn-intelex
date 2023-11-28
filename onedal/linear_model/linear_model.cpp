@@ -133,7 +133,9 @@ struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
         m.def("train",
               [](const Policy& policy,
                  const py::dict& params,
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
                  const py::dict& hyperparams_dict,
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
                  const table& data,
                  const table& responses) {
                   using namespace dal::linear_regression;

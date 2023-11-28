@@ -14,6 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+import logging
+from warnings import warn
+
+from daal4py.sklearn._utils import daal_check_version
 
 # simple storage for hyperparameters
 hyperparameters_storage = {
@@ -22,14 +26,20 @@ hyperparameters_storage = {
 
 
 def set_hyperparameter(algorithm, op, name, value):
+    if not daal_check_version((2024, "P", 0)):
+        warn(f"Hyperparameters are supported starting from 2024.0.0 oneDAL version.")
     if name not in hyperparameters_storage[algorithm][op].keys():
         raise ValueError(f"Hyperparameter '{name}' doesn't exist in {algorithm}.{op}")
     hyperparameters_storage[algorithm][op][name] = value
 
 
 def get_hyperparameters(algorithm, op):
-    return {
+    res = {
         key: value
         for key, value in hyperparameters_storage[algorithm][op].items()
         if value is not None
     }
+    logging.getLogger("sklearnex").debug(
+        f"Using next hyperparameters for '{algorithm}.{op}': {res}"
+    )
+    return res
