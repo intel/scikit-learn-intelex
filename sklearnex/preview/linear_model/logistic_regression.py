@@ -321,7 +321,7 @@ if daal_check_version((2024, "P", 1)):
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
 
 else:
-    from sklearn.linear_model import LogisticRegression
+    from daal4py.sklearn.linear_model import LogisticRegression
 
     logging.warning(
         "Sklearnex LogisticRegression requires oneDAL version >= 2024.0.1 "

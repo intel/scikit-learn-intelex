@@ -105,7 +105,6 @@ def get_patch_map():
             ]
 
             # LogisticRegression
-            mapping.pop("logistic")
             mapping.pop("log_reg")
             mapping["log_reg"] = [
                 [

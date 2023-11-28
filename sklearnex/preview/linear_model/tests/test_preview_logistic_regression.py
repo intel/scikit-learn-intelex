@@ -49,8 +49,10 @@ def test_sklearnex_import(dataframe, queue):
     model = LogisticRegression(fit_intercept=True, solver="newton-cg")
     model.fit(X_train, y_train)
     y_pred = _as_numpy(model.predict(X_test))
-
-    assert "sklearnex" in model.__module__
+    if daal_check_version((2024, "P", 1)):
+        assert "sklearnex" in model.__module__
+    else:
+        assert "daal4py" in model.__module__
     # in case dataframe='numpy' algorithm should fallback to sklearn
     # as cpu method is not implemented in onedal
     if dataframe != "numpy" and daal_check_version((2024, "P", 1)):
