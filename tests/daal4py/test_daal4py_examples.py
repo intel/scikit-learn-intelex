@@ -16,6 +16,7 @@
 
 import importlib
 import inspect
+import os
 import sys
 import time
 import unittest
@@ -119,6 +120,10 @@ class Base:
             start = time.process_time()
 
             ex = import_module_any_path(example_path / config.module_name)
+
+            if not hasattr(ex, "main"):
+                self.skipTest("Missing main function")
+
             result: Any = self.call_main(ex)  # type: ignore
             if config.result_file_name and config.result_attribute:
                 testdata = np_read_csv(example_data_path / config.result_file_name)
@@ -321,6 +326,20 @@ examples = [
     Config("lasso_regression", required_version=(2019, "P", 5)),
     Config("elastic_net", required_version=((2020, "P", 1), (2021, "B", 105))),
 ]
+
+module_names_with_configs = [cfg.module_name for cfg in examples]
+
+# add all examples that do not have an explicit config
+for fname in os.listdir(example_path):
+    if fname == "__init__.py":
+        continue
+    if not fname.endswith(".py"):
+        continue
+    stem = Path(fname).stem
+    if stem in module_names_with_configs:
+        continue
+
+    examples.append(Config(stem))
 
 for cfg in examples:
     Base.add_test(cfg)
