@@ -18,7 +18,7 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from daal4py.sklearn._utils import get_dtype, make2d, daal_check_version
 from onedal import _backend
 
 from ..common._policy import _get_policy
@@ -56,11 +56,15 @@ class EmpiricalCovariance(BaseEstimator):
         return _get_policy(queue, *data)
 
     def _get_onedal_params(self, dtype=np.float32):
-        return {
+        params = {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": self.method,
-            "bias": self.bias,
         }
+        if daal_check_version((2024, "P", 1)):
+            params["bias"] = self.bias
+
+        return params
+    
 
     def fit(self, X, queue=None):
         """Fit the sample covariance matrix of X.
@@ -91,7 +95,11 @@ class EmpiricalCovariance(BaseEstimator):
         module = _backend.covariance
         table_X = to_table(X)
         result = module.compute(policy, params, table_X)
-        self.covariance_ = from_table(result.cov_matrix)
+        if daal_check_version((2024, "P", 1)) or (not self.bias):
+            self.covariance_ = from_table(result.cov_matrix)
+        else:
+            self.covariance_ = from_table(result.cov_matrix) * (X.shape[0] - 1) / X.shape[0]
+
         self.location_ = from_table(result.means).ravel()
 
         return self
