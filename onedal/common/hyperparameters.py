@@ -39,7 +39,8 @@ def get_hyperparameters(algorithm, op):
         for key, value in hyperparameters_storage[algorithm][op].items()
         if value is not None
     }
-    logging.getLogger("sklearnex").debug(
-        f"Using next hyperparameters for '{algorithm}.{op}': {res}"
-    )
+    if len(res) > 0:
+        logging.getLogger("sklearnex").debug(
+            f"Using next hyperparameters for '{algorithm}.{op}': {res}"
+        )
     return res
