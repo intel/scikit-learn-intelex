@@ -20,7 +20,7 @@ from numbers import Number
 import numpy as np
 from sklearn.base import BaseEstimator
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
 
 from ..common._estimator_checks import _check_is_fitted
@@ -74,7 +74,10 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         hyperparams = get_hyperparameters("linear_regression", "train")
         X_table, y_table = to_table(X_loc, y_loc)
 
-        result = module.train(policy, params, hyperparams, X_table, y_table)
+        if daal_check_version((2024, "P", 0)):
+            result = module.train(policy, params, hyperparams, X_table, y_table)
+        else:
+            result = module.train(policy, params, X_table, y_table)
 
         self._onedal_model = result.model
 
