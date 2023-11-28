@@ -18,7 +18,7 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
 
-from daal4py.sklearn._utils import get_dtype, make2d, daal_check_version
+from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
 
 from ..common._policy import _get_policy
@@ -64,7 +64,6 @@ class EmpiricalCovariance(BaseEstimator):
             params["bias"] = self.bias
 
         return params
-    
 
     def fit(self, X, queue=None):
         """Fit the sample covariance matrix of X.
@@ -98,7 +97,9 @@ class EmpiricalCovariance(BaseEstimator):
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:
-            self.covariance_ = from_table(result.cov_matrix) * (X.shape[0] - 1) / X.shape[0]
+            self.covariance_ = (
+                from_table(result.cov_matrix) * (X.shape[0] - 1) / X.shape[0]
+            )
 
         self.location_ = from_table(result.means).ravel()
 
