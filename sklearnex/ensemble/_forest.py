@@ -66,9 +66,9 @@ except ModuleNotFoundError:
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
-from ..._config import get_config
-from ..._device_offload import dispatch, wrap_output_data
-from ..._utils import PatchingConditionsChain
+from .._config import get_config
+from .._device_offload import dispatch, wrap_output_data
+from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval

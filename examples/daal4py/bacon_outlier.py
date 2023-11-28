@@ -16,6 +16,8 @@
 
 # daal4py outlier detection bacon example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -35,7 +37,8 @@ except ImportError:
 
 def main(readcsv=read_csv, method="defaultDense"):
     # Input file
-    infile = "./data/batch/outlierdetection.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "outlierdetection.csv"
 
     # Retrieve the data from the input file
     data = readcsv(infile, range(3))

@@ -16,6 +16,8 @@
 
 # daal4py Gradient Bossting Regression example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -37,8 +39,9 @@ def main(readcsv=read_csv, method="defaultDense"):
     maxIterations = 200
 
     # input data file
-    infile = "./data/batch/df_regression_train.csv"
-    testfile = "./data/batch/df_regression_test.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "df_regression_train.csv"
+    testfile = data_path / "df_regression_test.csv"
 
     # Configure a training object
     train_algo = d4p.gbt_regression_training(maxIterations=maxIterations)

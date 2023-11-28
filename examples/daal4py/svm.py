@@ -16,6 +16,8 @@
 
 # daal4py SVM example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
 
 import daal4py as d4p
@@ -35,8 +37,9 @@ except ImportError:
 
 def main(readcsv=read_csv, method="defaultDense"):
     # input data file
-    infile = "./data/batch/svm_two_class_train_dense.csv"
-    testfile = "./data/batch/svm_two_class_test_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "svm_two_class_train_dense.csv"
+    testfile = data_path / "svm_two_class_test_dense.csv"
 
     # Configure a SVM object to use rbf kernel (and adjusting cachesize)
     kern = d4p.kernel_function_linear()

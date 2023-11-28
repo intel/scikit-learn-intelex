@@ -27,9 +27,11 @@ import os
 import re
 import shutil
 from collections import OrderedDict, defaultdict
+from os.path import isdir
 from os.path import join as jp
 from shutil import copytree, rmtree
 from subprocess import call
+from sys import platform
 
 from .format import mk_var
 from .parse import parse_header, parse_version
@@ -1196,7 +1198,15 @@ def gen_daal4py(dalroot, outdir, version, warn_all=False, no_dist=False, no_stre
     global no_warn
     if warn_all:
         no_warn = {}
-    orig_path = jp(dalroot, "include")
+    orig_path_candidates = [
+        jp(dalroot, "include", "dal"),
+        jp(dalroot, "Library", "include", "dal"),
+        jp(dalroot, "include"),
+    ]
+    for candidate in orig_path_candidates:
+        if isdir(candidate):
+            orig_path = candidate
+            break
     assert os.path.isfile(jp(orig_path, "algorithms", "algorithm.h")) and os.path.isfile(
         jp(orig_path, "algorithms", "model.h")
     ), (
