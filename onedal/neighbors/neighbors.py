@@ -200,7 +200,9 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         if y is not None or self.requires_y:
             shape = getattr(y, "shape", None)
-            X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
+            X, y = super()._validate_data(
+                X, y, dtype=[np.float64, np.float32], accept_sparse=True
+            )
             self._shape = shape if shape is not None else y.shape
 
             if _is_classifier(self):
