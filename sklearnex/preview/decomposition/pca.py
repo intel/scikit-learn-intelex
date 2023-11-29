@@ -103,12 +103,6 @@ class PCA(sklearn_PCA):
         return self
 
     def _fit(self, X):
-        if issparse(X):
-            raise TypeError(
-                "PCA does not support sparse input. See "
-                "TruncatedSVD for a possible alternative."
-            )
-
         if sklearn_check_version("0.23"):
             X = self._validate_data(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
@@ -195,6 +189,8 @@ class PCA(sklearn_PCA):
 
     def _onedal_supported(self, method_name, *data):
         class_name = self.__class__.__name__
+        X = data[0]
+
         if method_name == "fit":
             patching_status = PatchingConditionsChain(
                 f"sklearn.decomposition.{class_name}.{method_name}"
@@ -205,6 +201,9 @@ class PCA(sklearn_PCA):
                         self._fit_svd_solver == "full",
                         f"'{self._fit_svd_solver}' SVD solver is not supported. "
                         "Only 'full' solver is supported.",
+                        not issparse(X),
+                        "PCA does not support sparse input. See "
+                        "TruncatedSVD as a possible alternative.",
                     ),
                 ]
             )
