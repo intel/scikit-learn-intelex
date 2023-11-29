@@ -74,10 +74,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         hyperparams = get_hyperparameters("linear_regression", "train")
         X_table, y_table = to_table(X_loc, y_loc)
 
-        if daal_check_version((2024, "P", 0)):
-            result = module.train(policy, params, hyperparams, X_table, y_table)
-        else:
-            result = module.train(policy, params, X_table, y_table)
+        result = module.train(policy, params, hyperparams, X_table, y_table)
 
         self._onedal_model = result.model
 

@@ -94,7 +94,7 @@ auto get_hyperparameters(const py::dict& hyperparams_dict) {
     return hyperparams;
 }
 
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 template <typename Float, typename Method, typename Task>
 struct descriptor_creator;
@@ -130,34 +130,32 @@ template <typename Policy>
 struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
     void operator()(py::module_& m) {
         using Task = linear_regression::task::regression;
-        m.def("train",
-              [](const Policy& policy,
-                 const py::dict& params,
+        m.def("train", [](
+            const Policy& policy,
+            const py::dict& params,
+            const py::dict& hyperparams_dict,
+            const table& data,
+            const table& responses) {
+                using namespace dal::linear_regression;
+                using namespace dal::linear_regression::detail;
+                using input_t = train_input<Task>;
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-                 const py::dict& hyperparams_dict,
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-                 const table& data,
-                 const table& responses) {
-                  using namespace dal::linear_regression;
-                  using namespace dal::linear_regression::detail;
-                  using input_t = train_input<Task>;
-
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-                  if (py::len(hyperparams_dict) > 0) {
+                if (py::len(hyperparams_dict) > 0) {
                     auto hyperparams = get_hyperparameters(hyperparams_dict);
                     train_ops_with_hyperparams ops(
-                      policy, input_t{ data, responses }, params2desc{}, hyperparams);
+                        policy, input_t{ data, responses }, params2desc{}, hyperparams);
                     return fptype2t{ method2t{ Task{}, ops } }(params);
-                  }
-                  else {
+                }
+                else {
                     train_ops ops(policy, input_t{ data, responses }, params2desc{});
                     return fptype2t{ method2t{ Task{}, ops } }(params);
-                  }
+                }
 #else
-                  train_ops ops(policy, input_t{ data, responses }, params2desc{});
-                  return fptype2t{ method2t{ Task{}, ops } }(params);
+                train_ops ops(policy, input_t{ data, responses }, params2desc{});
+                return fptype2t{ method2t{ Task{}, ops } }(params);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-              });
+            }
+        );
     }
 };
 
