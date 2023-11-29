@@ -93,6 +93,15 @@ void set_rawp_base(PyArrayObject * ary, void * ptr)
     PyArray_SetBaseObject(ary, cap);
 }
 
+inline void py_err_check()
+{        
+    if (PyErr_Occurred())
+    {
+        PyErr_Print();
+        throw std::runtime_error("Python error");
+    }
+}
+
 // *****************************************************************************
 
 // Uses a shared pointer to a raw array (T*) for creating a nd-array
@@ -389,17 +398,9 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 // special protocol assumes that python objects implement __2daalnt__
                 // returning a pointer to a NumericTablePtr, we have to delete the shared-pointer
                 PyObject * _obj = PyObject_CallMethod(obj, "__2daalnt__", NULL);
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
                 void * _ptr = PyCapsule_GetPointer(_obj, NULL);
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
                 Py_DECREF(_obj);
                 auto nt = reinterpret_cast<daal::data_management::NumericTablePtr *>(_ptr);
                 ntptr   = *nt;
@@ -474,11 +475,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
         else if (PyList_Check(obj) && PyList_Size(obj) > 0)
         { // a list of arrays for SOA?
             PyObject * first = PyList_GetItem(obj, 0);
-            if (PyErr_Occurred())
-            {
-                PyErr_Print();
-                throw std::runtime_error("Python Error");
-            }
+            py_err_check();
 
             if (is_array(first))
             { // can handle only list of 1d arrays
@@ -488,11 +485,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 for (auto i = 0; i < N; i++)
                 {
                     PyArrayObject * ary = reinterpret_cast<PyArrayObject *>(PyList_GetItem(obj, i));
-                    if (PyErr_Occurred())
-                    {
-                        PyErr_Print();
-                        throw std::runtime_error("Python Error");
-                    }
+                    py_err_check();
                     if (i == 0) soatbl = daal::data_management::SOANumericTable::create(N, PyArray_DIM(ary, 0));
                     if (PyArray_NDIM(ary) != 1)
                     {
@@ -524,11 +517,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
         {
             daal::services::SharedPtr<daal::data_management::CSRNumericTable> ret;
             PyObject * vals = PyObject_GetAttrString(obj, "data");
-            if (PyErr_Occurred())
-            {
-                PyErr_Print();
-                throw std::runtime_error("Python Error");
-            }
+            py_err_check();
             PyObject * indcs = PyObject_GetAttrString(obj, "indices");
             if (PyErr_Occurred())
             {
@@ -550,44 +539,20 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
 
             if (shape && PyTuple_Check(shape) && is_array(vals) && is_array(indcs) && is_array(roffs) && array_numdims(vals) == 1 && array_numdims(indcs) == 1 && array_numdims(roffs) == 1)
             {
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
 
                 // As long as oneDAL does not support 0-based indexing we have to copy the indices and add 1 to each
                 PyObject * np_indcs = PyArray_FROMANY(indcs, NPY_UINT64, 0, 0, NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
                 PyObject * np_roffs = PyArray_FROMANY(roffs, NPY_UINT64, 0, 0, NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
                 PyObject * np_vals = PyArray_FROMANY(vals, array_type(vals), 0, 0, NPY_ARRAY_CARRAY);
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
 
                 PyObject * nr = PyTuple_GetItem(shape, 0);
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
                 PyObject * nc = PyTuple_GetItem(shape, 1);
-                if (PyErr_Occurred())
-                {
-                    PyErr_Print();
-                    throw std::runtime_error("Python Error");
-                }
+                py_err_check();
 
                 if (np_indcs && np_roffs && np_vals && nr && nc)
                 {
@@ -602,17 +567,9 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     DAAL4PY_CHECK_MALLOC(c_roffs_one_based);
                     for (size_t i = 0; i < n; ++i) c_roffs_one_based[i] = c_roffs[i] + 1;
                     size_t c_nc = static_cast<size_t>(PyInt_AsSsize_t(nc));
-                    if (PyErr_Occurred())
-                    {
-                        PyErr_Print();
-                        throw std::runtime_error("Python Error");
-                    }
+                    py_err_check();
                     size_t c_nr = static_cast<size_t>(PyInt_AsSsize_t(nr));
-                    if (PyErr_Occurred())
-                    {
-                        PyErr_Print();
-                        throw std::runtime_error("Python Error");
-                    }
+                    py_err_check();
 #define MKCSR_(_T) ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>(reinterpret_cast<_T *>(array_data(np_vals)), NumpyDeleter(reinterpret_cast<PyArrayObject *>(np_vals))), daal::services::SharedPtr<size_t>(c_indcs_one_based, daal::services::ServiceDeleter()), daal::services::SharedPtr<size_t>(c_roffs_one_based, daal::services::ServiceDeleter()), c_nc, c_nr)
                     SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_matrix"));
 #undef MKCSR_
@@ -754,11 +711,7 @@ daal::data_management::DataCollectionPtr make_datacoll(PyObject * input)
         for (auto i = 0; i < n; i++)
         {
             PyObject * obj = PyList_GetItem(input, i);
-            if (PyErr_Occurred())
-            {
-                PyErr_Print();
-                throw std::runtime_error("Python Error");
-            }
+            py_err_check();
             auto tmp = make_nt(obj);
             if (tmp)
                 res->push_back(tmp);
