@@ -509,7 +509,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                 ptr = soatbl;
             } // else not a list of 1d arrays
         }     // else not a list of 1d arrays
-        if (!ptr && strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0)
+        if (!ptr && (strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0) || strcmp(Py_TYPE(obj)->tp_name, "csr_array") == 0))
         {
             daal::services::SharedPtr<daal::data_management::CSRNumericTable> ret;
             PyObject * vals = PyObject_GetAttrString(obj, "data");
@@ -555,11 +555,11 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                     size_t c_nr = static_cast<size_t>(PyInt_AsSsize_t(nr));
                     py_err_check();
 #define MKCSR_(_T) ret = daal::data_management::CSRNumericTable::create(daal::services::SharedPtr<_T>(reinterpret_cast<_T *>(array_data(np_vals)), NumpyDeleter(reinterpret_cast<PyArrayObject *>(np_vals))), daal::services::SharedPtr<size_t>(c_indcs_one_based, daal::services::ServiceDeleter()), daal::services::SharedPtr<size_t>(c_roffs_one_based, daal::services::ServiceDeleter()), c_nc, c_nr)
-                    SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_matrix"));
+                    SET_NPY_FEATURE(array_type(np_vals), MKCSR_, throw std::invalid_argument("Found unsupported data type in csr_object"));
 #undef MKCSR_
                 }
                 else
-                    throw std::invalid_argument("Failed accessing csr data when converting csr_matrix.\n");
+                    throw std::invalid_argument("Failed accessing csr data when converting csr_object.\n");
                 Py_DECREF(np_indcs);
                 Py_DECREF(np_roffs);
             }
