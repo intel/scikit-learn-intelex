@@ -1,8 +1,8 @@
 import json
 import os
+import re
 import subprocess
 import sys
-import re
 
 # Find current Scikit-learn major versions in release order
 conda_call = subprocess.run(
