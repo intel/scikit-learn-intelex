@@ -48,7 +48,9 @@ struct params2desc {
         auto desc = dal::covariance::descriptor<Float, Method>{};
         desc.set_result_options(dal::covariance::result_options::cov_matrix | dal::covariance::result_options::means);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
-        desc.set_bias(params["bias"].cast<bool>());
+        if (params.contains("bias")) {
+            desc.set_bias(params["bias"].cast<bool>());
+        }
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240001
         return desc;
     }
