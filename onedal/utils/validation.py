@@ -20,7 +20,6 @@ from numbers import Integral
 
 import numpy as np
 from scipy import sparse as sp
-from scipy.sparse import dok_matrix, issparse, lil_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
@@ -302,8 +301,8 @@ def _is_multilabel(y):
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
 
-    if issparse(y):
-        if isinstance(y, (dok_matrix, lil_matrix)):
+    if sp.issparse(y):
+        if isinstance(y, (sp.dok_matrix, sp.lil_matrix)):
             y = y.tocsr()
         return (
             len(y.data) == 0
