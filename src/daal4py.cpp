@@ -267,11 +267,7 @@ extern PyObject * make_nda(daal::data_management::DataCollectionPtr * coll)
     {
         daal::data_management::NumericTablePtr nt = daal::services::dynamicPointerCast<daal::data_management::NumericTable>((*coll)->get(i));
         PyList_SetItem(list, i, make_nda(&nt));
-        if (PyErr_Occurred())
-        {
-            PyErr_Print();
-            throw std::runtime_error("Python error");
-        }
+        py_err_check();
     }
     return list;
 }
@@ -519,23 +515,11 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
             PyObject * vals = PyObject_GetAttrString(obj, "data");
             py_err_check();
             PyObject * indcs = PyObject_GetAttrString(obj, "indices");
-            if (PyErr_Occurred())
-            {
-                PyErr_Print();
-                throw std::runtime_error("Python Error");
-            }
+            py_err_check();
             PyObject * roffs = PyObject_GetAttrString(obj, "indptr");
-            if (PyErr_Occurred())
-            {
-                PyErr_Print();
-                throw std::runtime_error("Python Error");
-            }
+            py_err_check();
             PyObject * shape = PyObject_GetAttrString(obj, "shape");
-            if (PyErr_Occurred())
-            {
-                PyErr_Print();
-                throw std::runtime_error("Python Error");
-            }
+            py_err_check();
 
             if (shape && PyTuple_Check(shape) && is_array(vals) && is_array(indcs) && is_array(roffs) && array_numdims(vals) == 1 && array_numdims(indcs) == 1 && array_numdims(roffs) == 1)
             {
