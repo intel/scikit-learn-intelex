@@ -198,12 +198,6 @@ class PCA(PCA_original):
         return U, S, V
 
     def _fit(self, X):
-        if issparse(X):
-            raise TypeError(
-                "PCA does not support sparse input. See "
-                "TruncatedSVD for a possible alternative."
-            )
-
         if sklearn_check_version("0.23"):
             X = self._validate_data(
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
@@ -272,7 +266,12 @@ class PCA(PCA_original):
                     self._fit_svd_solver == "full",
                     f"'{self._fit_svd_solver}' SVD solver is not supported. "
                     "Only 'full' solver is supported.",
-                )
+                ),
+                (
+                    not issparse(X),
+                    "PCA does not support sparse input. See "
+                    "TruncatedSVD as a possible alternative.",
+                ),
             ]
         )
 
