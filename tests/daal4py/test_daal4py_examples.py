@@ -44,7 +44,7 @@ example_data_path = project_path / "tests" / "unittest_data"
 def np_load_distributed(
     path: Path, file_name: str, parts: range, delimiter: str = ","
 ) -> npt.NDArray[np.float64]:
-    data = None
+    data = None3
     for i in parts:
         new_data = np.loadtxt(str(path / file_name.format(i=i)), delimiter=delimiter)
         data = new_data if data is None else np.append(data, new_data, axis=0)
@@ -58,6 +58,10 @@ def import_module_any_path(path: Path) -> ModuleType:
     if import_path not in sys.path:
         sys.path.insert(0, import_path)
     return importlib.import_module(path.stem)
+
+
+readcsv = import_module_any_path(example_path / "readcsv")
+csr_read_csv = readcsv.csr_read_csv
 
 
 @dataclass
