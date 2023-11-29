@@ -21,7 +21,7 @@ from daal4py.sklearn._utils import daal_check_version
 
 # simple storage for hyperparameters
 hyperparameters_storage = {
-    "linear_regression": {"train": {"cpu_macro_block": 8192, "gpu_macro_block": 16384}}
+    "linear_regression": {"train": {"cpu_macro_block": None, "gpu_macro_block": None}}
 }
 
 
