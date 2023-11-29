@@ -18,10 +18,10 @@
 
 from pathlib import Path
 
-import daal4py as d4p
-
 # let's use a generator for getting stream from file (defined in stream.py)
-from daal4py.sklearn.utils import pd_read_csv, read_next
+from readcsv import pd_read_csv, read_next
+
+import daal4py as d4p
 
 
 def main(readcsv=pd_read_csv, *args, **kwargs):

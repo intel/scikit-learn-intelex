@@ -19,8 +19,7 @@
 from pathlib import Path
 
 import numpy as np
-
-from daal4py.sklearn.utils import pd_read_csv
+from readcsv import pd_read_csv
 
 
 def get_chunk_params(lines_count, chunks_count, chunk_number):

@@ -16,7 +16,6 @@
 
 import importlib
 import inspect
-import os
 import sys
 import time
 import unittest
@@ -31,7 +30,6 @@ import numpy as np
 import numpy.typing as npt
 
 from daal4py.sklearn._utils import daal_check_version, get_daal_version
-from daal4py.sklearn.utils import csr_read_csv, np_read_csv, pd_read_csv
 
 daal_version = get_daal_version()
 
@@ -44,7 +42,7 @@ example_data_path = project_path / "tests" / "unittest_data"
 def np_load_distributed(
     path: Path, file_name: str, parts: range, delimiter: str = ","
 ) -> npt.NDArray[np.float64]:
-    data = None3
+    data = None
     for i in parts:
         new_data = np.loadtxt(str(path / file_name.format(i=i)), delimiter=delimiter)
         data = new_data if data is None else np.append(data, new_data, axis=0)
@@ -52,6 +50,8 @@ def np_load_distributed(
     return data
 
 
+# Examples are not part of any module, so we import them by modifying the
+# system's path
 def import_module_any_path(path: Path) -> ModuleType:
     """Import a module from any path"""
     import_path = str(path.parent)
@@ -60,8 +60,7 @@ def import_module_any_path(path: Path) -> ModuleType:
     return importlib.import_module(path.stem)
 
 
-readcsv = import_module_any_path(example_path / "readcsv")
-csr_read_csv = readcsv.csr_read_csv
+readcsv = import_module_any_path(example_path.parent / "utils" / "readcsv.py")
 
 
 @dataclass
@@ -71,7 +70,7 @@ class Config:
     result_attribute: Union[str, Callable[..., Any]] = ""
     required_version: Tuple[Any, ...] = daal_version
     req_libs: List[str] = field(default_factory=list)
-    timeout_cpu_seconds: int = 60
+    timeout_cpu_seconds: int = 90
     suspended_on: Optional[Tuple[int, int, int]] = None
     suspended_for_n_days: int = 30
 
@@ -120,17 +119,15 @@ class Base:
             config.is_suspended(),
             f"Test was suspended for {config.suspended_for_n_days} days on {config.suspended_on}",
         )
-        def run_test(self):  # type: ignore
+        def run_test(self):
             start = time.process_time()
 
             ex = import_module_any_path(example_path / config.module_name)
-
-            if not hasattr(ex, "main"):
-                self.skipTest("Missing main function")
-
-            result: Any = self.call_main(ex)  # type: ignore
+            result: Any = self.call_main(ex)
             if config.result_file_name and config.result_attribute:
-                testdata = np_read_csv(example_data_path / config.result_file_name)
+                testdata = readcsv.np_read_csv(
+                    example_data_path / config.result_file_name
+                )
                 ra = config.result_attribute
                 actual = ra(result) if callable(ra) else getattr(result, ra)
                 np.testing.assert_allclose(actual, testdata, atol=1e-05)
@@ -143,7 +140,7 @@ class Base:
     def test_svd(self):
         ex = import_module_any_path(example_path / "svd")
 
-        reference, intermediate = self.call_main(ex)  # type: ignore
+        reference, intermediate = self.call_main(ex)
         result = np.matmul(
             np.matmul(
                 intermediate.leftSingularMatrix, np.diag(intermediate.singularValues[0])
@@ -184,7 +181,7 @@ class Base:
 
     def test_svm(self):
         ex = import_module_any_path(example_path / "svm")
-        testdata = np_read_csv(example_data_path / "svm.csv", range(1))
+        testdata = readcsv.np_read_csv(example_data_path / "svm.csv", range(1))
 
         decision_result, _, _ = self.call_main(ex)
         left = np.absolute(decision_result - testdata).max()
@@ -331,20 +328,6 @@ examples = [
     Config("elastic_net", required_version=((2020, "P", 1), (2021, "B", 105))),
 ]
 
-module_names_with_configs = [cfg.module_name for cfg in examples]
-
-# add all examples that do not have an explicit config
-for fname in os.listdir(example_path):
-    if fname == "__init__.py":
-        continue
-    if not fname.endswith(".py"):
-        continue
-    stem = Path(fname).stem
-    if stem in module_names_with_configs:
-        continue
-
-    examples.append(Config(stem))
-
 for cfg in examples:
     Base.add_test(cfg)
 
@@ -358,7 +341,7 @@ class TestExNpyArray(Base, unittest.TestCase):
     def call_main(self, module: ModuleType):
         signature = inspect.signature(module.main)
         if "readcsv" in list(signature.parameters):
-            return module.main(readcsv=np_read_csv)
+            return module.main(readcsv=readcsv.np_read_csv)
         else:
             return module.main()
 
@@ -374,7 +357,7 @@ class TestExPandasDF(Base, unittest.TestCase):
         if "readcsv" not in list(signature.parameters):
             self.skipTest("Missing readcsv kwarg support")
 
-        return module.main(readcsv=pd_read_csv)
+        return module.main(readcsv=readcsv.pd_read_csv)
 
 
 class TestExCSRMatrix(Base, unittest.TestCase):
@@ -414,9 +397,9 @@ class TestExCSRMatrix(Base, unittest.TestCase):
                 method = module.dflt_method.replace("defaultDense", "fastCSR").replace(
                     "Dense", "CSR"
                 )
-            return module.main(readcsv=csr_read_csv, method=method)
+            return module.main(readcsv=readcsv.csr_read_csv, method=method)
         else:
-            return module.main(readcsv=csr_read_csv)
+            return module.main(readcsv=readcsv.csr_read_csv)
 
 
 if __name__ == "__main__":

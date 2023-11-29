@@ -18,8 +18,9 @@
 
 from pathlib import Path
 
+from readcsv import pd_read_csv
+
 import daal4py as d4p
-from daal4py.sklearn.utils import pd_read_csv
 
 
 def main(readcsv=pd_read_csv, *args, **kwargs):

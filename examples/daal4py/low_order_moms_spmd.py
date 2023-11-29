@@ -20,11 +20,12 @@
 
 from pathlib import Path
 
+from readcsv import pd_read_csv
+
 # let's use a reading of file in chunks (defined in spmd_chunks_read.py)
 from spmd_chunks_read import get_chunk_params
 
 import daal4py as d4p
-from daal4py.sklearn.utils import pd_read_csv
 
 
 def main(readcsv=pd_read_csv):
