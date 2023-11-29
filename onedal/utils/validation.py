@@ -144,7 +144,7 @@ def _check_array(
         accept_large_sparse=accept_large_sparse,
     )
 
-    if sp.isspmatrix(array):
+    if sp.issparse(array):
         return array
 
     # TODO: Convert this kind of arrays to a table like in daal4py
