@@ -201,6 +201,8 @@ class PCA(sklearn_PCA):
                         self._fit_svd_solver == "full",
                         f"'{self._fit_svd_solver}' SVD solver is not supported. "
                         "Only 'full' solver is supported.",
+                    ),
+                    (
                         not issparse(X),
                         "PCA does not support sparse input. See "
                         "TruncatedSVD as a possible alternative.",
