@@ -70,6 +70,7 @@ jobs:
   - script: |
       conda update -y -q -c defaults conda
       conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest pyyaml
+      conda install -y -q -n CB -c $(conda.channel) python=$(python.version) $(python .ci/scripts/get_compatible_sklearn_version.py $(conda.channel))
     displayName: 'Install scikit-learn-intelex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
