@@ -33,7 +33,7 @@ from daal4py.sklearn._utils import daal_check_version, get_daal_version
 
 daal_version = get_daal_version()
 
-project_path = Path(__file__).parent.parent.parent
+project_path = Path(__file__).parent.parent
 example_path = project_path / "examples" / "daal4py"
 distributed_data_path = example_path / "data" / "distributed"
 example_data_path = project_path / "tests" / "unittest_data"
@@ -46,7 +46,7 @@ def np_load_distributed(
     for i in parts:
         new_data = np.loadtxt(str(path / file_name.format(i=i)), delimiter=delimiter)
         data = new_data if data is None else np.append(data, new_data, axis=0)
-    assert data is not None, "Empty range is not supported"
+    assert data is not None, "Empty parts range is not supported"
     return data
 
 
@@ -55,12 +55,13 @@ def np_load_distributed(
 def import_module_any_path(path: Path) -> ModuleType:
     """Import a module from any path"""
     import_path = str(path.parent)
-    if import_path not in sys.path:
-        sys.path.insert(0, import_path)
-    return importlib.import_module(path.stem)
+    sys.path.insert(0, import_path)
+    module = importlib.import_module(path.stem)
+    sys.path.pop(0)
+    return module
 
 
-readcsv = import_module_any_path(example_path.parent / "utils" / "readcsv.py")
+readcsv = import_module_any_path(example_path / "readcsv.py")
 
 
 @dataclass
