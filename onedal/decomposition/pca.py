@@ -20,6 +20,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal import _backend
 
 from ..common._policy import _get_policy
+from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
@@ -54,8 +55,12 @@ class PCA:
         X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
+        hyperparams = get_hyperparameters("covariance", "compute")
         cov_result = _backend.covariance.compute(
-            policy, {"fptype": params["fptype"], "method": "dense"}, to_table(X)
+            policy,
+            {"fptype": params["fptype"], "method": "dense"},
+            hyperparams,
+            to_table(X),
         )
         covariance_matrix = from_table(cov_result.cov_matrix)
         self.mean_ = from_table(cov_result.means)

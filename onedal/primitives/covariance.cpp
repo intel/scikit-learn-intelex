@@ -48,14 +48,46 @@ struct params2desc {
     }
 };
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
+auto get_hyperparameters(const pybind11::dict& hyperparams_dict) {
+    using namespace dal::covariance::detail;
+
+    compute_parameters hyperparams{};
+    if (hyperparams_dict.contains("cpu_macro_block")) {
+        hyperparams.set_cpu_macro_block(hyperparams_dict["cpu_macro_block"].cast<int64_t>());
+    }
+    return hyperparams;
+}
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
 template <typename Policy, typename Task>
 void init_compute_ops(pybind11::module_& m) {
-    m.def("compute", [](const Policy& policy, const pybind11::dict& params, const table& data) {
-        using namespace dal::covariance;
-        using input_t = compute_input<Task>;
-        compute_ops ops(policy, input_t{ data }, params2desc{});
-        return fptype2t{ method2t{ Task{}, ops } }(params);
-    });
+    m.def("compute", [](
+        const Policy& policy,
+        const pybind11::dict& params,
+        const pybind11::dict& hyperparams_dict,
+        const table& data) {
+            using namespace dal::covariance;
+            using input_t = compute_input<Task>;
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+            if (pybind11::len(hyperparams_dict) > 0) {
+                auto hyperparams = get_hyperparameters(hyperparams_dict);
+                compute_ops_with_hyperparams ops(
+                    policy, input_t{ data }, params2desc{}, hyperparams);
+                return fptype2t{ method2t{ Task{}, ops } }(params);
+            }
+            else {
+                compute_ops ops(policy, input_t{ data }, params2desc{});
+                return fptype2t{ method2t{ Task{}, ops } }(params);
+            }
+#else
+            compute_ops ops(policy, input_t{ data }, params2desc{});
+            return fptype2t{ method2t{ Task{}, ops } }(params);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+        }
+    );
 }
 
 template <typename Task>
