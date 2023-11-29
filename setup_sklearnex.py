@@ -148,7 +148,7 @@ setup(
         "Topic :: Software Development",
     ],
     python_requires=">=3.8",
-    install_requires=["daal4py>=2024.0", "scikit-learn>=1.0"],
+    install_requires=["daal4py>=2024.0", "scikit-learn>=1.0, <1.4"],
     keywords=[
         "machine learning",
         "scikit-learn",
