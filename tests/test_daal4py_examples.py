@@ -350,7 +350,7 @@ for fname in os.listdir(example_path):
         continue
     if not fname.endswith(".py"):
         continue
-    if fname.endswith("_spmd.py"):
+    if "spmd" in fname:
         # spmd examples are done in test_daal4py_spmd_examples.py
         continue
     stem = Path(fname).stem

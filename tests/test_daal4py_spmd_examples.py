@@ -163,7 +163,7 @@ for fname in os.listdir(example_path):
         continue
     if not fname.endswith(".py"):
         continue
-    if not fname.endswith("_spmd.py"):
+    if "spmd" not in fname:
         # here we only run spmd examples
         continue
     stem = Path(fname).stem
