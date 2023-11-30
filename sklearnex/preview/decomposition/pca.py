@@ -134,7 +134,7 @@ class PCA(sklearn_PCA):
         self._validate_n_components(n_components, n_samples, n_features, n_sf_min)
 
         self._fit_svd_solver = self.svd_solver
-        shape_good_for_daal = X.shape[1] / X.shape[0] < 2
+
         if self._fit_svd_solver == "auto":
             if sklearn_check_version("1.1"):
                 if max(X.shape) <= 500 or n_components == "mle":
@@ -166,34 +166,15 @@ class PCA(sklearn_PCA):
                     else:
                         self._fit_svd_solver = "full"
 
-        if not shape_good_for_daal or self._fit_svd_solver != "full":
-            if sklearn_check_version("0.23"):
-                X = self._validate_data(X, copy=self.copy, accept_sparse=True)
-            else:
-                X = check_array(X, copy=self.copy, accept_sparse=True)
-
-        # Call different fits for either full or truncated SVD
-        if shape_good_for_daal and self._fit_svd_solver == "full":
-            return dispatch(
-                self,
-                "fit",
-                {
-                    "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_PCA._fit_full,
-                },
-                X,
-            )
-        elif not shape_good_for_daal and self._fit_svd_solver == "full":
-            return sklearn_PCA._fit_full(self, X, n_components)
-        elif self._fit_svd_solver in ["arpack", "randomized"]:
-            return sklearn_PCA._fit_truncated(
-                self,
-                X,
-                n_components,
-                self._fit_svd_solver,
-            )
-        else:
-            raise ValueError("Unrecognized svd_solver='{0}'".format(self._fit_svd_solver))
+        return dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": sklearn_PCA.fit,
+            },
+            X,
+        )
 
     def _onedal_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -212,9 +193,13 @@ class PCA(sklearn_PCA):
                     ),
                     (
                         not issparse(X),
-                        "PCA does not support sparse input. See "
-                        "TruncatedSVD as a possible alternative.",
+                        "oneDAL PCA does not support sparse inputs"
                     ),
+                    (
+                        X.shape[1] / X.shape[0] < 2,
+                        "The shape of X does not satisfy oneDAL requirements: "
+                        "number of features / number of samples >= 2",
+                    )
                 ]
             )
             return patching_status
