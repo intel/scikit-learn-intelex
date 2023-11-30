@@ -492,9 +492,21 @@ def _predict(self, X, sample_weight=None):
             (hasattr(X, "__array__"), "X does not have '__array__' attribute."),
         ]
     )
-    _dal_ready = _patching_status.or_conditions(
-        [(sp.isspmatrix_csr(X) or isinstance(X, sp.csr_array), "X is not sparse.")]
-    )
+
+    # CSR array is introduced in scipy 1.11, this requires an initial attribute check
+    if hasattr(sp, "csr_array"):
+        _dal_ready = _patching_status.or_conditions(
+            [
+                (
+                    sp.isspmatrix_csr(X) or isinstance(X, sp.csr_array),
+                    "X is not csr sparse.",
+                )
+            ]
+        )
+    else:
+        _dal_ready = _patching_status.or_conditions(
+            [(sp.isspmatrix_csr(X), "X is not csr sparse.")]
+        )
 
     _patching_status.write_log()
     if _dal_ready:
