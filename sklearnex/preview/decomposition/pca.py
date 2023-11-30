@@ -43,6 +43,8 @@ from onedal.decomposition import PCA as onedal_PCA
 
 
 class PCA(sklearn_PCA):
+    __doc__ = sklearn_PCA.__doc__
+
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
 
@@ -99,10 +101,7 @@ class PCA(sklearn_PCA):
                 min_val=1,
                 target_type=numbers.Integral,
             )
-        self._fit(X)
-        return self
 
-    def _fit(self, X):
         if sklearn_check_version("0.23"):
             X = self._validate_data(
                 X,
@@ -171,7 +170,7 @@ class PCA(sklearn_PCA):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_PCA._fit,
+                "sklearn": sklearn_PCA.fit,
             },
             X,
         )
@@ -309,6 +308,10 @@ class PCA(sklearn_PCA):
                 return X_new
             else:
                 return super().transform(X)
+
+    fit.__doc__ = sklearn_PCA.fit.__doc__
+    transform.__doc__ = sklearn_PCA.transform.__doc__
+    fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
 
     def _save_attributes(self):
         self.n_samples_ = self._onedal_estimator.n_samples_
