@@ -114,6 +114,8 @@ class BaseForest(ABC):
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
 
+        self._n_samples, self.n_outputs_ = y.shape
+
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
         self.n_features_in_ = X.shape[1]
