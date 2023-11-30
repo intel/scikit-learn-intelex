@@ -289,7 +289,9 @@ class PCA(PCA_original):
                         self._fit_svd_solver = "full"
 
         if not shape_good_for_daal or self._fit_svd_solver != "full":
-            if sklearn_check_version("0.23"):
+            if sklearn_check_version("1.4"):
+                X = self._validate_data(x, copy=self.copy, accept_sparse=("csr", "csc"))
+            elif sklearn_check_version("0.23"):
                 X = self._validate_data(X, copy=self.copy)
             else:
                 X = check_array(X, copy=self.copy)
