@@ -61,6 +61,10 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
                         self.assume_centered == False,
                         "assume_centered parameter is not supported on oneDAL side",
                     ),
+                    (
+                        self.store_precision == False,
+                        "precision matrix calculation is not supported on oneDAL side",
+                    ),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 ]
             )
