@@ -265,9 +265,9 @@ class PCA(PCA_original):
 
         if not shape_good_for_daal or self._fit_svd_solver != "full":
             if sklearn_check_version("0.23"):
-                X = self._validate_data(X, copy=self.copy)
+                X = self._validate_data(X, copy=self.copy, accept_sparse=True)
             else:
-                X = check_array(X, copy=self.copy)
+                X = check_array(X, copy=self.copy, accept_sparse=True)
 
         _patching_status = PatchingConditionsChain("sklearn.decomposition.PCA.fit")
         _dal_ready = _patching_status.and_conditions(

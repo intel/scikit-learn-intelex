@@ -105,11 +105,19 @@ class PCA(sklearn_PCA):
     def _fit(self, X):
         if sklearn_check_version("0.23"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=False,
+                accept_sparse=True,
             )
         else:
             X = _check_array(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=False,
+                accept_sparse=True,
             )
 
         n_samples, n_features = X.shape
@@ -160,9 +168,9 @@ class PCA(sklearn_PCA):
 
         if not shape_good_for_daal or self._fit_svd_solver != "full":
             if sklearn_check_version("0.23"):
-                X = self._validate_data(X, copy=self.copy)
+                X = self._validate_data(X, copy=self.copy, accept_sparse=True)
             else:
-                X = check_array(X, copy=self.copy)
+                X = check_array(X, copy=self.copy, accept_sparse=True)
 
         # Call different fits for either full or truncated SVD
         if shape_good_for_daal and self._fit_svd_solver == "full":
