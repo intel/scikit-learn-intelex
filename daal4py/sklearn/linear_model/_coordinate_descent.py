@@ -30,7 +30,7 @@ from daal4py.sklearn._utils import (
     make2d,
     run_with_n_jobs,
     sklearn_check_version,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -621,13 +621,13 @@ def _dual_gap(self):
     return self._gap
 
 
+@support_n_jobs
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**ElasticNet_original._parameter_constraints}
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -658,7 +658,6 @@ class ElasticNet(ElasticNet_original):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -820,12 +819,12 @@ class ElasticNet(ElasticNet_original):
         self._gap = None
 
 
+@support_n_jobs
 class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 
     if sklearn_check_version("1.2"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,
@@ -855,7 +854,6 @@ class Lasso(Lasso_original):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             alpha=1.0,

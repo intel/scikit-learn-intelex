@@ -48,7 +48,7 @@ from daal4py.sklearn._utils import (
     daal_check_version,
     run_with_n_jobs,
     sklearn_check_version,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
@@ -1128,6 +1128,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
 
 
+@support_n_jobs
 class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
     _onedal_factory = onedal_RandomForestClassifier
@@ -1141,7 +1142,6 @@ class RandomForestClassifier(ForestClassifier):
 
     if sklearn_check_version("1.4"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1208,7 +1208,6 @@ class RandomForestClassifier(ForestClassifier):
 
     elif sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1272,7 +1271,6 @@ class RandomForestClassifier(ForestClassifier):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1340,6 +1338,7 @@ class RandomForestClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
 
 
+@support_n_jobs
 class RandomForestRegressor(ForestRegressor):
     __doc__ = sklearn_RandomForestRegressor.__doc__
     _onedal_factory = onedal_RandomForestRegressor
@@ -1353,7 +1352,6 @@ class RandomForestRegressor(ForestRegressor):
 
     if sklearn_check_version("1.4"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1418,7 +1416,6 @@ class RandomForestRegressor(ForestRegressor):
 
     elif sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1480,7 +1477,6 @@ class RandomForestRegressor(ForestRegressor):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1543,6 +1539,7 @@ class RandomForestRegressor(ForestRegressor):
             self.min_bin_size = min_bin_size
 
 
+@support_n_jobs
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
     _onedal_factory = onedal_ExtraTreesClassifier
@@ -1556,7 +1553,6 @@ class ExtraTreesClassifier(ForestClassifier):
 
     if sklearn_check_version("1.4"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1623,7 +1619,6 @@ class ExtraTreesClassifier(ForestClassifier):
 
     elif sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1687,7 +1682,6 @@ class ExtraTreesClassifier(ForestClassifier):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1755,6 +1749,7 @@ class ExtraTreesClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
 
 
+@support_n_jobs
 class ExtraTreesRegressor(ForestRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
     _onedal_factory = onedal_ExtraTreesRegressor
@@ -1768,7 +1763,6 @@ class ExtraTreesRegressor(ForestRegressor):
 
     if sklearn_check_version("1.4"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1833,7 +1827,6 @@ class ExtraTreesRegressor(ForestRegressor):
 
     elif sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1895,7 +1888,6 @@ class ExtraTreesRegressor(ForestRegressor):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,

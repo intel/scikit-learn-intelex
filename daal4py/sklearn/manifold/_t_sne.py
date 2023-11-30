@@ -33,6 +33,7 @@ from daal4py.sklearn._utils import (
     daal_check_version,
     run_with_n_jobs,
     sklearn_check_version,
+    support_n_jobs,
 )
 
 from .._device_offload import support_usm_ndarray
@@ -44,6 +45,7 @@ else:
     from sklearn.manifold.t_sne import _joint_probabilities, _joint_probabilities_nn
 
 
+@support_n_jobs
 class TSNE(BaseTSNE):
     __doc__ = BaseTSNE.__doc__
 

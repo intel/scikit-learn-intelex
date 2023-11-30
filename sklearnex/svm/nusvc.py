@@ -18,11 +18,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import (
-    run_with_n_jobs,
-    sklearn_check_version,
-    support_init_with_n_jobs,
-)
+from daal4py.sklearn._utils import run_with_n_jobs, sklearn_check_version, support_n_jobs
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVC
@@ -33,13 +29,13 @@ if sklearn_check_version("1.0"):
 from onedal.svm import NuSVC as onedal_NuSVC
 
 
+@support_n_jobs
 class NuSVC(sklearn_NuSVC, BaseSVC):
     __doc__ = sklearn_NuSVC.__doc__
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_NuSVC._parameter_constraints}
 
-    @support_init_with_n_jobs
     @_deprecate_positional_args
     def __init__(
         self,

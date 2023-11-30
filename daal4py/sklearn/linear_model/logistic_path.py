@@ -37,7 +37,7 @@ from .._utils import (
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 from .logistic_loss import (
     _daal4py_cross_entropy_loss_extra_args,
@@ -951,6 +951,7 @@ if sklearn_check_version("0.24"):
             l1_ratio=l1_ratio,
         )
 
+    @support_n_jobs
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
@@ -959,7 +960,6 @@ if sklearn_check_version("0.24"):
                 **LogisticRegression_original._parameter_constraints
             }
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             penalty="l2",
@@ -1152,10 +1152,10 @@ else:
             l1_ratio=l1_ratio,
         )
 
+    @support_n_jobs
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             penalty="l2",

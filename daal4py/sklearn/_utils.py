@@ -268,24 +268,38 @@ class PatchingConditionsChain:
         return self.patching_is_enabled
 
 
-def support_init_with_n_jobs(init_function):
-    """Decorator for addition of 'n_jobs' parameter to estimator's init"""
+def support_n_jobs(original_class):
+    """Decorator for addition of 'n_jobs' parameter to estimator class"""
+    original_init = original_class.__init__
 
-    @wraps(init_function)
+    if sklearn_check_version("1.2") and hasattr(original_class, "_parameter_constraints"):
+        parameter_constraints = original_class._parameter_constraints
+        if "n_jobs" not in parameter_constraints:
+            parameter_constraints["n_jobs"] = [Integral, None]
+
+    @wraps(original_init)
     def init_with_n_jobs(self, *args, n_jobs=None, **kwargs):
-        if sklearn_check_version("1.2") and hasattr(self, "_parameter_constraints"):
-            parameter_constraints = self._parameter_constraints
-            if "n_jobs" not in parameter_constraints:
-                parameter_constraints["n_jobs"] = [Integral, None]
-        init_function(self, *args, **kwargs)
-        # add n_jobs to __doc__ string if needed
-        if (
-            hasattr(self, "__doc__")
-            and isinstance(self.__doc__, str)
-            and "n_jobs : int" not in self.__doc__
-        ):
-            parameters_doc_tail = "\n    Attributes"
-            n_jobs_doc = """
+        original_init(self, *args, **kwargs)
+        self.n_jobs = n_jobs
+
+    # add "n_jobs" parameter to signature of wrapped init
+    # if estimator doesn't originally support it
+    sig = signature(original_init)
+    original_params = list(sig.parameters.values())
+    if "n_jobs" not in list(map(lambda param: param.name, original_params)):
+        original_params.append(Parameter("n_jobs", Parameter.KEYWORD_ONLY, default=None))
+        init_with_n_jobs.__signature__ = sig.replace(parameters=original_params)
+
+    original_class.__init__ = init_with_n_jobs
+
+    # add n_jobs to __doc__ string if needed
+    if (
+        hasattr(original_class, "__doc__")
+        and isinstance(original_class.__doc__, str)
+        and "n_jobs : int" not in original_class.__doc__
+    ):
+        parameters_doc_tail = "\n    Attributes"
+        n_jobs_doc = """
     n_jobs : int, default=None
         The number of jobs to use in parallel for the computation.
         ``None`` means using all physical cores
@@ -293,20 +307,11 @@ def support_init_with_n_jobs(init_function):
         ``-1`` means using all logical cores.
         See :term:`Glossary <n_jobs>` for more details.
 """
-            self.__doc__ = self.__doc__.replace(
-                parameters_doc_tail, n_jobs_doc + parameters_doc_tail
-            )
-        self.n_jobs = n_jobs
+        original_class.__doc__ = original_class.__doc__.replace(
+            parameters_doc_tail, n_jobs_doc + parameters_doc_tail
+        )
 
-    # add "n_jobs" parameter to signature of wrapped init
-    # if estimator doesn't originally support it
-    sig = signature(init_function)
-    original_params = list(sig.parameters.values())
-    if "n_jobs" not in list(map(lambda param: param.name, original_params)):
-        original_params.append(Parameter("n_jobs", Parameter.KEYWORD_ONLY, default=None))
-        init_with_n_jobs.__signature__ = sig.replace(parameters=original_params)
-
-    return init_with_n_jobs
+    return original_class
 
 
 # Note: getting controller in global scope of this module is required

@@ -23,11 +23,7 @@ from scipy import sparse as sp
 from sklearn.cluster import DBSCAN as sklearn_DBSCAN
 from sklearn.utils.validation import _check_sample_weight
 
-from daal4py.sklearn._utils import (
-    run_with_n_jobs,
-    sklearn_check_version,
-    support_init_with_n_jobs,
-)
+from daal4py.sklearn._utils import run_with_n_jobs, sklearn_check_version, support_n_jobs
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
 from .._device_offload import dispatch, wrap_output_data
@@ -50,13 +46,13 @@ class BaseDBSCAN(ABC):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
 
 
+@support_n_jobs
 class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
     __doc__ = sklearn_DBSCAN.__doc__
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_DBSCAN._parameter_constraints}
 
-    @support_init_with_n_jobs
     def __init__(
         self,
         eps=0.5,

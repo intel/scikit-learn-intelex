@@ -21,11 +21,7 @@ from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 
-from daal4py.sklearn._utils import (
-    run_with_n_jobs,
-    sklearn_check_version,
-    support_init_with_n_jobs,
-)
+from daal4py.sklearn._utils import run_with_n_jobs, sklearn_check_version, support_n_jobs
 
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
@@ -145,13 +141,13 @@ else:
             self.weights = _check_weights(weights)
 
 
+@support_n_jobs
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsClassifier_._parameter_constraints}
 
     if sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_neighbors=5,
@@ -177,7 +173,6 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
 
     else:
 
-        @support_init_with_n_jobs
         @_deprecate_positional_args
         def __init__(
             self,

@@ -31,11 +31,7 @@ from sklearn.neighbors._kd_tree import KDTree
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
-from daal4py.sklearn._utils import (
-    run_with_n_jobs,
-    sklearn_check_version,
-    support_init_with_n_jobs,
-)
+from daal4py.sklearn._utils import run_with_n_jobs, sklearn_check_version, support_n_jobs
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 from onedal.utils import _check_array, _num_features, _num_samples
 
@@ -100,11 +96,11 @@ else:
             )
 
 
+@support_n_jobs
 class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**NearestNeighbors_._parameter_constraints}
 
-    @support_init_with_n_jobs
     @_deprecate_positional_args
     def __init__(
         self,

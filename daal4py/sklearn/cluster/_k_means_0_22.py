@@ -38,7 +38,7 @@ from .._utils import (
     daal_check_version,
     getFPType,
     run_with_n_jobs,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 
 
@@ -372,10 +372,10 @@ def _predict(self, X, sample_weight=None):
     return _labels_inertia(X, sample_weight, x_squared_norms, self.cluster_centers_)[0]
 
 
+@support_n_jobs
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
-    @support_init_with_n_jobs
     def __init__(
         self,
         n_clusters=8,

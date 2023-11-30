@@ -33,7 +33,7 @@ if daal_check_version((2023, "P", 200)):
     from daal4py.sklearn._utils import (
         run_with_n_jobs,
         sklearn_check_version,
-        support_init_with_n_jobs,
+        support_n_jobs,
     )
     from onedal.cluster import KMeans as onedal_KMeans
 
@@ -41,6 +41,7 @@ if daal_check_version((2023, "P", 200)):
     from ..._utils import PatchingConditionsChain
     from ._common import BaseKMeans
 
+    @support_n_jobs
     class KMeans(sklearn_KMeans, BaseKMeans):
         __doc__ = sklearn_KMeans.__doc__
         n_iter_, inertia_ = None, None
@@ -49,7 +50,6 @@ if daal_check_version((2023, "P", 200)):
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**sklearn_KMeans._parameter_constraints}
 
-            @support_init_with_n_jobs
             @_deprecate_positional_args
             def __init__(
                 self,
@@ -78,7 +78,6 @@ if daal_check_version((2023, "P", 200)):
 
         elif sklearn_check_version("1.0"):
 
-            @support_init_with_n_jobs
             @_deprecate_positional_args
             def __init__(
                 self,
@@ -107,7 +106,6 @@ if daal_check_version((2023, "P", 200)):
 
         else:
 
-            @support_init_with_n_jobs
             @_deprecate_positional_args
             def __init__(
                 self,

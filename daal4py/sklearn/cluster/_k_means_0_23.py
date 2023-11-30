@@ -40,7 +40,7 @@ from .._utils import (
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 
 if sklearn_check_version("1.1"):
@@ -520,13 +520,13 @@ def _predict(self, X, sample_weight=None):
         ]
 
 
+@support_n_jobs
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KMeans_original._parameter_constraints}
 
-        @support_init_with_n_jobs
         @_deprecate_positional_args
         def __init__(
             self,
@@ -555,7 +555,6 @@ class KMeans(KMeans_original):
 
     elif sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         @_deprecate_positional_args
         def __init__(
             self,
@@ -584,7 +583,6 @@ class KMeans(KMeans_original):
 
     else:
 
-        @support_init_with_n_jobs
         @_deprecate_positional_args
         def __init__(
             self,

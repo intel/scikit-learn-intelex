@@ -44,7 +44,7 @@ from .._utils import (
     is_DataFrame,
     make2d,
     run_with_n_jobs,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 
 
@@ -258,6 +258,7 @@ def _predict_linear(self, X):
     return _daal4py_predict(self, X)
 
 
+@support_n_jobs
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 
@@ -266,7 +267,6 @@ class LinearRegression(LinearRegression_original):
             **LinearRegression_original._parameter_constraints
         }
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             fit_intercept=True,
@@ -283,7 +283,6 @@ class LinearRegression(LinearRegression_original):
 
     elif sklearn_check_version("0.24"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             fit_intercept=True,
@@ -302,7 +301,6 @@ class LinearRegression(LinearRegression_original):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             fit_intercept=True,

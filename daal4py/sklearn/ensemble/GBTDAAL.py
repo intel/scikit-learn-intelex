@@ -27,7 +27,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 import daal4py as d4p
 
-from .._utils import getFPType
+from .._utils import getFPType, run_with_n_jobs, support_n_jobs
 
 
 class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
@@ -128,7 +128,9 @@ class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
         return {"allow_nan": self.allow_nan_}
 
 
+@support_n_jobs
 class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
+    @run_with_n_jobs
     def fit(self, X, y):
         # Check the algorithm parameters
         self._check_params()
@@ -191,6 +193,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         # Return the classifier
         return self
 
+    @run_with_n_jobs
     def _predict(self, X, resultsToEvaluate):
         # Input validation
         if not self.allow_nan_:
@@ -241,7 +244,9 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         return gbm
 
 
+@support_n_jobs
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
+    @run_with_n_jobs
     def fit(self, X, y):
         # Check the algorithm parameters
         self._check_params()
@@ -286,6 +291,7 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         # Return the classifier
         return self
 
+    @run_with_n_jobs
     def predict(self, X):
         # Input validation
         if not self.allow_nan_:

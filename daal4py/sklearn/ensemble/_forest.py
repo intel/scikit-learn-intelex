@@ -42,7 +42,7 @@ from daal4py.sklearn._utils import (
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 
 from .._device_offload import support_usm_ndarray
@@ -234,6 +234,7 @@ class RandomForestBase:
             )
 
 
+@support_n_jobs
 class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
     __doc__ = RandomForestClassifier_original.__doc__
 
@@ -247,7 +248,6 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
     if sklearn_check_version("1.4"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -302,7 +302,6 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
     elif sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -354,7 +353,6 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -883,6 +881,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
 
+@support_n_jobs
 class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
     __doc__ = RandomForestRegressor_original.__doc__
 
@@ -896,7 +895,6 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
     if sklearn_check_version("1.4"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -950,7 +948,6 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
     elif sklearn_check_version("1.0"):
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,
@@ -1001,7 +998,6 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
     else:
 
-        @support_init_with_n_jobs
         def __init__(
             self,
             n_estimators=100,

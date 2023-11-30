@@ -70,7 +70,7 @@ if daal_check_version((2023, "P", 100)):
         make2d,
         run_with_n_jobs,
         sklearn_check_version,
-        support_init_with_n_jobs,
+        support_n_jobs,
     )
 
     from .._device_offload import dispatch, wrap_output_data
@@ -87,6 +87,7 @@ if daal_check_version((2023, "P", 100)):
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
     from onedal.utils import _num_features, _num_samples
 
+    @support_n_jobs
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__
         intercept_, coef_ = None, None
@@ -96,7 +97,6 @@ if daal_check_version((2023, "P", 100)):
                 **sklearn_LinearRegression._parameter_constraints
             }
 
-            @support_init_with_n_jobs
             def __init__(
                 self,
                 fit_intercept=True,
@@ -113,7 +113,6 @@ if daal_check_version((2023, "P", 100)):
 
         elif sklearn_check_version("0.24"):
 
-            @support_init_with_n_jobs
             def __init__(
                 self,
                 fit_intercept=True,
@@ -132,7 +131,6 @@ if daal_check_version((2023, "P", 100)):
 
         else:
 
-            @support_init_with_n_jobs
             def __init__(
                 self,
                 fit_intercept=True,

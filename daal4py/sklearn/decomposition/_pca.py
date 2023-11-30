@@ -31,7 +31,7 @@ from .._utils import (
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_init_with_n_jobs,
+    support_n_jobs,
 )
 
 if sklearn_check_version("1.3"):
@@ -53,10 +53,10 @@ else:
     from sklearn.decomposition.pca import _infer_dimension_
 
 
+@support_n_jobs
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 
-    @support_init_with_n_jobs
     def __init__(
         self,
         n_components=None,
