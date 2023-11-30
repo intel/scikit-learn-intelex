@@ -281,7 +281,7 @@ class PCA(sklearn_PCA):
             if self.whiten:
                 X_new /= np.sqrt(self.explained_variance_)
         else:
-            return sklearn_PCA.transform(self, X)
+            return super().transform(X)
         return X_new
 
     def fit_transform(self, X, y=None):
@@ -299,7 +299,7 @@ class PCA(sklearn_PCA):
             Transformed values of X.
         """
         if self.svd_solver in ["randomized", "arpack"]:
-            return sklearn_PCA.fit_transform(self, X)
+            return super().fit_transform(X)
         else:
             self.fit(X)
             if hasattr(self, "_onedal_estimator"):
@@ -308,7 +308,7 @@ class PCA(sklearn_PCA):
                     X_new /= np.sqrt(self.explained_variance_)
                 return X_new
             else:
-                return sklearn_PCA.transform(self, X)
+                return super().transform(X)
 
     def _save_attributes(self):
         self.n_samples_ = self._onedal_estimator.n_samples_
