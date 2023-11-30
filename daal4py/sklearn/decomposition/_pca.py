@@ -200,10 +200,20 @@ class PCA(PCA_original):
     def _fit(self, X):
         if sklearn_check_version("0.23"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=False,
+                accept_sparse=True,
             )
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=False,
+                accept_sparse=True,
+            )
 
         if self.n_components is None:
             if self.svd_solver != "arpack":
