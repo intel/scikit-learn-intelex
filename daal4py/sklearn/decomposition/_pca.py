@@ -201,7 +201,6 @@ class PCA(PCA_original):
         return U, S, V
 
     def _fit(self, X):
-
         if sklearn_check_version("1.4"):
             xp, is_array_api_compliant = get_namespace(X)
 
@@ -237,7 +236,9 @@ class PCA(PCA_original):
                     X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
                 )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
+                X = check_array(
+                    X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                )
 
         if self.n_components is None:
             if self.svd_solver != "arpack":

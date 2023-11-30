@@ -191,15 +191,12 @@ class PCA(sklearn_PCA):
                         f"'{self._fit_svd_solver}' SVD solver is not supported. "
                         "Only 'full' solver is supported.",
                     ),
-                    (
-                        not issparse(X),
-                        "oneDAL PCA does not support sparse inputs"
-                    ),
+                    (not issparse(X), "oneDAL PCA does not support sparse inputs"),
                     (
                         X.shape[1] / X.shape[0] < 2,
                         "The shape of X does not satisfy oneDAL requirements: "
                         "number of features / number of samples >= 2",
-                    )
+                    ),
                 ]
             )
             return patching_status
