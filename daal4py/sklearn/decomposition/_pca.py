@@ -456,7 +456,10 @@ class PCA(PCA_original):
         """
         _patching_status = PatchingConditionsChain("sklearn.decomposition.PCA.transform")
         _dal_ready = _patching_status.and_conditions(
-            [(self.n_components_ > 0, "Number of components <= 0.")]
+            [
+                (self.n_components_ > 0, "Number of components <= 0."),
+                (not sp.issparse(X), "oneDAL PCA does not support sparse input"),
+            ]
         )
 
         _patching_status.write_log()
@@ -504,7 +507,10 @@ class PCA(PCA_original):
         )
         if _dal_ready:
             _dal_ready = _patching_status.and_conditions(
-                [(self.n_components_ > 0, "Number of components <= 0.")]
+                [
+                    (self.n_components_ > 0, "Number of components <= 0."),
+                    (not sp.issparse(X), "oneDAL PCA does not support sparse input"),
+                ]
             )
             if _dal_ready:
                 result = self._transform_daal4py(
