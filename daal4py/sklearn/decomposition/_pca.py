@@ -458,7 +458,7 @@ class PCA(PCA_original):
         _dal_ready = _patching_status.and_conditions(
             [
                 (self.n_components_ > 0, "Number of components <= 0."),
-                (not sp.issparse(X), "oneDAL PCA does not support sparse input"),
+                (not issparse(X), "oneDAL PCA does not support sparse input"),
             ]
         )
 
@@ -509,7 +509,7 @@ class PCA(PCA_original):
             _dal_ready = _patching_status.and_conditions(
                 [
                     (self.n_components_ > 0, "Number of components <= 0."),
-                    (not sp.issparse(X), "oneDAL PCA does not support sparse input"),
+                    (not issparse(X), "oneDAL PCA does not support sparse input"),
                 ]
             )
             if _dal_ready:
