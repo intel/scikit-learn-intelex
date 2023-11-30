@@ -16,6 +16,7 @@
 
 import importlib
 import inspect
+import os
 import sys
 import time
 import unittest
@@ -35,6 +36,7 @@ daal_version = get_daal_version()
 
 project_path = Path(__file__).parent.parent
 example_path = project_path / "examples" / "daal4py"
+batch_data_path = example_path / "data" / "batch"
 distributed_data_path = example_path / "data" / "distributed"
 example_data_path = project_path / "tests" / "unittest_data"
 
@@ -71,7 +73,7 @@ class Config:
     result_attribute: Union[str, Callable[..., Any]] = ""
     required_version: Tuple[Any, ...] = daal_version
     req_libs: List[str] = field(default_factory=list)
-    timeout_cpu_seconds: int = 90
+    timeout_cpu_seconds: int = 60
     suspended_on: Optional[Tuple[int, int, int]] = None
     suspended_for_n_days: int = 30
 
@@ -109,6 +111,11 @@ class Base:
     @classmethod
     def add_test(cls, config: Config):
         """Add a test to the class"""
+        test_name = f"test_{config.module_name}"
+        if getattr(cls, test_name, None) is not None:
+            # already added, do not override
+            return
+
         missing_dep = config.get_missing_dep()
 
         @unittest.skipUnless(
@@ -124,6 +131,10 @@ class Base:
             start = time.process_time()
 
             ex = import_module_any_path(example_path / config.module_name)
+
+            if not hasattr(ex, "main"):
+                self.skipTest("Missing main function")
+
             result: Any = self.call_main(ex)
             if config.result_file_name and config.result_attribute:
                 testdata = readcsv.np_read_csv(
@@ -136,8 +147,10 @@ class Base:
             duration_seconds = time.process_time() - start
             self.assertLessEqual(duration_seconds, config.timeout_cpu_seconds)
 
-        setattr(cls, "test_" + config.module_name, run_test)
+        setattr(cls, test_name, run_test)
 
+
+class Daal4pyBase(Base):
     def test_svd(self):
         ex = import_module_any_path(example_path / "svd")
 
@@ -329,11 +342,28 @@ examples = [
     Config("elastic_net", required_version=((2020, "P", 1), (2021, "B", 105))),
 ]
 
+module_names_with_configs = [cfg.module_name for cfg in examples]
+
+# add all examples that do not have an explicit config
+for fname in os.listdir(example_path):
+    if fname == "__init__.py":
+        continue
+    if not fname.endswith(".py"):
+        continue
+    if fname.endswith("_spmd.py"):
+        # spmd examples are done in test_daal4py_spmd_examples.py
+        continue
+    stem = Path(fname).stem
+    if stem in module_names_with_configs:
+        continue
+
+    examples.append(Config(stem))
+
 for cfg in examples:
-    Base.add_test(cfg)
+    Daal4pyBase.add_test(cfg)
 
 
-class TestExNpyArray(Base, unittest.TestCase):
+class TestExNpyArray(Daal4pyBase, unittest.TestCase):
     """
     We run and validate all the examples but read data with numpy,
     so working natively on a numpy arrays.
@@ -347,7 +377,7 @@ class TestExNpyArray(Base, unittest.TestCase):
             return module.main()
 
 
-class TestExPandasDF(Base, unittest.TestCase):
+class TestExPandasDF(Daal4pyBase, unittest.TestCase):
     """
     We run and validate all the examples but read data with pandas,
     so working natively on a pandas DataFrame
@@ -361,7 +391,7 @@ class TestExPandasDF(Base, unittest.TestCase):
         return module.main(readcsv=readcsv.pd_read_csv)
 
 
-class TestExCSRMatrix(Base, unittest.TestCase):
+class TestExCSRMatrix(Daal4pyBase, unittest.TestCase):
     """
     We run and validate all the examples but use scipy-sparse-csr_matrix as input data.
     We also let algos use CSR method (some algos ignore the method argument since they
