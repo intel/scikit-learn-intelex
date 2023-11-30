@@ -268,8 +268,9 @@ class PatchingConditionsChain:
         return self.patching_is_enabled
 
 
-# decorator for addition of "n_jobs" parameter to estimator's init
 def support_init_with_n_jobs(init_function):
+    """Decorator for addition of 'n_jobs' parameter to estimator's init"""
+
     @wraps(init_function)
     def init_with_n_jobs(self, *args, n_jobs=None, **kwargs):
         if sklearn_check_version("1.2") and hasattr(self, "_parameter_constraints"):
@@ -287,8 +288,9 @@ def support_init_with_n_jobs(init_function):
             n_jobs_doc = """
     n_jobs : int, default=None
         The number of jobs to use in parallel for the computation.
-        ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
-        ``-1`` means using all processors.
+        ``None`` means using all physical cores
+        unless in a :obj:`joblib.parallel_backend` context.
+        ``-1`` means using all logical cores.
         See :term:`Glossary <n_jobs>` for more details.
 """
             self.__doc__ = self.__doc__.replace(
@@ -313,6 +315,11 @@ threadpool_controller = threadpoolctl.ThreadpoolController()
 
 
 def get_suggested_n_threads(n_cpus):
+    """Function to get `n_threads` limit
+    if `n_jobs` is set in upper parallelization context.
+    Usually, limit is equal to `n_logical_cpus` // `n_jobs`.
+    Returns None if limit is not set.
+    """
     n_threads_map = {
         lib_ctl.internal_api: lib_ctl.get_num_threads()
         for lib_ctl in threadpool_controller.lib_controllers
@@ -322,7 +329,7 @@ def get_suggested_n_threads(n_cpus):
     # thus, 128 threads from openBLAS is uninformative
     if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
         del n_threads_map["openblas"]
-    # remove default values equal to n_cpus
+    # remove default values equal to n_cpus as uninformative
     for backend in list(n_threads_map.keys()):
         if n_threads_map[backend] == n_cpus:
             del n_threads_map[backend]
@@ -332,8 +339,9 @@ def get_suggested_n_threads(n_cpus):
         return None
 
 
-# decorator for running of methods containing oneDAL kernels with "n_jobs"
 def run_with_n_jobs(method):
+    """Decorator for running of methods containing oneDAL kernels with 'n_jobs'"""
+
     @wraps(method)
     def method_wrapper(self, *args, **kwargs):
         # threading parallel backend branch
@@ -346,9 +354,8 @@ def run_with_n_jobs(method):
             result = method(self, *args, **kwargs)
             return result
         # multiprocess parallel backends branch
-        method_name = (
-            f"{self.__class__.__module__}.{self.__class__.__name__}.{method.__name__}"
-        )
+        cl = self.__class__
+        method_name = ".".join([cl.__module__, cl.__name__, method.__name__])
         # search for specified n_jobs
         n_jobs = self.n_jobs
         n_cpus = cpu_count()

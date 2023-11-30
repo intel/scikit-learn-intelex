@@ -17,6 +17,8 @@
 # sklearnex support `n_jobs` parameter for all patched estimators
 # even if original sklearn estimator doesn't
 
+# sklearnex uses all physical cores by default if `n_jobs` is not set
+
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn
 
