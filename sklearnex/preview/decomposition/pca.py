@@ -165,7 +165,7 @@ class PCA(sklearn_PCA):
                     else:
                         self._fit_svd_solver = "full"
 
-        return dispatch(
+        dispatch(
             self,
             "fit",
             {
@@ -174,6 +174,7 @@ class PCA(sklearn_PCA):
             },
             X,
         )
+        return self
 
     def _onedal_supported(self, method_name, *data):
         class_name = self.__class__.__name__
