@@ -493,7 +493,7 @@ def _predict(self, X, sample_weight=None):
         ]
     )
     _dal_ready = _patching_status.or_conditions(
-        [(sp.isspmatrix_csr(X), "X is not sparse.")]
+        [(sp.isspmatrix_csr(X) or isinstance(X, sp.csr_array), "X is not sparse.")]
     )
 
     _patching_status.write_log()
