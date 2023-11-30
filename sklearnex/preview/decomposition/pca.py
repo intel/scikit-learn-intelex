@@ -171,7 +171,7 @@ class PCA(sklearn_PCA):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_PCA.fit,
+                "sklearn": sklearn_PCA._fit,
             },
             X,
         )
