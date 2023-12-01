@@ -191,7 +191,16 @@ class BaseForest(ABC):
                 self.oob_decision_function_ = (
                     self._onedal_estimator.oob_decision_function_
                 )
-
+        if self.bootstrap:
+            self._n_samples_bootstrap = max(
+                round(
+                    self._onedal_estimator.get_observations_per_tree_fraction
+                    * self._n_samples,
+                    1,
+                )
+            )
+        else:
+            self._n_samples_bootstrap = None
         self._validate_estimator()
         return self
 
@@ -584,9 +593,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             )
             # TODO: Fix to support integers as input
 
-            self._n_samples_bootstrap = _get_n_samples_bootstrap(
-                n_samples=X.shape[0], max_samples=self.max_samples
-            )
+            _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
@@ -952,9 +959,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             )
 
             # Sklearn function used for doing checks on max_samples attribute
-            self._n_samples_bootstrap = _get_n_samples_bootstrap(
-                n_samples=X.shape[0], max_samples=self.max_samples
-            )
+            _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
