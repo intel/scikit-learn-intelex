@@ -34,10 +34,10 @@ import daal4py as d4p
 
 from .._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_n_jobs,
 )
 from .logistic_loss import (
     _daal4py_cross_entropy_loss_extra_args,
@@ -951,7 +951,7 @@ if sklearn_check_version("0.24"):
             l1_ratio=l1_ratio,
         )
 
-    @support_n_jobs
+    @control_n_jobs
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
@@ -1152,7 +1152,7 @@ else:
             l1_ratio=l1_ratio,
         )
 
-    @support_n_jobs
+    @control_n_jobs
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 

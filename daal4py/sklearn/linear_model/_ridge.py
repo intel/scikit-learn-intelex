@@ -28,12 +28,12 @@ import daal4py
 from .._device_offload import support_usm_ndarray
 from .._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     get_patch_message,
     getFPType,
     make2d,
     run_with_n_jobs,
     sklearn_check_version,
-    support_n_jobs,
 )
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -257,7 +257,7 @@ def _predict_ridge(self, X):
     return _daal4py_predict(self, X)
 
 
-@support_n_jobs
+@control_n_jobs
 class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 

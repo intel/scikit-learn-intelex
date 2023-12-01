@@ -35,10 +35,10 @@ import daal4py
 from .._device_offload import support_usm_ndarray
 from .._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     daal_check_version,
     getFPType,
     run_with_n_jobs,
-    support_n_jobs,
 )
 
 
@@ -372,7 +372,7 @@ def _predict(self, X, sample_weight=None):
     return _labels_inertia(X, sample_weight, x_squared_norms, self.cluster_centers_)[0]
 
 
-@support_n_jobs
+@control_n_jobs
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 

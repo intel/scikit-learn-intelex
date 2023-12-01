@@ -17,14 +17,14 @@
 from sklearn.svm import SVR as sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import run_with_n_jobs, sklearn_check_version, support_n_jobs
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 from onedal.svm import SVR as onedal_SVR
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVR
 
 
-@support_n_jobs
+@control_n_jobs
 class SVR(sklearn_SVR, BaseSVR):
     __doc__ = sklearn_SVR.__doc__
 

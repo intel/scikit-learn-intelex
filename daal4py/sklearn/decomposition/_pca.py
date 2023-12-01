@@ -28,10 +28,10 @@ import daal4py
 from .._device_offload import support_usm_ndarray
 from .._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_n_jobs,
 )
 
 if sklearn_check_version("1.3"):
@@ -53,7 +53,7 @@ else:
     from sklearn.decomposition.pca import _infer_dimension_
 
 
-@support_n_jobs
+@control_n_jobs
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 

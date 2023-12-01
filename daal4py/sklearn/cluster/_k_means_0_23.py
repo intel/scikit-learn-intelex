@@ -37,10 +37,10 @@ import daal4py
 from .._device_offload import support_usm_ndarray
 from .._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_n_jobs,
 )
 
 if sklearn_check_version("1.1"):
@@ -520,7 +520,7 @@ def _predict(self, X, sample_weight=None):
         ]
 
 
-@support_n_jobs
+@control_n_jobs
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 

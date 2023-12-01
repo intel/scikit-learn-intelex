@@ -38,13 +38,13 @@ import daal4py
 
 from .._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     get_dtype,
     get_patch_message,
     getFPType,
     is_DataFrame,
     make2d,
     run_with_n_jobs,
-    support_n_jobs,
 )
 
 
@@ -258,7 +258,7 @@ def _predict_linear(self, X):
     return _daal4py_predict(self, X)
 
 
-@support_n_jobs
+@control_n_jobs
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 

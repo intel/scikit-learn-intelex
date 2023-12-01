@@ -17,14 +17,14 @@
 from sklearn.svm import NuSVR as sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import run_with_n_jobs, sklearn_check_version, support_n_jobs
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 from onedal.svm import NuSVR as onedal_NuSVR
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVR
 
 
-@support_n_jobs
+@control_n_jobs
 class NuSVR(sklearn_NuSVR, BaseSVR):
     __doc__ = sklearn_NuSVR.__doc__
 

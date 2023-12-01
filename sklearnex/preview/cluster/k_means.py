@@ -31,9 +31,9 @@ if daal_check_version((2023, "P", 200)):
     )
 
     from daal4py.sklearn._utils import (
+        control_n_jobs,
         run_with_n_jobs,
         sklearn_check_version,
-        support_n_jobs,
     )
     from onedal.cluster import KMeans as onedal_KMeans
 
@@ -41,7 +41,7 @@ if daal_check_version((2023, "P", 200)):
     from ..._utils import PatchingConditionsChain
     from ._common import BaseKMeans
 
-    @support_n_jobs
+    @control_n_jobs
     class KMeans(sklearn_KMeans, BaseKMeans):
         __doc__ = sklearn_KMeans.__doc__
         n_iter_, inertia_ = None, None

@@ -38,11 +38,11 @@ import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
     check_tree_nodes,
+    control_n_jobs,
     daal_check_version,
     getFPType,
     run_with_n_jobs,
     sklearn_check_version,
-    support_n_jobs,
 )
 
 from .._device_offload import support_usm_ndarray
@@ -234,7 +234,7 @@ class RandomForestBase:
             )
 
 
-@support_n_jobs
+@control_n_jobs
 class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
     __doc__ = RandomForestClassifier_original.__doc__
 
@@ -881,7 +881,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
 
-@support_n_jobs
+@control_n_jobs
 class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
     __doc__ = RandomForestRegressor_original.__doc__
 

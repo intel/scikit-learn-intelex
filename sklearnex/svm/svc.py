@@ -20,7 +20,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import run_with_n_jobs, sklearn_check_version, support_n_jobs
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
@@ -32,7 +32,7 @@ if sklearn_check_version("1.0"):
 from onedal.svm import SVC as onedal_SVC
 
 
-@support_n_jobs
+@control_n_jobs
 class SVC(sklearn_SVC, BaseSVC):
     __doc__ = sklearn_SVC.__doc__
 

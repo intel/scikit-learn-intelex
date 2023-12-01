@@ -25,12 +25,12 @@ from sklearn.utils import check_array, check_X_y
 import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     get_patch_message,
     getFPType,
     make2d,
     run_with_n_jobs,
     sklearn_check_version,
-    support_n_jobs,
 )
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -621,7 +621,7 @@ def _dual_gap(self):
     return self._gap
 
 
-@support_n_jobs
+@control_n_jobs
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
@@ -819,7 +819,7 @@ class ElasticNet(ElasticNet_original):
         self._gap = None
 
 
-@support_n_jobs
+@control_n_jobs
 class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 

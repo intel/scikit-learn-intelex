@@ -27,7 +27,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 import daal4py as d4p
 
-from .._utils import getFPType, run_with_n_jobs, support_n_jobs
+from .._utils import control_n_jobs, getFPType, run_with_n_jobs
 
 try:
     from packaging.version import Version
@@ -35,7 +35,7 @@ except ImportError:
     from distutils.version import LooseVersion as Version
 
 
-@support_n_jobs
+@control_n_jobs
 class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
     def __init__(
         self,

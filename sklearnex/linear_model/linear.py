@@ -66,11 +66,11 @@ if daal_check_version((2023, "P", 100)):
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
     from daal4py.sklearn._utils import (
+        control_n_jobs,
         get_dtype,
         make2d,
         run_with_n_jobs,
         sklearn_check_version,
-        support_n_jobs,
     )
 
     from .._device_offload import dispatch, wrap_output_data
@@ -87,7 +87,7 @@ if daal_check_version((2023, "P", 100)):
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
     from onedal.utils import _num_features, _num_samples
 
-    @support_n_jobs
+    @control_n_jobs
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__
         intercept_, coef_ = None, None

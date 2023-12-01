@@ -268,8 +268,11 @@ class PatchingConditionsChain:
         return self.patching_is_enabled
 
 
-def support_n_jobs(original_class):
-    """Decorator for addition of 'n_jobs' parameter to estimator class"""
+def control_n_jobs(original_class):
+    """Decorator for the control of 'n_jobs' parameter in estimator class. It applied
+    for all estimators with and without support of parameter in original sklearn.
+    In case of estimator without 'n_jobs' support, this decorator adds it.
+    """
     original_init = original_class.__init__
 
     if sklearn_check_version("1.2") and hasattr(original_class, "_parameter_constraints"):
@@ -289,8 +292,7 @@ def support_n_jobs(original_class):
     if "n_jobs" not in list(map(lambda param: param.name, original_params)):
         original_params.append(Parameter("n_jobs", Parameter.KEYWORD_ONLY, default=None))
         init_with_n_jobs.__signature__ = sig.replace(parameters=original_params)
-
-    original_class.__init__ = init_with_n_jobs
+        original_class.__init__ = init_with_n_jobs
 
     # add n_jobs to __doc__ string if needed
     if (
