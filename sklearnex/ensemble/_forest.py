@@ -593,23 +593,14 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             )
             # TODO: Fix to support integers as input
 
-<<<<<<< HEAD
             _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
-=======
->>>>>>> origin/ensemble_n_samples
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
                     "`max_sample` cannot be set if `bootstrap=False`. "
                     "Either switch to `bootstrap=True` or set "
                     "`max_sample=None`."
                 )
-            elif self.bootstrap:
-                self._n_samples_bootstrap = _get_n_samples_bootstrap(
-                    n_samples=X.shape[0], max_samples=self.max_samples
-                )
-            else:
-                self._n_samples_bootstrap = None
 
             if (
                 patching_status.get_status()
@@ -967,24 +958,15 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-<<<<<<< HEAD
             # Sklearn function used for doing checks on max_samples attribute
             _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
 
-=======
->>>>>>> origin/ensemble_n_samples
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
                     "`max_sample` cannot be set if `bootstrap=False`. "
                     "Either switch to `bootstrap=True` or set "
                     "`max_sample=None`."
                 )
-            elif self.bootstrap:
-                self._n_samples_bootstrap = _get_n_samples_bootstrap(
-                    n_samples=X.shape[0], max_samples=self.max_samples
-                )
-            else:
-                self._n_samples_bootstrap = None
 
             if (
                 patching_status.get_status()
