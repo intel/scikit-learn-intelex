@@ -194,7 +194,7 @@ class BaseForest(ABC):
         if self.bootstrap:
             self._n_samples_bootstrap = max(
                 round(
-                    self._onedal_estimator.get_observations_per_tree_fraction
+                    self._onedal_estimator.observations_per_tree_fraction
                     * self._n_samples,
                     1,
                 )
