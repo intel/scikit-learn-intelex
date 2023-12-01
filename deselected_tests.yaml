@@ -341,7 +341,7 @@ deselected_tests:
   # oneDAL decision forest trains individual trees differently than
   # sklearn. Attempts to compare individual sklearn trees to oneDAL
   # trees will fail, especially since two different RNGs are used.
-  - ensemble/tests/test_forest.py::test_estimators_samples >=1.4
+  - ensemble/tests/test_forest.py::test_estimators_samples
 
   # --------------------------------------------------------
   # No need to test daal4py patching
