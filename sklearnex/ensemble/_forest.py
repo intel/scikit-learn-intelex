@@ -584,7 +584,9 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             )
             # TODO: Fix to support integers as input
 
-            _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+            self._n_samples_bootstrap = _get_n_samples_bootstrap(
+                n_samples=X.shape[0], max_samples=self.max_samples
+            )
 
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
@@ -950,7 +952,9 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             )
 
             # Sklearn function used for doing checks on max_samples attribute
-            _get_n_samples_bootstrap(n_samples=X.shape[0], max_samples=self.max_samples)
+            self._n_samples_bootstrap = _get_n_samples_bootstrap(
+                n_samples=X.shape[0], max_samples=self.max_samples
+            )
 
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
