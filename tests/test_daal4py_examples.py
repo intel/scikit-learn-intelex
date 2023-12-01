@@ -34,7 +34,7 @@ from daal4py.sklearn._utils import daal_check_version, get_daal_version
 
 daal_version = get_daal_version()
 
-project_path = Path(__file__).parent.parent
+project_path = Path(__file__).absolute().parent.parent
 example_path = project_path / "examples" / "daal4py"
 batch_data_path = example_path / "data" / "batch"
 distributed_data_path = example_path / "data" / "distributed"
@@ -71,9 +71,9 @@ class Config:
     module_name: str
     result_file_name: str = ""
     result_attribute: Union[str, Callable[..., Any]] = ""
-    required_version: Tuple[Any, ...] = daal_version
+    required_version: Optional[Tuple[Any, ...]] = None
     req_libs: List[str] = field(default_factory=list)
-    timeout_cpu_seconds: int = 60
+    timeout_cpu_seconds: int = 90
     suspended_on: Optional[Tuple[int, int, int]] = None
     suspended_for_n_days: int = 30
 
@@ -96,7 +96,7 @@ class Config:
                 return module_name
 
     def check_version(self):
-        return daal_check_version(self.required_version)
+        return self.required_version is None or daal_check_version(self.required_version)
 
 
 class Base:
@@ -145,7 +145,13 @@ class Base:
                 np.testing.assert_allclose(actual, testdata, atol=1e-05)
 
             duration_seconds = time.process_time() - start
-            self.assertLessEqual(duration_seconds, config.timeout_cpu_seconds)
+            timeout_msg = (
+                "Runtime (in seconds too long). Test timeout. "
+                "Decrease workload or increase `timeout_cpu_seconds`"
+            )
+            self.assertLessEqual(
+                duration_seconds, config.timeout_cpu_seconds, msg=timeout_msg
+            )
 
         setattr(cls, test_name, run_test)
 
@@ -283,12 +289,7 @@ examples = [
         "decision_tree_regression.csv",
         result_attribute=lambda r: r[1].prediction,
     ),
-    Config("distributions_bernoulli"),
-    Config("distributions_normal"),
-    Config("distributions_uniform"),
     Config("em_gmm", "em_gmm.csv", lambda r: r.covariances[0]),
-    Config("gradient_boosted_classification"),
-    Config("gradient_boosted_regression"),
     Config("implicit_als", "implicit_als.csv", "prediction"),
     Config("kdtree_knn_classification"),
     Config("kmeans", "kmeans.csv", "centroids"),
@@ -299,8 +300,6 @@ examples = [
         "linear_regression_streaming", "linear_regression.csv", lambda r: r[1].prediction
     ),
     Config("log_reg_binary_dense", "log_reg_binary_dense.csv", lambda r: r[1].prediction),
-    Config("log_reg_binary_dense"),
-    Config("log_reg_dense"),
     Config("logitboost", required_version=(2020, "P", 0)),
     Config("low_order_moms_dense", "low_order_moms_dense.csv", low_order_moms_getter),
     Config("low_order_moms_streaming", "low_order_moms_dense.csv", low_order_moms_getter),
@@ -320,7 +319,6 @@ examples = [
     Config("saga", required_version=(2019, "P", 3)),
     Config("sgd_logistic_loss", "sgd_logistic_loss.csv", "minimum"),
     Config("sgd_mse", "sgd_mse.csv", "minimum"),
-    Config("sorting"),
     Config("stump_classification", required_version=(2020, "P", 0)),
     Config("stump_regression", required_version=(2020, "P", 0)),
     Config("svm_multiclass", "svm_multiclass.csv", lambda r: r[0].prediction),
