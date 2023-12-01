@@ -372,27 +372,27 @@ def run_with_n_jobs(method):
         # get real `n_jobs` number of threads for oneDAL
         # using sklearn rules and `n_threads` from upper parallelism context
         if n_jobs is None or n_jobs == 0:
-            n_jobs = n_threads
+            if n_threads is None:
+                # default branch with no setting for n_jobs
+                return method(self, *args, **kwargs)
+            else:
+                n_jobs = n_threads
         elif n_jobs < 0:
             if n_threads is None:
                 n_jobs = max(1, n_cpus + n_jobs + 1)
             else:
                 n_jobs = max(1, n_threads + n_jobs + 1)
-        # set number of threads
-        if n_jobs is not None:
-            old_n_threads = get_n_threads()
-            if n_jobs != old_n_threads:
-                logger = logging.getLogger("sklearnex")
-                logger.debug(
-                    f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
-                )
-                set_n_threads(n_jobs)
-        # run method
+        # branch with set n_jobs
+        old_n_threads = get_n_threads()
+        if n_jobs != old_n_threads:
+            logger = logging.getLogger("sklearnex")
+            logger.debug(
+                f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
+            )
+            set_n_threads(n_jobs)
         result = method(self, *args, **kwargs)
-        # reset number of threads to old one
-        if n_jobs is not None:
-            if n_jobs != old_n_threads:
-                set_n_threads(old_n_threads)
+        if n_jobs != old_n_threads:
+            set_n_threads(old_n_threads)
         return result
 
     return method_wrapper
