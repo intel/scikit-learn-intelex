@@ -953,8 +953,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-
-
             if not self.bootstrap and self.max_samples is not None:
                 raise ValueError(
                     "`max_sample` cannot be set if `bootstrap=False`. "
