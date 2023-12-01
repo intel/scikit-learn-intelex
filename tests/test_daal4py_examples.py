@@ -263,18 +263,6 @@ examples = [
     ),
     Config(
         "decision_forest_regression_default_dense",
-        "decision_forest_regression.csv",
-        result_attribute=lambda r: r[1].prediction,
-        required_version=(2023, "P", 1),
-    ),
-    Config(
-        "decision_forest_regression_hist",
-        "decision_forest_regression.csv",
-        result_attribute=lambda r: r[1].prediction,
-        required_version=(2023, "P", 1),
-    ),
-    Config(
-        "decision_forest_regression_default_dense",
         "decision_forest_regression_20230101.csv",
         result_attribute=lambda r: r[1].prediction,
         required_version=(2023, "P", 101),
