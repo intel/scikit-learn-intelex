@@ -14,34 +14,71 @@
 # limitations under the License.
 # ==============================================================================
 
-import logging
-from warnings import warn
-
 from daal4py.sklearn._utils import daal_check_version
+from onedal import _backend
 
-# simple storage for hyperparameters
-hyperparameters_storage = {
-    "linear_regression": {"train": {"cpu_macro_block": None, "gpu_macro_block": None}},
-    "covariance": {"compute": {"cpu_macro_block": None}},
+
+class HyperParameters:
+    def __init__(self, algorithm, op, setters, getters, backend):
+        self.algorithm = algorithm
+        self.op = op
+        self.setters = setters
+        self.getters = getters
+        self.backend = backend
+
+    def __getattr__(self, __name):
+        if __name in ["algorithm", "op", "setters", "getters", "backend"]:
+            return super().__getattr__(__name)
+        elif __name in self.getters.keys():
+            return self.getters[__name]()
+        else:
+            raise ValueError(
+                f"Unknown '{__name}' name in "
+                f"'{self.algorithm}.{self.op}' hyperparameters"
+            )
+
+    def __setattr__(self, __name, __value):
+        if __name in ["algorithm", "op", "setters", "getters", "backend"]:
+            super().__setattr__(__name, __value)
+        elif __name in self.setters.keys():
+            self.setters[__name](__value)
+        else:
+            raise ValueError(
+                f"Unknown '{__name}' name in "
+                f"'{self.algorithm}.{self.op}' hyperparameters"
+            )
+
+
+def get_methods_with_prefix(obj, prefix):
+    return {
+        method.replace(prefix, ""): getattr(obj, method)
+        for method in filter(lambda f: f.startswith(prefix), dir(obj))
+    }
+
+
+hyperparameters_backend = {
+    (
+        "linear_regression",
+        "train",
+    ): _backend.linear_model.regression.train_hyperparameters(),
+    ("covariance", "compute"): _backend.covariance.compute_hyperparameters(),
 }
+hyperparameters_map = {}
 
+for (algorithm, op), hyperparameters in hyperparameters_backend.items():
+    setters = get_methods_with_prefix(hyperparameters, "set_")
+    getters = get_methods_with_prefix(hyperparameters, "get_")
 
-def set_hyperparameter(algorithm, op, name, value):
-    if not daal_check_version((2024, "P", 0)):
-        warn(f"Hyperparameters are supported starting from 2024.0.0 oneDAL version.")
-    if name not in hyperparameters_storage[algorithm][op].keys():
-        raise ValueError(f"Hyperparameter '{name}' doesn't exist in {algorithm}.{op}")
-    hyperparameters_storage[algorithm][op][name] = value
+    if set(setters.keys()) != set(getters.keys()):
+        raise ValueError(
+            f"Setters and getters in '{algorithm}.{op}' "
+            "hyperparameters wrapper do not correspond."
+        )
+
+    hyperparameters_map[(algorithm, op)] = HyperParameters(
+        algorithm, op, setters, getters, hyperparameters
+    )
 
 
 def get_hyperparameters(algorithm, op):
-    res = {
-        key: value
-        for key, value in hyperparameters_storage[algorithm][op].items()
-        if value is not None
-    }
-    if len(res) > 0:
-        logging.getLogger("sklearnex").debug(
-            f"Using next hyperparameters for '{algorithm}.{op}': {res}"
-        )
-    return res
+    return hyperparameters_map[(algorithm, op)]

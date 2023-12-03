@@ -79,23 +79,6 @@ auto get_onedal_result_options(const py::dict& params) {
     return onedal_options;
 }
 
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-
-auto get_hyperparameters_from_dict(const py::dict& hyperparams_dict) {
-    using namespace dal::linear_regression::detail;
-
-    train_parameters hyperparams{};
-    if (hyperparams_dict.contains("cpu_macro_block")) {
-        hyperparams.set_cpu_macro_block(hyperparams_dict["cpu_macro_block"].cast<int64_t>());
-    }
-    if (hyperparams_dict.contains("gpu_macro_block")) {
-        hyperparams.set_gpu_macro_block(hyperparams_dict["gpu_macro_block"].cast<int64_t>());
-    }
-    return hyperparams;
-}
-
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-
 template <typename Float, typename Method, typename Task>
 struct descriptor_creator;
 
@@ -130,34 +113,39 @@ template <typename Policy>
 struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
     void operator()(py::module_& m) {
         using Task = linear_regression::task::regression;
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+        using train_hyperparams_t = dal::linear_regression::detail::train_parameters<Task>;
         m.def("train", [](
             const Policy& policy,
             const py::dict& params,
-            const py::dict& hyperparams_dict,
+            const train_hyperparams_t& hyperparams,
             const table& data,
             const table& responses) {
                 using namespace dal::linear_regression;
-                using namespace dal::linear_regression::detail;
                 using input_t = train_input<Task>;
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-                if (py::len(hyperparams_dict) > 0) {
-                    auto hyperparams = get_hyperparameters_from_dict(hyperparams_dict);
-                    train_ops_with_hyperparams ops(
-                        policy, input_t{ data, responses }, params2desc{}, hyperparams);
-                    return fptype2t{ method2t{ Task{}, ops } }(params);
-                }
-                else {
-                    train_ops ops(policy, input_t{ data, responses }, params2desc{});
-                    return fptype2t{ method2t{ Task{}, ops } }(params);
-                }
-#else
-                train_ops ops(policy, input_t{ data, responses }, params2desc{});
+                train_ops_with_hyperparams ops(
+                    policy, input_t{ data, responses }, params2desc{}, hyperparams);
                 return fptype2t{ method2t{ Task{}, ops } }(params);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
             }
         );
     }
 };
+#else
+        m.def("train", [](
+            const Policy& policy,
+            const py::dict& params,
+            const table& data,
+            const table& responses) {
+                using namespace dal::linear_regression;
+                using input_t = train_input<Task>;
+                train_ops ops(policy, input_t{ data, responses }, params2desc{});
+                return fptype2t{ method2t{ Task{}, ops } }(params);
+            }
+        );
+    }
+};
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 template <typename Policy, typename Task>
 void init_train_ops(py::module& m) {
@@ -223,22 +211,22 @@ void init_infer_result(py::module_& m) {
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 template <typename Task>
-void init_hyperparameters(py::module_& m) {
+void init_train_hyperparameters(py::module_& m) {
     using namespace dal::linear_regression::detail;
-    using hyperparams_t = train_parameters<Task>;
+    using train_hyperparams_t = train_parameters<Task>;
 
-    auto cls = py::class_<hyperparams_t>(m, "hyperparameters")
+    auto cls = py::class_<train_hyperparams_t>(m, "train_hyperparameters")
                    .def(py::init())
-                   .def("set_cpu_macro_block", [](hyperparams_t& self, int64_t cpu_macro_block) {
+                   .def("set_cpu_macro_block", [](train_hyperparams_t& self, int64_t cpu_macro_block) {
                         self.set_cpu_macro_block(cpu_macro_block);
                    })
-                   .def("set_gpu_macro_block", [](hyperparams_t& self, int64_t gpu_macro_block) {
+                   .def("set_gpu_macro_block", [](train_hyperparams_t& self, int64_t gpu_macro_block) {
                         self.set_gpu_macro_block(gpu_macro_block);
                    })
-                   .def("get_cpu_macro_block", [](const hyperparams_t& self) {
+                   .def("get_cpu_macro_block", [](const train_hyperparams_t& self) {
                         return self.get_cpu_macro_block();
                    })
-                   .def("get_gpu_macro_block", [](const hyperparams_t& self) {
+                   .def("get_gpu_macro_block", [](const train_hyperparams_t& self) {
                         return self.get_gpu_macro_block();
                    });
 }
@@ -251,7 +239,7 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-ONEDAL_PY_DECLARE_INSTANTIATOR(init_hyperparameters);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_hyperparameters);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 } // namespace linear_model
@@ -276,7 +264,7 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-    ONEDAL_PY_INSTANTIATE(init_hyperparameters, sub, task_list);
+    ONEDAL_PY_INSTANTIATE(init_train_hyperparameters, sub, task_list);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 }
 

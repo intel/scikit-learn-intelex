@@ -15,7 +15,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.common.hyperparameters import get_hyperparameters, set_hyperparameter
+from onedal.common.hyperparameters import get_hyperparameters
 
 from . import utils
 from ._config import config_context, get_config, set_config
@@ -45,7 +45,6 @@ __all__ = [
     "neighbors",
     "patch_sklearn",
     "set_config",
-    "set_hyperparameter",
     "sklearn_is_patched",
     "sklearn_is_patchedget_patch_map",
     "svm",
