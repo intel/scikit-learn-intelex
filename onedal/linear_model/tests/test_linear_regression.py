@@ -24,6 +24,7 @@ if daal_check_version((2023, "P", 100)):
     from sklearn.metrics import mean_squared_error
     from sklearn.model_selection import train_test_split
 
+    from onedal.common.hyperparameters import get_hyperparameters
     from onedal.linear_model import LinearRegression
     from onedal.tests.utils._device_selection import get_queues
 
@@ -73,6 +74,8 @@ if daal_check_version((2023, "P", 100)):
         X = gen.random(size=(s_count, f_count), dtype=dtype)
         y = X @ coef + intp[np.newaxis, :]
 
+        hparams = get_hyperparameters("linear_regression", "train")
+        hparams.cpu_macro_block = 2048  # required to pass float32 dtype test
         model = LinearRegression(fit_intercept=True)
         model.fit(X, y, queue=queue)
 
