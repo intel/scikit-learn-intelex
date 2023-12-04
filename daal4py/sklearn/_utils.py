@@ -22,8 +22,8 @@ from functools import wraps
 from inspect import Parameter, signature
 from multiprocessing import cpu_count
 from numbers import Integral
+from typing import Any, Callable, Tuple
 from warnings import warn
-from typing import Any, Tuple
 
 import numpy as np
 import threadpoolctl
@@ -84,14 +84,20 @@ def get_daal_version() -> DaalVersionTuple:
     return int(dv()[0:4]), str(dv()[10:11]), int(dv()[4:8])
 
 
-def daal_check_version(required_version: Tuple[Any, ...]) -> bool:
-    # First item is major version - 2021,
-    # Second item is status - B
-    # Third is minor+patch - 0110,
+def daal_check_version(
+    required_version: Tuple[Any, ...],
+    _get_daal_version: Callable[[], DaalVersionTuple] = get_daal_version,
+) -> bool:
+    """Check daal version provided as (MAJOR, STATUS, MINOR+PATCH)
+
+    This function also accepts a list or tuple of daal versions. It will return true if
+    any version in the list/tuple is <= `_get_daal_version()`.
+    """
     if isinstance(required_version[0], (list, tuple)):
+        # a list of version candidates was provided, recursively check if any is <= _get_daal_version
         return any(map(daal_check_version, required_version))
 
-    return required_version <= get_daal_version()
+    return required_version <= _get_daal_version()
 
 
 sklearn_versions_map = {}

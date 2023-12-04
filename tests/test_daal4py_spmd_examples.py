@@ -15,8 +15,6 @@
 # ==============================================================================
 
 import os
-
-# if d4p.__has_dist__:
 import unittest
 from pathlib import Path
 
