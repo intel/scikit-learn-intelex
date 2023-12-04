@@ -187,11 +187,11 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             self.max_features, n_features, self.is_classification
         )
 
-        observations_per_tree_fraction = self._get_observations_per_tree_fraction(
+        self.observations_per_tree_fraction = self._get_observations_per_tree_fraction(
             n_samples=n_samples, max_samples=self.max_samples
         )
-        observations_per_tree_fraction = (
-            observations_per_tree_fraction if bool(self.bootstrap) else 1.0
+        self.observations_per_tree_fraction = (
+            self.observations_per_tree_fraction if bool(self.bootstrap) else 1.0
         )
 
         if not self.bootstrap and self.max_samples is not None:
@@ -223,7 +223,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             "method": self.algorithm,
             "infer_mode": self.infer_mode,
             "voting_mode": self.voting_mode,
-            "observations_per_tree_fraction": observations_per_tree_fraction,
+            "observations_per_tree_fraction": self.observations_per_tree_fraction,
             "impurity_threshold": float(
                 0.0 if self.min_impurity_split is None else self.min_impurity_split
             ),

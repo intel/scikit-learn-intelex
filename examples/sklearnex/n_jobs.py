@@ -14,13 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
-# sklearnex doesn't have interface for threading configuration and not following
-# scikit-learn n_jobs yet. Thus it's requered to use daal4py package to set this.
-# nthreads parameter define number of threads used by sklearnex.
-# Without this code sklearnex would be using all system cores
-import daal4py
+# sklearnex support `n_jobs` parameter for all patched estimators
+# even if original sklearn estimator doesn't
 
-daal4py.daalinit(nthreads=2)
+# sklearnex uses all physical cores by default if `n_jobs` is not set
 
 # Calling scikit-learn patch - this would enable acceleration on all enabled algorithms
 from sklearnex import patch_sklearn
@@ -39,15 +36,29 @@ X, labels_true = make_blobs(
 
 X = StandardScaler().fit_transform(X)
 
-from sklearn import metrics
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
+from sklearn.metrics import davies_bouldin_score
 
-db = DBSCAN(eps=0.3, min_samples=10).fit(X)
+# DBSCAN originally supports `n_jobs`
+db = DBSCAN(eps=0.3, min_samples=10, n_jobs=2).fit(X)
 labels = db.labels_
 
 # Number of clusters in labels, ignoring noise if present.
 n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
 n_noise_ = list(labels).count(-1)
+db_score = davies_bouldin_score(X, labels)
 
-print("Estimated number of clusters: %d" % n_clusters_)
-print("Estimated number of noise points: %d" % n_noise_)
+print("DBSCAN - Estimated number of clusters: %d" % n_clusters_)
+print("DBSCAN - Estimated number of noise points: %d" % n_noise_)
+print("DBSCAN - Estimated Davies-Bouldin score: %f" % db_score)
+
+# KMeans doesn't originally support `n_jobs`
+km = KMeans(n_clusters=len(centers), init="k-means++", n_init=5, n_jobs=2).fit(X)
+labels = km.labels_
+inertia_ = km.inertia_
+n_iter_ = km.n_iter_
+km_score = davies_bouldin_score(X, labels)
+
+print("KMeans - Estimated number of iterations: %d" % n_iter_)
+print("KMeans - Estimated inertia: %f" % inertia_)
+print("KMeans - Estimated Davies-Bouldin score: %f" % km_score)

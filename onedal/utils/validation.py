@@ -20,7 +20,6 @@ from numbers import Integral
 
 import numpy as np
 from scipy import sparse as sp
-from scipy.sparse import dok_matrix, issparse, lil_matrix
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
@@ -144,7 +143,7 @@ def _check_array(
         accept_large_sparse=accept_large_sparse,
     )
 
-    if sp.isspmatrix(array):
+    if sp.issparse(array):
         return array
 
     # TODO: Convert this kind of arrays to a table like in daal4py
@@ -216,8 +215,8 @@ def _check_classification_targets(y):
 
 def _type_of_target(y):
     is_sequence, is_array = isinstance(y, Sequence), hasattr(y, "__array__")
-    is_not_string, is_spmatrix = not isinstance(y, str), sp.isspmatrix(y)
-    valid = (is_sequence or is_array or is_spmatrix) and is_not_string
+    is_not_string, is_sparse = not isinstance(y, str), sp.issparse(y)
+    valid = (is_sequence or is_array or is_sparse) and is_not_string
 
     if not valid:
         raise ValueError(
@@ -302,8 +301,8 @@ def _is_multilabel(y):
     if not (hasattr(y, "shape") and y.ndim == 2 and y.shape[1] > 1):
         return False
 
-    if issparse(y):
-        if isinstance(y, (dok_matrix, lil_matrix)):
+    if sp.issparse(y):
+        if isinstance(y, (sp.dok_matrix, sp.lil_matrix)):
             y = y.tocsr()
         return (
             len(y.data) == 0

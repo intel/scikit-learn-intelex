@@ -177,7 +177,7 @@ class KNeighborsDispatchingBase:
             return patching_status
 
         if not patching_status.and_condition(
-            not sp.isspmatrix(data[0]), "Sparse input is not supported."
+            not sp.issparse(data[0]), "Sparse input is not supported."
         ):
             return patching_status
 

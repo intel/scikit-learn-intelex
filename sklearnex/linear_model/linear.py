@@ -65,7 +65,13 @@ if daal_check_version((2023, "P", 100)):
     import numpy as np
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
-    from daal4py.sklearn._utils import get_dtype, make2d, sklearn_check_version
+    from daal4py.sklearn._utils import (
+        control_n_jobs,
+        get_dtype,
+        make2d,
+        run_with_n_jobs,
+        sklearn_check_version,
+    )
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
@@ -81,6 +87,7 @@ if daal_check_version((2023, "P", 100)):
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
     from onedal.utils import _num_features, _num_samples
 
+    @control_n_jobs
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__
         intercept_, coef_ = None, None
@@ -317,6 +324,7 @@ if daal_check_version((2023, "P", 100)):
             onedal_params = {"fit_intercept": self.fit_intercept, "copy_X": self.copy_X}
             self._onedal_estimator = onedal_LinearRegression(**onedal_params)
 
+        @run_with_n_jobs
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             assert sample_weight is None
 
@@ -355,6 +363,7 @@ if daal_check_version((2023, "P", 100)):
                 del self._onedal_estimator
                 super().fit(X, y)
 
+        @run_with_n_jobs
         def _onedal_predict(self, X, queue=None):
             X = self._validate_data(X, accept_sparse=False, reset=False)
             if not hasattr(self, "_onedal_estimator"):

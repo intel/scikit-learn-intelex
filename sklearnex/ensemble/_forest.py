@@ -45,7 +45,9 @@ from sklearn.utils.validation import (
 
 from daal4py.sklearn._utils import (
     check_tree_nodes,
+    control_n_jobs,
     daal_check_version,
+    run_with_n_jobs,
     sklearn_check_version,
 )
 from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
@@ -77,6 +79,7 @@ if sklearn_check_version("1.4"):
 class BaseForest(ABC):
     _onedal_factory = None
 
+    @run_with_n_jobs
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sklearn_check_version("0.24"):
             X, y = self._validate_data(
@@ -113,6 +116,8 @@ class BaseForest(ABC):
             # reshape is necessary to preserve the data contiguity against vs
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
+
+        self._n_samples, self.n_outputs_ = y.shape
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
@@ -189,7 +194,16 @@ class BaseForest(ABC):
                 self.oob_decision_function_ = (
                     self._onedal_estimator.oob_decision_function_
                 )
-
+        if self.bootstrap:
+            self._n_samples_bootstrap = max(
+                round(
+                    self._onedal_estimator.observations_per_tree_fraction
+                    * self._n_samples
+                ),
+                1,
+            )
+        else:
+            self._n_samples_bootstrap = None
         self._validate_estimator()
         return self
 
@@ -774,6 +788,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         return patching_status
 
+    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         X = check_array(
             X,
@@ -788,6 +803,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
+    @run_with_n_jobs
     def _onedal_predict_proba(self, X, queue=None):
         X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
         check_is_fitted(self, "_onedal_estimator")
@@ -1081,6 +1097,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         return patching_status
 
+    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         X = check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=False
@@ -1122,6 +1139,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
 
 
+@control_n_jobs
 class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
     _onedal_factory = onedal_RandomForestClassifier
@@ -1331,6 +1349,7 @@ class RandomForestClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
 
 
+@control_n_jobs
 class RandomForestRegressor(ForestRegressor):
     __doc__ = sklearn_RandomForestRegressor.__doc__
     _onedal_factory = onedal_RandomForestRegressor
@@ -1531,6 +1550,7 @@ class RandomForestRegressor(ForestRegressor):
             self.min_bin_size = min_bin_size
 
 
+@control_n_jobs
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
     _onedal_factory = onedal_ExtraTreesClassifier
@@ -1740,6 +1760,7 @@ class ExtraTreesClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
 
 
+@control_n_jobs
 class ExtraTreesRegressor(ForestRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
     _onedal_factory = onedal_ExtraTreesRegressor

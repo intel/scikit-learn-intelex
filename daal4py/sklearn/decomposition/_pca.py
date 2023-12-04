@@ -26,7 +26,16 @@ from sklearn.utils.validation import check_is_fitted
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
+from .._utils import (
+    PatchingConditionsChain,
+    control_n_jobs,
+    getFPType,
+    run_with_n_jobs,
+    sklearn_check_version,
+)
+
+if sklearn_check_version("1.4"):
+    from sklearn.utils._array_api import get_namespace
 
 if sklearn_check_version("1.3"):
     from sklearn.base import _fit_context
@@ -47,6 +56,7 @@ else:
     from sklearn.decomposition.pca import _infer_dimension_
 
 
+@control_n_jobs
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 
@@ -92,6 +102,7 @@ class PCA(PCA_original):
                     "was of type=%r" % (n_components, type(n_components))
                 )
 
+    @run_with_n_jobs
     def _fit_full_daal4py(self, X, n_components):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -198,18 +209,44 @@ class PCA(PCA_original):
         return U, S, V
 
     def _fit(self, X):
-        if issparse(X):
-            raise TypeError(
-                "PCA does not support sparse input. See "
-                "TruncatedSVD for a possible alternative."
+        if sklearn_check_version("1.4"):
+            xp, is_array_api_compliant = get_namespace(X)
+
+            if issparse(X) and self.svd_solver != "arpack":
+                raise TypeError(
+                    'PCA only support sparse inputs with the "arpack" solver, while '
+                    f'"{self.svd_solver}" was passed. See TruncatedSVD for a possible'
+                    " alternative."
+                )
+            # Raise an error for non-Numpy input and arpack solver.
+            if self.svd_solver == "arpack" and is_array_api_compliant:
+                raise ValueError(
+                    "PCA with svd_solver='arpack' is not supported for Array API inputs."
+                )
+
+            X = self._validate_data(
+                X,
+                dtype=[xp.float64, xp.float32],
+                accept_sparse=("csr", "csc"),
+                ensure_2d=True,
+                copy=self.copy,
             )
 
-        if sklearn_check_version("0.23"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
-            )
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
+            if issparse(X):
+                raise TypeError(
+                    "PCA does not support sparse input. See "
+                    "TruncatedSVD for a possible alternative."
+                )
+
+            if sklearn_check_version("0.23"):
+                X = self._validate_data(
+                    X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                )
+            else:
+                X = check_array(
+                    X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                )
 
         if self.n_components is None:
             if self.svd_solver != "arpack":
@@ -260,7 +297,9 @@ class PCA(PCA_original):
                         self._fit_svd_solver = "full"
 
         if not shape_good_for_daal or self._fit_svd_solver != "full":
-            if sklearn_check_version("0.23"):
+            if sklearn_check_version("1.4"):
+                X = self._validate_data(X, copy=self.copy, accept_sparse=("csr", "csc"))
+            elif sklearn_check_version("0.23"):
                 X = self._validate_data(X, copy=self.copy)
             else:
                 X = check_array(X, copy=self.copy)
@@ -283,7 +322,7 @@ class PCA(PCA_original):
                         shape_good_for_daal,
                         "The shape of X does not satisfy oneDAL requirements: "
                         "number of features / number of samples >= 2",
-                    )
+                    ),
                 ]
             )
             if _dal_ready:
@@ -300,6 +339,7 @@ class PCA(PCA_original):
         _patching_status.write_log()
         return result
 
+    @run_with_n_jobs
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
         if sklearn_check_version("0.22"):
             check_is_fitted(self)
@@ -425,7 +465,10 @@ class PCA(PCA_original):
         """
         _patching_status = PatchingConditionsChain("sklearn.decomposition.PCA.transform")
         _dal_ready = _patching_status.and_conditions(
-            [(self.n_components_ > 0, "Number of components <= 0.")]
+            [
+                (self.n_components_ > 0, "Number of components <= 0."),
+                (not issparse(X), "oneDAL PCA does not support sparse input"),
+            ]
         )
 
         _patching_status.write_log()
@@ -473,7 +516,10 @@ class PCA(PCA_original):
         )
         if _dal_ready:
             _dal_ready = _patching_status.and_conditions(
-                [(self.n_components_ > 0, "Number of components <= 0.")]
+                [
+                    (self.n_components_ > 0, "Number of components <= 0."),
+                    (not issparse(X), "oneDAL PCA does not support sparse input"),
+                ]
             )
             if _dal_ready:
                 result = self._transform_daal4py(
