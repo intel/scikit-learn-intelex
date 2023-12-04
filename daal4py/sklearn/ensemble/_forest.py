@@ -38,8 +38,10 @@ import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
     check_tree_nodes,
+    control_n_jobs,
     daal_check_version,
     getFPType,
+    run_with_n_jobs,
     sklearn_check_version,
 )
 
@@ -232,6 +234,7 @@ class RandomForestBase:
             )
 
 
+@control_n_jobs
 class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
     __doc__ = RandomForestClassifier_original.__doc__
 
@@ -735,6 +738,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         self._cached_estimators_ = estimators_
         return estimators_
 
+    @run_with_n_jobs
     def _daal_predict_proba(self, X):
         X_fptype = getFPType(X)
         dfc_algorithm = daal4py.decision_forest_classification_prediction(
@@ -748,6 +752,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
         return pred
 
+    @run_with_n_jobs
     def _daal_fit_classifier(self, X, y, sample_weight=None):
         y = check_array(y, ensure_2d=False, dtype=None)
         y, expanded_class_weight = self._validate_y_class_weight(y)
@@ -853,6 +858,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
 
         return self
 
+    @run_with_n_jobs
     def _daal_predict_classifier(self, X):
         X_fptype = getFPType(X)
         dfc_algorithm = daal4py.decision_forest_classification_prediction(
@@ -875,6 +881,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
 
+@control_n_jobs
 class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
     __doc__ = RandomForestRegressor_original.__doc__
 
@@ -1293,6 +1300,7 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
         return estimators_
 
+    @run_with_n_jobs
     def _daal_fit_regressor(self, X, y, sample_weight=None):
         self.n_features_in_ = X.shape[1]
         if not sklearn_check_version("1.0"):
@@ -1392,6 +1400,7 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
 
         return self
 
+    @run_with_n_jobs
     def _daal_predict_regressor(self, X):
         if X.shape[1] != self.n_features_in_:
             raise ValueError(

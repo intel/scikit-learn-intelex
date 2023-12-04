@@ -35,7 +35,13 @@ from sklearn.utils.validation import (
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
+from .._utils import (
+    PatchingConditionsChain,
+    control_n_jobs,
+    getFPType,
+    run_with_n_jobs,
+    sklearn_check_version,
+)
 
 if sklearn_check_version("1.1"):
     from sklearn.utils.validation import _check_sample_weight, _is_arraylike_not_scalar
@@ -514,6 +520,7 @@ def _predict(self, X, sample_weight=None):
         ]
 
 
+@control_n_jobs
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
@@ -607,6 +614,7 @@ class KMeans(KMeans_original):
             )
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def fit(self, X, y=None, sample_weight=None):
         """
         Compute k-means clustering.
@@ -637,6 +645,7 @@ class KMeans(KMeans_original):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def predict(self, X, sample_weight=None):
         """
         Predict the closest cluster each sample in X belongs to.

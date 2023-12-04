@@ -16,13 +16,22 @@
 
 import os
 import sys
+import threading
 import warnings
+from functools import wraps
+from inspect import Parameter, signature
+from multiprocessing import cpu_count
+from numbers import Integral
+from warnings import warn
 
 import numpy as np
+import threadpoolctl
 from numpy.lib.recfunctions import require_fields
 from sklearn import __version__ as sklearn_version
 
 from daal4py import _get__daal_link_version__ as dv
+from daal4py import daalinit as set_n_threads
+from daal4py import num_threads as get_n_threads
 
 try:
     from packaging.version import Version
@@ -257,3 +266,133 @@ class PatchingConditionsChain:
         if logs:
             self.write_log()
         return self.patching_is_enabled
+
+
+def control_n_jobs(original_class):
+    """Decorator for the control of 'n_jobs' parameter in estimator class. It applied
+    for all estimators with and without support of parameter in original sklearn.
+    In case of estimator without 'n_jobs' support, this decorator adds it.
+    """
+    original_init = original_class.__init__
+
+    if sklearn_check_version("1.2") and hasattr(original_class, "_parameter_constraints"):
+        parameter_constraints = original_class._parameter_constraints
+        if "n_jobs" not in parameter_constraints:
+            parameter_constraints["n_jobs"] = [Integral, None]
+
+    @wraps(original_init)
+    def init_with_n_jobs(self, *args, n_jobs=None, **kwargs):
+        original_init(self, *args, **kwargs)
+        self.n_jobs = n_jobs
+
+    # add "n_jobs" parameter to signature of wrapped init
+    # if estimator doesn't originally support it
+    sig = signature(original_init)
+    original_params = list(sig.parameters.values())
+    if "n_jobs" not in list(map(lambda param: param.name, original_params)):
+        original_params.append(Parameter("n_jobs", Parameter.KEYWORD_ONLY, default=None))
+        init_with_n_jobs.__signature__ = sig.replace(parameters=original_params)
+        original_class.__init__ = init_with_n_jobs
+
+    # add n_jobs to __doc__ string if needed
+    if (
+        hasattr(original_class, "__doc__")
+        and isinstance(original_class.__doc__, str)
+        and "n_jobs : int" not in original_class.__doc__
+    ):
+        parameters_doc_tail = "\n    Attributes"
+        n_jobs_doc = """
+    n_jobs : int, default=None
+        The number of jobs to use in parallel for the computation.
+        ``None`` means using all physical cores
+        unless in a :obj:`joblib.parallel_backend` context.
+        ``-1`` means using all logical cores.
+        See :term:`Glossary <n_jobs>` for more details.
+"""
+        original_class.__doc__ = original_class.__doc__.replace(
+            parameters_doc_tail, n_jobs_doc + parameters_doc_tail
+        )
+
+    return original_class
+
+
+# Note: getting controller in global scope of this module is required
+# to avoid overheads by its initialization per each function call
+threadpool_controller = threadpoolctl.ThreadpoolController()
+
+
+def get_suggested_n_threads(n_cpus):
+    """Function to get `n_threads` limit
+    if `n_jobs` is set in upper parallelization context.
+    Usually, limit is equal to `n_logical_cpus` // `n_jobs`.
+    Returns None if limit is not set.
+    """
+    n_threads_map = {
+        lib_ctl.internal_api: lib_ctl.get_num_threads()
+        for lib_ctl in threadpool_controller.lib_controllers
+        if lib_ctl.internal_api != "mkl"
+    }
+    # openBLAS is limited by 128 threads by default.
+    # thus, 128 threads from openBLAS is uninformative
+    if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
+        del n_threads_map["openblas"]
+    # remove default values equal to n_cpus as uninformative
+    for backend in list(n_threads_map.keys()):
+        if n_threads_map[backend] == n_cpus:
+            del n_threads_map[backend]
+    if len(n_threads_map) > 0:
+        return min(n_threads_map.values())
+    else:
+        return None
+
+
+def run_with_n_jobs(method):
+    """Decorator for running of methods containing oneDAL kernels with 'n_jobs'"""
+
+    @wraps(method)
+    def method_wrapper(self, *args, **kwargs):
+        # threading parallel backend branch
+        if not isinstance(threading.current_thread(), threading._MainThread):
+            warn(
+                "'Threading' parallel backend is not supported by "
+                "Intel(R) Extension for Scikit-learn*. "
+                "Falling back to usage of all available threads."
+            )
+            result = method(self, *args, **kwargs)
+            return result
+        # multiprocess parallel backends branch
+        cl = self.__class__
+        method_name = ".".join([cl.__module__, cl.__name__, method.__name__])
+        # search for specified n_jobs
+        n_jobs = self.n_jobs
+        n_cpus = cpu_count()
+        # receive n_threads limitation from upper parallelism context
+        # using `threadpoolctl.ThreadpoolController`
+        n_threads = get_suggested_n_threads(n_cpus)
+        # get real `n_jobs` number of threads for oneDAL
+        # using sklearn rules and `n_threads` from upper parallelism context
+        if n_jobs is None or n_jobs == 0:
+            if n_threads is None:
+                # default branch with no setting for n_jobs
+                return method(self, *args, **kwargs)
+            else:
+                n_jobs = n_threads
+        elif n_jobs < 0:
+            if n_threads is None:
+                n_jobs = max(1, n_cpus + n_jobs + 1)
+            else:
+                n_jobs = max(1, n_threads + n_jobs + 1)
+        # branch with set n_jobs
+        old_n_threads = get_n_threads()
+        if n_jobs != old_n_threads:
+            logger = logging.getLogger("sklearnex")
+            logger.debug(
+                f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
+            )
+            set_n_threads(n_jobs)
+        result = method(self, *args, **kwargs)
+        if n_jobs != old_n_threads:
+            set_n_threads(old_n_threads)
+        return result
+
+    return method_wrapper
