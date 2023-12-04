@@ -79,7 +79,7 @@ def _daal4py_compute_starting_centroids(
     def is_string(s, target_str):
         return isinstance(s, str) and s == target_str
 
-    is_sparse = sp.isspmatrix(X)
+    is_sparse = sp.issparse(X)
 
     deterministic = False
     if is_string(cluster_centers_0, "k-means++"):
@@ -165,7 +165,7 @@ def _daal4py_k_means_predict(
     X, nClusters, centroids, resultsToEvaluate="computeAssignments"
 ):
     X_fptype = getFPType(X)
-    is_sparse = sp.isspmatrix(X)
+    is_sparse = sp.issparse(X)
     method = "lloydCSR" if is_sparse else "defaultDense"
     kmeans_algo = _daal4py_kmeans_compatibility(
         nClusters=nClusters,
@@ -204,7 +204,7 @@ def _daal4py_k_means_fit(
             n_init = default_n_init
     X_fptype = getFPType(X)
     abs_tol = _tolerance(X, tol)  # tol is relative tolerance
-    is_sparse = sp.isspmatrix(X)
+    is_sparse = sp.issparse(X)
     method = "lloydCSR" if is_sparse else "defaultDense"
     best_inertia, best_cluster_centers = None, None
     best_n_iter = -1
@@ -498,9 +498,21 @@ def _predict(self, X, sample_weight=None):
             (hasattr(X, "__array__"), "X does not have '__array__' attribute."),
         ]
     )
-    _dal_ready = _patching_status.or_conditions(
-        [(sp.isspmatrix_csr(X), "X is not sparse.")]
-    )
+
+    # CSR array is introduced in scipy 1.11, this requires an initial attribute check
+    if hasattr(sp, "csr_array"):
+        _dal_ready = _patching_status.or_conditions(
+            [
+                (
+                    sp.isspmatrix_csr(X) or isinstance(X, sp.csr_array),
+                    "X is not csr sparse.",
+                )
+            ]
+        )
+    else:
+        _dal_ready = _patching_status.or_conditions(
+            [(sp.isspmatrix_csr(X), "X is not csr sparse.")]
+        )
 
     _patching_status.write_log()
     if _dal_ready:

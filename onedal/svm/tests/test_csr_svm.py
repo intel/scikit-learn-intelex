@@ -41,7 +41,7 @@ def check_svm_model_equal(queue, svm, X_train, y_train, X_test, decimal=6):
     sparse_svm = clone_estimator(svm)
     dense_svm = clone_estimator(svm)
     dense_svm.fit(X_train.toarray(), y_train, queue=queue)
-    if sp.isspmatrix(X_test):
+    if sp.issparse(X_test):
         X_test_dense = X_test.toarray()
     else:
         X_test_dense = X_test

@@ -236,7 +236,7 @@ class SVC(sklearn_SVC, BaseSVC):
         )
         if len(data) > 1:
             self._class_count = len(np.unique(data[1]))
-        self._is_sparse = sp.isspmatrix(data[0])
+        self._is_sparse = sp.issparse(data[0])
         conditions = [
             (
                 self.kernel in ["linear", "rbf"],
