@@ -24,7 +24,7 @@ from readcsv import pd_read_csv
 import daal4py as d4p
 
 
-def main(readcsv=pd_read_csv, method="svdDense"):
+def main(readcsv=pd_read_csv):
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "qr.csv"
 
