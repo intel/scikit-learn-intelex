@@ -186,7 +186,7 @@ if daal_check_version((2024, "P", 1)):
                         "multi_class parameter is not supported.",
                     ),
                     (self.warm_start == False, "Warm start is not supported."),
-                    (self.l1_ratio is None, "l1 ration is not supported."),
+                    (self.l1_ratio is None, "l1 ratio is not supported."),
                     (sample_weight is None, "Sample weight is not supported."),
                 ]
             )

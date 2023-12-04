@@ -105,6 +105,7 @@ def get_patch_map():
             ]
 
             # LogisticRegression
+            mapping.pop("logisticregression")
             mapping.pop("log_reg")
             mapping["log_reg"] = [
                 [
@@ -116,6 +117,7 @@ def get_patch_map():
                     None,
                 ]
             ]
+            mapping["logisticregression"] = mapping["log_reg"]
 
         # DBSCAN
         mapping.pop("dbscan")

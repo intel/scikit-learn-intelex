@@ -127,7 +127,6 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         )
 
         coefficients, intercept = make2d(coefficients), make2d(intercept)
-        # coefficients = coefficients.T
 
         assert coefficients.shape == (1, n_features_in)
         assert intercept.shape == (1, 1)
