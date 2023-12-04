@@ -32,8 +32,21 @@ from test_daal4py_examples import (
 
 import daal4py as d4p
 
+# the examples are supposed to be executed in parallel with mpirun
+try:
+    from mpi4py import MPI
+except ImportError:
+    MPI = None
+
+missing_dist_reason = "daal4py was built without SPMD support"
+
+is_parallel_execution = MPI is not None and MPI.COMM_WORLD.size > 1
+parallel_reason = "Not running in distributed mode"
+
 
 class SpmdDaal4pyBase(Base):
+    @unittest.skipUnless(d4p.__has_dist__, missing_dist_reason)
+    @unittest.skipUnless(is_parallel_execution, parallel_reason)
     def test_svd_spmd(self):
         ex = import_module_any_path(example_path / "svd_spmd")
 
@@ -50,6 +63,8 @@ class SpmdDaal4pyBase(Base):
 
         np.testing.assert_allclose(data, np.squeeze(result, axis=0))
 
+    @unittest.skipUnless(d4p.__has_dist__, missing_dist_reason)
+    @unittest.skipUnless(is_parallel_execution, parallel_reason)
     def test_qr_spmd(self):
         ex = import_module_any_path(example_path / "qr_spmd")
 
@@ -58,6 +73,8 @@ class SpmdDaal4pyBase(Base):
 
         np.testing.assert_allclose(data, result)
 
+    @unittest.skipUnless(d4p.__has_dist__, missing_dist_reason)
+    @unittest.skipUnless(is_parallel_execution, parallel_reason)
     def test_kmeans_spmd(self):
         nClusters = 10
         maxIter = 25
@@ -112,6 +129,8 @@ class SpmdDaal4pyBase(Base):
                     batch_res.centroids, spmd_res.centroids, err_msg=reason
                 )
 
+    @unittest.skipUnless(d4p.__has_dist__, missing_dist_reason)
+    @unittest.skipUnless(is_parallel_execution, parallel_reason)
     def test_dbscan_spmd(self):
         epsilon = 0.04
         minObservations = 45
@@ -185,8 +204,9 @@ class Test(SpmdDaal4pyBase, unittest.TestCase):
 
     def call_main(self, ex):
         if not d4p.__has_dist__:
-            # library was not build with distributed mode support
-            self.skipTest("Skipping SPMD test, as daal4py was built without SPMD support")
+            self.skipTest(missing_dist_reason)
+        if not is_parallel_execution:
+            self.skipTest(parallel_reason)
         return ex.main()
 
 
