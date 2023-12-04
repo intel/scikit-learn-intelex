@@ -243,18 +243,12 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_class_weights
   - ensemble/tests/test_forest.py::test_poisson_vs_mse
   - inspection/tests/test_permutation_importance.py::test_robustness_to_high_cardinality_noisy_feature >=0.23
-  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_no_attributes_set_in_init] >=1.0
-  - tests/test_common.py::test_estimators[RandomForestRegressor()-check_no_attributes_set_in_init] >=1.0
   - tests/test_common.py::test_estimators[SVC()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[SVR()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[NuSVC()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[NuSVR()-check_sample_weights_invariance(kind=zeros)] <1.0
   - tests/test_common.py::test_estimators[NuSVC()-check_class_weight_classifiers] <1.0
   - tests/test_multioutput.py::test_multi_output_classification
-
-  # Linear Regression - badly defined equation system
-  - tests/test_common.py::test_estimators[RandomForestClassifier()-check_requires_y_none]
-  - tests/test_common.py::test_estimators[RandomForestRegressor()-check_requires_y_none]
 
   # Linear Regression - minor mismatches in error/warning messages
   - model_selection/tests/test_search.py::test_grid_search_pipeline_steps
@@ -358,11 +352,10 @@ deselected_tests:
   # Had been solved by using MT19937, but oneDAL forces use of MT2203
   - tests/test_multioutput.py::test_classifier_chain_tuple_order
 
-  # Floating point error accumulation in right nodes of oneDAL decision forest
-  # causes this error when nodes split down to one element
-  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train]
-  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True,X_dtype=float32)]
+  # oneDAL decision forest trains individual trees differently than
+  # sklearn. Attempts to compare individual sklearn trees to oneDAL
+  # trees will fail, especially since two different RNGs are used.
+  - ensemble/tests/test_forest.py::test_estimators_samples
 
   # --------------------------------------------------------
   # No need to test daal4py patching

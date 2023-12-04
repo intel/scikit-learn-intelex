@@ -117,6 +117,8 @@ class BaseForest(ABC):
             # [:, np.newaxis] that does not.
             y = np.reshape(y, (-1, 1))
 
+        self._n_samples, self.n_outputs_ = y.shape
+
         y, expanded_class_weight = self._validate_y_class_weight(y)
 
         self.n_features_in_ = X.shape[1]
@@ -192,7 +194,16 @@ class BaseForest(ABC):
                 self.oob_decision_function_ = (
                     self._onedal_estimator.oob_decision_function_
                 )
-
+        if self.bootstrap:
+            self._n_samples_bootstrap = max(
+                round(
+                    self._onedal_estimator.observations_per_tree_fraction
+                    * self._n_samples
+                ),
+                1,
+            )
+        else:
+            self._n_samples_bootstrap = None
         self._validate_estimator()
         return self
 
