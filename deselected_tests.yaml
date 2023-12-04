@@ -411,7 +411,6 @@ reduced_tests:
   - utils/tests/test_utils.py
 
   - _loss/
-  - covariance/
   - cross_decomposition/
   - datasets/
   - ensemble/_hist_gradient_boosting/
