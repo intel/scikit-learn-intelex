@@ -107,7 +107,7 @@ def get_patch_map():
             ]
 
         # Covariance
-        mapping["covariance"] = [
+        mapping["empiricalcovariance"] = [
             [
                 (
                     covariance_module,
