@@ -69,7 +69,12 @@ def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=No
     allow_fallback_to_host : bool, default=None
         If True, allows to fallback computation to host device
         in case particular estimator does not support the selected one.
-        Global default: False.
+        Global default: False
+    compute_mode : str, list, default=None
+        The computational method used for BLAS level 3 routines in
+        oneDAL for GPU devices. The compute_modes must be
+        from the oneMKL compute_mode enum list. None will not
+        change the set compute_mode.
     See Also
     --------
     config_context : Context manager for global configuration.
@@ -85,7 +90,8 @@ def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=No
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
     if compute_mode is not None and _is_dpc_backend:
         try:
-            os.environ["DAL_BLAS_COMPUTE_MODE"] = ','.join([i for i in compute_mode.split('|') if ComputeMode[i]])
+            inp = [compute_mode] if type(compute_mode) is str else compute_mode
+            os.environ["DAL_BLAS_COMPUTE_MODE"] = ','.join([i for i in inp if ComputeMode[i]])
         except KeyError as e:
             raise ValueError(f"'{e.args[0]}' is not a supported compute_mode")
 
