@@ -16,14 +16,14 @@
 
 import threading
 from contextlib import contextmanager
-from onedal import _is_dpc_backend
+from onedal import _backend, _is_dpc_backend
 import os
 
 from sklearn import get_config as skl_get_config
 from sklearn import set_config as skl_set_config
 
 if _is_dpc_backend:
-    from onedal._backend import ComputeMode
+    ComputeMode = _backend.ComputeMode
 
 _default_global_config = {
     "target_offload": "auto",
