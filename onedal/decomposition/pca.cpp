@@ -75,8 +75,9 @@ void init_model(py::module_& m) {
                            return deserialize<model_t>(bytes);
                        }))
                    .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t)
+                   .DEF_ONEDAL_PY_PROPERTY(eigenvalues, model_t)
                    .DEF_ONEDAL_PY_PROPERTY(means, model_t)
-                   .DEF_ONEDAL_PY_PROPERTY(eigenvalues, model_t);
+                   .DEF_ONEDAL_PY_PROPERTY(variances, model_t);
 }
 
 template <typename Task>
@@ -88,8 +89,11 @@ void init_train_result(py::module_& m) {
         .def(py::init())
         .DEF_ONEDAL_PY_PROPERTY(model, result_t)
         .def_property_readonly("eigenvectors", &result_t::get_eigenvectors)
-        .DEF_ONEDAL_PY_PROPERTY(eigenvalues, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(variances, result_t);
+        .def_property_readonly("singular_values", &result_t::get_singular_values)
+        .def_property_readonly("means", &result_t::get_means)
+        .def_property_readonly("variances", &result_t::get_variances)
+        .def_property_readonly("eigenvalues", &result_t::get_eigenvalues)
+        .def_property_readonly("explained_variances_ratio", &result_t::get_explained_variances_ratio);
 }
 
 template <typename Task>
