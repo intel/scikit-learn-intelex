@@ -14,13 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
+import os
 import threading
 from contextlib import contextmanager
-from onedal import _backend, _is_dpc_backend
-import os
 
 from sklearn import get_config as skl_get_config
 from sklearn import set_config as skl_set_config
+
+from onedal import _backend, _is_dpc_backend
 
 if _is_dpc_backend:
     ComputeMode = _backend.ComputeMode
