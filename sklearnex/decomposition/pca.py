@@ -243,6 +243,7 @@ class PCA(sklearn_PCA):
             self.n_features_ = self._onedal_estimator.n_features_
 
         self.n_components_ = self._onedal_estimator.n_components_
+        self.components_ = self._onedal_estimator.components_
         self.mean_ = self._onedal_estimator.mean_
         self.singular_values_ = self._onedal_estimator.singular_values_
         self.explained_variance_ = self._onedal_estimator.explained_variance_
@@ -270,8 +271,9 @@ class PCA(sklearn_PCA):
         onedal_params = {
             "n_components": self.n_components,
             "is_deterministic": True,
-            "method": "precomputed",
+            "method": "cov",
             "whiten": self.whiten,
+            "do_scale": False,
         }
         self._onedal_estimator = onedal_PCA(**onedal_params)
         self._onedal_estimator.fit(X, queue=queue)

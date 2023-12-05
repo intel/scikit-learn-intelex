@@ -82,7 +82,7 @@ class PCA:
             return self.n_components
 
     def _compute_noise_variance(self, n_components, n_sf_min):
-        if _n_components < n_sf_min:
+        if n_components < n_sf_min:
             if len(self.explained_variance_) == n_sf_min:
                 return self.explained_variance_[n_components :].mean()
             elif len(self.explained_variance_) < n_sf_min:
@@ -117,14 +117,15 @@ class PCA:
         self.n_samples_ = n_samples
         self.n_features_ = n_features
 
-        n_components = self._resolve_n_components_for_result(shape_tuple)
+        n_components = self._resolve_n_components_for_result(X.shape)
         self.n_components_ = n_components
         self.noise_variance_ = self._compute_noise_variance(n_components, n_sf_min)
 
-        if self.n_components == "mle" or self.n_components < 1.0:
-            self.explained_variance_ = self.explained_variance_[: n_components]
-            self.components_ = self.components_[: n_components]
-            self.singular_values_ = self.singular_values_[: n_components]
+        if self.n_components is not None:
+            if self.n_components == "mle" or self.n_components < 1.0:
+                self.explained_variance_ = self.explained_variance_[: n_components]
+                self.components_ = self.components_[: n_components]
+                self.singular_values_ = self.singular_values_[: n_components]
         return self
 
     def _create_model(self):
