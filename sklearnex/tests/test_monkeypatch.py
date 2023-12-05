@@ -179,6 +179,7 @@ def test_preview_namespace():
     # behavior with enabled preview
     sklearnex.patch_sklearn(preview=True)
     from sklearnex.dispatcher import _is_preview_enabled
+
     assert _is_preview_enabled()
 
     lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
