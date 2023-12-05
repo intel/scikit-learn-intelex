@@ -77,6 +77,9 @@ def get_patch_map():
         # Preview classes for patching
         from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.decomposition import PCA as PCA_sklearnex
+        from .preview.linear_model import (
+            LogisticRegression as LogisticRegression_sklearnex,
+        )
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
@@ -100,6 +103,21 @@ def get_patch_map():
                     None,
                 ]
             ]
+
+            # LogisticRegression
+            mapping.pop("logisticregression")
+            mapping.pop("log_reg")
+            mapping["log_reg"] = [
+                [
+                    (
+                        linear_model_module,
+                        "LogisticRegression",
+                        LogisticRegression_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+            mapping["logisticregression"] = mapping["log_reg"]
 
         # DBSCAN
         mapping.pop("dbscan")
