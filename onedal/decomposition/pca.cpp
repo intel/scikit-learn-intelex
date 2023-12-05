@@ -27,12 +27,16 @@ struct params2desc {
         using namespace dal::pca;
 
         const auto n_components = params["n_components"].cast<std::int64_t>();
+        bool do_scale = params["do_scale"].cast<bool>();
+        bool whiten = params["whiten"].cast<bool>();
         // sign-flip feature is always used in scikit-learn
         bool is_deterministic = params["is_deterministic"].cast<bool>();
 
         auto desc = dal::pca::descriptor<Float, Method>()
                         .set_component_count(n_components)
-                        .set_deterministic(is_deterministic);
+                        .set_deterministic(is_deterministic)
+                        .set_do_scale(do_scale)
+                        .set_whiten(whiten);
 
         return desc;
     }
@@ -140,7 +144,7 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
     auto sub = m.def_submodule("decomposition");
     #ifdef ONEDAL_DATA_PARALLEL_SPMD
         ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list_spmd, task_list);
-    #else  
+    #else
         ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     #endif
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);

@@ -34,7 +34,8 @@ class PCA:
         self,
         n_components=None,
         is_deterministic=True,
-        method="precomputed",
+        method="cov",
+        do_scale=False,
         copy=True,
         whiten=False,
     ):
@@ -42,6 +43,7 @@ class PCA:
         self.method = method
         self.is_deterministic = is_deterministic
         self.whiten = whiten
+        self.do_scale = do_scale
 
     def get_onedal_params(self, data):
         n_components = self._resolve_n_components(data.shape)
@@ -50,6 +52,8 @@ class PCA:
             "method": self.method,
             "n_components": n_components,
             "is_deterministic": self.is_deterministic,
+            "do_scale": self.do_scale,
+            "whiten": self.whiten,
         }
 
     def _get_policy(self, queue, *data):
@@ -75,22 +79,15 @@ class PCA:
         X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
-        cov_result = _backend.covariance.compute(
-            policy, {"fptype": params["fptype"], "method": "dense"}, to_table(X)
-        )
-        covariance_matrix = from_table(cov_result.cov_matrix)
-        self.mean_ = from_table(cov_result.means)
         pca_result = _backend.decomposition.dim_reduction.train(
-            policy, params, to_table(covariance_matrix)
+            policy, params, to_table(X)
         )
 
+        self.mean_ = from_table(pca_result.means)
         self.variances_ = from_table(pca_result.variances)
         self.components_ = from_table(pca_result.eigenvectors)
-        self.explained_variance_ = np.maximum(
-            from_table(pca_result.eigenvalues).ravel(), 0
-        )
-        total_variance = covariance_matrix.trace()
-        self.singular_values_ = np.sqrt((n_samples - 1) * self.explained_variance_)
+        self.explained_variance_ = from_table(pca_result.explained_variance)
+        self.singular_values_ = from_table(pca_result.singular_values)
         self.n_samples_ = n_samples
         self.n_features_ = n_features
 
@@ -117,7 +114,8 @@ class PCA:
             if self.explained_variance_.shape[0] == n_sf_min:
                 self.noise_variance_ = self.explained_variance_[self.n_components_ :].mean()
             elif self.explained_variance_.shape[0] < n_sf_min:
-                resid_var = total_variance - self.explained_variance_[: self.n_components_].sum()
+                resid_var = self.variances_.sum()
+                resid_var -= self.explained_variance_[: self.n_components_].sum()
                 self.noise_variance_ = resid_var / (n_sf_min - self.n_components_)
         else:
             self.noise_variance_ = 0.0

@@ -76,6 +76,15 @@ class PCA(sklearn_PCA):
                 min_val=1,
                 target_type=numbers.Integral,
             )
+        
+        if sklearn_check_version("0.23"):
+            X = self._validate_data(
+                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+            )
+        else:
+            X = check_array(
+                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+            )
 
         dispatch(
             self,
@@ -89,6 +98,15 @@ class PCA(sklearn_PCA):
         return self
 
     def transform(self, X, y=None):
+        if sklearn_check_version("0.23"):
+            X = self._validate_data(
+                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+            )
+        else:
+            X = check_array(
+                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+            )
+
         return dispatch(
             self,
             "transform",
@@ -151,13 +169,7 @@ class PCA(sklearn_PCA):
             return False
 
     def _onedal_supported(self, method_name, X):
-        if hasattr(X, "shape"):
-            shape_tuple = X.shape
-        elif isinstance(X, list) and isinstance(X[0], list):
-            shape_tuple = (len(X), len(X[0]))
-        else:
-            raise RuntimeError(f"Unsupported data object {type(X)} or data dimension passed.")
-
+        shape_tuple = X.shape
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.decomposition.{class_name}.{method_name}"
@@ -244,15 +256,6 @@ class PCA(sklearn_PCA):
         # #         target_type=numbers.Integral,
         # #     )
 
-        if sklearn_check_version("0.23"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
-            )
-        else:
-            X = check_array(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
-            )
-
         self._validate_n_components(self.n_components, X.shape[0], X.shape[1])
 
         onedal_params = {
@@ -283,14 +286,6 @@ class PCA(sklearn_PCA):
 
     def _onedal_transform(self, X, queue=None):
         check_is_fitted(self)
-        if sklearn_check_version("0.23"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
-            )
-        else:
-            X = check_array(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
-            )
 
         self._validate_n_features_in(X)
         return self._onedal_estimator.predict(X, queue=queue)
