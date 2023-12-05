@@ -17,13 +17,18 @@
 import threading
 from contextlib import contextmanager
 from onedal import _is_dpc_backend
+import os
 
 from sklearn import get_config as skl_get_config
 from sklearn import set_config as skl_set_config
 
+if _is_dpc_backend:
+    from onedal.policy import ComputeMode
+
 _default_global_config = {
     "target_offload": "auto",
     "allow_fallback_to_host": False,
+    "compute_mode": os.environ.get("DAL_BLAS_COMPUTE_MODE")
 }
 
 _threadlocal = threading.local()
