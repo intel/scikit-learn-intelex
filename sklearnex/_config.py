@@ -28,7 +28,7 @@ if _is_dpc_backend:
 _default_global_config = {
     "target_offload": "auto",
     "allow_fallback_to_host": False,
-    "compute_mode": os.environ.get("DAL_BLAS_COMPUTE_MODE")
+    "compute_mode": os.environ.get("DAL_BLAS_COMPUTE_MODE"),
 }
 
 _threadlocal = threading.local()
@@ -57,7 +57,9 @@ def get_config():
     return {**sklearn, **sklearnex}
 
 
-def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=None, **sklearn_configs):
+def set_config(
+    target_offload=None, allow_fallback_to_host=None, compute_mode=None, **sklearn_configs
+):
     """Set global configuration
     Parameters
     ----------
@@ -92,9 +94,12 @@ def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=No
     if compute_mode is not None and _is_dpc_backend:
         try:
             inp = [compute_mode] if type(compute_mode) is str else compute_mode
-            os.environ["DAL_BLAS_COMPUTE_MODE"] = ','.join([i for i in inp if ComputeMode[i]])
+            os.environ["DAL_BLAS_COMPUTE_MODE"] = ",".join(
+                [i for i in inp if ComputeMode[i]]
+            )
         except KeyError as e:
             raise ValueError(f"'{e.args[0]}' is not a supported compute_mode")
+
 
 @contextmanager
 def config_context(**new_config):
