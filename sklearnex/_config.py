@@ -53,10 +53,11 @@ def get_config():
     """
     sklearn = skl_get_config()
     sklearnex = _get_sklearnex_threadlocal_config().copy()
+    sklearnex["compute_mode"] = os.environ.get("DAL_BLAS_COMPUTE_MODE")
     return {**sklearn, **sklearnex}
 
 
-def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_configs):
+def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=None, **sklearn_configs):
     """Set global configuration
     Parameters
     ----------
@@ -82,7 +83,11 @@ def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_confi
         local_config["target_offload"] = target_offload
     if allow_fallback_to_host is not None:
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
-
+    if compute_mode is not None:
+        try:
+            os.environ["DAL_BLAS_COMPUTE_MODE"] = ','.join([i for in compute_mode.split('|') if ComputeMode[i]])
+        except: KeyError
+            raise ValueError('Selected compute_mode is not supported')
 
 @contextmanager
 def config_context(**new_config):
