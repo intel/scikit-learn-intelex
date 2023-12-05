@@ -16,6 +16,9 @@
 
 #include "oneapi/dal/detail/policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
+#ifdef ONEDAL_DATA_PARALLEL
+#include <mkl_dal_sycl.hpp>
+#endif
 
 namespace py = pybind11;
 
@@ -46,6 +49,22 @@ ONEDAL_PY_INIT_MODULE(policy) {
             }
             return "unknown";
         });
+
+    // mkl blas compute mode will be linked to oneDAL via data parallel policy in the future
+    py::enum_<oneapi::fpk::blas::compute_mode>(m, "ComputeMode")
+        .value("unset",            oneapi::fpk::blas::compute_mode::unset)
+        .value("float_to_bf16",    oneapi::fpk::blas::compute_mode::float_tobf16)
+        .value("float_to_bf16x2",  oneapi::fpk::blas::compute_mode::float_tobf16x2)
+        .value("float_to_bf16x3",  oneapi::fpk::blas::compute_mode::float_tobf16x3)
+        .value("float_to_tf32",    oneapi::fpk::blas::compute_mode::float_to_tf32)
+        .value("complex_3m",       oneapi::fpk::blas::compute_mode::complex_3m)
+        .value("any",              oneapi::fpk::blas::compute_mode::any)
+        .value("standard",         oneapi::fpk::blas::compute_mode::standard)
+        .value("prefer_alternate", oneapi::fpk::blas::compute_mode::prefer_alternate)
+        .value("force_alternate",  oneapi::fpk::blas::compute_mode::force_alternate)
+        .export_values();
+};
+
 #endif
 }
 
