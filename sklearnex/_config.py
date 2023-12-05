@@ -16,6 +16,7 @@
 
 import threading
 from contextlib import contextmanager
+from onedal import _is_dpc_backend
 
 from sklearn import get_config as skl_get_config
 from sklearn import set_config as skl_set_config
