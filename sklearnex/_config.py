@@ -23,7 +23,7 @@ from sklearn import get_config as skl_get_config
 from sklearn import set_config as skl_set_config
 
 if _is_dpc_backend:
-    from onedal.policy import ComputeMode
+    from onedal._backend import ComputeMode
 
 _default_global_config = {
     "target_offload": "auto",
