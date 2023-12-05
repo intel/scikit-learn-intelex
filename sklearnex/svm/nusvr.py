@@ -17,13 +17,14 @@
 from sklearn.svm import NuSVR as sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 from onedal.svm import NuSVR as onedal_NuSVR
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVR
 
 
+@control_n_jobs
 class NuSVR(sklearn_NuSVR, BaseSVR):
     __doc__ = sklearn_NuSVR.__doc__
 
@@ -141,6 +142,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             X,
         )
 
+    @run_with_n_jobs
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             "C": self.C,
@@ -159,5 +161,6 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
+    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)

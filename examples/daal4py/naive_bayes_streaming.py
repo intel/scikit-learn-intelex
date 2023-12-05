@@ -16,34 +16,18 @@
 
 # daal4py Naive Bayes Classification example for streaming on shared memory systems
 
-import numpy as np
+from pathlib import Path
+
+from stream import read_csv
 
 import daal4py as d4p
-
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
-
-    def read_csv(f, c, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
-        )
-
-except:
-    # fall back to numpy genfromtxt
-    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
-        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
-        if a.shape[0] == 0:
-            raise Exception("done")
-        if a.ndim == 1:
-            return a[:, np.newaxis]
-        return a
 
 
 def main(readcsv=read_csv, method="defaultDense"):
     # input data file
-    infile = "./data/batch/naivebayes_train_dense.csv"
-    testfile = "./data/batch/naivebayes_test_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "naivebayes_train_dense.csv"
+    testfile = data_path / "naivebayes_test_dense.csv"
 
     # Configure a training object (20 classes)
     train_algo = d4p.multinomial_naive_bayes_training(20, streaming=True, method=method)
@@ -55,10 +39,13 @@ def main(readcsv=read_csv, method="defaultDense"):
         # Read data in chunks
         # Read data. Let's use 20 features per observation
         try:
-            data = readcsv(infile, range(20), lines_read, chunk_size)
-            labels = readcsv(infile, range(20, 21), lines_read, chunk_size)
-        except:
-            break
+            data = readcsv(infile, range(20), s=lines_read, n=chunk_size)
+            labels = readcsv(infile, range(20, 21), s=lines_read, n=chunk_size)
+        except Exception as e:
+            if lines_read > 0:
+                break
+            else:
+                raise ValueError("No training data was read - empty input file?") from e
         # Now feed chunk
         train_algo.compute(data, labels)
         lines_read += data.shape[0]

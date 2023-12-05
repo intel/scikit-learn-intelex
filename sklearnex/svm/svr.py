@@ -17,13 +17,14 @@
 from sklearn.svm import SVR as sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 from onedal.svm import SVR as onedal_SVR
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVR
 
 
+@control_n_jobs
 class SVR(sklearn_SVR, BaseSVR):
     __doc__ = sklearn_SVR.__doc__
 
@@ -142,6 +143,7 @@ class SVR(sklearn_SVR, BaseSVR):
             X,
         )
 
+    @run_with_n_jobs
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             "C": self.C,
@@ -160,5 +162,6 @@ class SVR(sklearn_SVR, BaseSVR):
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
+    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)

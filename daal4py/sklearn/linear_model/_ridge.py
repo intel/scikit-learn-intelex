@@ -28,9 +28,11 @@ import daal4py
 from .._device_offload import support_usm_ndarray
 from .._utils import (
     PatchingConditionsChain,
+    control_n_jobs,
     get_patch_message,
     getFPType,
     make2d,
+    run_with_n_jobs,
     sklearn_check_version,
 )
 
@@ -40,6 +42,7 @@ if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
 
 
+@run_with_n_jobs
 def _daal4py_fit(self, X, y_):
     X = make2d(X)
     y = make2d(y_)
@@ -79,6 +82,7 @@ def _daal4py_fit(self, X, y_):
     return self
 
 
+@run_with_n_jobs
 def _daal4py_predict(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -253,6 +257,7 @@ def _predict_ridge(self, X):
     return _daal4py_predict(self, X)
 
 
+@control_n_jobs
 class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 

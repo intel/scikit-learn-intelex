@@ -23,13 +23,12 @@ from scipy.sparse import issparse
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_array, check_is_fitted
 
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
+from onedal.utils import _check_array
 
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 
-if sklearn_check_version("1.1"):
-    from sklearn.utils import check_scalar
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
 
@@ -37,8 +36,10 @@ from sklearn.decomposition import PCA as sklearn_PCA
 
 from onedal.decomposition import PCA as onedal_PCA
 
-
+@control_n_jobs
 class PCA(sklearn_PCA):
+    __doc__ = sklearn_PCA.__doc__
+
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
 
@@ -65,7 +66,6 @@ class PCA(sklearn_PCA):
         self.power_iteration_normalizer = power_iteration_normalizer
         self.random_state = random_state
 
-    # @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -79,11 +79,19 @@ class PCA(sklearn_PCA):
         
         if sklearn_check_version("0.23"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=self.copy,
+                accept_sparse=True,
             )
         else:
             X = check_array(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=self.copy,
+                accept_sparse=True,
             )
 
         dispatch(
@@ -97,6 +105,7 @@ class PCA(sklearn_PCA):
         )
         return self
 
+    @run_with_n_jobs
     def transform(self, X, y=None):
         if sklearn_check_version("0.23"):
             X = self._validate_data(

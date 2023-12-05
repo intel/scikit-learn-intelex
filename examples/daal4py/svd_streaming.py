@@ -16,32 +16,16 @@
 
 # daal4py SVD example for streaming on shared memory systems
 
-import numpy as np
+from pathlib import Path
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
-        )
-
-except:
-    # fall back to numpy genfromtxt
-    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
-        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
-        if a.shape[0] == 0:
-            raise Exception("done")
-        if a.ndim == 1:
-            return a[:, np.newaxis]
-        return a
-
-
-def main(readcsv=read_csv, method="defaultDense"):
-    infiles = ["./data/distributed/svd_{}.csv".format(i) for i in range(1, 5)]
+def main(*args, **kwargs):
+    infiles = [
+        Path(__file__).parent / "data" / "distributed" / f"svd_{i}.csv"
+        for i in range(1, 5)
+    ]
 
     # configure a SVD object
     algo = d4p.svd(streaming=True)
@@ -49,7 +33,7 @@ def main(readcsv=read_csv, method="defaultDense"):
     # let's provide files directly, not a tables/arrays
     # Feed file by file
     for infile in infiles:
-        algo.compute(infile)
+        algo.compute(str(infile))
 
     # All files are done, now finalize the computation
     result = algo.finalize()

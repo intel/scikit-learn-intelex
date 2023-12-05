@@ -16,33 +16,17 @@
 
 # daal4py Ridge Regression example for streaming on shared memory systems
 
-import numpy as np
+from pathlib import Path
+
+from stream import read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
-        )
-
-except:
-    # fall back to numpy genfromtxt
-    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
-        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
-        if a.shape[0] == 0:
-            raise Exception("done")
-        if a.ndim == 1:
-            return a[:, np.newaxis]
-        return a
-
-
-def main(readcsv=read_csv, method="defaultDense"):
-    infile = "./data/batch/linear_regression_train.csv"
-    testfile = "./data/batch/linear_regression_test.csv"
+def main(readcsv=read_csv, *args, **kwargs):
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "linear_regression_train.csv"
+    testfile = data_path / "linear_regression_test.csv"
 
     # Configure a Ridge regression training object for streaming
     train_algo = d4p.ridge_regression_training(interceptFlag=True, streaming=True)
@@ -54,10 +38,13 @@ def main(readcsv=read_csv, method="defaultDense"):
         # Read data in chunks
         # Let's have 10 independent, and 2 dependent variables (for each observation)
         try:
-            indep_data = readcsv(infile, range(10), lines_read, chunk_size)
-            dep_data = readcsv(infile, range(10, 12), lines_read, chunk_size)
-        except:
-            break
+            indep_data = readcsv(infile, range(10), s=lines_read, n=chunk_size)
+            dep_data = readcsv(infile, range(10, 12), s=lines_read, n=chunk_size)
+        except Exception as e:
+            if lines_read > 0:
+                break
+            else:
+                raise ValueError("No training data was read - empty input file?") from e
         # Now feed chunk
         train_algo.compute(indep_data, dep_data)
         lines_read += indep_data.shape[0]

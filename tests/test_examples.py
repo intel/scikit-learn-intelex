@@ -20,9 +20,7 @@ import sys
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
 daal4py_examples_path = os.path.join(os.path.dirname(test_path), "examples", "daal4py")
-mb_examples_path = os.path.join(os.path.dirname(test_path), "examples", "mb")
 sys.path.insert(0, daal4py_examples_path)
-sys.path.insert(0, mb_examples_path)
 os.chdir(daal4py_examples_path)
 
 import unittest
@@ -63,7 +61,8 @@ def check_libraries(rule):
 
 
 # function reading file and returning numpy array
-def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
+def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64, **kwargs):
+    n = kwargs.get("nrows") or n
     if s == 0 and n == np.iinfo(np.int64).max:
         return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
     a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n, dtype=t)
@@ -75,15 +74,16 @@ def np_read_csv(f, c=None, s=0, n=np.iinfo(np.int64).max, t=np.float64):
 
 
 # function reading file and returning pandas DataFrame
-def pd_read_csv(f, c=None, s=0, n=None, t=np.float64):
+def pd_read_csv(f, c=None, s=0, t=np.float64, n=None, **kwargs):
+    n = kwargs.get("nrows") or n
     return pd.read_csv(
-        f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
+        f, usecols=c, delimiter=",", header=None, skiprows=s, dtype=t, nrows=n
     )
 
 
 # function reading file and returning scipy.sparse.csr_matrix
-def csr_read_csv(f, c=None, s=0, n=None, t=np.float64):
-    return csr_matrix(pd_read_csv(f, c, s=s, n=n, t=t))
+def csr_read_csv(f, c=None, s=0, t=np.float64, n=None):
+    return csr_matrix(pd_read_csv(f, c=c, s=s, t=t, n=n))
 
 
 def add_test(cls, e, f=None, attr=None, ver=(0, 0), req_libs=[]):
@@ -258,28 +258,6 @@ gen_examples = [
     ("distributions_normal",),
     ("distributions_uniform",),
     ("em_gmm", "em_gmm.csv", lambda r: r.covariances[0]),
-    (
-        "model_builders_lightgbm",
-        None,
-        None,
-        ((2020, "P", 2), (2021, "B", 109)),
-        ["lightgbm"],
-    ),
-    (
-        "model_builders_xgboost",
-        None,
-        None,
-        ((2020, "P", 2), (2021, "B", 109)),
-        ["xgboost"],
-    ),
-    (
-        "model_builders_xgboost_shap",
-        None,
-        None,
-        (2024, "P", 1),
-        ["xgboost"],
-    ),
-    ("model_builders_catboost", None, None, (2021, "P", 4), ["catboost"]),
     ("gradient_boosted_classification",),
     ("gradient_boosted_regression",),
     ("implicit_als", "implicit_als.csv", "prediction"),
@@ -396,7 +374,6 @@ class TestExCSRMatrix(Base, unittest.TestCase):
                 "adaboost",
                 "brownboost",
                 "stump_classification",
-                "model_builders",
                 "decision_forest",
             ]
         ):

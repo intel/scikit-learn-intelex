@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 # ==============================================================================
-# Copyright 2021 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,4 +14,18 @@
 # limitations under the License.
 # ==============================================================================
 
-from daal4py.sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+import pytest
+
+from sklearnex.cluster import KMeans
+from sklearnex.linear_model import ElasticNet, Lasso, Ridge
+from sklearnex.svm import SVC, SVR, NuSVC, NuSVR
+
+estimators = [KMeans, SVC, SVR, NuSVC, NuSVR, Lasso, Ridge, ElasticNet]
+
+
+@pytest.mark.parametrize("estimator", estimators)
+def test_n_jobs_support(estimator):
+    # use `n_jobs` parameter where original sklearn doesn't expect it
+    estimator(n_jobs=1)
+    # check `n_jobs` parameter doc entry
+    assert "n_jobs" in estimator.__doc__

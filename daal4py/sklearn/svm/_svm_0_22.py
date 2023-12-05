@@ -439,7 +439,7 @@ def fit(self, X, y, sample_weight=None):
     """
     rnd = check_random_state(self.random_state)
 
-    sparse = sp.isspmatrix(X)
+    sparse = sp.issparse(X)
     if sparse and self.kernel == "precomputed":
         raise TypeError("Sparse precomputed kernels are not supported.")
     self._sparse = sparse and not callable(self.kernel)
