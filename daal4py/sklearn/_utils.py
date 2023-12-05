@@ -95,9 +95,22 @@ def daal_check_version(
     """
     if isinstance(required_version[0], (list, tuple)):
         # a list of version candidates was provided, recursively check if any is <= _get_daal_version
-        return any(map(daal_check_version, required_version))
+        return any(
+            map(lambda ver: daal_check_version(ver, _get_daal_version), required_version)
+        )
 
-    return required_version <= _get_daal_version()
+    major_required, status_required, patch_required = required_version
+    major, status, patch = _get_daal_version()
+
+    if status != status_required:
+        return False
+
+    if major_required < major:
+        return True
+    if major == major_required:
+        return patch_required <= patch
+
+    return False
 
 
 sklearn_versions_map = {}
