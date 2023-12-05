@@ -85,7 +85,7 @@ def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=No
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
     if compute_mode is not None and _is_dpc_backend:
         try:
-            os.environ["DAL_BLAS_COMPUTE_MODE"] = ','.join([i for in compute_mode.split('|') if ComputeMode[i]])
+            os.environ["DAL_BLAS_COMPUTE_MODE"] = ','.join([i for i in compute_mode.split('|') if ComputeMode[i]])
         except KeyError as e:
             raise ValueError(f"'{e.args[0]}' is not a supported compute_mode")
 
