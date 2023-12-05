@@ -69,12 +69,13 @@ def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=No
     allow_fallback_to_host : bool, default=None
         If True, allows to fallback computation to host device
         in case particular estimator does not support the selected one.
-        Global default: False
+        Global default: False.
     compute_mode : str, list, default=None
         The computational method used for BLAS level 3 routines in
-        oneDAL for GPU devices. The compute_modes must be
+        oneDAL for GPU devices. The compute_mode string(s) must be
         from the oneMKL compute_mode enum list. None will not
         change the set compute_mode.
+        Global default: os environment variable DAL_BLAS_COMPUTE_MODE
     See Also
     --------
     config_context : Context manager for global configuration.
