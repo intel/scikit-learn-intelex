@@ -86,8 +86,8 @@ def set_config(target_offload=None, allow_fallback_to_host=None, compute_mode=No
     if compute_mode is not None and _is_dpc_backend:
         try:
             os.environ["DAL_BLAS_COMPUTE_MODE"] = ','.join([i for in compute_mode.split('|') if ComputeMode[i]])
-        except: KeyError
-            raise ValueError('Selected compute_mode is not supported')
+        except KeyError as e:
+            raise ValueError(f"'{e.args[0]}' is not a supported compute_mode")
 
 @contextmanager
 def config_context(**new_config):
