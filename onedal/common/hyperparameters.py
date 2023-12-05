@@ -38,6 +38,7 @@ if daal_check_version((2024, "P", 0)):
         def __getattribute__(self, __name):
             if __name in ["algorithm", "op", "setters", "getters", "backend", "to_dict"]:
                 if __name == "backend":
+                    # `backend` attribute accessed only for oneDAL kernel calls
                     logging.getLogger("sklearnex").debug(
                         "Using next hyperparameters for "
                         f"'{self.algorithm}.{self.op}': {self.to_dict()}"
