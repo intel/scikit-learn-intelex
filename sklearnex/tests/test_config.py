@@ -76,7 +76,10 @@ def test_set_compute_mode(setting):
 def test_infinite_monkey_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
     default_config = sklearnex.get_config()
-    sklearnex.set_config(compute_mode=setting)
+    try:
+        sklearnex.set_config(compute_mode=setting)
+    except KeyError:
+        pass
 
     config = sklearnex.get_config()
     assert config["compute_mode"] == "standard"
