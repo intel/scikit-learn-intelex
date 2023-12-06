@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import os
 import random
 import string
 
@@ -67,7 +68,10 @@ def test_set_compute_mode(setting):
     sklearnex.set_config(compute_mode=setting)
 
     config = sklearnex.get_config()
-    assert config["compute_mode"] == setting
+    assert (
+        config["compute_mode"] == setting
+        and os.environ.get("DAL_BLAS_COMPUTE_MODE", "STANDARD") == setting
+    )
     sklearnex.set_config(**default_config)
 
 
@@ -82,5 +86,8 @@ def test_infinite_monkey_compute_mode():
         pass
 
     config = sklearnex.get_config()
-    assert config["compute_mode"] == "standard"
+    assert (
+        config["compute_mode"] == "standard"
+        and os.environ.get("DAL_BLAS_COMPUTE_MODE", None) is None
+    )
     sklearnex.set_config(**default_config)
