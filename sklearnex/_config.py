@@ -99,7 +99,9 @@ def set_config(
                 inp = (
                     compute_mode.split(",") if type(compute_mode) is str else compute_mode
                 )
-                compute_mode = ",".join([ComputeMode[i.lower()].name for i in inp])
+                compute_mode = ",".join(
+                    [ComputeMode.__members__[i.lower()].name for i in inp]
+                )
 
                 local_config["compute_mode"] = compute_mode
                 os.environ["DAL_BLAS_COMPUTE_MODE"] = compute_mode.upper()
