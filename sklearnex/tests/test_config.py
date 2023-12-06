@@ -14,9 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
+import pytest
+import random
 import sklearn
-
 import sklearnex
+
+from onedal.tests.utils._device_selection import is_dpctl_available
 
 
 def test_get_config_contains_sklearn_params():
@@ -36,4 +39,43 @@ def test_set_config_works():
     assert config["target_offload"] == "cpu:0"
     assert config["allow_fallback_to_host"]
     assert config["assume_finite"]
+    sklearnex.set_config(**default_config)
+
+
+@pytest.mark.parametrize(
+    "setting",
+    [
+        pytest.param("standard", marks=pytest.mark.skipif(is_dpctl_available("gpu"))),
+        pytest.param(
+            "FORCE_ALTERNATE", marks=pytest.mark.skipif(is_dpctl_available("gpu"))
+        ),
+        pytest.param(
+            ["FLOAT_TO_BF16", "float_to_bf16x2", "float_to_bf16x3"],
+            marks=pytest.mark.skipif(is_dpctl_available("gpu")),
+        ),
+        pytest.param(
+            "float_to_bf16,float_to_bf16x2,float_to_bf16x3",
+            marks=pytest.mark.skipif(is_dpctl_available("gpu")),
+        ),
+        pytest.param("any", marks=pytest.mark.skipif(is_dpctl_available("gpu"))),
+    ],
+)
+def test_set_compute_mode(setting):
+    default_config = sklearnex.get_config()
+    sklearnex.set_config(compute_mode=setting)
+
+    config = sklearnex.get_config()
+    assert config["compute_mode"] == setting
+    sklearnex.set_config(**default_config)
+
+
+# has the possiblity of a erronous success albeit vanishingly small
+@pytest.mark.skipif(is_dpctl_available("gpu"))
+def test_infinite_monkey_compute_mode():
+    setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
+    default_config = sklearnex.get_config()
+    sklearnex.set_config(compute_mode=setting)
+
+    config = sklearnex.get_config()
+    assert config["compute_mode"] == "standard"
     sklearnex.set_config(**default_config)
