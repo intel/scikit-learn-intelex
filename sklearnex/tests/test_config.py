@@ -45,22 +45,22 @@ def test_set_config_works():
     sklearnex.set_config(**default_config)
 
 
+gpu_mark = pytest.mark.skipif(not is_dpctl_available("gpu"))
+
+
 @pytest.mark.parametrize(
     "setting",
     [
-        pytest.param("standard", marks=pytest.mark.skipif(not is_dpctl_available("gpu"))),
+        pytest.param("standard", marks=gpu_mark),
+        pytest.param("FORCE_ALTERNATE", marks=gpu_mark),
         pytest.param(
-            "FORCE_ALTERNATE", marks=pytest.mark.skipif(not is_dpctl_available("gpu"))
-        ),
-        pytest.param(
-            ["FLOAT_TO_BF16", "float_to_bf16x2", "float_to_bf16x3"],
-            marks=pytest.mark.skipif(not is_dpctl_available("gpu")),
+            ["FLOAT_TO_BF16", "float_to_bf16x2", "float_to_bf16x3"], marks=gpu_mark
         ),
         pytest.param(
             "float_to_bf16,float_to_bf16x2,float_to_bf16x3",
-            marks=pytest.mark.skipif(not is_dpctl_available("gpu")),
+            marks=gpu_mark,
         ),
-        pytest.param("any", marks=pytest.mark.skipif(not is_dpctl_available("gpu"))),
+        pytest.param("any", marks=gpu_mark),
     ],
 )
 def test_set_compute_mode(setting):
