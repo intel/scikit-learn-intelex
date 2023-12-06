@@ -17,7 +17,7 @@
 #include "oneapi/dal/detail/policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #ifdef ONEDAL_DATA_PARALLEL
-#include <mkl_dal_sycl.hpp>
+#include "services/internal/sycl/math/mkl_dal_sycl.hpp"
 #endif
 
 namespace py = pybind11;
