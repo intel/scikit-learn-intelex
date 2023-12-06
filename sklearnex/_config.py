@@ -23,14 +23,17 @@ from sklearn import set_config as skl_set_config
 
 from onedal import _backend, _is_dpc_backend
 
-if _is_dpc_backend:
-    ComputeMode = _backend.ComputeMode
-
 _default_global_config = {
     "target_offload": "auto",
     "allow_fallback_to_host": False,
-    "compute_mode": os.environ.get("DAL_BLAS_COMPUTE_MODE"),
 }
+
+if _is_dpc_backend:
+    ComputeMode = _backend.ComputeMode
+    _default_global_config["compute_mode"] = os.environ.get(
+        "DAL_BLAS_COMPUTE_MODE", "STANDARD"
+    ).lower()
+
 
 _threadlocal = threading.local()
 
@@ -54,7 +57,6 @@ def get_config():
     """
     sklearn = skl_get_config()
     sklearnex = _get_sklearnex_threadlocal_config().copy()
-    sklearnex["compute_mode"] = os.environ.get("DAL_BLAS_COMPUTE_MODE")
     return {**sklearn, **sklearnex}
 
 
@@ -98,15 +100,19 @@ def set_config(
                 inp = (
                     compute_mode.split(",") if type(compute_mode) is str else compute_mode
                 )
-                os.environ["DAL_BLAS_COMPUTE_MODE"] = ",".join(
-                    [ComputeMode[i.lower()].name for i in inp]
-                ).upper()
+                compute_mode_string = ",".join([ComputeMode[i.lower()].name for i in inp])
+
+                local_config["compute_mode"] = compute_mode_string
+
+                if compute_mode_string is not "standard":
+                    os.environ["DAL_BLAS_COMPUTE_MODE"] = compute_mode_string.upper()
+                else:
+                    os.environ.pop("DAL_BLAS_COMPUTE_MODE", None)
+
             except (KeyError, AttributeError) as e:
                 raise ValueError(
                     f"'{e.args[0]}' is not a supported compute_mode"
                 ) from None
-        else:
-            os.environ.pop("DAL_BLAS_COMPUTE_MODE", None)
 
 
 @contextmanager
