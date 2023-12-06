@@ -94,26 +94,25 @@ def set_config(
         local_config["target_offload"] = target_offload
     if allow_fallback_to_host is not None:
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
-    if _is_dpc_backend:
-        if compute_mode is not None:
+    if _is_dpc_backend and compute_mode is not None:
+        if compute_mode is not "standard"
             try:
                 inp = (
                     compute_mode.split(",") if type(compute_mode) is str else compute_mode
                 )
-                compute_mode_string = ",".join([ComputeMode[i.lower()].name for i in inp])
+                compute_mode = ",".join([ComputeMode[i.lower()].name for i in inp])
 
-                local_config["compute_mode"] = compute_mode_string
-
-                if compute_mode_string is not "standard":
-                    os.environ["DAL_BLAS_COMPUTE_MODE"] = compute_mode_string.upper()
-                else:
-                    os.environ.pop("DAL_BLAS_COMPUTE_MODE", None)
+                local_config["compute_mode"] = compute_mode
+                os.environ["DAL_BLAS_COMPUTE_MODE"] = compute_mode.upper()
 
             except (KeyError, AttributeError) as e:
                 raise ValueError(
                     f"'{e.args[0]}' is not a supported compute_mode"
                 ) from None
 
+        else:
+            local_config["compute_mode"] = compute_mode
+            os.environ.pop("DAL_BLAS_COMPUTE_MODE", None)
 
 @contextmanager
 def config_context(**new_config):
