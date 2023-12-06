@@ -71,7 +71,7 @@ def test_set_compute_mode(setting):
     sklearnex.set_config(**default_config)
 
 
-# has the possiblity of a erronous success albeit vanishingly small
+# has the possibility of a erronous success albeit vanishingly small
 @pytest.mark.skipif(not is_dpctl_available("gpu"))
 def test_infinite_monkey_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
