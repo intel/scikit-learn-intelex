@@ -67,5 +67,4 @@ ONEDAL_PY_INIT_MODULE(policy) {
 
 #endif
 }
-
 } // namespace oneapi::dal::python
