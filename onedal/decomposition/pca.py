@@ -45,8 +45,11 @@ class PCA:
         self.whiten = whiten
         self.do_scale = do_scale
 
-    def get_onedal_params(self, data):
-        n_components = self._resolve_n_components_for_training(data.shape)
+    def get_onedal_params(self, data, stage="train"):
+        if stage == "train":
+            n_components = self._resolve_n_components_for_training(data.shape)
+        else:
+            n_components = self._resolve_n_components_for_result(data.shape)
         return {
             "fptype": "float" if data.dtype == np.float32 else "double",
             "method": self.method,
@@ -99,9 +102,9 @@ class PCA:
         policy = self._get_policy(queue, X)
         # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
         # fails to be converted to oneDAL table
-        # if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
-        #     X = X.copy()
-        # X = _convert_to_supported(policy, X)
+        if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
+            X = X.copy()
+        X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
         pca_result = _backend.decomposition.dim_reduction.train(
@@ -142,7 +145,7 @@ class PCA:
         model = self._create_model()
 
         X = _convert_to_supported(policy, X)
-        params = self.get_onedal_params(X)
+        params = self.get_onedal_params(X, stage="predict")
         result = _backend.decomposition.dim_reduction.infer(
             policy, params, model, to_table(X)
         )
