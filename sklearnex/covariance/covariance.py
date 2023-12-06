@@ -35,8 +35,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         self.covariance_ = self._onedal_estimator.covariance_
         self.location_ = self._onedal_estimator.location_
 
-    def _onedal_covariance(self, **onedal_params):
-        return onedal_EmpiricalCovariance(**onedal_params)
+    _onedal_covariance = staticmethod(onedal_EmpiricalCovariance)
 
     def _onedal_fit(self, X, queue=None):
         onedal_params = {
@@ -71,11 +70,8 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
-    def _onedal_cpu_supported(self, method_name, *data):
-        return self._onedal_supported(method_name, *data)
-
-    def _onedal_gpu_supported(self, method_name, *data):
-        return self._onedal_supported(method_name, *data)
+    _onedal_cpu_supported = _onedal_supported
+    _onedal_gpu_supported = _onedal_supported
 
     def fit(self, X, y=None):
         if sklearn_check_version("1.2"):
