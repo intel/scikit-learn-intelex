@@ -14,12 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-import pytest
 import random
-import sklearn
-import sklearnex
 import string
 
+import pytest
+import sklearn
+
+import sklearnex
 from onedal.tests.utils._device_selection import is_dpctl_available
 
 
