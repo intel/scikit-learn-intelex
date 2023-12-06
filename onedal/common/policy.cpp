@@ -63,8 +63,7 @@ ONEDAL_PY_INIT_MODULE(policy) {
         .value("prefer_alternate", oneapi::fpk::blas::compute_mode::prefer_alternate)
         .value("force_alternate",  oneapi::fpk::blas::compute_mode::force_alternate)
         .export_values();
-};
-
 #endif
 }
+
 } // namespace oneapi::dal::python
