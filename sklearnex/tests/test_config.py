@@ -46,19 +46,19 @@ def test_set_config_works():
 @pytest.mark.parametrize(
     "setting",
     [
-        pytest.param("standard", marks=pytest.mark.skipif(is_dpctl_available("gpu"))),
+        pytest.param("standard", marks=pytest.mark.skipif(not is_dpctl_available("gpu"))),
         pytest.param(
-            "FORCE_ALTERNATE", marks=pytest.mark.skipif(is_dpctl_available("gpu"))
+            "FORCE_ALTERNATE", marks=pytest.mark.skipif(not is_dpctl_available("gpu"))
         ),
         pytest.param(
             ["FLOAT_TO_BF16", "float_to_bf16x2", "float_to_bf16x3"],
-            marks=pytest.mark.skipif(is_dpctl_available("gpu")),
+            marks=pytest.mark.skipif(not is_dpctl_available("gpu")),
         ),
         pytest.param(
             "float_to_bf16,float_to_bf16x2,float_to_bf16x3",
-            marks=pytest.mark.skipif(is_dpctl_available("gpu")),
+            marks=pytest.mark.skipif(not is_dpctl_available("gpu")),
         ),
-        pytest.param("any", marks=pytest.mark.skipif(is_dpctl_available("gpu"))),
+        pytest.param("any", marks=pytest.mark.skipif(not is_dpctl_available("gpu"))),
     ],
 )
 def test_set_compute_mode(setting):
@@ -71,7 +71,7 @@ def test_set_compute_mode(setting):
 
 
 # has the possiblity of a erronous success albeit vanishingly small
-@pytest.mark.skipif(is_dpctl_available("gpu"))
+@pytest.mark.skipif(not is_dpctl_available("gpu"))
 def test_infinite_monkey_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
     default_config = sklearnex.get_config()
