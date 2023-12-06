@@ -26,10 +26,6 @@ from .._utils import PatchingConditionsChain
 
 
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
-    def __init__(self, *, store_precision=True, assume_centered=False):
-        self.store_precision = store_precision
-        self.assume_centered = assume_centered
-
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
         self.covariance_ = self._onedal_estimator.covariance_
