@@ -77,9 +77,8 @@ def set_config(
         Global default: False.
     compute_mode : str or list, default=None
         The computational method used for BLAS level 3 routines in
-        oneDAL for GPU devices. The compute_mode string(s) must be
-        from the oneMKL compute_mode enum list. None will not
-        change the set compute_mode.
+        oneDAL for select GPU devices. The compute_mode string(s)
+        must be from the oneMKL compute_mode enum list.
         Global default: os environment variable DAL_BLAS_COMPUTE_MODE
     See Also
     --------
@@ -131,9 +130,8 @@ def config_context(**new_config):
         Global default: False.
     compute_mode : str or list, default=None
         The computational method used for BLAS level 3 routines in
-        oneDAL for GPU devices. The compute_mode string(s) must be
-        from the oneMKL compute_mode enum list. None will not
-        change the set compute_mode.
+        oneDAL for select GPU devices. The compute_mode string(s)
+        must be from the oneMKL compute_mode enum list.
         Global default: os environment variable DAL_BLAS_COMPUTE_MODE
     Notes
     -----
