@@ -94,7 +94,7 @@ def set_config(
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
     if compute_mode is not None and _is_dpc_backend:
         try:
-            inp = compute_mode.split(',') if type(compute_mode) is str else compute_mode
+            inp = compute_mode.split(",") if type(compute_mode) is str else compute_mode
             os.environ["DAL_BLAS_COMPUTE_MODE"] = ",".join(
                 [ComputeMode[i.lower()].name for i in inp]
             ).upper()
