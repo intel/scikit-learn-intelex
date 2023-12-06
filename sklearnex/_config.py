@@ -96,10 +96,10 @@ def set_config(
         try:
             inp = [compute_mode] if type(compute_mode) is str else compute_mode
             os.environ["DAL_BLAS_COMPUTE_MODE"] = ",".join(
-                [i for i in inp if ComputeMode[i]]
+                [ComputeMode[i].name for i in inp]
             )
         except KeyError as e:
-            raise ValueError(f"'{e.args[0]}' is not a supported compute_mode")
+            raise ValueError(f"'{e.args[0]}' is not a supported compute_mode") from None
 
 
 @contextmanager
