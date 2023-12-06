@@ -36,7 +36,7 @@ class PCA:
         is_deterministic=True,
         method="cov",
         do_scale=False,
-        copy=True,
+        copy=False,
         whiten=False,
     ):
         self.n_components = n_components

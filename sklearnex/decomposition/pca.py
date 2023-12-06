@@ -47,7 +47,7 @@ class PCA(sklearn_PCA):
         self,
         n_components=None,
         *,
-        copy=True,
+        copy=False,
         whiten=False,
         svd_solver="auto",
         tol=0.0,
