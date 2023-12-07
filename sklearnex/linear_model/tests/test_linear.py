@@ -113,8 +113,8 @@ def test_bf16_blas_epsilon():
     assert_raises(
         AssertionError,
         assert_allclose,
-        _as_numpy(linreg_standard.coef_),
-        _as_numpy(linreg_bf16.coef_),
+        linreg_standard.coef_,
+        linreg_bf16.coef_,
     )
     print(linreg_bf16.coef_)
     print(linreg_bf16.intercept_)
