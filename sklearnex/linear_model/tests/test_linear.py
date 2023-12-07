@@ -75,3 +75,26 @@ def test_sklearnex_import_elastic():
     assert "daal4py" in elasticnet.__module__
     assert_allclose(elasticnet.intercept_, 1.451, atol=1e-3)
     assert_allclose(elasticnet.coef_, [18.838, 64.559], atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="gpu")
+)  # pytest.mark.xfail
+def test_bf16_blas_epsilon(dataframe, queue):
+    from sklearnex.linear_model import LinearRegression
+    from sklearnex import config_context
+
+    size = 100
+    X = np.ones((size, 2))
+    y = np.arange(size, dtype=np.float32) * np.finfo(np.float32).eps
+    X[:, 0] = y
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    linreg_standard = LinearRegression().fit(X, y)
+    with config_context(compute_mode="float_to_bf16"):
+        linreg_bf16 = LinearRegression().fit(X, y)
+
+    assert linreg_standard.n_features_in_ == 2
+    assert linreg_bf16.n_features_in_ == 2
+    # This should fail
+    assert_allclose(_as_numpy(linreg_standard.coef_), _as_numpy(linreg_bf16.coef_))
