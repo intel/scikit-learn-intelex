@@ -78,7 +78,8 @@ def test_sklearnex_import_elastic():
 
 
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu")
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
 def test_bf16_blas_epsilon(dataframe, queue):
     from sklearnex import config_context
