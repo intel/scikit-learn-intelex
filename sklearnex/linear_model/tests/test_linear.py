@@ -87,8 +87,8 @@ def test_bf16_blas_epsilon():
     from sklearnex.linear_model import LinearRegression
 
     X = np.array([[0.0, 1.0], [1.0, 1.0]], dtype=np.float32)
-    y = np.array([[0.0], [0.0]], dtype=np.float32)
-    y[1, 0] += np.spacing(y[1, 0])
+    y = np.array([[1.0], [1.0]], dtype=np.float32)
+    y[1, 0] += np.finfo(np.float32).eps
 
     # Make changes in y not observable in bfloat16 which means casting
     # to bf16 for gemm should yield an incorrect value, everything
