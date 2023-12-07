@@ -74,7 +74,11 @@ if daal_check_version((2023, "P", 100)):
     )
 
     from .._device_offload import dispatch, wrap_output_data
-    from .._utils import PatchingConditionsChain, get_patch_message
+    from .._utils import (
+        PatchingConditionsChain,
+        get_patch_message,
+        register_hyperparameters,
+    )
     from ..utils.validation import _assert_all_finite
 
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -84,9 +88,11 @@ if daal_check_version((2023, "P", 100)):
     from sklearn.exceptions import NotFittedError
     from sklearn.utils.validation import _deprecate_positional_args, check_X_y
 
+    from onedal.common.hyperparameters import get_hyperparameters
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
     from onedal.utils import _num_features, _num_samples
 
+    @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
     @control_n_jobs
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__
