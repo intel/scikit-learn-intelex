@@ -79,7 +79,7 @@ def test_sklearnex_import_elastic():
 
 
 @pytest.mark.skipif(
-    not is_dpctl_available("gpu"),
+    not is_dpctl_available(["gpu"]),
     reason="gpu_blas_compute_mode is only available for select gpus",
 )
 def test_bf16_blas_epsilon():
