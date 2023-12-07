@@ -85,7 +85,7 @@ def test_bf16_blas_epsilon(dataframe, queue):
     from sklearnex import config_context
 
     size = 100
-    X = np.ones((size, 2))
+    X = np.ones((size, 2),dtype=np.float32)
     y = np.arange(size, dtype=np.float32) * np.finfo(np.float32).eps
     X[:, 0] = y
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
