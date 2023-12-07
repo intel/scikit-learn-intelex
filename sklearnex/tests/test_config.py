@@ -84,7 +84,7 @@ def test_infinite_monkey_compute_mode():
     default_config = sklearnex.get_config()
     try:
         sklearnex.set_config(compute_mode=setting)
-    except KeyError:
+    except ValueError:
         pass
 
     config = sklearnex.get_config()
