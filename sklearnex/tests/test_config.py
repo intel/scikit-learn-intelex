@@ -70,7 +70,7 @@ def test_set_compute_mode(setting):
     sklearnex.set_config(compute_mode=setting)
 
     config = sklearnex.get_config()
-    setting = ",".join(setting) if type(setting) is not str  # convert to internal representation
+    setting = ",".join(setting) if type(setting) is not str else setting  # convert to internal representation
     assert config["compute_mode"] == setting.lower()
     assert os.environ.get("DAL_BLAS_COMPUTE_MODE", "STANDARD") == setting.upper()
     sklearnex.set_config(**default_config)
