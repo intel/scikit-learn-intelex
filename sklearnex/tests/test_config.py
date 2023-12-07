@@ -87,7 +87,7 @@ def test_infinite_monkey_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
     default_config = sklearnex.get_config()
 
-    assert_raises(ValueError,sklearnex.set_config,compute_mode=setting)
+    assert_raises(ValueError, sklearnex.set_config, compute_mode=setting)
 
     config = sklearnex.get_config()
     sklearnex.set_config(**default_config)
