@@ -68,9 +68,10 @@ gpu_mark = pytest.mark.skipif(
 def test_set_compute_mode(setting):
     default_config = sklearnex.get_config()
     sklearnex.set_config(compute_mode=setting)
-
+    
     config = sklearnex.get_config()
-    assert config["compute_mode"] == ",".join(setting.split(",")).lower()
+    setting = ",".join(setting.split(",")).lower() #convert to internal representation
+    assert config["compute_mode"] == setting
     assert os.environ.get("DAL_BLAS_COMPUTE_MODE", "STANDARD").lower() == setting
     sklearnex.set_config(**default_config)
 
