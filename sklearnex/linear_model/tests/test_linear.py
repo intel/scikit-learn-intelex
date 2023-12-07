@@ -21,6 +21,7 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from daal4py.sklearn._utils import daal_check_version
+from numpy.testing import assert_raises
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
@@ -79,7 +80,7 @@ def test_sklearnex_import_elastic():
 
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues(device_filter_="gpu")
-)  # pytest.mark.xfail
+)
 def test_bf16_blas_epsilon(dataframe, queue):
     from sklearnex.linear_model import LinearRegression
     from sklearnex import config_context
@@ -96,5 +97,9 @@ def test_bf16_blas_epsilon(dataframe, queue):
 
     assert linreg_standard.n_features_in_ == 2
     assert linreg_bf16.n_features_in_ == 2
-    # This should fail
-    assert_allclose(_as_numpy(linreg_standard.coef_), _as_numpy(linreg_bf16.coef_))
+    assert_raises(
+        AssertionError,
+        assert_allclose,
+        _as_numpy(linreg_standard.coef_),
+        _as_numpy(linreg_bf16.coef_),
+    )

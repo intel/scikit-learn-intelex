@@ -22,6 +22,7 @@ import pytest
 import sklearn
 
 import sklearnex
+from numpy.testing import assert_raises
 from onedal import _is_dpc_backend
 
 
@@ -85,12 +86,10 @@ def test_set_compute_mode(setting):
 def test_infinite_monkey_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
     default_config = sklearnex.get_config()
-    try:
-        sklearnex.set_config(compute_mode=setting)
-    except ValueError:
-        pass
+
+    assert_raises(ValueError,sklearnex.set_config,compute_mode=setting)
 
     config = sklearnex.get_config()
+    sklearnex.set_config(**default_config)
     assert config["compute_mode"] == "standard"
     assert os.environ.get("DAL_BLAS_COMPUTE_MODE", None) is None
-    sklearnex.set_config(**default_config)
