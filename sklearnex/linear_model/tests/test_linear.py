@@ -87,9 +87,13 @@ def test_bf16_blas_epsilon(dataframe, queue):
 
     size = 100
     X = np.ones((size, 2), dtype=np.float32)
-    X[:, 0] = np.arange(size, dtype=np.float32)
+    X[:, 0] = np.arange(size, dtype=np.float32) / 10
     y = np.arange(size, dtype=np.float32) * np.finfo(np.float32).eps
 
+    # The first coeff should be 10*np.finfo(np.float32).eps
+    # this is under the bf16 precision and above the float32 precision,
+    # meaning bf16 should yield a different answer. This will prove
+    # bf16 computation in gemm on gpu has been used.
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg_standard = LinearRegression().fit(X, y)
