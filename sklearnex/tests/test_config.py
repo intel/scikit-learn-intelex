@@ -78,7 +78,7 @@ def test_set_compute_mode(setting):
     sklearnex.set_config(**default_config)
 
 
-# This test has the possibility of a erronous failure albeit vanishingly small
+# This test has the possibility of an erronous failure albeit vanishingly small
 @pytest.mark.skipif(
     not _is_dpc_backend, reason="compute_mode is only supported with the dpc backend"
 )
