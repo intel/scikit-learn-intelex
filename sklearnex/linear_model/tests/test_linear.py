@@ -26,6 +26,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from onedal.tests.utils._device_selection import is_dpctl_available
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -77,31 +78,42 @@ def test_sklearnex_import_elastic():
     assert_allclose(elasticnet.coef_, [18.838, 64.559], atol=1e-3)
 
 
-@pytest.mark.parametrize(
-    "dataframe,queue",
-    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+@pytest.mark.skipif(
+    not is_dpctl_available("gpu"),
+    reason="gpu_blas_compute_mode is only available for select gpus",
 )
-def test_bf16_blas_epsilon(dataframe, queue):
+def test_bf16_blas_epsilon():
     from sklearnex import config_context
     from sklearnex.linear_model import LinearRegression
 
     size = 100  # Needs to be under 16 bits
     X = np.ones((size, 2), dtype=np.float32)
     y = np.ones((size, 1), dtype=np.float32)
-    for i in range(1, len(y)):
-        y[i] = y[i - 1] + np.spacing(y[i - 1])
+    for i in range(1, len(X)):
+        X[i, 0] = X[i - 1, 0] + np.spacing(X[i - 1, 0])
 
-    X[:, 0] = 10 * (y[:, 0] - 1)
-    # Subtract first to maximize fidelity (smaller spacing around 0)
+    y[:, 0] = 10 * (X[:, 0] - 1)
+    # Make changes in y observable in bfloat16 by first subtracting
+    # to maximize fidelity (smaller spacing around 0) and multiplying
+    # by 10
 
     # The first coeff should be under the bf16 precision and above
     # the float32 precision, meaning bf16 should yield a different
     # answer. This will prove bf16 computation in gemm on gpu has
     # been used.
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
-    linreg_standard = LinearRegression().fit(X, y)
-    with config_context(gpu_blas_compute_mode="float_to_bf16"):
+    with config_context(
+        target_offload="gpu:0",
+        allow_fallback_to_host=False,
+        gpu_blas_compute_mode="standard",
+    ):
+        linreg_standard = LinearRegression().fit(X, y)
+    print(linreg_standard.coef_)
+    print(linreg_standard.intercept_)
+    with config_context(
+        target_offload="gpu:0",
+        allow_fallback_to_host=False,
+        gpu_blas_compute_mode="float_to_bf16",
+    ):
         linreg_bf16 = LinearRegression().fit(X, y)
 
     assert linreg_standard.n_features_in_ == 2
@@ -112,3 +124,6 @@ def test_bf16_blas_epsilon(dataframe, queue):
         _as_numpy(linreg_standard.coef_),
         _as_numpy(linreg_bf16.coef_),
     )
+    print(linreg_bf16.coef_)
+    print(linreg_bf16.intercept_)
+    assert False
