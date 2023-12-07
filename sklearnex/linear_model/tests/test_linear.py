@@ -87,8 +87,9 @@ def test_bf16_blas_epsilon(dataframe, queue):
 
     size = 100
     X = np.ones((size, 2), dtype=np.float32)
+    X[:, 0] = np.arange(size, dtype=np.float32)
     y = np.arange(size, dtype=np.float32) * np.finfo(np.float32).eps
-    X[:, 0] = y
+
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg_standard = LinearRegression().fit(X, y)
