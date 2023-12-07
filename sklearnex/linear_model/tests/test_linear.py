@@ -93,7 +93,6 @@ def test_bf16_blas_epsilon():
     # to bf16 for gemm should yield an incorrect value, everything
     # should be fine until the end multiplication (inverses etc.).
 
-    # The first coeff should be the precision of floats at 0
     with config_context(
         target_offload="gpu:0",
         allow_fallback_to_host=False,
