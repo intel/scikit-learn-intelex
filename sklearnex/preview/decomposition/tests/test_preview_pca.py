@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
@@ -27,12 +28,16 @@ from onedal.tests.utils._dataframes_support import (
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import(dataframe, queue):
+@pytest.mark.parametrize("macro_block", [None, 1024])
+def test_sklearnex_import(dataframe, queue, macro_block):
     from sklearnex.preview.decomposition import PCA
 
     X = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    pca = PCA(n_components=2, svd_solver="full").fit(X)
+    pca = PCA(n_components=2, svd_solver="full")
+    if daal_check_version((2024, "P", 0)) and macro_block is not None:
+        pca.get_hyperparameters("compute").cpu_macro_block = macro_block
+    pca.fit(X)
     assert "sklearnex" in pca.__module__
     assert hasattr(pca, "_onedal_estimator")
     assert_allclose(_as_numpy(pca.singular_values_), [6.30061232, 0.54980396])

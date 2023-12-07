@@ -29,14 +29,19 @@ from onedal.tests.utils._dataframes_support import (
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import_linear(dataframe, queue):
+@pytest.mark.parametrize("macro_block", [None, 1024])
+def test_sklearnex_import_linear(dataframe, queue, macro_block):
     from sklearnex.linear_model import LinearRegression
 
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
     y = np.dot(X, np.array([1, 2])) + 3
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
-    linreg = LinearRegression().fit(X, y)
+    linreg = LinearRegression()
+    if daal_check_version((2024, "P", 0)) and macro_block is not None:
+        linreg.get_hyperparameters("train").cpu_macro_block = macro_block
+        linreg.get_hyperparameters("train").gpu_macro_block = macro_block
+    linreg.fit(X, y)
     if daal_check_version((2023, "P", 100)):
         assert hasattr(linreg, "_onedal_estimator")
     assert "sklearnex" in linreg.__module__
