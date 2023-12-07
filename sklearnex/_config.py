@@ -94,7 +94,7 @@ def set_config(
     if allow_fallback_to_host is not None:
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
     if _is_dpc_backend and compute_mode is not None:
-        if compute_mode is not "standard":
+        if compute_mode != "standard":
             try:
                 inp = (
                     compute_mode.split(",") if type(compute_mode) is str else compute_mode
@@ -102,7 +102,6 @@ def set_config(
                 compute_mode = ",".join(
                     [ComputeMode.__members__[i.lower()].name for i in inp]
                 )
-                print(compute_mode)
                 local_config["compute_mode"] = compute_mode
                 os.environ["DAL_BLAS_COMPUTE_MODE"] = compute_mode.upper()
 
