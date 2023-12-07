@@ -116,7 +116,7 @@ def set_config(
                 ) from None
 
         else:
-            local_config["gpu_blas_compute_mode"] = compute_mode
+            local_config["gpu_blas_compute_mode"] = gpu_blas_compute_mode
             os.environ.pop("DAL_BLAS_COMPUTE_MODE", None)
 
 
