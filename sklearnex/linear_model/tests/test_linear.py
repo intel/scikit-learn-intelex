@@ -86,21 +86,15 @@ def test_bf16_blas_epsilon():
     from sklearnex import config_context
     from sklearnex.linear_model import LinearRegression
 
-    size = 100  # Needs to be under 16 bits
-    X = np.ones((size, 2), dtype=np.float32)
-    y = np.ones((size, 1), dtype=np.float32)
-    for i in range(1, len(X)):
-        X[i, 0] = X[i - 1, 0] + np.spacing(X[i - 1, 0])
+    X = np.array([[0.0, 1.0], [1.0, 1.0]], dtype=np.float32)
+    y = np.array([[0.0], [0.0]], dtype=np.float32)
+    y[1, 0] += np.spacing(y[1, 0])
 
-    y[:, 0] = 10 * (X[:, 0] - 1)
-    # Make changes in y observable in bfloat16 by first subtracting
-    # to maximize fidelity (smaller spacing around 0) and multiplying
-    # by 10
+    # Make changes in y not observable in bfloat16 which means casting
+    # to bf16 for gemm should yield an incorrect value, everything
+    # should be fine until the end multiplication (inverses etc.).
 
-    # The first coeff should be under the bf16 precision and above
-    # the float32 precision, meaning bf16 should yield a different
-    # answer. This will prove bf16 computation in gemm on gpu has
-    # been used.
+    # The first coeff should be the precision of floats at 0
     with config_context(
         target_offload="gpu:0",
         allow_fallback_to_host=False,
