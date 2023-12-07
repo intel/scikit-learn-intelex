@@ -55,8 +55,8 @@ class PCA:
         X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
-        if daal_check_version((2024, "P", 0)):
-            hparams = get_hyperparameters("covariance", "compute")
+        hparams = get_hyperparameters("covariance", "compute")
+        if hparams is not None and not hparams.is_default:
             cov_result = _backend.covariance.compute(
                 policy,
                 {"fptype": params["fptype"], "method": "dense"},

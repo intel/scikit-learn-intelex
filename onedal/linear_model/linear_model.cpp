@@ -129,9 +129,7 @@ struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
                 return fptype2t{ method2t{ Task{}, ops } }(params);
             }
         );
-    }
-};
-#else
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
         m.def("train", [](
             const Policy& policy,
             const py::dict& params,
@@ -145,7 +143,6 @@ struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
         );
     }
 };
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 template <typename Policy, typename Task>
 void init_train_ops(py::module& m) {

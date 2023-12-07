@@ -21,6 +21,15 @@ from daal4py.sklearn._utils import daal_check_version
 from onedal import _backend
 
 if daal_check_version((2024, "P", 0)):
+    _hparams_reserved_words = [
+        "algorithm",
+        "op",
+        "setters",
+        "getters",
+        "backend",
+        "is_default",
+        "to_dict",
+    ]
 
     class HyperParameters:
         """Class for simplified interaction with oneDAL hyperparameters.
@@ -34,9 +43,10 @@ if daal_check_version((2024, "P", 0)):
             self.setters = setters
             self.getters = getters
             self.backend = backend
+            self.is_default = True
 
         def __getattribute__(self, __name):
-            if __name in ["algorithm", "op", "setters", "getters", "backend", "to_dict"]:
+            if __name in _hparams_reserved_words:
                 if __name == "backend":
                     # `backend` attribute accessed only for oneDAL kernel calls
                     logging.getLogger("sklearnex").debug(
@@ -53,9 +63,10 @@ if daal_check_version((2024, "P", 0)):
                 )
 
         def __setattr__(self, __name, __value):
-            if __name in ["algorithm", "op", "setters", "getters", "backend"]:
+            if __name in _hparams_reserved_words:
                 super().__setattr__(__name, __value)
             elif __name in self.setters.keys():
+                self.is_default = False
                 self.setters[__name](__value)
             else:
                 raise ValueError(

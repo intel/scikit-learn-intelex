@@ -67,8 +67,7 @@ void init_compute_ops(py::module_& m) {
             return fptype2t{ method2t{ Task{}, ops } }(params);
         }
     );
-}
-#else
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     m.def("compute", [](
         const Policy& policy,
         const py::dict& params,
@@ -80,7 +79,6 @@ void init_compute_ops(py::module_& m) {
         }
     );
 }
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 template <typename Task>
 inline void init_compute_result(py::module_& m) {
