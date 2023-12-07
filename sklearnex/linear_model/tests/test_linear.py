@@ -81,8 +81,8 @@ def test_sklearnex_import_elastic():
     "dataframe,queue", get_dataframes_and_queues(device_filter_="gpu")
 )
 def test_bf16_blas_epsilon(dataframe, queue):
-    from sklearnex.linear_model import LinearRegression
     from sklearnex import config_context
+    from sklearnex.linear_model import LinearRegression
 
     size = 100
     X = np.ones((size, 2), dtype=np.float32)

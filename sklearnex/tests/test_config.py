@@ -20,9 +20,9 @@ import string
 
 import pytest
 import sklearn
+from numpy.testing import assert_raises
 
 import sklearnex
-from numpy.testing import assert_raises
 from onedal import _is_dpc_backend
 
 
