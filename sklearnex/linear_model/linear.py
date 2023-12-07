@@ -92,9 +92,7 @@ if daal_check_version((2023, "P", 100)):
     from onedal.linear_model import LinearRegression as onedal_LinearRegression
     from onedal.utils import _num_features, _num_samples
 
-    @register_hyperparameters(
-        {"train": get_hyperparameters("linear_regression", "train")}
-    )
+    @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
     @control_n_jobs
     class LinearRegression(sklearn_LinearRegression, BaseLinearRegression):
         __doc__ = sklearn_LinearRegression.__doc__

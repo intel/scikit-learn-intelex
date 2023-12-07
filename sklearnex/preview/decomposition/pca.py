@@ -43,7 +43,7 @@ from onedal.common.hyperparameters import get_hyperparameters
 from onedal.decomposition import PCA as onedal_PCA
 
 
-@register_hyperparameters({"compute": get_hyperparameters("covariance", "compute")})
+@register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
 @control_n_jobs
 class PCA(sklearn_PCA):
     __doc__ = sklearn_PCA.__doc__

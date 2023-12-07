@@ -36,7 +36,7 @@ def test_sklearnex_import(dataframe, queue, macro_block):
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     pca = PCA(n_components=2, svd_solver="full")
     if daal_check_version((2024, "P", 0)) and macro_block is not None:
-        pca.get_hyperparameters("compute").cpu_macro_block = macro_block
+        pca.get_hyperparameters("fit").cpu_macro_block = macro_block
     pca.fit(X)
     assert "sklearnex" in pca.__module__
     assert hasattr(pca, "_onedal_estimator")
