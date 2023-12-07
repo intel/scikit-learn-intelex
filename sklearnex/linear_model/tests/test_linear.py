@@ -17,11 +17,10 @@
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_raises
 from sklearn.datasets import make_regression
 
 from daal4py.sklearn._utils import daal_check_version
-from numpy.testing import assert_raises
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
