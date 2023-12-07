@@ -47,7 +47,8 @@ def test_set_config_works():
 
 
 gpu_mark = pytest.mark.skipif(
-    not _is_dpc_backend, reason="compute_mode is only supported with the dpc backend"
+    not _is_dpc_backend,
+    reason="gpu_blas_compute_mode is only supported with the dpc backend",
 )
 
 
@@ -66,7 +67,7 @@ gpu_mark = pytest.mark.skipif(
         pytest.param("any", marks=gpu_mark),
     ],
 )
-def test_set_compute_mode(setting):
+def test_set_gpu_blas_compute_mode(setting):
     default_config = sklearnex.get_config()
     sklearnex.set_config(compute_mode=setting)
 
@@ -74,22 +75,23 @@ def test_set_compute_mode(setting):
     setting = (
         ",".join(setting) if type(setting) is not str else setting
     )  # convert to internal representation
-    assert config["compute_mode"] == setting.lower()
+    assert config["gpu_blas_compute_mode"] == setting.lower()
     assert os.environ.get("DAL_BLAS_COMPUTE_MODE", "STANDARD") == setting.upper()
     sklearnex.set_config(**default_config)
 
 
 # This test has the possibility of an erronous failure albeit vanishingly small
 @pytest.mark.skipif(
-    not _is_dpc_backend, reason="compute_mode is only supported with the dpc backend"
+    not _is_dpc_backend,
+    reason="gpu_blas_compute_mode is only supported with the dpc backend",
 )
-def test_infinite_monkey_compute_mode():
+def test_infinite_monkey_gpu_blas_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
     default_config = sklearnex.get_config()
 
     assert_raises(ValueError, sklearnex.set_config, compute_mode=setting)
 
     config = sklearnex.get_config()
-    sklearnex.set_config(**default_config)
-    assert config["compute_mode"] == "standard"
+    assert config["gpu_blas_compute_mode"] == "standard"
     assert os.environ.get("DAL_BLAS_COMPUTE_MODE", None) is None
+    sklearnex.set_config(**default_config)
