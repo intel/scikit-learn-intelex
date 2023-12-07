@@ -102,7 +102,6 @@ def set_config(
                 compute_mode = ",".join(
                     [ComputeMode.__members__[i.lower()].name for i in inp]
                 )
-                print(compute_mode)
                 local_config["compute_mode"] = compute_mode
                 os.environ["DAL_BLAS_COMPUTE_MODE"] = compute_mode.upper()
 
