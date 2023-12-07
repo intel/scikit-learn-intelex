@@ -85,15 +85,19 @@ def test_bf16_blas_epsilon(dataframe, queue):
     from sklearnex import config_context
     from sklearnex.linear_model import LinearRegression
 
-    size = 100
+    size = 100  # Needs to be under 16 bits
     X = np.ones((size, 2), dtype=np.float32)
-    X[:, 0] = np.arange(size, dtype=np.float32) / 10
-    y = np.arange(size, dtype=np.float32) * np.finfo(np.float32).eps
+    y = np.ones((size, 1), dtype=np.float32)
+    for i in range(1, len(y)):
+        y[i] = y[i - 1] + np.spacing(y[i - 1])
 
-    # The first coeff should be 10*np.finfo(np.float32).eps
-    # this is under the bf16 precision and above the float32 precision,
-    # meaning bf16 should yield a different answer. This will prove
-    # bf16 computation in gemm on gpu has been used.
+    X[:, 0] = 10 * (y[:, 0] - 1)
+    # Subtract first to maximize fidelity (smaller spacing around 0)
+
+    # The first coeff should be under the bf16 precision and above
+    # the float32 precision, meaning bf16 should yield a different
+    # answer. This will prove bf16 computation in gemm on gpu has
+    # been used.
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg_standard = LinearRegression().fit(X, y)
