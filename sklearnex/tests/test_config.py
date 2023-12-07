@@ -69,7 +69,7 @@ gpu_mark = pytest.mark.skipif(
 )
 def test_set_gpu_blas_compute_mode(setting):
     default_config = sklearnex.get_config()
-    sklearnex.set_config(compute_mode=setting)
+    sklearnex.set_config(gpu_blas_compute_mode=setting)
 
     config = sklearnex.get_config()
     setting = (
@@ -89,7 +89,7 @@ def test_infinite_monkey_gpu_blas_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
     default_config = sklearnex.get_config()
 
-    assert_raises(ValueError, sklearnex.set_config, compute_mode=setting)
+    assert_raises(ValueError, sklearnex.set_config, gpu_blas_compute_mode=setting)
 
     config = sklearnex.get_config()
     assert config["gpu_blas_compute_mode"] == "standard"
