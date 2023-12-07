@@ -22,7 +22,7 @@ import pytest
 import sklearn
 
 import sklearnex
-from onedal.tests.utils._device_selection import is_dpctl_available
+from onedal import _is_dpc_backend
 
 
 def test_get_config_contains_sklearn_params():
@@ -45,7 +45,9 @@ def test_set_config_works():
     sklearnex.set_config(**default_config)
 
 
-gpu_mark = pytest.mark.skipif(not is_dpctl_available("gpu"))
+gpu_mark = pytest.mark.skipif(
+    not _is_dpc_backend, reason="compute_mode is only supported with the dpc backend"
+)
 
 
 @pytest.mark.parametrize(
@@ -74,7 +76,9 @@ def test_set_compute_mode(setting):
 
 
 # This test has the possibility of a erronous failure albeit vanishingly small
-@pytest.mark.skipif(not is_dpctl_available("gpu"))
+@pytest.mark.skipif(
+    not _is_dpc_backend, reason="compute_mode is only supported with the dpc backend"
+)
 def test_infinite_monkey_compute_mode():
     setting = "".join(random.choices(string.ascii_letters, k=random.randrange(25)))
     default_config = sklearnex.get_config()
