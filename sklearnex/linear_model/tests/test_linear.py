@@ -97,7 +97,7 @@ def test_bf16_blas_epsilon(dataframe, queue):
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg_standard = LinearRegression().fit(X, y)
-    with config_context(compute_mode="float_to_bf16"):
+    with config_context(gpu_blas_compute_mode="float_to_bf16"):
         linreg_bf16 = LinearRegression().fit(X, y)
 
     assert linreg_standard.n_features_in_ == 2
