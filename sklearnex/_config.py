@@ -30,7 +30,7 @@ _default_global_config = {
 
 if _is_dpc_backend:
     ComputeMode = _backend.ComputeMode
-    _default_global_config["compute_mode"] = os.environ.get(
+    _default_global_config["gpu_blas_compute_mode"] = os.environ.get(
         "DAL_BLAS_COMPUTE_MODE", "STANDARD"
     ).lower()
 
@@ -61,7 +61,10 @@ def get_config():
 
 
 def set_config(
-    target_offload=None, allow_fallback_to_host=None, compute_mode=None, **sklearn_configs
+    target_offload=None,
+    allow_fallback_to_host=None,
+    gpu_blas_compute_mode=None,
+    **sklearn_configs,
 ):
     """Set global configuration
     Parameters
@@ -75,10 +78,10 @@ def set_config(
         If True, allows to fallback computation to host device
         in case particular estimator does not support the selected one.
         Global default: False.
-    compute_mode : str or list, default=None
+    gpu_blas_compute_mode : str or list, default=None
         The computational method used for BLAS level 3 routines in
-        oneDAL for select GPU devices. The compute_mode string(s)
-        must be from the oneMKL compute_mode enum list.
+        oneDAL for select GPU devices. The gpu_blas_compute_mode
+        string(s) must be from the oneMKL compute_mode enum list.
         Global default: os environment variable DAL_BLAS_COMPUTE_MODE
     See Also
     --------
@@ -93,25 +96,27 @@ def set_config(
         local_config["target_offload"] = target_offload
     if allow_fallback_to_host is not None:
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
-    if _is_dpc_backend and compute_mode is not None:
-        if compute_mode != "standard":
+    if _is_dpc_backend and gpu_blas_compute_mode is not None:
+        if gpu_blas_compute_mode != "standard":
             try:
                 inp = (
-                    compute_mode.split(",") if type(compute_mode) is str else compute_mode
+                    gpu_blas_compute_mode.split(",")
+                    if type(gpu_blas_compute_mode) is str
+                    else gpu_blas_compute_mode
                 )
-                compute_mode = ",".join(
+                gpu_blas_compute_mode = ",".join(
                     [ComputeMode.__members__[i.lower()].name for i in inp]
                 )
-                local_config["compute_mode"] = compute_mode
-                os.environ["DAL_BLAS_COMPUTE_MODE"] = compute_mode.upper()
+                local_config["gpu_blas_compute_mode"] = gpu_blas_compute_mode
+                os.environ["DAL_BLAS_COMPUTE_MODE"] = gpu_blas_compute_mode.upper()
 
             except (KeyError, AttributeError) as e:
                 raise ValueError(
-                    f"'{e.args[0]}' is not a supported compute_mode"
+                    f"'{e.args[0]}' is not a supported gpu_blas_compute_mode"
                 ) from None
 
         else:
-            local_config["compute_mode"] = compute_mode
+            local_config["gpu_blas_compute_mode"] = compute_mode
             os.environ.pop("DAL_BLAS_COMPUTE_MODE", None)
 
 
@@ -129,9 +134,9 @@ def config_context(**new_config):
         If True, allows to fallback computation to host device
         in case particular estimator does not support the selected one.
         Global default: False.
-    compute_mode : str or list, default=None
+    gpu_blas_compute_mode : str or list, default=None
         The computational method used for BLAS level 3 routines in
-        oneDAL for select GPU devices. The compute_mode string(s)
+        oneDAL for select GPU devices. The gpu_blas_compute_mode string(s)
         must be from the oneMKL compute_mode enum list.
         Global default: os environment variable DAL_BLAS_COMPUTE_MODE
     Notes
