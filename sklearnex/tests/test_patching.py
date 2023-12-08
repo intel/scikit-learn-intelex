@@ -116,14 +116,21 @@ PATCHED_MODELS = _load_all_models(patched=True)
 UNPATCHED_MODELS = _load_all_models(patched=False)
 
 
-@pytest.mark.parametrize(("patched", "unpatched"), zip(PATCHED_MODELS, UNPATCHED_MODELS))
-def test_is_patched_instance(patched, unpatched):
+@pytest.mark.parametrize("name", PATCHED_MODELS.keys())
+def test_is_patched_instance(name):
+    patched = PATCHED_MODELS[name]
+    unpatched = UNPATCHED_MODELS[name]
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
 
 
-@pytest.mark.parametrize(("patched", "unpatched"), zip(PATCHED_MODELS, UNPATCHED_MODELS))
-def test_docstring_patching_match(patched, unpatched):
+d
+
+
+@pytest.mark.parametrize("name", PATCHED_MODELS.keys())
+def test_docstring_patching_match(name):
+    patched = PATCHED_MODELS[name]
+    unpatched = UNPATCHED_MODELS[name]
     patched_docstrings = {
         i: getattr(patched, i).__doc__
         for i in dir(patched)
