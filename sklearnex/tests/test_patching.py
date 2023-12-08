@@ -124,9 +124,6 @@ def test_is_patched_instance(name):
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
 
 
-d
-
-
 @pytest.mark.parametrize("name", PATCHED_MODELS.keys())
 def test_docstring_patching_match(name):
     patched = PATCHED_MODELS[name]
