@@ -134,5 +134,10 @@ def test_docstring_patching_match(patched, unpatched):
         for i in dir(unpatched)
         if not i.startswith("_") and not i.endswith("_")
     }
+
+    # check class docstring match
+    assert unpatched.__doc__ == patched.__doc__
+
+    # check class attribute docstrings
     for i in unpatched_docstrings:
         assert unpatched_docstrings[i] == patched_docstrings[i]
