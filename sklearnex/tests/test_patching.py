@@ -96,7 +96,7 @@ def _load_all_models(patched):
     if patched:
         patch_sklearn()
 
-    models = []
+    models = {}
     for patch_infos in get_patch_map().values():
         maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
         if (
@@ -104,7 +104,7 @@ def _load_all_models(patched):
             and isclass(maybe_class)
             and issubclass(maybe_class, BaseEstimator)
         ):
-            models.append(maybe_class())
+            models[patch_infos[0][0][1]] = maybe_class()
 
     if patched:
         unpatch_sklearn()
@@ -136,8 +136,8 @@ def test_docstring_patching_match(patched, unpatched):
     }
 
     # check class docstring match
-    assert unpatched.__doc__ == patched.__doc__
+    assert patched.__doc__ == unpatched.__doc__
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
-        assert unpatched_docstrings[i] == patched_docstrings[i]
+        assert patched_docstrings[i] == unpatched_docstrings[i]
