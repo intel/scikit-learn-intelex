@@ -47,7 +47,7 @@ class PCA(sklearn_PCA):
         self,
         n_components=None,
         *,
-        copy=False,
+        copy=True,
         whiten=False,
         svd_solver="auto",
         tol=0.0,
@@ -109,11 +109,11 @@ class PCA(sklearn_PCA):
     def transform(self, X, y=None):
         if sklearn_check_version("0.23"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
             )
         else:
             X = check_array(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=self.copy
+                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
             )
 
         return dispatch(
