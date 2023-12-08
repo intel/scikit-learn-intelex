@@ -119,5 +119,3 @@ def test_bf16_blas_epsilon():
         )
     else:
         assert_allclose(linreg_standard.coef_, linreg_bf16.coef_)
-
-    assert False
