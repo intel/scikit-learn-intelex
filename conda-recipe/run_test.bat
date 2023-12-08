@@ -44,3 +44,4 @@ pytest --verbose --pyargs %1\daal4py\sklearn
 pytest --verbose --pyargs %1\sklearnex
 pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py"
 python %1\.ci\scripts\test_global_patch.py
+EXIT /B %ERRORLEVEL%
