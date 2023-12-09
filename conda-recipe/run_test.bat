@@ -18,11 +18,11 @@ rem ============================================================================
 rem %1 - scikit-learn-intelex repo root
 
 set MPIROOT=%PREFIX%\Library
-set /a exitcode=0
+set exitcode=0
 
 IF DEFINED DPCPPROOT (
     echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat" || set /a exitcode=1
+    call "%DPCPPROOT%\env\vars.bat" || set exitcode=1
     set "CC=dpcpp"
     set "CXX=dpcpp"
     dpcpp --version
@@ -30,19 +30,19 @@ IF DEFINED DPCPPROOT (
 
 IF DEFINED DALROOT (
     echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat" || set /a exitcode=1
+    call "%DALROOT%\env\vars.bat" || set exitcode=1
     echo "Finish sourcing DALROOT"
 )
 
 IF DEFINED TBBROOT (
     echo "Sourcing TBBROOT"
-    call "%TBBROOT%\env\vars.bat" || set /a exitcode=1
+    call "%TBBROOT%\env\vars.bat" || set exitcode=1
 )
 
-%PYTHON% -m unittest discover -v -s %1\tests -p test*.py || set /a exitcode=1
+%PYTHON% -m unittest discover -v -s %1\tests -p test*.py || set exitcode=1
 
-pytest --verbose --pyargs %1\daal4py\sklearn || set /a exitcode=1
-pytest --verbose --pyargs %1\sklearnex || set /a exitcode=1
-pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set /a exitcode=1
-python %1\.ci\scripts\test_global_patch.py || set /a exitcode=1
+pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
+pytest --verbose --pyargs %1\sklearnex || set exitcode=1
+pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set exitcode=1
+python %1\.ci\scripts\test_global_patch.py || set exitcode=1
 EXIT /B %exitcode%
