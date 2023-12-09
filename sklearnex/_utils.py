@@ -93,3 +93,18 @@ def get_patch_message(s, queue=None):
 
 def get_sklearnex_version(rule):
     return daal_check_version(rule)
+
+
+def register_hyperparameters(hyperparameters_map):
+    """Decorator for hyperparameters support in estimator class.
+    Adds `get_hyperparameters` method to class.
+    """
+
+    def wrap_class(estimator_class):
+        def get_hyperparameters(self, op):
+            return hyperparameters_map[op]
+
+        estimator_class.get_hyperparameters = get_hyperparameters
+        return estimator_class
+
+    return wrap_class

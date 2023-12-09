@@ -28,7 +28,7 @@ from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_chec
 from onedal.utils import _check_array
 
 from ..._device_offload import dispatch
-from ..._utils import PatchingConditionsChain
+from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -39,9 +39,11 @@ else:
 
 from sklearn.decomposition import PCA as sklearn_PCA
 
+from onedal.common.hyperparameters import get_hyperparameters
 from onedal.decomposition import PCA as onedal_PCA
 
 
+@register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
 @control_n_jobs
 class PCA(sklearn_PCA):
     __doc__ = sklearn_PCA.__doc__
