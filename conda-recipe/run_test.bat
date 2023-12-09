@@ -27,17 +27,18 @@ IF DEFINED DPCPPROOT (
     set "CXX=dpcpp"
     dpcpp --version
 )
-set /a exitcode = %exitcode% + %errorlevel%
+
 IF DEFINED DALROOT (
     echo "Sourcing DALROOT"
     call "%DALROOT%\env\vars.bat" || set /a exitcode=1
     echo "Finish sourcing DALROOT"
 )
-set /a exitcode = %exitcode% + %errorlevel%
+
 IF DEFINED TBBROOT (
     echo "Sourcing TBBROOT" || set /a exitcode=1
     call "%TBBROOT%\env\vars.bat"
 )
+
 %PYTHON% -m unittest discover -v -s %1\tests -p test*.py || set /a exitcode=1
 pytest --verbose --pyargs %1\daal4py\sklearn || set /a exitcode=1
 pytest --verbose --pyargs %1\sklearnex || set /a exitcode=1
