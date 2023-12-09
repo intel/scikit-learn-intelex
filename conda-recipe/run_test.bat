@@ -35,11 +35,12 @@ IF DEFINED DALROOT (
 )
 
 IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT" || set /a exitcode=1
-    call "%TBBROOT%\env\vars.bat"
+    echo "Sourcing TBBROOT"
+    call "%TBBROOT%\env\vars.bat" || set /a exitcode=1
 )
 
 %PYTHON% -m unittest discover -v -s %1\tests -p test*.py || set /a exitcode=1
+
 pytest --verbose --pyargs %1\daal4py\sklearn || set /a exitcode=1
 pytest --verbose --pyargs %1\sklearnex || set /a exitcode=1
 pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set /a exitcode=1
