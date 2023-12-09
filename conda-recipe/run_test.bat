@@ -22,7 +22,7 @@ set /a exitcode=0
 
 IF DEFINED DPCPPROOT (
     echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat"
+    call "%DPCPPROOT%\env\vars.bat" || set /a exitcode=1
     set "CC=dpcpp"
     set "CXX=dpcpp"
     dpcpp --version
@@ -30,23 +30,17 @@ IF DEFINED DPCPPROOT (
 set /a exitcode = %exitcode% + %errorlevel%
 IF DEFINED DALROOT (
     echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat"
+    call "%DALROOT%\env\vars.bat" || set /a exitcode=1
     echo "Finish sourcing DALROOT"
 )
 set /a exitcode = %exitcode% + %errorlevel%
 IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT"
+    echo "Sourcing TBBROOT" || set /a exitcode=1
     call "%TBBROOT%\env\vars.bat"
 )
-set /a exitcode = %exitcode% + %errorlevel%
-%PYTHON% -m unittest discover -v -s %1\tests -p test*.py
-set /a exitcode = %exitcode% + %errorlevel%
-pytest --verbose --pyargs %1\daal4py\sklearn
-set /a exitcode = %exitcode% + %errorlevel%
-pytest --verbose --pyargs %1\sklearnex
-set /a exitcode = %exitcode% + %errorlevel%
-pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py"
-set /a exitcode = %exitcode% + %errorlevel%
-python %1\.ci\scripts\test_global_patch.py
-set /a exitcode = %exitcode% + %errorlevel%
+%PYTHON% -m unittest discover -v -s %1\tests -p test*.py || set /a exitcode=1
+pytest --verbose --pyargs %1\daal4py\sklearn || set /a exitcode=1
+pytest --verbose --pyargs %1\sklearnex || set /a exitcode=1
+pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set /a exitcode=1
+python %1\.ci\scripts\test_global_patch.py || set /a exitcode=1
 EXIT /B %exitcode%
