@@ -26,6 +26,8 @@ from ..._utils import PatchingConditionsChain
 
 
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
+    __doc__ = sklearn_EmpiricalCovariance.__doc__
+
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
         self.covariance_ = self._onedal_estimator.covariance_
@@ -85,3 +87,5 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         )
 
         return self
+
+    fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
