@@ -196,6 +196,8 @@ def get_exe_cmd(ex, args):
             return None
 
     if os.path.dirname(ex).endswith("daal4py"):
+        if args.nodaal4py:
+            return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
@@ -316,6 +318,12 @@ if __name__ == "__main__":
         action="store_true",
         default=False,
         help="Skip sklearnex examples",
+    )
+    parser.add_argument(
+        "--nodaal4py",
+        action="store_true",
+        default=False,
+        help="Skip daal4py examples",
     )
     parser.add_argument(
         "--assert-gpu",
