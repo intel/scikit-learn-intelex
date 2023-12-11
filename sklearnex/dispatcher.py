@@ -65,7 +65,6 @@ def get_patch_map():
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
-        from .covariance import EmpiricalCovariance as EmpiricalCovariance_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
@@ -77,6 +76,7 @@ def get_patch_map():
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
         # Preview classes for patching
+        from .preview.covariance import EmpiricalCovariance as EmpiricalCovariance_sklearnex
         from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.decomposition import PCA as PCA_sklearnex
         from .preview.linear_model import (
@@ -106,17 +106,17 @@ def get_patch_map():
                 ]
             ]
 
-        # Covariance
-        mapping["empiricalcovariance"] = [
-            [
-                (
-                    covariance_module,
-                    "EmpiricalCovariance",
-                    EmpiricalCovariance_sklearnex,
-                ),
-                None,
+            # Covariance
+            mapping["empiricalcovariance"] = [
+                [
+                    (
+                        covariance_module,
+                        "EmpiricalCovariance",
+                        EmpiricalCovariance_sklearnex,
+                    ),
+                    None,
+                ]
             ]
-        ]
 
             # LogisticRegression
             mapping.pop("logisticregression")

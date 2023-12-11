@@ -161,6 +161,7 @@ def enable(name=None, verbose=True, deprecation=True, get_map=_get_map_of_algori
     if name is not None:
         do_patch(name, get_map)
     else:
+        map_ = get_map()
         for key in get_map():
             do_patch(key, get_map)
     if deprecation:

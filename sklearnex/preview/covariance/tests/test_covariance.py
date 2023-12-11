@@ -27,7 +27,7 @@ from onedal.tests.utils._dataframes_support import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_covariance(dataframe, queue):
-    from sklearnex.covariance import EmpiricalCovariance
+    from sklearnex.preview.covariance import EmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)

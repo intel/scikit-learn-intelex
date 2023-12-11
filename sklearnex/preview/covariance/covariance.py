@@ -21,8 +21,8 @@ from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovarianc
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
 
-from .._device_offload import dispatch, wrap_output_data
-from .._utils import PatchingConditionsChain
+from ..._device_offload import dispatch, wrap_output_data
+from ..._utils import PatchingConditionsChain
 
 
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
@@ -70,6 +70,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     _onedal_gpu_supported = _onedal_supported
 
     def fit(self, X, y=None):
+        print("sklearnex fit")
         if sklearn_check_version("1.2"):
             self._validate_params()
 
