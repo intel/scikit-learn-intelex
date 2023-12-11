@@ -182,6 +182,10 @@ req_library["random_forest_classifier_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["random_forest_regressor_dpnp.py"] = ["dpnp"]
 req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
+# add sklearnex as required library for all sklearnex examples
+for fname in os.listdir(jp(examples_rootdir, "sklearnex")):
+    req_library[fname].append("sklearnex")
+
 req_os = defaultdict(lambda: [])
 
 skiped_files = []
