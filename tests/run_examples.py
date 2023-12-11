@@ -26,10 +26,6 @@ from time import gmtime, strftime
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--assert-gpu", action="store_true")
-args = parser.parse_args()
-
 print("Starting examples validation")
 # First item is major version - 2021,
 # second is minor+patch - 0110,
@@ -95,9 +91,6 @@ if sycl_extention_available:
     # validate that host and cpu devices avaialbe for logging reasons. Examples and
     # vaidaton logic assumes that host and cpu devices are always available
     print("Sycl gpu device: {}".format(gpu_available))
-
-if args.assert_gpu and "gpu" not in available_devices:
-    raise RuntimeError("GPU device not available or not detected")
 
 
 def check_version(rule, target):
@@ -182,16 +175,12 @@ req_library["random_forest_classifier_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["random_forest_regressor_dpnp.py"] = ["dpnp"]
 req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
-# add sklearnex as required library for all sklearnex examples
-for fname in os.listdir(jp(examples_rootdir, "sklearnex")):
-    req_library[fname].append("sklearnex")
-
 req_os = defaultdict(lambda: [])
 
 skiped_files = []
 
 
-def get_exe_cmd(ex, nodist, nostream):
+def get_exe_cmd(ex, args):
     if os.path.dirname(ex).endswith("sycl"):
         if not sycl_extention_available:
             return None
@@ -213,13 +202,15 @@ def get_exe_cmd(ex, nodist, nostream):
             return None
 
     if os.path.dirname(ex).endswith("sklearnex"):
+        if args.nosklearnex:
+            return None
         if not check_device(req_device[os.path.basename(ex)], available_devices):
             return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
-    if not nodist and ex.endswith("spmd.py"):
+    if not args.nodist and ex.endswith("spmd.py"):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
@@ -227,7 +218,7 @@ def get_exe_cmd(ex, nodist, nostream):
         return '"' + sys.executable + '" "' + ex + '"'
 
 
-def run(exdir, logdir, nodist=False, nostream=False):
+def run(exdir, logdir, args):
     success = 0
     n = 0
     if not os.path.exists(logdir):
@@ -248,9 +239,7 @@ def run(exdir, logdir, nodist=False, nostream=False):
                     logfn = jp(logdir, script.replace(".py", ".res"))
                     with open(logfn, "w") as logfile:
                         print("\n##### " + jp(dirpath, script))
-                        execute_string = get_exe_cmd(
-                            jp(dirpath, script), nodist, nostream
-                        )
+                        execute_string = get_exe_cmd(jp(dirpath, script), args)
                         if execute_string:
                             os.chdir(dirpath)
                             try:
@@ -287,11 +276,14 @@ def run(exdir, logdir, nodist=False, nostream=False):
     return success, n
 
 
-def run_all(nodist=False, nostream=False):
+def run_all(args):
+    if args.assert_gpu and "gpu" not in available_devices:
+        raise RuntimeError("GPU device not available or not detected")
+
     success = 0
     num = 0
     for edir, ldir in ex_log_dirs:
-        s, n = run(edir, ldir, nodist, nostream)
+        s, n = run(edir, ldir, args)
         success += s
         num += n
     if success != num:
@@ -306,4 +298,29 @@ def run_all(nodist=False, nostream=False):
 
 
 if __name__ == "__main__":
-    sys.exit(run_all("nodist" in sys.argv or not __has_dist__, "nostream" in sys.argv))
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--nodist",
+        action="store_true",
+        default=False,
+        help="Skip examples with distributed execution",
+    )
+    parser.add_argument(
+        "--nostream",
+        action="store_true",
+        default=False,
+        help="Skip examples with data streaming",
+    )
+    parser.add_argument(
+        "--nosklearnex",
+        action="store_true",
+        default=False,
+        help="Skip sklearnex examples",
+    )
+    parser.add_argument(
+        "--assert-gpu",
+        action="store_true",
+        default=False,
+        help="Assert a GPU is available",
+    )
+    sys.exit(run_all(parser.parse_args()))
