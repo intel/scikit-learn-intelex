@@ -38,13 +38,13 @@ To contribute your changes directly to the repository, do the following:
 - Make sure you can build the product and run all the examples with your patch.
 - For a larger feature, provide a relevant example.
 - Document your code.
-- [Submit](https://github.com/intel/scikit-learn-intelex/pulls) a pull request into the `master` branch. Provide a brief description of the changes you are contributing.
+- [Submit](https://github.com/intel/scikit-learn-intelex/pulls) a pull request into the `main` branch. Provide a brief description of the changes you are contributing.
 
 Public CI is enabled for the repository. Your PR should pass all of our checks. We will review your contribution and, if any additional fixes or modifications are necessary, we may give some feedback to guide you. When accepted, your pull request will be merged into our GitHub repository.
 
 ## Code Style
 
-We use [black](https://black.readthedocs.io/en/stable/) and [isort](https://pycqa.github.io/isort/) formatters for Python* code. The line length is 90 characters; use default options otherwise. You can find the linter configuration in our [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/master/pyproject.toml).
+We use [black](https://black.readthedocs.io/en/stable/) and [isort](https://pycqa.github.io/isort/) formatters for Python* code. The line length is 90 characters; use default options otherwise. You can find the linter configuration in our [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/main/pyproject.toml).
 A GitHub* Action verifies if your changes comply with the output of the auto-formatting tools.
 
 Optionally, you can install pre-commit hooks that do the formatting for you. For this, run from the top level of the repository:

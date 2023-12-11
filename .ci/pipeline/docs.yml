@@ -17,7 +17,7 @@
 trigger:
   branches:
     include:
-    - master
+    - main
     - rls/*
   paths:
     include:
@@ -28,7 +28,7 @@ trigger:
 pr:
   branches:
     include:
-    - master
+    - main
     - rls/*
   paths:
     include:
