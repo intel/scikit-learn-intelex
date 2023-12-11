@@ -60,7 +60,7 @@ def main(readcsv=pd_read_csv):
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    plabels = readcsv(testfile, range(3, 4), t=np.float32)
+    plabels = readcsv(testfile, range(3, 4), dtype=np.float32)
     assert np.count_nonzero(predict_result.prediction - plabels) / pdata.shape[0] < 0.023
 
     return (train_result, predict_result, plabels)
