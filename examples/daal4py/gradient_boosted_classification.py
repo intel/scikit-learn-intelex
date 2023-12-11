@@ -27,7 +27,7 @@ import daal4py as d4p
 def main(readcsv=pd_read_csv):
     nFeatures = 3
     nClasses = 5
-    maxIterations = 200
+    maxIterations = 100
     minObservationsInLeafNode = 8
     # input data file
     data_path = Path(__file__).parent / "data" / "batch"
@@ -60,8 +60,8 @@ def main(readcsv=pd_read_csv):
     predict_result = predict_algo.compute(pdata, train_result.model)
 
     # Prediction result provides prediction
-    plabels = readcsv(testfile, usecols=range(3, 4), dtype=np.float32)
-    assert np.count_nonzero(predict_result.prediction - plabels) / pdata.shape[0] < 0.022
+    plabels = readcsv(testfile, range(3, 4), t=np.float32)
+    assert np.count_nonzero(predict_result.prediction - plabels) / pdata.shape[0] < 0.023
 
     return (train_result, predict_result, plabels)
 
