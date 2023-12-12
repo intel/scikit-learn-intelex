@@ -38,9 +38,6 @@ Intel(R) Extension for Scikit-learn is also a part of [Intel(R) AI Tools](https:
 ## Acceleration
 
 ![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/sources/_static/scikit-learn-acceleration-2021.2.3.PNG)
-Configurations:
-- HW: c5.24xlarge AWS EC2 Instance using an Intel Xeon Platinum 8275CL with 2 sockets and 24 cores per socket
-- SW: scikit-learn version 0.24.2, scikit-learn-intelex version 2021.2.3, Python 3.8
 
 [Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
 
