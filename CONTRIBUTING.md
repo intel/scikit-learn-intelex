@@ -17,34 +17,38 @@
 
 # How to Contribute
 
-We welcome community contributions to Intel(R) Extension for Scikit-learn. You can:
+As an open source project, we welcome community contributions to Intel(R) Extension for Scikit-learn. 
+This document explains how to participate in project conversations, log bugs and enhancement requests, and submit code patches.
 
-- Submit your changes directly with a [pull request](https://github.com/intel/scikit-learn-intelex/pulls).
-- Log a bug or make a feature request with an [issue](https://github.com/intel/scikit-learn-intelex/issues).
+## Licensing 
 
-Refer to our guidelines on [pull requests](#pull-requests) and [issues](#issues) before you proceed.
+Intel(R) Extension for Scikit-learn uses the [Apache 2.0 License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE). 
+By contributing to the project, you agree to the license and copyright terms and release your own contributions under these terms. 
 
-## Issues
+## Pull Requests 
 
-Use [GitHub issues](https://github.com/intel/scikit-learn-intelex/issues) to:
-- report an issue
-- make a feature request
+No anonymous contributions are accepted. The name in the commit message Signed-off-by line and your email must match the change authorship information. 
 
-**Note**: To report a vulnerability, refer to [Intel vulnerability reporting policy](https://www.intel.com/content/www/us/en/security-center/default.html).
+Make sure your ``.gitconfig`` is set up correctly so you can use `git commit -s` for signing your patches: 
 
-## Pull Requests
+`git config --global user.name "Kate Developer"`
 
-To contribute your changes directly to the repository, do the following:
-- Make sure you can build the product and run all the examples with your patch.
-- For a larger feature, provide a relevant example.
-- Document your code.
-- [Submit](https://github.com/intel/scikit-learn-intelex/pulls) a pull request into the `master` branch. Provide a brief description of the changes you are contributing.
+`git config --global user.email kate.developer@company.com`
+ 
+### Before Contributing Changes
 
-Public CI is enabled for the repository. Your PR should pass all of our checks. We will review your contribution and, if any additional fixes or modifications are necessary, we may give some feedback to guide you. When accepted, your pull request will be merged into our GitHub repository.
+* Make sure you can build the product and run all the tests with your patch. 
+* For a larger feature, provide a relevant test. 
+* Document your code. Our project uses reStructuredText for documentation.  
+* For new file(s), specify the appropriate copyright year in the first line. 
+* Submit a pull request into the master branch. 
+
+Continuous Integration (CI) testing is enabled for the repository. Your pull request must pass all checks before it can be merged. We will review your contribution and may provide feedback to guide you if any additional fixes or modifications are necessary. When reviewed and accepted, your pull request will be merged into our GitHub repository. 
 
 ## Code Style
 
-We use [black](https://black.readthedocs.io/en/stable/) and [isort](https://pycqa.github.io/isort/) formatters for Python* code. The line length is 90 characters; use default options otherwise. You can find the linter configuration in our [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/master/pyproject.toml).
+We use [black](https://black.readthedocs.io/en/stable/) and [isort](https://pycqa.github.io/isort/) formatters for Python* code. The line length is 90 characters; use default options otherwise. You can find the linter configuration in [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/master/pyproject.toml).
+
 A GitHub* Action verifies if your changes comply with the output of the auto-formatting tools.
 
 Optionally, you can install pre-commit hooks that do the formatting for you. For this, run from the top level of the repository:
