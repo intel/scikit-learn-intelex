@@ -15,6 +15,8 @@
 # limitations under the License.
 # ==============================================================================
 
+from onedal.common.hyperparameters import get_hyperparameters
+
 from . import utils
 from ._config import config_context, get_config, set_config
 from .dispatcher import (
@@ -33,6 +35,7 @@ __all__ = [
     "decomposition",
     "ensemble",
     "get_config",
+    "get_hyperparameters",
     "get_patch_map",
     "get_patch_names",
     "is_patched_instance",

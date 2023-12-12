@@ -21,7 +21,7 @@ from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
@@ -141,6 +141,7 @@ else:
             self.weights = _check_weights(weights)
 
 
+@control_n_jobs
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsClassifier_._parameter_constraints}
@@ -285,6 +286,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
 
         return result
 
+    @run_with_n_jobs
     def _onedal_fit(self, X, y, queue=None):
         onedal_params = {
             "n_neighbors": self.n_neighbors,
@@ -307,12 +309,15 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
 
         self._save_attributes()
 
+    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
 
+    @run_with_n_jobs
     def _onedal_predict_proba(self, X, queue=None):
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
+    @run_with_n_jobs
     def _onedal_kneighbors(
         self, X=None, n_neighbors=None, return_distance=True, queue=None
     ):

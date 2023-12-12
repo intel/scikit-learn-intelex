@@ -39,9 +39,9 @@ from onedal.tests.utils._device_selection import get_queues
 def get_dataframes_and_queues(
     dataframe_filter_="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
-    dataframes_and_queues = [
-        pytest.param("numpy", None, id="numpy"),
-    ]
+    dataframes_and_queues = []
+    if "numpy" in dataframe_filter_:
+        dataframes_and_queues.append(pytest.param("numpy", None, id="numpy"))
 
     def get_df_and_q(dataframe: str):
         df_and_q = []

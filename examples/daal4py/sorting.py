@@ -19,23 +19,12 @@
 from pathlib import Path
 
 import numpy as np
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c=None, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c=None, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(method="defaultDense"):
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "sorting.csv"
 
@@ -46,7 +35,7 @@ def main(readcsv=read_csv, method="defaultDense"):
     result1 = algo.compute(str(infile))
 
     # We can also load the data ourselfs and provide the numpy array
-    data = readcsv(infile)
+    data = pd_read_csv(infile)
     result2 = algo.compute(data)
 
     # sorting result objects provide sortedData

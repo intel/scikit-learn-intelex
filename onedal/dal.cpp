@@ -54,6 +54,9 @@ ONEDAL_PY_INIT_MODULE(kmeans);
 ONEDAL_PY_INIT_MODULE(kmeans_common);
 ONEDAL_PY_INIT_MODULE(neighbors);
 ONEDAL_PY_INIT_MODULE(svm);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+ONEDAL_PY_INIT_MODULE(logistic_regression);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
@@ -88,6 +91,9 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_kmeans_common(m);
     init_neighbors(m);
     init_svm(m);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    init_logistic_regression(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 }
 
 } // namespace oneapi::dal::python

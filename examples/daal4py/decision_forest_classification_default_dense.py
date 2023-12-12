@@ -19,23 +19,12 @@
 from pathlib import Path
 
 import numpy as np
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=t)
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv, method="defaultDense"):
     # input data file
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "df_classification_train.csv"
@@ -55,8 +44,8 @@ def main(readcsv=read_csv, method="defaultDense"):
     )
 
     # Read data. Let's use 3 features per observation
-    data = readcsv(infile, range(3), t=np.float32)
-    labels = readcsv(infile, range(3, 4), t=np.float32)
+    data = readcsv(infile, usecols=range(3), dtype=np.float32)
+    labels = readcsv(infile, usecols=range(3, 4), dtype=np.float32)
     train_result = train_algo.compute(data, labels)
     # Traiing result provides (depending on parameters) model,
     # outOfBagError, outOfBagErrorPerObservation and/or variableImportance
@@ -68,8 +57,8 @@ def main(readcsv=read_csv, method="defaultDense"):
         votingMethod="unweighted",
     )
     # read test data (with same #features)
-    pdata = readcsv(testfile, range(3), t=np.float32)
-    plabels = readcsv(testfile, range(3, 4), t=np.float32)
+    pdata = readcsv(testfile, usecols=range(3), dtype=np.float32)
+    plabels = readcsv(testfile, usecols=range(3, 4), dtype=np.float32)
     # now predict using the model from the training above
     predict_result = predict_algo.compute(pdata, train_result.model)
 
