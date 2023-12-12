@@ -22,7 +22,7 @@ import numpy as np
 import daal4py as d4p
 
 
-def main(readcsv=None, method="defaultDense"):
+def main(readcsv=None):
     # Create algorithm
     algorithm = d4p.distributions_uniform(engine=d4p.engines_mt19937(seed=777))
 

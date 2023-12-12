@@ -19,23 +19,12 @@
 from pathlib import Path
 
 import numpy as np
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv, method="defaultDense"):
     # input data file
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "naivebayes_train_dense.csv"
