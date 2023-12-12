@@ -195,7 +195,7 @@ def get_exe_cmd(ex, args):
         if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
             return None
 
-    if os.path.dirname(ex).endswith("daal4py"):
+    if os.path.dirname(ex).endswith("daal4py") or os.path.dirname(ex).endswith("mb"):
         if args.nodaal4py:
             return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
