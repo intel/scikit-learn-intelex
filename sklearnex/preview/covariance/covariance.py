@@ -17,6 +17,7 @@
 
 from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
@@ -72,9 +73,12 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     _onedal_gpu_supported = _onedal_supported
 
     def fit(self, X, y=None):
-        print("sklearnex fit")
         if sklearn_check_version("1.2"):
             self._validate_params()
+        if sklearn_check_version("0.23"):
+            self._validate_data(X)
+        else:
+            check_array(X)
 
         dispatch(
             self,
