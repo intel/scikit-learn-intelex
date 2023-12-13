@@ -22,6 +22,7 @@ from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
 
 from ..common._policy import _get_policy
+from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
@@ -90,10 +91,13 @@ class EmpiricalCovariance(BaseEstimator):
             X = X.astype(np.float64)
         X = _convert_to_supported(policy, X)
         dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
         module = _backend.covariance
-        table_X = to_table(X)
-        result = module.compute(policy, params, table_X)
+        params = self._get_onedal_params(dtype)
+        hparams = get_hyperparameters("covariance", "compute")
+        if hparams is not None and not hparams.is_default:
+            result = module.compute(policy, params, hparams.backend, to_table(X))
+        else:
+            result = module.compute(policy, params, to_table(X))
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:
