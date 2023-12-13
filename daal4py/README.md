@@ -1,5 +1,5 @@
 # daal4py - A Convenient Python API to the Intel(R) oneAPI Data Analytics Library
-[![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
+[![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=main)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=main)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/IntelPython/daal4py/discussions)
 [![PyPI Version](https://img.shields.io/pypi/v/daal4py)](https://pypi.org/project/daal4py/)
@@ -23,7 +23,7 @@ We publish blogs on Medium, so [follow us](https://medium.com/intel-analytics-so
 ## 🔗 Important links
 - [Documentation](https://intelpython.github.io/daal4py/)
 - [scikit-learn API and patching](https://intelpython.github.io/daal4py/sklearn.html#sklearn)
-- [Building from Sources](https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md)
+- [Building from Sources](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md)
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
 
 ## 💬 Support
@@ -110,7 +110,7 @@ conda install impi_rt -c intel
 
 </details>
 
-You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md) as well.
+You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md) as well.
 
 
 # ⚠️ Scikit-learn patching
