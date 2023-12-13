@@ -44,7 +44,7 @@ To contribute your changes directly to the repository, do the following:
 - Make sure you can build the product and run all the examples with your patch.
 - For a larger feature, provide a relevant example.
 - Document your code.
-- `Submit <https://github.com/intel/scikit-learn-intelex/pulls>`_ a pull request into the `master` branch.
+- `Submit <https://github.com/intel/scikit-learn-intelex/pulls>`_ a pull request into the `main` branch.
   Provide a brief description of the changes you are contributing.
 
 Public CI is enabled for the repository. Your PR should pass all of our checks.
