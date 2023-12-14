@@ -20,13 +20,15 @@
 
 from pathlib import Path
 
+from readcsv import pd_read_csv
+
 # let's use a reading of file in chunks (defined in spmd_chunks_read.py)
-from spmd_chunks_read import get_chunk_params, read_csv
+from spmd_chunks_read import get_chunk_params
 
 import daal4py as d4p
 
 
-def main():
+def main(readcsv=pd_read_csv):
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "covcormoments_dense.csv"
 
@@ -37,10 +39,10 @@ def main():
     )
 
     # Each process reads its chunk of the file
-    data = read_csv(infile, s=skiprows, n=nrows)
+    data = readcsv(infile, skip_header=skiprows, max_rows=nrows)
 
     # Create algorithm with distributed mode
-    alg = d4p.low_order_moments(method="defaultDense", distributed=True)
+    alg = d4p.low_order_moments(distributed=True)
 
     # Perform computation
     res = alg.compute(data)

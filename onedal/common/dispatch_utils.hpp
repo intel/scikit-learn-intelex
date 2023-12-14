@@ -18,6 +18,8 @@
 
 #include <pybind11/pybind11.h>
 
+#include "onedal/version.hpp"
+
 #include "oneapi/dal/train.hpp"
 #include "oneapi/dal/infer.hpp"
 #include "oneapi/dal/compute.hpp"
@@ -68,6 +70,34 @@ struct compute_ops {
     Ops ops;
 };
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
+template <typename Policy, typename Input, typename Ops, typename Hyperparams>
+struct compute_ops_with_hyperparams {
+    using Task = typename Input::task_t;
+
+    compute_ops_with_hyperparams(
+        const Policy& policy, const Input& input,
+        const Ops& ops, const Hyperparams& hyperparams)
+        : policy(policy),
+          input(input),
+          ops(ops),
+          hyperparams(hyperparams) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::compute(policy, desc, hyperparams, input);
+    }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+    Hyperparams hyperparams;
+};
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
 template <typename Policy, typename Input, typename Ops>
 struct train_ops {
     using Task = typename Input::task_t;
@@ -87,6 +117,34 @@ struct train_ops {
     Input input;
     Ops ops;
 };
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
+template <typename Policy, typename Input, typename Ops, typename Hyperparams>
+struct train_ops_with_hyperparams {
+    using Task = typename Input::task_t;
+
+    train_ops_with_hyperparams(
+        const Policy& policy, const Input& input,
+        const Ops& ops, const Hyperparams& hyperparams)
+        : policy(policy),
+          input(input),
+          ops(ops),
+          hyperparams(hyperparams) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::train(policy, desc, hyperparams, input);
+    }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+    Hyperparams hyperparams;
+};
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 template <typename Policy, typename Input, typename Ops>
 struct infer_ops {
