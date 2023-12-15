@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -25,12 +26,17 @@ from onedal.tests.utils._dataframes_support import (
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import_covariance(dataframe, queue):
+@pytest.mark.parametrize("macro_block", [None, 1024])
+def test_sklearnex_import_covariance(dataframe, queue, macro_block):
     from sklearnex.preview.covariance import EmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    result = EmpiricalCovariance().fit(X)
+    empcov = EmpiricalCovariance()
+    if daal_check_version((2024, "P", 0)) and macro_block is not None:
+        hparams = empcov.get_hyperparameters("fit")
+        hparams.cpu_macro_block = macro_block
+    result = empcov.fit(X)
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 
