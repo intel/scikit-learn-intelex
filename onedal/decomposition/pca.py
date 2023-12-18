@@ -20,7 +20,6 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal import _backend
 
 from ..common._policy import _get_policy
-from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from sklearn.utils.extmath import stable_cumsum
 
@@ -108,29 +107,8 @@ class PCA:
         X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
-<<<<<<< HEAD
         pca_result = _backend.decomposition.dim_reduction.train(
             policy, params, to_table(X)
-=======
-        hparams = get_hyperparameters("covariance", "compute")
-        if hparams is not None and not hparams.is_default:
-            cov_result = _backend.covariance.compute(
-                policy,
-                {"fptype": params["fptype"], "method": "dense"},
-                hparams.backend,
-                to_table(X),
-            )
-        else:
-            cov_result = _backend.covariance.compute(
-                policy,
-                {"fptype": params["fptype"], "method": "dense"},
-                to_table(X),
-            )
-        covariance_matrix = from_table(cov_result.cov_matrix)
-        self.mean_ = from_table(cov_result.means)
-        result = _backend.decomposition.dim_reduction.train(
-            policy, params, to_table(covariance_matrix)
->>>>>>> main
         )
 
         self.mean_ = from_table(pca_result.means)
