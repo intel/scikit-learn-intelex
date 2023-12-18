@@ -305,6 +305,7 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         fptype = getFPType(X)
         return self._predict_regression(X, fptype)
 
+    @staticmethod
     def convert_model(model):
         gbm = GBTDAALRegressor()
         gbm._convert_model(model)
