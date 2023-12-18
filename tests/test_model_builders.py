@@ -167,10 +167,6 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
             approx_contribs=False,
             validate_features=False,
         )
-        self.assertTrue(
-            d4p_pred.shape == xgboost_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {xgboost_pred.shape}",
-        )
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
     def test_model_predict_shap_interactions(self):
@@ -182,10 +178,6 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
             pred_interactions=True,
             approx_contribs=False,
             validate_features=False,
-        )
-        self.assertTrue(
-            d4p_pred.shape == xgboost_pred.shape,
-            f"d4p and reference SHAP interaction shape is different {d4p_pred.shape} != {xgboost_pred.shape}",
         )
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
@@ -392,14 +384,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_test, pred_contribs=True)
-        explainer = shap.TreeExplainer(self.lgbm_model)
-        shap_pred = explainer(self.X_test).values
         lgbm_pred = self.lgbm_model.predict(self.X_test, pred_contrib=True)
-        self.assertTrue(
-            d4p_pred.shape == lgbm_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
-        )
-        np.testing.assert_allclose(d4p_pred[:, :-1], shap_pred, rtol=1e-6)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
     @unittest.skipUnless(shap_available, reason=shap_unavailable_str)
@@ -409,20 +394,12 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         d4p_pred = m.predict(self.X_test, pred_interactions=True)[:, :-1, :-1]
         explainer = shap.TreeExplainer(self.lgbm_model)
         shap_pred = explainer.shap_interaction_values(self.X_test)
-        self.assertTrue(
-            d4p_pred.shape == shap_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {shap_pred.shape}",
-        )
         np.testing.assert_allclose(d4p_pred, shap_pred, rtol=1e-6)
 
     def test_model_predict_shap_contribs_missing_values(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_nan, pred_contribs=True)
         lgbm_pred = self.lgbm_model.predict(self.X_nan, pred_contrib=True)
-        self.assertTrue(
-            d4p_pred.shape == lgbm_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
-        )
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
 
@@ -590,14 +567,14 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
     def test_model_predict(self):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_test)
-        lgbm_pred = self.cb_model.predict(self.X_test)
-        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+        cb_pred = self.cb_model.predict(self.X_test)
+        np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_nan)
-        lgbm_pred = self.cb_model.predict(self.X_nan)
-        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+        cb_pred = self.cb_model.predict(self.X_nan)
+        np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
     def test_model_predict_shap_contribs(self):
         # SHAP value support from CatBoost models is to be added
