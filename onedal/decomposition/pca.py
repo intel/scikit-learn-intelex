@@ -55,8 +55,6 @@ class PCA:
             "n_components": n_components,
             "is_deterministic": self.is_deterministic,
             "whiten": self.whiten,
-            "do_scale": False,
-            "mean_center": True,
         }
 
     def _get_policy(self, queue, *data):
@@ -75,9 +73,9 @@ class PCA:
             return min(shape_tuple)
         elif self.n_components == "mle":
             if sklearn_check_version("0.23"):
-                return _infer_dimension(self.explained_variance_, n_samples)
+                return _infer_dimension(self.explained_variance_, shape_tuple[0])
             else:
-                return _infer_dimension_(self.explained_variance_, n_samples, n_features)
+                return _infer_dimension_(self.explained_variance_, shape_tuple[0], shape_tuple[1])
         elif 0 < self.n_components < 1:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
             return np.searchsorted(ratio_cumsum, self.n_components, side="right") + 1
@@ -111,12 +109,12 @@ class PCA:
             policy, params, to_table(X)
         )
 
-        self.mean_ = from_table(pca_result.means)
-        self.variances_ = from_table(pca_result.variances)
+        self.mean_ = from_table(pca_result.means).ravel()
+        self.variances_ = from_table(pca_result.variances).ravel()
         self.components_ = from_table(pca_result.eigenvectors)
-        self.singular_values_ = from_table(pca_result.singular_values)
-        self.explained_variance_ = from_table(pca_result.eigenvalues)
-        self.explained_variance_ratio_ = from_table(pca_result.explained_variances_ratio)
+        self.singular_values_ = from_table(pca_result.singular_values).ravel()
+        self.explained_variance_ = from_table(pca_result.eigenvalues).ravel()
+        self.explained_variance_ratio_ = from_table(pca_result.explained_variances_ratio).ravel()
         self.n_samples_ = n_samples
         self.n_features_ = n_features
 
@@ -146,6 +144,7 @@ class PCA:
 
         X = _convert_to_supported(policy, X)
         params = self.get_onedal_params(X, stage="predict")
+        assert params["n_components"] == self.components_.shape[0]
         result = _backend.decomposition.dim_reduction.infer(
             policy, params, model, to_table(X)
         )

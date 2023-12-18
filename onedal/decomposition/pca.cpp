@@ -27,18 +27,15 @@ struct params2desc {
         using namespace dal::pca;
 
         const auto n_components = params["n_components"].cast<std::int64_t>();
-        bool do_scale = params["do_scale"].cast<bool>();
         bool whiten = params["whiten"].cast<bool>();
-        bool mean_center = params["mean_center"].cast<bool>();
         // sign-flip feature is always used in scikit-learn
         bool is_deterministic = params["is_deterministic"].cast<bool>();
 
         auto desc = dal::pca::descriptor<Float, Method>()
                         .set_component_count(n_components)
                         .set_deterministic(is_deterministic)
-                        .set_do_scale(do_scale)
                         .set_whiten(whiten)
-                        .set_do_mean_centering(mean_center);
+                        .set_normalization_mode(oneapi::dal::pca::normalization::mean_center);
 
         return desc;
     }
