@@ -36,6 +36,7 @@ from sklearn.decomposition import PCA as sklearn_PCA
 
 from onedal.decomposition import PCA as onedal_PCA
 
+
 @control_n_jobs
 class PCA(sklearn_PCA):
     __doc__ = sklearn_PCA.__doc__
@@ -76,7 +77,7 @@ class PCA(sklearn_PCA):
                 min_val=1,
                 target_type=numbers.Integral,
             )
-        
+
         if sklearn_check_version("0.23"):
             X = self._validate_data(
                 X,
@@ -112,9 +113,7 @@ class PCA(sklearn_PCA):
                 X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
             )
         else:
-            X = check_array(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
-            )
+            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
 
         return dispatch(
             self,

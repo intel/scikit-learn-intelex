@@ -15,13 +15,13 @@
 # ==============================================================================
 
 import numpy as np
+from sklearn.utils.extmath import stable_cumsum
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal import _backend
 
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
-from sklearn.utils.extmath import stable_cumsum
 
 if sklearn_check_version("0.23"):
     from sklearn.decomposition._pca import _infer_dimension
@@ -35,7 +35,6 @@ class PCA:
         n_components=None,
         is_deterministic=True,
         method="cov",
-        do_scale=False,
         copy=False,
         whiten=False,
     ):
@@ -43,7 +42,7 @@ class PCA:
         self.method = method
         self.is_deterministic = is_deterministic
         self.whiten = whiten
-        self.do_scale = do_scale
+        self.copy = copy
 
     def get_onedal_params(self, data, stage="train"):
         if stage == "train":
@@ -55,8 +54,9 @@ class PCA:
             "method": self.method,
             "n_components": n_components,
             "is_deterministic": self.is_deterministic,
-            "do_scale": self.do_scale,
             "whiten": self.whiten,
+            "do_scale": False,
+            "mean_center": True,
         }
 
     def _get_policy(self, queue, *data):
@@ -87,7 +87,7 @@ class PCA:
     def _compute_noise_variance(self, n_components, n_sf_min):
         if n_components < n_sf_min:
             if len(self.explained_variance_) == n_sf_min:
-                return self.explained_variance_[n_components :].mean()
+                return self.explained_variance_[n_components:].mean()
             elif len(self.explained_variance_) < n_sf_min:
                 resid_var = self.variances_.sum()
                 resid_var -= self.explained_variance_.sum()
@@ -126,9 +126,9 @@ class PCA:
 
         if self.n_components is not None:
             if self.n_components == "mle" or self.n_components < 1.0:
-                self.explained_variance_ = self.explained_variance_[: n_components]
-                self.components_ = self.components_[: n_components]
-                self.singular_values_ = self.singular_values_[: n_components]
+                self.explained_variance_ = self.explained_variance_[:n_components]
+                self.components_ = self.components_[:n_components]
+                self.singular_values_ = self.singular_values_[:n_components]
         return self
 
     def _create_model(self):
