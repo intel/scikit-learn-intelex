@@ -272,7 +272,6 @@ class PCA(sklearn_PCA):
             "is_deterministic": True,
             "method": "cov",
             "whiten": self.whiten,
-            "do_scale": False,
         }
         self._onedal_estimator = onedal_PCA(**onedal_params)
         self._onedal_estimator.fit(X, queue=queue)
