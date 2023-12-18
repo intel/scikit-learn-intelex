@@ -87,7 +87,6 @@ def get_patch_map():
 
         # Patch for mapping
         if _is_preview_enabled():
-
             # KMeans
             mapping.pop("kmeans")
             mapping["kmeans"] = [
