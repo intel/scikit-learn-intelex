@@ -27,7 +27,7 @@ ONEDAL_PY_INIT_MODULE(policy);
 ONEDAL_PY_INIT_MODULE(spmd_policy);
 #endif
 
-// New data management module
+/* data management */
 ONEDAL_PY_INIT_MODULE(data_management);
 ONEDAL_PY_INIT_MODULE(interop);
 ONEDAL_PY_INIT_MODULE(dtype_dispatcher);

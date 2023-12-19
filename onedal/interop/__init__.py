@@ -20,9 +20,20 @@ from .homogen_table import from_homogen_table, is_homogen_entity, to_homogen_tab
 from .sparse_table import from_sparse_table, is_sparse_entity, to_sparse_table
 from .table import from_table, is_table_entity, to_table
 
-__all__ = []
-__all__ += ["is_table_entity", "to_table", "from_table"]
-__all__ += ["is_array_entity", "to_array", "from_array"]
-__all__ += ["is_csr_entity", "to_csr_table", "from_csr_table"]
-__all__ += ["is_sparse_entity", "to_sparse_table", "from_sparse_table"]
-__all__ += ["is_homogen_entity", "to_homogen_table", "from_homogen_table"]
+__all__ = [
+    "from_array",
+    "from_csr_table",
+    "from_homogen_table",
+    "from_sparse_table",
+    "from_table",
+    "is_array_entity",
+    "is_csr_entity",
+    "is_homogen_entity",
+    "is_sparse_entity",
+    "is_table_entity",
+    "to_array",
+    "to_csr_table",
+    "to_homogen_table",
+    "to_sparse_table",
+    "to_table",
+]
