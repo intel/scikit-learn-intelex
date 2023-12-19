@@ -561,7 +561,7 @@ if ONEDAL_VERSION >= 20230100:
 if ONEDAL_VERSION >= 20230200:
     packages_with_tests += ["onedal.cluster"]
 
-if ONEDAL_VERSION >= 20240100:
+if ONEDAL_VERSION >= 20240001:
     packages_with_tests += [
         "onedal.data_management",
         "onedal.interop",
