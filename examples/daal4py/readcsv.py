@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2014 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,29 +14,19 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py cholesky example for shared memory systems
-
+from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
-import numpy as np
-from readcsv import pd_read_csv
+utils_path = Path(__file__).parent.parent / "utils"
 
-import daal4py as d4p
+readcsv = SourceFileLoader("readcsv", str(utils_path / "readcsv.py")).load_module()
 
+np_read_csv = readcsv.np_read_csv
+pd_read_csv = readcsv.pd_read_csv
+csr_read_csv = readcsv.csr_read_csv
 
-def main(readcsv=pd_read_csv):
-    data_path = Path(__file__).parent / "data" / "batch"
-    infile = data_path / "cholesky.csv"
-
-    # configure a cholesky object
-    algo = d4p.cholesky()
-
-    # let's provide a file directly, not a table/array
-    return algo.compute(str(infile))
-    # cholesky result objects provide choleskyFactor
-
-
-if __name__ == "__main__":
-    result = main()
-    print("\nFactor:\n", result.choleskyFactor)
-    print("All looks good!")
+__all__ = [
+    "np_read_csv",
+    "pd_read_csv",
+    "csr_read_csv",
+]

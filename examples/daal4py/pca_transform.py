@@ -16,29 +16,20 @@
 
 # daal4py PCA example for shared memory systems
 
-import numpy as np
+from pathlib import Path
+
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
-
-
-def main(readcsv=read_csv, method="svdDense"):
-    dataFileName = "data/batch/pca_transform.csv"
+def main(readcsv=pd_read_csv):
+    data_path = Path(__file__).parent / "data" / "batch"
+    data_file = data_path / "pca_transform.csv"
     nComponents = 2
 
     # read data
-    data = readcsv(dataFileName, range(3))
+    data = readcsv(data_file, range(3))
 
     # configure a PCA object and perform PCA
     pca_algo = d4p.pca(isDeterministic=True, resultsToCompute="mean|variance|eigenvalue")

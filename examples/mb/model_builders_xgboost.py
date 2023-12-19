@@ -14,31 +14,27 @@
 # limitations under the License.
 # ==============================================================================
 
-# daal4py Gradient Bossting Classification model creation from XGBoost example
+# daal4py Gradient Boosting Classification model creation from XGBoost example
 
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import xgboost as xgb
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
 
-def pd_read_csv(f, c=None, t=np.float64):
-    return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-
 def main(readcsv=pd_read_csv):
-    data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "daal4py" / "data" / "batch"
     train_file = data_path / "df_classification_train.csv"
     test_file = data_path / "df_classification_test.csv"
 
     # Data reading
-    X_train = readcsv(train_file, range(3), t=np.float32)
-    y_train = readcsv(train_file, range(3, 4), t=np.float32)
-    X_test = readcsv(test_file, range(3), t=np.float32)
-    y_test = readcsv(test_file, range(3, 4), t=np.float32)
+    X_train = readcsv(train_file, usecols=range(3), dtype=np.float32)
+    y_train = readcsv(train_file, usecols=range(3, 4), dtype=np.float32)
+    X_test = readcsv(test_file, usecols=range(3), dtype=np.float32)
+    y_test = readcsv(test_file, usecols=range(3, 4), dtype=np.float32)
 
     # Datasets creation
     xgb_train = xgb.DMatrix(X_train, label=np.array(y_train))
