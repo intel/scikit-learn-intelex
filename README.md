@@ -37,7 +37,7 @@ Intel(R) Extension for Scikit-learn is also a part of [Intel(R) AI Tools](https:
 
 ## Acceleration
 
-![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/sources/_static/scikit-learn-acceleration-2021.2.3.PNG)
+![](https://raw.githubusercontent.com/intel/scikit-learn-intelex/master/doc/sources/_static/scikit-learn-acceleration.PNG)
 
 [Benchmarks code](https://github.com/IntelPython/scikit-learn_bench)
 
