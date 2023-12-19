@@ -84,6 +84,7 @@ To install Intel(R) Extension for Scikit-learn, run:
 pip install scikit-learn-intelex
 ```
 
+See all installation instructions in the [Installation Guide](https://intel.github.io/scikit-learn-intelex/latest/installation.html).
 
 ## Integration
 
