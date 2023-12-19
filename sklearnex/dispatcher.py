@@ -74,9 +74,9 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
-        from .preview.cluster import KMeans as KMeans_sklearnex
 
         # Preview classes for patching
+        from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.covariance import (
             EmpiricalCovariance as EmpiricalCovariance_sklearnex,
         )
