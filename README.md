@@ -1,12 +1,14 @@
 <div align="center">
 
+
 # Intel(R) Extension for Scikit-learn* 
 
 <h3> Speed up your scikit-learn applications for Intel(R) CPUs and GPUs across single- and multi-node configurations
 
 [Releases](https://github.com/intel/scikit-learn-intelex/releases)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support]()&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;[License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE)&nbsp;&nbsp;&nbsp;
 
-[![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=master)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=master)
+
+[![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=main)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=main)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
 [![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
@@ -74,7 +76,6 @@ Intel(R) Extension for Scikit-learn is also a part of [Intel(R) AI Tools](https:
     ```
 :eyes: Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
 
-
 ## Installation
 
 To install Intel(R) Extension for Scikit-learn, run:
@@ -83,7 +84,6 @@ To install Intel(R) Extension for Scikit-learn, run:
 pip install scikit-learn-intelex
 ```
 
-See all installation instructions in the [Installation Guide](https://intel.github.io/scikit-learn-intelex/latest/installation.html). 
 
 ## Integration
 
@@ -105,7 +105,6 @@ To patch scikit-learn, you can:
   patch_sklearn()
   ```
 
-
 :eyes: Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage). 
 
 ## Documentation
@@ -120,7 +119,7 @@ To patch scikit-learn, you can:
 
 The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
-- [About daal4py](https://github.com/intel/scikit-learn-intelex/tree/master/daal4py)
+- [About daal4py](https://github.com/intel/scikit-learn-intelex/tree/main/daal4py)
 
 ## Samples & Examples
 
@@ -135,3 +134,4 @@ We welcome community contributions, check our [Contributing Guidelines](https://
 
 ------------------------------------------------------------------------
 \* The Intel logo, and other Intel marks are trademarks of Intel Corporation or its subsidiaries. Other names and brands may be claimed as the property of others. 
+

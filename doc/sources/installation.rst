@@ -136,7 +136,7 @@ Sources are available in |intelex_repo|_.
     daal4py >= 2021.4
 
 .. note::
-    You can `build daal4py from sources <https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md>`_ or get it from `distribution channels
+    You can `build daal4py from sources <https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md>`_ or get it from `distribution channels
     <https://intelpython.github.io/daal4py/#getting-daal4py>`_.
 
 Configure the build with environment variables
