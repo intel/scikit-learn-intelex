@@ -30,7 +30,7 @@ def test_onedal_import_covariance(queue):
     inccov = IncrementalEmpiricalCovariance()
     for i in range(2):
         inccov.partial_compute(X_split[i], queue=queue)
-    
+
     result = inccov.finalize_compute()
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])

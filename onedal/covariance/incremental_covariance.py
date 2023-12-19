@@ -13,15 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import numpy as np
+from sklearn.utils import check_array
+
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
+
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
-from sklearn.utils import check_array
-import numpy as np
 
 
-class IncrementalEmpiricalCovariance():
+class IncrementalEmpiricalCovariance:
     def __init__(self, method="dense", bias=False):
         self.method = method
         self.bias = bias
@@ -39,7 +41,6 @@ class IncrementalEmpiricalCovariance():
             params["bias"] = self.bias
         return params
 
-
     def partial_compute(self, X, queue=None):
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
@@ -54,7 +55,9 @@ class IncrementalEmpiricalCovariance():
         params = self._get_onedal_params(self._dtype)
         module = _backend.covariance
         table_X = to_table(X)
-        self._partial_result = module.partial_compute(self._policy, params, self._partial_result, table_X)
+        self._partial_result = module.partial_compute(
+            self._policy, params, self._partial_result, table_X
+        )
 
     def finalize_compute(self, queue=None):
         params = self._get_onedal_params(self._dtype)
@@ -65,7 +68,6 @@ class IncrementalEmpiricalCovariance():
         else:
             n_rows = self._partial_result.partial_n_rows
             self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
-            
 
         self.location_ = from_table(result.means).ravel()
 
