@@ -42,3 +42,12 @@ def test_sklearnex_import_covariance(dataframe, queue, macro_block):
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
+
+    X = np.array([[1, 2], [3, 6]])
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    result = empcov.fit(X)
+    expected_covariance = np.array([[1, 2], [2, 4]])
+    expected_means = np.array([2, 4])
+
+    assert_allclose(expected_covariance, result.covariance_)
+    assert_allclose(expected_means, result.location_)
