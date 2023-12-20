@@ -75,7 +75,9 @@ class PCA:
             if sklearn_check_version("0.23"):
                 return _infer_dimension(self.explained_variance_, shape_tuple[0])
             else:
-                return _infer_dimension_(self.explained_variance_, shape_tuple[0], shape_tuple[1])
+                return _infer_dimension_(
+                    self.explained_variance_, shape_tuple[0], shape_tuple[1]
+                )
         elif 0 < self.n_components < 1:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
             return np.searchsorted(ratio_cumsum, self.n_components, side="right") + 1
@@ -114,7 +116,9 @@ class PCA:
         self.components_ = from_table(pca_result.eigenvectors)
         self.singular_values_ = from_table(pca_result.singular_values).ravel()
         self.explained_variance_ = from_table(pca_result.eigenvalues).ravel()
-        self.explained_variance_ratio_ = from_table(pca_result.explained_variances_ratio).ravel()
+        self.explained_variance_ratio_ = from_table(
+            pca_result.explained_variances_ratio
+        ).ravel()
         self.n_samples_ = n_samples
         self.n_features_ = n_features
 

@@ -214,7 +214,7 @@ class PCA(sklearn_PCA):
                 "min(n_samples, n_features)=%r with "
                 "svd_solver='full'" % (n_components, min(n_samples, n_features))
             )
-        elif n_components >= 1:v
+        elif n_components >= 1:
             if not isinstance(n_components, numbers.Integral):
                 raise ValueError(
                     "n_components=%r must be of type int "
@@ -280,4 +280,3 @@ class PCA(sklearn_PCA):
 
         self._validate_n_features_in(X)
         return self._onedal_estimator.predict(X, queue=queue)
-
