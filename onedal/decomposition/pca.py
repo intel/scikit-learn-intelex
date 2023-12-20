@@ -122,11 +122,11 @@ class PCA:
         self.n_components_ = n_components
         self.noise_variance_ = self._compute_noise_variance(n_components, n_sf_min)
 
-        if self.n_components is not None:
-            if self.n_components == "mle" or self.n_components < 1.0:
-                self.explained_variance_ = self.explained_variance_[:n_components]
-                self.components_ = self.components_[:n_components]
-                self.singular_values_ = self.singular_values_[:n_components]
+        if n_components < params["n_components"]:
+            self.explained_variance_ = self.explained_variance_[:n_components]
+            self.components_ = self.components_[:n_components]
+            self.singular_values_ = self.singular_values_[:n_components]
+            self.explained_variance_ratio_ = self.explained_variance_ratio_[:n_components]
         return self
 
     def _create_model(self):

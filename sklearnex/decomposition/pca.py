@@ -78,22 +78,13 @@ class PCA(sklearn_PCA):
                 target_type=numbers.Integral,
             )
 
-        if sklearn_check_version("0.23"):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                ensure_2d=True,
-                copy=self.copy,
-                accept_sparse=True,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                ensure_2d=True,
-                copy=self.copy,
-                accept_sparse=True,
-            )
+        X = self._validate_data(
+            X,
+            dtype=[np.float64, np.float32],
+            ensure_2d=True,
+            copy=self.copy,
+            accept_sparse=True,
+        )
 
         dispatch(
             self,
@@ -223,13 +214,13 @@ class PCA(sklearn_PCA):
                 "min(n_samples, n_features)=%r with "
                 "svd_solver='full'" % (n_components, min(n_samples, n_features))
             )
-        # elif n_components >= 1:v
-        #     if not isinstance(n_components, numbers.Integral):
-        #         raise ValueError(
-        #             "n_components=%r must be of type int "
-        #             "when greater than or equal to 1, "
-        #             "was of type=%r" % (n_components, type(n_components))
-        #         )
+        elif n_components >= 1:v
+            if not isinstance(n_components, numbers.Integral):
+                raise ValueError(
+                    "n_components=%r must be of type int "
+                    "when greater than or equal to 1, "
+                    "was of type=%r" % (n_components, type(n_components))
+                )
 
     def _save_attributes(self):
         self.n_samples_ = self._onedal_estimator.n_samples_
@@ -255,15 +246,6 @@ class PCA(sklearn_PCA):
                 "PCA does not support sparse input. See "
                 "TruncatedSVD for a possible alternative."
             )
-        # if sklearn_check_version("1.2"):
-        #     _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
-        # # elif sklearn_check_version("1.1"):
-        # #     check_scalar(
-        # #         self.n_oversamples,
-        # #         "n_oversamples",
-        # #         min_val=1,
-        # #         target_type=numbers.Integral,
-        # #     )
 
         self._validate_n_components(self.n_components, X.shape[0], X.shape[1])
 
@@ -299,6 +281,3 @@ class PCA(sklearn_PCA):
         self._validate_n_features_in(X)
         return self._onedal_estimator.predict(X, queue=queue)
 
-    fit.__doc__ = sklearn_PCA.fit.__doc__
-    transform.__doc__ = sklearn_PCA.transform.__doc__
-    fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
