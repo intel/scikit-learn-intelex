@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import unittest
+from datetime import datetime
 
 import lightgbm as lgbm
 import numpy as np
@@ -53,6 +54,17 @@ shap_not_supported_str = (
 )
 shap_unavailable_str = "SHAP Python package not available"
 cb_unavailable_str = "CatBoost not available"
+
+# CatBoost's SHAP value calculation seems to be buggy
+# See https://github.com/catboost/catboost/issues/2556
+# Disable SHAP tests temporarily
+catboost_shap_temp_disabled_on = datetime(2023, 12, 21)
+# Check once per month
+catboost_skip_shap = datetime.today().month == catboost_shap_temp_disabled_on.month
+catboost_skip_shap_msg = (
+    "CatBoost SHAP calculation is buggy. "
+    "See https://github.com/catboost/catboost/issues/2556."
+)
 
 
 class LogRegModelBuilder(unittest.TestCase):
@@ -380,7 +392,6 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         lgbm_pred = self.lgbm_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=5e-6)
 
-    @unittest.skipUnless(shap_available, reason=shap_unavailable_str)
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_test, pred_contribs=True)
@@ -542,6 +553,7 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
     def setUpClass(cls):
         X, y = make_regression(n_samples=100, n_features=10, random_state=42)
         cls.X_test = X[:2, :]
+        cls.y_test = y[:2]
         cls.X_nan = np.array([np.nan] * 20, dtype=np.float32).reshape(2, 10)
         params = {
             "reg_lambda": 1,
@@ -576,13 +588,14 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
         cb_pred = self.cb_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
+    @unittest.skipIf(catboost_skip_shap, reason=catboost_skip_shap_msg)
     def test_model_predict_shap_contribs(self):
-        # SHAP value support from CatBoost models is to be added
-        with self.assertWarnsRegex(
-            Warning,
-            "Models converted from CatBoost cannot be used for SHAP value calculation",
-        ):
-            d4p.mb.convert_model(self.cb_model)
+        m = d4p.mb.convert_model(self.cb_model)
+        d4p_pred = m.predict(self.X_test, pred_contribs=True)
+        lgbm_pred = self.cb_model.get_feature_importance(
+            cb.Pool(self.X_test, self.y_test), type="ShapValues"
+        )
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
