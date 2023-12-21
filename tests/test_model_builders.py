@@ -645,7 +645,7 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
         # SHAP value support from CatBoost models is to be added
         with self.assertWarnsRegex(
             Warning,
-            "Models converted from CatBoost cannot be used for SHAP value calculation",
+            "Converted models of this type do not support SHAP value calculation",
         ):
             d4p.mb.convert_model(self.cb_model)
 
