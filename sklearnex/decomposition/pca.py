@@ -97,14 +97,9 @@ class PCA(sklearn_PCA):
         )
         return self
 
-    @run_with_n_jobs
     def transform(self, X, y=None):
-        if sklearn_check_version("0.23"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
-            )
-        else:
-            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
+
+        X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
 
         return dispatch(
             self,
@@ -241,6 +236,7 @@ class PCA(sklearn_PCA):
         self.explained_variance_ratio_ = self._onedal_estimator.explained_variance_ratio_
         self.noise_variance_ = self._onedal_estimator.noise_variance_
 
+    @run_with_n_jobs
     def _onedal_fit(self, X, queue=None):
         if issparse(X):
             raise TypeError(
@@ -276,6 +272,7 @@ class PCA(sklearn_PCA):
                     f"{self.n_features_} features as input"
                 )
 
+    @run_with_n_jobs
     def _onedal_transform(self, X, queue=None):
         check_is_fitted(self)
 
