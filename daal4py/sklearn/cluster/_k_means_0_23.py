@@ -161,8 +161,9 @@ def _daal4py_kmeans_compatibility(
     return kmeans_algo
 
 
+@run_with_n_jobs
 def _daal4py_k_means_predict(
-    X, nClusters, centroids, resultsToEvaluate="computeAssignments"
+    self, X, nClusters, centroids, resultsToEvaluate="computeAssignments"
 ):
     X_fptype = getFPType(X)
     is_sparse = sp.issparse(X)
@@ -180,8 +181,17 @@ def _daal4py_k_means_predict(
     return res.assignments[:, 0], res.objectiveFunction[0, 0]
 
 
+@run_with_n_jobs
 def _daal4py_k_means_fit(
-    X, nClusters, numIterations, tol, cluster_centers_0, n_init, verbose, random_state
+    self,
+    X,
+    nClusters,
+    numIterations,
+    tol,
+    cluster_centers_0,
+    n_init,
+    verbose,
+    random_state,
 ):
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
@@ -245,7 +255,7 @@ def _daal4py_k_means_fit(
 
     flag_compute = "computeAssignments|computeExactObjectiveFunction"
     best_labels, best_inertia = _daal4py_k_means_predict(
-        X, nClusters, best_cluster_centers, flag_compute
+        self, X, nClusters, best_cluster_centers, flag_compute
     )
 
     distinct_clusters = np.unique(best_labels).size
@@ -434,6 +444,7 @@ def _fit(self, X, y=None, sample_weight=None):
             self.inertia_,
             self.n_iter_,
         ) = _daal4py_k_means_fit(
+            self,
             X,
             self.n_clusters,
             self.max_iter,
@@ -516,7 +527,9 @@ def _predict(self, X, sample_weight=None):
 
     _patching_status.write_log()
     if _dal_ready:
-        return _daal4py_k_means_predict(X, self.n_clusters, self.cluster_centers_)[0]
+        return _daal4py_k_means_predict(self, X, self.n_clusters, self.cluster_centers_)[
+            0
+        ]
     if sklearn_check_version("1.2"):
         if sklearn_check_version("1.3") and sample_weight is not None:
             warnings.warn(
@@ -626,7 +639,6 @@ class KMeans(KMeans_original):
             )
 
     @support_usm_ndarray()
-    @run_with_n_jobs
     def fit(self, X, y=None, sample_weight=None):
         """
         Compute k-means clustering.
@@ -657,7 +669,6 @@ class KMeans(KMeans_original):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
-    @run_with_n_jobs
     def predict(self, X, sample_weight=None):
         """
         Predict the closest cluster each sample in X belongs to.

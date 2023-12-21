@@ -88,6 +88,7 @@ def _daal4py_check(self, X, y, check_input):
         raise ValueError("selection should be either random or cyclic.")
 
 
+@run_with_n_jobs
 def _daal4py_fit_enet(self, X, y_, check_input):
     # appropriate checks
     _daal4py_check(self, X, y_, check_input)
@@ -263,6 +264,7 @@ def _daal4py_predict_enet(self, X):
     return res
 
 
+@run_with_n_jobs
 def _daal4py_fit_lasso(self, X, y_, check_input):
     # appropriate checks
     _daal4py_check(self, X, y_, check_input)
@@ -430,7 +432,6 @@ def _daal4py_predict_lasso(self, X):
     return res
 
 
-@run_with_n_jobs
 def _fit(self, X, y, sample_weight=None, check_input=True):
     if sklearn_check_version("1.0"):
         self._check_feature_names(X, reset=True)
