@@ -69,7 +69,7 @@ class CatBoostModelData:
 
     @property
     def is_classification(self):
-        return "class_params" in self.__data
+        return "class_params" in self.__data["model_info"]
 
     @property
     def has_categorical_features(self):
