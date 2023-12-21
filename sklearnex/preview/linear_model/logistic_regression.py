@@ -269,15 +269,18 @@ if daal_check_version((2024, "P", 1)):
             }
             self._onedal_estimator = onedal_LogisticRegression(**onedal_params)
 
+        def _onedal_cpu_fit(self, X, y, sample_weight):
+            which, what = logistic_module, "_logistic_regression_path"
+            replacer = logistic_regression_path
+            descriptor = getattr(which, what, None)
+            setattr(which, what, replacer)
+            clf = super().fit(X, y, sample_weight)
+            setattr(which, what, descriptor)
+            return clf
+
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
-                which, what = logistic_module, "_logistic_regression_path"
-                replacer = logistic_regression_path
-                descriptor = getattr(which, what, None)
-                setattr(which, what, replacer)
-                clf = super().fit(X, y, sample_weight)
-                setattr(which, what, descriptor)
-                return clf
+                return self._onedal_cpu_fit(X, y, sample_weight)
 
             assert sample_weight is None
 
