@@ -116,12 +116,11 @@ class PCA(sklearn_PCA):
             X,
         )
 
-    # @_fit_context(prefer_skip_nested_validation=True)
     def fit_transform(self, X, y=None):
         m = self.fit(X, y)
         return m.transform(X, y)
 
-    def _is_onedal_compatible(self, shape_tuple):
+    def _is_solver_compatible(self, shape_tuple):
         self._fit_svd_solver = self.svd_solver
         n_sf_min = min(shape_tuple)
         n_components = n_sf_min if self.n_components is None else self.n_components
@@ -161,8 +160,7 @@ class PCA(sklearn_PCA):
                     else:
                         self._fit_svd_solver = "full"
 
-        shape_good_for_daal = shape_tuple[1] / shape_tuple[0] < 2
-        if self._fit_svd_solver == "full" and shape_good_for_daal:
+        if self._fit_svd_solver == "full":
             return True
         else:
             return False
@@ -177,9 +175,12 @@ class PCA(sklearn_PCA):
             patching_status.and_conditions(
                 [
                     (
-                        self._is_onedal_compatible(shape_tuple),
-                        f"Only 'full' svd solver and data with shape "
-                        "X.shape[1] < 2 * X.shape[0] are supported.",
+                        self._is_solver_compatible(shape_tuple),
+                        f"Only 'full' svd solver is supported.",
+                    ),
+                    (
+                        shape_tuple[1] / shape_tuple[0] < 2,
+                        "Only data with X.shape[1] < 2 * X.shape[0] is supported",
                     ),
                 ]
             )

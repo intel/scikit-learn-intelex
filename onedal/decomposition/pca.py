@@ -35,14 +35,12 @@ class PCA:
         n_components=None,
         is_deterministic=True,
         method="cov",
-        copy=False,
         whiten=False,
     ):
         self.n_components = n_components
         self.method = method
         self.is_deterministic = is_deterministic
         self.whiten = whiten
-        self.copy = copy
 
     def get_onedal_params(self, data, stage="train"):
         if stage == "train":
