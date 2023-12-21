@@ -292,7 +292,7 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         return self
 
     @run_with_n_jobs
-    def predict(self, X):
+    def predict(self, X, pred_contribs=False, pred_interactions=False):
         # Input validation
         if not self.allow_nan_:
             X = check_array(X, dtype=[np.single, np.double])
@@ -303,7 +303,7 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         check_is_fitted(self, ["n_features_in_"])
 
         fptype = getFPType(X)
-        return self._predict_regression(X, fptype)
+        return self._predict_regression(X, fptype, pred_contribs, pred_interactions)
 
     @staticmethod
     def convert_model(model):
