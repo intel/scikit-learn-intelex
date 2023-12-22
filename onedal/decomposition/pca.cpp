@@ -51,8 +51,6 @@ struct method2t {
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "cov", ops, Float, method::cov);
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "svd", ops, Float, method::svd);
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "precomputed", ops, Float, method::precomputed);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
