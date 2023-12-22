@@ -267,11 +267,24 @@ class PCA(sklearn_PCA):
             expected_n_features = self.n_features_
         if X.shape[1] != expected_n_features:
             raise ValueError(
-                (
-                    f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} is expecting {expected_n_features} features as input"
-                )
+                f"X has {X.shape[1]} features, "
+                f"but {self.__class__.__name__} is expecting {expected_n_features} features as input"
             )
+
+        # if hasattr(self, "n_features_in_"):
+        #     if self.n_features_in_ != X.shape[1]:
+        #         raise ValueError(
+        #             f"X has {X.shape[1]} features, "
+        #             f"but {self.__class__.__name__} is expecting "
+        #             f"{self.n_features_in_} features as input"
+        #         )
+        # elif hasattr(self, "n_features_"):
+        #     if self.n_features_ != X.shape[1]:
+        #         raise ValueError(
+        #             f"X has {X.shape[1]} features, "
+        #             f"but {self.__class__.__name__} is expecting "
+        #             f"{self.n_features_} features as input"
+        #         )
 
     @run_with_n_jobs
     def _onedal_transform(self, X, queue=None):
