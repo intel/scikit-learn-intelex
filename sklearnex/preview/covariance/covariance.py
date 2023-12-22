@@ -18,7 +18,7 @@ from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.utils import check_array
 
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
 
@@ -27,6 +27,7 @@ from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
+@control_n_jobs
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     __doc__ = sklearn_EmpiricalCovariance.__doc__
 
@@ -37,6 +38,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     _onedal_covariance = staticmethod(onedal_EmpiricalCovariance)
 
+    @run_with_n_jobs
     def _onedal_fit(self, X, queue=None):
         onedal_params = {
             "method": "dense",
