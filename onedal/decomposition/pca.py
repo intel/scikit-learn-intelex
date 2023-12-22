@@ -16,14 +16,16 @@
 
 import numpy as np
 from sklearn.utils.extmath import stable_cumsum
-# from abc import ABCMeta, abstractmethod
-# from sklearn.decomposition._base import _BasePCA
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal import _backend
 
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
+
+# from abc import ABCMeta, abstractmethod
+# from sklearn.decomposition._base import _BasePCA
+
 
 if sklearn_check_version("0.23"):
     from sklearn.decomposition._pca import _infer_dimension
@@ -117,7 +119,9 @@ class PCA:
         self.variances_ = from_table(pca_result.variances)
         self.components_ = from_table(pca_result.eigenvectors)
         self.singular_values_ = from_table(pca_result.singular_values).ravel()
-        self.explained_variance_ = np.maximum(from_table(pca_result.eigenvalues).ravel(), 0)
+        self.explained_variance_ = np.maximum(
+            from_table(pca_result.eigenvalues).ravel(), 0
+        )
         self.explained_variance_ratio_ = from_table(pca_result.explained_variances_ratio)
         self.n_samples_ = n_samples
         self.n_features_ = n_features
