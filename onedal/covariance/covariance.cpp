@@ -19,6 +19,7 @@
 #include "oneapi/dal/algo/covariance.hpp"
 
 #include "onedal/common.hpp"
+#include "onedal/version.hpp"
 
 namespace py = pybind11;
 
@@ -44,8 +45,13 @@ struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const py::dict& params) {
         using namespace dal::covariance;
-        auto desc = dal::covariance::descriptor<Float, Method>{}.set_result_options(
-            dal::covariance::result_options::cov_matrix | dal::covariance::result_options::means);
+        auto desc = dal::covariance::descriptor<Float, Method>{};
+        desc.set_result_options(dal::covariance::result_options::cov_matrix | dal::covariance::result_options::means);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+        if (params.contains("bias")) {
+            desc.set_bias(params["bias"].cast<bool>());
+        }
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240001
         return desc;
     }
 };

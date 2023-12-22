@@ -33,13 +33,13 @@ ONEDAL_PY_INIT_MODULE(table_metadata);
 
 /* primitives */
 ONEDAL_PY_INIT_MODULE(get_tree);
-ONEDAL_PY_INIT_MODULE(covariance);
 ONEDAL_PY_INIT_MODULE(linear_kernel);
 ONEDAL_PY_INIT_MODULE(rbf_kernel);
 ONEDAL_PY_INIT_MODULE(polynomial_kernel);
 ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
+ONEDAL_PY_INIT_MODULE(covariance);
 ONEDAL_PY_INIT_MODULE(dbscan);
 ONEDAL_PY_INIT_MODULE(ensemble);
 ONEDAL_PY_INIT_MODULE(decomposition);
@@ -70,13 +70,13 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_table(m);
     init_table_metadata(m);
 
-    init_covariance(m);
     init_linear_kernel(m);
     init_rbf_kernel(m);
     init_polynomial_kernel(m);
     init_sigmoid_kernel(m);
     init_get_tree(m);
 
+    init_covariance(m);
     init_dbscan(m);
     init_decomposition(m);
     init_ensemble(m);

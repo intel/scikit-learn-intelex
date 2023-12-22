@@ -36,6 +36,8 @@ deselected_tests:
   - tests/test_common.py::test_check_param_validation[KMeans()]
   - tests/test_common.py::test_check_param_validation[Lasso()]
   - tests/test_common.py::test_check_param_validation[ElasticNet()]
+  - tests/test_common.py::test_check_param_validation[EmpiricalCovariance()]
+  - tests/test_common.py::test_check_param_validation[OAS()]
   - tests/test_common.py::test_estimators[PCA()-check_no_attributes_set_in_init]
   - tests/test_common.py::test_estimators[KMeans()-check_no_attributes_set_in_init]
   - tests/test_common.py::test_estimators[Lasso()-check_no_attributes_set_in_init]
@@ -416,7 +418,6 @@ reduced_tests:
   - utils/tests/test_utils.py
 
   - _loss/
-  - covariance/
   - cross_decomposition/
   - datasets/
   - ensemble/_hist_gradient_boosting/
