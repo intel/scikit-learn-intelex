@@ -18,7 +18,14 @@
 import logging
 from abc import ABC
 
+import sklearn.linear_model._logistic as logistic_module
+
 from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn.linear_model.logistic_path import (
+    LogisticRegression,
+    daal4py_predict,
+    logistic_regression_path,
+)
 
 
 class BaseLogisticRegression(ABC):
@@ -164,7 +171,7 @@ if daal_check_version((2024, "P", 1)):
                 return False
             return True
 
-        def _onedal_fit_supported(self, method_name, *data):
+        def _onedal_gpu_fit_supported(self, method_name, *data):
             assert method_name == "fit"
             assert len(data) == 3
             X, y, sample_weight = data
@@ -205,7 +212,7 @@ if daal_check_version((2024, "P", 1)):
 
             return patching_status
 
-        def _onedal_predict_supported(self, method_name, *data):
+        def _onedal_gpu_predict_supported(self, method_name, *data):
             assert method_name in ["predict", "predict_proba", "predict_log_proba"]
             assert len(data) == 1
 
@@ -237,9 +244,9 @@ if daal_check_version((2024, "P", 1)):
 
         def _onedal_gpu_supported(self, method_name, *data):
             if method_name == "fit":
-                return self._onedal_fit_supported(method_name, *data)
+                return self._onedal_gpu_fit_supported(method_name, *data)
             if method_name in ["predict", "predict_proba", "predict_log_proba"]:
-                return self._onedal_predict_supported(method_name, *data)
+                return self._onedal_gpu_predict_supported(method_name, *data)
             raise RuntimeError(
                 f"Unknown method {method_name} in {self.__class__.__name__}"
             )
@@ -249,9 +256,7 @@ if daal_check_version((2024, "P", 1)):
             patching_status = PatchingConditionsChain(
                 f"sklearn.linear_model.{class_name}.{method_name}"
             )
-            patching_status.and_conditions(
-                [(False, "oneDAL does not support LogisticRegression on CPU")]
-            )
+
             return patching_status
 
         def _initialize_onedal_estimator(self):
@@ -264,7 +269,19 @@ if daal_check_version((2024, "P", 1)):
             }
             self._onedal_estimator = onedal_LogisticRegression(**onedal_params)
 
+        def _onedal_cpu_fit(self, X, y, sample_weight):
+            which, what = logistic_module, "_logistic_regression_path"
+            replacer = logistic_regression_path
+            descriptor = getattr(which, what, None)
+            setattr(which, what, replacer)
+            clf = super().fit(X, y, sample_weight)
+            setattr(which, what, descriptor)
+            return clf
+
         def _onedal_fit(self, X, y, sample_weight, queue=None):
+            if queue is None or queue.sycl_device.is_cpu:
+                return self._onedal_cpu_fit(X, y, sample_weight)
+
             assert sample_weight is None
 
             check_params = {
@@ -293,6 +310,9 @@ if daal_check_version((2024, "P", 1)):
                 super().fit(X, y)
 
         def _onedal_predict(self, X, queue=None):
+            if queue is None or queue.sycl_device.is_cpu:
+                return daal4py_predict(self, X, "computeClassLabels")
+
             X = self._validate_data(X, accept_sparse=False, reset=False)
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
@@ -303,6 +323,8 @@ if daal_check_version((2024, "P", 1)):
             return self._onedal_estimator.predict(X, queue=queue)
 
         def _onedal_predict_proba(self, X, queue=None):
+            if queue is None or queue.sycl_device.is_cpu:
+                return daal4py_predict(self, X, "computeClassProbabilities")
             X = self._validate_data(X, accept_sparse=False, reset=False)
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
@@ -312,6 +334,8 @@ if daal_check_version((2024, "P", 1)):
             return self._onedal_estimator.predict_proba(X, queue=queue)
 
         def _onedal_predict_log_proba(self, X, queue=None):
+            if queue is None or queue.sycl_device.is_cpu:
+                return daal4py_predict(self, X, "computeClassLogProbabilities")
             X = self._validate_data(X, accept_sparse=False, reset=False)
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
