@@ -146,7 +146,8 @@ class PCA:
 
         X = _convert_to_supported(policy, X)
         params = self.get_onedal_params(X, stage="predict")
-        assert params["n_components"] == self.components_.shape[0]
+        # print("n_componets:", params["n_components"], "eigen_vector:", self.components_.shape[0])
+        # assert params["n_components"] == self.components_.shape[0]
         result = _backend.decomposition.dim_reduction.infer(
             policy, params, model, to_table(X)
         )

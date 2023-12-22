@@ -20,7 +20,6 @@ from math import sqrt
 
 import numpy as np
 from scipy.sparse import issparse
-from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
@@ -83,7 +82,6 @@ class PCA(sklearn_PCA):
             dtype=[np.float64, np.float32],
             ensure_2d=True,
             copy=self.copy,
-            accept_sparse=True,
         )
 
         dispatch(
@@ -98,8 +96,12 @@ class PCA(sklearn_PCA):
         return self
 
     def transform(self, X, y=None):
-
-        X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
+        X = self._validate_data(
+            X,
+            dtype=[np.float64, np.float32],
+            ensure_2d=True,
+            copy=False,
+        )
 
         return dispatch(
             self,
@@ -115,7 +117,7 @@ class PCA(sklearn_PCA):
         m = self.fit(X, y)
         return m.transform(X, y)
 
-    def _is_solver_compatible(self, shape_tuple):
+    def _is_solver_compatible_with_onedal(self, shape_tuple):
         self._fit_svd_solver = self.svd_solver
         n_sf_min = min(shape_tuple)
         n_components = n_sf_min if self.n_components is None else self.n_components
@@ -166,11 +168,12 @@ class PCA(sklearn_PCA):
         patching_status = PatchingConditionsChain(
             f"sklearn.decomposition.{class_name}.{method_name}"
         )
+
         if method_name == "fit":
             patching_status.and_conditions(
                 [
                     (
-                        self._is_solver_compatible(shape_tuple),
+                        self._is_solver_compatible_with_onedal(shape_tuple),
                         f"Only 'full' svd solver is supported.",
                     ),
                     (
@@ -188,6 +191,7 @@ class PCA(sklearn_PCA):
                 ]
             )
             return patching_status
+
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_cpu_supported(self, method_name, *data):
@@ -257,24 +261,23 @@ class PCA(sklearn_PCA):
         self._save_attributes()
 
     def _validate_n_features_in(self, X):
-        if hasattr(self, "n_features_in_"):
-            if self.n_features_in_ != X.shape[1]:
-                raise ValueError(
+        if sklearn_check_version("1.2"):
+            expected_n_features = self.n_features_in_
+        else:
+            expected_n_features = self.n_features_
+        if X.shape[1] != expected_n_features:
+            raise ValueError(
+                (
                     f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} is expecting "
-                    f"{self.n_features_in_} features as input"
+                    f"but {self.__class__.__name__} is expecting {expected_n_features} features as input"
                 )
-        elif hasattr(self, "n_features_"):
-            if self.n_features_ != X.shape[1]:
-                raise ValueError(
-                    f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} is expecting "
-                    f"{self.n_features_} features as input"
-                )
+            )
 
     @run_with_n_jobs
     def _onedal_transform(self, X, queue=None):
         check_is_fitted(self)
-
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
         self._validate_n_features_in(X)
+
         return self._onedal_estimator.predict(X, queue=queue)
