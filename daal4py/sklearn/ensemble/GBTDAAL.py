@@ -235,6 +235,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
         return proba
 
+    @staticmethod
     def convert_model(model):
         gbm = GBTDAALClassifier()
         gbm._convert_model(model)
