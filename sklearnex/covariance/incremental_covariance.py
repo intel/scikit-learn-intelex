@@ -14,7 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
-from sklearn.utils import gen_batches
+from sklearn.utils import check_array, gen_batches
+import numpy as np
 
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
@@ -96,6 +97,7 @@ class IncrementalEmpiricalCovariance:
         self : object
             Returns the instance itself.
         """
+        X = check_array(X, dtype=[np.float64, np.float32])
         self._onedal_partial_compute(X)
         return self
 

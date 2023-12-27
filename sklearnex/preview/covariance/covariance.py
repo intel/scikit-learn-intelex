@@ -17,6 +17,7 @@
 from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.utils import check_array
+from sklearn.base import BaseEstimator
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
