@@ -65,8 +65,9 @@ else:
     logdir = jp(runner_dir, "_results", "intel64")
 
 ex_log_dirs = [
-    (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
-    (jp(examples_rootdir, "update"), jp(logdir, "sklearnex")),
+    (jp(examples_rootdir, "cpu"), jp(logdir, "sklearnex")),
+    (jp(examples_rootdir, "gpu"), jp(logdir, "sklearnex")),
+    (jp(examples_rootdir, "multi-gpu"), jp(logdir, "sklearnex")),
     (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
