@@ -93,7 +93,7 @@ def to_numpy(data):
 
 def main(readcsv=read_csv):
     # input data file
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     train_file = data_path / "svm_two_class_train_dense.csv"
     predict_file = data_path / "svm_two_class_test_dense.csv"
 

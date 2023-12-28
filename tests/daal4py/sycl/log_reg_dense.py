@@ -91,7 +91,7 @@ def main(readcsv=read_csv, method="defaultDense"):
     nFeatures = 6
 
     # read training data from file with 6 features per observation and 1 class label
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     trainfile = data_path / "logreg_train.csv"
     train_data = readcsv(trainfile, range(nFeatures), t=np.float32)
     train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1), t=np.float32)

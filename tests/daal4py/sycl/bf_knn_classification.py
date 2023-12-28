@@ -79,7 +79,7 @@ def compute(train_data, train_labels, predict_data, nClasses):
 
 def main(readcsv=read_csv, method="defaultDense"):
     # Input data set parameters
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     train_file = data_path / "k_nearest_neighbors_train.csv"
     predict_file = data_path / "k_nearest_neighbors_test.csv"
 

@@ -81,7 +81,7 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="svdDense"):
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     infile = data_path / "pca_normalized.csv"
 
     # Load the data

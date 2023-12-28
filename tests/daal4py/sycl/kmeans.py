@@ -84,7 +84,7 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="randomDense"):
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     infile = data_path / "kmeans_dense.csv"
 
     nClusters = 20

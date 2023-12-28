@@ -80,7 +80,7 @@ def to_numpy(data):
 def main(readcsv=read_csv, method="defaultDense"):
     # read training data. Let's have 10 independent,
     # and 2 dependent variables (for each observation)
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     trainfile = data_path / "linear_regression_train.csv"
     train_indep_data = readcsv(trainfile, range(10), t=np.float32)
     train_dep_data = readcsv(trainfile, range(10, 12), t=np.float32)

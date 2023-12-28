@@ -80,7 +80,7 @@ def main(readcsv=read_csv, method="defaultDense"):
     maxIterations = 200
 
     # input data file
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     infile = data_path / "df_regression_train.csv"
     testfile = data_path / "df_regression_test.csv"
 

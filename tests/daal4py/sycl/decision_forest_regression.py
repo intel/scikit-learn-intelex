@@ -92,7 +92,7 @@ def to_numpy(data):
 def main(readcsv=read_csv, method="defaultDense"):
     nFeatures = 13
     # input data file
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     train_file = data_path / "df_regression_train.csv"
     predict_file = data_path / "df_regression_test.csv"
 

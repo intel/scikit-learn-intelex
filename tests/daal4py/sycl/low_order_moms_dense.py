@@ -73,7 +73,7 @@ def to_numpy(data):
 
 def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     file = data_path / "covcormoments_dense.csv"
     data = readcsv(file, range(10), t=np.float32)
 

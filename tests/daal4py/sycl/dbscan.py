@@ -81,7 +81,7 @@ def compute(data, minObservations, epsilon):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    data_path = Path(__file__).parent / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "data" / "batch"
     infile = data_path / "dbscan_dense.csv"
 
     epsilon = 0.04
