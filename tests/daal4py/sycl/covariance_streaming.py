@@ -17,6 +17,7 @@
 # daal4py covariance example for streaming on shared memory systems
 
 import os
+from pathlib import Path
 
 # let's use a generator for getting stream from file (defined in stream.py)
 import sys
@@ -93,16 +94,8 @@ def to_numpy(data):
 
 
 def main(readcsv=None, method="defaultDense"):
-    infile = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "covcormoments_dense.csv",
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "covcormoments_dense.csv"
 
     # Using of the classic way (computations on CPU)
     # configure a covariance object

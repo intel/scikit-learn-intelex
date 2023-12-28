@@ -17,6 +17,7 @@
 # daal4py Linear Regression example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -79,30 +80,13 @@ def to_numpy(data):
 def main(readcsv=read_csv, method="defaultDense"):
     # read training data. Let's have 10 independent,
     # and 2 dependent variables (for each observation)
-    trainfile = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "linear_regression_train.csv",
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    trainfile = data_path / "linear_regression_train.csv"
     train_indep_data = readcsv(trainfile, range(10), t=np.float32)
     train_dep_data = readcsv(trainfile, range(10, 12), t=np.float32)
 
     # read testing data
-    testfile = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "linear_regression_test.csv",
-    )
+    testfile = data_path / "linear_regression_test.csv"
     test_indep_data = readcsv(testfile, range(10), t=np.float32)
     test_dep_data = readcsv(testfile, range(10, 12), t=np.float32)
 

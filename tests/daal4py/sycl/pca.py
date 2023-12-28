@@ -17,6 +17,7 @@
 # daal4py PCA example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -80,9 +81,8 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="svdDense"):
-    infile = os.path.join(
-        "..", "..", "..", "examples", "daal4py", "data", "batch", "pca_normalized.csv"
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "pca_normalized.csv"
 
     # Load the data
     data = readcsv(infile, t=np.float32)

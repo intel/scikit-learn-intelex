@@ -17,6 +17,7 @@
 # daal4py logistic regression example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -90,16 +91,13 @@ def main(readcsv=read_csv, method="defaultDense"):
     nFeatures = 6
 
     # read training data from file with 6 features per observation and 1 class label
-    trainfile = os.path.join(
-        "..", "..", "..", "examples", "daal4py", "data", "batch", "logreg_train.csv"
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    trainfile = data_path / "logreg_train.csv"
     train_data = readcsv(trainfile, range(nFeatures), t=np.float32)
     train_labels = readcsv(trainfile, range(nFeatures, nFeatures + 1), t=np.float32)
 
     # read testing data from file with 6 features per observation
-    testfile = os.path.join(
-        "..", "..", "..", "examples", "daal4py", "data", "batch", "logreg_test.csv"
-    )
+    testfile = data_path / "logreg_test.csv"
     predict_data = readcsv(testfile, range(nFeatures), t=np.float32)
 
     # Using of the classic way (computations on CPU)

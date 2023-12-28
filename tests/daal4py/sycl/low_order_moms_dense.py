@@ -17,6 +17,7 @@
 # daal4py low order moments example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -72,16 +73,8 @@ def to_numpy(data):
 
 def main(readcsv=read_csv, method="defaultDense"):
     # read data from file
-    file = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "covcormoments_dense.csv",
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    file = data_path / "covcormoments_dense.csv"
     data = readcsv(file, range(10), t=np.float32)
 
     # Using of the classic way (computations on CPU)

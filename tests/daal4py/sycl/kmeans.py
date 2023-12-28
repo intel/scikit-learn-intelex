@@ -17,6 +17,7 @@
 # daal4py K-Means example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -83,9 +84,9 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="randomDense"):
-    infile = os.path.join(
-        "..", "..", "..", "examples", "daal4py", "data", "batch", "kmeans_dense.csv"
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "kmeans_dense.csv"
+
     nClusters = 20
     maxIter = 5
 

@@ -17,6 +17,7 @@
 # daal4py BF KNN example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -78,26 +79,9 @@ def compute(train_data, train_labels, predict_data, nClasses):
 
 def main(readcsv=read_csv, method="defaultDense"):
     # Input data set parameters
-    train_file = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "k_nearest_neighbors_train.csv",
-    )
-    predict_file = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "k_nearest_neighbors_test.csv",
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    train_file = data_path / "k_nearest_neighbors_train.csv"
+    predict_file = data_path / "k_nearest_neighbors_test.csv"
 
     # Read data. Let's use 5 features per observation
     nFeatures = 5

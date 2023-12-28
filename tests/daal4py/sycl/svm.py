@@ -17,6 +17,7 @@
 # daal4py SVM example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -92,26 +93,9 @@ def to_numpy(data):
 
 def main(readcsv=read_csv):
     # input data file
-    train_file = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "svm_two_class_train_dense.csv",
-    )
-    predict_file = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "svm_two_class_test_dense.csv",
-    )
+    data_path = Path(__file__).parent / "data" / "batch"
+    train_file = data_path / "svm_two_class_train_dense.csv"
+    predict_file = data_path / "svm_two_class_test_dense.csv"
 
     nFeatures = 20
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)
