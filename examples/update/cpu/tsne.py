@@ -9,4 +9,4 @@ X = np.array([[1., 2.], [1., 9.], [5., 5.],
             [6., 4.], [8., 8.], [4., 4.]], dtype=np.float32)
 
 # Fit simple model
-tsne_model = TSNE(n_components=2).fit(X)
+tsne_model = TSNE(n_components=2, perplexity=3).fit(X)
