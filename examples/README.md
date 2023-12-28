@@ -25,3 +25,7 @@ This sub-folder contains Jupyter Notebook examples of Intel(R) extension for Sci
 ### Miscellaneous
 
 This sub-folder contains any other relevant examples related to Intel(R) extension for Scikit-learn usage.
+
+### daal4py
+
+Examples related to daal4py algorithm usage can be found in [tests](https://github.com/intel/scikit-learn-intelex/tree/main/tests/daal4py/).
