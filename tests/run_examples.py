@@ -212,6 +212,23 @@ def get_exe_cmd(ex, args):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
+
+    if os.path.dirname(ex).endswith("gpu"):
+        if args.nosklearnex:
+            return None
+        if not check_device("gpu", available_devices):
+            return None
+        if not check_version((2024, "P", 1), get_daal_version()):
+            return None
+        if not check_library(["dpctl"]):
+            return None
+
+    if os.path.dirname(ex).endswith("cpu"):
+        if args.nosklearnex:
+            return None
+        if not check_version((2024, "P", 1), get_daal_version()):
+            return None
+
     if not args.nodist and ex.endswith("spmd.py"):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
