@@ -204,7 +204,7 @@ def get_exe_cmd(ex, args):
         if not check_library(req_library[os.path.basename(ex)]):
             return None
 
-    if os.path.dirname(ex).endswith("sklearnex"):
+    if os.path.dirname(ex).endswith("multi-gpu") or os.path.dirname(ex).endswith("miscellaneous"):
         if args.nosklearnex:
             return None
         if not check_device(req_device[os.path.basename(ex)], available_devices):
