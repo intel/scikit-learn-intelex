@@ -217,7 +217,7 @@ def get_exe_cmd(ex, args):
     if os.path.dirname(ex).endswith("gpu"):
         if args.nosklearnex:
             return None
-        if not check_device("gpu", available_devices):
+        if not check_device(["gpu"], available_devices):
             return None
         if not check_version((2024, "P", 1), get_daal_version()):
             return None
