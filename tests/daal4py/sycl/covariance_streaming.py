@@ -17,10 +17,10 @@
 # daal4py covariance example for streaming on shared memory systems
 
 import os
-from pathlib import Path
 
 # let's use a generator for getting stream from file (defined in stream.py)
 import sys
+from pathlib import Path
 
 import numpy as np
 

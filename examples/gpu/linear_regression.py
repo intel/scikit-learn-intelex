@@ -1,6 +1,7 @@
-import numpy as np
 import dpctl
-from sklearnex import patch_sklearn, config_context
+import numpy as np
+
+from sklearnex import config_context, patch_sklearn
 
 patch_sklearn()
 
