@@ -1,13 +1,16 @@
 import numpy as np
 import dpctl
 from sklearnex import patch_sklearn, config_context
+
 patch_sklearn()
 
 from sklearn.decomposition import PCA
 
 # Create simple arrays
-X = np.array([[1., 2.], [1., 9.], [5., 5.],
-            [6., 4.], [8., 8.], [4., 4.]], dtype=np.float32)
+X = np.array(
+    [[1.0, 2.0], [1.0, 9.0], [5.0, 5.0], [6.0, 4.0], [8.0, 8.0], [4.0, 4.0]],
+    dtype=np.float32,
+)
 
 # Configure GPU context, and create simple model
 with config_context(target_offload="gpu:0"):

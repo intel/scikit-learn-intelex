@@ -1,13 +1,16 @@
 import numpy as np
 import dpctl
 from sklearnex import patch_sklearn, config_context
+
 patch_sklearn()
 
 from sklearn.cluster import KMeans
 
 # Create simple arrays
-X = np.array([[1., 2.], [2., 2.], [2., 3.],
-            [8., 7.], [8., 8.], [25., 80.]], dtype=np.float32)
+X = np.array(
+    [[1.0, 2.0], [2.0, 2.0], [2.0, 3.0], [8.0, 7.0], [8.0, 8.0], [25.0, 80.0]],
+    dtype=np.float32,
+)
 
 # Configure GPU context, and create simple model
 with config_context(target_offload="gpu:0"):

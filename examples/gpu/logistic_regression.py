@@ -1,15 +1,18 @@
 import numpy as np
 import dpctl
 from sklearnex import patch_sklearn, config_context
+
 patch_sklearn()
 
 from sklearn.linear_model import LogisticRegression
 
 # Create simple arrays
-X_train = np.array([[1., 2.], [1., 9.], [5., 5.],
-            [6., 4.], [8., 8.], [4., 4.]], dtype=np.float32)
+X_train = np.array(
+    [[1.0, 2.0], [1.0, 9.0], [5.0, 5.0], [6.0, 4.0], [8.0, 8.0], [4.0, 4.0]],
+    dtype=np.float32,
+)
 y_train = np.array([0, 0, 1, 0, 1, 0], dtype=np.int32)
-X_test = np.array([[9., 3.], [6., 5.]], dtype=np.float32)
+X_test = np.array([[9.0, 3.0], [6.0, 5.0]], dtype=np.float32)
 
 # Configure GPU context, train simple model, and make inferences
 with config_context(target_offload="gpu:0"):
