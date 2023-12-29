@@ -44,3 +44,17 @@ def test_sklearnex_import_incremental_covariance(dataframe, queue):
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
+
+    X = np.array([[0, 1, 2, 3], [0, -1, -2, -3], [0, 1, 2, 3], [0, 1, 2, 3]])
+    X_split = np.array_split(X, 2)
+    inccov = IncrementalEmpiricalCovariance()
+    for i in range(2):
+        result = inccov.partial_fit(X_split[i])
+
+    expected_covariance = np.array(
+        [[0, 0, 0, 0], [0, 0.75, 1.5, 2.25], [0, 1.5, 3, 4.5], [0, 2.25, 4.5, 6.75]]
+    )
+    expected_means = np.array([0, 0.5, 1, 1.5])
+
+    assert_allclose(expected_covariance, result.covariance_)
+    assert_allclose(expected_means, result.location_)
