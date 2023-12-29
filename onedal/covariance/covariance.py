@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 from abc import ABCMeta
+
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
@@ -25,7 +26,7 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 
 
 class BaseEmpiricalCovariance(metaclass=ABCMeta):
-    def __init__(self, method, bias):
+    def __init__(self, method="dense", bias=False):
         self.method = method
         self.bias = bias
         self._module = _backend.covariance
@@ -42,6 +43,7 @@ class BaseEmpiricalCovariance(metaclass=ABCMeta):
             params["bias"] = self.bias
 
         return params
+
 
 class EmpiricalCovariance(BaseEmpiricalCovariance):
     """Covariance estimator.
@@ -65,7 +67,6 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
     covariance_ : ndarray of shape (n_features, n_features)
         Estimated covariance matrix
     """
-
 
     def fit(self, X, queue=None):
         """Fit the sample covariance matrix of X.

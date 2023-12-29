@@ -14,8 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
-from sklearn.utils import check_array, gen_batches
 import numpy as np
+from sklearn.utils import check_array, gen_batches
 
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
