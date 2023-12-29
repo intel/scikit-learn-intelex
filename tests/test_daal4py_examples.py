@@ -35,7 +35,7 @@ from daal4py.sklearn._utils import daal_check_version, get_daal_version
 daal_version = get_daal_version()
 
 project_path = Path(__file__).absolute().parent.parent
-example_path = project_path / "examples" / "daal4py"
+example_path = project_path / "tests" / "daal4py"
 batch_data_path = example_path / "data" / "batch"
 distributed_data_path = example_path / "data" / "distributed"
 example_data_path = project_path / "tests" / "unittest_data"
