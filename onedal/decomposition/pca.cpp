@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 #include "oneapi/dal/algo/pca.hpp"
-#include "oneapi/dal/algo/common.hpp"
+#include "oneapi/dal/algo/pca/common.hpp"
 #include "onedal/common.hpp"
 
 namespace py = pybind11;

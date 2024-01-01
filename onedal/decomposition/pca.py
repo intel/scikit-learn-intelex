@@ -28,7 +28,6 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 # from sklearn.decomposition._base import _BasePCA
 
 
-
 # class BasePCA(_BasePCA, metaclass=ABCMeta):
 
 
