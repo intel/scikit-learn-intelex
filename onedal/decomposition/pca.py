@@ -27,10 +27,7 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 # from sklearn.decomposition._base import _BasePCA
 
 
-if sklearn_check_version("0.23"):
-    from sklearn.decomposition._pca import _infer_dimension
-else:
-    from sklearn.decomposition._pca import _infer_dimension_
+from sklearn.decomposition._pca import _infer_dimension
 
 # class BasePCA(_BasePCA, metaclass=ABCMeta):
 
@@ -76,12 +73,7 @@ class PCA:
         if self.n_components is None:
             return min(shape_tuple)
         elif self.n_components == "mle":
-            if sklearn_check_version("0.23"):
-                return _infer_dimension(self.explained_variance_, shape_tuple[0])
-            else:
-                return _infer_dimension_(
-                    self.explained_variance_, shape_tuple[0], shape_tuple[1]
-                )
+            return _infer_dimension(self.explained_variance_, shape_tuple[0])
         elif 0 < self.n_components < 1:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
             return np.searchsorted(ratio_cumsum, self.n_components, side="right") + 1

@@ -35,7 +35,7 @@ struct params2desc {
                         .set_component_count(n_components)
                         .set_deterministic(is_deterministic)
                         .set_whiten(whiten)
-                        .set_normalization_mode(oneapi::dal::pca::normalization::mean_center);
+                        .set_normalization_mode(normalization::mean_center);
 
         return desc;
     }
