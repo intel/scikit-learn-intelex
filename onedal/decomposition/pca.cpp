@@ -18,25 +18,23 @@
 #include "onedal/common.hpp"
 
 namespace py = pybind11;
+namespace pca = oneapi::dal::pca;
 
 namespace oneapi::dal::python {
 namespace decomposition {
 struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const pybind11::dict& params) {
-        using namespace dal::pca;
-
         const auto n_components = params["n_components"].cast<std::int64_t>();
         bool whiten = params["whiten"].cast<bool>();
         // sign-flip feature is always used in scikit-learn
         bool is_deterministic = params["is_deterministic"].cast<bool>();
 
-        auto desc = dal::pca::descriptor<Float, Method>()
+        auto desc = pca::descriptor<Float, Method>()
                         .set_component_count(n_components)
                         .set_deterministic(is_deterministic)
                         .set_whiten(whiten)
-                        .set_normalization_mode(normalization::mean_center);
-
+                        .set_normalization_mode(pca::normalization::mean_center);
         return desc;
     }
 };
@@ -47,10 +45,12 @@ struct method2t {
 
     template <typename Float>
     auto operator()(const py::dict& params) {
-        using namespace dal::pca;
+        using namespace pca;
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "cov", ops, Float, method::cov);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "svd", ops, Float, method::svd);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "precomputed", ops, Float, method::precomputed);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
@@ -59,7 +59,7 @@ struct method2t {
 
 template <typename Task>
 void init_model(py::module_& m) {
-    using namespace dal::pca;
+    using namespace pca;
     using model_t = model<Task>;
 
     auto cls = py::class_<model_t>(m, "model")
@@ -79,7 +79,7 @@ void init_model(py::module_& m) {
 
 template <typename Task>
 void init_train_result(py::module_& m) {
-    using namespace dal::pca;
+    using namespace pca;
     using result_t = train_result<Task>;
 
     py::class_<result_t>(m, "train_result")
@@ -138,7 +138,7 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
 ONEDAL_PY_INIT_MODULE(decomposition) {
     using namespace decomposition;
-    using namespace dal::pca;
+    using namespace pca;
     using namespace dal::detail;
 
     using task_list = types<task::dim_reduction>;
@@ -154,5 +154,5 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 }
 
-ONEDAL_PY_TYPE2STR(oneapi::dal::pca::task::dim_reduction, "dim_reduction");
+ONEDAL_PY_TYPE2STR(pca::task::dim_reduction, "dim_reduction");
 } //namespace oneapi::dal::python
