@@ -22,7 +22,7 @@
 #include <daal.h>
 #include "onedal/version.hpp"
 
-#if (((MAJOR_VERSION == 2024) && (MINOR_VERSION == 0) && (UPDATE_VERSION >= 1)) || ((MAJOR_VERSION > 2024) && (MINOR_VERSION >= 1)))
+#if (((MAJOR_VERSION == 2024) && (MINOR_VERSION == 0) && (UPDATE_VERSION >= 1)) || ((MAJOR_VERSION >= 2024) && (MINOR_VERSION >= 1)))
     // added missing value support to GBT regression
     // added SHAP value support
     // added base_score parameter
