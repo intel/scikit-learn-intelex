@@ -24,12 +24,6 @@ from onedal import _backend
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 
-# from abc import ABCMeta, abstractmethod
-# from sklearn.decomposition._base import _BasePCA
-
-
-# class BasePCA(_BasePCA, metaclass=ABCMeta):
-
 
 class PCA:
     def __init__(
