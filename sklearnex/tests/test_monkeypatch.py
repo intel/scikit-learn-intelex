@@ -219,7 +219,10 @@ def test_preview_namespace():
         assert "daal4py" in lr.__module__
 
     assert "daal4py" in log_reg.__module__
-    assert "sklearnex" in pca.__module__
+    if daal_check_version((2024, "P", 100)):
+        assert "sklearnex" in pca.__module__
+    else:
+        assert "daal4py" in pca.__module__
     assert "sklearnex" in rfc.__module__
     assert "sklearnex" in dbscan.__module__
     assert "sklearnex" in svc.__module__
