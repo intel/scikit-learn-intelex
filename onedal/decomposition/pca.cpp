@@ -14,11 +14,9 @@
 * limitations under the License.
 *******************************************************************************/
 #include "oneapi/dal/algo/pca.hpp"
-#include "oneapi/dal/algo/pca/common.hpp"
 #include "onedal/common.hpp"
 
 namespace py = pybind11;
-namespace pca = oneapi::dal::pca;
 
 namespace oneapi::dal::python {
 namespace decomposition {
@@ -31,10 +29,12 @@ struct params2desc {
         bool is_deterministic = params["is_deterministic"].cast<bool>();
 
         auto desc = pca::descriptor<Float, Method>()
-                        .set_component_count(n_components)
-                        .set_deterministic(is_deterministic)
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
                         .set_whiten(whiten)
-                        .set_normalization_mode(pca::normalization::mean_center);
+                        .set_normalization_mode(dal::pca::normalization::mean_center)
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240100
+                        .set_component_count(n_components)
+                        .set_deterministic(is_deterministic);
         return desc;
     }
 };
@@ -45,7 +45,7 @@ struct method2t {
 
     template <typename Float>
     auto operator()(const py::dict& params) {
-        using namespace pca;
+        using namespace dal::pca;
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "cov", ops, Float, method::cov);
@@ -59,7 +59,7 @@ struct method2t {
 
 template <typename Task>
 void init_model(py::module_& m) {
-    using namespace pca;
+    using namespace dal::pca;
     using model_t = model<Task>;
 
     auto cls = py::class_<model_t>(m, "model")
@@ -71,26 +71,30 @@ void init_model(py::module_& m) {
                        [](const py::bytes& bytes) {
                            return deserialize<model_t>(bytes);
                        }))
-                   .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t)
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
                    .DEF_ONEDAL_PY_PROPERTY(eigenvalues, model_t)
                    .DEF_ONEDAL_PY_PROPERTY(means, model_t)
-                   .DEF_ONEDAL_PY_PROPERTY(variances, model_t);
+                   .DEF_ONEDAL_PY_PROPERTY(variances, model_t)
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240100
+                   .DEF_ONEDAL_PY_PROPERTY(eigenvectors, model_t);
 }
 
 template <typename Task>
 void init_train_result(py::module_& m) {
-    using namespace pca;
+    using namespace dal::pca;
     using result_t = train_result<Task>;
 
     py::class_<result_t>(m, "train_result")
         .def(py::init())
         .DEF_ONEDAL_PY_PROPERTY(model, result_t)
-        .def_property_readonly("eigenvectors", &result_t::get_eigenvectors)
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
         .def_property_readonly("singular_values", &result_t::get_singular_values)
         .def_property_readonly("means", &result_t::get_means)
         .def_property_readonly("variances", &result_t::get_variances)
         .def_property_readonly("eigenvalues", &result_t::get_eigenvalues)
-        .def_property_readonly("explained_variances_ratio", &result_t::get_explained_variances_ratio);
+        .def_property_readonly("explained_variances_ratio", &result_t::get_explained_variances_ratio)
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240100
+        .def_property_readonly("eigenvectors", &result_t::get_eigenvectors);
 }
 
 template <typename Task>
@@ -138,7 +142,7 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 
 ONEDAL_PY_INIT_MODULE(decomposition) {
     using namespace decomposition;
-    using namespace pca;
+    using namespace dal::pca;
     using namespace dal::detail;
 
     using task_list = types<task::dim_reduction>;
@@ -154,5 +158,5 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 }
 
-ONEDAL_PY_TYPE2STR(pca::task::dim_reduction, "dim_reduction");
+ONEDAL_PY_TYPE2STR(dal::pca::task::dim_reduction, "dim_reduction");
 } //namespace oneapi::dal::python
