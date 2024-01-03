@@ -187,3 +187,5 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         )
 
         return self
+
+    fit.__doc__ = sklearn_DBSCAN.fit.__doc__

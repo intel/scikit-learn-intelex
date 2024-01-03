@@ -98,6 +98,7 @@ else:
 
 @control_n_jobs
 class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
+    __doc__ = sklearn_NearestNeighbors.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**NearestNeighbors_._parameter_constraints}
 
@@ -222,3 +223,8 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         self._fit_X = self._onedal_estimator._fit_X
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree
+
+    fit.__doc__ = sklearn_NearestNeighbors.__doc__
+    predict.__doc__ = sklearn_NearestNeighbors.predict.__doc__
+    kneighbors.__doc__ = sklearn_NearestNeighbors.kneighbors.__doc__
+    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
