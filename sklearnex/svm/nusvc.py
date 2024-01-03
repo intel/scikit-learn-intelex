@@ -195,6 +195,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             self._check_proba()
             return self._predict_proba
 
+        predict_proba.__doc__ = sklearn_NuSVC.predict_proba.__doc__
+
     @wrap_output_data
     def _predict_proba(self, X):
         if sklearn_check_version("1.0"):
@@ -228,6 +230,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             },
             X,
         )
+
+    decision_function.__doc__ = sklearn_NuSVC.decision_function.__doc__
 
     @run_with_n_jobs
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
