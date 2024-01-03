@@ -171,6 +171,31 @@ if sklearn_check_version("1.0"):
             )
 
         def _score_samples(self, X, queue=None):
+            """Opposite of the Local Outlier Factor of X.
+
+            It is the opposite as bigger is better, i.e. large values correspond
+            to inliers.
+
+            **Only available for novelty detection (when novelty is set to True).**
+            The argument X is supposed to contain *new data*: if X contains a
+            point from training, it considers the later in its own neighborhood.
+            Also, the samples in X are not considered in the neighborhood of any
+            point.
+            The score_samples on training data is available by considering the
+            the ``negative_outlier_factor_`` attribute.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                The query sample or samples to compute the Local Outlier Factor
+                w.r.t. the training samples.
+
+            Returns
+            -------
+            opposite_lof_scores : ndarray of shape (n_samples,)
+                The opposite of the Local Outlier Factor of each input samples.
+                The lower, the more abnormal.
+            """
             with config_context(target_offload=queue):
                 check_is_fitted(self)
                 X = check_array(X, accept_sparse="csr")
@@ -226,6 +251,26 @@ if sklearn_check_version("1.0"):
         @available_if(_check_novelty_fit_predict)
         @wrap_output_data
         def fit_predict(self, X, y=None):
+            """Fit the model to the training set X and return the labels.
+
+            **Not available for novelty detection (when novelty is set to True).**
+            Label is 1 for an inlier and -1 for an outlier according to the LOF
+            score and the contamination parameter.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features), default=None
+                The query sample or samples to compute the Local Outlier Factor
+                w.r.t. to the training samples.
+
+            y : Ignored
+                Not used, present for API consistency by convention.
+
+            Returns
+            -------
+            is_inlier : ndarray of shape (n_samples,)
+                Returns -1 for anomalies/outliers and 1 for inliers.
+            """
             return dispatch(
                 self,
                 "neighbors.LocalOutlierFactor.fit_predict",
@@ -252,8 +297,6 @@ if sklearn_check_version("1.0"):
             return patching_status
 
         fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
-        fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
-        score_samples.__doc__ = sklearn_LocalOutlierFactor.score_samples.__doc__
 
 else:
 

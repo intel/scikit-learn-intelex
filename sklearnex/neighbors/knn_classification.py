@@ -338,5 +338,6 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
 
     fit.__doc__ = sklearn_KNeighborsClassifier.fit.__doc__
     predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
+    predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
