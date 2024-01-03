@@ -340,4 +340,3 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_KNeighborsClassifier.radius_neighbors.__doc__
-

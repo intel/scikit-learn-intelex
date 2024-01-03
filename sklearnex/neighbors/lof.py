@@ -255,8 +255,6 @@ if sklearn_check_version("1.0"):
         fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
         score_samples.__doc__ = sklearn_LocalOutlierFactor.score_samples.__doc__
 
-
-
 else:
 
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
