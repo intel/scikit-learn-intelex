@@ -18,12 +18,17 @@ import numpy as np
 
 from sklearnex.covariance import IncrementalEmpiricalCovariance
 
-X = np.array([[0, 1], [0, 1]])
-X_split = np.array_split(X, 2)
-
 inccov = IncrementalEmpiricalCovariance()
-for i in range(2):
-    result = inccov.partial_fit(X_split[i])
+
+# We do partial_fit for each batch and then print final result
+X_1 = np.array([[0, 1], [0, 1]])
+result = inccov.partial_fit(X_1)
+
+X_2 = np.array([[1, 2]])
+result = inccov.partial_fit(X_2)
+
+X_3 = np.array([[1, 1], [1, 2], [2, 3]])
+result = inccov.partial_fit(X_3)
 
 print(f"Covariance matrix:\n{result.covariance_}")
 print(f"Means:\n{result.location_}")
