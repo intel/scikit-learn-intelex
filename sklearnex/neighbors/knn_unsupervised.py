@@ -225,6 +225,5 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         self._tree = self._onedal_estimator._tree
 
     fit.__doc__ = sklearn_NearestNeighbors.__doc__
-    predict.__doc__ = sklearn_NearestNeighbors.predict.__doc__
     kneighbors.__doc__ = sklearn_NearestNeighbors.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
