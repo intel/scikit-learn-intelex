@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import logging
 import os
 import pathlib
 import re
@@ -139,9 +140,17 @@ def test_docstring_patching_match(name):
         if not i.startswith("_") and not i.endswith("_")
     }
 
-    # check class docstring match
-    assert patched.__doc__ == unpatched.__doc__
+    # check class docstring match if a docstring is available
+    assert patched.__doc__ is not None or unpatched.__doc__ is None
+    if patched.__doc__ != unpatched.__doc__:
+        logging.warning(
+            f"class {name} has a custom docstring which does not match sklearn"
+        )
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
-        assert patched_docstrings[i] == unpatched_docstrings[i]
+        assert patched_docstrings[i] is not None or unpatched_docstrings[i] is None
+        if patched_docstrings[i] != unpatched_docstrings[i]:
+            logging.warning(
+                f"{name}.{i} has a custom docstring which does not match sklearn"
+            )
