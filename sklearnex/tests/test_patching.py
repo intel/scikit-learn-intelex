@@ -105,7 +105,7 @@ def _load_all_models(patched):
             and isclass(maybe_class)
             and issubclass(maybe_class, BaseEstimator)
         ):
-            models[patch_infos[0][0][1]] = maybe_class()
+            models[patch_infos[0][0][1]] = maybe_class
 
     if patched:
         unpatch_sklearn()
@@ -119,8 +119,8 @@ UNPATCHED_MODELS = _load_all_models(patched=False)
 
 @pytest.mark.parametrize("name", PATCHED_MODELS.keys())
 def test_is_patched_instance(name):
-    patched = PATCHED_MODELS[name]
-    unpatched = UNPATCHED_MODELS[name]
+    patched = PATCHED_MODELS[name]()
+    unpatched = UNPATCHED_MODELS[name]()
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
 
