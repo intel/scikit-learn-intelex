@@ -143,6 +143,7 @@ else:
 
 @control_n_jobs
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
+    __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsClassifier_._parameter_constraints}
 
@@ -334,3 +335,9 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         self._fit_method = self._onedal_estimator._fit_method
         self.outputs_2d_ = self._onedal_estimator.outputs_2d_
         self._tree = self._onedal_estimator._tree
+
+    fit.__doc__ = sklearn_KNeighborsClassifier.fit.__doc__
+    predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
+    kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
+    radius_neighbors.__doc__ = sklearn_KNeighborsClassifier.radius_neighbors.__doc__
+

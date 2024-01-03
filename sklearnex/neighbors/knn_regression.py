@@ -139,7 +139,7 @@ else:
 
 @control_n_jobs
 class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
-    __doc__ == sklearn_KNeighborsRegressor.__doc__
+    __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsRegressor_._parameter_constraints}
 

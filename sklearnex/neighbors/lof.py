@@ -39,6 +39,7 @@ from .._utils import PatchingConditionsChain
 if sklearn_check_version("1.0"):
 
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
+        __doc__ = sklearn_LocalOutlierFactor.__doc__
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {
                 **sklearn_LocalOutlierFactor._parameter_constraints
@@ -250,6 +251,12 @@ if sklearn_check_version("1.0"):
             )
             return patching_status
 
+        fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
+        fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
+        score_samples.__doc__ = sklearn_LocalOutlierFactor.score_samples.__doc__
+
+
+
 else:
 
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
@@ -435,3 +442,5 @@ else:
 
         def _onedal_cpu_supported(self, method_name, *data):
             return True
+
+        fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
