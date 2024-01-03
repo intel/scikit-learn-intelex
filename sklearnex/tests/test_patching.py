@@ -14,12 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import logging
 import os
 import pathlib
 import re
 import subprocess
 import sys
+import warnings
 from inspect import isclass
 
 import pytest
@@ -143,14 +143,12 @@ def test_docstring_patching_match(name):
     # check class docstring match if a docstring is available
     assert patched.__doc__ is not None or unpatched.__doc__ is None
     if patched.__doc__ != unpatched.__doc__:
-        logging.warning(
-            f"class {name} has a custom docstring which does not match sklearn"
-        )
+        warnings.warn(f"class {name} has a custom docstring which does not match sklearn")
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
         assert patched_docstrings[i] is not None or unpatched_docstrings[i] is None
         if patched_docstrings[i] != unpatched_docstrings[i]:
-            logging.warning(
+            warnings.warn(
                 f"{name}.{i} has a custom docstring which does not match sklearn"
             )
