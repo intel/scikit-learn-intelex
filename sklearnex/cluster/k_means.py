@@ -148,32 +148,6 @@ if daal_check_version((2023, "P", 200)):
 
             self._onedal_estimator = onedal_KMeans(**onedal_params)
 
-        def _onedal_fit_supported(self, method_name, X, y=None, sample_weight=None):
-            assert method_name == "fit"
-
-            class_name = self.__class__.__name__
-            patching_status = PatchingConditionsChain(f"sklearn.cluster.{class_name}.fit")
-
-            sample_count = _num_samples(X)
-            self._algorithm = self.algorithm
-            supported_algs = ["auto", "full", "lloyd"]
-            correct_count = self.n_clusters < sample_count
-
-            patching_status.and_conditions(
-                [
-                    (
-                        self.algorithm in supported_algs,
-                        "Only lloyd algorithm is supported.",
-                    ),
-                    (not issparse(self.init), "Sparse init values are not supported"),
-                    (correct_count, "n_clusters is smaller than number of samples"),
-                    (sample_weight is None, "Sample weight is not None."),
-                    (not issparse(X), "Sparse input is not supported."),
-                ]
-            )
-
-            return patching_status
-
         def fit(self, X, y=None, sample_weight=None):
             """Compute k-means clustering.
 
@@ -235,30 +209,6 @@ if daal_check_version((2023, "P", 200)):
 
             self._save_attributes()
 
-        def _onedal_predict_supported(self, method_name, X):
-            assert method_name == "predict"
-
-            class_name = self.__class__.__name__
-            patching_status = PatchingConditionsChain(
-                f"sklearn.cluster.{class_name}.predict"
-            )
-
-            supported_algs = ["auto", "full", "lloyd"]
-            dense_centers = not issparse(self.cluster_centers_)
-
-            patching_status.and_conditions(
-                [
-                    (
-                        self.algorithm in supported_algs,
-                        "Only lloyd algorithm is supported.",
-                    ),
-                    (dense_centers, "Sparse clusters is not supported."),
-                    (not issparse(X), "Sparse input is not supported."),
-                ]
-            )
-
-            return patching_status
-
         @wrap_output_data
         def predict(self, X):
             """Compute k-means clustering.
@@ -305,11 +255,47 @@ if daal_check_version((2023, "P", 200)):
 
             return self._onedal_estimator.predict(X, queue=queue)
 
-        def _onedal_supported(self, method_name, *data):
+        def _onedal_supported(self, method_name, X, y=None, sample_weight=None):
+            sample_count = _num_samples(X)
+            self._algorithm = self.algorithm
+            supported_algs = ["auto", "full", "lloyd"]
+
+            class_name = self.__class__.__name__
+            patching_status = PatchingConditionsChain(
+                f"sklearn.cluster.{class_name}.{method_name}"
+            )
             if method_name == "fit":
-                return self._onedal_fit_supported(method_name, *data)
+                correct_count = self.n_clusters < sample_count
+
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.algorithm in supported_algs,
+                            "Only lloyd algorithm is supported.",
+                        ),
+                        (not issparse(self.init), "Sparse init values are not supported"),
+                        (correct_count, "n_clusters is smaller than number of samples"),
+                        (sample_weight is None, "Sample weight is not None."),
+                        (not issparse(X), "Sparse input is not supported."),
+                    ]
+                )
+                return patching_status
+
             if method_name == "predict":
-                return self._onedal_predict_supported(method_name, *data)
+                dense_centers = not issparse(self.cluster_centers_)
+
+                patching_status.and_conditions(
+                    [
+                        (
+                            self.algorithm in supported_algs,
+                            "Only lloyd algorithm is supported.",
+                        ),
+                        (dense_centers, "Sparse clusters is not supported."),
+                        (not issparse(X), "Sparse input is not supported."),
+                    ]
+                )
+                return patching_status
+
             raise RuntimeError(
                 f"Unknown method {method_name} in {self.__class__.__name__}"
             )
