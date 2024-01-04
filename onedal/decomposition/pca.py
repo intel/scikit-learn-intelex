@@ -38,11 +38,11 @@ class PCA:
         self.is_deterministic = is_deterministic
         self.whiten = whiten
 
-    def get_onedal_params(self, data, stage="train"):
-        if stage == "train":
+    def get_onedal_params(self, data, is_train=True):
+        if is_train:
             n_components = self._resolve_n_components_for_training(data.shape)
         else:
-            n_components = self._resolve_n_components_for_result(data.shape)
+            n_components = self.n_components_
         return {
             "fptype": "float" if data.dtype == np.float32 else "double",
             "method": self.method,
@@ -136,7 +136,7 @@ class PCA:
         model = self._create_model()
 
         X = _convert_to_supported(policy, X)
-        params = self.get_onedal_params(X, stage="predict")
+        params = self.get_onedal_params(X, is_train=False)
         # print("n_componets:", params["n_components"], "eigen_vector:", self.components_.shape[0])
         # assert params["n_components"] == self.components_.shape[0]
         result = _backend.decomposition.dim_reduction.infer(
