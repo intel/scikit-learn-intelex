@@ -158,8 +158,7 @@ def test_patching_checker():
 
 def test_preview_namespace():
     def get_estimators():
-        from sklearn.cluster import DBSCAN
-        from sklearn.cluster import KMeans
+        from sklearn.cluster import DBSCAN, KMeans
         from sklearn.decomposition import PCA
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.linear_model import LinearRegression, LogisticRegression

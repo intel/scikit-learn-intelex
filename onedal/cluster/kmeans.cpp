@@ -73,9 +73,6 @@ struct params2desc {
         if (result_options == "computeAssignments"){
             desc.set_result_options(result_options::compute_assignments);
         }
-        else if (result_options == "computeObjectiveFunction") {
-            desc.set_result_options(result_options::compute_exact_objective_function);
-        }        
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
         return desc;
     }

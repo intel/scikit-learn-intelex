@@ -148,7 +148,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             "max_iteration_count": self.max_iter,
             "cluster_count": self.n_clusters,
             "accuracy_threshold": thr,
-            "result_options":result_option,
+            "result_options": result_option,
         }
 
     def _get_params_and_input(self, X, policy):
