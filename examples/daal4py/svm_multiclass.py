@@ -16,30 +16,22 @@
 
 # daal4py multi-class SVM example for shared memory systems
 
+from pathlib import Path
+
 import numpy as np
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv):
     nFeatures = 20
     nClasses = 5
 
     # read training data from file
     # with nFeatures features per observation and 1 class label
-    train_file = "data/batch/svm_multi_class_train_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    train_file = data_path / "svm_multi_class_train_dense.csv"
     train_data = readcsv(train_file, range(nFeatures))
     train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
 
@@ -57,7 +49,7 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # Now the prediction stage
     # Read data
-    pred_file = "data/batch/svm_multi_class_test_dense.csv"
+    pred_file = data_path / "svm_multi_class_test_dense.csv"
     pred_data = readcsv(pred_file, range(nFeatures))
     pred_labels = readcsv(pred_file, range(nFeatures, nFeatures + 1))
 

@@ -22,7 +22,7 @@ Distributed Mode
 .. note::
 
    |intelex| contains scikit-learn patching functionality that was originally available in 
-   `daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_ package.
+   `daal4py <https://github.com/intel/scikit-learn-intelex/tree/main/daal4py>`_ package.
    We recommend you to use scikit-learn-intelex package instead of daal4py.
    You can learn more about daal4py in `daal4py documentation <https://intelpython.github.io/daal4py>`_.
 
