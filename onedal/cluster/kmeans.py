@@ -338,7 +338,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
     cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
     def _predict_raw(self, X_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(dtype, "computAssignments")
+        params = self._get_onedal_params(dtype, "computeAssignments")
 
         result = module.infer(policy, params, self.model_, X_table)
 
