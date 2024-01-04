@@ -64,6 +64,7 @@ def get_patch_map():
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .cluster import KMeans as KMeans_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
@@ -75,7 +76,6 @@ def get_patch_map():
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
 
         # Preview classes for patching
-        from .preview.cluster import KMeans as KMeans_sklearnex
         from .preview.covariance import (
             EmpiricalCovariance as EmpiricalCovariance_sklearnex,
         )
@@ -93,19 +93,6 @@ def get_patch_map():
             # PCA
             mapping.pop("pca")
             mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
-
-            # KMeans
-            mapping.pop("kmeans")
-            mapping["kmeans"] = [
-                [
-                    (
-                        cluster_module,
-                        "KMeans",
-                        KMeans_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
 
             # Covariance
             mapping["empiricalcovariance"] = [
@@ -137,6 +124,10 @@ def get_patch_map():
         # DBSCAN
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
+
+        # KMeans
+        mapping.pop("kmeans")
+        mapping["kmeans"] = [[(cluster_module, "KMeans", KMeans_sklearnex), None]]
 
         # SVM
         mapping.pop("svm")

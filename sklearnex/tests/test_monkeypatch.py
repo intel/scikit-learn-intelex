@@ -159,6 +159,7 @@ def test_patching_checker():
 def test_preview_namespace():
     def get_estimators():
         from sklearn.cluster import DBSCAN
+        from sklearn.cluster import KMeans
         from sklearn.decomposition import PCA
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -169,6 +170,7 @@ def test_preview_namespace():
             LogisticRegression(),
             PCA(),
             DBSCAN(),
+            KMeans(),
             SVC(),
             RandomForestClassifier(),
         )
@@ -182,7 +184,7 @@ def test_preview_namespace():
 
     assert _is_preview_enabled()
 
-    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
+    lr, log_reg, pca, dbscan, kmeans, svc, rfc = get_estimators()
     assert "sklearnex" in rfc.__module__
 
     if daal_check_version((2023, "P", 100)):
@@ -197,6 +199,12 @@ def test_preview_namespace():
 
     assert "sklearnex.preview" in pca.__module__
     assert "sklearnex" in dbscan.__module__
+
+    if daal_check_version((2023, "P", 200)):
+        assert "sklearnex" in kmeans.__module__
+    else:
+        assert "daal4py" in kmeans.__module__
+
     assert "sklearnex" in svc.__module__
     sklearnex.unpatch_sklearn()
 
@@ -206,6 +214,7 @@ def test_preview_namespace():
     assert "sklearn." in log_reg.__module__ and "daal4py" not in log_reg.__module__
     assert "sklearn." in pca.__module__ and "daal4py" not in pca.__module__
     assert "sklearn." in dbscan.__module__ and "daal4py" not in dbscan.__module__
+    assert "sklearn." in kmeans.__module__ and "daal4py" not in kmeans.__module__
     assert "sklearn." in svc.__module__ and "daal4py" not in svc.__module__
     assert "sklearn." in rfc.__module__ and "daal4py" not in rfc.__module__
 
@@ -213,7 +222,7 @@ def test_preview_namespace():
     sklearnex.patch_sklearn()
     assert not _is_preview_enabled()
 
-    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
+    lr, log_reg, pca, dbscan, kmeans, svc, rfc = get_estimators()
     if daal_check_version((2023, "P", 100)):
         assert "sklearnex" in lr.__module__
     else:
@@ -223,5 +232,11 @@ def test_preview_namespace():
     assert "daal4py" in pca.__module__
     assert "sklearnex" in rfc.__module__
     assert "sklearnex" in dbscan.__module__
+
+    if daal_check_version((2023, "P", 200)):
+        assert "sklearnex" in kmeans.__module__
+    else:
+        assert "daal4py" in kmeans.__module__
+
     assert "sklearnex" in svc.__module__
     sklearnex.unpatch_sklearn()
