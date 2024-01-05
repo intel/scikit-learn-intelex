@@ -17,10 +17,10 @@
 import os
 import subprocess
 import sys
-from inspect import isclass
-import numpy as np
 from contextlib import contextmanager
+from inspect import isclass
 
+import numpy as np
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -30,12 +30,13 @@ from sklearn.base import (
     TransformerMixin,
 )
 from sklearn.neighbors._base import KNeighborsMixin
+
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 from sklearnex.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
-    NearestNeighbors,
     LocalOutlierFactor,
+    NearestNeighbors,
 )
 from sklearnex.svm import SVC
 

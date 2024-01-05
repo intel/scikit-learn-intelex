@@ -20,6 +20,7 @@ import re
 from contextlib import contextmanager
 
 import pytest
+from sklearn.datasets import load_diabetes, load_iris, make_regression
 from utils._patching import (
     DTYPES,
     PATCHED_MODELS,
@@ -27,7 +28,6 @@ from utils._patching import (
     UNPATCHED_MODELS,
     gen_models_info,
 )
-from sklearn.datasets import load_diabetes, load_iris, make_regression
 
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 from sklearnex.metrics import pairwise_distances, roc_auc_score
