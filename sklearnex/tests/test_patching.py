@@ -22,6 +22,7 @@ import pytest
 from utils._patching import (
     DTYPES,
     PATCHED_MODELS,
+    SPECIAL_INSTANCES,
     UNPATCHED_MODELS,
     gen_models_info,
 )
@@ -75,6 +76,39 @@ def test_standard_estimator_patching(dtype, estimator, method, dataset):
     sklearnex_logger.setLevel(logging.INFO)
 
     est = PATCHED_MODELS[estimator]().fit(X, y)
+    if not hasattr(est, method):
+        pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
+    if method != "score":
+        getattr(est, method)(X)
+    else:
+        est.score(X, y)
+
+    result = log_stream.getvalue().strip().split("\n")
+    sklearnex_logger.setLevel(logging.WARNING)
+
+    assert all(
+        [
+            "running accelerated version" in i or "fallback to original Scikit-learn" in i
+            for i in result
+        ]
+    ), f"sklearnex patching issue in {estimator}.{method} with log: \n" + "\n".join(
+        result
+    )
+
+
+@pytest.mark.parametrize("dtype", DTYPES)
+@pytest.mark.parametrize("estimator, method, dataset", gen_models_info(SPECIAL_INSTANCES))
+def test_special_estimator_patching(dtype, estimator, method, dataset):
+    X, y = _load_dataset(dataset, dtype)
+    # prepare logging
+    log_stream = io.StringIO()
+    log_handler = logging.StreamHandler(log_stream)
+    sklearnex_logger = logging.getLogger("sklearnex")
+    sklearnex_logger.addHandler(log_handler)
+    sklearnex_logger.setLevel(logging.INFO)
+
+    est = SPECIAL_INSTANCES[estimator].fit(X, y)
     if not hasattr(est, method):
         pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 

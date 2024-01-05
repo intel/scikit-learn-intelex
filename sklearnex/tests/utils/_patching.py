@@ -90,7 +90,8 @@ SPECIAL_INSTANCES = {
 def gen_models_info(algorithms):
     output = []
     for i in algorithms:
-        al = algorithms[i]()
+        al = algorithms[i]() if i in algorithms[i].__class__.__name__ else algorithms[i]
+
         methods = []
         candidates = set(
             [i for i in dir(al) if not i.startswith("_") and not i.endswith("_")]
