@@ -19,10 +19,22 @@ import subprocess
 import sys
 from inspect import isclass
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin, ClusterMixin, OutlierMixin, RegressorMixin, TransformerMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassifierMixin,
+    ClusterMixin,
+    OutlierMixin,
+    RegressorMixin,
+    TransformerMixin,
+)
 from sklearn.neighbors._base import KNeighborsMixin
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
-from sklearnex.neighbors import KNeighborsClassifier, KNeighborsRegressor, NearestNeighbors, LocalOutlierFactor
+from sklearnex.neighbors import (
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+    NearestNeighbors,
+    LocalOutlierFactor,
+)
 from sklearnex.svm import SVC
 
 
@@ -63,11 +75,16 @@ mixin_map = [
 ]
 
 
-SPECIAL_INSTANCES = {i.__str__():i for i in [LocalOutlierFactor(novelty=True),
-    SVC(probability=True),
-    KNeighborsClassifier(algorithm="brute"),
-    KNeighborsRegressor(algorithm="brute"),
-    NearestNeighbors(algorithm="brute")]}
+SPECIAL_INSTANCES = {
+    i.__str__(): i
+    for i in [
+        LocalOutlierFactor(novelty=True),
+        SVC(probability=True),
+        KNeighborsClassifier(algorithm="brute"),
+        KNeighborsRegressor(algorithm="brute"),
+        NearestNeighbors(algorithm="brute"),
+    ]
+}
 
 
 def gen_models_info(algorithms):
@@ -80,7 +97,7 @@ def gen_models_info(algorithms):
         )
         dataset = None
 
-        name = i.split("(")[0] #handling SPECIAL_INSTANCES
+        name = i.split("(")[0]  # handling SPECIAL_INSTANCES
         for mixin, method, data in mixin_map:
             if isinstance(UNPATCHED_MODELS[name](), mixin):
                 methods += list(candidates.intersection(set(method)))
@@ -89,7 +106,6 @@ def gen_models_info(algorithms):
 
         if not dataset:
             dataset = "classification"
-
 
         methods = list(set(methods))  # return only unique values
         output += [[i, j, dataset] for j in methods]
@@ -108,24 +124,4 @@ DTYPES = [
     np.uint16,
     np.uint32,
     np.uint64,
-]
-
-TO_SKIP = [
-    # --------------- NO INFO ---------------
-    r"KMeans .*transform",
-    r"KMeans .*score",
-    r"PCA .*score",
-    r"LogisticRegression .*decision_function",
-    r"LogisticRegressionCV .*decision_function",
-    r"LogisticRegressionCV .*predict",
-    r"LogisticRegressionCV .*predict_proba",
-    r"LogisticRegressionCV .*predict_log_proba",
-    r"LogisticRegressionCV .*score",
-    # --------------- Scikit ---------------
-    r"Ridge float16 predict",
-    r"Ridge float16 score",
-    r"RandomForestClassifier .*predict_proba",
-    r"RandomForestClassifier .*predict_log_proba",
-    r"pairwise_distances .*pairwise_distances",  # except float64
-    r"roc_auc_score .*roc_auc_score",
 ]

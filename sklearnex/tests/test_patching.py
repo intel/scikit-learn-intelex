@@ -23,7 +23,6 @@ from utils._patching import (
     DTYPES,
     PATCHED_MODELS,
     UNPATCHED_MODELS,
-    TO_SKIP,
     gen_models_info,
 )
 from sklearn.datasets import load_diabetes, load_iris, make_regression
