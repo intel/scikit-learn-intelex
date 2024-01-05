@@ -124,20 +124,22 @@ def test_is_patched_instance(name):
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
 
+
 @pytest.mark.parametrize(
     "name", [i for i in PATCHED_MODELS.keys() if "sklearnex" in PATCHED_MODELS[i].__module__]
 )
 def test_onedal_cpu_supported(name):
     patched = PATCHED_MODELS[name]
-    sig = inspect.signature(patched._onedal_cpu_supported)
+    sig = str(inspect.signature(patched._onedal_cpu_supported))
     assert "(self, method_name, *data)" == sig
+
 
 @pytest.mark.parametrize(
     "name", [i for i in PATCHED_MODELS.keys() if "sklearnex" in PATCHED_MODELS[i].__module__]
 )
 def test_onedal_gpu_supported(name):
     patched = PATCHED_MODELS[name]
-    sig = inspect.signature(patched._onedal_gpu_supported)
+    sig = str(inspect.signature(patched._onedal_gpu_supported))
     assert "(self, method_name, *data)" == sig
     
 
