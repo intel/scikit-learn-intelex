@@ -38,8 +38,8 @@ class PCA:
         self.is_deterministic = is_deterministic
         self.whiten = whiten
 
-    def get_onedal_params(self, data, is_train=True):
-        if is_train:
+    def get_onedal_params(self, data, is_predict=None):
+        if is_predict is None:
             n_components = self._resolve_n_components_for_training(data.shape)
         else:
             n_components = self.n_components_
@@ -113,6 +113,10 @@ class PCA:
         self.n_samples_ = n_samples
         self.n_features_ = n_features
 
+        U = None
+        S = self.singular_values_
+        Vt = self.components_
+
         n_components = self._resolve_n_components_for_result(X.shape)
         self.n_components_ = n_components
         self.noise_variance_ = self._compute_noise_variance(n_components, n_sf_min)
@@ -122,7 +126,8 @@ class PCA:
             self.components_ = self.components_[:n_components]
             self.singular_values_ = self.singular_values_[:n_components]
             self.explained_variance_ratio_ = self.explained_variance_ratio_[:n_components]
-        return self
+
+        return U, S, Vt
 
     def _create_model(self):
         m = _backend.decomposition.dim_reduction.model()
@@ -138,9 +143,7 @@ class PCA:
         model = self._create_model()
 
         X = _convert_to_supported(policy, X)
-        params = self.get_onedal_params(X, is_train=False)
-        # print("n_componets:", params["n_components"], "eigen_vector:", self.components_.shape[0])
-        # assert params["n_components"] == self.components_.shape[0]
+        params = self.get_onedal_params(X, is_predict=True)
         result = _backend.decomposition.dim_reduction.infer(
             policy, params, model, to_table(X)
         )

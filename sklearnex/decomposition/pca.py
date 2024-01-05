@@ -75,6 +75,10 @@ if daal_check_version((2024, "P", 100)):
             self.random_state = random_state
 
         def fit(self, X, y=None):
+            self._fit(X)
+            return self
+
+        def _fit(self, X):
             if sklearn_check_version("1.2"):
                 self._validate_params()
             elif sklearn_check_version("1.1"):
@@ -92,7 +96,7 @@ if daal_check_version((2024, "P", 100)):
                 copy=self.copy,
             )
 
-            dispatch(
+            U, S, Vt = dispatch(
                 self,
                 "fit",
                 {
@@ -101,7 +105,7 @@ if daal_check_version((2024, "P", 100)):
                 },
                 X,
             )
-            return self
+            return U, S, Vt
 
         def transform(self, X, y=None):
             X = self._validate_data(
@@ -122,8 +126,21 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def fit_transform(self, X, y=None):
-            m = self.fit(X, y)
-            return m.transform(X, y)
+            U, S, Vt = self._fit(X)
+            if U is None:
+                # oneDAL PCA was fit
+                X_transformed = self.transform(X, y)
+                return X_transformed
+            else:
+                # Scikit-learn PCA was fit
+                U = U[:, : self.n_components_]
+
+                if self.whiten:
+                    U *= sqrt(X.shape[0] - 1)
+                else:
+                    U *= S[: self.n_components_]
+
+                return U
 
         def _is_solver_compatible_with_onedal(self, shape_tuple):
             self._fit_svd_solver = self.svd_solver
@@ -273,10 +290,18 @@ if daal_check_version((2024, "P", 100)):
                 "whiten": self.whiten,
             }
             self._onedal_estimator = onedal_PCA(**onedal_params)
-            self._onedal_estimator.fit(X, queue=queue)
+            U, S, Vt = self._onedal_estimator.fit(X, queue=queue)
             self._save_attributes()
 
-        def _validate_n_features_in(self, X):
+            return U, S, Vt
+
+        @run_with_n_jobs
+        def _onedal_transform(self, X, queue=None):
+            check_is_fitted(self)
+
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=False)
+
             if sklearn_check_version("1.2"):
                 expected_n_features = self.n_features_in_
             else:
@@ -288,13 +313,6 @@ if daal_check_version((2024, "P", 100)):
                         f"but PCA is expecting {expected_n_features} features as input"
                     )
                 )
-
-        @run_with_n_jobs
-        def _onedal_transform(self, X, queue=None):
-            check_is_fitted(self)
-            self._validate_n_features_in(X)
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
 
             return self._onedal_estimator.predict(X, queue=queue)
 

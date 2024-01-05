@@ -441,7 +441,8 @@ gpu:
 
   # Segfaults
   - ensemble/tests/test_weight_boosting.py
-
+  # sklearn doesn't expect some estimators to support n_jobs
+  - tests/test_common.py::test_check_param_validation[PCA()]
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
   - cluster/tests/test_k_means.py::test_k_means_fit_predict
