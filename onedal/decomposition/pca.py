@@ -107,7 +107,9 @@ class PCA:
         self.explained_variance_ = np.maximum(
             from_table(pca_result.eigenvalues).ravel(), 0
         )
-        self.explained_variance_ratio_ = from_table(pca_result.explained_variances_ratio)
+        self.explained_variance_ratio_ = from_table(
+            pca_result.explained_variances_ratio
+        ).ravel()
         self.n_samples_ = n_samples
         self.n_features_ = n_features
 

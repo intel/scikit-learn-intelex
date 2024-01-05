@@ -250,7 +250,7 @@ if daal_check_version((2024, "P", 100)):
             self.components_ = self._onedal_estimator.components_
             self.mean_ = self._onedal_estimator.mean_
             self.singular_values_ = self._onedal_estimator.singular_values_
-            self.explained_variance_ = self._onedal_estimator.explained_variance_
+            self.explained_variance_ = self._onedal_estimator.explained_variance_.ravel()
             self.explained_variance_ratio_ = (
                 self._onedal_estimator.explained_variance_ratio_
             )
@@ -283,16 +283,18 @@ if daal_check_version((2024, "P", 100)):
                 expected_n_features = self.n_features_
             if X.shape[1] != expected_n_features:
                 raise ValueError(
-                    f"X has {X.shape[1]} features, "
-                    f"but {self.__class__.__name__} is expecting {expected_n_features} features as input"
+                    (
+                        f"X has {X.shape[1]} features, "
+                        f"but PCA is expecting {expected_n_features} features as input"
+                    )
                 )
 
         @run_with_n_jobs
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
+            self._validate_n_features_in(X)
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
-            self._validate_n_features_in(X)
 
             return self._onedal_estimator.predict(X, queue=queue)
 
