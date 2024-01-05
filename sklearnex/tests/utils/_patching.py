@@ -19,6 +19,8 @@ import subprocess
 import sys
 from inspect import isclass
 import numpy as np
+from contextlib import contextmanager
+
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,

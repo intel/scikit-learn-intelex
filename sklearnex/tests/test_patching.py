@@ -17,6 +17,7 @@
 import io
 import logging
 import re
+from contextlib import contextmanager
 
 import pytest
 from utils._patching import (
@@ -64,28 +65,36 @@ def _load_dataset(dataset, dtype):
     return X.astype(dtype), y.astype(dtype)
 
 
+@contextmanager
+def log_sklearnex():
+    try:
+        log_stream = io.StringIO()
+        log_handler = logging.StreamHandler(log_stream)
+        sklearnex_logger = logging.getLogger("sklearnex")
+        sklearnex_logger.addHandler(log_handler)
+        sklearnex_logger.setLevel(logging.INFO)
+        yield log_stream
+    finally:
+        sklearnex_logger.removeHandler(log_handler)
+        sklearnex_logger.setLevel(logging.WARNING)
+
+
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize("estimator, method, dataset", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_patching(dtype, estimator, method, dataset):
     X, y = _load_dataset(dataset, dtype)
-    # prepare logging
-    log_stream = io.StringIO()
-    log_handler = logging.StreamHandler(log_stream)
-    sklearnex_logger = logging.getLogger("sklearnex")
-    sklearnex_logger.addHandler(log_handler)
-    sklearnex_logger.setLevel(logging.INFO)
 
-    est = PATCHED_MODELS[estimator]().fit(X, y)
-    if not hasattr(est, method):
-        pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+    with log_sklearnex() as log:
+        est = PATCHED_MODELS[estimator]().fit(X, y)
+        if not hasattr(est, method):
+            pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
-    if method != "score":
-        getattr(est, method)(X)
-    else:
-        est.score(X, y)
+        if method != "score":
+            getattr(est, method)(X)
+        else:
+            est.score(X, y)
 
-    result = log_stream.getvalue().strip().split("\n")
-    sklearnex_logger.setLevel(logging.WARNING)
+        result = log.getvalue().strip().split("\n")
 
     assert all(
         [
@@ -102,23 +111,17 @@ def test_standard_estimator_patching(dtype, estimator, method, dataset):
 def test_special_estimator_patching(dtype, estimator, method, dataset):
     X, y = _load_dataset(dataset, dtype)
     # prepare logging
-    log_stream = io.StringIO()
-    log_handler = logging.StreamHandler(log_stream)
-    sklearnex_logger = logging.getLogger("sklearnex")
-    sklearnex_logger.addHandler(log_handler)
-    sklearnex_logger.setLevel(logging.INFO)
+    with log_sklearnex() as log:
+        est = SPECIAL_INSTANCES[estimator].fit(X, y)
+        if not hasattr(est, method):
+            pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
-    est = SPECIAL_INSTANCES[estimator].fit(X, y)
-    if not hasattr(est, method):
-        pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+        if method != "score":
+            getattr(est, method)(X)
+        else:
+            est.score(X, y)
 
-    if method != "score":
-        getattr(est, method)(X)
-    else:
-        est.score(X, y)
-
-    result = log_stream.getvalue().strip().split("\n")
-    sklearnex_logger.setLevel(logging.WARNING)
+        result = log.getvalue().strip().split("\n")
 
     assert all(
         [
