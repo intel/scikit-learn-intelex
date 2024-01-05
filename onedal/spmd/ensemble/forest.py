@@ -19,6 +19,7 @@ from abc import ABC
 from onedal.ensemble import RandomForestClassifier as RandomForestClassifier_Batch
 from onedal.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
+from ..._device_offload import support_usm_ndarray
 from ...common._spmd_policy import _get_spmd_policy
 
 
@@ -28,8 +29,20 @@ class BaseForestSPMD(ABC):
 
 
 class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
-    pass
+    @support_usm_ndarray()
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return super().fit(X, y, sample_weight, queue)
+
+    @support_usm_ndarray()
+    def predict(self, X, queue=None):
+        return super().predict(X, queue)
 
 
 class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
-    pass
+    @support_usm_ndarray()
+    def fit(self, X, y, sample_weight=None, queue=None):
+        return super().fit(X, y, sample_weight, queue)
+
+    @support_usm_ndarray()
+    def predict(self, X, queue=None):
+        return super().predict(X, queue)
