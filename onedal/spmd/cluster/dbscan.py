@@ -18,6 +18,7 @@ from abc import ABC
 
 from onedal.cluster import DBSCAN as DBSCAN_Batch
 
+from ..._device_offload import support_usm_ndarray
 from ...common._spmd_policy import _get_spmd_policy
 
 
@@ -27,4 +28,6 @@ class BaseDBSCANspmd(ABC):
 
 
 class DBSCAN(BaseDBSCANspmd, DBSCAN_Batch):
-    pass
+    @support_usm_ndarray()
+    def fit(self, X, y=None, sample_weight=None, queue=None):
+        return super().fit(X, y, sample_weight, queue)
