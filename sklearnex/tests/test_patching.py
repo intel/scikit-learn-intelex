@@ -52,9 +52,7 @@ def run_utils():
         logging.info("roc_auc_score")
 
 
-@pytest.mark.parametrize("dtype", DTYPES)
-@pytest.mark.parametrize("estimator, method, dataset", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(dtype, estimator, method, dataset):
+def _load_dataset(dataset, dtype):
     # load data
     if dataset == "classification":
         X, y = load_iris(return_X_y=True)
@@ -63,9 +61,13 @@ def test_standard_estimator_patching(dtype, estimator, method, dataset):
     else:
         raise ValueError("Unknown dataset type")
 
-    X = X.astype(dtype)
-    y = y.astype(dtype)
+    return X.astype(dtype), y.astype(dtype)
 
+
+@pytest.mark.parametrize("dtype", DTYPES)
+@pytest.mark.parametrize("estimator, method, dataset", gen_models_info(PATCHED_MODELS))
+def test_standard_estimator_patching(dtype, estimator, method, dataset):
+    X, y = _load_dataset(dataset, dtype)
     # prepare logging
     log_stream = io.StringIO()
     log_handler = logging.StreamHandler(log_stream)
@@ -86,8 +88,13 @@ def test_standard_estimator_patching(dtype, estimator, method, dataset):
     sklearnex_logger.setLevel(logging.WARNING)
 
     assert all(
-        ["running accelerated version" in i or "fallback to original Scikit-learn" in i for i in result]
-    ), f"sklearnex patching issue in {estimator}.{method} with log: \n"+"\n".join(result)
+        [
+            "running accelerated version" in i or "fallback to original Scikit-learn" in i
+            for i in result
+        ]
+    ), f"sklearnex patching issue in {estimator}.{method} with log: \n" + "\n".join(
+        result
+    )
 
 
 @pytest.mark.parametrize("name", PATCHED_MODELS.keys())
