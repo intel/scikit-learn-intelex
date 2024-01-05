@@ -19,11 +19,18 @@ import logging
 import re
 
 import pytest
-from utils._patching import DTYPES, PATCHED_MODELS, UNPATCHED_MODELS, TO_SKIP, gen_models_info
+from utils._patching import (
+    DTYPES,
+    PATCHED_MODELS,
+    UNPATCHED_MODELS,
+    TO_SKIP,
+    gen_models_info,
+)
 from sklearn.datasets import load_diabetes, load_iris, make_regression
 
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 from sklearnex.metrics import pairwise_distances, roc_auc_score
+
 
 def run_utils():
     # pairwise_distances
@@ -48,7 +55,7 @@ def run_utils():
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize("estimator, method, dataset", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_patching(dtype, estimator, method, dataset):
-    #load data
+    # load data
     if dataset == "classification":
         X, y = load_iris(return_X_y=True)
     elif dataset == "regression":
@@ -59,7 +66,7 @@ def test_standard_estimator_patching(dtype, estimator, method, dataset):
     X = X.astype(dtype)
     y = y.astype(dtype)
 
-    #prepare logging
+    # prepare logging
     log_stream = io.StringIO()
     log_handler = logging.StreamHandler(log_stream)
     sklearnex_logger = logging.getLogger("sklearnex")
@@ -75,11 +82,12 @@ def test_standard_estimator_patching(dtype, estimator, method, dataset):
     else:
         est.score(X, y)
 
-    result = log_stream.getvalue().split("\n")
+    result = log_stream.getvalue().strip().split("\n")
     sklearnex_logger.setLevel(logging.WARNING)
 
-    print(result)
-    assert True
+    assert all(
+        ["running accelerated version" in i or "fallback to original Scikit-learn" in i for i in result]
+    ), f"sklearnex patching issue in {estimator}.{method} with log: \n"+"\n".join(result)
 
 
 @pytest.mark.parametrize("name", PATCHED_MODELS.keys())
