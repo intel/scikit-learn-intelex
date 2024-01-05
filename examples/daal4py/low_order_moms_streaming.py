@@ -19,12 +19,12 @@
 
 from pathlib import Path
 
-from stream import read_csv
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
 
-def main(readcsv=read_csv, *args, **kwargs):
+def main(readcsv=pd_read_csv, *args, **kwargs):
     # read data from file
     data_path = Path(__file__).parent / "data" / "batch"
     file = data_path / "covcormoments_dense.csv"
@@ -38,8 +38,10 @@ def main(readcsv=read_csv, *args, **kwargs):
     while True:
         # Read data in chunks
         try:
-            data = readcsv(file, range(10), s=lines_read, n=chunk_size)
-        except Exception as e:
+            data = readcsv(
+                file, usecols=range(10), skip_header=lines_read, max_rows=chunk_size
+            )
+        except StopIteration as e:
             if lines_read > 0:
                 break
             else:

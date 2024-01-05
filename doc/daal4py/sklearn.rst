@@ -159,7 +159,7 @@ algorithms:
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
-<https://github.com/IntelPython/daal4py/blob/master/deselected_tests.yaml>`__.
+<https://github.com/IntelPython/daal4py/blob/main/deselected_tests.yaml>`__.
 
 In particular the tests execute `check_estimator
 <https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html>`__

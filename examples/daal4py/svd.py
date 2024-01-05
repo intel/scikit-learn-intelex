@@ -19,23 +19,12 @@
 from pathlib import Path
 
 import numpy as np
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=np.float32)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2, dtype=np.float32)
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv):
     data_path = Path(__file__).parent / "data" / "batch"
     infile = data_path / "svd.csv"
 
@@ -47,7 +36,7 @@ def main(readcsv=read_csv, method="defaultDense"):
 
     # We can also load the data ourselfs and provide the numpy array
     algo = d4p.svd()
-    data = readcsv(infile, range(18), t=np.float32)
+    data = readcsv(infile, usecols=range(18), dtype=np.float32)
     result2 = algo.compute(data)
 
     # SVD result objects provide leftSingularMatrix,
