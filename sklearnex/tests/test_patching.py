@@ -14,11 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
+import io
+import logging
 import re
 
 import pytest
-from .utils._patching import DTYPES, PATCHED_MODELS, UNPATCHED_MODELS, TO_SKIP, gen_models_info
-from sklearn.base import BaseEstimator
+from utils._patching import DTYPES, PATCHED_MODELS, UNPATCHED_MODELS, TO_SKIP, gen_models_info
 from sklearn.datasets import load_diabetes, load_iris, make_regression
 
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
@@ -44,9 +45,9 @@ def run_utils():
         logging.info("roc_auc_score")
 
 
-@pytest.mark.parametrize("estimator, method, dataset", gen_models_info())
 @pytest.mark.parametrize("dtype", DTYPES)
-def test_estimator_patching(estimator, method, dataset, dtype):
+@pytest.mark.parametrize("estimator, method, dataset", gen_models_info(PATCHED_MODELS))
+def test_standard_estimator_patching(dtype, estimator, method, dataset):
     #load data
     if dataset == "classification":
         X, y = load_iris(return_X_y=True)
@@ -65,14 +66,14 @@ def test_estimator_patching(estimator, method, dataset, dtype):
     sklearnex_logger.addHandler(log_handler)
     sklearnex_logger.setLevel(logging.INFO)
 
-    estimator.fit(X, y)
+    est = PATCHED_MODELS[estimator]().fit(X, y)
     if method != "score":
-        getattr(estimator, method)(X)
+        getattr(est, method)(X)
     else:
-        estimator.score(X, y)
+        est.score(X, y)
 
-    result = log_stream.getvalue().decode("utf-8").split("\n")
-    sklearnex_logger.getLogger("sklearnex").setLevel(logging.WARNING)
+    result = log_stream.getvalue().split("\n")
+    sklearnex_logger.setLevel(logging.WARNING)
 
     print(result)
     assert False

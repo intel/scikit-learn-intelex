@@ -19,9 +19,11 @@ import subprocess
 import sys
 from inspect import isclass
 import numpy as np
-from sklearn.base import ClassifierMixin, RegressorMixin, ClusterMixin, TransformerMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, ClusterMixin, OutlierMixin, RegressorMixin, TransformerMixin
 from sklearn.neighbors._base import KNeighborsMixin
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
+from sklearnex.neighbors import KNeighborsClassifier, KNeighborsRegressor, NearestNeighbors, LocalOutlierFactor
+from sklearnex.svm import SVC
 
 
 def _load_all_models(patched):
@@ -61,48 +63,40 @@ mixin_map = [
 ]
 
 
-SPECIAL_INSTANCES = [
-    LocalOutlierFactor(novelty=True),
+SPECIAL_INSTANCES = {i.__str__():i for i in [LocalOutlierFactor(novelty=True),
     SVC(probability=True),
     KNeighborsClassifier(algorithm="brute"),
     KNeighborsRegressor(algorithm="brute"),
-    NearestNeighbors(algorithm="brute"),
-]
+    NearestNeighbors(algorithm="brute")]}
 
 
-def collect_test_info(algorithm):
-    methods = []
-    candidates = set(
-        [i for i in dir(algorithm) if not i.startswith("_") and not i.endswith("_")]
-    )
-    dataset = None
-
-    for mixin, method, data in mixin_map:
-        if isinstance(algorithm, mixin):
-            methods += list(candidates.intersection(set(method)))
-            if data:
-                dataset = data
-
-    if not dataset:
-        dataset = "classification"
-
-    return list(set(methods)), dataset  # return only unique values
-
-
-def gen_models_info():
+def gen_models_info(algorithms):
     output = []
-    for i in PATCHED_MODELS:
-        estimator = PATCHED_MODELS[i]()
-        methods, dataset = collect_test_info(UNPATCHED_MODELS[i]())
-        output += [[estimator, j, dataset] for j in methods]
+    for i in algorithms:
+        al = algorithms[i]()
+        methods = []
+        candidates = set(
+            [i for i in dir(al) if not i.startswith("_") and not i.endswith("_")]
+        )
+        dataset = None
 
-    for i in SPECIAL_INSTANCES:
-        methods, dataset = collect_test_info(UNPATCHED_MODELS[j.__class__.__name__]())
+        name = i.split("(")[0] #handling SPECIAL_INSTANCES
+        for mixin, method, data in mixin_map:
+            if isinstance(UNPATCHED_MODELS[name](), mixin):
+                methods += list(candidates.intersection(set(method)))
+                if data:
+                    dataset = data
+
+        if not dataset:
+            dataset = "classification"
+
+
+        methods = list(set(methods))  # return only unique values
         output += [[i, j, dataset] for j in methods]
     return output
 
 
-TYPES = [
+DTYPES = [
     np.int8,
     np.int16,
     np.int32,
