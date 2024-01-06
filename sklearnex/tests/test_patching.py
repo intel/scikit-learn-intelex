@@ -72,11 +72,11 @@ def log_sklearnex():
         log_handler = logging.StreamHandler(log_stream)
         sklearnex_logger = logging.getLogger("sklearnex")
         sklearnex_logger.addHandler(log_handler)
-        sklearnex_logger.setLevel(logging.INFO)
+        log_handler.setLevel(logging.INFO)
         yield log_stream
     finally:
+        log_handler.setLevel(logging.WARNING)
         sklearnex_logger.removeHandler(log_handler)
-        sklearnex_logger.setLevel(logging.WARNING)
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
