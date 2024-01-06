@@ -314,11 +314,6 @@ deselected_tests:
   # 'randomized' PCA expected, but 'full' is given.
   - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
 
-  # pandas require scipy version >= 1.8.1, but due to conflict 1.7.3 is installed
-  - utils/tests/test_validation.py::test_check_sparse_pandas_sp_format
-  - utils/tests/test_validation.py::test_check_pandas_sparse_invalid
-  - utils/tests/test_validation.py::test_check_pandas_sparse_valid
-
   # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
   # Assertion error in check_estimator (PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator >=0.24
