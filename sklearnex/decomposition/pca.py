@@ -115,6 +115,18 @@ if daal_check_version((2024, "P", 100)):
                 copy=False,
             )
 
+            if sklearn_check_version("1.2"):
+                expected_n_features = self.n_features_in_
+            else:
+                expected_n_features = self.n_features_
+            if X.shape[1] != expected_n_features:
+                raise ValueError(
+                    (
+                        f"X has {X.shape[1]} features, "
+                        f"but PCA is expecting {expected_n_features} features as input"
+                    )
+                )
+
             return dispatch(
                 self,
                 "transform",
@@ -302,23 +314,11 @@ if daal_check_version((2024, "P", 100)):
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
 
-            if sklearn_check_version("1.2"):
-                expected_n_features = self.n_features_in_
-            else:
-                expected_n_features = self.n_features_
-            if X.shape[1] != expected_n_features:
-                raise ValueError(
-                    (
-                        f"X has {X.shape[1]} features, "
-                        f"but PCA is expecting {expected_n_features} features as input"
-                    )
-                )
-
             return self._onedal_estimator.predict(X, queue=queue)
 
 else:
     from daal4py.sklearn.decomposition import PCA
 
     logging.warning(
-        "Sklearnex PCA requires oneDAL version >= 2024.1.0 " "but it was not found"
+        "Sklearnex PCA requires oneDAL version >= 2024.1.0 but it was not found"
     )
