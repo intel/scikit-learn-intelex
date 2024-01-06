@@ -97,7 +97,11 @@ def gen_models_info(algorithms):
 
         methods = []
         candidates = set(
-            [i for i in dir(al) if not i.startswith("_") and not i.endswith("_")]
+            [
+                i
+                for i in dir(al)
+                if not i.startswith("_") and not i.endswith("_") and hasattr(al, i)
+            ]
         )
         dataset = None
 
