@@ -24,10 +24,8 @@ if sklearn_check_version("1.3") or python_version[1] > 11:
     print("scipy")
 elif sklearn_check_version("1.2") or python_version[1] > 10:
     print("scipy==1.9.*")
-elif sklearn_check_version("1.1"):
-    print("scipy==1.8.*")
 elif sklearn_check_version("1.0"):
-    print("scipy==1.7.*")
+    print("scipy==1.8.*")
 elif sklearn_check_version("0.24"):
     # scipy 1.6 is compatible with pandas versions lower than 1.4
     print("scipy==1.6.* pandas==1.3.*")
