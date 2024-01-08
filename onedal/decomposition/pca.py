@@ -143,6 +143,7 @@ class PCA:
         model = self._create_model()
 
         X = _convert_to_supported(policy, X)
+
         params = self.get_onedal_params(X, stage="predict")
         result = _backend.decomposition.dim_reduction.infer(
             policy, params, model, to_table(X)

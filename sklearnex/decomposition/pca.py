@@ -108,25 +108,6 @@ if daal_check_version((2024, "P", 100)):
             return U, S, Vt
 
         def transform(self, X, y=None):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                ensure_2d=True,
-                copy=False,
-            )
-
-            if sklearn_check_version("1.2"):
-                expected_n_features = self.n_features_in_
-            else:
-                expected_n_features = self.n_features_
-            if X.shape[1] != expected_n_features:
-                raise ValueError(
-                    (
-                        f"X has {X.shape[1]} features, "
-                        f"but PCA is expecting {expected_n_features} features as input"
-                    )
-                )
-
             return dispatch(
                 self,
                 "transform",
@@ -274,7 +255,6 @@ if daal_check_version((2024, "P", 100)):
                 self.n_features_in_ = self._onedal_estimator.n_features_
             else:
                 self.n_features_ = self._onedal_estimator.n_features_
-
             self.n_components_ = self._onedal_estimator.n_components_
             self.components_ = self._onedal_estimator.components_
             self.mean_ = self._onedal_estimator.mean_
@@ -311,12 +291,31 @@ if daal_check_version((2024, "P", 100)):
 
             return U, S, Vt
 
+        def _validate_n_features_in_after_fitting(self, X):
+            if sklearn_check_version("1.2"):
+                expected_n_features = self.n_features_in_
+            else:
+                expected_n_features = self.n_features_
+            if X.shape[1] != expected_n_features:
+                raise ValueError(
+                    (
+                        f"X has {X.shape[1]} features, "
+                        f"but PCA is expecting {expected_n_features} features as input"
+                    )
+                )
+
         @run_with_n_jobs
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
-
+            self._validate_n_features_in_after_fitting(X)
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
+
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=True,
+            )
 
             return self._onedal_estimator.predict(X, queue=queue)
 
