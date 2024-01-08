@@ -43,17 +43,13 @@ class IncrementalEmpiricalCovariance:
     covariance_ : ndarray of shape (n_features, n_features)
         Estimated covariance matrix
 
-    _need_to_finalize : bool
-        If True then finalize compute should be called to
-        obtain covariance_ or location_ from partial
-        compute data
-
     """
 
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
 
     def __init__(self, batch_size=None):
-        self._need_to_finalize = False
+        self._need_to_finalize = False  # If True then finalize compute should
+        #      be called to obtain covariance_ or location_ from partial compute data
         self.batch_size = batch_size
 
     def _onedal_finalize_compute(self):
