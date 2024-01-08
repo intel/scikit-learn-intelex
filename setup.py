@@ -546,6 +546,7 @@ packages_with_tests = [
     "daal4py.sklearn.model_selection",
     "onedal",
     "onedal.common",
+    "onedal.covariance",
     "onedal.datatypes",
     "onedal.decomposition",
     "onedal.ensemble",

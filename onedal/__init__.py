@@ -43,7 +43,7 @@ except ImportError:
     _is_dpc_backend = False
 
 
-__all__ = ["decomposition", "ensemble", "interop", "neighbors", "primitives", "svm"]
+__all__ = ["covariance", "decomposition", "ensemble", "interop", "neighbors", "primitives", "svm"]
 
 if _is_dpc_backend:
     __all__.append("spmd")
