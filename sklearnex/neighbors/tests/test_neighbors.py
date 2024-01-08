@@ -79,7 +79,6 @@ def test_sklearnex_import_lof(dataframe, queue):
     lof = LocalOutlierFactor(n_neighbors=2)
     result = lof.fit_predict(X)
     result = _as_numpy(result)
-    assert hasattr(lof, "_knn")
+    assert hasattr(lof, "_onedal_estimator")
     assert "sklearnex" in lof.__module__
-    assert "sklearnex" in lof._knn.__module__
     assert_allclose(result, [-1, 1, 1, 1])
