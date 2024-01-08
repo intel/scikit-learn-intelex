@@ -36,31 +36,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             **sklearn_LocalOutlierFactor._parameter_constraints
         }
 
-    def __init__(
-        self,
-        n_neighbors=20,
-        *,
-        algorithm="auto",
-        leaf_size=30,
-        metric="minkowski",
-        p=2,
-        metric_params=None,
-        contamination="auto",
-        novelty=False,
-        n_jobs=None,
-    ):
-        super().__init__(
-            n_neighbors=n_neighbors,
-            algorithm=algorithm,
-            leaf_size=leaf_size,
-            metric=metric,
-            p=p,
-            metric_params=metric_params,
-            n_jobs=n_jobs,
-            contamination=contamination,
-            novelty=novelty,
-        )
-
     # Only certain methods should be taken from knn to prevent code
     # duplication. Inheriting would yield a complicated inheritance
     # structure
