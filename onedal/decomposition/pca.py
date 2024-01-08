@@ -127,7 +127,7 @@ class PCA:
             self.singular_values_ = self.singular_values_[:n_components]
             self.explained_variance_ratio_ = self.explained_variance_ratio_[:n_components]
 
-        return U, S, Vt
+        return self
 
     def _create_model(self):
         m = _backend.decomposition.dim_reduction.model()

@@ -302,8 +302,12 @@ if daal_check_version((2024, "P", 100)):
                 "whiten": self.whiten,
             }
             self._onedal_estimator = onedal_PCA(**onedal_params)
-            U, S, Vt = self._onedal_estimator.fit(X, queue=queue)
+            self._onedal_estimator.fit(X, queue=queue)
             self._save_attributes()
+
+            U = None
+            S = self.singular_values_
+            Vt = self.components_
 
             return U, S, Vt
 
