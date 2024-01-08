@@ -58,7 +58,7 @@ cb_unavailable_str = "CatBoost not available"
 # CatBoost's SHAP value calculation seems to be buggy
 # See https://github.com/catboost/catboost/issues/2556
 # Disable SHAP tests temporarily
-catboost_shap_temp_disabled_on = datetime(2023, 12, 21)
+catboost_shap_temp_disabled_on = datetime(2024, 1, 1)
 # Check once per month
 catboost_skip_shap = datetime.today().month == catboost_shap_temp_disabled_on.month
 catboost_skip_shap_msg = (
