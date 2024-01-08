@@ -167,14 +167,13 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             return_distance,
         )
 
+    def _save_attributes(self):
+        self.classes_ = self._onedal_estimator.classes_
+        self.n_features_in_ = self._onedal_estimator.n_features_in_
+        self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
+        self._fit_X = self._onedal_estimator._fit_X
+        self._fit_method = self._onedal_estimator._fit_method
+        self._tree = self._onedal_estimator._tree
+
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
     kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
-
-
-def _save_attributes(self):
-    self.classes_ = self._onedal_estimator.classes_
-    self.n_features_in_ = self._onedal_estimator.n_features_in_
-    self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
-    self._fit_X = self._onedal_estimator._fit_X
-    self._fit_method = self._onedal_estimator._fit_method
-    self._tree = self._onedal_estimator._tree
