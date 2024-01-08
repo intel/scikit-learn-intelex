@@ -62,7 +62,8 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         )
 
     # Only certain methods should be taken from knn to prevent code
-    # duplication. Otherwise a complicated inheritance structure
+    # duplication. Inheriting would yield a complicated inheritance
+    # structure
     _save_attributes = NearestNeighbors._save_attributes
     _onedal_knn_fit = NearestNeighbors._onedal_fit
 
@@ -129,14 +130,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         )
         return self
 
-    @run_with_n_jobs
-    def _onedal_kneighbors(
-        self, X=None, n_neighbors=None, return_distance=True, queue=None
-    ):
-        return self._onedal_estimator.kneighbors(
-            X, n_neighbors, return_distance, queue=queue
-        )
-
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
@@ -146,7 +139,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             self,
             "kneighbors",
             {
-                "onedal": self.__class__._onedal_kneighbors,
+                "onedal": NearestNeighbors._onedal_kneighbors,
                 "sklearn": sklearn_LocalOutlierFactor.kneighbors,
             },
             X,
