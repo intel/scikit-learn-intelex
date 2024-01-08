@@ -19,22 +19,13 @@ import warnings
 
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor as sklearn_LocalOutlierFactor
-from .common import KNeighborsDispatchingBase
-
-try:
-    from sklearn.utils.metaestimators import available_if
-except ImportError:
-    pass
-
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 
-from .._config import config_context
 from .._device_offload import dispatch, wrap_output_data
-from .._utils import PatchingConditionsChain
+from .common import KNeighborsDispatchingBase
 
 
 @control_n_jobs
