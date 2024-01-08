@@ -84,6 +84,8 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         self._onedal_estimator.effective_metric_params_ = self.effective_metric_params_
         self._onedal_estimator.fit(X, y, queue=queue)
 
+        self._save_attributes()
+
         if self.contamination != "auto":
             if not (0.0 < self.contamination <= 0.5):
                 raise ValueError(
