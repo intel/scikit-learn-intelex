@@ -131,7 +131,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
 
     def fit(self, X, y=None):
         self._fit_validation(X, y)
-        return dispatch(
+        dispatch(
             self,
             "fit",
             {
@@ -139,8 +139,9 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
                 "sklearn": sklearn_LocalOutlierFactor.fit,
             },
             X,
-            y,
+            None,
         )
+        return self
 
     @run_with_n_jobs
     def _onedal_kneighbors(
@@ -160,7 +161,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             "kneighbors",
             {
                 "onedal": self.__class__._onedal_kneighbors,
-                "sklearn": sklearn_NearestNeighbors.kneighbors,
+                "sklearn": sklearn_LocalOutlierFactor.kneighbors,
             },
             X,
             n_neighbors,
