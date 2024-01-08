@@ -17,6 +17,7 @@
 import numpy as np
 from sklearn.utils import check_array, gen_batches
 
+from daal4py.sklearn._device_offload import support_usm_ndarray
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
@@ -79,6 +80,7 @@ class IncrementalEmpiricalCovariance:
             self._onedal_finalize_compute()
         return self._onedal_estimator.location_
 
+    @support_usm_ndarray()
     def partial_fit(self, X):
         """Incremental fit with X. All of X is processed as a single batch.
 
@@ -97,6 +99,7 @@ class IncrementalEmpiricalCovariance:
         self._onedal_partial_compute(X)
         return self
 
+    @support_usm_ndarray()
     def fit(self, X):
         """Fit the model with X, using minibatches of size batch_size.
 
