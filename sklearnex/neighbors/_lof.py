@@ -30,6 +30,7 @@ from .common import KNeighborsDispatchingBase
 
 @control_n_jobs
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
+    __doc__ = sklearn_LocalOutlierFactor.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
             **sklearn_LocalOutlierFactor._parameter_constraints
@@ -163,3 +164,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             n_neighbors,
             return_distance,
         )
+
+    fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
+    kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
