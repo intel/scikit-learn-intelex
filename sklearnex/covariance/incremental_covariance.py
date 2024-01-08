@@ -18,11 +18,13 @@ import numpy as np
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._device_offload import support_usm_ndarray
+from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
 
 
+@control_n_jobs
 class IncrementalEmpiricalCovariance:
     """Incremental estimator for covariance.
     Allows to compute empirical covariance estimated by maximum
@@ -81,6 +83,7 @@ class IncrementalEmpiricalCovariance:
         return self._onedal_estimator.location_
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def partial_fit(self, X):
         """Incremental fit with X. All of X is processed as a single batch.
 
@@ -100,6 +103,7 @@ class IncrementalEmpiricalCovariance:
         return self
 
     @support_usm_ndarray()
+    @run_with_n_jobs
     def fit(self, X):
         """Fit the model with X, using minibatches of size batch_size.
 
