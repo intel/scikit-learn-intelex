@@ -118,7 +118,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
 
     def fit(self, X, y=None):
         self._fit_validation(X, y)
-        dispatch(
+        return dispatch(
             self,
             "fit",
             {
@@ -128,7 +128,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             X,
             None,
         )
-        return self
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
