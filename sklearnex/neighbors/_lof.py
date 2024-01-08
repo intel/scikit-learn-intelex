@@ -26,6 +26,7 @@ from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
+from .knn_unsupervised import NearestNeighbors
 
 
 @control_n_jobs
@@ -61,30 +62,16 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             novelty=novelty,
         )
 
-    @run_with_n_jobs
+    # Only certain methods should be taken from knn to prevent code
+    # duplication. Otherwise a complicated inheritance structure
+    _save_attributes = NearestNeighbors._save_attributes
+    _onedal_knn_fit = NearestNeighbors._onedal_fit
+
     def _onedal_fit(self, X, y, queue=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        onedal_params = {
-            "n_neighbors": self.n_neighbors,
-            "algorithm": self.algorithm,
-            "metric": self.effective_metric_,
-            "p": self.effective_metric_params_["p"],
-        }
-
-        try:
-            requires_y = self._get_tags()["requires_y"]
-        except KeyError:
-            requires_y = False
-
-        self._onedal_estimator = onedal_NearestNeighbors(**onedal_params)
-        self._onedal_estimator.requires_y = requires_y
-        self._onedal_estimator.effective_metric_ = self.effective_metric_
-        self._onedal_estimator.effective_metric_params_ = self.effective_metric_params_
-        self._onedal_estimator.fit(X, y, queue=queue)
-
-        self._save_attributes()
+        self._onedal_knn_fit(X, y, queue)
 
         if self.contamination != "auto":
             if not (0.0 < self.contamination <= 0.5):
@@ -167,14 +154,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             n_neighbors,
             return_distance,
         )
-
-    def _save_attributes(self):
-        self.classes_ = self._onedal_estimator.classes_
-        self.n_features_in_ = self._onedal_estimator.n_features_in_
-        self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
-        self._fit_X = self._onedal_estimator._fit_X
-        self._fit_method = self._onedal_estimator._fit_method
-        self._tree = self._onedal_estimator._tree
 
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
     kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
