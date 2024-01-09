@@ -299,9 +299,7 @@ class KNeighborsDispatchingBase:
         else:
             neigh_ind = results
 
-
-
-        n_queries = X.shape[0] if hasattr(X,'shape') else len(X)
+        n_queries = X.shape[0] if hasattr(X, "shape") else len(X)
         sample_range = np.arange(n_queries)[:, None]
         sample_mask = neigh_ind != sample_range
 
