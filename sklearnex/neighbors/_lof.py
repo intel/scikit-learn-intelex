@@ -19,6 +19,8 @@ import warnings
 
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor as sklearn_LocalOutlierFactor
+from sklearn.utils.validation import check_is_fitted
+
 
 from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
 
