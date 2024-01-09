@@ -31,6 +31,11 @@ from ..._utils import PatchingConditionsChain, register_hyperparameters
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     __doc__ = sklearn_EmpiricalCovariance.__doc__
 
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {
+            **sklearn_EmpiricalCovariance._parameter_constraints
+        }
+
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
         self.covariance_ = self._onedal_estimator.covariance_
