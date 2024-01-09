@@ -211,6 +211,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             X,
             y,
         )
+        self._fit_X = X
         return self
 
     @wrap_output_data
@@ -324,7 +325,6 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         self.classes_ = self._onedal_estimator.classes_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
-        self._fit_X = self._onedal_estimator._fit_X
         self._y = self._onedal_estimator._y
         self._fit_method = self._onedal_estimator._fit_method
         self.outputs_2d_ = self._onedal_estimator.outputs_2d_
