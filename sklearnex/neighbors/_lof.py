@@ -103,7 +103,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
                 "sklearn": sklearn_LocalOutlierFactor.fit,
             },
             X,
-            y,
+            None,
         )
         # Preserve queue even if not correctly
         # formatted by 'check_array' or 'validate_data'.
