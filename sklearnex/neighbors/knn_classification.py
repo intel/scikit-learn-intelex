@@ -32,7 +32,7 @@ from sklearn.neighbors._classification import (
     KNeighborsClassifier as sklearn_KNeighborsClassifier,
 )
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
-from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 from onedal.utils import _check_array, _num_features, _num_samples
@@ -211,6 +211,8 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             X,
             y,
         )
+        # Preserve original data for queue even if not correctly
+        # formatted by 'check_array' or 'validate_data'.
         self._fit_X = X
         return self
 
@@ -246,6 +248,10 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+        check_is_fitted(self)
+        # _fit_X is not guaranteed to have been checked properly
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(self._fit_X if X is None else X, reset=False)
         return self._kneighbors_dispatch(
             {
                 "onedal": self.__class__._onedal_kneighbors,

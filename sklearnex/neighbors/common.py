@@ -24,7 +24,6 @@ from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
-from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
@@ -263,8 +262,6 @@ class KNeighborsDispatchingBase:
     def _kneighbors_dispatch(
         self, branches, X=None, n_neighbors=None, return_distance=True
     ):
-        check_is_fitted(self)
-
         if n_neighbors is None:
             n_neighbors = self.n_neighbors
         elif n_neighbors <= 0:
@@ -282,10 +279,6 @@ class KNeighborsDispatchingBase:
             query_is_train = True
             X = self._fit_X
             n_neighbors += 1
-
-        # _fit_X is not guaranteed to have been checked properly
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
 
         results = dispatch(
             self,
