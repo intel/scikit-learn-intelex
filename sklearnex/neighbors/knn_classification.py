@@ -32,7 +32,7 @@ from sklearn.neighbors._classification import (
     KNeighborsClassifier as sklearn_KNeighborsClassifier,
 )
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
-from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
+from sklearn.utils.validation import _deprecate_positional_args
 
 from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 from onedal.utils import _check_array, _num_features, _num_samples
