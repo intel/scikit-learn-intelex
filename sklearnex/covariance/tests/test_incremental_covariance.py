@@ -29,8 +29,8 @@ def test_sklearnex_import_incremental_covariance(dataframe, queue):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    result = IncrementalEmpiricalCovariance(batch_size=1).fit(X)
+    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    result = IncrementalEmpiricalCovariance(batch_size=1).fit(X_df)
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 
@@ -40,7 +40,10 @@ def test_sklearnex_import_incremental_covariance(dataframe, queue):
     X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance()
     for i in range(2):
-        result = inccov.partial_fit(X_split[i])
+        X_split_df = _convert_to_dataframe(
+            X_split[i], sycl_queue=queue, target_df=dataframe
+        )
+        result = inccov.partial_fit(X_split_df)
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
@@ -49,7 +52,10 @@ def test_sklearnex_import_incremental_covariance(dataframe, queue):
     X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance()
     for i in range(2):
-        result = inccov.partial_fit(X_split[i])
+        X_split_df = _convert_to_dataframe(
+            X_split[i], sycl_queue=queue, target_df=dataframe
+        )
+        result = inccov.partial_fit(X_split_df)
 
     expected_covariance = np.array(
         [[0, 0, 0, 0], [0, 0.75, 1.5, 2.25], [0, 1.5, 3, 4.5], [0, 2.25, 4.5, 6.75]]
