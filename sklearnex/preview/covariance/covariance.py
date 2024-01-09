@@ -33,7 +33,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
-            **sklearn_EmpiricalCovariance._parameter_constraints
+            **sklearn_EmpiricalCovariance._parameter_constraints,
         }
 
     def _save_attributes(self):
