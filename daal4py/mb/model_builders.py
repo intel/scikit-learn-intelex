@@ -283,8 +283,16 @@ class GBTDAALModel(GBTDAALBaseModel):
 
 
 def convert_model(model):
-    gbm = GBTDAALModel()
-    gbm._convert_model(model)
+    try:
+        gbm = GBTDAALModel()
+        gbm._convert_model(model)
+    except TypeError as err:
+        if "Only GBTDAALRegressor can be created" in str(err):
+            gbm = d4p.sklearn.ensemble.GBTDAALRegressor.convert_model(model)
+        elif "Only GBTDAALClassifier can be created" in str(err):
+            gbm = d4p.sklearn.ensemble.GBTDAALClassifier.convert_model(model)
+        else:
+            raise
 
     gbm._is_regression = isinstance(gbm.daal_model_, d4p.gbt_regression_model)
 
