@@ -122,7 +122,7 @@ class NeighborsCommonBase(metaclass=ABCMeta):
                 "'distance', or a callable function"
             )
 
-    def _get_onedal_params(self, X, y=None):
+    def _get_onedal_params(self, X, y=None, n_neighbors=None):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, "weights", "uniform")
         return {
@@ -131,20 +131,20 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             "method": self._fit_method,
             "radius": self.radius,
             "class_count": class_count,
-            "neighbor_count": self.n_neighbors,
+            "neighbor_count": self.n_neighbors if n_neighbors is None else n_neighbors,
             "metric": self.effective_metric_,
             "p": self.p,
             "metric_params": self.effective_metric_params_,
             "result_option": "indices|distances" if y is None else "responses",
         }
 
-    def _get_daal_params(self, data):
+    def _get_daal_params(self, data, n_neighbors=None):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, "weights", "uniform")
         params = {
             "fptype": "float" if data.dtype == np.float32 else "double",
             "method": "defaultDense",
-            "k": self.n_neighbors,
+            "k": self.n_neighbors if n_neighbors is None else n_neighbors,
             "voteWeights": "voteUniform" if weights == "uniform" else "voteDistance",
             "resultsToCompute": "computeIndicesOfNeighbors|computeDistances",
             "resultsToEvaluate": "none"
@@ -295,7 +295,6 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             # Include an extra neighbor to account for the sample itself being
             # returned, which is removed later
             n_neighbors += 1
-        self.n_neighbors = n_neighbors
 
         n_samples_fit = self.n_samples_fit_
         if n_neighbors > n_samples_fit:
@@ -311,9 +310,9 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         gpu_device = queue is not None and queue.sycl_device.is_gpu
         if self.effective_metric_ == "euclidean" and not gpu_device:
-            params = super()._get_daal_params(X)
+            params = super()._get_daal_params(X, n_neighbors=n_neighbors)
         else:
-            params = super()._get_onedal_params(X)
+            params = super()._get_onedal_params(X, n_neighbors=n_neighbors)
 
         prediction_results = self._onedal_predict(
             self._onedal_model, X, params, queue=queue
@@ -349,9 +348,6 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
         # If the query data is the same as the indexed data, we would like
         # to ignore the first nearest neighbor of every sample, i.e
         # the sample itself.
-        distances = distances[:, 1:]
-        indices = indices[:, 1:]
-
         if return_distance:
             neigh_dist, neigh_ind = results
         else:
@@ -397,10 +393,6 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             **kwargs,
         )
         self.weights = weights
-
-    def _get_onedal_params(self, X, y=None):
-        params = super()._get_onedal_params(X, y)
-        return params
 
     def _get_daal_params(self, data):
         params = super()._get_daal_params(data)
@@ -709,10 +701,6 @@ class NearestNeighbors(NeighborsBase):
             **kwargs,
         )
         self.weights = weights
-
-    def _get_onedal_params(self, X, y=None):
-        params = super()._get_onedal_params(X, y)
-        return params
 
     def _get_daal_params(self, data):
         params = super()._get_daal_params(data)

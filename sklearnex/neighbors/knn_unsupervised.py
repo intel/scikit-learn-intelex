@@ -21,6 +21,7 @@ except ImportError:
     from distutils.version import LooseVersion as Version
 
 import warnings
+from numbers import Integral
 
 import numpy as np
 from sklearn import __version__ as sklearn_version
@@ -136,14 +137,38 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
             X,
             None,
         )
+        # Preserve original data for queue even if not correctly
+        # formatted by 'check_array' or 'validate_data'.
+        self._fit_X = X
         return self
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if sklearn_check_version("1.0") and X is not None:
+
+        if n_neighbors is None:
+            n_neighbors = self.n_neighbors
+        elif n_neighbors <= 0:
+            raise ValueError("Expected n_neighbors > 0. Got %d" % n_neighbors)
+        else:
+            if not isinstance(n_neighbors, Integral):
+                raise TypeError(
+                    "n_neighbors does not take %s value, "
+                    "enter integer value" % type(n_neighbors)
+                )
+
+        if X is not None:
+            query_is_train = False
+        else:
+            query_is_train = True
+            X = self._fit_X
+            n_neighbors += 1
+
+        # _fit_X is not guaranteed to have been checked properly
+        if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
-        return dispatch(
+
+        result = dispatch(
             self,
             "kneighbors",
             {
@@ -154,6 +179,37 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
             n_neighbors,
             return_distance,
         )
+
+        if not query_is_train:
+            return results
+        # If the query data is the same as the indexed data, we would like
+        # to ignore the first nearest neighbor of every sample, i.e
+        # the sample itself.
+        distances = distances[:, 1:]
+        indices = indices[:, 1:]
+
+        if return_distance:
+            neigh_dist, neigh_ind = results
+        else:
+            neigh_ind = results
+
+        n_queries, _ = X.shape
+        sample_range = np.arange(n_queries)[:, None]
+        sample_mask = neigh_ind != sample_range
+
+        # Corner case: When the number of duplicates are more
+        # than the number of neighbors, the first NN will not
+        # be the sample, but a duplicate.
+        # In that case mask the first duplicate.
+        dup_gr_nbrs = np.all(sample_mask, axis=1)
+        sample_mask[:, 0][dup_gr_nbrs] = False
+
+        neigh_ind = np.reshape(neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
+
+        if return_distance:
+            neigh_dist = np.reshape(neigh_dist[sample_mask], (n_queries, n_neighbors - 1))
+            return neigh_dist, neigh_ind
+        return neigh_ind
 
     @wrap_output_data
     def radius_neighbors(
@@ -219,6 +275,5 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         self.classes_ = self._onedal_estimator.classes_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
-        self._fit_X = self._onedal_estimator._fit_X
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree
