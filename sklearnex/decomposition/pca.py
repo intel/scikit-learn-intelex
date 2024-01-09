@@ -25,14 +25,13 @@ if daal_check_version((2024, "P", 100)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.utils.validation import check_array, check_is_fitted
+    from sklearn.utils.validation import check_is_fitted
 
     from daal4py.sklearn._utils import (
         control_n_jobs,
         run_with_n_jobs,
         sklearn_check_version,
     )
-    from onedal.utils import _check_array
 
     from .._device_offload import dispatch
     from .._utils import PatchingConditionsChain
@@ -107,7 +106,39 @@ if daal_check_version((2024, "P", 100)):
             )
             return U, S, Vt
 
+        @run_with_n_jobs
+        def _onedal_fit(self, X, queue=None):
+            if issparse(X):
+                raise TypeError(
+                    "PCA does not support sparse input. See "
+                    "TruncatedSVD for a possible alternative."
+                )
+
+            self._validate_n_components(self.n_components, X.shape[0], X.shape[1])
+
+            onedal_params = {
+                "n_components": self.n_components,
+                "is_deterministic": True,
+                "method": "cov",
+                "whiten": self.whiten,
+            }
+            self._onedal_estimator = onedal_PCA(**onedal_params)
+            self._onedal_estimator.fit(X, queue=queue)
+            self._save_attributes()
+
+            U = None
+            S = self.singular_values_
+            Vt = self.components_
+
+            return U, S, Vt
+
         def transform(self, X, y=None):
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                reset=False,
+            )
+
             return dispatch(
                 self,
                 "transform",
@@ -117,6 +148,16 @@ if daal_check_version((2024, "P", 100)):
                 },
                 X,
             )
+
+        @run_with_n_jobs
+        def _onedal_transform(self, X, queue=None):
+            check_is_fitted(self)
+
+            self._validate_n_features_in_after_fitting(X)
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=False)
+
+            return self._onedal_estimator.predict(X, queue=queue)
 
         def fit_transform(self, X, y=None):
             U, S, Vt = self._fit(X)
@@ -134,6 +175,49 @@ if daal_check_version((2024, "P", 100)):
                     U *= S[: self.n_components_]
 
                 return U
+
+        def _onedal_supported(self, method_name, X):
+            shape_tuple = X.shape
+            class_name = self.__class__.__name__
+            patching_status = PatchingConditionsChain(
+                f"sklearn.decomposition.{class_name}.{method_name}"
+            )
+
+            if method_name == "fit":
+                patching_status.and_conditions(
+                    [
+                        (
+                            self._is_solver_compatible_with_onedal(shape_tuple),
+                            f"Only 'full' svd solver is supported.",
+                        ),
+                        (
+                            shape_tuple[1] / shape_tuple[0] < 2,
+                            "Only data with X.shape[1] < 2 * X.shape[0] is supported",
+                        ),
+                    ]
+                )
+                return patching_status
+
+            if method_name == "transform":
+                patching_status.and_conditions(
+                    [
+                        (
+                            hasattr(self, "_onedal_estimator"),
+                            "oneDAL model was not trained",
+                        ),
+                    ]
+                )
+                return patching_status
+
+            raise RuntimeError(
+                f"Unknown method {method_name} in {self.__class__.__name__}"
+            )
+
+        def _onedal_cpu_supported(self, method_name, *data):
+            return self._onedal_supported(method_name, *data)
+
+        def _onedal_gpu_supported(self, method_name, *data):
+            return self._onedal_supported(method_name, *data)
 
         def _is_solver_compatible_with_onedal(self, shape_tuple):
             self._fit_svd_solver = self.svd_solver
@@ -181,49 +265,6 @@ if daal_check_version((2024, "P", 100)):
             else:
                 return False
 
-        def _onedal_supported(self, method_name, X):
-            shape_tuple = X.shape
-            class_name = self.__class__.__name__
-            patching_status = PatchingConditionsChain(
-                f"sklearn.decomposition.{class_name}.{method_name}"
-            )
-
-            if method_name == "fit":
-                patching_status.and_conditions(
-                    [
-                        (
-                            self._is_solver_compatible_with_onedal(shape_tuple),
-                            f"Only 'full' svd solver is supported.",
-                        ),
-                        (
-                            shape_tuple[1] / shape_tuple[0] < 2,
-                            "Only data with X.shape[1] < 2 * X.shape[0] is supported",
-                        ),
-                    ]
-                )
-                return patching_status
-
-            if method_name == "transform":
-                patching_status.and_conditions(
-                    [
-                        (
-                            hasattr(self, "_onedal_estimator"),
-                            "oneDAL model was not trained",
-                        ),
-                    ]
-                )
-                return patching_status
-
-            raise RuntimeError(
-                f"Unknown method {method_name} in {self.__class__.__name__}"
-            )
-
-        def _onedal_cpu_supported(self, method_name, *data):
-            return self._onedal_supported(method_name, *data)
-
-        def _onedal_gpu_supported(self, method_name, *data):
-            return self._onedal_supported(method_name, *data)
-
         def _validate_n_components(self, n_components, n_samples, n_features):
             if n_components is None:
                 n_components = min(n_samples, n_features)
@@ -265,32 +306,6 @@ if daal_check_version((2024, "P", 100)):
             )
             self.noise_variance_ = self._onedal_estimator.noise_variance_
 
-        @run_with_n_jobs
-        def _onedal_fit(self, X, queue=None):
-            if issparse(X):
-                raise TypeError(
-                    "PCA does not support sparse input. See "
-                    "TruncatedSVD for a possible alternative."
-                )
-
-            self._validate_n_components(self.n_components, X.shape[0], X.shape[1])
-
-            onedal_params = {
-                "n_components": self.n_components,
-                "is_deterministic": True,
-                "method": "cov",
-                "whiten": self.whiten,
-            }
-            self._onedal_estimator = onedal_PCA(**onedal_params)
-            self._onedal_estimator.fit(X, queue=queue)
-            self._save_attributes()
-
-            U = None
-            S = self.singular_values_
-            Vt = self.components_
-
-            return U, S, Vt
-
         def _validate_n_features_in_after_fitting(self, X):
             if sklearn_check_version("1.2"):
                 expected_n_features = self.n_features_in_
@@ -303,21 +318,6 @@ if daal_check_version((2024, "P", 100)):
                         f"but PCA is expecting {expected_n_features} features as input"
                     )
                 )
-
-        @run_with_n_jobs
-        def _onedal_transform(self, X, queue=None):
-            check_is_fitted(self)
-            self._validate_n_features_in_after_fitting(X)
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
-
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=True,
-            )
-
-            return self._onedal_estimator.predict(X, queue=queue)
 
 else:
     from daal4py.sklearn.decomposition import PCA
