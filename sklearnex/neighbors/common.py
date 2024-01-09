@@ -299,7 +299,7 @@ class KNeighborsDispatchingBase:
         else:
             neigh_ind = results
 
-        n_queries, _ = X.shape
+        n_queries = len(X)
         sample_range = np.arange(n_queries)[:, None]
         sample_mask = neigh_ind != sample_range
 
