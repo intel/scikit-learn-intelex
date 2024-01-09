@@ -280,6 +280,10 @@ class KNeighborsDispatchingBase:
             X = self._fit_X
             n_neighbors += 1
 
+        X = _check_array(
+            X, accept_sparse="csr", dtype=[np.float64, np.float32], force_all_finite=False
+        )
+
         results = dispatch(
             self,
             "kneighbors",
@@ -299,7 +303,7 @@ class KNeighborsDispatchingBase:
         else:
             neigh_ind = results
 
-        n_queries = len(X)
+        n_queries, _ = X.shape
         sample_range = np.arange(n_queries)[:, None]
         sample_mask = neigh_ind != sample_range
 
