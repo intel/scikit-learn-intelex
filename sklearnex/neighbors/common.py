@@ -329,3 +329,10 @@ class KNeighborsDispatchingBase:
 
     def _onedal_cpu_supported(self, method_name, *data):
         return self._onedal_supported("cpu", method_name, *data)
+
+    def _save_attributes(self):
+        self.n_features_in_ = self._onedal_estimator.n_features_in_
+        self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
+        self._y = self._onedal_estimator._y
+        self._fit_method = self._onedal_estimator._fit_method
+        self._tree = self._onedal_estimator._tree

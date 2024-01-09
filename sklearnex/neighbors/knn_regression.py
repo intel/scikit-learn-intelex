@@ -207,6 +207,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
             X,
             y,
         )
+        self._fit_X = X
         return self
 
     @wrap_output_data
@@ -300,7 +301,6 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
     def _save_attributes(self):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
-        self._fit_X = self._onedal_estimator._fit_X
         self._y = self._onedal_estimator._y
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree

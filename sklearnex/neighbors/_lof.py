@@ -38,7 +38,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     # Only certain methods should be taken from knn to prevent code
     # duplication. Inheriting would yield a complicated inheritance
     # structure
-    _save_attributes = NearestNeighbors._save_attributes
     _onedal_knn_fit = NearestNeighbors._onedal_fit
 
     @run_with_n_jobs
