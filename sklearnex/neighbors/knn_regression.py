@@ -226,12 +226,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
-        check_is_fitted(self)
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-        return dispatch(
-            self,
-            "kneighbors",
+        return self._kneighbors_dispatch(
             {
                 "onedal": self.__class__._onedal_kneighbors,
                 "sklearn": sklearn_KNeighborsRegressor.kneighbors,

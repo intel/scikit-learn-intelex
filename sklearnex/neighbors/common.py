@@ -27,6 +27,7 @@ from sklearn.neighbors._kd_tree import KDTree
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
 
+from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 
 
@@ -256,6 +257,70 @@ class KNeighborsDispatchingBase:
             )
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
+
+    def _kneighbors_dispatch(
+        self, branches, X=None, n_neighbors=None, return_distance=True
+    ):
+        check_is_fitted(self)
+
+        if n_neighbors is None:
+            n_neighbors = self.n_neighbors
+        elif n_neighbors <= 0:
+            raise ValueError("Expected n_neighbors > 0. Got %d" % n_neighbors)
+        else:
+            if not isinstance(n_neighbors, Integral):
+                raise TypeError(
+                    "n_neighbors does not take %s value, "
+                    "enter integer value" % type(n_neighbors)
+                )
+
+        if X is not None:
+            query_is_train = False
+        else:
+            query_is_train = True
+            X = self._fit_X
+            n_neighbors += 1
+
+        # _fit_X is not guaranteed to have been checked properly
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+
+        results = dispatch(
+            self,
+            "kneighbors",
+            branches,
+            X,
+            n_neighbors,
+            return_distance,
+        )
+
+        if not query_is_train:
+            return results
+        # If the query data is the same as the indexed data, we would like
+        # to ignore the first nearest neighbor of every sample, i.e
+        # the sample itself.
+        if return_distance:
+            neigh_dist, neigh_ind = results
+        else:
+            neigh_ind = results
+
+        n_queries, _ = X.shape
+        sample_range = np.arange(n_queries)[:, None]
+        sample_mask = neigh_ind != sample_range
+
+        # Corner case: When the number of duplicates are more
+        # than the number of neighbors, the first NN will not
+        # be the sample, but a duplicate.
+        # In that case mask the first duplicate.
+        dup_gr_nbrs = np.all(sample_mask, axis=1)
+        sample_mask[:, 0][dup_gr_nbrs] = False
+
+        neigh_ind = np.reshape(neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
+
+        if return_distance:
+            neigh_dist = np.reshape(neigh_dist[sample_mask], (n_queries, n_neighbors - 1))
+            return neigh_dist, neigh_ind
+        return neigh_ind
 
     def _onedal_gpu_supported(self, method_name, *data):
         return self._onedal_supported("gpu", method_name, *data)
