@@ -16,7 +16,7 @@
 # ===============================================================================
 
 import numpy as np
-import pytest
+import pytest, copy
 from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
@@ -33,7 +33,7 @@ def test_sklearnex_import(dataframe, queue):
 
     X = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    X_copy = X.copy(deep=True)
+    X_copy = copy.deepcopy(X)
     result_tr = [
         [-1.38340578, -0.2935787],
         [-2.22189802, 0.25133484],
