@@ -147,7 +147,7 @@ class KNeighborsDispatchingBase:
             f"sklearn.neighbors.{class_name}.{method_name}"
         )
 
-        if data[0] is None and hasattr(self, _fit_queue):
+        if data[0] is None and hasattr(self, "_fit_queue"):
             # Ordering of sklearnex._device_offload.dispatch
             # checks arg and kwarg queues after global, thereby
             # taking precedence and allowing for this belated
