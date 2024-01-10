@@ -66,12 +66,10 @@ class KNeighborsDispatchingBase:
                 self.effective_metric_ = "chebyshev"
 
         if not isinstance(X, (KDTree, BallTree, sklearn_NeighborsBase)):
-            if not hasattr(X, "__sycl_usm_array_interface__"):
-                self._fit_X = _check_array(
-                    X, dtype=[np.float64, np.float32], accept_sparse=True
-                )
-            else:
-                self._fit_X = X
+            self._fit_X = _check_array(
+                X, dtype=[np.float64, np.float32], accept_sparse=True
+            )
+
             self.n_samples_fit_ = _num_samples(self._fit_X)
             self.n_features_in_ = _num_features(self._fit_X)
 
@@ -150,6 +148,18 @@ class KNeighborsDispatchingBase:
         patching_status = PatchingConditionsChain(
             f"sklearn.neighbors.{class_name}.{method_name}"
         )
+
+        if data[0] is None and hasattr(self, _fit_queue):
+            # Ordering of sklearnex._device_offload.dispatch
+            # checks arg and kwarg queues after global, thereby
+            # taking precedence and allowing for this belated
+            # check change. This corrects the issue of X=None
+            # for kneighbors when fit was offloaded to gpu
+            # via dpnp or dpctl
+            if self._fit_queue.sycl_device.is_cpu:
+                device = "cpu"
+            elif self._fit_queue.sycl_device.is_gpu:
+                device = "gpu"
 
         if not patching_status.and_condition(
             not isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase)),
@@ -262,64 +272,12 @@ class KNeighborsDispatchingBase:
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
-    def _kneighbors_dispatch(
-        self, branches, X=None, n_neighbors=None, return_distance=True
-    ):
-        if n_neighbors is None:
-            n_neighbors = self.n_neighbors
-        elif n_neighbors <= 0:
-            raise ValueError("Expected n_neighbors > 0. Got %d" % n_neighbors)
-        else:
-            if not isinstance(n_neighbors, Integral):
-                raise TypeError(
-                    "n_neighbors does not take %s value, "
-                    "enter integer value" % type(n_neighbors)
+    def _fit_queue_check(self, X, queue=None):
+        if X is None and hasattr(self, "_fit_queue"):
+            if queue is None:
+                queue = self._fit_queue
+            elif queue != self._fit_queue:
+                raise RuntimeError(
+                    "Input data shall be located " "on single target device"
                 )
-
-        query_is_train = X is None
-        if query_is_train:
-            X = self._fit_X
-            n_neighbors += 1
-
-        results = dispatch(
-            self,
-            "kneighbors",
-            branches,
-            X,
-            n_neighbors,
-            return_distance,
-        )
-
-        if not query_is_train:
-            return results
-        # If the query data is the same as the indexed data, we would like
-        # to ignore the first nearest neighbor of every sample, i.e
-        # the sample itself.
-        if return_distance:
-            neigh_dist, neigh_ind = results
-        else:
-            neigh_ind = results
-
-        n_queries = X.shape[0] if hasattr(X, "shape") else len(X)
-        sample_range = np.arange(n_queries)[:, None]
-        sample_mask = neigh_ind != sample_range
-
-        # Corner case: When the number of duplicates are more
-        # than the number of neighbors, the first NN will not
-        # be the sample, but a duplicate.
-        # In that case mask the first duplicate.
-        dup_gr_nbrs = np.all(sample_mask, axis=1)
-        sample_mask[:, 0][dup_gr_nbrs] = False
-
-        neigh_ind = np.reshape(neigh_ind[sample_mask], (n_queries, n_neighbors - 1))
-
-        if return_distance:
-            neigh_dist = np.reshape(neigh_dist[sample_mask], (n_queries, n_neighbors - 1))
-            return neigh_dist, neigh_ind
-        return neigh_ind
-
-    def _onedal_gpu_supported(self, method_name, *data):
-        return self._onedal_supported("gpu", method_name, *data)
-
-    def _onedal_cpu_supported(self, method_name, *data):
-        return self._onedal_supported("cpu", method_name, *data)
+        return queue

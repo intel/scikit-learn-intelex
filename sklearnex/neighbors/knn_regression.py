@@ -229,7 +229,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(self._fit_X if X is None else X, reset=False)
-        return self._kneighbors_dispatch(
+        return dispatch(
             {
                 "onedal": self.__class__._onedal_kneighbors,
                 "sklearn": sklearn_KNeighborsRegressor.kneighbors,
@@ -280,6 +280,9 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
         except KeyError:
             requires_y = False
 
+        if hasattr(self, "_fit_queue"):
+            del self._fit_queue
+
         self._onedal_estimator = onedal_KNeighborsRegressor(**onedal_params)
         self._onedal_estimator.requires_y = requires_y
         self._onedal_estimator.effective_metric_ = self.effective_metric_
@@ -300,9 +303,12 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
             X, n_neighbors, return_distance, queue=queue
         )
 
-    def _save_attributes(self):
+    def _save_attributes(self, queue=queue):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
+        self._fit_X = self._onedal_estimator._fit_X
+        if queue is not None:
+            self._fit_queue = queue
         self._y = self._onedal_estimator._y
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree
