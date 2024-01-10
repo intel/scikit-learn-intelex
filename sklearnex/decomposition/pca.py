@@ -33,7 +33,7 @@ if daal_check_version((2024, "P", 100)):
         sklearn_check_version,
     )
 
-    from .._device_offload import dispatch
+    from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
@@ -132,6 +132,7 @@ if daal_check_version((2024, "P", 100)):
 
             return U, S, Vt
 
+        @wrap_output_data
         def transform(self, X, y=None):
             X = self._validate_data(
                 X,
