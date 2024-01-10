@@ -34,8 +34,9 @@ def test_sklearnex_import(dataframe, queue):
     from sklearnex.decomposition import PCA
 
     X = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
+    X_copy = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    X_copy = copy.deepcopy(X)
+    X_copy = _convert_to_dataframe(X_copy, sycl_queue=queue, target_df=dataframe)
     result_tr = [
         [-1.38340578, -0.2935787],
         [-2.22189802, 0.25133484],
