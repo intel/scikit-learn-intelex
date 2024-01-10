@@ -16,7 +16,6 @@
 # ==============================================================================
 
 import warnings
-from numbers import Integral
 
 import numpy as np
 from scipy import sparse as sp
