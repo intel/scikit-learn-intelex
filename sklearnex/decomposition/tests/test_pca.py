@@ -15,8 +15,10 @@
 # limitations under the License.
 # ===============================================================================
 
+import copy
+
 import numpy as np
-import pytest, copy
+import pytest
 from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
