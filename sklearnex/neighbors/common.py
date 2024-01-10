@@ -26,7 +26,6 @@ from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal._device_offload import support_usm_ndarray
 from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._device_offload import dispatch
@@ -34,10 +33,6 @@ from .._utils import PatchingConditionsChain
 
 
 class KNeighborsDispatchingBase:
-    @support_usm_ndarray
-    def _check_array(self, *args, **kwargs):
-        return _check_array(*args, **kwargs)
-
     def _fit_validation(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -71,9 +66,12 @@ class KNeighborsDispatchingBase:
                 self.effective_metric_ = "chebyshev"
 
         if not isinstance(X, (KDTree, BallTree, sklearn_NeighborsBase)):
-            self._fit_X = self._check_array(
-                X, dtype=[np.float64, np.float32], accept_sparse=True
-            )
+            if not hasattr(X, "__sycl_usm_array_interface__"):
+                self._fit_X = _check_array(
+                    X, dtype=[np.float64, np.float32], accept_sparse=True
+                )
+            else:
+                self._fit_X = X
             self.n_samples_fit_ = _num_samples(self._fit_X)
             self.n_features_in_ = _num_features(self._fit_X)
 
