@@ -105,15 +105,11 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             X,
             None,
         )
-        # Preserve queue even if not correctly
-        # formatted by 'check_array' or 'validate_data'.
-        self._fit_X = X
         return result
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        # _fit_X is not guaranteed to have been checked properly
         if sklearn_check_version("1.0"):
             self._check_feature_names(self._fit_X if X is None else X, reset=False)
         return self._kneighbors_dispatch(

@@ -28,11 +28,15 @@ from sklearn.neighbors._kd_tree import KDTree
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
 
-from .._device_offload import dispatch
+from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
 
 
 class KNeighborsDispatchingBase:
+    @wrap_output_data
+    def _check_array(self, *args, **kwargs):
+        return _check_array(*args, **kwargs)
+
     def _fit_validation(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -66,7 +70,7 @@ class KNeighborsDispatchingBase:
                 self.effective_metric_ = "chebyshev"
 
         if not isinstance(X, (KDTree, BallTree, sklearn_NeighborsBase)):
-            self._fit_X = _check_array(
+            self._fit_X = self._check_array(
                 X, dtype=[np.float64, np.float32], accept_sparse=True
             )
             self.n_samples_fit_ = _num_samples(self._fit_X)
@@ -273,10 +277,8 @@ class KNeighborsDispatchingBase:
                     "enter integer value" % type(n_neighbors)
                 )
 
-        if X is not None:
-            query_is_train = False
-        else:
-            query_is_train = True
+        query_is_train = X is None
+        if query_is_train:
             X = self._fit_X
             n_neighbors += 1
 
