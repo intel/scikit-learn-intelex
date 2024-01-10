@@ -271,6 +271,12 @@ class KNeighborsDispatchingBase:
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
+    def _onedal_gpu_supported(self, method_name, *data):
+        return self._onedal_supported("gpu", method_name, *data)
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        return self._onedal_supported("cpu", method_name, *data)            
+
     def _fit_queue_check(self, X, queue=None):
         if X is None and hasattr(self, "_fit_queue"):
             if queue is None:
