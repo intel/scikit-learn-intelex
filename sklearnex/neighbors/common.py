@@ -26,7 +26,7 @@ from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal._device_offload import support_usm_array
+from onedal._device_offload import support_usm_ndarray
 from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._device_offload import dispatch
@@ -34,7 +34,7 @@ from .._utils import PatchingConditionsChain
 
 
 class KNeighborsDispatchingBase:
-    @support_usm_array
+    @support_usm_ndarray
     def _check_array(self, *args, **kwargs):
         return _check_array(*args, **kwargs)
 
