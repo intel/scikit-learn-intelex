@@ -327,7 +327,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             X, n_neighbors, return_distance, queue=queue
         )
 
-    def _save_attributes(self, queue=queue):
+    def _save_attributes(self, queue=None):
         self.classes_ = self._onedal_estimator.classes_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_

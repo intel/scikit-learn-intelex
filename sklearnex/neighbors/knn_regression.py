@@ -304,7 +304,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
             X, n_neighbors, return_distance, queue=queue
         )
 
-    def _save_attributes(self, queue=queue):
+    def _save_attributes(self, queue=None):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
         self._fit_X = self._onedal_estimator._fit_X
