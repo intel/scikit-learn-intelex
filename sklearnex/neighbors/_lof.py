@@ -113,6 +113,8 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         if sklearn_check_version("1.0"):
             self._check_feature_names(self._fit_X if X is None else X, reset=False)
         return dispatch(
+            self,
+            "kneighbors",
             {
                 "onedal": NearestNeighbors._onedal_kneighbors,
                 "sklearn": sklearn_LocalOutlierFactor.kneighbors,

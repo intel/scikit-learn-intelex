@@ -230,6 +230,8 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
         if sklearn_check_version("1.0"):
             self._check_feature_names(self._fit_X if X is None else X, reset=False)
         return dispatch(
+            self,
+            "kneighbors",
             {
                 "onedal": self.__class__._onedal_kneighbors,
                 "sklearn": sklearn_KNeighborsRegressor.kneighbors,
