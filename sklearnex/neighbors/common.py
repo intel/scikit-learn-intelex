@@ -28,7 +28,6 @@ from sklearn.neighbors._kd_tree import KDTree
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
 
-from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 
 
