@@ -299,6 +299,9 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         except KeyError:
             requires_y = False
 
+        if hasattr(self, "_fit_queue"):
+            del self._fit_queue
+
         self._onedal_estimator = onedal_KNeighborsClassifier(**onedal_params)
         self._onedal_estimator.requires_y = requires_y
         self._onedal_estimator.effective_metric_ = self.effective_metric_
@@ -319,6 +322,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     def _onedal_kneighbors(
         self, X=None, n_neighbors=None, return_distance=True, queue=None
     ):
+        queue = self._fit_queue_check(X, queue)
         return self._onedal_estimator.kneighbors(
             X, n_neighbors, return_distance, queue=queue
         )
