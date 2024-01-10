@@ -88,13 +88,6 @@ if daal_check_version((2024, "P", 100)):
                     target_type=numbers.Integral,
                 )
 
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                ensure_2d=True,
-                copy=self.copy,
-            )
-
             U, S, Vt = dispatch(
                 self,
                 "fit",
@@ -134,12 +127,6 @@ if daal_check_version((2024, "P", 100)):
 
         @wrap_output_data
         def transform(self, X, y=None):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                reset=False,
-            )
-
             return dispatch(
                 self,
                 "transform",
@@ -178,6 +165,13 @@ if daal_check_version((2024, "P", 100)):
                 return U
 
         def _onedal_supported(self, method_name, X):
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=self.copy,
+            )
+
             shape_tuple = X.shape
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
