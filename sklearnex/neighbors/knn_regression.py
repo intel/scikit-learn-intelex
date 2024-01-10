@@ -299,6 +299,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
     def _onedal_kneighbors(
         self, X=None, n_neighbors=None, return_distance=True, queue=None
     ):
+        queue = self._fit_queue_check(X, queue)
         return self._onedal_estimator.kneighbors(
             X, n_neighbors, return_distance, queue=queue
         )
