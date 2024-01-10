@@ -33,10 +33,24 @@ def test_sklearnex_import(dataframe, queue):
 
     X = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    pca = PCA(n_components=2, svd_solver="full").fit(X)
+    X_copy = X.copy(deep=True)
+    result_tr = [[-1.38340578, -0.2935787 ],
+        [-2.22189802,  0.25133484],
+        [-3.6053038 , -0.04224385],
+        [ 1.38340578,  0.2935787 ],
+        [ 2.22189802, -0.25133484],
+        [ 3.6053038 ,  0.04224385]]
+
+    pca = PCA(n_components=2, svd_solver="full")
+    pca_fit = pca.fit(X)
+    X_transformed = pca_fit.transform(X)
+    X_fit_transformed = pca.fit_transform(X_copy)
+
     if daal_check_version((2024, "P", 100)):
         assert "sklearnex" in pca.__module__
-        assert hasattr(pca, "_onedal_estimator")
+        assert hasattr(pca_fit, "_onedal_estimator")
     else:
-        assert "daal4py" in pca.__module__
-    assert_allclose(_as_numpy(pca.singular_values_), [6.30061232, 0.54980396])
+        assert "daal4py" in pca_fit.__module__
+    assert_allclose(_as_numpy(pca_fit.singular_values_), [6.30061232, 0.54980396])
+    assert_allclose(_as_numpy(X_transformed), _as_numpy(X_fit_transformed))
+    assert_allclose(_as_numpy(X_transformed), result_tr)
