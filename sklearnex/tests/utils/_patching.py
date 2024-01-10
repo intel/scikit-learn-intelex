@@ -115,7 +115,7 @@ def gen_models_info(algorithms):
 
 def gen_dataset(estimator, dtype=np.float64):
     dataset = None
-    name = estimator.__class__.__name__.split("(")[0]  # handling SPECIAL_INSTANCES
+    name = estimator.__class__.__name__
     est = UNPATCHED_MODELS[name]()
     for mixin, _, data in mixin_map:
         if isinstance(est, mixin) and data is not None:
