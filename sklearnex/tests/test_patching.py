@@ -20,13 +20,13 @@ import re
 from contextlib import contextmanager
 
 import pytest
-from sklearn.datasets import load_diabetes, load_iris, make_regression
 from utils._patching import (
     DTYPES,
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     UNPATCHED_MODELS,
     gen_models_info,
+    gen_dataset,
 )
 
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
@@ -53,18 +53,6 @@ def run_utils():
         logging.info("roc_auc_score")
 
 
-def _load_dataset(dataset, dtype):
-    # load data
-    if dataset == "classification":
-        X, y = load_iris(return_X_y=True)
-    elif dataset == "regression":
-        X, y = load_diabetes(return_X_y=True)
-    else:
-        raise ValueError("Unknown dataset type")
-
-    return X.astype(dtype), y.astype(dtype)
-
-
 @contextmanager
 def log_sklearnex():
     try:
@@ -80,12 +68,13 @@ def log_sklearnex():
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
-@pytest.mark.parametrize("estimator, method, dataset", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(dtype, estimator, method, dataset):
-    X, y = _load_dataset(dataset, dtype)
-
+@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
+def test_standard_estimator_patching(dtype, estimator, method):
     with log_sklearnex() as log:
-        est = PATCHED_MODELS[estimator]().fit(X, y)
+        est = PATCHED_MODELS[estimator]()
+        X, y = gen_dataset(est, dtype)
+        est.fit(X, y)
+
         if not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
@@ -107,14 +96,13 @@ def test_standard_estimator_patching(dtype, estimator, method, dataset):
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
-@pytest.mark.parametrize("estimator, method, dataset", gen_models_info(SPECIAL_INSTANCES))
-def test_special_estimator_patching(dtype, estimator, method, dataset):
-    X, y = _load_dataset(dataset, dtype)
+@pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
+def test_special_estimator_patching(dtype, estimator, method):
     # prepare logging
     with log_sklearnex() as log:
-        est = SPECIAL_INSTANCES[estimator].fit(X, y)
-        if not hasattr(est, method):
-            pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+        est = SPECIAL_INSTANCES[estimator]
+        X, y = gen_dataset(est, dtype)
+        est.fit(X, y)
 
         if method != "score":
             getattr(est, method)(X)

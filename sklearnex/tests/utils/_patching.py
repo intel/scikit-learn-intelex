@@ -29,6 +29,7 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
+from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
 
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
@@ -93,31 +94,41 @@ SPECIAL_INSTANCES = {
 def gen_models_info(algorithms):
     output = []
     for i in algorithms:
-        al = algorithms[i]() if i in algorithms[i].__class__.__name__ else algorithms[i]
+        # split handles SPECIAL_INSTANCES or custom inputs
+        # custom sklearn inputs must be a dict of estimators
+        # with keys set by the __str__ method
+        est = UNPATCHED_MODELS[i.split("(")[0]]()
 
         methods = []
         candidates = set(
-            [
-                i
-                for i in dir(al)
-                if not i.startswith("_") and not i.endswith("_") and hasattr(al, i)
-            ]
+            [i for i in dir(est) if not i.startswith("_") and not i.endswith("_")]
         )
-        dataset = None
 
-        name = i.split("(")[0]  # handling SPECIAL_INSTANCES
-        for mixin, method, data in mixin_map:
-            if isinstance(UNPATCHED_MODELS[name](), mixin):
+        for mixin, method, _ in mixin_map:
+            if isinstance(est, mixin):
                 methods += list(candidates.intersection(set(method)))
-                if data:
-                    dataset = data
-
-        if not dataset:
-            dataset = "classification"
 
         methods = list(set(methods))  # return only unique values
-        output += [[i, j, dataset] for j in methods]
+        output += [[i, j] for j in methods]
     return output
+
+
+def gen_dataset(estimator, dtype=np.float64):
+    dataset = None
+    name = estimator.__class__.__name__.split("(")[0]  # handling SPECIAL_INSTANCES
+    est = UNPATCHED_MODELS[name]()
+    for mixin, _, data in mixin_map:
+        if isinstance(est, mixin) and data is not None:
+            dataset = data
+    # load data
+    if dataset == "classification" or dataset is None:
+        X, y = load_iris(return_X_y=True)
+    elif dataset == "regression":
+        X, y = load_diabetes(return_X_y=True)
+    else:
+        raise ValueError("Unknown dataset type")
+
+    return X.astype(dtype), y.astype(dtype)
 
 
 DTYPES = [
