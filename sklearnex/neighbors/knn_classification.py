@@ -301,16 +301,13 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         except KeyError:
             requires_y = False
 
-        if hasattr(self, "_fit_queue"):
-            del self._fit_queue
-
         self._onedal_estimator = onedal_KNeighborsClassifier(**onedal_params)
         self._onedal_estimator.requires_y = requires_y
         self._onedal_estimator.effective_metric_ = self.effective_metric_
         self._onedal_estimator.effective_metric_params_ = self.effective_metric_params_
         self._onedal_estimator.fit(X, y, queue=queue)
 
-        self._save_attributes(queue=queue)
+        self._save_attributes()
 
     @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
@@ -324,18 +321,15 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     def _onedal_kneighbors(
         self, X=None, n_neighbors=None, return_distance=True, queue=None
     ):
-        queue = self._fit_queue_check(X, queue)
         return self._onedal_estimator.kneighbors(
             X, n_neighbors, return_distance, queue=queue
         )
 
-    def _save_attributes(self, queue=None):
+    def _save_attributes(self):
         self.classes_ = self._onedal_estimator.classes_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
         self._fit_X = self._onedal_estimator._fit_X
-        if queue is not None:
-            self._fit_queue = queue
         self._y = self._onedal_estimator._y
         self._fit_method = self._onedal_estimator._fit_method
         self.outputs_2d_ = self._onedal_estimator.outputs_2d_

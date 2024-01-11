@@ -147,18 +147,6 @@ class KNeighborsDispatchingBase:
             f"sklearn.neighbors.{class_name}.{method_name}"
         )
 
-        if data[0] is None and hasattr(self, "_fit_queue"):
-            # Ordering of sklearnex._device_offload.dispatch
-            # checks arg and kwarg queues after global, thereby
-            # taking precedence and allowing for this belated
-            # check change. This corrects the issue of X=None
-            # for kneighbors when fit was offloaded to gpu
-            # via dpnp or dpctl
-            if self._fit_queue.sycl_device.is_cpu:
-                device = "cpu"
-            elif self._fit_queue.sycl_device.is_gpu:
-                device = "gpu"
-
         if not patching_status.and_condition(
             not isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase)),
             f"Input type {type(data[0])} is not supported.",
@@ -275,13 +263,3 @@ class KNeighborsDispatchingBase:
 
     def _onedal_cpu_supported(self, method_name, *data):
         return self._onedal_supported("cpu", method_name, *data)
-
-    def _fit_queue_check(self, X, queue=None):
-        if X is None and hasattr(self, "_fit_queue"):
-            if queue is None:
-                return self._fit_queue
-            # Verify that the same target device is used.
-            if queue.sycl_device == self._fit_queue.sycl_device:
-                return queue
-            raise RuntimeError("Input data shall be located on single target device")
-        return queue
