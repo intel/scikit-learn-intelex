@@ -17,34 +17,25 @@
 # daal4py KD-Tree KNN example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, t=np.float64):
-        return pandas.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-except ImportError:
-    # fall back to numpy loadtxt
-    def read_csv(f, c, t=np.float64):
-        return np.loadtxt(f, usecols=c, delimiter=",", ndmin=2)
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv):
     # Input data set parameters
-    train_file = os.path.join("data", "batch", "k_nearest_neighbors_train.csv")
-    predict_file = os.path.join("data", "batch", "k_nearest_neighbors_test.csv")
+    data_path = Path(__file__).parent / "data" / "batch"
+    train_file = data_path / "k_nearest_neighbors_train.csv"
+    predict_file = data_path / "k_nearest_neighbors_test.csv"
 
     # Read data. Let's use 5 features per observation
     nFeatures = 5
     nClasses = 5
-    train_data = readcsv(train_file, range(nFeatures))
-    train_labels = readcsv(train_file, range(nFeatures, nFeatures + 1))
+    train_data = readcsv(train_file, usecols=range(nFeatures))
+    train_labels = readcsv(train_file, usecols=range(nFeatures, nFeatures + 1))
 
     # Create an algorithm object and call compute
     train_algo = d4p.kdtree_knn_classification_training(nClasses=nClasses)

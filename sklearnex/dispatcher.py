@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ==============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -42,6 +41,7 @@ def get_patch_map():
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.cluster as cluster_module
+        import sklearn.covariance as covariance_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
@@ -76,6 +76,9 @@ def get_patch_map():
 
         # Preview classes for patching
         from .preview.cluster import KMeans as KMeans_sklearnex
+        from .preview.covariance import (
+            EmpiricalCovariance as EmpiricalCovariance_sklearnex,
+        )
         from .preview.decomposition import PCA as PCA_sklearnex
         from .preview.linear_model import (
             LogisticRegression as LogisticRegression_sklearnex,
@@ -99,6 +102,18 @@ def get_patch_map():
                         cluster_module,
                         "KMeans",
                         KMeans_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+
+            # Covariance
+            mapping["empiricalcovariance"] = [
+                [
+                    (
+                        covariance_module,
+                        "EmpiricalCovariance",
+                        EmpiricalCovariance_sklearnex,
                     ),
                     None,
                 ]

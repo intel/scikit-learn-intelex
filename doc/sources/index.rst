@@ -46,7 +46,7 @@ Important Links
 - |intelex_repo|_
 - `Machine Learning Benchmarks <https://github.com/IntelPython/scikit-learn_bench>`_
 - `About Intel(R) oneAPI Data Analytics Library <https://github.com/oneapi-src/oneDAL>`_
-- `About daal4py <https://github.com/intel/scikit-learn-intelex/tree/master/daal4py>`_
+- `About daal4py <https://github.com/intel/scikit-learn-intelex/tree/main/daal4py>`_
 
 .. toctree::
    :caption: Get Started

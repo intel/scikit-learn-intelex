@@ -178,7 +178,9 @@ def test_preview_namespace():
     sklearnex.unpatch_sklearn()
     # behavior with enabled preview
     sklearnex.patch_sklearn(preview=True)
-    assert sklearnex.dispatcher._is_preview_enabled()
+    from sklearnex.dispatcher import _is_preview_enabled
+
+    assert _is_preview_enabled()
 
     lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
     assert "sklearnex" in rfc.__module__
@@ -209,7 +211,7 @@ def test_preview_namespace():
 
     # default patching behavior
     sklearnex.patch_sklearn()
-    assert not sklearnex.dispatcher._is_preview_enabled()
+    assert not _is_preview_enabled()
 
     lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
     if daal_check_version((2023, "P", 100)):

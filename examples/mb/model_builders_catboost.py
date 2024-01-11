@@ -20,25 +20,21 @@ from pathlib import Path
 
 import catboost as cb
 import numpy as np
-import pandas as pd
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
 
-def pd_read_csv(f, c=None, t=np.float64):
-    return pd.read_csv(f, usecols=c, delimiter=",", header=None, dtype=t)
-
-
 def main(readcsv=pd_read_csv):
-    data_path = Path(__file__).parent / ".." / "daal4py" / "data" / "batch"
+    data_path = Path(__file__).parent.parent / "daal4py" / "data" / "batch"
     train_file = data_path / "df_classification_train.csv"
     test_file = data_path / "df_classification_test.csv"
 
     # Data reading
-    X_train = readcsv(train_file, range(3), t=np.float32)
-    y_train = readcsv(train_file, range(3, 4), t=np.float32)
-    X_test = readcsv(test_file, range(3), t=np.float32)
-    y_test = readcsv(test_file, range(3, 4), t=np.float32)
+    X_train = readcsv(train_file, usecols=range(3), dtype=np.float32)
+    y_train = readcsv(train_file, usecols=range(3, 4), dtype=np.float32)
+    X_test = readcsv(test_file, usecols=range(3), dtype=np.float32)
+    y_test = readcsv(test_file, usecols=range(3, 4), dtype=np.float32)
 
     # Datasets creation
     cb_train = cb.Pool(X_train, label=np.array(y_train))
