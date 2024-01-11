@@ -47,6 +47,7 @@ if oneapi_is_available:
 class DummySyclQueue:
     """This class is designed to act like dpctl.SyclQueue
     to allow device dispatching in scenarios when dpctl is not available"""
+    _cache = {}
 
     class DummySyclDevice:
         def __init__(self, filter_string):
@@ -67,7 +68,9 @@ class DummySyclQueue:
             return self._filter_string
 
     def __init__(self, filter_string):
-        self.sycl_device = self.DummySyclDevice(filter_string)
+        if not filter_string in self.__class__._cache:
+            self.__class__._cache[filter_string] = self.DummySyclDevice(filter_string)
+        self.sycl_device = self.__class__._cache[filter_string]
 
 
 def _get_device_info_from_daal4py():
