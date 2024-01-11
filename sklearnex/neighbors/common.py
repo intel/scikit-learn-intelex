@@ -279,9 +279,8 @@ class KNeighborsDispatchingBase:
     def _fit_queue_check(self, X, queue=None):
         if X is None and hasattr(self, "_fit_queue"):
             if queue is None:
-                queue = self._fit_queue
-            elif queue != self._fit_queue:
-                raise RuntimeError(
-                    "Input data shall be located " "on single target device"
-                )
+                return self._fit_queue
+            if queue.sycl_device == self._fit_queue.sycl_device:
+                return queue
+            raise RuntimeError("Input data shall be located " "on single target device")
         return queue
