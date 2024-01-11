@@ -23,11 +23,14 @@ from .covariance import BaseEmpiricalCovariance
 
 
 class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
+    """
+    Incremental Covariance oneDAL implementation
+    """
     def __init__(self, method="dense", bias=False):
         super().__init__(method, bias)
         self._partial_result = _backend.covariance.partial_compute_result()
 
-    def partial_compute(self, X, queue=None):
+    def partial_fit(self, X, queue=None):
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
         if not hasattr(self, "_dtype"):
@@ -43,7 +46,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             self._policy, params, self._partial_result, table_X
         )
 
-    def finalize_compute(self, queue=None):
+    def finalize_fit(self, queue=None):
         params = self._get_onedal_params(self._dtype)
         result = self._module.finalize_compute(self._policy, params, self._partial_result)
         if daal_check_version((2024, "P", 1)) or (not self.bias):

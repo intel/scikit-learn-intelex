@@ -17,7 +17,7 @@
 import numpy as np
 from sklearn.utils import check_array, gen_batches
 
-from daal4py.sklearn._device_offload import support_usm_ndarray
+from onedal._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
@@ -57,7 +57,7 @@ class IncrementalEmpiricalCovariance:
 
     def _onedal_finalize_compute(self):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_compute()
+        self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
     def _onedal_partial_compute(self, X):
@@ -67,7 +67,7 @@ class IncrementalEmpiricalCovariance:
         }
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_covariance(**onedal_params)
-        self._onedal_estimator.partial_compute(X)
+        self._onedal_estimator.partial_fit(X)
         self._need_to_finalize = True
 
     @property

@@ -29,9 +29,9 @@ def test_onedal_import_covariance(queue):
     X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance()
     for i in range(2):
-        inccov.partial_compute(X_split[i], queue=queue)
+        inccov.partial_fit(X_split[i], queue=queue)
 
-    result = inccov.finalize_compute()
+    result = inccov.finalize_fit()
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 
@@ -42,9 +42,9 @@ def test_onedal_import_covariance(queue):
     X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance()
     for i in range(2):
-        inccov.partial_compute(X_split[i], queue=queue)
+        inccov.partial_fit(X_split[i], queue=queue)
 
-    result = inccov.finalize_compute()
+    result = inccov.finalize_fit()
     expected_covariance = np.array([[2, 4], [4, 8]])
     expected_means = np.array([2, 4])
 
@@ -55,9 +55,9 @@ def test_onedal_import_covariance(queue):
     X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance(bias=True)
     for i in range(2):
-        inccov.partial_compute(X_split[i], queue=queue)
+        inccov.partial_fit(X_split[i], queue=queue)
 
-    result = inccov.finalize_compute()
+    result = inccov.finalize_fit()
     expected_covariance = np.array([[1, 2], [2, 4]])
     expected_means = np.array([2, 4])
 

@@ -16,6 +16,7 @@
 from abc import ABCMeta
 
 import numpy as np
+from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
@@ -86,6 +87,7 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
             Returns the instance itself.
         """
         policy = self._get_policy(queue, X)
+        X = check_array(X, dtype=[np.float64, np.float32])
         X = make2d(X)
         types = [np.float32, np.float64]
         if get_dtype(X) not in types:

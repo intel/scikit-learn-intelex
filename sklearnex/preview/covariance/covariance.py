@@ -15,7 +15,6 @@
 # ===============================================================================
 
 from scipy import sparse as sp
-from sklearn.base import BaseEstimator
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.utils import check_array
 
