@@ -55,19 +55,21 @@ class IncrementalEmpiricalCovariance:
         #      be called to obtain covariance_ or location_ from partial compute data
         self.batch_size = batch_size
 
+    @run_with_n_jobs
     def _onedal_finalize_compute(self):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
-    def _onedal_partial_compute(self, X):
+    @run_with_n_jobs
+    def _onedal_partial_fit(self, X, queue):
         onedal_params = {
             "method": "dense",
             "bias": True,
         }
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_covariance(**onedal_params)
-        self._onedal_estimator.partial_fit(X)
+        self._onedal_estimator.partial_fit(X, queue)
         self._need_to_finalize = True
 
     @property
@@ -83,8 +85,7 @@ class IncrementalEmpiricalCovariance:
         return self._onedal_estimator.location_
 
     @support_usm_ndarray()
-    @run_with_n_jobs
-    def partial_fit(self, X):
+    def partial_fit(self, X, queue=None):
         """Incremental fit with X. All of X is processed as a single batch.
 
         Parameters
@@ -99,12 +100,10 @@ class IncrementalEmpiricalCovariance:
             Returns the instance itself.
         """
         X = check_array(X, dtype=[np.float64, np.float32])
-        self._onedal_partial_compute(X)
+        self._onedal_partial_fit(X, queue)
         return self
 
-    @support_usm_ndarray()
-    @run_with_n_jobs
-    def fit(self, X):
+    def fit(self, X, queue=None):
         """Fit the model with X, using minibatches of size batch_size.
 
         Parameters
@@ -125,7 +124,7 @@ class IncrementalEmpiricalCovariance:
             batch_size_ = self.batch_size
         for batch in gen_batches(n_samples, batch_size_):
             X_batch = X[batch]
-            self.partial_fit(X_batch)
+            self.partial_fit(X_batch, queue=queue)
 
         self._onedal_finalize_compute()
         return self
