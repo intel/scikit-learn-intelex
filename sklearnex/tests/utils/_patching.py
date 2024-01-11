@@ -21,6 +21,7 @@ from contextlib import contextmanager
 from inspect import isclass
 
 import numpy as np
+from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -113,7 +114,7 @@ def gen_models_info(algorithms):
     return output
 
 
-def gen_dataset(estimator, dtype=np.float64):
+def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
     dataset = None
     name = estimator.__class__.__name__
     est = UNPATCHED_MODELS[name]()
@@ -128,7 +129,9 @@ def gen_dataset(estimator, dtype=np.float64):
     else:
         raise ValueError("Unknown dataset type")
 
-    return X.astype(dtype), y.astype(dtype)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
+    return X,y
 
 
 DTYPES = [

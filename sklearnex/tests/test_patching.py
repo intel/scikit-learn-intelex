@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import io
+import numpy as np
 import logging
 import re
 from contextlib import contextmanager
@@ -25,10 +26,11 @@ from utils._patching import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     UNPATCHED_MODELS,
-    gen_models_info,
     gen_dataset,
+    gen_models_info,
 )
 
+from onedal.tests.utils._dataframes_support import get_dataframes_and_queues
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 
@@ -68,11 +70,13 @@ def log_sklearnex():
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(dtype, estimator, method):
+def test_standard_estimator_patching(dataframe, queue, dtype, estimator, method):
     with log_sklearnex() as log:
         est = PATCHED_MODELS[estimator]()
-        X, y = gen_dataset(est, dtype)
+
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
         if not hasattr(est, method):
@@ -96,13 +100,20 @@ def test_standard_estimator_patching(dtype, estimator, method):
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
+@pytest.mark.parametrize(
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+)
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
-def test_special_estimator_patching(dtype, estimator, method):
+def test_special_estimator_patching(dataframe, queue, dtype, estimator, method):
     # prepare logging
     with log_sklearnex() as log:
         est = SPECIAL_INSTANCES[estimator]
-        X, y = gen_dataset(est, dtype)
+
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
+        
+        if not hasattr(est, method):
+            pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
         if method != "score":
             getattr(est, method)(X)
