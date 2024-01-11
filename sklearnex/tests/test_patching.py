@@ -15,11 +15,11 @@
 # ==============================================================================
 
 import io
-import numpy as np
 import logging
 import re
 from contextlib import contextmanager
 
+import numpy as np
 import pytest
 from utils._patching import (
     DTYPES,
@@ -70,7 +70,9 @@ def log_sklearnex():
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy"))
+@pytest.mark.parametrize(
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+)
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_patching(dataframe, queue, dtype, estimator, method):
     with log_sklearnex() as log:
@@ -111,7 +113,7 @@ def test_special_estimator_patching(dataframe, queue, dtype, estimator, method):
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
-        
+
         if not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 

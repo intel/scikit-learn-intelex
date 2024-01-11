@@ -21,7 +21,6 @@ from contextlib import contextmanager
 from inspect import isclass
 
 import numpy as np
-from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -33,6 +32,7 @@ from sklearn.base import (
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
 
+from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 from sklearnex.neighbors import (
     KNeighborsClassifier,
@@ -131,7 +131,7 @@ def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
 
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
-    return X,y
+    return X, y
 
 
 DTYPES = [
