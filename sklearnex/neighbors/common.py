@@ -282,5 +282,5 @@ class KNeighborsDispatchingBase:
                 return self._fit_queue
             if queue.sycl_device == self._fit_queue.sycl_device:
                 return queue
-            raise RuntimeError("Input data shall be located " "on single target device")
+            raise RuntimeError(f"Input data shall be located \n on single target device {queue.sycl_device} {self._fit_queue.sycl_device}")
         return queue
