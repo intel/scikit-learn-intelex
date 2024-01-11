@@ -47,6 +47,7 @@ if oneapi_is_available:
 class DummySyclQueue:
     """This class is designed to act like dpctl.SyclQueue
     to allow device dispatching in scenarios when dpctl is not available"""
+
     _cache = {}
 
     class DummySyclDevice:
