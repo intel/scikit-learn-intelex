@@ -17,8 +17,8 @@
 import numpy as np
 from sklearn.utils import check_array, gen_batches
 
-from onedal._device_offload import support_usm_ndarray
 from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs
+from onedal._device_offload import support_usm_ndarray
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )

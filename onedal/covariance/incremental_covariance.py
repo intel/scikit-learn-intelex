@@ -26,6 +26,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
     """
     Incremental Covariance oneDAL implementation
     """
+
     def __init__(self, method="dense", bias=False):
         super().__init__(method, bias)
         self._partial_result = _backend.covariance.partial_compute_result()
