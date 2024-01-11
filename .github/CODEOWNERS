@@ -19,6 +19,7 @@ examples/                     @maria-Petrova @Alexsandruss @samir-nasibli @napet
 # Dependencies
 setup.py                      @napetrov @Alexsandruss @samir-nasibli
 requirements*                 @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
+dependencies-dev              @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
 conda-recipe/                 @napetrov @Alexsandruss
 
 # Model builders
