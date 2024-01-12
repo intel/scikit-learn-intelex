@@ -341,7 +341,7 @@ def run_with_n_jobs(method):
         # preemptive validation of n_jobs parameter is required
         # because 'run_with_n_jobs' decorator is applied on top of method
         # where validation takes place
-        if sklearn_check_version("1.2"):
+        if sklearn_check_version("1.2") and hasattr(self, "_parameter_constraints"):
             validate_parameter_constraints(
                 parameter_constraints={"n_jobs": self._parameter_constraints["n_jobs"]},
                 params={"n_jobs": self.n_jobs},
