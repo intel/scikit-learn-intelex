@@ -21,7 +21,7 @@ from contextlib import contextmanager
 
 import numpy as np
 import pytest
-from utils._patching import (
+from _utils import (
     DTYPES,
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
