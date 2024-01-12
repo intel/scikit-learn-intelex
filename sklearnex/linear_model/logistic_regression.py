@@ -1,5 +1,5 @@
 # ===============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import sklearn.linear_model._logistic as logistic_module
 
 from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.logistic_path import (
-    LogisticRegression,
     daal4py_predict,
     logistic_regression_path,
 )
@@ -48,9 +47,9 @@ if daal_check_version((2024, "P", 1)):
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
     from onedal.utils import _num_features, _num_samples
 
-    from ..._device_offload import dispatch, wrap_output_data
-    from ..._utils import PatchingConditionsChain, get_patch_message
-    from ...utils.validation import _assert_all_finite
+    from .._device_offload import dispatch, wrap_output_data
+    from .._utils import PatchingConditionsChain, get_patch_message
+    from ..utils.validation import _assert_all_finite
 
     @control_n_jobs(
         decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]

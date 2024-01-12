@@ -15,14 +15,58 @@
 # ===============================================================================
 
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_breast_cancer, load_iris
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+
+from daal4py.sklearn._utils import daal_check_version
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
+from sklearnex import config_context
 
 
-def test_sklearnex_import():
+def test_sklearnex_import_cpu():
     from sklearnex.linear_model import LogisticRegression
 
     X, y = load_iris(return_X_y=True)
     logreg = LogisticRegression(random_state=0, max_iter=200).fit(X, y)
-    assert "daal4py" in logreg.__module__
+    # assert "daal4py" in logreg.__module__
+    if daal_check_version((2024, "P", 1)):
+        assert "sklearnex" in logreg.__module__
+    else:
+        assert "daal4py" in logreg.__module__
     assert_allclose(logreg.score(X, y), 0.9733, atol=1e-3)
+
+
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
+def test_sklearnex_import_gpu(dataframe, queue):
+    from sklearnex.preview.linear_model import LogisticRegression
+
+    X, y = load_breast_cancer(return_X_y=True)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, train_size=0.8, random_state=42
+    )
+    X_train = _convert_to_dataframe(X_train, sycl_queue=queue, target_df=dataframe)
+    y_train = _convert_to_dataframe(y_train, sycl_queue=queue, target_df=dataframe)
+    X_test = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
+
+    model = LogisticRegression(fit_intercept=True, solver="newton-cg")
+    model.fit(X_train, y_train)
+    y_pred = _as_numpy(model.predict(X_test))
+    if daal_check_version((2024, "P", 1)):
+        assert "sklearnex" in model.__module__
+    else:
+        assert "daal4py" in model.__module__
+    # in case dataframe='numpy' algorithm should fallback to sklearn
+    # as cpu method is not implemented in onedal
+    if dataframe != "numpy" and daal_check_version((2024, "P", 1)):
+        assert hasattr(model, "_onedal_estimator")
+    assert accuracy_score(y_test, y_pred) > 0.95
