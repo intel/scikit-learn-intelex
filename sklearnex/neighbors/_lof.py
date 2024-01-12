@@ -19,6 +19,7 @@ import warnings
 
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor as sklearn_LocalOutlierFactor
+from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
@@ -116,7 +117,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         )
         return result
 
-    # Subtle change order to remove check_array and preserve dpnp and
+    # Subtle order change to remove check_array and preserve dpnp and
     # dpctl conformance. decision_function will return a dpnp or dpctl
     # instance via kneighbors and an equivalent check_array exists in
     # that call already in sklearn so no loss of functionality occurs
@@ -134,7 +135,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         return is_inlier
 
     @run_with_n_jobs
-    def _onedal_score_samples(self, X, queue=queue):
+    def _onedal_score_samples(self, X, queue=None):
         distances_X, neighbors_indices_X = self.onedal_estimator._kneighbors(
             X, n_neighbors=self.n_neighbors_, queue=queue
         )
@@ -153,7 +154,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         return -np.mean(lrd_ratios_array, axis=1)
 
     # Only necessary to preserve dpnp and dpctl conformance, otherwise a copy
-    @available_if(_check_novelty_score_samples)
+    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
     @wrap_output_data
     def score_samples(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
