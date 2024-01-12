@@ -47,7 +47,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     # structure, wrap
     _save_attributes = NearestNeighbors._save_attributes
     _onedal_knn_fit = NearestNeighbors._onedal_fit
-    _check_novelty_score_samples = sklearn_LocalOutlierFactor._check_novelty_score_samples
 
     @run_with_n_jobs
     def _onedal_fit(self, X, y, queue=None):
@@ -118,7 +117,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     # dpctl conformance. decision_function will return a dpnp or dpctl
     # instance via kneighbors and an equivalent check_array exists in
     # that call already in sklearn so no loss of functionality occurs
-    @wrap_output_data
     def _predict(self, X=None):
         check_is_fitted(self)
 
@@ -131,6 +129,20 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             is_inlier[self.negative_outlier_factor_ < self.offset_] = -1
 
         return is_inlier
+
+    # This had to be done because predict loses the queue when no
+    # argument is given and it is a dpctl tensor or dpnp array.
+    # This would cause issues in fit_predict. Also, available_if
+    # is hard to unwrap, and this is the most straighforward way.
+    @available_if(sklearn_LocalOutlierFactor._check_novelty_fit_predict)
+    @wrap_output_data
+    def fit_predict(self, X, y=None):
+        return self.fit(X)._predict()
+
+    @available_if(sklearn_LocalOutlierFactor._check_novelty_predict)
+    @wrap_output_data
+    def predict(self, X=None):
+        return self._predict(X)
 
     @run_with_n_jobs
     def _onedal_score_samples(self, X, queue=None):
@@ -149,7 +161,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         return -np.mean(lrd_ratios_array, axis=1)
 
     # Only necessary to preserve dpnp and dpctl conformance, otherwise a copy
-    @available_if(_check_novelty_score_samples)
+    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
     @wrap_output_data
     def score_samples(self, X):
         check_is_fitted(self)
@@ -183,4 +195,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         )
 
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
+    fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
+    predict.__doc__ = sklearn_LocalOutlierFactor.predict.__doc__
+    score_samples.__doc__ = sklearn_LocalOutlierFactor.score_samples.__doc__
     kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
