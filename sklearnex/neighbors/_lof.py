@@ -47,10 +47,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     # structure, wrap
     _save_attributes = NearestNeighbors._save_attributes
     _onedal_knn_fit = NearestNeighbors._onedal_fit
-    # This is necessary because of fit_predict losing the dpnp or
-    # dpctl queue when calling _predict() without arguments
-    predict = wrap_output_data(sklearn_LocalOutlierFactor.predict)
-    fit_predict = wrap_output_data(sklearn_LocalOutlierFactor.fit_predict)
+    _check_novelty_score_samples = sklearn_LocalOutlierFactor._check_novelty_score_samples
 
     @run_with_n_jobs
     def _onedal_fit(self, X, y, queue=None):
@@ -121,6 +118,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     # dpctl conformance. decision_function will return a dpnp or dpctl
     # instance via kneighbors and an equivalent check_array exists in
     # that call already in sklearn so no loss of functionality occurs
+    @wrap_output_data
     def _predict(self, X=None):
         check_is_fitted(self)
 
@@ -136,12 +134,9 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
 
     @run_with_n_jobs
     def _onedal_score_samples(self, X, queue=None):
-        distances_X, neighbors_indices_X = self.onedal_estimator._kneighbors(
+        distances_X, neighbors_indices_X = self._onedal_estimator._kneighbors(
             X, n_neighbors=self.n_neighbors_, queue=queue
         )
-
-        if X.dtype == np.float32:
-            distances_X = distances_X.astype(X.dtype, copy=False)
 
         X_lrd = self._local_reachability_density(
             distances_X,
@@ -154,9 +149,9 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         return -np.mean(lrd_ratios_array, axis=1)
 
     # Only necessary to preserve dpnp and dpctl conformance, otherwise a copy
-    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
+    @available_if(_check_novelty_score_samples)
     @wrap_output_data
-    def score_samples(self, X=None, n_neighbors=None, return_distance=True):
+    def score_samples(self, X):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
@@ -164,7 +159,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             self,
             "score_samples",
             {
-                "onedal": self._onedal_score_samples,
+                "onedal": self.__class__._onedal_score_samples,
                 "sklearn": sklearn_LocalOutlierFactor.score_samples,
             },
             X,
