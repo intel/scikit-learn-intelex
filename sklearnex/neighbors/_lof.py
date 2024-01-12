@@ -30,10 +30,12 @@ from .knn_unsupervised import NearestNeighbors
 
 @control_n_jobs
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
-    __doc__ = sklearn_LocalOutlierFactor.__doc__ +
-    "NOTE: When X=None, methods kneighbors, kneighbors_graph, and predict will"+
-    "\n only output numpy arrays. In that case, the only way to offload to gpu"+
-    "\n is to use a global queue (e.g. using config_context)"
+    __doc__ = (
+        sklearn_LocalOutlierFactor.__doc__
+        + "NOTE: When X=None, methods kneighbors, kneighbors_graph, and predict will"
+        + "\n only output numpy arrays. In that case, the only way to offload to gpu"
+        + "\n is to use a global queue (e.g. using config_context)"
+    )
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
             **sklearn_LocalOutlierFactor._parameter_constraints
