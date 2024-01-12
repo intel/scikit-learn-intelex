@@ -129,6 +129,10 @@ def sklearn_check_version(ver):
     return res
 
 
+if sklearn_check_version("1.2"):
+    from sklearn.utils._param_validation import validate_parameter_constraints
+
+
 def parse_dtype(dt):
     if dt == np.double:
         return "double"
@@ -334,6 +338,15 @@ def run_with_n_jobs(method):
         # multiprocess parallel backends branch
         cl = self.__class__
         method_name = ".".join([cl.__module__, cl.__name__, method.__name__])
+        # preemptive validation of n_jobs parameter is required
+        # because 'run_with_n_jobs' decorator is applied on top of method
+        # where validation takes place
+        if sklearn_check_version("1.2"):
+            validate_parameter_constraints(
+                parameter_constraints={"n_jobs": self._parameter_constraints["n_jobs"]},
+                params={"n_jobs": self.n_jobs},
+                caller_name=self.__class__.__name__,
+            )
         # search for specified n_jobs
         n_jobs = self.n_jobs
         n_cpus = cpu_count()
