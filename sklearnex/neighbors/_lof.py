@@ -43,9 +43,13 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
 
     # Only certain methods should be taken from knn to prevent code
     # duplication. Inheriting would yield a complicated inheritance
-    # structure
+    # structure, wrap
     _save_attributes = NearestNeighbors._save_attributes
     _onedal_knn_fit = NearestNeighbors._onedal_fit
+    # This is necessary because of fit_predict losing the dpnp or
+    # dpctl queue when calling _predict() without arguments
+    predict = wrap_output_data(sklearn_LocalOutlierFactor.predict)
+    fit_predict = wrap_output_data(sklearn_LocalOutlierFactor.fit_predict)
 
     @run_with_n_jobs
     def _onedal_fit(self, X, y, queue=None):
@@ -112,11 +116,64 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         )
         return result
 
+    # Subtle change order to remove check_array and preserve dpnp and
+    # dpctl conformance. decision_function will return a dpnp or dpctl
+    # instance via kneighbors and an equivalent check_array exists in
+    # that call already in sklearn so no loss of functionality occurs
+    def _predict(self, X=None):
+        check_is_fitted(self)
+
+        if X is not None:
+            output = self.decision_function(X) < 0
+            is_inlier = np.ones(output.shape[0], dtype=int)
+            is_inlier[output] = -1
+        else:
+            is_inlier = np.ones(self.n_samples_fit_, dtype=int)
+            is_inlier[self.negative_outlier_factor_ < self.offset_] = -1
+
+        return is_inlier
+
+    @run_with_n_jobs
+    def _onedal_score_samples(self, X, queue=queue):
+        distances_X, neighbors_indices_X = self.onedal_estimator._kneighbors(
+            X, n_neighbors=self.n_neighbors_, queue=queue
+        )
+
+        if X.dtype == np.float32:
+            distances_X = distances_X.astype(X.dtype, copy=False)
+
+        X_lrd = self._local_reachability_density(
+            distances_X,
+            neighbors_indices_X,
+        )
+
+        lrd_ratios_array = self._lrd[neighbors_indices_X] / X_lrd[:, np.newaxis]
+
+        # as bigger is better:
+        return -np.mean(lrd_ratios_array, axis=1)
+
+    # Only necessary to preserve dpnp and dpctl conformance, otherwise a copy
+    @available_if(_check_novelty_score_samples)
+    @wrap_output_data
+    def score_samples(self, X=None, n_neighbors=None, return_distance=True):
+        check_is_fitted(self)
+        if sklearn_check_version("1.0") and X is not None:
+            self._check_feature_names(X, reset=False)
+        return dispatch(
+            self,
+            "score_samples",
+            {
+                "onedal": self._onedal_score_samples,
+                "sklearn": sklearn_LocalOutlierFactor.score_samples,
+            },
+            X,
+        )
+
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(self._fit_X if X is None else X, reset=False)
+        if sklearn_check_version("1.0") and X is not None:
+            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "kneighbors",
