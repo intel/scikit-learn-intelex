@@ -48,7 +48,7 @@ def test_sklearnex_import_cpu():
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
 def test_sklearnex_import_gpu(dataframe, queue):
-    from sklearnex.preview.linear_model import LogisticRegression
+    from sklearnex.linear_model import LogisticRegression
 
     X, y = load_breast_cancer(return_X_y=True)
     X_train, X_test, y_train, y_test = train_test_split(
