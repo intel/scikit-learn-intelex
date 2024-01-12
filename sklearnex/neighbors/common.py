@@ -66,7 +66,6 @@ class KNeighborsDispatchingBase:
             self._fit_X = _check_array(
                 X, dtype=[np.float64, np.float32], accept_sparse=True
             )
-
             self.n_samples_fit_ = _num_samples(self._fit_X)
             self.n_features_in_ = _num_features(self._fit_X)
 
