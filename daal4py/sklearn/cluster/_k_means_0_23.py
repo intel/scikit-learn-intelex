@@ -39,7 +39,6 @@ from .._utils import (
     PatchingConditionsChain,
     control_n_jobs,
     getFPType,
-    run_with_n_jobs,
     sklearn_check_version,
 )
 
@@ -161,7 +160,6 @@ def _daal4py_kmeans_compatibility(
     return kmeans_algo
 
 
-@run_with_n_jobs
 def _daal4py_k_means_predict(
     self, X, nClusters, centroids, resultsToEvaluate="computeAssignments"
 ):
@@ -181,7 +179,6 @@ def _daal4py_k_means_predict(
     return res.assignments[:, 0], res.objectiveFunction[0, 0]
 
 
-@run_with_n_jobs
 def _daal4py_k_means_fit(
     self,
     X,
@@ -545,7 +542,7 @@ def _predict(self, X, sample_weight=None):
         ]
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 

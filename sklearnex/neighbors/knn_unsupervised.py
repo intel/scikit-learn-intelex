@@ -96,7 +96,7 @@ else:
             )
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "kneighbors"])
 class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**NearestNeighbors_._parameter_constraints}
@@ -181,7 +181,6 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
 
         return result
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, y=None, queue=None):
         onedal_params = {
             "n_neighbors": self.n_neighbors,
@@ -203,11 +202,9 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
 
         self._save_attributes()
 
-    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
 
-    @run_with_n_jobs
     def _onedal_kneighbors(
         self, X=None, n_neighbors=None, return_distance=True, queue=None
     ):

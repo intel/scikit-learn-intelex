@@ -30,18 +30,14 @@ if daal_check_version((2023, "P", 200)):
         check_is_fitted,
     )
 
-    from daal4py.sklearn._utils import (
-        control_n_jobs,
-        run_with_n_jobs,
-        sklearn_check_version,
-    )
+    from daal4py.sklearn._utils import control_n_jobs, sklearn_check_version
     from onedal.cluster import KMeans as onedal_KMeans
 
     from ..._device_offload import dispatch, wrap_output_data
     from ..._utils import PatchingConditionsChain
     from ._common import BaseKMeans
 
-    @control_n_jobs
+    @control_n_jobs(decorated_methods=["fit", "predict"])
     class KMeans(sklearn_KMeans, BaseKMeans):
         __doc__ = sklearn_KMeans.__doc__
         n_iter_, inertia_ = None, None
@@ -213,7 +209,6 @@ if daal_check_version((2023, "P", 200)):
 
             return self
 
-        @run_with_n_jobs
         def _onedal_fit(self, X, _, sample_weight, queue=None):
             assert sample_weight is None
 
@@ -295,7 +290,6 @@ if daal_check_version((2023, "P", 200)):
                 X,
             )
 
-        @run_with_n_jobs
         def _onedal_predict(self, X, queue=None):
             X = self._validate_data(
                 X, accept_sparse=False, reset=False, dtype=[np.float64, np.float32]

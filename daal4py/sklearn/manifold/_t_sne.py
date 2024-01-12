@@ -32,7 +32,6 @@ from daal4py.sklearn._utils import (
     PatchingConditionsChain,
     control_n_jobs,
     daal_check_version,
-    run_with_n_jobs,
     sklearn_check_version,
 )
 
@@ -45,7 +44,7 @@ else:
     from sklearn.manifold.t_sne import _joint_probabilities, _joint_probabilities_nn
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit"])
 class TSNE(BaseTSNE):
     __doc__ = BaseTSNE.__doc__
 
@@ -144,7 +143,6 @@ class TSNE(BaseTSNE):
 
         return X_embedded
 
-    @run_with_n_jobs
     def _fit(self, X, skip_num_points=0):
         """Private function to fit the model using X as training data."""
         if isinstance(self.init, str) and self.init == "warn":

@@ -27,7 +27,7 @@ from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit"])
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     __doc__ = sklearn_EmpiricalCovariance.__doc__
 
@@ -43,7 +43,6 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     _onedal_covariance = staticmethod(onedal_EmpiricalCovariance)
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, queue=None):
         onedal_params = {
             "method": "dense",

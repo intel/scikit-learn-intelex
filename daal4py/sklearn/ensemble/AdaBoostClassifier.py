@@ -27,7 +27,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 import daal4py as d4p
 
-from .._utils import control_n_jobs, getFPType, run_with_n_jobs
+from .._utils import control_n_jobs, getFPType
 
 try:
     from packaging.version import Version
@@ -35,7 +35,7 @@ except ImportError:
     from distutils.version import LooseVersion as Version
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
     def __init__(
         self,
@@ -53,7 +53,6 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         self.learning_rate = learning_rate
         self.accuracy_threshold = accuracy_threshold
 
-    @run_with_n_jobs
     def fit(self, X, y):
         if self.split_criterion not in ("gini", "infoGain"):
             raise ValueError(
@@ -153,7 +152,6 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         # Return the classifier
         return self
 
-    @run_with_n_jobs
     def predict(self, X):
         # Check is fit had been called
         if Version(sklearn_version) >= Version("0.22"):

@@ -29,7 +29,7 @@ if sklearn_check_version("1.0"):
 from onedal.svm import NuSVC as onedal_NuSVC
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict", "decision_function"])
 class NuSVC(sklearn_NuSVC, BaseSVC):
     __doc__ = sklearn_NuSVC.__doc__
 
@@ -195,6 +195,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             self._check_proba()
             return self._predict_proba
 
+    @run_with_n_jobs
     @wrap_output_data
     def _predict_proba(self, X):
         if sklearn_check_version("1.0"):
@@ -229,7 +230,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             X,
         )
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             "nu": self.nu,
@@ -253,11 +253,9 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             self._fit_proba(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
-    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
 
-    @run_with_n_jobs
     def _onedal_predict_proba(self, X, queue=None):
         if getattr(self, "clf_prob", None) is None:
             raise NotFittedError(
@@ -272,6 +270,5 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         with config_context(**cfg):
             return self.clf_prob.predict_proba(X)
 
-    @run_with_n_jobs
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)

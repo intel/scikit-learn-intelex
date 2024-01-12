@@ -38,7 +38,6 @@ from .._utils import (
     control_n_jobs,
     daal_check_version,
     getFPType,
-    run_with_n_jobs,
 )
 
 
@@ -372,7 +371,7 @@ def _predict(self, X, sample_weight=None):
     return _labels_inertia(X, sample_weight, x_squared_norms, self.cluster_centers_)[0]
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
@@ -405,7 +404,6 @@ class KMeans(KMeans_original):
         )
 
     @support_usm_ndarray()
-    @run_with_n_jobs
     def fit(self, X, y=None, sample_weight=None):
         """
         Compute k-means clustering.
@@ -436,7 +434,6 @@ class KMeans(KMeans_original):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
-    @run_with_n_jobs
     def predict(self, X, sample_weight=None):
         """
         Predict the closest cluster each sample in X belongs to.
