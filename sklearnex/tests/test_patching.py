@@ -21,12 +21,7 @@ from contextlib import contextmanager
 
 import numpy as np
 import pytest
-
-from onedal.tests.utils._dataframes_support import get_dataframes_and_queues
-from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
-from sklearnex.metrics import pairwise_distances, roc_auc_score
-
-from ._utils import (
+from _utils import (
     DTYPES,
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
@@ -34,6 +29,10 @@ from ._utils import (
     gen_dataset,
     gen_models_info,
 )
+
+from onedal.tests.utils._dataframes_support import get_dataframes_and_queues
+from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
+from sklearnex.metrics import pairwise_distances, roc_auc_score
 
 
 def run_utils():
