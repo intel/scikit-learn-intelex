@@ -24,7 +24,6 @@ __all__ = [
     "Ridge",
     "LinearRegression",
     "LogisticRegression",
-    "logistic_regression_path",
     "ElasticNet",
     "Lasso",
 ]

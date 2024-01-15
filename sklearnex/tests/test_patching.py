@@ -14,7 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import importlib
 import io
+import os
 import logging
 import re
 from contextlib import contextmanager
@@ -24,6 +26,7 @@ import pytest
 from _utils import (
     DTYPES,
     PATCHED_MODELS,
+    PATCHED_FUNCTIONS,
     SPECIAL_INSTANCES,
     UNPATCHED_MODELS,
     gen_dataset,
@@ -140,3 +143,50 @@ def test_is_patched_instance(name):
     unpatched = UNPATCHED_MODELS[name]()
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
+
+
+def test_patch_map_match():
+    def list_submodules(string):
+        try:
+            modules = set(importlib.import_module(string).__all__)
+        except ModuleNotFoundError:
+            modules = set([None])
+        return modules
+
+    patched = PATCHED_MODELS | PATCHED_FUNCTIONS
+
+    sklearnex__all__ = list_submodules("sklearnex")
+    sklearn__all__ = list_submodules("sklearn")
+
+    module_map = {i: i for i in sklearnex__all__.intersection(sklearn__all__)}
+
+    # replace with preview if SKLEARNEX_PREVIEW is defined
+    if os.getenv("SKLEARNEX_PREVIEW", None):
+        preview_modules = list_submodules("sklearnex.preview")
+        for i in preview_modules:
+            module_candidates[i] = "preview." + i
+
+    # _assert_all_finite and _logistic_regression_path patch internal
+    # sklearn functions which aren't exposed. These are not available in
+    # __all__ and require more careful anaylsis. Future patching of
+    # internal sklearn functions should recieve similarly special treatment
+    # and should be deleted here.
+    del patched["_assert_all_finite"]
+    del patched["_logistic_regression_path"]
+
+    for module in module_map:
+        sklearn_module__all__ = list_submodules("sklearn." + module)
+        sklearnex_module__all__ = list_submodules("sklearnex." + module_map[module])
+        intersect = sklearnex_module__all__.intersection(sklearn_module__all__)
+
+        assert (
+            intersect == sklearnex_module__all__
+        ), f"{sklearnex_module__all__ - intersect} should not be in sklearnex.{module}.__all__"
+
+        for i in intersect:
+            if i:
+                del patched[i]
+            else:
+                del patched[module]
+
+    assert patched == {}, f"{patched.keys()} were not properly patched"

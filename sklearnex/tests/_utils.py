@@ -43,19 +43,16 @@ from sklearnex.neighbors import (
 from sklearnex.svm import SVC
 
 
-def _load_all_models(patched):
+def _load_all_models(patched, estimator=True):
     if patched:
         patch_sklearn()
 
     models = {}
     for patch_infos in get_patch_map().values():
         maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
-        if (
-            maybe_class is not None
-            and isclass(maybe_class)
-            and issubclass(maybe_class, BaseEstimator)
-        ):
-            models[patch_infos[0][0][1]] = maybe_class
+        if maybe_class is not None and isclass(maybe_class) == estimator:
+            if not estimator or issubclass(maybe_class, BaseEstimator):
+                models[patch_infos[0][0][1]] = maybe_class
 
     if patched:
         unpatch_sklearn()
@@ -65,6 +62,9 @@ def _load_all_models(patched):
 
 PATCHED_MODELS = _load_all_models(patched=True)
 UNPATCHED_MODELS = _load_all_models(patched=False)
+
+PATCHED_FUNCTIONS = _load_all_models(patched=True, estimator=False)
+UNPATCHED_FUNCTIONS = _load_all_models(patched=True, estimator=False)
 
 mixin_map = [
     [
