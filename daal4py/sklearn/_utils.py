@@ -319,9 +319,7 @@ def get_suggested_n_threads(n_cpus):
 
 def run_with_n_jobs(method):
     """Decorator for running of methods containing oneDAL kernels with 'n_jobs'.
-    NOTE: This decorator is not expected to be used manually except for
-    '[Nu]SVC.predict_proba' which is not accessible by attribute getter because of
-    applied 'if_available' decorator.
+    This decorator is not expected to be used manually.
     """
 
     @wraps(method)

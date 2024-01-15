@@ -18,7 +18,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
+from daal4py.sklearn._utils import control_n_jobs, sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVC
@@ -29,7 +29,9 @@ if sklearn_check_version("1.0"):
 from onedal.svm import NuSVC as onedal_NuSVC
 
 
-@control_n_jobs(decorated_methods=["fit", "predict", "decision_function"])
+@control_n_jobs(
+    decorated_methods=["fit", "predict", "_predict_proba", "decision_function"]
+)
 class NuSVC(sklearn_NuSVC, BaseSVC):
     __doc__ = sklearn_NuSVC.__doc__
 
@@ -159,7 +161,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     if sklearn_check_version("1.0"):
 
         @available_if(sklearn_NuSVC._check_proba)
-        @run_with_n_jobs
         def predict_proba(self, X):
             """
             Compute probabilities of possible outcomes for samples in X.
@@ -192,7 +193,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     else:
 
         @property
-        @run_with_n_jobs
         def predict_proba(self):
             self._check_proba()
             return self._predict_proba
