@@ -49,10 +49,10 @@ def _load_all_models(patched, estimator=True):
 
     models = {}
     for patch_infos in get_patch_map().values():
-        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
-        if maybe_class is not None and isclass(maybe_class) == estimator:
-            if not estimator or issubclass(maybe_class, BaseEstimator):
-                models[patch_infos[0][0][1]] = maybe_class
+        candidate = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
+        if candidate is not None and isclass(candidate) == estimator:
+            if not estimator or issubclass(candidate, BaseEstimator):
+                models[patch_infos[0][0][1]] = candidate
 
     if patched:
         unpatch_sklearn()
