@@ -15,8 +15,10 @@
 # ==============================================================================
 
 import importlib
+import inspect
 import io
 import logging
+import os
 import re
 from contextlib import contextmanager
 
@@ -79,17 +81,26 @@ def log_sklearnex():
 def test_standard_estimator_patching(dataframe, queue, dtype, estimator, method):
     with log_sklearnex() as log:
         est = PATCHED_MODELS[estimator]()
+        unpatched_est = UNPATCHED_MODELS[estimator]()
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
-        if not hasattr(est, method):
+        est_method = getattr(est, method, None)
+
+        if not est_method:
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
+        unpatched_est_method = getattr(unpatched_est, method)
+
+        assert str(inspect.signature(est_method)) == str(
+            inspect.signature(unpatched_est_method)
+        )  # , f"{estimator}.{method} doesn't match sklearn signature"
+
         if method != "score":
-            getattr(est, method)(X)
+            est_method(X)
         else:
-            est.score(X, y)
+            est_method(X, y)
 
         result = log.getvalue().strip().split("\n")
 
@@ -148,12 +159,16 @@ def test_patch_map_match():
     # This rule applies to functions and classes which are out of preview.
     # Items listed in a matching submodule's __all__ attribute should be
     # in get_patch_map. There should not be any missing or additional elements.
+
     def list_submodules(string):
         try:
             modules = set(importlib.import_module(string).__all__)
         except ModuleNotFoundError:
             modules = set([None])
         return modules
+
+    if os.getenv("SKLEARNEX_PREVIEW") is not None:
+        pytest.skip("preview sklearnex has been activated")
 
     patched = PATCHED_MODELS | PATCHED_FUNCTIONS
 
