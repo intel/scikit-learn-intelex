@@ -161,7 +161,7 @@ def _daal4py_kmeans_compatibility(
 
 
 def _daal4py_k_means_predict(
-    self, X, nClusters, centroids, resultsToEvaluate="computeAssignments"
+    X, nClusters, centroids, resultsToEvaluate="computeAssignments"
 ):
     X_fptype = getFPType(X)
     is_sparse = sp.issparse(X)
@@ -180,15 +180,7 @@ def _daal4py_k_means_predict(
 
 
 def _daal4py_k_means_fit(
-    self,
-    X,
-    nClusters,
-    numIterations,
-    tol,
-    cluster_centers_0,
-    n_init,
-    verbose,
-    random_state,
+    X, nClusters, numIterations, tol, cluster_centers_0, n_init, verbose, random_state
 ):
     if numIterations < 0:
         raise ValueError("Wrong iterations number")
@@ -252,7 +244,7 @@ def _daal4py_k_means_fit(
 
     flag_compute = "computeAssignments|computeExactObjectiveFunction"
     best_labels, best_inertia = _daal4py_k_means_predict(
-        self, X, nClusters, best_cluster_centers, flag_compute
+        X, nClusters, best_cluster_centers, flag_compute
     )
 
     distinct_clusters = np.unique(best_labels).size
@@ -441,7 +433,6 @@ def _fit(self, X, y=None, sample_weight=None):
             self.inertia_,
             self.n_iter_,
         ) = _daal4py_k_means_fit(
-            self,
             X,
             self.n_clusters,
             self.max_iter,
@@ -524,9 +515,7 @@ def _predict(self, X, sample_weight=None):
 
     _patching_status.write_log()
     if _dal_ready:
-        return _daal4py_k_means_predict(self, X, self.n_clusters, self.cluster_centers_)[
-            0
-        ]
+        return _daal4py_k_means_predict(X, self.n_clusters, self.cluster_centers_)[0]
     if sklearn_check_version("1.2"):
         if sklearn_check_version("1.3") and sample_weight is not None:
             warnings.warn(
