@@ -16,7 +16,6 @@
 
 import importlib
 import io
-import os
 import logging
 import re
 from contextlib import contextmanager
@@ -25,8 +24,8 @@ import numpy as np
 import pytest
 from _utils import (
     DTYPES,
-    PATCHED_MODELS,
     PATCHED_FUNCTIONS,
+    PATCHED_MODELS,
     SPECIAL_INSTANCES,
     UNPATCHED_MODELS,
     gen_dataset,
@@ -146,6 +145,9 @@ def test_is_patched_instance(name):
 
 
 def test_patch_map_match():
+    # This rule applies to functions and classes which are out of preview.
+    # Items listed in a matching submodule's __all__ attribute should be
+    # in get_patch_map. There should not be any missing or additional elements.
     def list_submodules(string):
         try:
             modules = set(importlib.import_module(string).__all__)
@@ -160,12 +162,6 @@ def test_patch_map_match():
 
     module_map = {i: i for i in sklearnex__all__.intersection(sklearn__all__)}
 
-    # replace with preview if SKLEARNEX_PREVIEW is defined
-    if os.getenv("SKLEARNEX_PREVIEW", None):
-        preview_modules = list_submodules("sklearnex.preview")
-        for i in preview_modules:
-            module_candidates[i] = "preview." + i
-
     # _assert_all_finite and _logistic_regression_path patch internal
     # sklearn functions which aren't exposed. These are not available in
     # __all__ and require more careful anaylsis. Future patching of
@@ -175,8 +171,8 @@ def test_patch_map_match():
     del patched["_logistic_regression_path"]
 
     for module in module_map:
-        sklearn_module__all__ = list_submodules("sklearn." + module)
-        sklearnex_module__all__ = list_submodules("sklearnex." + module_map[module])
+        sklearn_module__all__ = list_submodules("sklearn." + module_map[module])
+        sklearnex_module__all__ = list_submodules("sklearnex." + module)
         intersect = sklearnex_module__all__.intersection(sklearn_module__all__)
 
         assert (
