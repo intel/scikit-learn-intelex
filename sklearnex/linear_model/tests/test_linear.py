@@ -107,7 +107,7 @@ def test_bf16_blas_epsilon():
         linreg_standard = LinearRegression().fit(X, y)
 
     with config_context(
-        target_offload="gpu:0",
+        target_offload="gpu",
         allow_fallback_to_host=False,
         gpu_blas_compute_mode="float_to_bf16",
     ):
@@ -116,12 +116,12 @@ def test_bf16_blas_epsilon():
     assert linreg_standard.n_features_in_ == 2
     assert linreg_bf16.n_features_in_ == 2
     # DAL_BLAS_COMPUTE_MODE is available in the mkl_gpu_fpk in 2024.0.2
-    if daal_check_version((2024, "P", 100)):
-        assert_raises(
-            AssertionError,
-            assert_allclose,
-            linreg_standard.coef_,
-            linreg_bf16.coef_,
-        )
-    else:
-        assert_allclose(linreg_standard.coef_, linreg_bf16.coef_)
+    #if daal_check_version((2024, "P", 100)):
+    assert_raises(
+        AssertionError,
+        assert_allclose,
+        linreg_standard.coef_,
+        linreg_bf16.coef_,
+    )
+    #else:
+    #    assert_allclose(linreg_standard.coef_, linreg_bf16.coef_)
