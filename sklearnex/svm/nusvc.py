@@ -159,6 +159,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     if sklearn_check_version("1.0"):
 
         @available_if(sklearn_NuSVC._check_proba)
+        @run_with_n_jobs
         def predict_proba(self, X):
             """
             Compute probabilities of possible outcomes for samples in X.
@@ -191,11 +192,11 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     else:
 
         @property
+        @run_with_n_jobs
         def predict_proba(self):
             self._check_proba()
             return self._predict_proba
 
-    @run_with_n_jobs
     @wrap_output_data
     def _predict_proba(self, X):
         if sklearn_check_version("1.0"):

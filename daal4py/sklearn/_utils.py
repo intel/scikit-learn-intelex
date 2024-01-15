@@ -386,6 +386,8 @@ def control_n_jobs(decorated_methods: list):
     """Decorator for the control of 'n_jobs' parameter in estimator class. It applied
     for all estimators with and without support of parameter in original sklearn.
     In case of estimator without 'n_jobs' support, this decorator adds it.
+    Methods listed in 'decorated_methods' argument are only methods
+    to be run with 'n_jobs'.
     """
 
     def class_wrapper(original_class):
@@ -433,7 +435,7 @@ def control_n_jobs(decorated_methods: list):
                 parameters_doc_tail, n_jobs_doc + parameters_doc_tail
             )
 
-        # decorated methods to be run with applied n_jobs parameter
+        # decorate methods to be run with applied n_jobs parameter
         for method_name in decorated_methods:
             method = getattr(original_class, method_name, None)
             setattr(original_class, method_name, run_with_n_jobs(method))

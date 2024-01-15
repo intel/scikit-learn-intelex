@@ -161,6 +161,7 @@ class SVC(sklearn_SVC, BaseSVC):
     if sklearn_check_version("1.0"):
 
         @available_if(sklearn_SVC._check_proba)
+        @run_with_n_jobs
         def predict_proba(self, X):
             """
             Compute probabilities of possible outcomes for samples in X.
@@ -193,11 +194,11 @@ class SVC(sklearn_SVC, BaseSVC):
     else:
 
         @property
+        @run_with_n_jobs
         def predict_proba(self):
             self._check_proba()
             return self._predict_proba
 
-    @run_with_n_jobs
     @wrap_output_data
     def _predict_proba(self, X):
         sklearn_pred_proba = (
