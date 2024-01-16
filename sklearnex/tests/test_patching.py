@@ -58,9 +58,7 @@ def log_sklearnex():
         sklearnex_logger.removeHandler(log_handler)
 
 
-@pytest.mark.parametrize(
-    "dtype", DTYPES
-)  # [i for i in DTYPES if "32" in i.__name__ or "64" in i.__name__])
+@pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
