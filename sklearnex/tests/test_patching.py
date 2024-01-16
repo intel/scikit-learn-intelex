@@ -20,43 +20,28 @@ import logging
 import os
 import re
 from contextlib import contextmanager
+from inspect import signature
 
 import numpy as np
+import numpy.random as nprnd
 import pytest
 from _utils import (
     DTYPES,
     PATCHED_FUNCTIONS,
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
+    UNPATCHED_FUNCTIONS,
     UNPATCHED_MODELS,
     gen_dataset,
     gen_models_info,
 )
 
-from inspect import signature
-from onedal.tests.utils._dataframes_support import get_dataframes_and_queues
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 from sklearnex.metrics import pairwise_distances, roc_auc_score
-
-
-def run_utils():
-    # pairwise_distances
-    for metric in ["cosine", "correlation"]:
-        for t in TYPES:
-            X = np.random.rand(1000)
-            X = np.array(X, dtype=t)
-            print("pairwise_distances", t.__name__)
-            _ = pairwise_distances(X.reshape(1, -1), metric=metric)
-            logging.info("pairwise_distances")
-    # roc_auc_score
-    for t in [np.float32, np.float64]:
-        a = [random.randint(0, 1) for i in range(1000)]
-        b = [random.randint(0, 1) for i in range(1000)]
-        a = np.array(a, dtype=t)
-        b = np.array(b, dtype=t)
-        print("roc_auc_score", t.__name__)
-        _ = roc_auc_score(a, b)
-        logging.info("roc_auc_score")
 
 
 @contextmanager
@@ -71,6 +56,60 @@ def log_sklearnex():
     finally:
         log_handler.setLevel(logging.WARNING)
         sklearnex_logger.removeHandler(log_handler)
+
+
+@pytest.mark.parametrize(
+    "dtype", DTYPES
+)  # [i for i in DTYPES if "32" in i.__name__ or "64" in i.__name__])
+@pytest.mark.parametrize(
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+)
+@pytest.mark.parametrize("metric", ["cosine", "correlation"])
+def test_pairwise_distances_patching(dataframe, queue, dtype, metric):
+    with log_sklearnex() as log:
+        rng = nprnd.default_rng()
+        X = _convert_to_dataframe(
+            rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+        )
+
+        _ = pairwise_distances(X.reshape(1, -1), metric=metric)
+
+        result = log.getvalue().strip().split("\n")
+
+    assert all(
+        [
+            "running accelerated version" in i or "fallback to original Scikit-learn" in i
+            for i in result
+        ]
+    ), "sklearnex patching issue in roc_auc_score"
+
+
+@pytest.mark.parametrize(
+    "dtype", [i for i in DTYPES if "32" in i.__name__ or "64" in i.__name__]
+)
+@pytest.mark.parametrize(
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+)
+def test_roc_auc_score_patching(dataframe, queue, dtype):
+    with log_sklearnex() as log:
+        rng = nprnd.default_rng()
+        X = _convert_to_dataframe(
+            rng.integers(2, size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+        )
+        y = _convert_to_dataframe(
+            rng.integers(2, size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+        )
+
+        _ = roc_auc_score(X, y)
+
+        result = log.getvalue().strip().split("\n")
+
+    assert all(
+        [
+            "running accelerated version" in i or "fallback to original Scikit-learn" in i
+            for i in result
+        ]
+    ), "sklearnex patching issue in roc_auc_score"
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
@@ -158,6 +197,17 @@ def test_standard_estimator_signatures(estimator):
             ), f"Signature of {estimator}.{method} does not match sklearn"
 
 
+@pytest.mark.parametrize("function", PATCHED_FUNCTIONS.keys())
+def test_patched_function_signatures(function):
+    func = PATCHED_FUNCTIONS[function]
+    unpatched_func = UNPATCHED_FUNCTIONS[function]
+
+    if callable(unpatched_func):
+        assert str(signature(func)) == str(
+            signature(unpatched_func)
+        ), f"Signature of {func} does not match sklearn"
+
+
 @pytest.mark.parametrize("name", PATCHED_MODELS.keys())
 def test_is_patched_instance(name):
     patched = PATCHED_MODELS[name]()
@@ -181,7 +231,7 @@ def test_patch_map_match():
     if os.getenv("SKLEARNEX_PREVIEW") is not None:
         pytest.skip("preview sklearnex has been activated")
 
-    patched = PATCHED_MODELS | PATCHED_FUNCTIONS
+    patched = {**PATCHED_MODELS, **PATCHED_FUNCTIONS}
 
     sklearnex__all__ = list_submodules("sklearnex")
     sklearn__all__ = list_submodules("sklearn")
