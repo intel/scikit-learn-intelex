@@ -293,7 +293,8 @@ threadpool_controller = threadpoolctl.ThreadpoolController()
 
 
 def get_suggested_n_threads(n_cpus):
-    """Function to get `n_threads` limit
+    """
+    Function to get `n_threads` limit
     if `n_jobs` is set in upper parallelization context.
     Usually, limit is equal to `n_logical_cpus` // `n_jobs`.
     Returns None if limit is not set.
@@ -317,9 +318,14 @@ def get_suggested_n_threads(n_cpus):
         return None
 
 
-def run_with_n_jobs(method):
-    """Decorator for running of methods containing oneDAL kernels with 'n_jobs'.
-    This decorator is not expected to be used manually.
+def _run_with_n_jobs(method):
+    """
+    Decorator for running of methods containing oneDAL kernels with 'n_jobs'.
+
+    Outside actual call of decorated method, this decorator:
+    - checks correctness of passed 'n_jobs',
+    - deducts actual number of threads to use,
+    - sets and resets this number for oneDAL environment.
     """
 
     @wraps(method)
@@ -337,7 +343,7 @@ def run_with_n_jobs(method):
         cl = self.__class__
         method_name = ".".join([cl.__module__, cl.__name__, method.__name__])
         # preemptive validation of n_jobs parameter is required
-        # because 'run_with_n_jobs' decorator is applied on top of method
+        # because '_run_with_n_jobs' decorator is applied on top of method
         # where validation takes place
         if sklearn_check_version("1.2") and hasattr(self, "_parameter_constraints"):
             validate_parameter_constraints(
@@ -381,11 +387,41 @@ def run_with_n_jobs(method):
 
 
 def control_n_jobs(decorated_methods: list):
-    """Decorator for the control of 'n_jobs' parameter in estimator class. It applied
-    for all estimators with and without support of parameter in original sklearn.
-    In case of estimator without 'n_jobs' support, this decorator adds it.
-    Methods listed in 'decorated_methods' argument are only methods
-    to be run with 'n_jobs'.
+    """
+    Decorator for controlling the 'n_jobs' parameter in an estimator class.
+
+    This decorator is designed to be applied to both estimators with and without
+    native support for the 'n_jobs' parameter in the original Scikit-learn APIs.
+    When applied to an estimator without 'n_jobs' support in
+    its original '__init__' method, this decorator adds the 'n_jobs' parameter.
+
+    Additionally, this decorator allows for fine-grained control over which methods
+    should be executed with the 'n_jobs' parameter. The methods specified in
+    the 'decorated_methods' argument will run with 'n_jobs',
+    while all other methods remain unaffected.
+
+    Parameters
+    ----------
+        decorated_methods (list): A list of method names to be executed with 'n_jobs'.
+
+    Example
+    -------
+        @control_n_jobs(decorated_methods=['fit', 'predict'])
+
+        class MyEstimator:
+
+            def __init__(self, *args, **kwargs):
+                # Your original __init__ implementation here
+
+            def fit(self, *args, **kwargs):
+                # Your original fit implementation here
+
+            def predict(self, *args, **kwargs):
+                # Your original predict implementation here
+
+            def other_method(self, *args, **kwargs):
+                # Methods not listed in decorated_methods will not be affected by 'n_jobs'
+                pass
     """
 
     def class_wrapper(original_class):
@@ -406,12 +442,16 @@ def control_n_jobs(decorated_methods: list):
         # add "n_jobs" parameter to signature of wrapped init
         # if estimator doesn't originally support it
         sig = signature(original_init)
-        original_params = list(sig.parameters.values())
-        if "n_jobs" not in list(map(lambda param: param.name, original_params)):
-            original_params.append(
-                Parameter("n_jobs", Parameter.KEYWORD_ONLY, default=None)
+        if "n_jobs" not in sig.parameters:
+            params_copy = sig.parameters.copy()
+            params_copy.update(
+                {
+                    "n_jobs": Parameter(
+                        name="n_jobs", kind=Parameter.KEYWORD_ONLY, default=None
+                    )
+                }
             )
-            init_with_n_jobs.__signature__ = sig.replace(parameters=original_params)
+            init_with_n_jobs.__signature__ = sig.replace(parameters=params_copy.values())
             original_class.__init__ = init_with_n_jobs
 
         # add n_jobs to __doc__ string if needed
@@ -436,7 +476,7 @@ def control_n_jobs(decorated_methods: list):
         # decorate methods to be run with applied n_jobs parameter
         for method_name in decorated_methods:
             method = getattr(original_class, method_name, None)
-            setattr(original_class, method_name, run_with_n_jobs(method))
+            setattr(original_class, method_name, _run_with_n_jobs(method))
 
         return original_class
 
