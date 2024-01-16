@@ -38,13 +38,13 @@ import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
     check_tree_nodes,
-    control_n_jobs,
     daal_check_version,
     getFPType,
     sklearn_check_version,
 )
 
 from .._device_offload import support_usm_ndarray
+from .._n_jobs_support import control_n_jobs
 from ..utils.validation import _daal_num_features
 
 if sklearn_check_version("1.2"):

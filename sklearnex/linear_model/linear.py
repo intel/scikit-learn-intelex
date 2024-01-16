@@ -65,12 +65,8 @@ if daal_check_version((2023, "P", 100)):
     import numpy as np
     from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
-    from daal4py.sklearn._utils import (
-        control_n_jobs,
-        get_dtype,
-        make2d,
-        sklearn_check_version,
-    )
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
+    from daal4py.sklearn._utils import get_dtype, make2d, sklearn_check_version
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import (

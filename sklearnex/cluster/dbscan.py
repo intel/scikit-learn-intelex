@@ -23,7 +23,8 @@ from scipy import sparse as sp
 from sklearn.cluster import DBSCAN as sklearn_DBSCAN
 from sklearn.utils.validation import _check_sample_weight
 
-from daal4py.sklearn._utils import control_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
 from .._device_offload import dispatch, wrap_output_data

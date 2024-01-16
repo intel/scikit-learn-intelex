@@ -17,7 +17,8 @@
 from sklearn.svm import NuSVR as sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import control_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.svm import NuSVR as onedal_NuSVR
 
 from .._device_offload import dispatch, wrap_output_data

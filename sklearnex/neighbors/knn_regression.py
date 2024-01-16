@@ -21,7 +21,8 @@ from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 
-from daal4py.sklearn._utils import control_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights

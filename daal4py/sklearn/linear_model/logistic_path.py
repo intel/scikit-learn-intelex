@@ -32,12 +32,8 @@ from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
 import daal4py as d4p
 
-from .._utils import (
-    PatchingConditionsChain,
-    control_n_jobs,
-    getFPType,
-    sklearn_check_version,
-)
+from .._n_jobs_support import control_n_jobs
+from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 from .logistic_loss import (
     _daal4py_cross_entropy_loss_extra_args,
     _daal4py_grad_,

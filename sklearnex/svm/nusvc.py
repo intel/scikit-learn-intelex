@@ -18,7 +18,8 @@ from sklearn.exceptions import NotFittedError
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import control_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVC

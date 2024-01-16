@@ -30,12 +30,12 @@ from sklearn.utils.validation import check_non_negative
 import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
-    control_n_jobs,
     daal_check_version,
     sklearn_check_version,
 )
 
 from .._device_offload import support_usm_ndarray
+from .._n_jobs_support import control_n_jobs
 from ..neighbors import NearestNeighbors
 
 if sklearn_check_version("0.22"):

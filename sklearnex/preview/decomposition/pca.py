@@ -24,7 +24,8 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_array, check_is_fitted
 
-from daal4py.sklearn._utils import control_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array
 
 from ..._device_offload import dispatch

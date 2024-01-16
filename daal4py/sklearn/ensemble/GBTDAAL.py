@@ -27,7 +27,8 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 import daal4py as d4p
 
-from .._utils import control_n_jobs, getFPType
+from .._n_jobs_support import control_n_jobs
+from .._utils import getFPType
 
 
 class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):

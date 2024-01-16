@@ -23,10 +23,10 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
 
 import daal4py
-from daal4py.sklearn._utils import PatchingConditionsChain, getFPType, make2d
 
 from .._device_offload import support_usm_ndarray
-from .._utils import control_n_jobs, sklearn_check_version
+from .._n_jobs_support import control_n_jobs
+from .._utils import PatchingConditionsChain, getFPType, make2d, sklearn_check_version
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar

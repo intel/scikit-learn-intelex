@@ -35,12 +35,8 @@ from sklearn.utils.validation import (
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import (
-    PatchingConditionsChain,
-    control_n_jobs,
-    getFPType,
-    sklearn_check_version,
-)
+from .._n_jobs_support import control_n_jobs
+from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
 if sklearn_check_version("1.1"):
     from sklearn.utils.validation import _check_sample_weight, _is_arraylike_not_scalar

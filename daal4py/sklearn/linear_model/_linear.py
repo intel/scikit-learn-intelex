@@ -36,9 +36,9 @@ import logging
 
 import daal4py
 
+from .._n_jobs_support import control_n_jobs
 from .._utils import (
     PatchingConditionsChain,
-    control_n_jobs,
     get_dtype,
     get_patch_message,
     getFPType,

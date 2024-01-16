@@ -43,9 +43,9 @@ from sklearn.utils.validation import (
     check_X_y,
 )
 
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import (
     check_tree_nodes,
-    control_n_jobs,
     daal_check_version,
     sklearn_check_version,
 )

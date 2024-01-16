@@ -25,12 +25,13 @@ from sklearn.utils import check_array, check_X_y
 import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
-    control_n_jobs,
     get_patch_message,
     getFPType,
     make2d,
     sklearn_check_version,
 )
+
+from .._n_jobs_support import control_n_jobs
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
