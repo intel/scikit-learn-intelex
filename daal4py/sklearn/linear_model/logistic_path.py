@@ -987,7 +987,7 @@ if sklearn_check_version("0.24"):
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = 1 if n_jobs is not None else None
+            self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
 
         @support_usm_ndarray()
@@ -1185,7 +1185,7 @@ else:
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = 1 if n_jobs is not None else None
+            self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
 
         @support_usm_ndarray()

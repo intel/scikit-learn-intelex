@@ -171,6 +171,8 @@ def control_n_jobs(decorated_methods: list):
     """
 
     def class_wrapper(original_class):
+        original_class._n_jobs_supported_onedal_methods = decorated_methods
+
         original_init = original_class.__init__
 
         if sklearn_check_version("1.2") and hasattr(
