@@ -238,11 +238,10 @@ def test_patch_map_match():
 
     # _assert_all_finite and _logistic_regression_path patch internal
     # sklearn functions which aren't exposed. These are not available in
-    # __all__ and require more careful anaylsis. Future patching of
-    # internal sklearn functions should recieve similarly special treatment
-    # and should be deleted here.
-    del patched["_assert_all_finite"]
-    del patched["_logistic_regression_path"]
+    # __all__ and require more careful anaylsis.
+    for i in patched.copy():
+        if i.startswith("_"):
+            del patched[i]
 
     for module in module_map:
         sklearn_module__all__ = list_submodules("sklearn." + module_map[module])
