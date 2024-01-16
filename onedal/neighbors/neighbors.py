@@ -345,6 +345,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         if not query_is_train:
             return results
+
         # If the query data is the same as the indexed data, we would like
         # to ignore the first nearest neighbor of every sample, i.e
         # the sample itself.

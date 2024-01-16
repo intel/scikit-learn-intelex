@@ -47,6 +47,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     # structure, wrap
     _save_attributes = NearestNeighbors._save_attributes
     _onedal_knn_fit = NearestNeighbors._onedal_fit
+    _onedal_kneighbors = NearestNeighbors._onedal_kneighbors
 
     @run_with_n_jobs
     def _onedal_fit(self, X, y, queue=None):
@@ -186,7 +187,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             self,
             "kneighbors",
             {
-                "onedal": NearestNeighbors._onedal_kneighbors,
+                "onedal": self.__class__._onedal_kneighbors,
                 "sklearn": sklearn_LocalOutlierFactor.kneighbors,
             },
             X,
