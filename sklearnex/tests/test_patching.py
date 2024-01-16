@@ -15,7 +15,6 @@
 # ==============================================================================
 
 import importlib
-import inspect
 import io
 import logging
 import os
@@ -34,6 +33,7 @@ from _utils import (
     gen_models_info,
 )
 
+from inspect import signature
 from onedal.tests.utils._dataframes_support import get_dataframes_and_queues
 from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch_sklearn
 from sklearnex.metrics import pairwise_distances, roc_auc_score
@@ -81,26 +81,17 @@ def log_sklearnex():
 def test_standard_estimator_patching(dataframe, queue, dtype, estimator, method):
     with log_sklearnex() as log:
         est = PATCHED_MODELS[estimator]()
-        unpatched_est = UNPATCHED_MODELS[estimator]()
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
-        est_method = getattr(est, method, None)
-
-        if not est_method:
+        if not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
-        unpatched_est_method = getattr(unpatched_est, method)
-
-        assert str(inspect.signature(est_method)) == str(
-            inspect.signature(unpatched_est_method)
-        )  # , f"{estimator}.{method} doesn't match sklearn signature"
-
         if method != "score":
-            est_method(X)
+            getattr(est, method)(X)
         else:
-            est_method(X, y)
+            est.score(X, y)
 
         result = log.getvalue().strip().split("\n")
 
@@ -145,6 +136,26 @@ def test_special_estimator_patching(dataframe, queue, dtype, estimator, method):
     ), f"sklearnex patching issue in {estimator}.{method} with log: \n" + "\n".join(
         result
     )
+
+
+@pytest.mark.parametrize("estimator", PATCHED_MODELS.keys())
+def test_standard_estimator_signatures(estimator):
+    est = PATCHED_MODELS[estimator]()
+    unpatched_est = UNPATCHED_MODELS[estimator]()
+
+    # all public sklearn methods should have signature matches in sklearnex
+    unpatched_est_methods = [
+        i
+        for i in dir(unpatched_est)
+        if not i.startswith("_") and not i.endswith("_") and hasattr(unpatched_est, i)
+    ]
+    for method in unpatched_est_methods:
+        est_method = getattr(est, method)
+        unpatched_est_method = getattr(unpatched_est, method)
+        if callable(unpatched_est_method):
+            assert str(signature(est_method)) == str(
+                signature(unpatched_est_method)
+            ), f"Signature of {estimator}.{method} does not match sklearn"
 
 
 @pytest.mark.parametrize("name", PATCHED_MODELS.keys())
