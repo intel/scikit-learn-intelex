@@ -68,12 +68,6 @@ struct params2desc {
         desc.set_cluster_count( params["cluster_count"].cast<std::int64_t>() );
         desc.set_accuracy_threshold( params["accuracy_threshold"].cast<Float>() );
         desc.set_max_iteration_count( params["max_iteration_count"].cast<std::int64_t>() );
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
-        auto result_options = params["result_options"].cast<std::string>();
-        if (result_options == "computeAssignments"){
-            desc.set_result_options(result_options::compute_assignments);
-        }
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
         return desc;
     }
 };
