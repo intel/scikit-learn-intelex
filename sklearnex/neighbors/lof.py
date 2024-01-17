@@ -39,7 +39,7 @@ from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.0"):
 
-    @control_n_jobs(decorated_methods=[])
+    @control_n_jobs()
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {

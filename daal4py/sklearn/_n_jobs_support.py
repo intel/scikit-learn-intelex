@@ -50,9 +50,10 @@ def get_suggested_n_threads(n_cpus):
         for lib_ctl in threadpool_controller.lib_controllers
         if lib_ctl.internal_api != "mkl"
     }
-    # openBLAS is limited by 128 threads by default.
-    # thus, 128 threads from openBLAS is uninformative
-    if "openblas" in n_threads_map and n_threads_map["openblas"] == 128:
+    # openBLAS is limited to 64 or 128 threads by default
+    # depending on SW/HW configuration.
+    # thus, these numbers of threads from openBLAS are uninformative
+    if "openblas" in n_threads_map and n_threads_map["openblas"] in [64, 128]:
         del n_threads_map["openblas"]
     # remove default values equal to n_cpus as uninformative
     for backend in list(n_threads_map.keys()):
@@ -132,7 +133,7 @@ def _run_with_n_jobs(method):
     return method_wrapper
 
 
-def control_n_jobs(decorated_methods: list):
+def control_n_jobs(decorated_methods: list = []):
     """
     Decorator for controlling the 'n_jobs' parameter in an estimator class.
 
@@ -171,7 +172,7 @@ def control_n_jobs(decorated_methods: list):
     """
 
     def class_wrapper(original_class):
-        original_class._n_jobs_supported_onedal_methods = decorated_methods
+        original_class._n_jobs_supported_onedal_methods = decorated_methods.copy()
 
         original_init = original_class.__init__
 
