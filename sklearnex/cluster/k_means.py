@@ -194,6 +194,7 @@ if daal_check_version((2024, "P", 200)):
                 X,
                 accept_sparse=False,
                 dtype=[np.float64, np.float32],
+                copy=self.copy_x,
             )
 
             if sklearn_check_version("1.2"):
