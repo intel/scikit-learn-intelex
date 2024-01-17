@@ -1034,12 +1034,8 @@ if sklearn_check_version("0.24"):
             setattr(which, what, replacer)
             try:
                 clf = LogisticRegression_original.fit(self, X, y, sample_weight)
-            except Exception as error:
-                # guarantee monkeypatch is returned to previous state
+            finally:
                 setattr(which, what, descriptor)
-                raise error
-
-            setattr(which, what, descriptor)
             return clf
 
         @support_usm_ndarray()
