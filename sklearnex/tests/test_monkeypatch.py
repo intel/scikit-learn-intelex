@@ -208,7 +208,7 @@ def test_preview_namespace():
     sklearnex.unpatch_sklearn()
 
     # no patching behavior
-    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
+    lr, log_reg, pca, dbscan, kmeans, svc, rfc = get_estimators()
     assert "sklearn." in lr.__module__ and "daal4py" not in lr.__module__
     assert "sklearn." in log_reg.__module__ and "daal4py" not in log_reg.__module__
     assert "sklearn." in pca.__module__ and "daal4py" not in pca.__module__
