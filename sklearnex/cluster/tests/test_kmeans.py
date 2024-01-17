@@ -16,6 +16,7 @@
 
 import numpy as np
 from numpy.testing import assert_allclose
+from daal4py.sklearn._utils import daal_check_version
 
 
 def test_sklearnex_import():
@@ -23,7 +24,10 @@ def test_sklearnex_import():
 
     X = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
     kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
-    assert "sklearnex" in kmeans.__module__
+    if daal_check_version((2024, "P", 200)):
+        assert "sklearnex" in kmeans.__module__
+    else:
+        assert "daal4py" in kmeans.__module__
 
     result = kmeans.predict([[0, 0], [12, 3]])
     expected = np.array([1, 0], dtype=np.int32)
