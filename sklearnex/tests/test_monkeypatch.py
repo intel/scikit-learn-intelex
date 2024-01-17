@@ -199,7 +199,7 @@ def test_preview_namespace():
     assert "sklearnex.preview" in pca.__module__
     assert "sklearnex" in dbscan.__module__
 
-    if daal_check_version((2024, "P", 100)):
+    if daal_check_version((2024, "P", 200)):
         assert "sklearnex" in kmeans.__module__
     else:
         assert "daal4py" in kmeans.__module__
@@ -232,7 +232,7 @@ def test_preview_namespace():
     assert "sklearnex" in rfc.__module__
     assert "sklearnex" in dbscan.__module__
 
-    if daal_check_version((2024, "P", 100)):
+    if daal_check_version((2024, "P", 200)):
         assert "sklearnex" in kmeans.__module__
     else:
         assert "daal4py" in kmeans.__module__

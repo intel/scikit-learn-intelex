@@ -18,7 +18,7 @@ import logging
 
 from daal4py.sklearn._utils import daal_check_version
 
-if daal_check_version((2023, "P", 200)):
+if daal_check_version((2024, "P", 200)):
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.cluster import KMeans as sklearn_KMeans
@@ -358,5 +358,5 @@ else:
     from daal4py.sklearn.cluster import KMeans
 
     logging.warning(
-        "Preview KMeans requires oneDAL version >= 2023.2 " "but it was not found"
+        "Sklearnex KMeans requires oneDAL version >= 2024.2 " "but it was not found"
     )
