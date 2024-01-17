@@ -1032,7 +1032,12 @@ if sklearn_check_version("0.24"):
             replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
             setattr(which, what, replacer)
-            clf = super().fit(X, y, sample_weight)
+            try:
+                clf = LogisticRegression_original.fit(self, X, y, sample_weight)
+            except Exception as e:
+                setattr(which, what, descriptor)
+                raise e
+
             setattr(which, what, descriptor)
             return clf
 
