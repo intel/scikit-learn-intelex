@@ -281,14 +281,30 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
-        with self.assertRaises(NotImplementedError):
-            m.predict(self.X_test, pred_contribs=True)
+        d4p_pred = m.predict(self.X_test, pred_contribs=True)
+        xgboost_pred = booster.predict(
+            xgb.DMatrix(self.X_test),
+            pred_contribs=True,
+            approx_contribs=False,
+            validate_features=False,
+        )
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-6)
 
     def test_model_predict_shap_interactions(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
-        with self.assertRaises(NotImplementedError):
-            m.predict(self.X_test, pred_contribs=True)
+        d4p_pred = m.predict(self.X_test, pred_interactions=True)
+        xgboost_pred = booster.predict(
+            xgb.DMatrix(self.X_test),
+            pred_interactions=True,
+            approx_contribs=False,
+            validate_features=False,
+        )
+        # hitting floating precision limits for classification where class probabilities
+        # are between 0 and 1
+        # we need to accept large relative differences, as long as the absolute difference
+        # remains small (<1e-6)
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-2, atol=1e-6)
 
 
 # duplicate all tests for bae_score=0.3
