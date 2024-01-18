@@ -50,10 +50,10 @@ def get_suggested_n_threads(n_cpus):
         for lib_ctl in threadpool_controller.lib_controllers
         if lib_ctl.internal_api != "mkl"
     }
-    # openBLAS is limited to 64 or 128 threads by default
+    # openBLAS is limited to 24, 64 or 128 threads by default
     # depending on SW/HW configuration.
     # thus, these numbers of threads from openBLAS are uninformative
-    if "openblas" in n_threads_map and n_threads_map["openblas"] in [64, 128]:
+    if "openblas" in n_threads_map and n_threads_map["openblas"] in [24, 64, 128]:
         del n_threads_map["openblas"]
     # remove default values equal to n_cpus as uninformative
     for backend in list(n_threads_map.keys()):
