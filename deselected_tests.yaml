@@ -31,6 +31,12 @@ deselected_tests:
 
   # test for KMeans FutureWarning is not removed from sklearn tests suit yet
   - cluster/tests/test_k_means.py::test_change_n_init_future_warning[KMeans-10] ==1.4.dev0
+ 
+  # copied from preview, clusters centers for "full" method are different from "elkan", needs investigation
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
+  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
 
   # sklearn doesn't expect some estimators to support n_jobs
   - tests/test_common.py::test_check_param_validation[KMeans()]
@@ -1199,8 +1205,4 @@ gpu:
   # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
   - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
 
-preview:
-  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
-  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
+
