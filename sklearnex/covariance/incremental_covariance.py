@@ -26,7 +26,8 @@ from onedal.covariance import (
 
 @control_n_jobs
 class IncrementalEmpiricalCovariance:
-    """Incremental estimator for covariance.
+    """
+    Incremental estimator for covariance.
     Allows to compute empirical covariance estimated by maximum
     likelihood method if data are splitted into batches.
 
@@ -45,7 +46,6 @@ class IncrementalEmpiricalCovariance:
 
     covariance_ : ndarray of shape (n_features, n_features)
         Estimated covariance matrix
-
     """
 
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
@@ -86,7 +86,8 @@ class IncrementalEmpiricalCovariance:
 
     @support_usm_ndarray()
     def partial_fit(self, X, queue=None):
-        """Incremental fit with X. All of X is processed as a single batch.
+        """
+        Incremental fit with X. All of X is processed as a single batch.
 
         Parameters
         ----------
@@ -104,7 +105,8 @@ class IncrementalEmpiricalCovariance:
         return self
 
     def fit(self, X, queue=None):
-        """Fit the model with X, using minibatches of size batch_size.
+        """
+        Fit the model with X, using minibatches of size batch_size.
 
         Parameters
         ----------
