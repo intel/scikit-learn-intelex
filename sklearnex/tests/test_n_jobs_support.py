@@ -71,7 +71,23 @@ def test_n_jobs_support(estimator_class, n_jobs):
         logs = get_logs_from_stream(stream)
         assert check_n_jobs_entry_in_logs(logs, method.__name__, n_jobs)
 
+    def check_methods_decoration(estimator):
+        attrs = []
+        for attr_name in dir(estimator):
+            try:
+                attrs.append(getattr(estimator, attr_name))
+            except AttributeError:
+                # some attribute are available depending on specific estimator parameters
+                pass
+        funcs = filter(lambda attr: inspect.isfunction(attr), attrs)
+        for func in funcs:
+            if func.__name__ in estimator._n_jobs_supported_onedal_methods:
+                assert hasattr(func, "__onedal_n_jobs_decorated__")
+            else:
+                assert not hasattr(func, "__onedal_n_jobs_decorated__")
+
     estimator_kwargs = {"n_jobs": n_jobs}
+    # by default, [Nu]SVC.predict_proba is restricted by @available_if decorator
     if estimator_class in [SVC, NuSVC]:
         estimator_kwargs["probability"] = True
     estimator_instance = estimator_class(**estimator_kwargs)
@@ -87,3 +103,6 @@ def test_n_jobs_support(estimator_class, n_jobs):
             continue
         method = getattr(estimator_instance, method_name)
         check_method(X, method=method, stream=stream)
+    # check if correct methods were decorated
+    check_methods_decoration(estimator_class)
+    check_methods_decoration(estimator_instance)
