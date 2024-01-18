@@ -33,10 +33,8 @@ def test_sklearnex_import(dataframe, queue):
     from sklearnex.decomposition import PCA
 
     X = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
-    X_copy = [[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    X_copy = _convert_to_dataframe(X_copy, sycl_queue=queue, target_df=dataframe)
-    result_tr = [
+    X_transformed_expected = [
         [-1.38340578, -0.2935787],
         [-2.22189802, 0.25133484],
         [-3.6053038, -0.04224385],
@@ -48,7 +46,7 @@ def test_sklearnex_import(dataframe, queue):
     pca = PCA(n_components=2, svd_solver="full")
     pca_fit = pca.fit(X)
     X_transformed = pca_fit.transform(X)
-    X_fit_transformed = pca.fit_transform(X_copy)
+    X_fit_transformed = pca.fit_transform(X)
 
     if daal_check_version((2024, "P", 100)):
         assert "sklearnex" in pca.__module__
@@ -56,5 +54,5 @@ def test_sklearnex_import(dataframe, queue):
     else:
         assert "daal4py" in pca_fit.__module__
     assert_allclose(_as_numpy(pca_fit.singular_values_), [6.30061232, 0.54980396])
-    assert_allclose(_as_numpy(X_transformed), _as_numpy(X_fit_transformed))
-    assert_allclose(_as_numpy(X_transformed), result_tr)
+    assert_allclose(_as_numpy(X_transformed), X_transformed_expected)
+    assert_allclose(_as_numpy(X_fit_transformed), X_transformed_expected)
