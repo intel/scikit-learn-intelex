@@ -56,7 +56,7 @@ class IncrementalEmpiricalCovariance:
         self.batch_size = batch_size
 
     @run_with_n_jobs
-    def _onedal_finalize_compute(self):
+    def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
@@ -75,13 +75,13 @@ class IncrementalEmpiricalCovariance:
     @property
     def covariance_(self):
         if self._need_to_finalize:
-            self._onedal_finalize_compute()
+            self._onedal_finalize_fit()
         return self._onedal_estimator.covariance_
 
     @property
     def location_(self):
         if self._need_to_finalize:
-            self._onedal_finalize_compute()
+            self._onedal_finalize_fit()
         return self._onedal_estimator.location_
 
     @support_usm_ndarray()
@@ -126,5 +126,5 @@ class IncrementalEmpiricalCovariance:
             X_batch = X[batch]
             self.partial_fit(X_batch, queue=queue)
 
-        self._onedal_finalize_compute()
+        self._onedal_finalize_fit()
         return self
