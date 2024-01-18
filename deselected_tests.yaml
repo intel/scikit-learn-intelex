@@ -260,7 +260,7 @@ deselected_tests:
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=0.24
 
   # Patched and unpatched kmeans set same values to different clusters. Need to investigate.
-  # - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
+  - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]  
