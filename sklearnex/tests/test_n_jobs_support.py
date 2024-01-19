@@ -38,38 +38,24 @@ X, Y = make_classification(n_samples=40, n_features=4, random_state=42)
 
 @pytest.mark.parametrize("estimator_class", ESTIMATORS)
 @pytest.mark.parametrize("n_jobs", [None, -1, 1, 2])
-def test_n_jobs_support(estimator_class, n_jobs):
+def test_n_jobs_support(caplog, estimator_class, n_jobs):
     def check_estimator_doc(estimator):
         if estimator.__doc__ is not None:
             assert "n_jobs" in estimator.__doc__
 
-    def get_sklearnex_logger_stream(level="DEBUG"):
-        sklex_logger = logging.getLogger("sklearnex")
-        sklex_logger.setLevel(level)
-        stream = StringIO()
-        channel = logging.StreamHandler(stream)
-        formatter = logging.Formatter("%(name)s: %(message)s")
-        channel.setFormatter(formatter)
-        sklex_logger.addHandler(channel)
-        return stream
-
-    def get_logs_from_stream(stream):
-        return stream.getvalue().split("\n")[:-1]
-
-    def check_n_jobs_entry_in_logs(logs, function_name, n_jobs):
-        for log in logs:
-            if function_name in log and "threads" in log:
+    def check_n_jobs_entry_in_logs(caplog, function_name, n_jobs):
+        for rec in caplog.records:
+            if function_name in rec.message and "threads" in rec.message:
                 expected_n_jobs = n_jobs if n_jobs > 0 else cpu_count() + 1 + n_jobs
                 logging.info(f"{function_name}: setting {expected_n_jobs} threads")
-                if f"{function_name}: setting {expected_n_jobs} threads" in log:
+                if f"{function_name}: setting {expected_n_jobs} threads" in rec.message:
                     return True
         # False if n_jobs is set and not found in logs
         return n_jobs is None
 
-    def check_method(*args, method, stream):
+    def check_method(*args, method, caplog):
         method(*args)
-        logs = get_logs_from_stream(stream)
-        assert check_n_jobs_entry_in_logs(logs, method.__name__, n_jobs)
+        assert check_n_jobs_entry_in_logs(caplog, method.__name__, n_jobs)
 
     def check_methods_decoration(estimator):
         attrs = []
@@ -86,6 +72,7 @@ def test_n_jobs_support(estimator_class, n_jobs):
             else:
                 assert not hasattr(func, "__onedal_n_jobs_decorated__")
 
+    caplog.set_level(logging.DEBUG, logger="sklearnex")
     estimator_kwargs = {"n_jobs": n_jobs}
     # by default, [Nu]SVC.predict_proba is restricted by @available_if decorator
     if estimator_class in [SVC, NuSVC]:
@@ -95,14 +82,13 @@ def test_n_jobs_support(estimator_class, n_jobs):
     check_estimator_doc(estimator_class)
     check_estimator_doc(estimator_instance)
     # check `n_jobs` log entry for supported methods
-    stream = get_sklearnex_logger_stream()
     # `fit` call is required before other methods
-    check_method(X, Y, method=estimator_instance.fit, stream=stream)
+    check_method(X, Y, method=estimator_instance.fit, caplog=caplog)
     for method_name in estimator_instance._n_jobs_supported_onedal_methods:
         if method_name == "fit":
             continue
         method = getattr(estimator_instance, method_name)
-        check_method(X, method=method, stream=stream)
+        check_method(X, method=method, caplog=caplog)
     # check if correct methods were decorated
     check_methods_decoration(estimator_class)
     check_methods_decoration(estimator_instance)
