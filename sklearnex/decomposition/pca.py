@@ -232,12 +232,11 @@ if daal_check_version((2024, "P", 100)):
                     shape_tuple = (len(X), len(X[0]))
             else:
                 return _empty_shape, _is_shape_compatible
-            
+
             if shape_tuple[0] > 0 and shape_tuple[1] > 0 and len(shape_tuple) == 2:
                 _is_shape_compatible = shape_tuple[1] / shape_tuple[0] < 2
 
             return shape_tuple, _is_shape_compatible
-
 
         def _is_solver_compatible_with_onedal(self, shape_tuple):
             self._fit_svd_solver = self.svd_solver
