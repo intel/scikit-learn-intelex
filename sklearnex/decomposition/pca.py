@@ -149,7 +149,6 @@ if daal_check_version((2024, "P", 100)):
             X = self._validate_data(
                 X,
                 dtype=[np.float64, np.float32],
-                ensure_2d=True,
                 reset=False,
             )
             self._validate_n_features_in_after_fitting(X)
