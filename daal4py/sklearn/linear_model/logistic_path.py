@@ -1032,8 +1032,10 @@ if sklearn_check_version("0.24"):
             replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
             setattr(which, what, replacer)
-            clf = super().fit(X, y, sample_weight)
-            setattr(which, what, descriptor)
+            try:
+                clf = LogisticRegression_original.fit(self, X, y, sample_weight)
+            finally:
+                setattr(which, what, descriptor)
             return clf
 
         @support_usm_ndarray()
