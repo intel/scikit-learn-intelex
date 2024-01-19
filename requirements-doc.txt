@@ -30,7 +30,7 @@ nbclient==0.9.0
 nbconvert==7.14.0
 nbformat==5.9.2
 nbsphinx==0.9.3
-nest-asyncio==1.5.8
+nest-asyncio==1.5.9
 packaging==23.2
 pandocfilters==1.5.0
 parso==0.8.3
