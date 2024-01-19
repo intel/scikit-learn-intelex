@@ -141,8 +141,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
 
     def _get_onedal_params(self, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
-        if result_options is None:
-            result_options = ""
+
         return {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": "by_default",
@@ -150,7 +149,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             "max_iteration_count": self.max_iter,
             "cluster_count": self.n_clusters,
             "accuracy_threshold": thr,
-            "result_options": result_options,
+            "result_options": "" if result_options is None else result_options,
         }
 
     def _get_params_and_input(self, X, policy):

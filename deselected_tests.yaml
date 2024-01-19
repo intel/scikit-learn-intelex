@@ -1204,5 +1204,3 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
   # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
   - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
-
-
