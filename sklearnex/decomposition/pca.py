@@ -106,6 +106,13 @@ if daal_check_version((2024, "P", 100)):
                     "TruncatedSVD for a possible alternative."
                 )
 
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=self.copy,
+            )
+
             self._validate_n_components(self.n_components, X.shape[0], X.shape[1])
 
             onedal_params = {
@@ -139,7 +146,12 @@ if daal_check_version((2024, "P", 100)):
         @run_with_n_jobs
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
-
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                reset=False,
+            )
             self._validate_n_features_in_after_fitting(X)
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
@@ -164,14 +176,14 @@ if daal_check_version((2024, "P", 100)):
                 return U
 
         def _onedal_supported(self, method_name, X):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                ensure_2d=True,
-                copy=self.copy,
-            )
+            if hasattr(X, "shape"):
+                shape_tuple = X.shape
+            elif isinstance(X, list):
+                if np.ndim(X) == 1:
+                    shape_tuple = (1, len(X))
+                elif np.ndim(X) == 2:
+                    shape_tuple = (len(X), len(X[0]))
 
-            shape_tuple = X.shape
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f"sklearn.decomposition.{class_name}.{method_name}"
