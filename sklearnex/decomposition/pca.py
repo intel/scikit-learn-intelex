@@ -176,29 +176,22 @@ if daal_check_version((2024, "P", 100)):
                 return U
 
         def _onedal_supported(self, method_name, X):
-            if hasattr(X, "shape"):
-                shape_tuple = X.shape
-            elif isinstance(X, list):
-                if np.ndim(X) == 1:
-                    shape_tuple = (1, len(X))
-                elif np.ndim(X) == 2:
-                    shape_tuple = (len(X), len(X[0]))
-
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f"sklearn.decomposition.{class_name}.{method_name}"
             )
 
             if method_name == "fit":
+                shape_tuple, _is_shape_compatible = self._get_shape(X)
                 patching_status.and_conditions(
                     [
                         (
-                            self._is_solver_compatible_with_onedal(shape_tuple),
-                            f"Only 'full' svd solver is supported.",
+                            _is_shape_compatible,
+                            "Data shape is not compatible.",
                         ),
                         (
-                            shape_tuple[1] / shape_tuple[0] < 2,
-                            "Only data with X.shape[1] < 2 * X.shape[0] is supported",
+                            self._is_solver_compatible_with_onedal(shape_tuple),
+                            f"Only 'full' svd solver is supported.",
                         ),
                     ]
                 )
@@ -224,6 +217,27 @@ if daal_check_version((2024, "P", 100)):
 
         def _onedal_gpu_supported(self, method_name, *data):
             return self._onedal_supported(method_name, *data)
+
+        def _get_shape(self, X):
+            _is_shape_compatible = False
+            _empty_shape = (0, 0)
+            if hasattr(X, "shape"):
+                shape_tuple = X.shape
+                if len(shape_tuple) == 1:
+                    shape_tuple = (1, shape_tuple[0])
+            elif isinstance(X, list):
+                if np.ndim(X) == 1:
+                    shape_tuple = (1, len(X))
+                elif np.ndim(X) == 2:
+                    shape_tuple = (len(X), len(X[0]))
+            else:
+                return _empty_shape, _is_shape_compatible
+            
+            if shape_tuple[0] > 0 and shape_tuple[1] > 0 and len(shape_tuple) == 2:
+                _is_shape_compatible = shape_tuple[1] / shape_tuple[0] < 2
+
+            return shape_tuple, _is_shape_compatible
+
 
         def _is_solver_compatible_with_onedal(self, shape_tuple):
             self._fit_svd_solver = self.svd_solver
