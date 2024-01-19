@@ -26,7 +26,7 @@ from onedal.tests.utils._dataframes_support import (
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import():
+def test_sklearnex_import(dataframe, queue):
     from sklearnex.cluster import KMeans
 
     X = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
