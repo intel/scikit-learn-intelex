@@ -43,24 +43,6 @@ if daal_check_version((2023, "P", 100)):
     ]
 
     @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_basic_uniform(queue, dtype):
-        seed = 42
-        s_count, f_count = 70000, 29
-
-        gen = np.random.default_rng(seed)
-        data = gen.uniform(low=-0.5, high=+0.6, size=(s_count, f_count))
-        data = data.astype(dtype=dtype)
-
-        alg = BasicStatistics(result_options="mean")
-        res = alg.compute(data, queue=queue)
-
-        res_mean = res["mean"]
-        gtr_mean = np.mean(data, axis=0)
-        tol = 2e-5 if res_mean.dtype == np.float32 else 1e-7
-        assert_allclose(gtr_mean, res_mean, rtol=tol)
-
-    @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("option", options_and_tests)
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     def test_option_uniform(queue, option, dtype):
@@ -75,12 +57,37 @@ if daal_check_version((2023, "P", 100)):
         data = data.astype(dtype=dtype)
 
         alg = BasicStatistics(result_options=result_option)
-        res = alg.compute(data, queue=queue)
+        res = alg.fit(data, queue=queue)
 
-        res, gtr = res[result_option], function(data, axis=0)
+        res, gtr = getattr(res, result_option), function(data, axis=0)
 
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, rtol=tol)
+
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    def test_multiple_options_uniform(queue, dtype):
+        seed = 42
+        s_count, f_count = 700, 29
+
+        gen = np.random.default_rng(seed)
+        data = gen.uniform(low=-0.5, high=+0.6, size=(s_count, f_count))
+        data = data.astype(dtype=dtype)
+
+        alg = BasicStatistics(result_options=["mean", "max", "sum"])
+        res = alg.fit(data, queue=queue)
+
+        res_mean, res_max, res_sum = res.mean, res.max, res.sum
+        gtr_mean, gtr_max, gtr_sum = (
+            np.mean(data, axis=0),
+            np.max(data, axis=0),
+            np.sum(data, axis=0),
+        )
+
+        tol = 2e-5 if res_mean.dtype == np.float32 else 1e-7
+        assert_allclose(gtr_mean, res_mean, rtol=tol)
+        assert_allclose(gtr_max, res_max, rtol=tol)
+        assert_allclose(gtr_sum, res_sum, rtol=tol)
 
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("option", options_and_tests)
@@ -101,10 +108,10 @@ if daal_check_version((2023, "P", 100)):
         weights = weights.astype(dtype=dtype)
 
         alg = BasicStatistics(result_options=result_option)
-        res = alg.compute(data, weights, queue=queue)
+        res = alg.fit(data, weights, queue=queue)
 
         weighted = np.diag(weights) @ data
-        res, gtr = res[result_option], function(weighted, axis=0)
+        res, gtr = getattr(res, result_option), function(weighted, axis=0)
 
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, rtol=tol)

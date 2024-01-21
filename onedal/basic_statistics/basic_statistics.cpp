@@ -129,26 +129,21 @@ struct params2desc_incremental {
 };
 
 template <typename Policy, typename Task>
-struct init_compute_ops_dispatcher {};
+void init_compute_ops(py::module& m) {
+    m.def("compute", [](
+        const Policy& policy,
+        const py::dict& params,
+        const table& data,
+        const table& weights) {
+            using namespace dal::basic_statistics;
+            using input_t = compute_input<Task>;
 
-template <typename Policy>
-struct init_compute_ops_dispatcher<Policy, dal::basic_statistics::task::compute> {
-    void operator()(py::module_& m) {
-        using Task = dal::basic_statistics::task::compute;
+            compute_ops ops(policy, input_t{ data, weights }, params2desc{});
+            return fptype2t{ method2t{ Task{}, ops } }(params);
+        }
+    );
+}
 
-        m.def("train",
-              [](const Policy& policy,
-                 const py::dict& params,
-                 const table& data,
-                 const table& weights) {
-                  using namespace dal::basic_statistics;
-                  using input_t = compute_input<Task>;
-
-                  compute_ops ops(policy, input_t{ data, weights }, params2desc{});
-                  return fptype2t{ method2t{ Task{}, ops } }(params);
-              });
-    }
-};
 
 template <typename Policy, typename Task>
 void init_partial_compute_ops(py::module& m) {
@@ -187,18 +182,18 @@ void init_compute_result(py::module_& m) {
     using namespace dal::basic_statistics;
     using result_t = compute_result<Task>;
 
-    auto cls = py::class_<result_t>(m, "compute_result")
-                   .def(py::init())
-                   .DEF_ONEDAL_PY_PROPERTY(min, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(max, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(sum, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(mean, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(variance, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(variation, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(sum_squares, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(standard_deviation, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(sum_squares_centered, result_t)
-                   .DEF_ONEDAL_PY_PROPERTY(second_order_raw_moment, result_t);
+    py::class_<result_t>(m, "compute_result")
+        .def(py::init())
+        .DEF_ONEDAL_PY_PROPERTY(min, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(max, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(sum, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(mean, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(variance, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(variation, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(sum_squares, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(standard_deviation, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(sum_squares_centered, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(second_order_raw_moment, result_t);
 }
 
 template <typename Task>
@@ -230,7 +225,6 @@ ONEDAL_PY_INIT_MODULE(basic_statistics) {
     using namespace dal::basic_statistics;
 
     auto sub = m.def_submodule("basic_statistics");
-    using task_list = types<dal::basic_statistics::task::compute>;
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task_list);
@@ -242,8 +236,6 @@ ONEDAL_PY_INIT_MODULE(basic_statistics) {
     ONEDAL_PY_INSTANTIATE(init_partial_compute_result, sub, task_list);
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 }
-
-ONEDAL_PY_TYPE2STR(dal::basic_statistics::task::compute, "compute");
 
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 

@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2024 Intel Corporation
+# Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,56 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABCMeta, abstractmethod
-
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 from onedal import _backend
 
-from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
-
-
-class BaseBasicStatistics(metaclass=ABCMeta):
-    @abstractmethod
-    def __init__(self, result_options, algorithm):
-        self.options = result_options
-        self.algorithm = algorithm
-
-    @staticmethod
-    def get_all_result_options():
-        return [
-            "min",
-            "max",
-            "sum",
-            "mean",
-            "variance",
-            "variation",
-            "sum_squares",
-            "standard_deviation",
-            "sum_squares_centered",
-            "second_order_raw_moment",
-        ]
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
-    def _get_result_options(self, options):
-        if options == "all":
-            options = self.get_all_result_options()
-        if isinstance(options, list):
-            options = "|".join(options)
-        assert isinstance(options, str)
-        return options
-
-    def _get_onedal_params(self, dtype=np.float32):
-        options = self._get_result_options(self.options)
-        return {
-            "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.algorithm,
-            "result_option": options,
-        }
+from .basic_statistics import BaseBasicStatistics
 
 
 class IncrementalBasicStatistics(BaseBasicStatistics):

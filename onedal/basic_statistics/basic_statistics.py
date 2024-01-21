@@ -15,7 +15,6 @@
 # ==============================================================================
 
 from abc import ABCMeta, abstractmethod
-from numbers import Number
 
 import numpy as np
 
@@ -31,6 +30,7 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def __init__(self, result_options, algorithm):
         self.options = result_options
         self.algorithm = algorithm
+        self._module = _backend.basic_statistics
 
     @staticmethod
     def get_all_result_options():
@@ -63,19 +63,16 @@ class BaseBasicStatistics(metaclass=ABCMeta):
             "result_option": options,
         }
 
-    def _compute_raw(
-        self, data_table, weights_table, module, policy, dtype=np.float32, is_csr=False
-    ):
-        params = self._get_onedal_params(is_csr, dtype)
 
-        result = module.train(policy, params, data_table, weights_table)
+class BasicStatistics(BaseBasicStatistics):
+    """
+    Basic Statistics oneDAL implementation.
+    """
 
-        options = self._get_result_options(self.options)
-        options = options.split("|")
+    def __init__(self, result_options="all", algorithm="by_default"):
+        super().__init__(result_options, algorithm)
 
-        return {opt: getattr(result, opt) for opt in options}
-
-    def _compute(self, data, weights, module, queue):
+    def fit(self, data, weights=None, queue=None):
         policy = self._get_policy(queue, data, weights)
 
         is_csr = _is_csr(data)
@@ -86,36 +83,19 @@ class BaseBasicStatistics(metaclass=ABCMeta):
             weights = np.asarray(weights)
 
         data, weights = _convert_to_supported(policy, data, weights)
-
         data_table, weights_table = to_table(data, weights)
 
         dtype = data.dtype
-        res = self._compute_raw(data_table, weights_table, module, policy, dtype, is_csr)
+        raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
+        for opt, raw_value in raw_result.items():
+            value = from_table(raw_value).ravel()
+            setattr(self, opt, value)
 
-        return {k: from_table(v).ravel() for k, v in res.items()}
+        return self
 
+    def _compute_raw(self, data_table, weights_table, policy, dtype=np.float32, is_csr=False):
+        params = self._get_onedal_params(is_csr, dtype)
+        result = self._module.compute(policy, params, data_table, weights_table)
+        options = self._get_result_options(self.options).split("|")
 
-class BasicStatistics(BaseEstimator, BaseBasicStatistics):
-    """
-    Basic Statistics oneDAL implementation.
-    """
-
-    def __init__(self, result_options="all", *, algorithm="by_default", **kwargs):
-        super().__init__(result_options, algorithm)
-
-    def compute(self, data, weights=None, queue=None):
-        return super()._compute(
-            data, weights, self._get_backend("basic_statistics", "compute", None), queue
-        )
-
-    def compute_raw(
-        self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
-    ):
-        return super()._compute_raw(
-            data_table,
-            weights_table,
-            self._get_backend("basic_statistics", "compute", None),
-            policy,
-            dtype,
-            is_csr,
-        )
+        return {opt: getattr(result, opt) for opt in options}
