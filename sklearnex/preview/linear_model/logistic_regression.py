@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -44,6 +43,7 @@ if daal_check_version((2024, "P", 1)):
     from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
     from sklearn.utils.validation import check_X_y
 
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
     from onedal.utils import _num_features, _num_samples
@@ -52,6 +52,9 @@ if daal_check_version((2024, "P", 1)):
     from ..._utils import PatchingConditionsChain, get_patch_message
     from ...utils.validation import _assert_all_finite
 
+    @control_n_jobs(
+        decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]
+    )
     class LogisticRegression(sklearn_LogisticRegression, BaseLogisticRegression):
         __doc__ = sklearn_LogisticRegression.__doc__
         intercept_, coef_, n_iter_ = None, None, None

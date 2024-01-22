@@ -16,6 +16,8 @@
 
 # daal4py Model builders API
 
+from typing import Literal, Optional
+
 import numpy as np
 
 import daal4py as d4p
@@ -48,6 +50,15 @@ def getFPType(X):
 
 
 class GBTDAALBaseModel:
+    def __init__(self):
+        self.model_type: Optional[Literal["xgboost", "catboost", "lightgbm"]] = None
+
+    @property
+    def _is_regression(self):
+        return hasattr(self, "daal_model_") and isinstance(
+            self.daal_model_, d4p.gbt_regression_model
+        )
+
     def _get_params_from_lightgbm(self, params):
         self.n_classes_ = params["num_tree_per_iteration"]
         objective_fun = params["objective"]
@@ -260,9 +271,6 @@ class GBTDAALBaseModel:
 
 
 class GBTDAALModel(GBTDAALBaseModel):
-    def __init__(self):
-        pass
-
     def predict(self, X, pred_contribs=False, pred_interactions=False):
         fptype = getFPType(X)
         if self._is_regression:
@@ -283,9 +291,20 @@ class GBTDAALModel(GBTDAALBaseModel):
 
 
 def convert_model(model):
-    gbm = GBTDAALModel()
-    gbm._convert_model(model)
+    try:
+        gbm = GBTDAALModel()
+        gbm._convert_model(model)
+    except TypeError as err:
+        if "Only GBTDAALRegressor can be created" in str(err):
+            gbm = d4p.sklearn.ensemble.GBTDAALRegressor.convert_model(model)
+        elif "Only GBTDAALClassifier can be created" in str(err):
+            gbm = d4p.sklearn.ensemble.GBTDAALClassifier.convert_model(model)
+        else:
+            raise
 
-    gbm._is_regression = isinstance(gbm.daal_model_, d4p.gbt_regression_model)
+    for type_str in ("xgboost", "lightgbm", "catboost"):
+        if type_str in str(type(model)):
+            gbm.model_type = type_str
+            break
 
     return gbm
