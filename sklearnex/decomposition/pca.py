@@ -26,12 +26,8 @@ if daal_check_version((2024, "P", 100)):
     from scipy.sparse import issparse
     from sklearn.utils.validation import check_is_fitted
 
-    from daal4py.sklearn._utils import (
-        control_n_jobs,
-        run_with_n_jobs,
-        sklearn_check_version,
-    )
-
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
+    from daal4py.sklearn._utils import sklearn_check_version
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
@@ -42,7 +38,7 @@ if daal_check_version((2024, "P", 100)):
 
     from onedal.decomposition import PCA as onedal_PCA
 
-    @control_n_jobs
+    @control_n_jobs(decorated_methods=["fit", "transform"])
     class PCA(sklearn_PCA):
         __doc__ = sklearn_PCA.__doc__
 
@@ -98,7 +94,6 @@ if daal_check_version((2024, "P", 100)):
             )
             return U, S, Vt
 
-        @run_with_n_jobs
         def _onedal_fit(self, X, queue=None):
             if issparse(X):
                 raise TypeError(
@@ -143,7 +138,6 @@ if daal_check_version((2024, "P", 100)):
                 X,
             )
 
-        @run_with_n_jobs
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
             X = self._validate_data(
