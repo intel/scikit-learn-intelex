@@ -19,7 +19,6 @@ import io
 import logging
 import os
 import re
-from contextlib import contextmanager
 from inspect import signature
 
 import numpy as np
@@ -44,20 +43,6 @@ from sklearnex import get_patch_map, is_patched_instance, patch_sklearn, unpatch
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 
 
-@contextmanager
-def log_sklearnex():
-    try:
-        log_stream = io.StringIO()
-        log_handler = logging.StreamHandler(log_stream)
-        sklearnex_logger = logging.getLogger("sklearnex")
-        sklearnex_logger.addHandler(log_handler)
-        sklearnex_logger.setLevel(logging.INFO)
-        yield log_stream
-    finally:
-        log_handler.setLevel(logging.WARNING)
-        sklearnex_logger.removeHandler(log_handler)
-
-
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
@@ -74,7 +59,8 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
 
     assert all(
         [
-            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            "running accelerated version" in i.message
+            or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
     ), "sklearnex patching issue in roc_auc_score"
@@ -100,7 +86,8 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
 
     assert all(
         [
-            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            "running accelerated version" in i.message
+            or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
     ), "sklearnex patching issue in roc_auc_score"
@@ -128,7 +115,8 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
 
     assert all(
         [
-            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            "running accelerated version" in i.message
+            or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
     ), f"sklearnex patching issue in {estimator}.{method} with log: \n" + "\n".join(
@@ -159,7 +147,8 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
 
     assert all(
         [
-            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            "running accelerated version" in i.message
+            or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
     ), f"sklearnex patching issue in {estimator}.{method} with log: \n" + "\n".join(
