@@ -29,7 +29,7 @@ from .common import KNeighborsDispatchingBase
 from .knn_unsupervised import NearestNeighbors
 
 
-@control_n_jobs(decorated_methods=["fit", "kneighbors", "score_samples"])
+@control_n_jobs(decorated_methods=["fit", "_kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     __doc__ = (
         sklearn_LocalOutlierFactor.__doc__
@@ -151,16 +151,9 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
-        # using dispatch to prevent use of wrap_output_data until end
-        distances_X, neighbors_indices_X = dispatch(
-            self,
-            "kneighbors",
-            {
-                "onedal": self.__class__._onedal_kneighbors,
-                "sklearn": sklearn_LocalOutlierFactor.kneighbors,
-            },
-            X,
-            self.n_neighbors_,
+        # done via private method to avoid wrap for dpnp and dpctl until end
+        distances_X, neighbors_indices_X = self._kneighbors(
+            X, n_neighbors=self.n_neighbors_
         )
 
         X_lrd = self._local_reachability_density(
@@ -173,8 +166,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         # as bigger is better:
         return -np.mean(lrd_ratios_array, axis=1)
 
-    @wrap_output_data
-    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+    def _kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
@@ -189,6 +181,8 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             n_neighbors,
             return_distance,
         )
+
+    kneighbors = wrap_output_data(_kneighbors)
 
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
     fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
