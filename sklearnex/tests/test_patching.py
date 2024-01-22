@@ -63,7 +63,7 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
             or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
-    ), "sklearnex patching issue in roc_auc_score"
+    ), "sklearnex patching issue in pairwise_distances"
 
 
 @pytest.mark.parametrize(
