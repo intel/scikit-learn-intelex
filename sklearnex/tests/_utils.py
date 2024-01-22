@@ -14,10 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import os
-import subprocess
-import sys
-from contextlib import contextmanager
 from inspect import isclass
 
 import numpy as np
