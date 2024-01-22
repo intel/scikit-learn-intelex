@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import platform
 
@@ -43,7 +43,7 @@ except ImportError:
     _is_dpc_backend = False
 
 
-__all__ = ["decomposition", "ensemble", "neighbors", "primitives", "svm"]
+__all__ = ["covariance", "decomposition", "ensemble", "neighbors", "primitives", "svm"]
 
 if _is_dpc_backend:
     __all__.append("spmd")

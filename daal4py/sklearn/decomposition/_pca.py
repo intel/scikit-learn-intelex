@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numbers
 from math import sqrt
@@ -26,7 +26,17 @@ from sklearn.utils.validation import check_is_fitted
 import daal4py
 
 from .._device_offload import support_usm_ndarray
+from .._n_jobs_support import control_n_jobs
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
+
+if sklearn_check_version("1.4"):
+    from sklearn.utils._array_api import get_namespace
+
+if sklearn_check_version("1.3"):
+    from sklearn.base import _fit_context
+
+if sklearn_check_version("1.1"):
+    from sklearn.utils import check_scalar
 
 if sklearn_check_version("0.22"):
     from sklearn.decomposition._pca import PCA as PCA_original
@@ -41,6 +51,7 @@ else:
     from sklearn.decomposition.pca import _infer_dimension_
 
 
+@control_n_jobs(decorated_methods=["fit", "transform"])
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 
@@ -192,18 +203,44 @@ class PCA(PCA_original):
         return U, S, V
 
     def _fit(self, X):
-        if issparse(X):
-            raise TypeError(
-                "PCA does not support sparse input. See "
-                "TruncatedSVD for a possible alternative."
+        if sklearn_check_version("1.4"):
+            xp, is_array_api_compliant = get_namespace(X)
+
+            if issparse(X) and self.svd_solver != "arpack":
+                raise TypeError(
+                    'PCA only support sparse inputs with the "arpack" solver, while '
+                    f'"{self.svd_solver}" was passed. See TruncatedSVD for a possible'
+                    " alternative."
+                )
+            # Raise an error for non-Numpy input and arpack solver.
+            if self.svd_solver == "arpack" and is_array_api_compliant:
+                raise ValueError(
+                    "PCA with svd_solver='arpack' is not supported for Array API inputs."
+                )
+
+            X = self._validate_data(
+                X,
+                dtype=[xp.float64, xp.float32],
+                accept_sparse=("csr", "csc"),
+                ensure_2d=True,
+                copy=self.copy,
             )
 
-        if sklearn_check_version("0.23"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
-            )
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
+            if issparse(X):
+                raise TypeError(
+                    "PCA does not support sparse input. See "
+                    "TruncatedSVD for a possible alternative."
+                )
+
+            if sklearn_check_version("0.23"):
+                X = self._validate_data(
+                    X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                )
+            else:
+                X = check_array(
+                    X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                )
 
         if self.n_components is None:
             if self.svd_solver != "arpack":
@@ -254,7 +291,9 @@ class PCA(PCA_original):
                         self._fit_svd_solver = "full"
 
         if not shape_good_for_daal or self._fit_svd_solver != "full":
-            if sklearn_check_version("0.23"):
+            if sklearn_check_version("1.4"):
+                X = self._validate_data(X, copy=self.copy, accept_sparse=("csr", "csc"))
+            elif sklearn_check_version("0.23"):
                 X = self._validate_data(X, copy=self.copy)
             else:
                 X = check_array(X, copy=self.copy)
@@ -277,7 +316,7 @@ class PCA(PCA_original):
                         shape_good_for_daal,
                         "The shape of X does not satisfy oneDAL requirements: "
                         "number of features / number of samples >= 2",
-                    )
+                    ),
                 ]
             )
             if _dal_ready:
@@ -340,6 +379,63 @@ class PCA(PCA_original):
 
         return tr_res.transformedData
 
+    if sklearn_check_version("1.3"):
+
+        @support_usm_ndarray()
+        @_fit_context(prefer_skip_nested_validation=True)
+        def fit(self, X, y=None):
+            """Fit the model with X.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Training data, where `n_samples` is the number of samples
+                and `n_features` is the number of features.
+
+            y : Ignored
+                Ignored.
+
+            Returns
+            -------
+            self : object
+                Returns the instance itself.
+            """
+            self._fit(X)
+            return self
+
+    else:
+
+        @support_usm_ndarray()
+        def fit(self, X, y=None):
+            """Fit the model with X.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features)
+                Training data, where `n_samples` is the number of samples
+                and `n_features` is the number of features.
+
+            y : Ignored
+                Ignored.
+
+            Returns
+            -------
+            self : object
+                Returns the instance itself.
+            """
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+            elif sklearn_check_version("1.1"):
+                check_scalar(
+                    self.n_oversamples,
+                    "n_oversamples",
+                    min_val=1,
+                    target_type=numbers.Integral,
+                )
+
+            self._fit(X)
+            return self
+
     @support_usm_ndarray()
     def transform(self, X):
         """
@@ -362,7 +458,10 @@ class PCA(PCA_original):
         """
         _patching_status = PatchingConditionsChain("sklearn.decomposition.PCA.transform")
         _dal_ready = _patching_status.and_conditions(
-            [(self.n_components_ > 0, "Number of components <= 0.")]
+            [
+                (self.n_components_ > 0, "Number of components <= 0."),
+                (not issparse(X), "oneDAL PCA does not support sparse input"),
+            ]
         )
 
         _patching_status.write_log()
@@ -410,7 +509,10 @@ class PCA(PCA_original):
         )
         if _dal_ready:
             _dal_ready = _patching_status.and_conditions(
-                [(self.n_components_ > 0, "Number of components <= 0.")]
+                [
+                    (self.n_components_ > 0, "Number of components <= 0."),
+                    (not issparse(X), "oneDAL PCA does not support sparse input"),
+                ]
             )
             if _dal_ready:
                 result = self._transform_daal4py(

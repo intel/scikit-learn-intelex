@@ -19,6 +19,9 @@
 ##########
 Input Data
 ##########
+
+.. include:: note.rst
+    
 All array arguments to compute functions and to algorithm constructors can be
 provided in different formats. daal4py will automatically do its best to work on
 the provided data with minimal overhead, most notably without copying the data.

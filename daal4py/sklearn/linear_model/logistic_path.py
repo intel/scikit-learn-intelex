@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numbers
 
@@ -32,6 +32,7 @@ from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
 import daal4py as d4p
 
+from .._n_jobs_support import control_n_jobs
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 from .logistic_loss import (
     _daal4py_cross_entropy_loss_extra_args,
@@ -944,6 +945,9 @@ if sklearn_check_version("0.24"):
             l1_ratio=l1_ratio,
         )
 
+    @control_n_jobs(
+        decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]
+    )
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
@@ -983,7 +987,7 @@ if sklearn_check_version("0.24"):
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = 1 if n_jobs is not None else None
+            self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
 
         @support_usm_ndarray()
@@ -1024,8 +1028,10 @@ if sklearn_check_version("0.24"):
             replacer = logistic_regression_path
             descriptor = getattr(which, what, None)
             setattr(which, what, replacer)
-            clf = super().fit(X, y, sample_weight)
-            setattr(which, what, descriptor)
+            try:
+                clf = LogisticRegression_original.fit(self, X, y, sample_weight)
+            finally:
+                setattr(which, what, descriptor)
             return clf
 
         @support_usm_ndarray()
@@ -1144,6 +1150,9 @@ else:
             l1_ratio=l1_ratio,
         )
 
+    @control_n_jobs(
+        decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]
+    )
     class LogisticRegression(LogisticRegression_original):
         __doc__ = LogisticRegression_original.__doc__
 
@@ -1178,7 +1187,7 @@ else:
             self.multi_class = multi_class
             self.verbose = verbose
             self.warm_start = warm_start
-            self.n_jobs = 1 if n_jobs is not None else None
+            self.n_jobs = n_jobs
             self.l1_ratio = l1_ratio
 
         @support_usm_ndarray()

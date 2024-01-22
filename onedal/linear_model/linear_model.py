@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 from abc import ABCMeta, abstractmethod
 from numbers import Number
@@ -20,12 +20,13 @@ from numbers import Number
 import numpy as np
 from sklearn.base import BaseEstimator
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import RegressorMixin
 from ..common._policy import _get_policy
+from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
@@ -72,7 +73,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         params = self._get_onedal_params(get_dtype(X_loc))
         X_table, y_table = to_table(X_loc, y_loc)
 
-        result = module.train(policy, params, X_table, y_table)
+        hparams = get_hyperparameters("linear_regression", "train")
+        if hparams is not None and not hparams.is_default:
+            result = module.train(policy, params, hparams.backend, X_table, y_table)
+        else:
+            result = module.train(policy, params, X_table, y_table)
 
         self._onedal_model = result.model
 

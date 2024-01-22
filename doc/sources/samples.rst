@@ -22,7 +22,7 @@ Samples
 
 The following samples are also provided as Jupyter notebooks in |intelex| repository.
 If you want to run them locally, refer to `these instructions
-<https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks#snake-intelr-extension-for-scikit-learn-notebooks>`_.
+<https://github.com/intel/scikit-learn-intelex/tree/main/examples/notebooks#snake-intelr-extension-for-scikit-learn-notebooks>`_.
 
 .. rubric:: Classification Tasks
 
@@ -64,3 +64,5 @@ If you want to run them locally, refer to `these instructions
 .. seealso::
 
    There are also :ref:`Kaggle kernels <kaggle>` that use |intelex| for a variety of machine learning scenarios.
+
+.. note:: Explore the complete list of oneAPI code samples in the `oneAPI Samples Catalog <https://oneapi-src.github.io/oneAPI-samples/>`_. These samples were designed to help you develop, offload, and optimize multiarchitecture applications targeting CPUs, GPUs, and FPGAs.

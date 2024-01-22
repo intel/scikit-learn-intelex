@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import warnings
 
@@ -21,6 +20,7 @@ from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
 if not sklearn_check_version("1.2"):
@@ -137,6 +137,7 @@ else:
             self.weights = _check_weights(weights)
 
 
+@control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
 class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsRegressor_._parameter_constraints}

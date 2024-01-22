@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,9 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py Model builders API
+
+from typing import Literal, Optional
 
 import numpy as np
 
@@ -48,6 +50,15 @@ def getFPType(X):
 
 
 class GBTDAALBaseModel:
+    def __init__(self):
+        self.model_type: Optional[Literal["xgboost", "catboost", "lightgbm"]] = None
+
+    @property
+    def _is_regression(self):
+        return hasattr(self, "daal_model_") and isinstance(
+            self.daal_model_, d4p.gbt_regression_model
+        )
+
     def _get_params_from_lightgbm(self, params):
         self.n_classes_ = params["num_tree_per_iteration"]
         objective_fun = params["objective"]
@@ -200,7 +211,9 @@ class GBTDAALBaseModel:
         else:
             return predict_result.probabilities
 
-    def _predict_regression(self, X, fptype):
+    def _predict_regression(
+        self, X, fptype, pred_contribs=False, pred_interactions=False
+    ):
         if X.shape[1] != self.n_features_in_:
             raise ValueError("Shape of input is different from what was seen in `fit`")
 
@@ -212,22 +225,61 @@ class GBTDAALBaseModel:
                 ).format(type(self).__name__)
             )
 
-        # Prediction
+        try:
+            return self._predict_regression_with_results_to_compute(
+                X, fptype, pred_contribs, pred_interactions
+            )
+        except TypeError as e:
+            if "unexpected keyword argument 'resultsToCompute'" in str(e):
+                if pred_contribs or pred_interactions:
+                    # SHAP values requested, but not supported by this version
+                    raise TypeError(
+                        f"{'pred_contribs' if pred_contribs else 'pred_interactions'} not supported by this version of daalp4y"
+                    ) from e
+            else:
+                # unknown type error
+                raise
+
+        # fallback to calculation without `resultsToCompute`
         predict_algo = d4p.gbt_regression_prediction(fptype=fptype)
         predict_result = predict_algo.compute(X, self.daal_model_)
-
         return predict_result.prediction.ravel()
+
+    def _predict_regression_with_results_to_compute(
+        self, X, fptype, pred_contribs=False, pred_interactions=False
+    ):
+        """Assume daal4py supports the resultsToCompute kwarg"""
+        resultsToCompute = ""
+        if pred_contribs:
+            resultsToCompute = "shapContributions"
+        elif pred_interactions:
+            resultsToCompute = "shapInteractions"
+
+        predict_algo = d4p.gbt_regression_prediction(
+            fptype=fptype, resultsToCompute=resultsToCompute
+        )
+        predict_result = predict_algo.compute(X, self.daal_model_)
+
+        if pred_contribs:
+            return predict_result.prediction.ravel().reshape((-1, X.shape[1] + 1))
+        elif pred_interactions:
+            return predict_result.prediction.ravel().reshape(
+                (-1, X.shape[1] + 1, X.shape[1] + 1)
+            )
+        else:
+            return predict_result.prediction.ravel()
 
 
 class GBTDAALModel(GBTDAALBaseModel):
-    def __init__(self):
-        pass
-
-    def predict(self, X):
+    def predict(self, X, pred_contribs=False, pred_interactions=False):
         fptype = getFPType(X)
         if self._is_regression:
-            return self._predict_regression(X, fptype)
+            return self._predict_regression(X, fptype, pred_contribs, pred_interactions)
         else:
+            if pred_contribs or pred_interactions:
+                raise NotImplementedError(
+                    f"{'pred_contribs' if pred_contribs else 'pred_interactions'} is not implemented for classification models"
+                )
             return self._predict_classification(X, fptype, "computeClassLabels")
 
     def predict_proba(self, X):
@@ -239,9 +291,20 @@ class GBTDAALModel(GBTDAALBaseModel):
 
 
 def convert_model(model):
-    gbm = GBTDAALModel()
-    gbm._convert_model(model)
+    try:
+        gbm = GBTDAALModel()
+        gbm._convert_model(model)
+    except TypeError as err:
+        if "Only GBTDAALRegressor can be created" in str(err):
+            gbm = d4p.sklearn.ensemble.GBTDAALRegressor.convert_model(model)
+        elif "Only GBTDAALClassifier can be created" in str(err):
+            gbm = d4p.sklearn.ensemble.GBTDAALClassifier.convert_model(model)
+        else:
+            raise
 
-    gbm._is_regression = isinstance(gbm.daal_model_, d4p.gbt_regression_model)
+    for type_str in ("xgboost", "lightgbm", "catboost"):
+        if type_str in str(type(model)):
+            gbm.model_type = type_str
+            break
 
     return gbm

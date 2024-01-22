@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py DBSCAN example for distributed memory systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./dbscan_spmd.py
+
+from pathlib import Path
 
 import numpy as np
 
@@ -24,7 +26,8 @@ import daal4py as d4p
 
 
 def main(method="defaultDense"):
-    infile = "./data/batch/dbscan_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "dbscan_dense.csv"
     epsilon = 0.04
     minObservations = 45
 

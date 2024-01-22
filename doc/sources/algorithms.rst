@@ -367,7 +367,7 @@ Scikit-learn tests
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
-<https://github.com/intel/scikit-learn-intelex/blob/master/deselected_tests.yaml>`__.
+<https://github.com/intel/scikit-learn-intelex/blob/main/deselected_tests.yaml>`__.
 
 The results of the entire latest scikit-learn test suite with |intelex|: `CircleCI
 <https://circleci.com/gh/intel/scikit-learn-intelex>`_.

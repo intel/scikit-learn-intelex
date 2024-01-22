@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py SVD example for distributed memory systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./svd_spmd.py
+
+from pathlib import Path
 
 from numpy import allclose, loadtxt
 
@@ -25,13 +27,14 @@ import daal4py as d4p
 
 def main():
     # Each process gets its own data
-    infile = "./data/distributed/svd_{}.csv".format(d4p.my_procid() + 1)
+    data_path = Path(__file__).parent / "data" / "distributed"
+    infile = data_path / f"svd_{d4p.my_procid()+ 1}.csv"
 
     # configure a SVD object
     algo = d4p.svd(distributed=True)
 
     # let's provide a file directly, not a table/array
-    result1 = algo.compute(infile)
+    result1 = algo.compute(str(infile))
 
     # We can also load the data ourselfs and provide the numpy array
     data = loadtxt(infile, delimiter=",")

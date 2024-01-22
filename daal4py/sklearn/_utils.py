@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import os
 import sys
 import warnings
+from typing import Any, Callable, Tuple
 
 import numpy as np
 from numpy.lib.recfunctions import require_fields
 from sklearn import __version__ as sklearn_version
 
 from daal4py import _get__daal_link_version__ as dv
+
+DaalVersionTuple = Tuple[int, str, int]
 
 try:
     from packaging.version import Version
@@ -68,21 +71,37 @@ def set_idp_sklearn_verbose():
         )
 
 
-def daal_check_version(rule):
-    # First item is major version - 2021,
-    # second is minor+patch - 0110,
-    # third item is status - B
-    target = (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
-    if not isinstance(rule[0], type(target)):
-        if rule > target:
-            return False
-    else:
-        for rule_item in rule:
-            if rule_item > target:
-                return False
-            if rule_item[0] == target[0]:
-                break
-    return True
+def get_daal_version() -> DaalVersionTuple:
+    return int(dv()[0:4]), str(dv()[10:11]), int(dv()[4:8])
+
+
+def daal_check_version(
+    required_version: Tuple[Any, ...],
+    _get_daal_version: Callable[[], DaalVersionTuple] = get_daal_version,
+) -> bool:
+    """Check daal version provided as (MAJOR, STATUS, MINOR+PATCH)
+
+    This function also accepts a list or tuple of daal versions. It will return true if
+    any version in the list/tuple is <= `_get_daal_version()`.
+    """
+    if isinstance(required_version[0], (list, tuple)):
+        # a list of version candidates was provided, recursively check if any is <= _get_daal_version
+        return any(
+            map(lambda ver: daal_check_version(ver, _get_daal_version), required_version)
+        )
+
+    major_required, status_required, patch_required = required_version
+    major, status, patch = _get_daal_version()
+
+    if status != status_required:
+        return False
+
+    if major_required < major:
+        return True
+    if major == major_required:
+        return patch_required <= patch
+
+    return False
 
 
 sklearn_versions_map = {}
@@ -99,10 +118,6 @@ def sklearn_check_version(ver):
         res = bool(Version(sklearn_version) >= Version(ver))
     sklearn_versions_map[ver] = res
     return res
-
-
-def get_daal_version():
-    return (int(dv()[0:4]), dv()[10:11], int(dv()[4:8]))
 
 
 def parse_dtype(dt):

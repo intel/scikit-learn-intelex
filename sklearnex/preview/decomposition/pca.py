@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -24,10 +23,12 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_array, check_is_fitted
 
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array
 
 from ..._device_offload import dispatch
+from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -38,10 +39,15 @@ else:
 
 from sklearn.decomposition import PCA as sklearn_PCA
 
+from onedal.common.hyperparameters import get_hyperparameters
 from onedal.decomposition import PCA as onedal_PCA
 
 
+@register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
+@control_n_jobs(decorated_methods=["fit", "transform"])
 class PCA(sklearn_PCA):
+    __doc__ = sklearn_PCA.__doc__
+
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
 
@@ -98,23 +104,22 @@ class PCA(sklearn_PCA):
                 min_val=1,
                 target_type=numbers.Integral,
             )
-        self._fit(X)
-        return self
-
-    def _fit(self, X):
-        if issparse(X):
-            raise TypeError(
-                "PCA does not support sparse input. See "
-                "TruncatedSVD for a possible alternative."
-            )
 
         if sklearn_check_version("0.23"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=False,
+                accept_sparse=True,
             )
         else:
             X = _check_array(
-                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=True,
+                copy=False,
+                accept_sparse=True,
             )
 
         n_samples, n_features = X.shape
@@ -131,7 +136,7 @@ class PCA(sklearn_PCA):
         self._validate_n_components(n_components, n_samples, n_features, n_sf_min)
 
         self._fit_svd_solver = self.svd_solver
-        shape_good_for_daal = X.shape[1] / X.shape[0] < 2
+
         if self._fit_svd_solver == "auto":
             if sklearn_check_version("1.1"):
                 if max(X.shape) <= 500 or n_components == "mle":
@@ -163,48 +168,58 @@ class PCA(sklearn_PCA):
                     else:
                         self._fit_svd_solver = "full"
 
-        if not shape_good_for_daal or self._fit_svd_solver != "full":
-            if sklearn_check_version("0.23"):
-                X = self._validate_data(X, copy=self.copy)
-            else:
-                X = check_array(X, copy=self.copy)
+        dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": sklearn_PCA.fit,
+            },
+            X,
+        )
+        return self
 
-        # Call different fits for either full or truncated SVD
-        if shape_good_for_daal and self._fit_svd_solver == "full":
-            return dispatch(
-                self,
-                "fit",
-                {
-                    "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_PCA._fit_full,
-                },
-                X,
-            )
-        elif not shape_good_for_daal and self._fit_svd_solver == "full":
-            return sklearn_PCA._fit_full(self, X, n_components)
-        elif self._fit_svd_solver in ["arpack", "randomized"]:
-            return sklearn_PCA._fit_truncated(
-                self,
-                X,
-                n_components,
-                self._fit_svd_solver,
-            )
-        else:
-            raise ValueError("Unrecognized svd_solver='{0}'".format(self._fit_svd_solver))
+    def _onedal_supported(self, method_name, *data):
+        class_name = self.__class__.__name__
+        X = data[0]
 
-    def _onedal_gpu_supported(self, method_name, *data):
         if method_name == "fit":
-            return self._fit_svd_solver == "full"
+            patching_status = PatchingConditionsChain(
+                f"sklearn.decomposition.{class_name}.{method_name}"
+            )
+            patching_status.and_conditions(
+                [
+                    (
+                        self._fit_svd_solver == "full",
+                        f"'{self._fit_svd_solver}' SVD solver is not supported. "
+                        "Only 'full' solver is supported.",
+                    ),
+                    (not issparse(X), "oneDAL PCA does not support sparse inputs"),
+                    (
+                        X.shape[1] / X.shape[0] < 2,
+                        "The shape of X does not satisfy oneDAL requirements: "
+                        "number of features / number of samples >= 2",
+                    ),
+                ]
+            )
+            return patching_status
         elif method_name == "transform":
-            return hasattr(self, "_onedal_estimator")
+            patching_status = PatchingConditionsChain(
+                f"sklearn.decomposition.{class_name}.{method_name}"
+            )
+            patching_status.and_conditions(
+                [
+                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained"),
+                ]
+            )
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
     def _onedal_cpu_supported(self, method_name, *data):
-        if method_name == "fit":
-            return self._fit_svd_solver == "full"
-        elif method_name == "transform":
-            return hasattr(self, "_onedal_estimator")
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+        return self._onedal_supported(method_name, *data)
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        return self._onedal_supported(method_name, *data)
 
     def _onedal_fit(self, X, y=None, queue=None):
         if self.n_components == "mle" or self.n_components is None:
@@ -269,7 +284,7 @@ class PCA(sklearn_PCA):
             if self.whiten:
                 X_new /= np.sqrt(self.explained_variance_)
         else:
-            return sklearn_PCA.transform(self, X)
+            return super().transform(X)
         return X_new
 
     def fit_transform(self, X, y=None):
@@ -287,7 +302,7 @@ class PCA(sklearn_PCA):
             Transformed values of X.
         """
         if self.svd_solver in ["randomized", "arpack"]:
-            return sklearn_PCA.fit_transform(self, X)
+            return super().fit_transform(X)
         else:
             self.fit(X)
             if hasattr(self, "_onedal_estimator"):
@@ -296,7 +311,11 @@ class PCA(sklearn_PCA):
                     X_new /= np.sqrt(self.explained_variance_)
                 return X_new
             else:
-                return sklearn_PCA.transform(self, X)
+                return super().transform(X)
+
+    fit.__doc__ = sklearn_PCA.fit.__doc__
+    transform.__doc__ = sklearn_PCA.transform.__doc__
+    fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
 
     def _save_attributes(self):
         self.n_samples_ = self._onedal_estimator.n_samples_

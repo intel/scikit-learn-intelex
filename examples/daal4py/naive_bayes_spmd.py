@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py Naive Bayes Classification example for distributed memory systems; SPMD mode
 # run like this:
 #    mpirun -n 4 python ./naive_bayes_spmd.py
+
+from pathlib import Path
 
 from numpy import loadtxt
 
@@ -27,7 +29,8 @@ if __name__ == "__main__":
     d4p.daalinit()
 
     # Each process gets its own data
-    infile = "./data/batch/naivebayes_train_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    infile = data_path / "naivebayes_train_dense.csv"
 
     # Configure a training object (20 classes)
     talgo = d4p.multinomial_naive_bayes_training(20, distributed=True)

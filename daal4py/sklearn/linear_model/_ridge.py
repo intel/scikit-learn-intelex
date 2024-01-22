@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import logging
 import numbers
@@ -26,6 +26,7 @@ from sklearn.utils import check_array, check_X_y
 import daal4py
 
 from .._device_offload import support_usm_ndarray
+from .._n_jobs_support import control_n_jobs
 from .._utils import (
     PatchingConditionsChain,
     get_patch_message,
@@ -253,6 +254,7 @@ def _predict_ridge(self, X):
     return _daal4py_predict(self, X)
 
 
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class Ridge(Ridge_original, _BaseRidge):
     __doc__ = Ridge_original.__doc__
 

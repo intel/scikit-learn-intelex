@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py TSNE scikit-learn-compatible class
 
@@ -35,6 +35,7 @@ from daal4py.sklearn._utils import (
 )
 
 from .._device_offload import support_usm_ndarray
+from .._n_jobs_support import control_n_jobs
 from ..neighbors import NearestNeighbors
 
 if sklearn_check_version("0.22"):
@@ -43,6 +44,7 @@ else:
     from sklearn.manifold.t_sne import _joint_probabilities, _joint_probabilities_nn
 
 
+@control_n_jobs(decorated_methods=["fit"])
 class TSNE(BaseTSNE):
     __doc__ = BaseTSNE.__doc__
 

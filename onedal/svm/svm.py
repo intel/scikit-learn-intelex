@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 from abc import ABCMeta, abstractmethod
 from enum import Enum
@@ -90,7 +90,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     def _compute_gamma_sigma(self, gamma, X):
         if isinstance(gamma, str):
             if gamma == "scale":
-                if sp.isspmatrix(X):
+                if sp.issparse(X):
                     # var = E[X^2] - E[X]^2
                     X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
                 else:
@@ -263,7 +263,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         y = self._validate_targets(y, X.dtype)
         sample_weight = self._get_sample_weight(X, y, sample_weight)
 
-        self._sparse = sp.isspmatrix(X)
+        self._sparse = sp.issparse(X)
 
         if self.kernel == "linear":
             self._scale_, self._sigma_ = 1.0, 1.0

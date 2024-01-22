@@ -29,7 +29,6 @@ build:
     include_recipe: False
     script_env:
     - DPCPPROOT
-    - DAALROOT
     - DALROOT
     ignore_run_exports:
        - python
@@ -77,12 +76,12 @@ test:
         - daal4py/sklearn
     commands:
         - python -c "import daal4py"
-        - mpirun -n 4 python -m unittest discover -v -s tests -p spmd*.py # [not win]
-        - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p spmd*.py # [win]
+        - mpirun -n 4 python -m unittest discover -v -s tests -p test*spmd*.py # [not win]
+        - mpiexec -localonly -n 4 python -m unittest discover -v -s tests -p test*spmd*.py # [win]
         - python -m unittest discover -v -s tests -p test*.py
         - pytest --pyargs daal4py/sklearn/
         - python tests/run_examples.py
-        - python -m daal4py examples/daal4py/sycl/sklearn_sycl.py
+        - python -m daal4py tests/daal4py/sycl/sklearn_sycl.py
 
 about:
     about:

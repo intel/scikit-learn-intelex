@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -30,13 +29,16 @@ except ImportError:
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
 from .._config import config_context
 from .._device_offload import dispatch, wrap_output_data
+from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.0"):
 
+    @control_n_jobs()
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {
@@ -236,13 +238,22 @@ if sklearn_check_version("1.0"):
             )
 
         def _onedal_gpu_supported(self, method_name, *data):
-            return True
+            class_name = self.__class__.__name__
+            patching_status = PatchingConditionsChain(
+                f"sklearn.neighbors.{class_name}.{method_name}"
+            )
+            return patching_status
 
         def _onedal_cpu_supported(self, method_name, *data):
-            return True
+            class_name = self.__class__.__name__
+            patching_status = PatchingConditionsChain(
+                f"sklearn.neighbors.{class_name}.{method_name}"
+            )
+            return patching_status
 
 else:
 
+    @control_n_jobs(decorated_methods=[])
     class LocalOutlierFactor(sklearn_LocalOutlierFactor):
         def __init__(
             self,

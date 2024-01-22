@@ -33,13 +33,14 @@ ONEDAL_PY_INIT_MODULE(table_metadata);
 
 /* primitives */
 ONEDAL_PY_INIT_MODULE(get_tree);
-ONEDAL_PY_INIT_MODULE(covariance);
 ONEDAL_PY_INIT_MODULE(linear_kernel);
 ONEDAL_PY_INIT_MODULE(rbf_kernel);
 ONEDAL_PY_INIT_MODULE(polynomial_kernel);
 ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
 /* algorithms */
+ONEDAL_PY_INIT_MODULE(covariance);
+ONEDAL_PY_INIT_MODULE(dbscan);
 ONEDAL_PY_INIT_MODULE(ensemble);
 ONEDAL_PY_INIT_MODULE(decomposition);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
@@ -53,6 +54,9 @@ ONEDAL_PY_INIT_MODULE(kmeans);
 ONEDAL_PY_INIT_MODULE(kmeans_common);
 ONEDAL_PY_INIT_MODULE(neighbors);
 ONEDAL_PY_INIT_MODULE(svm);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+ONEDAL_PY_INIT_MODULE(logistic_regression);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
@@ -66,13 +70,14 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_table(m);
     init_table_metadata(m);
 
-    init_covariance(m);
     init_linear_kernel(m);
     init_rbf_kernel(m);
     init_polynomial_kernel(m);
     init_sigmoid_kernel(m);
     init_get_tree(m);
 
+    init_covariance(m);
+    init_dbscan(m);
     init_decomposition(m);
     init_ensemble(m);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
@@ -86,6 +91,9 @@ PYBIND11_MODULE(_onedal_py_host, m) {
     init_kmeans_common(m);
     init_neighbors(m);
     init_svm(m);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    init_logistic_regression(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 }
 
 } // namespace oneapi::dal::python

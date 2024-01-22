@@ -113,17 +113,34 @@ template <typename Policy>
 struct init_train_ops_dispatcher<Policy, linear_regression::task::regression> {
     void operator()(py::module_& m) {
         using Task = linear_regression::task::regression;
-        m.def("train",
-              [](const Policy& policy,
-                 const py::dict& params,
-                 const table& data,
-                 const table& responses) {
-                  using namespace dal::linear_regression;
-                  using input_t = train_input<Task>;
 
-                  train_ops ops(policy, input_t{ data, responses }, params2desc{});
-                  return fptype2t{ method2t{ Task{}, ops } }(params);
-              });
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+        using train_hyperparams_t = dal::linear_regression::detail::train_parameters<Task>;
+        m.def("train", [](
+            const Policy& policy,
+            const py::dict& params,
+            const train_hyperparams_t& hyperparams,
+            const table& data,
+            const table& responses) {
+                using namespace dal::linear_regression;
+                using input_t = train_input<Task>;
+                train_ops_with_hyperparams ops(
+                    policy, input_t{ data, responses }, params2desc{}, hyperparams);
+                return fptype2t{ method2t{ Task{}, ops } }(params);
+            }
+        );
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+        m.def("train", [](
+            const Policy& policy,
+            const py::dict& params,
+            const table& data,
+            const table& responses) {
+                using namespace dal::linear_regression;
+                using input_t = train_input<Task>;
+                train_ops ops(policy, input_t{ data, responses }, params2desc{});
+                return fptype2t{ method2t{ Task{}, ops } }(params);
+            }
+        );
     }
 };
 
@@ -188,11 +205,39 @@ void init_infer_result(py::module_& m) {
                    .DEF_ONEDAL_PY_PROPERTY(responses, result_t);
 }
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
+template <typename Task>
+void init_train_hyperparameters(py::module_& m) {
+    using namespace dal::linear_regression::detail;
+    using train_hyperparams_t = train_parameters<Task>;
+
+    auto cls = py::class_<train_hyperparams_t>(m, "train_hyperparameters")
+                   .def(py::init())
+                   .def("set_cpu_macro_block", [](train_hyperparams_t& self, int64_t cpu_macro_block) {
+                        self.set_cpu_macro_block(cpu_macro_block);
+                   })
+                   .def("set_gpu_macro_block", [](train_hyperparams_t& self, int64_t gpu_macro_block) {
+                        self.set_gpu_macro_block(gpu_macro_block);
+                   })
+                   .def("get_cpu_macro_block", [](const train_hyperparams_t& self) {
+                        return self.get_cpu_macro_block();
+                   })
+                   .def("get_gpu_macro_block", [](const train_hyperparams_t& self) {
+                        return self.get_gpu_macro_block();
+                   });
+}
+
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_hyperparameters);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 } // namespace linear_model
 
@@ -215,6 +260,9 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+    ONEDAL_PY_INSTANTIATE(init_train_hyperparameters, sub, task_list);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 }
 
 ONEDAL_PY_TYPE2STR(dal::linear_regression::task::regression, "regression");

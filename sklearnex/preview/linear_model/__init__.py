@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,6 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-from .linear import LinearRegression
+from .logistic_regression import LogisticRegression
 
-__all__ = ["LinearRegression"]
+__all__ = ["LogisticRegression"]

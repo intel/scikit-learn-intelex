@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py GBT scikit-learn-compatible estimator class
 
@@ -27,6 +27,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 import daal4py as d4p
 
+from .._n_jobs_support import control_n_jobs
 from .._utils import getFPType
 
 
@@ -128,6 +129,7 @@ class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
         return {"allow_nan": self.allow_nan_}
 
 
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def fit(self, X, y):
         # Check the algorithm parameters
@@ -232,6 +234,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
         return proba
 
+    @staticmethod
     def convert_model(model):
         gbm = GBTDAALClassifier()
         gbm._convert_model(model)
@@ -241,6 +244,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         return gbm
 
 
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
     def fit(self, X, y):
         # Check the algorithm parameters
@@ -286,7 +290,7 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         # Return the classifier
         return self
 
-    def predict(self, X):
+    def predict(self, X, pred_contribs=False, pred_interactions=False):
         # Input validation
         if not self.allow_nan_:
             X = check_array(X, dtype=[np.single, np.double])
@@ -297,8 +301,9 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         check_is_fitted(self, ["n_features_in_"])
 
         fptype = getFPType(X)
-        return self._predict_regression(X, fptype)
+        return self._predict_regression(X, fptype, pred_contribs, pred_interactions)
 
+    @staticmethod
     def convert_model(model):
         gbm = GBTDAALRegressor()
         gbm._convert_model(model)

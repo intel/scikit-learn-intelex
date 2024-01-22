@@ -1,28 +1,38 @@
 # Infra and tools
-.ci/                          @napetrov @Alexsandruss
-.github/                      @napetrov @Alexsandruss
-.circleci/                    @napetrov @Alexsandruss
+.ci/                          @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
+.github/                      @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
+.circleci/                    @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
 
 # Docs
-*.md                          @maria-Petrova @napetrov @alexandraepan
-doc/                          @maria-Petrova @napetrov @alexandraepan
+*.md                          @maria-Petrova @napetrov @aepanchi @Alexsandruss
+doc/                          @maria-Petrova @napetrov @aepanchi @Alexsandruss
+requirements-doc.txt          @maria-Petrova @napetrov @aepanchi @Alexsandruss
 
 # DPC++
-**/oneapi/                    @Alexsandruss @samir-nasibli @KulikovNikita
-onedal/                       @Alexsandruss @samir-nasibli @KulikovNikita
-sklearnex/                    @Alexsandruss @samir-nasibli @KulikovNikita
+**/oneapi/                    @Alexsandruss @samir-nasibli
+onedal/                       @Alexsandruss @samir-nasibli
+sklearnex/                    @Alexsandruss @samir-nasibli
 
-# Examples 
-examples/daal4py/             @maria-Petrova @Alexsandruss @samir-nasibli
-examples/notebooks/           @maria-Petrova @Alexsandruss @napetrov
+# Examples
+examples/                     @maria-Petrova @Alexsandruss @samir-nasibli @napetrov
 
 # Dependencies
-setup.py                      @Alexsandruss
-requirements*                 @napetrov @Alexsandruss 
-conda-recipe/                 @Alexsandruss
+setup.py                      @napetrov @Alexsandruss @samir-nasibli
+requirements*                 @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
+dependencies-dev              @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
+conda-recipe/                 @napetrov @Alexsandruss
+
+# Model builders
+*model_builders*              @razdoburdin @ahuber21 @avolkov-intel
+
+# Forests
+*ensemble*                    @ahuber21 @icfaust
 
 # Testing
 **/test*.py                   @Alexsandruss @samir-nasibli
+
+# Distributed
+*spmd*                        @samir-nasibli
 
 # Scikit-learn patching
 daal4py/sklearn/              @Alexsandruss @samir-nasibli

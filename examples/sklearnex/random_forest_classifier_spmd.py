@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # sklearnex RF example for distributed systems; SPMD mode
 # run like this:
@@ -36,8 +36,8 @@ def generate_X_y(par, seed):
     return data, resp
 
 
-params_train = {"ns": 10000, "nf": 8}
-params_test = {"ns": 100, "nf": 8}
+params_train = {"ns": 1000000, "nf": 3}
+params_test = {"ns": 100, "nf": 3}
 
 comm = MPI.COMM_WORLD
 mpi_size = comm.Get_size()

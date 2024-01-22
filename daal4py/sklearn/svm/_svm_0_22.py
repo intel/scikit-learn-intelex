@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 from __future__ import print_function
 
@@ -439,7 +439,7 @@ def fit(self, X, y, sample_weight=None):
     """
     rnd = check_random_state(self.random_state)
 
-    sparse = sp.isspmatrix(X)
+    sparse = sp.issparse(X)
     if sparse and self.kernel == "precomputed":
         raise TypeError("Sparse precomputed kernels are not supported.")
     self._sparse = sparse and not callable(self.kernel)

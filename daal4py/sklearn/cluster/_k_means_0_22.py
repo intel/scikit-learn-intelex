@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numpy as np
 from scipy import sparse as sp
@@ -33,7 +33,12 @@ from sklearn.utils.extmath import row_norms
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import PatchingConditionsChain, daal_check_version, getFPType
+from .._utils import (
+    PatchingConditionsChain,
+    control_n_jobs,
+    daal_check_version,
+    getFPType,
+)
 
 
 def _tolerance(X, rtol):
@@ -366,6 +371,7 @@ def _predict(self, X, sample_weight=None):
     return _labels_inertia(X, sample_weight, x_squared_norms, self.cluster_centers_)[0]
 
 
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 

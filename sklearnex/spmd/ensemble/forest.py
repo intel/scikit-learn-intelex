@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 from abc import ABC
 
 from onedal.spmd.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.spmd.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 
-from ...preview.ensemble.forest import (
-    RandomForestClassifier as RandomForestClassifier_Batch,
-)
-from ...preview.ensemble.forest import (
-    RandomForestRegressor as RandomForestRegressor_Batch,
-)
+from ...ensemble import RandomForestClassifier as RandomForestClassifier_Batch
+from ...ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
 
 class BaseForestSPMD(ABC):

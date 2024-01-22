@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 from abc import ABCMeta
 from numbers import Integral
@@ -200,7 +200,9 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         if y is not None or self.requires_y:
             shape = getattr(y, "shape", None)
-            X, y = super()._validate_data(X, y, dtype=[np.float64, np.float32])
+            X, y = super()._validate_data(
+                X, y, dtype=[np.float64, np.float32], accept_sparse="csr"
+            )
             self._shape = shape if shape is not None else y.shape
 
             if _is_classifier(self):

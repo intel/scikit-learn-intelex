@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numpy as np
 from scipy import sparse as sp
@@ -20,9 +20,11 @@ from sklearn.exceptions import NotFittedError
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
+from .._utils import PatchingConditionsChain
 from ._common import BaseSVC
 
 if sklearn_check_version("1.0"):
@@ -31,6 +33,9 @@ if sklearn_check_version("1.0"):
 from onedal.svm import SVC as onedal_SVC
 
 
+@control_n_jobs(
+    decorated_methods=["fit", "predict", "_predict_proba", "decision_function"]
+)
 class SVC(sklearn_SVC, BaseSVC):
     __doc__ = sklearn_SVC.__doc__
 
@@ -232,37 +237,28 @@ class SVC(sklearn_SVC, BaseSVC):
         patching_status = PatchingConditionsChain(
             f"sklearn.svm.{class_name}.{method_name}"
         )
+        if len(data) > 1:
+            self._class_count = len(np.unique(data[1]))
+        self._is_sparse = sp.issparse(data[0])
+        conditions = [
+            (
+                self.kernel in ["linear", "rbf"],
+                f'Kernel is "{self.kernel}" while '
+                '"linear" and "rbf" are only supported on GPU.',
+            ),
+            (self.class_weight is None, "Class weight is not supported on GPU."),
+            (not self._is_sparse, "Sparse input is not supported on GPU."),
+            (self._class_count == 2, "Multiclassification is not supported on GPU."),
+        ]
         if method_name == "fit":
-            if len(data) > 1:
-                self._class_count = len(np.unique(data[1]))
-            self._is_sparse = sp.isspmatrix(data[0])
-            patching_status.and_conditions(
-                [
-                    (
-                        self.kernel in ["linear", "rbf"],
-                        f'Kernel is "{self.kernel}" while '
-                        '"linear" and "rbf" are only supported on GPU.',
-                    ),
-                    (self.class_weight is None, "Class weight is not supported on GPU."),
-                    (
-                        self._class_count == 2,
-                        "Multiclassification is not supported on GPU.",
-                    ),
-                    (not self._is_sparse, "Sparse input is not supported on GPU."),
-                ]
-            )
-            return patching_status.get_status(logs=True)
+            patching_status.and_conditions(conditions)
+            return patching_status
         if method_name in ["predict", "predict_proba", "decision_function"]:
-            patching_status.and_conditions(
-                [
-                    (
-                        hasattr(self, "_onedal_estimator")
-                        and self._onedal_gpu_supported("fit", *data),
-                        "oneDAL model was not trained on GPU.",
-                    )
-                ]
+            conditions.append(
+                (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained")
             )
-            return patching_status.get_status(logs=True)
+            patching_status.and_conditions(conditions)
+            return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):

@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import gc
 import logging
@@ -31,15 +31,6 @@ from sklearnex import get_patch_map
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.model_selection import train_test_split
 from sklearnex.preview.decomposition import PCA as PreviewPCA
-from sklearnex.preview.ensemble import ExtraTreesClassifier as PreviewExtraTreesClassifier
-from sklearnex.preview.ensemble import ExtraTreesRegressor as PreviewExtraTreesRegressor
-from sklearnex.preview.ensemble import (
-    RandomForestClassifier as PreviewRandomForestClassifier,
-)
-from sklearnex.preview.ensemble import (
-    RandomForestRegressor as PreviewRandomForestRegressor,
-)
-from sklearnex.preview.linear_model import LinearRegression as PreviewLinearRegression
 from sklearnex.utils import _assert_all_finite
 
 
@@ -90,7 +81,7 @@ def get_patched_estimators(ban_list, output_list):
         estimator, name = listing[0][0][2], listing[0][0][1]
         if not isinstance(estimator, types.FunctionType):
             if name not in ban_list:
-                if isinstance(estimator(), BaseEstimator):
+                if issubclass(estimator, BaseEstimator):
                     if hasattr(estimator, "fit"):
                         output_list.append(estimator)
 
@@ -109,11 +100,6 @@ BANNED_ESTIMATORS = (
 )
 estimators = [
     PreviewPCA,
-    PreviewLinearRegression,
-    PreviewRandomForestClassifier,
-    PreviewRandomForestRegressor,
-    PreviewExtraTreesClassifier,
-    PreviewExtraTreesRegressor,
     TrainTestSplitEstimator,
     FiniteCheckEstimator,
     CosineDistancesEstimator,

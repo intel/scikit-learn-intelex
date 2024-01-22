@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -31,6 +30,7 @@ from sklearn.neighbors._kd_tree import KDTree
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 from onedal.utils import _check_array, _num_features, _num_samples
@@ -96,6 +96,7 @@ else:
             )
 
 
+@control_n_jobs(decorated_methods=["fit", "kneighbors"])
 class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**NearestNeighbors_._parameter_constraints}

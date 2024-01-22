@@ -115,7 +115,7 @@ def test_unpatch_by_list_many_estimators():
     from sklearn.neighbors import KNeighborsRegressor
     from sklearn.svm import SVC
 
-    assert RandomForestRegressor.__module__.startswith("daal4py")
+    assert RandomForestRegressor.__module__.startswith("sklearnex")
     assert KNeighborsRegressor.__module__.startswith(
         "daal4py"
     ) or KNeighborsRegressor.__module__.startswith("sklearnex")
@@ -161,47 +161,67 @@ def test_preview_namespace():
         from sklearn.cluster import DBSCAN
         from sklearn.decomposition import PCA
         from sklearn.ensemble import RandomForestClassifier
-        from sklearn.linear_model import LinearRegression
+        from sklearn.linear_model import LinearRegression, LogisticRegression
         from sklearn.svm import SVC
 
-        return LinearRegression(), PCA(), DBSCAN(), SVC(), RandomForestClassifier()
+        return (
+            LinearRegression(),
+            LogisticRegression(),
+            PCA(),
+            DBSCAN(),
+            SVC(),
+            RandomForestClassifier(),
+        )
 
     # BUG: previous patching tests force PCA to be patched with daal4py.
     # This unpatching returns behavior to expected
     sklearnex.unpatch_sklearn()
     # behavior with enabled preview
     sklearnex.patch_sklearn(preview=True)
-    assert sklearnex.dispatcher._is_preview_enabled()
+    from sklearnex.dispatcher import _is_preview_enabled
 
-    lr, pca, dbscan, svc, rfc = get_estimators()
-    assert "sklearnex.preview" in rfc.__module__
+    assert _is_preview_enabled()
+
+    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
+    assert "sklearnex" in rfc.__module__
 
     if daal_check_version((2023, "P", 100)):
-        assert "sklearnex.preview" in lr.__module__
+        assert "sklearnex" in lr.__module__
     else:
         assert "daal4py" in lr.__module__
 
+    if daal_check_version((2024, "P", 1)):
+        assert "sklearnex" in log_reg.__module__
+    else:
+        assert "daal4py" in log_reg.__module__
+
     assert "sklearnex.preview" in pca.__module__
-    assert "daal4py" in dbscan.__module__
+    assert "sklearnex" in dbscan.__module__
     assert "sklearnex" in svc.__module__
     sklearnex.unpatch_sklearn()
 
     # no patching behavior
-    lr, pca, dbscan, svc, rfc = get_estimators()
-    assert "sklearn." in lr.__module__
-    assert "sklearn." in pca.__module__
-    assert "sklearn." in dbscan.__module__
-    assert "sklearn." in svc.__module__
-    assert "sklearn." in rfc.__module__
+    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
+    assert "sklearn." in lr.__module__ and "daal4py" not in lr.__module__
+    assert "sklearn." in log_reg.__module__ and "daal4py" not in log_reg.__module__
+    assert "sklearn." in pca.__module__ and "daal4py" not in pca.__module__
+    assert "sklearn." in dbscan.__module__ and "daal4py" not in dbscan.__module__
+    assert "sklearn." in svc.__module__ and "daal4py" not in svc.__module__
+    assert "sklearn." in rfc.__module__ and "daal4py" not in rfc.__module__
 
     # default patching behavior
     sklearnex.patch_sklearn()
-    assert not sklearnex.dispatcher._is_preview_enabled()
+    assert not _is_preview_enabled()
 
-    lr, pca, dbscan, svc, rfc = get_estimators()
-    assert "daal4py" in lr.__module__
+    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
+    if daal_check_version((2023, "P", 100)):
+        assert "sklearnex" in lr.__module__
+    else:
+        assert "daal4py" in lr.__module__
+
+    assert "daal4py" in log_reg.__module__
     assert "daal4py" in pca.__module__
-    assert "daal4py" in rfc.__module__
-    assert "daal4py" in dbscan.__module__
+    assert "sklearnex" in rfc.__module__
+    assert "sklearnex" in dbscan.__module__
     assert "sklearnex" in svc.__module__
     sklearnex.unpatch_sklearn()

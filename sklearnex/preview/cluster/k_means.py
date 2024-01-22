@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import logging
 
@@ -30,12 +29,15 @@ if daal_check_version((2023, "P", 200)):
         check_is_fitted,
     )
 
-    from daal4py.sklearn._utils import PatchingConditionsChain, sklearn_check_version
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
+    from daal4py.sklearn._utils import sklearn_check_version
     from onedal.cluster import KMeans as onedal_KMeans
 
     from ..._device_offload import dispatch, wrap_output_data
+    from ..._utils import PatchingConditionsChain
     from ._common import BaseKMeans
 
+    @control_n_jobs(decorated_methods=["fit", "predict"])
     class KMeans(sklearn_KMeans, BaseKMeans):
         __doc__ = sklearn_KMeans.__doc__
         n_iter_, inertia_ = None, None
@@ -167,7 +169,7 @@ if daal_check_version((2023, "P", 200)):
                 ]
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         def fit(self, X, y=None, sample_weight=None):
             """Compute k-means clustering.
@@ -216,7 +218,10 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            self._check_params_vs_input(X)
+            if sklearn_check_version("1.2"):
+                self._check_params_vs_input(X)
+            else:
+                self._check_params(X)
 
             self._n_features_out = self.n_clusters
             self._n_threads = _openmp_effective_n_threads()
@@ -248,7 +253,7 @@ if daal_check_version((2023, "P", 200)):
                 ]
             )
 
-            return patching_status.get_status(logs=True)
+            return patching_status
 
         @wrap_output_data
         def predict(self, X):
@@ -286,7 +291,9 @@ if daal_check_version((2023, "P", 200)):
             )
 
         def _onedal_predict(self, X, queue=None):
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            X = self._validate_data(
+                X, accept_sparse=False, reset=False, dtype=[np.float64, np.float32]
+            )
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
                 self._onedal_estimator.cluster_centers_ = self.cluster_centers_

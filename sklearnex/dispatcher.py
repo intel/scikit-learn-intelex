@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import os
 import sys
@@ -42,16 +41,34 @@ def get_patch_map():
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.cluster as cluster_module
+        import sklearn.covariance as covariance_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
 
+        if sklearn_check_version("1.2.1"):
+            import sklearn.utils.parallel as parallel_module
+        else:
+            import sklearn.utils.fixes as parallel_module
+
         # Classes and functions for patching
         from ._config import config_context as config_context_sklearnex
         from ._config import get_config as get_config_sklearnex
         from ._config import set_config as set_config_sklearnex
+
+        if sklearn_check_version("1.2.1"):
+            from .utils.parallel import _FuncWrapper as _FuncWrapper_sklearnex
+        else:
+            from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
+
+        from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
+        from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
+        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
+        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -59,18 +76,13 @@ def get_patch_map():
 
         # Preview classes for patching
         from .preview.cluster import KMeans as KMeans_sklearnex
+        from .preview.covariance import (
+            EmpiricalCovariance as EmpiricalCovariance_sklearnex,
+        )
         from .preview.decomposition import PCA as PCA_sklearnex
-        from .preview.ensemble import (
-            ExtraTreesClassifier as ExtraTreesClassifier_sklearnex,
+        from .preview.linear_model import (
+            LogisticRegression as LogisticRegression_sklearnex,
         )
-        from .preview.ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
-        from .preview.ensemble import (
-            RandomForestClassifier as RandomForestClassifier_sklearnex,
-        )
-        from .preview.ensemble import (
-            RandomForestRegressor as RandomForestRegressor_sklearnex,
-        )
-        from .preview.linear_model import LinearRegression as LinearRegression_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
@@ -78,74 +90,9 @@ def get_patch_map():
 
         # Patch for mapping
         if _is_preview_enabled():
-            # Ensemble
-            mapping["extra_trees_classifier"] = [
-                [
-                    (
-                        ensemble_module,
-                        "ExtraTreesClassifier",
-                        ExtraTreesClassifier_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["extra_trees_regressor"] = [
-                [
-                    (
-                        ensemble_module,
-                        "ExtraTreesRegressor",
-                        ExtraTreesRegressor_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["extratreesclassifier"] = mapping["extra_trees_classifier"]
-            mapping["extratreesregressor"] = mapping["extra_trees_regressor"]
-            mapping.pop("random_forest_classifier")
-            mapping.pop("random_forest_regressor")
-            mapping.pop("randomforestclassifier")
-            mapping.pop("randomforestregressor")
-            mapping["random_forest_classifier"] = [
-                [
-                    (
-                        ensemble_module,
-                        "RandomForestClassifier",
-                        RandomForestClassifier_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["random_forest_regressor"] = [
-                [
-                    (
-                        ensemble_module,
-                        "RandomForestRegressor",
-                        RandomForestRegressor_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
-            mapping["randomforestregressor"] = mapping["random_forest_regressor"]
-
             # PCA
             mapping.pop("pca")
             mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
-
-            # Linear Regression
-            mapping.pop("linear")
-            mapping.pop("linearregression")
-            mapping["linear"] = [
-                [
-                    (
-                        linear_model_module,
-                        "LinearRegression",
-                        LinearRegression_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["linearregression"] = mapping["linear"]
 
             # KMeans
             mapping.pop("kmeans")
@@ -160,6 +107,37 @@ def get_patch_map():
                 ]
             ]
 
+            # Covariance
+            mapping["empiricalcovariance"] = [
+                [
+                    (
+                        covariance_module,
+                        "EmpiricalCovariance",
+                        EmpiricalCovariance_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+
+            # LogisticRegression
+            mapping.pop("logisticregression")
+            mapping.pop("log_reg")
+            mapping["log_reg"] = [
+                [
+                    (
+                        linear_model_module,
+                        "LogisticRegression",
+                        LogisticRegression_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+            mapping["logisticregression"] = mapping["log_reg"]
+
+        # DBSCAN
+        mapping.pop("dbscan")
+        mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
+
         # SVM
         mapping.pop("svm")
         mapping.pop("svc")
@@ -167,6 +145,21 @@ def get_patch_map():
         mapping["svc"] = [[(svm_module, "SVC", SVC_sklearnex), None]]
         mapping["nusvr"] = [[(svm_module, "NuSVR", NuSVR_sklearnex), None]]
         mapping["nusvc"] = [[(svm_module, "NuSVC", NuSVC_sklearnex), None]]
+
+        # Linear Regression
+        mapping.pop("linear")
+        mapping.pop("linearregression")
+        mapping["linear"] = [
+            [
+                (
+                    linear_model_module,
+                    "LinearRegression",
+                    LinearRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["linearregression"] = mapping["linear"]
 
         # kNN
         mapping.pop("knn_classifier")
@@ -202,6 +195,56 @@ def get_patch_map():
         mapping["kneighborsregressor"] = mapping["knn_regressor"]
         mapping["nearestneighbors"] = mapping["nearest_neighbors"]
 
+        # Ensemble
+        mapping["extra_trees_classifier"] = [
+            [
+                (
+                    ensemble_module,
+                    "ExtraTreesClassifier",
+                    ExtraTreesClassifier_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["extra_trees_regressor"] = [
+            [
+                (
+                    ensemble_module,
+                    "ExtraTreesRegressor",
+                    ExtraTreesRegressor_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["extratreesclassifier"] = mapping["extra_trees_classifier"]
+        mapping["extratreesregressor"] = mapping["extra_trees_regressor"]
+        mapping.pop("random_forest_classifier")
+        mapping.pop("random_forest_regressor")
+        mapping.pop("randomforestclassifier")
+        mapping.pop("randomforestregressor")
+        mapping["random_forest_classifier"] = [
+            [
+                (
+                    ensemble_module,
+                    "RandomForestClassifier",
+                    RandomForestClassifier_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["random_forest_regressor"] = [
+            [
+                (
+                    ensemble_module,
+                    "RandomForestRegressor",
+                    RandomForestRegressor_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
+        mapping["randomforestregressor"] = mapping["random_forest_regressor"]
+
         # LocalOutlierFactor
         mapping["lof"] = [
             [
@@ -220,6 +263,14 @@ def get_patch_map():
         ]
         mapping["config_context"] = [
             [(base_module, "config_context", config_context_sklearnex), None]
+        ]
+
+        # Necessary for proper work with multiple threads
+        mapping["parallel.get_config"] = [
+            [(parallel_module, "get_config", get_config_sklearnex), None]
+        ]
+        mapping["_funcwrapper"] = [
+            [(parallel_module, "_FuncWrapper", _FuncWrapper_sklearnex), None]
         ]
     return mapping
 

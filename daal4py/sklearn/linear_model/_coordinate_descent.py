@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2020 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numbers
 
@@ -30,6 +30,8 @@ from daal4py.sklearn._utils import (
     make2d,
     sklearn_check_version,
 )
+
+from .._n_jobs_support import control_n_jobs
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
@@ -616,6 +618,7 @@ def _dual_gap(self):
     return self._gap
 
 
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
@@ -813,6 +816,7 @@ class ElasticNet(ElasticNet_original):
         self._gap = None
 
 
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 

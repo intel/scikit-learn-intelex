@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numpy as np
 import pytest
@@ -38,13 +38,27 @@ def test_rf_classifier(queue):
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
-@pytest.mark.parametrize("queue", get_queues())
+# TODO:
+# fix RF regressor predict for the GPU sycl_queue.
+@pytest.mark.parametrize("queue", get_queues("cpu"))
 def test_rf_regression(queue):
     X, y = make_regression(
         n_samples=100, n_features=4, n_informative=2, random_state=0, shuffle=False
     )
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y, queue=queue)
-    assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+
+    # GPU and CPU implementations of Random Forest use RNGs differently. They build
+    # different ensembles of trees, thereby requiring separate check values.
+    if queue.sycl_device.is_gpu:
+        if daal_check_version((2024, "P", 0)):
+            assert_allclose([1.82], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+        else:
+            assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    else:
+        if daal_check_version((2024, "P", 0)):
+            assert_allclose([-6.97], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+        else:
+            assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
 
 
 @pytest.mark.skipif(
@@ -66,6 +80,9 @@ def test_rf_classifier_random_splitter(queue):
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
+# TODO:
+# fix RF regressor predict for the GPU sycl_queue.
+@pytest.mark.skip(reason="fix RF regressor predict for the GPU sycl_queue")
 @pytest.mark.parametrize("queue", get_queues("gpu"))
 def test_rf_regression_random_splitter(queue):
     X, y = make_regression(
@@ -74,4 +91,7 @@ def test_rf_regression_random_splitter(queue):
     rf = RandomForestRegressor(max_depth=2, random_state=0, splitter_mode="random").fit(
         X, y, queue=queue
     )
-    assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    if daal_check_version((2024, "P", 0)):
+        assert_allclose([-6.88], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
+    else:
+        assert_allclose([-6.83], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)

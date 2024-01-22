@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numpy as np
 import pytest
@@ -41,7 +41,7 @@ def check_svm_model_equal(queue, svm, X_train, y_train, X_test, decimal=6):
     sparse_svm = clone_estimator(svm)
     dense_svm = clone_estimator(svm)
     dense_svm.fit(X_train.toarray(), y_train, queue=queue)
-    if sp.isspmatrix(X_test):
+    if sp.issparse(X_test):
         X_test_dense = X_test.toarray()
     else:
         X_test_dense = X_test

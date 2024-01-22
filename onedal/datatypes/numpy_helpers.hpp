@@ -81,18 +81,24 @@
             _FUNCT(double);                     \
             break;                              \
         }                                       \
+        case NPY_INTLTR:                        \
         case NPY_INT32: {                       \
             _FUNCT(std::int32_t);               \
             break;                              \
         }                                       \
+        case NPY_UINTLTR:                       \
         case NPY_UINT32: {                      \
             _FUNCT(std::uint32_t);              \
             break;                              \
         }                                       \
+        case NPY_LONGLTR:                       \
+        case NPY_LONGLONGLTR:                   \
         case NPY_INT64: {                       \
             _FUNCT(std::int64_t);               \
             break;                              \
         }                                       \
+        case NPY_ULONGLTR:                      \
+        case NPY_ULONGLONGLTR:                  \
         case NPY_UINT64: {                      \
             _FUNCT(std::uint64_t);              \
             break;                              \

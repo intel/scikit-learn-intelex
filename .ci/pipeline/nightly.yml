@@ -21,6 +21,7 @@ variables:
   PYTHON: 'python'
   ARGS: '1'
   SELECTED_TESTS: 'all'
+  SHELLOPTS: 'errexit:pipefail'
 
 jobs:
 - job: Coverity
@@ -63,7 +64,7 @@ jobs:
       conda activate CB
       pip install -r dependencies-dev
       pip install -r requirements-doc.txt
-      pip install -r requirements-test.txt -r requirements-test-optional.txt
+      pip install -r requirements-test.txt
       pip install jupyter matplotlib requests
     displayName: 'Install requirements'
   - script: |
@@ -92,19 +93,6 @@ jobs:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
-- job: MacOSNightly
-  timeoutInMinutes: 120
-  strategy:
-    matrix:
-      Python3.11_SklearnMain:
-        PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: 'main'
-  pool:
-    vmImage: 'macos-12'
-  variables:
-    SKLEARN_SKIP_OPENMP_TEST: 'true'
-  steps:
-  - template: build-and-test-mac.yml
 - job: WindowsNightly
   timeoutInMinutes: 120
   strategy:

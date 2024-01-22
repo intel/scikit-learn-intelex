@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#===============================================================================
+# ===============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,43 +13,58 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#===============================================================================
+# ===============================================================================
 
 import re
+from os.path import isfile
 from os.path import join as jp
+from sys import platform
 
 
 def find_defines(defines: list, file_obj):
-    defines_dict = {define: '' for define in defines}
+    defines_dict = {define: "" for define in defines}
     for elem in file_obj:
         for define in defines:
-            if f'#define {define}' in elem:
-                match = re.match(rf'#define {define} (\d+)', elem)
+            if f"#define {define}" in elem:
+                match = re.match(rf"#define {define} (\d+)", elem)
                 if match:
                     defines_dict[define] = match.group(1)
     return defines_dict
 
 
-def get_onedal_version(dal_root, version_type='release'):
+def get_onedal_version(dal_root, version_type="release"):
     """Parse oneDAL version strings"""
 
-    if version_type not in ['release', 'binary']:
+    if version_type not in ["release", "binary"]:
         raise ValueError(f'Incorrect version type "{version_type}"')
 
-    header_version = jp(dal_root, 'include', 'services', 'library_version_info.h')
-    version = ""
+    header_candidates = [
+        jp(dal_root, "include", "dal", "services", "library_version_info.h"),
+        jp(dal_root, "Library", "include", "dal", "services", "library_version_info.h"),
+        jp(dal_root, "include", "services", "library_version_info.h"),
+    ]
+    for candidate in header_candidates:
+        if isfile(candidate):
+            header_version = candidate
+            break
 
-    with open(header_version, 'r') as header:
-        if version_type == 'release':
+    version = ""
+    with open(header_version, "r") as header:
+        if version_type == "release":
             version = find_defines(
-                ['__INTEL_DAAL__', '__INTEL_DAAL_MINOR__', '__INTEL_DAAL_UPDATE__'],
-                header)
-            version = int(version['__INTEL_DAAL__']) * 10000 + \
-                int(version['__INTEL_DAAL_MINOR__']) * 100 + \
-                int(version['__INTEL_DAAL_UPDATE__'])
-        elif version_type == 'binary':
+                ["__INTEL_DAAL__", "__INTEL_DAAL_MINOR__", "__INTEL_DAAL_UPDATE__"],
+                header,
+            )
+            version = (
+                int(version["__INTEL_DAAL__"]) * 10000
+                + int(version["__INTEL_DAAL_MINOR__"]) * 100
+                + int(version["__INTEL_DAAL_UPDATE__"])
+            )
+        elif version_type == "binary":
             version = find_defines(
-                ['__INTEL_DAAL_MAJOR_BINARY__', '__INTEL_DAAL_MINOR_BINARY__'], header)
-            version = int(version['__INTEL_DAAL_MAJOR_BINARY__']), \
-                int(version['__INTEL_DAAL_MINOR_BINARY__'])
+                ["__INTEL_DAAL_MAJOR_BINARY__", "__INTEL_DAAL_MINOR_BINARY__"], header
+            )
+            version = int(version["__INTEL_DAAL_MAJOR_BINARY__"]), int(
+                version["__INTEL_DAAL_MINOR_BINARY__"]
+            )
     return version

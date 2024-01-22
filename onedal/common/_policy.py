@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import sys
 
@@ -31,8 +31,12 @@ def _get_policy(queue, *data):
                 return _HostInteropPolicy()
             return _DataParallelInteropPolicy(data_queue)
         return _DataParallelInteropPolicy(queue)
-    assert data_queue is None and queue is None
-    return _HostInteropPolicy()
+    else:
+        if not (data_queue is None and queue is None):
+            raise RuntimeError(
+                "Operation using the requested SYCL queue requires the DPC backend"
+            )
+        return _HostInteropPolicy()
 
 
 def _get_queue(*data):
@@ -45,11 +49,8 @@ def _get_queue(*data):
 class _Daal4PyContextReset:
     def __init__(self):
         self._d4p_context = None
-        self._host_context = None
         if oneapi_is_available:
             self._d4p_context = _get_sycl_ctxt()
-            self._host_context = sycl_execution_context("cpu")
-            self._host_context.apply()
 
     def __del__(self):
         if self._d4p_context:

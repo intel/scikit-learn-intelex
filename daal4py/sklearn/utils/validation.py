@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import warnings
 from contextlib import suppress
@@ -276,7 +276,10 @@ def _daal_check_array(
 
     # a branch for heterogeneous pandas.DataFrame
     if is_DataFrame(array) and get_number_of_types(array) > 1:
-        from pandas.api.types import is_sparse
+        from pandas import SparseDtype
+
+        def is_sparse(dtype):
+            return isinstance(dtype, SparseDtype)
 
         if hasattr(array, "sparse") or not array.dtypes.apply(is_sparse).any():
             return _pandas_check_array(
@@ -305,7 +308,10 @@ def _daal_check_array(
         # throw warning if columns are sparse. If all columns are sparse, then
         # array.sparse exists and sparsity will be perserved (later).
         with suppress(ImportError):
-            from pandas.api.types import is_sparse
+            from pandas import SparseDtype
+
+            def is_sparse(dtype):
+                return isinstance(dtype, SparseDtype)
 
             if not hasattr(array, "sparse") and array.dtypes.apply(is_sparse).any():
                 warnings.warn(

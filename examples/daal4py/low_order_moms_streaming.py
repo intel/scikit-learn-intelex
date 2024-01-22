@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,37 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 # daal4py low order moments example for streaming on shared memory systems
 
-import numpy as np
+
+from pathlib import Path
+
+from readcsv import pd_read_csv
 
 import daal4py as d4p
 
-# let's try to use pandas' fast csv reader
-try:
-    import pandas
 
-    def read_csv(f, c, s=0, n=None, t=np.float64):
-        return pandas.read_csv(
-            f, usecols=c, delimiter=",", header=None, skiprows=s, nrows=n, dtype=t
-        )
-
-except:
-    # fall back to numpy genfromtxt
-    def read_csv(f, c, s=0, n=np.iinfo(np.int64).max):
-        a = np.genfromtxt(f, usecols=c, delimiter=",", skip_header=s, max_rows=n)
-        if a.shape[0] == 0:
-            raise Exception("done")
-        if a.ndim == 1:
-            return a[:, np.newaxis]
-        return a
-
-
-def main(readcsv=read_csv, method="defaultDense"):
+def main(readcsv=pd_read_csv, *args, **kwargs):
     # read data from file
-    file = "./data/batch/covcormoments_dense.csv"
+    data_path = Path(__file__).parent / "data" / "batch"
+    file = data_path / "covcormoments_dense.csv"
 
     # Configure a low order moments object for streaming
     algo = d4p.low_order_moments(streaming=True)
@@ -53,9 +38,14 @@ def main(readcsv=read_csv, method="defaultDense"):
     while True:
         # Read data in chunks
         try:
-            data = readcsv(file, range(10), lines_read, chunk_size)
-        except:
-            break
+            data = readcsv(
+                file, usecols=range(10), skip_header=lines_read, max_rows=chunk_size
+            )
+        except StopIteration as e:
+            if lines_read > 0:
+                break
+            else:
+                raise ValueError("No training data was read - empty input file?") from e
         # Now feed chunk
         algo.compute(data)
         lines_read += data.shape[0]

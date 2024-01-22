@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,6 +14,16 @@
 # limitations under the License.
 # ===============================================================================
 
-from .forest import RandomForestClassifier, RandomForestRegressor
+from ._forest import (
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
+    RandomForestClassifier,
+    RandomForestRegressor,
+)
 
-__all__ = ["RandomForestClassifier", "RandomForestRegressor"]
+__all__ = [
+    "ExtraTreesClassifier",
+    "ExtraTreesRegressor",
+    "RandomForestClassifier",
+    "RandomForestRegressor",
+]

@@ -17,7 +17,7 @@
 trigger:
   branches:
     include:
-    - master
+    - main
     - rls/*
   paths:
     exclude:
@@ -28,7 +28,7 @@ trigger:
 pr:
   branches:
     include:
-    - master
+    - main
     - rls/*
   paths:
     exclude:
@@ -37,18 +37,28 @@ pr:
     - .ci/pipeline/docs.yml
 
 variables:
-  MACOSX_DEPLOYMENT_TARGET: '10.15'
   PYTHON: 'python'
   ARGS: '1'
+  SHELLOPTS: 'errexit:pipefail'
 
 jobs:
+- job: Lint
+  pool:
+    vmImage: 'ubuntu-22.04'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.9'
+      addToPath: true
+  - script: |
+      python -m pip install --upgrade pip setuptools
+      pip install isort black[jupyter]
+      isort --check . && black --check .
+    displayName: 'Linting'
 - job: Linux
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.7_Sklearn0.24:
-        PYTHON_VERSION: '3.7'
-        SKLEARN_VERSION: '0.24'
       Python3.8_Sklearn1.0:
         PYTHON_VERSION: '3.8'
         SKLEARN_VERSION: '1.0'
@@ -60,18 +70,18 @@ jobs:
         SKLEARN_VERSION: '1.2'
       Python3.11_Sklearn1.3:
         PYTHON_VERSION: '3.11'
+        SKLEARN_VERSION: '1.3'
+      Python3.12_Sklearn1.3:
+        PYTHON_VERSION: '3.12'
         SKLEARN_VERSION: '1.3'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
-- job: MacOS
+- job: Windows
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.7_Sklearn0.24:
-        PYTHON_VERSION: '3.7'
-        SKLEARN_VERSION: '0.24'
       Python3.8_Sklearn1.0:
         PYTHON_VERSION: '3.8'
         SKLEARN_VERSION: '1.0'
@@ -84,28 +94,8 @@ jobs:
       Python3.11_Sklearn1.3:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.3'
-  pool:
-    vmImage: 'macos-12'
-  steps:
-  - template: build-and-test-mac.yml
-- job: Windows
-  timeoutInMinutes: 120
-  strategy:
-    matrix:
-      Python3.7_Sklearn0.24:
-        PYTHON_VERSION: '3.7'
-        SKLEARN_VERSION: '0.24'
-      Python3.8_Sklearn1.0:
-        PYTHON_VERSION: '3.8'
-        SKLEARN_VERSION: '1.0'
-      Python3.9_Sklearn1.1:
-        PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.1'
-      Python3.10_Sklearn1.2:
-        PYTHON_VERSION: '3.10'
-        SKLEARN_VERSION: '1.2'
-      Python3.11_Sklearn1.3:
-        PYTHON_VERSION: '3.11'
+      Python3.12_Sklearn1.3:
+        PYTHON_VERSION: '3.12'
         SKLEARN_VERSION: '1.3'
   pool:
     vmImage: 'windows-latest'

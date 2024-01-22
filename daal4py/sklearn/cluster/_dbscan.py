@@ -1,4 +1,4 @@
-# ===============================================================================
+# ==============================================================================
 # Copyright 2014 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
 import numbers
 
@@ -23,10 +23,10 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
 
 import daal4py
-from daal4py.sklearn._utils import PatchingConditionsChain, getFPType, make2d
 
 from .._device_offload import support_usm_ndarray
-from .._utils import sklearn_check_version
+from .._n_jobs_support import control_n_jobs
+from .._utils import PatchingConditionsChain, getFPType, make2d, sklearn_check_version
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -56,6 +56,7 @@ def _daal_dbscan(X, eps=0.5, min_samples=5, sample_weight=None):
     return (core_ind, assignments)
 
 
+@control_n_jobs(decorated_methods=["fit"])
 class DBSCAN(DBSCAN_original):
     """Perform DBSCAN clustering from vector array or distance matrix.
 

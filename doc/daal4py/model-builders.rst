@@ -19,82 +19,117 @@
 ###############################################
 Model Builders for the Gradient Boosting Frameworks
 ###############################################
+
+.. include:: note.rst
+
 Introduction
 ------------------
-Gradient boosting on decision trees is one of the most accurate and efficient 
-machine learning algorithms for classification and regression. 
-The most popular implementations of it are the XGBoost*, 
-LightGBM*, and CatBoost* frameworks.
+Gradient boosting on decision trees is one of the most accurate and efficient
+machine learning algorithms for classification and regression.
+The most popular implementations of it are:
+
+* XGBoost*
+* LightGBM*
+* CatBoost*
+
 daal4py Model Builders deliver the accelerated
-models inference of those frameworks. The inference is performed by the oneDAL GBT implementation tuned 
-for the best performance on the Intel(R) Architecture. 
+models inference of those frameworks. The inference is performed by the oneDAL GBT implementation tuned
+for the best performance on the Intel(R) Architecture.
 
 Conversion
 ---------
-The first step is to convert already trained model. There are similar 
-APIs for different frameworks. 
+The first step is to convert already trained model. The
+API usage for different frameworks is the same:
+
 XGBoost::
 
   import daal4py as d4p
-  d4p_model = d4p.get_gbt_model_from_xgboost(xgb_model)
+  d4p_model = d4p.mb.convert_model(xgb_model)
 
 LightGBM::
 
   import daal4py as d4p
-  d4p_model = d4p.get_gbt_model_from_lightgbm(lgb_model)
+  d4p_model = d4p.mb.convert_model(lgb_model)
 
 CatBoost::
 
   import daal4py as d4p
-  d4p_model = d4p.get_gbt_model_from_catboost(cb_model)
+  d4p_model = d4p.mb.convert_model(cb_model)
 
 .. note:: Convert model only once and then use it for the inference.
 
 Classification and Regression Inference
----------
-GBT implementation in daal4py assumes separate APIs for the classification and regression.
-Specify the corresponding API and match the corresponding problem 
-in the initial framework.
+----------------------------------------
 
-Classification::
+The API is the same for classification and regression inference.
+Based on the original model passed to the ``convert_model()``, ``d4p_prediction`` is either the classification or regression output.
 
-    d4p_cls_algo = d4p.gbt_classification_prediction(
-        nClasses=params['classes_count'],
-        resultsToEvaluate="computeClassLabels",
-        fptype='float'
-    )
+    ::
 
-Regression::
-    d4p_reg_algo = d4p.gbt_regression_prediction()
+      d4p_prediction = d4p_model.predict(test_data)
 
-Next, daal4py algorithm object needs compute method to be called. 
-Both the data and the previously converted model should be passed with the results of the prediction 
-available within the  ``.prediction`` parameter.
+Here, the ``predict()`` method of ``d4p_model`` is being used to make predictions on the ``test_data`` dataset.
+The ``d4p_prediction`` variable stores the predictions made by the ``predict()`` method.
 
-Compute::
+SHAP Value Calculation for Regression Models
+------------------------------------------------------------
 
-    d4p_predictions = d4p_reg_algo.compute(X_test, d4p_model).prediction
+SHAP contribution and interaction value calculation are natively supported by models created with daal4py Model Builders.
+For these models, the ``predict()`` method takes additional keyword arguments:
 
-The one-line variant of the same code::
-    d4p_prediction = d4p.gbt_regression_prediction().compute(X_test, d4p_model).prediction
+    ::
+
+      d4p_model.predict(test_data, pred_contribs=True)      # for SHAP contributions
+      d4p_model.predict(test_data, pred_interactions=True)  # for SHAP interactions
+
+The returned prediction has the shape:
+
+   * ``(n_rows, n_features + 1)``  for SHAP contributions 
+   * ``(n_rows, n_features + 1, n_features + 1)`` for SHAP interactions
+Here, ``n_rows`` is the number of rows (i.e., observations) in
+``test_data``, and ``n_features`` is the number of features in the dataset.
+
+The prediction result for SHAP contributions includes a feature attribution value for each feature and a bias term for each observation.
+
+The prediction result for SHAP interactions comprises ``(n_features + 1) x (n_features + 1)`` values for all possible
+feature combinations, along with their corresponding bias terms.
+
+.. note:: The shapes of SHAP contributions and interactions are consistent with the XGBoost results.
+  In contrast, the `SHAP Python package <https://shap.readthedocs.io/en/latest/>`_ drops bias terms, resulting
+  in SHAP contributions (SHAP interactions) with one fewer column (one fewer column and row) per observation.
+
+Scikit-learn-style Estimators
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also use the scikit-learn-style classes ``GBTDAALClassifier`` and ``GBTDAALRegressor`` to convert and infer your models. For example:
+
+::
+
+  from daal4py.sklearn.ensemble import GBTDAALRegressor
+  reg = xgb.XGBRegressor()
+  reg.fit(X, y)
+  d4p_predt = GBTDAALRegressor.convert_model(reg).predict(X)
 
 
 Limitations
----------------------------------
-Missing Values (NaN)
-Note that there is temporary limitation on the use of missing values 
-(NaN) during training and prediction. This problem is addressed on 
-the master branch and to be available in the 2023.2 release.
+------------------
+Model Builders support only base inference with prediction and probabilities prediction. The functionality is to be extended.
+Therefore, there are the following limitations:
+- The categorical features are not supported for conversion and prediction.
+- The multioutput models are not supported for conversion and prediction.
+- SHAP values can be calculated for regression models only.
+
 
 Examples
 ---------------------------------
 Model Builders models conversion
 
-- `XGBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_xgboost.py>`_
-- `LightGBM model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_lightgbm.py>`_
-- `CatBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/master/examples/daal4py/model_builders_catboost.py>`_
+- `XGBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/main/examples/daal4py/model_builders_xgboost.py>`_
+- `SHAP value prediction from an XGBoost model <https://github.com/intel/scikit-learn-intelex/blob/main/examples/daal4py/model_builders_xgboost_shap.py>`_
+- `LightGBM model conversion <https://github.com/intel/scikit-learn-intelex/blob/main/examples/daal4py/model_builders_lightgbm.py>`_
+- `CatBoost model conversion <https://github.com/intel/scikit-learn-intelex/blob/main/examples/daal4py/model_builders_catboost.py>`_
 
 Articles and Blog Posts
 ---------------------------------
 
--  `Improving the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>` _
+-  `Improving the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_
