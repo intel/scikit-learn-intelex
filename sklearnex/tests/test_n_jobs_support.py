@@ -16,7 +16,6 @@
 
 import inspect
 import logging
-from io import StringIO
 from multiprocessing import cpu_count
 
 import pytest
@@ -58,19 +57,17 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
         assert check_n_jobs_entry_in_logs(caplog, method.__name__, n_jobs)
 
     def check_methods_decoration(estimator):
-        attrs = []
-        for attr_name in dir(estimator):
-            try:
-                attrs.append(getattr(estimator, attr_name))
-            except AttributeError:
-                # some attribute are available depending on specific estimator parameters
-                pass
-        funcs = filter(lambda attr: inspect.isfunction(attr), attrs)
-        for func in funcs:
-            if func.__name__ in estimator._n_jobs_supported_onedal_methods:
-                assert hasattr(func, "__onedal_n_jobs_decorated__")
+        funcs = {
+            i: getattr(estimator, i)
+            for i in dir(estimator)
+            if hasattr(estimator, i) and callable(getattr(estimator, i))
+        }
+
+        for i in funcs:
+            if func in estimator._n_jobs_supported_onedal_methods:
+                assert hasattr(funcs[i], "__onedal_n_jobs_decorated__")
             else:
-                assert not hasattr(func, "__onedal_n_jobs_decorated__")
+                assert not hasattr(funcs[i], "__onedal_n_jobs_decorated__")
 
     caplog.set_level(logging.DEBUG, logger="sklearnex")
     estimator_kwargs = {"n_jobs": n_jobs}
