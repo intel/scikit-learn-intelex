@@ -207,7 +207,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-6)
 
 
-# duplicate all tests for bae_score=0.0
+# duplicate all tests for base_score=0.0
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostRegressionModelBuilder_base_score0(XGBoostRegressionModelBuilder):
     @classmethod
@@ -215,7 +215,7 @@ class XGBoostRegressionModelBuilder_base_score0(XGBoostRegressionModelBuilder):
         XGBoostRegressionModelBuilder.setUpClass(0)
 
 
-# duplicate all tests for bae_score=100
+# duplicate all tests for base_score=100
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostRegressionModelBuilder_base_score100(XGBoostRegressionModelBuilder):
     @classmethod
@@ -319,7 +319,7 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
             np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-2, atol=1e-6)
 
 
-# duplicate all tests for bae_score=0.3
+# duplicate all tests for base_score=0.3
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelBuilder):
     @classmethod
@@ -327,7 +327,7 @@ class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelB
         XGBoostClassificationModelBuilder.setUpClass(base_score=0.3)
 
 
-# duplicate all tests for bae_score=0.7
+# duplicate all tests for base_score=0.7
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_base_score07(XGBoostClassificationModelBuilder):
     @classmethod
@@ -355,6 +355,16 @@ class XGBoostClassificationModelBuilder_n_classes5_base_score03(
 class XGBoostClassificationModelBuilder_objective_logitraw(
     XGBoostClassificationModelBuilder
 ):
+    """
+    Caveat: logitraw is not per se supported in daal4py because we always
+
+                 1. apply the bias
+                 2. normalize to probabilities ("activation") using sigmoid
+                   (exception: SHAP values, the scores defining phi_ij are the raw class scores)
+
+    However, by undoing the activation and bias we can still compare if the original probas and SHAP values are aligned.
+    """
+
     @classmethod
     def setUpClass(cls):
         XGBoostClassificationModelBuilder.setUpClass(
@@ -411,11 +421,7 @@ class XGBoostClassificationModelBuilder_objective_logitraw(
         )
         # undo bias
         d4p_pred[:, -1, -1] += 0.5
-        # hitting floating precision limits for classification where class probabilities
-        # are between 0 and 1
-        # we need to accept large relative differences, as long as the absolute difference
-        # remains small (<1e-6)
-        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-2, atol=1e-6)
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
