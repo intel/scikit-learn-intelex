@@ -25,13 +25,13 @@ from sklearn.utils import check_array, check_X_y
 import daal4py
 from daal4py.sklearn._utils import (
     PatchingConditionsChain,
-    control_n_jobs,
     get_patch_message,
     getFPType,
     make2d,
-    run_with_n_jobs,
     sklearn_check_version,
 )
+
+from .._n_jobs_support import control_n_jobs
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
@@ -239,7 +239,6 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     return self
 
 
-@run_with_n_jobs
 def _daal4py_predict_enet(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -406,7 +405,6 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     return self
 
 
-@run_with_n_jobs
 def _daal4py_predict_lasso(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -430,7 +428,6 @@ def _daal4py_predict_lasso(self, X):
     return res
 
 
-@run_with_n_jobs
 def _fit(self, X, y, sample_weight=None, check_input=True):
     if sklearn_check_version("1.0"):
         self._check_feature_names(X, reset=True)
@@ -621,7 +618,7 @@ def _dual_gap(self):
     return self._gap
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class ElasticNet(ElasticNet_original):
     __doc__ = ElasticNet_original.__doc__
 
@@ -819,7 +816,7 @@ class ElasticNet(ElasticNet_original):
         self._gap = None
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 

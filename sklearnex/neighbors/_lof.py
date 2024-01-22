@@ -29,11 +29,11 @@ from .common import KNeighborsDispatchingBase
 from .knn_unsupervised import NearestNeighbors
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     __doc__ = (
         sklearn_LocalOutlierFactor.__doc__
-        + "NOTE: When X=None, methods kneighbors, kneighbors_graph, and predict will"
+        + "\n NOTE: When X=None, methods kneighbors, kneighbors_graph, and predict will"
         + "\n only output numpy arrays. In that case, the only way to offload to gpu"
         + "\n is to use a global queue (e.g. using config_context)"
     )
@@ -49,7 +49,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     _onedal_knn_fit = NearestNeighbors._onedal_fit
     _onedal_kneighbors = NearestNeighbors._onedal_kneighbors
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, y, queue=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -145,7 +144,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     def predict(self, X=None):
         return self._predict(X)
 
-    @run_with_n_jobs
     def _onedal_score_samples(self, X, queue=None):
         distances_X, neighbors_indices_X = self._onedal_estimator._kneighbors(
             X, n_neighbors=self.n_neighbors_, queue=queue

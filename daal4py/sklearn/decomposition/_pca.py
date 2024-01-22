@@ -26,13 +26,8 @@ from sklearn.utils.validation import check_is_fitted
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import (
-    PatchingConditionsChain,
-    control_n_jobs,
-    getFPType,
-    run_with_n_jobs,
-    sklearn_check_version,
-)
+from .._n_jobs_support import control_n_jobs
+from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
 if sklearn_check_version("1.4"):
     from sklearn.utils._array_api import get_namespace
@@ -56,7 +51,7 @@ else:
     from sklearn.decomposition.pca import _infer_dimension_
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "transform"])
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 
@@ -102,7 +97,6 @@ class PCA(PCA_original):
                     "was of type=%r" % (n_components, type(n_components))
                 )
 
-    @run_with_n_jobs
     def _fit_full_daal4py(self, X, n_components):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -339,7 +333,6 @@ class PCA(PCA_original):
         _patching_status.write_log()
         return result
 
-    @run_with_n_jobs
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
         if sklearn_check_version("0.22"):
             check_is_fitted(self)
