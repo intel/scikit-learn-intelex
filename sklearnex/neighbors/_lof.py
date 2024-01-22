@@ -30,7 +30,7 @@ from .common import KNeighborsDispatchingBase
 from .knn_unsupervised import NearestNeighbors
 
 
-@control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     __doc__ = (
         sklearn_LocalOutlierFactor.__doc__
@@ -145,9 +145,23 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     def predict(self, X=None):
         return self._predict(X)
 
-    def _onedal_score_samples(self, X, queue=None):
-        distances_X, neighbors_indices_X = self._onedal_estimator._kneighbors(
-            X, n_neighbors=self.n_neighbors_, queue=queue
+    # Only necessary to preserve dpnp and dpctl conformance, otherwise a copy
+    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
+    @wrap_output_data
+    def score_samples(self, X):
+        check_is_fitted(self)
+        if sklearn_check_version("1.0") and X is not None:
+            self._check_feature_names(X, reset=False)
+        # done via dispatch to avoid wrap_output_data for dpnp and dpctl
+        distances_X, neighbors_indices_X = dispatch(
+            self,
+            "kneighbors",
+            {
+                "onedal": self.__class__._onedal_kneighbors,
+                "sklearn": sklearn_LocalOutlierFactor.kneighbors,
+            },
+            X,
+            self.n_neighbors,
         )
 
         X_lrd = self._local_reachability_density(
@@ -159,23 +173,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
 
         # as bigger is better:
         return -np.mean(lrd_ratios_array, axis=1)
-
-    # Only necessary to preserve dpnp and dpctl conformance, otherwise a copy
-    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
-    @wrap_output_data
-    def score_samples(self, X):
-        check_is_fitted(self)
-        if sklearn_check_version("1.0") and X is not None:
-            self._check_feature_names(X, reset=False)
-        return dispatch(
-            self,
-            "score_samples",
-            {
-                "onedal": self.__class__._onedal_score_samples,
-                "sklearn": sklearn_LocalOutlierFactor.score_samples,
-            },
-            X,
-        )
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
