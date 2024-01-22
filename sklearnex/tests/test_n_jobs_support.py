@@ -88,4 +88,3 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     # check if correct methods were decorated
     check_methods_decoration(estimator_class)
     check_methods_decoration(estimator_instance)
-    
