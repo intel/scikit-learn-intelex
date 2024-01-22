@@ -63,8 +63,8 @@ def log_sklearnex():
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 @pytest.mark.parametrize("metric", ["cosine", "correlation"])
-def test_pairwise_distances_patching(dataframe, queue, dtype, metric):
-    with log_sklearnex() as log:
+def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
+    with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
             rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
@@ -72,12 +72,10 @@ def test_pairwise_distances_patching(dataframe, queue, dtype, metric):
 
         _ = pairwise_distances(X.reshape(1, -1), metric=metric)
 
-        result = log.getvalue().strip().split("\n")
-
     assert all(
         [
-            "running accelerated version" in i or "fallback to original Scikit-learn" in i
-            for i in result
+            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            for i in caplog.records
         ]
     ), "sklearnex patching issue in roc_auc_score"
 
@@ -88,8 +86,8 @@ def test_pairwise_distances_patching(dataframe, queue, dtype, metric):
 @pytest.mark.parametrize(
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
-def test_roc_auc_score_patching(dataframe, queue, dtype):
-    with log_sklearnex() as log:
+def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
+    with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
             rng.integers(2, size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
@@ -100,12 +98,10 @@ def test_roc_auc_score_patching(dataframe, queue, dtype):
 
         _ = roc_auc_score(X, y)
 
-        result = log.getvalue().strip().split("\n")
-
     assert all(
         [
-            "running accelerated version" in i or "fallback to original Scikit-learn" in i
-            for i in result
+            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            for i in caplog.records
         ]
     ), "sklearnex patching issue in roc_auc_score"
 
@@ -115,8 +111,8 @@ def test_roc_auc_score_patching(dataframe, queue, dtype):
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(dataframe, queue, dtype, estimator, method):
-    with log_sklearnex() as log:
+def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
+    with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
@@ -130,12 +126,10 @@ def test_standard_estimator_patching(dataframe, queue, dtype, estimator, method)
         else:
             est.score(X, y)
 
-        result = log.getvalue().strip().split("\n")
-
     assert all(
         [
-            "running accelerated version" in i or "fallback to original Scikit-learn" in i
-            for i in result
+            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            for i in caplog.records
         ]
     ), f"sklearnex patching issue in {estimator}.{method} with log: \n" + "\n".join(
         result
@@ -147,9 +141,9 @@ def test_standard_estimator_patching(dataframe, queue, dtype, estimator, method)
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
-def test_special_estimator_patching(dataframe, queue, dtype, estimator, method):
+def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
     # prepare logging
-    with log_sklearnex() as log:
+    with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
@@ -163,12 +157,10 @@ def test_special_estimator_patching(dataframe, queue, dtype, estimator, method):
         else:
             est.score(X, y)
 
-        result = log.getvalue().strip().split("\n")
-
     assert all(
         [
-            "running accelerated version" in i or "fallback to original Scikit-learn" in i
-            for i in result
+            "running accelerated version" in i.message or "fallback to original Scikit-learn" in i.message
+            for i in caplog.records
         ]
     ), f"sklearnex patching issue in {estimator}.{method} with log: \n" + "\n".join(
         result
