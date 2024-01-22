@@ -30,7 +30,7 @@ from .common import KNeighborsDispatchingBase
 from .knn_unsupervised import NearestNeighbors
 
 
-@control_n_jobs(decorated_methods=["fit", "kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "_kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     __doc__ = (
         sklearn_LocalOutlierFactor.__doc__
