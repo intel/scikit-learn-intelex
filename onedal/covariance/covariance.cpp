@@ -56,32 +56,6 @@ struct params2desc {
     }
 };
 
-template <typename Policy, typename Task>
-void init_finalize_compute_ops(pybind11::module_& m) {
-    using namespace dal::covariance;
-    using input_t = partial_compute_result<Task>;
-    m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
-        finalize_compute_ops ops(policy, data, params2desc{});
-        return fptype2t{ method2t{ Task{}, ops } }(params);
-    });
-}
-
-template <typename Policy, typename Task>
-void init_partial_compute_ops(pybind11::module_& m) {
-    using prev_result_t = dal::covariance::partial_compute_result<Task>;
-    m.def("partial_compute", [](
-        const Policy& policy,
-        const pybind11::dict& params,
-        const prev_result_t& prev,
-        const table& data) {
-            using namespace dal::covariance;
-            using input_t = partial_compute_input<Task>;
-            partial_compute_ops ops(policy, input_t{prev, data}, params2desc{});
-            return fptype2t{ method2t{ Task{}, ops } }(params);
-        }
-    );
-}
-
 
 template <typename Policy, typename Task>
 void init_compute_ops(py::module_& m) {
@@ -112,6 +86,33 @@ void init_compute_ops(py::module_& m) {
         }
     );
 }
+
+template <typename Policy, typename Task>
+void init_partial_compute_ops(pybind11::module_& m) {
+    using prev_result_t = dal::covariance::partial_compute_result<Task>;
+    m.def("partial_compute", [](
+        const Policy& policy,
+        const pybind11::dict& params,
+        const prev_result_t& prev,
+        const table& data) {
+            using namespace dal::covariance;
+            using input_t = partial_compute_input<Task>;
+            partial_compute_ops ops(policy, input_t{prev, data}, params2desc{});
+            return fptype2t{ method2t{ Task{}, ops } }(params);
+        }
+    );
+}
+
+template <typename Policy, typename Task>
+void init_finalize_compute_ops(pybind11::module_& m) {
+    using namespace dal::covariance;
+    using input_t = partial_compute_result<Task>;
+    m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
+        finalize_compute_ops ops(policy, data, params2desc{});
+        return fptype2t{ method2t{ Task{}, ops } }(params);
+    });
+}
+
 
 template <typename Task>
 inline void init_compute_result(py::module_& m) {
@@ -156,8 +157,8 @@ void init_compute_hyperparameters(py::module_& m) {
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_ops);
-ONEDAL_PY_DECLARE_INSTANTIATOR(init_finalize_compute_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_finalize_compute_ops);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_hyperparameters);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
