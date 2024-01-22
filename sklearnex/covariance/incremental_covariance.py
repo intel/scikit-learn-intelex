@@ -17,14 +17,14 @@
 import numpy as np
 from sklearn.utils import check_array, gen_batches
 
-from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from onedal._device_offload import support_usm_ndarray
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["partial_fit"])
 class IncrementalEmpiricalCovariance:
     """
     Incremental estimator for covariance.
@@ -55,13 +55,11 @@ class IncrementalEmpiricalCovariance:
         #      be called to obtain covariance_ or location_ from partial compute data
         self.batch_size = batch_size
 
-    @run_with_n_jobs
     def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
-    @run_with_n_jobs
     def _onedal_partial_fit(self, X, queue):
         onedal_params = {
             "method": "dense",
