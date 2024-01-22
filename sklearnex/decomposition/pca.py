@@ -28,6 +28,7 @@ if daal_check_version((2024, "P", 100)):
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
+
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
