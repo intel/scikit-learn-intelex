@@ -63,7 +63,7 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
             or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
-    ), f"sklearnex patching issue in pairwise_distances with log: \n {caplog.text}"
+    ), f"sklearnex patching issue in pairwise_distances with log: \n{caplog.text}"
 
 
 @pytest.mark.parametrize(
@@ -90,7 +90,7 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
             or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
-    ), f"sklearnex patching issue in roc_auc_score with log: \n {caplog.text}"
+    ), f"sklearnex patching issue in roc_auc_score with log: \n{caplog.text}"
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
@@ -119,7 +119,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
-    ), f"sklearnex patching issue in {estimator}.{method} with log: \n {caplog.text}"
+    ), f"sklearnex patching issue in {estimator}.{method} with log: \n{caplog.text}"
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
@@ -149,7 +149,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
             or "fallback to original Scikit-learn" in i.message
             for i in caplog.records
         ]
-    ), f"sklearnex patching issue in {estimator}.{method} with log: \n {caplog.text}"
+    ), f"sklearnex patching issue in {estimator}.{method} with log: \n{caplog.text}"
 
 
 @pytest.mark.parametrize("estimator", PATCHED_MODELS.keys())
