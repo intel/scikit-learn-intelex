@@ -38,6 +38,77 @@ class CatBoostNode:
         self.left = left
         self.cover = cover
 
+class CatBoostModelData:
+    """Wrapper around the CatBoost model dump for easier access to properties"""
+
+    def __init__(self, data):
+        self.__data = data
+
+    @property
+    def n_features(self):
+        return len(self.__data["features_info"]["float_features"])
+
+    @property
+    def grow_policy(self):
+        return self.__data["model_info"]["params"]["tree_learner_options"]["grow_policy"]
+
+    @property
+    def oblivious_trees(self):
+        return self.__data["oblivious_trees"]
+
+    @property
+    def trees(self):
+        return self.__data["trees"]
+
+    @property
+    def n_classes(self):
+        """Number of classes, returns -1 if it's not a classification model"""
+        if "class_params" in self.__data["model_info"]:
+            return len(self.__data["model_info"]["class_params"]["class_to_label"])
+        return -1
+
+    @property
+    def is_classification(self):
+        return "class_params" in self.__data["model_info"]
+
+    @property
+    def has_categorical_features(self):
+        return "categorical_features" in self.__data["features_info"]
+
+    @property
+    def is_symmetric_tree(self):
+        return self.grow_policy == "SymmetricTree"
+
+    @property
+    def float_features(self):
+        return self.__data["features_info"]["float_features"]
+
+    @property
+    def n_iterations(self):
+        if self.is_symmetric_tree:
+            return len(self.oblivious_trees)
+        else:
+            return len(self.trees)
+
+    @property
+    def bias(self):
+        if self.is_classification:
+            return 0
+        return self.__data["scale_and_bias"][1][0] / self.n_iterations
+
+    @property
+    def scale(self):
+        if self.is_classification:
+            return 1
+        else:
+            return self.__data["scale_and_bias"][0]
+
+    @property
+    def default_left(self):
+        dpo = self.__data["model_info"]["params"]["data_processing_options"]
+        nan_mode = dpo["float_features_binarization"]["nan_mode"]
+        return int(nan_mode.lower() == "min")
+
 
 class Node:
     """Helper class holding Tree Node information"""
@@ -405,101 +476,85 @@ def get_gbt_model_from_xgboost(booster: Any, xgb_config=None) -> Any:
     )
 
 
-def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
-    if not model.is_fitted():
+def __get_value_as_list(node):
+    """Make sure the values are a list"""
+    values = node["value"]
+    if isinstance(values, (list, tuple)):
+        return values
+    else:
+        return [values]
+
+
+def __calc_node_weights_from_leaf_weights(weights):
+    def sum_pairs(values):
+        assert len(values) % 2 == 0, "Length of values must be even"
+        return [values[i] + values[i + 1] for i in range(0, len(values), 2)]
+
+    level_weights = sum_pairs(weights)
+    result = [level_weights]
+    while len(level_weights) > 1:
+        level_weights = sum_pairs(level_weights)
+        result.append(level_weights)
+    return result[::-1]
+
+
+def get_gbt_model_from_catboost(booster: Any) -> Any:
+    if not booster.is_fitted():
         raise RuntimeError("Model should be fitted before exporting to daal4py.")
 
-    if model_data is None:
-        model_data = get_catboost_params(model)
+    model = CatBoostModelData(get_catboost_params(booster))
 
-    if "categorical_features" in model_data["features_info"]:
+    if model.has_categorical_features:
         raise NotImplementedError(
             "Categorical features are not supported in daal4py Gradient Boosting Trees"
         )
 
-    n_features = len(model_data["features_info"]["float_features"])
-
-    is_symmetric_tree = (
-        model_data["model_info"]["params"]["tree_learner_options"]["grow_policy"]
-        == "SymmetricTree"
-    )
-
-    if is_symmetric_tree:
-        n_iterations = len(model_data["oblivious_trees"])
-    else:
-        n_iterations = len(model_data["trees"])
-
-    n_classes = 0
-
-    if "class_params" in model_data["model_info"]:
-        is_classification = True
-        n_classes = len(model_data["model_info"]["class_params"]["class_to_label"])
+    if model.is_classification:
         mb = gbt_clf_model_builder(
-            n_features=n_features, n_iterations=n_iterations, n_classes=n_classes
+            n_features=model.n_features,
+            n_iterations=model.n_iterations,
+            n_classes=model.n_classes,
         )
     else:
-        is_classification = False
-        mb = gbt_reg_model_builder(n_features, n_iterations)
-
-    splits = []
+        mb = gbt_reg_model_builder(
+            n_features=model.n_features, n_iterations=model.n_iterations
+        )
 
     # Create splits array (all splits are placed sequentially)
-    for feature in model_data["features_info"]["float_features"]:
+    splits = []
+    for feature in model.float_features:
         if feature["borders"]:
             for feature_border in feature["borders"]:
                 splits.append(
                     {"feature_index": feature["feature_index"], "value": feature_border}
                 )
 
-    if not is_classification:
-        bias = model_data["scale_and_bias"][1][0] / n_iterations
-        scale = model_data["scale_and_bias"][0]
-    else:
-        bias = 0
-        scale = 1
-
     trees_explicit = []
     tree_symmetric = []
 
-    if (
-        model_data["model_info"]["params"]["data_processing_options"][
-            "float_features_binarization"
-        ]["nan_mode"]
-        == "Min"
-    ):
-        default_left = 1
+    if model.is_symmetric_tree:
+        for tree in model.oblivious_trees:
+            cur_tree_depth = len(tree.get("splits", []))
+            tree_symmetric.append((tree, cur_tree_depth))
     else:
-        default_left = 0
-
-    for tree_num in range(n_iterations):
-        if is_symmetric_tree:
-            if model_data["oblivious_trees"][tree_num]["splits"] is not None:
-                # Tree has more than 1 node
-                cur_tree_depth = len(model_data["oblivious_trees"][tree_num]["splits"])
-            else:
-                cur_tree_depth = 0
-
-            tree_symmetric.append(
-                (model_data["oblivious_trees"][tree_num], cur_tree_depth)
-            )
-        else:
+        for tree in model.trees:
             n_nodes = 1
+            if "split" not in tree:
+                # handle leaf node
+                values = __get_value_as_list(tree)
+                root_node = CatBoostNode(value=[value * model.scale for value in values])
+                continue
             # Check if node is a leaf (in case of stump)
-            if "split" in model_data["trees"][tree_num]:
+            if "split" in tree:
                 # Get number of trees and splits info via BFS
                 # Create queue
                 nodes_queue = []
-                root_node = CatBoostNode(
-                    split=splits[model_data["trees"][tree_num]["split"]["split_index"]]
-                )
-                nodes_queue.append((model_data["trees"][tree_num], root_node))
+                root_node = CatBoostNode(split=splits[tree["split"]["split_index"]])
+                nodes_queue.append((tree, root_node))
                 while nodes_queue:
                     cur_node_data, cur_node = nodes_queue.pop(0)
                     if "value" in cur_node_data:
-                        if isinstance(cur_node_data["value"], list):
-                            cur_node.value = [value for value in cur_node_data["value"]]
-                        else:
-                            cur_node.value = [cur_node_data["value"] * scale + bias]
+                        cur_node.value = __get_value_as_list(cur_node_data)
                     else:
                         cur_node.split = splits[cur_node_data["split"]["split_index"]]
                         left_node = CatBoostNode()
@@ -511,14 +566,10 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                         n_nodes += 2
             else:
                 root_node = CatBoostNode()
-                if is_classification and n_classes > 2:
-                    root_node.value = [
-                        value * scale for value in model_data["trees"][tree_num]["value"]
-                    ]
+                if model.is_classification and model.n_classes > 2:
+                    root_node.value = [value * model.scale for value in tree["value"]]
                 else:
-                    root_node.value = [
-                        model_data["trees"][tree_num]["value"] * scale + bias
-                    ]
+                    root_node.value = [tree["value"] * model.scale + model.bias]
             trees_explicit.append((root_node, n_nodes))
 
     tree_id = []
@@ -526,58 +577,71 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
     count = 0
 
     # Only 1 tree for each iteration in case of regression or binary classification
-    if not is_classification or n_classes == 2:
+    if not model.is_classification or model.n_classes == 2:
         n_tree_each_iter = 1
     else:
-        n_tree_each_iter = n_classes
+        n_tree_each_iter = model.n_classes
 
-    # Create id for trees (for the right order in modelbuilder)
-    for i in range(n_iterations):
-        for c in range(n_tree_each_iter):
-            if is_symmetric_tree:
+    shap_ready = False
+
+    # Create id for trees (for the right order in model builder)
+    for i in range(model.n_iterations):
+        for _ in range(n_tree_each_iter):
+            if model.is_symmetric_tree:
                 n_nodes = 2 ** (tree_symmetric[i][1] + 1) - 1
             else:
                 n_nodes = trees_explicit[i][1]
 
-            if is_classification and n_classes > 2:
+            if model.is_classification and model.n_classes > 2:
                 tree_id.append(mb.create_tree(n_nodes, class_label))
                 count += 1
-                if count == n_iterations:
+                if count == model.n_iterations:
                     class_label += 1
                     count = 0
 
-            elif is_classification:
+            elif model.is_classification:
                 tree_id.append(mb.create_tree(n_nodes, 0))
             else:
                 tree_id.append(mb.create_tree(n_nodes))
 
-    if is_symmetric_tree:
+    if model.is_symmetric_tree:
         for class_label in range(n_tree_each_iter):
-            for i in range(n_iterations):
+            for i in range(model.n_iterations):
+                shap_ready = True  # this code branch provides all info for SHAP values
                 cur_tree_info = tree_symmetric[i][0]
                 cur_tree_id = tree_id[i * n_tree_each_iter + class_label]
                 cur_tree_leaf_val = cur_tree_info["leaf_values"]
+                cur_tree_leaf_weights = cur_tree_info["leaf_weights"]
                 cur_tree_depth = tree_symmetric[i][1]
-
                 if cur_tree_depth == 0:
-                    mb.add_leaf(tree_id=cur_tree_id, response=cur_tree_leaf_val[0])
+                    mb.add_leaf(
+                        tree_id=cur_tree_id,
+                        response=cur_tree_leaf_val[0],
+                        cover=cur_tree_leaf_weights[0],
+                    )
                 else:
                     # One split used for the whole level
                     cur_level_split = splits[
                         cur_tree_info["splits"][cur_tree_depth - 1]["split_index"]
                     ]
+                    cur_tree_weights_per_level = __calc_node_weights_from_leaf_weights(
+                        cur_tree_leaf_weights
+                    )
+                    root_weight = cur_tree_weights_per_level[0][0]
                     root_id = mb.add_split(
                         tree_id=cur_tree_id,
                         feature_index=cur_level_split["feature_index"],
                         feature_value=cur_level_split["value"],
-                        default_left=default_left,
-                        cover=0.0,
+                        default_left=model.default_left,
+                        cover=root_weight,
                     )
                     prev_level_nodes = [root_id]
 
                     # Iterate over levels, splits in json are reversed (root split is the last)
                     for cur_level in range(cur_tree_depth - 2, -1, -1):
                         cur_level_nodes = []
+                        next_level_weights = cur_tree_weights_per_level[cur_level + 1]
+                        cur_level_node_index = 0
                         for cur_parent in prev_level_nodes:
                             cur_level_split = splits[
                                 cur_tree_info["splits"][cur_level]["split_index"]
@@ -588,44 +652,47 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 position=0,
                                 feature_index=cur_level_split["feature_index"],
                                 feature_value=cur_level_split["value"],
-                                default_left=default_left,
-                                cover=0.0,
+                                default_left=model.default_left,
+                                cover=next_level_weights[cur_level_node_index],
                             )
+                            # cur_level_node_index += 1
                             cur_right_node = mb.add_split(
                                 tree_id=cur_tree_id,
                                 parent_id=cur_parent,
                                 position=1,
                                 feature_index=cur_level_split["feature_index"],
                                 feature_value=cur_level_split["value"],
-                                default_left=default_left,
-                                cover=0.0,
+                                default_left=model.default_left,
+                                cover=next_level_weights[cur_level_node_index],
                             )
+                            # cur_level_node_index += 1
                             cur_level_nodes.append(cur_left_node)
                             cur_level_nodes.append(cur_right_node)
                         prev_level_nodes = cur_level_nodes
 
                     # Different storing format for leaves
-                    if not is_classification or n_classes == 2:
+                    if not model.is_classification or model.n_classes == 2:
                         for last_level_node_num in range(len(prev_level_nodes)):
                             mb.add_leaf(
                                 tree_id=cur_tree_id,
                                 response=cur_tree_leaf_val[2 * last_level_node_num]
-                                * scale
-                                + bias,
+                                * model.scale
+                                + model.bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=0,
-                                cover=0.0,
+                                cover=cur_tree_leaf_weights[2 * last_level_node_num],
                             )
                             mb.add_leaf(
                                 tree_id=cur_tree_id,
                                 response=cur_tree_leaf_val[2 * last_level_node_num + 1]
-                                * scale
-                                + bias,
+                                * model.scale
+                                + model.bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=1,
-                                cover=0.0,
+                                cover=cur_tree_leaf_weights[2 * last_level_node_num + 1],
                             )
                     else:
+                        shap_ready = False
                         for last_level_node_num in range(len(prev_level_nodes)):
                             left_index = (
                                 2 * last_level_node_num * n_tree_each_iter + class_label
@@ -635,21 +702,24 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                             ) * n_tree_each_iter + class_label
                             mb.add_leaf(
                                 tree_id=cur_tree_id,
-                                response=cur_tree_leaf_val[left_index] * scale + bias,
+                                response=cur_tree_leaf_val[left_index] * model.scale
+                                + model.bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=0,
                                 cover=0.0,
                             )
                             mb.add_leaf(
                                 tree_id=cur_tree_id,
-                                response=cur_tree_leaf_val[right_index] * scale + bias,
+                                response=cur_tree_leaf_val[right_index] * model.scale
+                                + model.bias,
                                 parent_id=prev_level_nodes[last_level_node_num],
                                 position=1,
                                 cover=0.0,
                             )
     else:
+        shap_ready = False
         for class_label in range(n_tree_each_iter):
-            for i in range(n_iterations):
+            for i in range(model.n_iterations):
                 root_node = trees_explicit[i][0]
 
                 cur_tree_id = tree_id[i * n_tree_each_iter + class_label]
@@ -659,7 +729,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                         tree_id=cur_tree_id,
                         feature_index=root_node.split["feature_index"],
                         feature_value=root_node.split["value"],
-                        default_left=default_left,
+                        default_left=model.default_left,
                         cover=0.0,
                     )
                     nodes_queue = [(root_node, root_id)]
@@ -674,7 +744,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 position=0,
                                 feature_index=left_node.split["feature_index"],
                                 feature_value=left_node.split["value"],
-                                default_left=default_left,
+                                default_left=model.default_left,
                                 cover=0.0,
                             )
                             nodes_queue.append((left_node, left_node_id))
@@ -695,7 +765,7 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                                 position=1,
                                 feature_index=right_node.split["feature_index"],
                                 feature_value=right_node.split["value"],
-                                default_left=default_left,
+                                default_left=model.default_left,
                                 cover=0.0,
                             )
                             nodes_queue.append((right_node, right_node_id))
@@ -716,5 +786,12 @@ def get_gbt_model_from_catboost(model: Any, model_data=None) -> Any:
                         cover=0.0,
                     )
 
-    warn("Models converted from CatBoost cannot be used for SHAP value calculation")
-    return mb.model(0.0)
+    if not shap_ready:
+        warn("Converted models of this type do not support SHAP value calculation")
+    else:
+        warn(
+            "CatBoost SHAP values seem to be incorrect. "
+            "Values from converted models will differ. "
+            "See https://github.com/catboost/catboost/issues/2556 for more details."
+        )
+    return mb.model(base_score=0.0)

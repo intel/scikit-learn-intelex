@@ -9,9 +9,9 @@ doc/                          @maria-Petrova @napetrov @aepanchi @Alexsandruss
 requirements-doc.txt          @maria-Petrova @napetrov @aepanchi @Alexsandruss
 
 # DPC++
-**/oneapi/                    @Alexsandruss @samir-nasibli @KulikovNikita
-onedal/                       @Alexsandruss @samir-nasibli @KulikovNikita
-sklearnex/                    @Alexsandruss @samir-nasibli @KulikovNikita
+**/oneapi/                    @Alexsandruss @samir-nasibli
+onedal/                       @Alexsandruss @samir-nasibli
+sklearnex/                    @Alexsandruss @samir-nasibli
 
 # Examples
 examples/                     @maria-Petrova @Alexsandruss @samir-nasibli @napetrov
@@ -19,6 +19,7 @@ examples/                     @maria-Petrova @Alexsandruss @samir-nasibli @napet
 # Dependencies
 setup.py                      @napetrov @Alexsandruss @samir-nasibli
 requirements*                 @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
+dependencies-dev              @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
 conda-recipe/                 @napetrov @Alexsandruss
 
 # Model builders
