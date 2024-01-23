@@ -164,5 +164,4 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
     fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
     predict.__doc__ = sklearn_LocalOutlierFactor.predict.__doc__
-    score_samples.__doc__ = sklearn_LocalOutlierFactor.score_samples.__doc__
     kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
