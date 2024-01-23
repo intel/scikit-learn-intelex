@@ -25,37 +25,57 @@ from onedal.tests.utils._dataframes_support import (
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import_incremental_covariance(dataframe, queue):
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
-    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    result = IncrementalEmpiricalCovariance(batch_size=1).fit(X_df)
+    X = X.astype(dtype)
+    X_split = np.array_split(X, 2)
+    inccov = IncrementalEmpiricalCovariance()
+
+    for i in range(2):
+        X_split_df = _convert_to_dataframe(
+            X_split[i], sycl_queue=queue, target_df=dataframe
+        )
+        result = inccov.partial_fit(X_split_df)
+
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
 
+    X = np.array([[1, 2], [3, 6]])
+    X = X.astype(dtype)
     X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance()
+
     for i in range(2):
         X_split_df = _convert_to_dataframe(
             X_split[i], sycl_queue=queue, target_df=dataframe
         )
         result = inccov.partial_fit(X_split_df)
+
+    expected_covariance = np.array([[1, 2], [2, 4]])
+    expected_means = np.array([2, 4])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
 
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("batch_size", [2, 4])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sklearnex_fit_on_gold_data(dataframe, queue, batch_size, dtype):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
     X = np.array([[0, 1, 2, 3], [0, -1, -2, -3], [0, 1, 2, 3], [0, 1, 2, 3]])
-    X_split = np.array_split(X, 2)
-    inccov = IncrementalEmpiricalCovariance()
-    for i in range(2):
-        X_split_df = _convert_to_dataframe(
-            X_split[i], sycl_queue=queue, target_df=dataframe
-        )
-        result = inccov.partial_fit(X_split_df)
+    X = X.astype(dtype)
+    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    inccov = IncrementalEmpiricalCovariance(batch_size=batch_size)
+
+    result = inccov.fit(X_df)
 
     expected_covariance = np.array(
         [[0, 0, 0, 0], [0, 0.75, 1.5, 2.25], [0, 1.5, 3, 4.5], [0, 2.25, 4.5, 6.75]]
@@ -64,3 +84,60 @@ def test_sklearnex_import_incremental_covariance(dataframe, queue):
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
+@pytest.mark.parametrize("row_count", [100, 1000, 2000])
+@pytest.mark.parametrize("column_count", [10, 100, 200])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sklearnex_partial_fit_on_random_data(
+    dataframe, queue, num_batches, row_count, column_count, dtype
+):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
+    X = X.astype(dtype)
+    X_split = np.array_split(X, num_batches)
+    inccov = IncrementalEmpiricalCovariance()
+
+    for i in range(num_batches):
+        X_split_df = _convert_to_dataframe(
+            X_split[i], sycl_queue=queue, target_df=dataframe
+        )
+        result = inccov.partial_fit(X_split_df)
+
+    expected_covariance = np.cov(X.T, bias=1)
+    expected_means = np.mean(X, axis=0)
+
+    assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
+    assert_allclose(expected_means, result.location_, atol=1e-6)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
+@pytest.mark.parametrize("row_count", [100, 1000, 2000])
+@pytest.mark.parametrize("column_count", [10, 100, 200])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sklearnex_fit_on_random_data(
+    dataframe, queue, num_batches, row_count, column_count, dtype
+):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
+    X = X.astype(dtype)
+    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    batch_size = row_count // num_batches
+    inccov = IncrementalEmpiricalCovariance(batch_size=batch_size)
+
+    result = inccov.fit(X_df)
+
+    expected_covariance = np.cov(X.T, bias=1)
+    expected_means = np.mean(X, axis=0)
+
+    assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
+    assert_allclose(expected_means, result.location_, atol=1e-6)

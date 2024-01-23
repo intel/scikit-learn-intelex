@@ -97,8 +97,11 @@ def test_on_gold_data_biased(queue, dtype):
 @pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
 @pytest.mark.parametrize("row_count", [100, 1000, 2000])
 @pytest.mark.parametrize("column_count", [10, 100, 200])
+@pytest.mark.parametrize("bias", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_on_random_data_unbiased(queue, num_batches, row_count, column_count, dtype):
+def test_partial_fit_on_random_data(
+    queue, num_batches, row_count, column_count, bias, dtype
+):
     from onedal.covariance import IncrementalEmpiricalCovariance
 
     seed = 77
@@ -106,39 +109,13 @@ def test_on_random_data_unbiased(queue, num_batches, row_count, column_count, dt
     X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
     X = X.astype(dtype)
     X_split = np.array_split(X, num_batches)
-    inccov = IncrementalEmpiricalCovariance()
+    inccov = IncrementalEmpiricalCovariance(bias=bias)
 
     for i in range(num_batches):
         inccov.partial_fit(X_split[i], queue=queue)
     result = inccov.finalize_fit()
 
-    expected_covariance = np.cov(X.T, bias=0)
-    expected_means = np.mean(X, axis=0)
-
-    assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
-    assert_allclose(expected_means, result.location_, atol=1e-6)
-
-
-@pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
-@pytest.mark.parametrize("row_count", [100, 1000, 2000])
-@pytest.mark.parametrize("column_count", [10, 100, 200])
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_on_random_data_biased(queue, num_batches, row_count, column_count, dtype):
-    from onedal.covariance import IncrementalEmpiricalCovariance
-
-    seed = 77
-    gen = np.random.default_rng(seed)
-    X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
-    X = X.astype(dtype)
-    X_split = np.array_split(X, num_batches)
-    inccov = IncrementalEmpiricalCovariance(bias=True)
-
-    for i in range(num_batches):
-        inccov.partial_fit(X_split[i], queue=queue)
-    result = inccov.finalize_fit()
-
-    expected_covariance = np.cov(X.T, bias=1)
+    expected_covariance = np.cov(X.T, bias=bias)
     expected_means = np.mean(X, axis=0)
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
