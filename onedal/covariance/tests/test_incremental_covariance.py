@@ -22,16 +22,19 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 @pytest.mark.parametrize("queue", get_queues())
-def test_onedal_import_covariance(queue):
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_on_gold_data_unbiased(queue, dtype):
     from onedal.covariance import IncrementalEmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
     X_split = np.array_split(X, 2)
+    X = X.astype(dtype)
     inccov = IncrementalEmpiricalCovariance()
+
     for i in range(2):
         inccov.partial_fit(X_split[i], queue=queue)
-
     result = inccov.finalize_fit()
+    
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 
@@ -40,26 +43,101 @@ def test_onedal_import_covariance(queue):
 
     X = np.array([[1, 2], [3, 6]])
     X_split = np.array_split(X, 2)
+    X = X.astype(dtype)
     inccov = IncrementalEmpiricalCovariance()
+
     for i in range(2):
         inccov.partial_fit(X_split[i], queue=queue)
-
     result = inccov.finalize_fit()
+
     expected_covariance = np.array([[2, 4], [4, 8]])
     expected_means = np.array([2, 4])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
 
-    X = np.array([[1, 2], [3, 6]])
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_on_gold_data_biased(queue, dtype):
+    from onedal.covariance import IncrementalEmpiricalCovariance
+
+    X = np.array([[0, 1], [0, 1]])
+    X = X.astype(dtype)
     X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance(bias=True)
+
     for i in range(2):
         inccov.partial_fit(X_split[i], queue=queue)
-
     result = inccov.finalize_fit()
+
+    expected_covariance = np.array([[0, 0], [0, 0]])
+    expected_means = np.array([0, 1])
+
+    assert_allclose(expected_covariance, result.covariance_)
+    assert_allclose(expected_means, result.location_)
+
+    X = np.array([[1, 2], [3, 6]])
+    X = X.astype(dtype)
+    X_split = np.array_split(X, 2)
+    inccov = IncrementalEmpiricalCovariance(bias=True)
+
+    for i in range(2):
+        inccov.partial_fit(X_split[i], queue=queue)
+    result = inccov.finalize_fit()
+
     expected_covariance = np.array([[1, 2], [2, 4]])
     expected_means = np.array([2, 4])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
+
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("num_batches", [2, 4, 6, 8 ,10])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_on_random_data_unbiased(queue, num_batches, dtype):
+    from onedal.covariance import IncrementalEmpiricalCovariance
+
+    seed = 77
+    size = (19999, 31)
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=size)
+    X = X.astype(dtype)
+    X_split = np.array_split(X, num_batches)
+    inccov = IncrementalEmpiricalCovariance()
+
+    for i in range(num_batches):
+        inccov.partial_fit(X_split[i], queue=queue)
+    result = inccov.finalize_fit()
+
+    expected_covariance = np.cov(X.T, bias=0)
+    expected_means = np.mean(X, axis=0)
+
+    assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
+    assert_allclose(expected_means, result.location_, atol=1e-6)
+
+
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_on_random_data_biased(queue, num_batches, dtype):
+    from onedal.covariance import IncrementalEmpiricalCovariance
+
+    seed = 77
+    size = (19999, 31)
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=size)
+
+    X = X.astype(dtype)
+    X_split = np.array_split(X, num_batches)
+    inccov = IncrementalEmpiricalCovariance(bias=True)
+
+    for i in range(num_batches):
+        inccov.partial_fit(X_split[i], queue=queue)
+    result = inccov.finalize_fit()
+
+    expected_covariance = np.cov(X.T, bias=1)
+    expected_means = np.mean(X, axis=0)
+
+    assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
+    assert_allclose(expected_means, result.location_, atol=1e-6)
+    
