@@ -34,7 +34,7 @@ def test_on_gold_data_unbiased(queue, dtype):
     for i in range(2):
         inccov.partial_fit(X_split[i], queue=queue)
     result = inccov.finalize_fit()
-    
+
     expected_covariance = np.array([[0, 0], [0, 0]])
     expected_means = np.array([0, 1])
 
@@ -55,6 +55,7 @@ def test_on_gold_data_unbiased(queue, dtype):
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
+
 
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -91,8 +92,9 @@ def test_on_gold_data_biased(queue, dtype):
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
 
+
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("num_batches", [2, 4, 6, 8 ,10])
+@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_on_random_data_unbiased(queue, num_batches, dtype):
     from onedal.covariance import IncrementalEmpiricalCovariance
@@ -140,4 +142,3 @@ def test_on_random_data_biased(queue, num_batches, dtype):
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
-    
