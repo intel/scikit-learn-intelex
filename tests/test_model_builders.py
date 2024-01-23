@@ -151,6 +151,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        self.assertEqual(m.model_type, "xgboost")
         # XGBoost treats regression as 0 classes, LightGBM 1 class
         # For us, it does not make a difference and both are acceptable
         self.assertEqual(m.n_classes_, 0)
@@ -251,6 +252,7 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        self.assertEqual(m.model_type, "xgboost")
         self.assertEqual(m.n_classes_, self.n_classes)
         self.assertEqual(m.n_features_in_, 15)
         self.assertFalse(m._is_regression)
@@ -376,6 +378,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
+        self.assertEqual(m.model_type, "lightgbm")
         self.assertEqual(m.n_classes_, 1)
         self.assertEqual(m.n_features_in_, 10)
         self.assertTrue(m._is_regression)
@@ -438,6 +441,7 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
+        self.assertEqual(m.model_type, "lightgbm")
         self.assertEqual(m.n_classes_, 3)
         self.assertEqual(m.n_features_in_, 10)
         self.assertFalse(m._is_regression)
@@ -500,6 +504,7 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
+        self.assertEqual(m.model_type, "lightgbm")
         self.assertEqual(m.n_classes_, 2)
         self.assertEqual(m.n_features_in_, 10)
         self.assertFalse(m._is_regression)
@@ -571,6 +576,7 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.cb_model)
         self.assertTrue(hasattr(m, "daal_model_"))
         self.assertIsInstance(m.daal_model_, d4p._daal4py.gbt_regression_model)
+        self.assertEqual(m.model_type, "catboost")
         self.assertEqual(m.daal_model_.NumberOfFeatures, 10)
         self.assertEqual(m.daal_model_.NumberOfTrees, 25)
         self.assertEqual(m.n_features_in_, 10)
@@ -624,6 +630,7 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.cb_model)
         self.assertTrue(hasattr(m, "daal_model_"))
         self.assertIsInstance(m.daal_model_, d4p._daal4py.gbt_classification_model)
+        self.assertEqual(m.model_type, "catboost")
         self.assertEqual(m.daal_model_.NumberOfFeatures, 10)
         self.assertEqual(m.daal_model_.NumberOfTrees, 3 * 25)
         self.assertEqual(m.n_features_in_, 10)
