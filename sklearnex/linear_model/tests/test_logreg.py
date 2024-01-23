@@ -27,46 +27,67 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex import config_context
 
 
-def test_sklearnex_import_cpu():
-    from sklearnex.linear_model import LogisticRegression
-
-    X, y = load_iris(return_X_y=True)
-    logreg = LogisticRegression(random_state=0, max_iter=200).fit(X, y)
-    # assert "daal4py" in logreg.__module__
-    if daal_check_version((2024, "P", 1)):
-        assert "sklearnex" in logreg.__module__
-    else:
-        assert "daal4py" in logreg.__module__
-    assert_allclose(logreg.score(X, y), 0.9733, atol=1e-3)
-
-
-@pytest.mark.parametrize(
-    "dataframe,queue",
-    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
-)
-def test_sklearnex_import_gpu(dataframe, queue):
-    from sklearnex.linear_model import LogisticRegression
-
-    X, y = load_breast_cancer(return_X_y=True)
+def prepare_input(X, y, dataframe, queue):
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, train_size=0.8, random_state=42
     )
     X_train = _convert_to_dataframe(X_train, sycl_queue=queue, target_df=dataframe)
     y_train = _convert_to_dataframe(y_train, sycl_queue=queue, target_df=dataframe)
     X_test = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
+    return X_train, X_test, y_train, y_test
 
-    model = LogisticRegression(fit_intercept=True, solver="newton-cg")
-    model.fit(X_train, y_train)
-    y_pred = _as_numpy(model.predict(X_test))
+
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(device_filter_="cpu"),
+)
+def test_sklearnex_multiclass_classification(dataframe, queue):
+    from sklearnex.linear_model import LogisticRegression
+
+    X, y = load_iris(return_X_y=True)
+    X_train, X_test, y_train, y_test = prepare_input(X, y, dataframe, queue)
+
+    logreg = LogisticRegression(fit_intercept=True, solver="lbfgs", max_iter=200).fit(
+        X_train, y_train
+    )
+
     if daal_check_version((2024, "P", 1)):
-        assert "sklearnex" in model.__module__
+        assert "sklearnex" in logreg.__module__
     else:
-        assert "daal4py" in model.__module__
-    # in case dataframe='numpy' algorithm should fallback to sklearn
-    # as cpu method is not implemented in onedal
-    if dataframe != "numpy" and daal_check_version((2024, "P", 1)):
-        assert hasattr(model, "_onedal_estimator")
+        assert "daal4py" in logreg.__module__
+
+    y_pred = _as_numpy(logreg.predict(X_test))
+    assert accuracy_score(y_test, y_pred) > 0.99
+
+
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(),
+)
+def test_sklearnex_binary_classification(dataframe, queue):
+    from sklearnex.linear_model import LogisticRegression
+
+    X, y = load_breast_cancer(return_X_y=True)
+    X_train, X_test, y_train, y_test = prepare_input(X, y, dataframe, queue)
+
+    logreg = LogisticRegression(fit_intercept=True, solver="newton-cg", max_iter=100).fit(
+        X_train, y_train
+    )
+
+    if daal_check_version((2024, "P", 1)):
+        assert "sklearnex" in logreg.__module__
+    else:
+        assert "daal4py" in logreg.__module__
+    if (
+        dataframe != "numpy"
+        and queue is not None
+        and queue.sycl_device.is_gpu
+        and daal_check_version((2024, "P", 1))
+    ):
+        # fit was done on gpu
+        assert hasattr(logreg, "_onedal_estimator")
+
+    y_pred = _as_numpy(logreg.predict(X_test))
     assert accuracy_score(y_test, y_pred) > 0.95
