@@ -29,7 +29,7 @@ from .common import KNeighborsDispatchingBase
 from .knn_unsupervised import NearestNeighbors
 
 
-@control_n_jobs(decorated_methods=["fit", "_kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     __doc__ = (
         sklearn_LocalOutlierFactor.__doc__
@@ -75,7 +75,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         (
             self._distances_fit_X_,
             _neighbors_indices_fit_X_,
-        ) = self._onedal_estimator.kneighbors(n_neighbors=self.n_neighbors_, queue=queue)
+        ) = self._onedal_kneighbors(n_neighbors=self.n_neighbors_, queue=queue)
 
         # Sklearn includes a check for float32 at this point which may not be
         # necessary for onedal
@@ -144,29 +144,8 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     def predict(self, X=None):
         return self._predict(X)
 
-    # Only necessary to preserve dpnp and dpctl conformance, otherwise a copy
-    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
     @wrap_output_data
-    def score_samples(self, X):
-        check_is_fitted(self)
-        if sklearn_check_version("1.0") and X is not None:
-            self._check_feature_names(X, reset=False)
-        # done via private method to avoid wrap for dpnp and dpctl until end
-        distances_X, neighbors_indices_X = self._kneighbors(
-            X, n_neighbors=self.n_neighbors_
-        )
-
-        X_lrd = self._local_reachability_density(
-            distances_X,
-            neighbors_indices_X,
-        )
-
-        lrd_ratios_array = self._lrd[neighbors_indices_X] / X_lrd[:, np.newaxis]
-
-        # as bigger is better:
-        return -np.mean(lrd_ratios_array, axis=1)
-
-    def _kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
@@ -181,8 +160,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             n_neighbors,
             return_distance,
         )
-
-    kneighbors = wrap_output_data(_kneighbors)
 
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
     fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
