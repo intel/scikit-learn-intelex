@@ -16,8 +16,6 @@
 
 from .coordinate_descent import ElasticNet, Lasso
 from .linear import LinearRegression
-
-# from .logistic_path import LogisticRegression, logistic_regression_path
 from .logistic_regression import LogisticRegression
 from .ridge import Ridge
 
@@ -25,7 +23,6 @@ __all__ = [
     "Ridge",
     "LinearRegression",
     "LogisticRegression",
-    # "logistic_regression_path",
     "ElasticNet",
     "Lasso",
 ]
