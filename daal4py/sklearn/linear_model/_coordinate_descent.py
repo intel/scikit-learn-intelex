@@ -821,6 +821,9 @@ class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 
     if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {
+            **Lasso_original._parameter_constraints
+        }
 
         def __init__(
             self,
