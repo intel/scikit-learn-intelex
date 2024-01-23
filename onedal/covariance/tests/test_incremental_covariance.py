@@ -95,14 +95,15 @@ def test_on_gold_data_biased(queue, dtype):
 
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
+@pytest.mark.parametrize("row_count", [100, 1000, 2000])
+@pytest.mark.parametrize("column_count", [10, 100, 200])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_on_random_data_unbiased(queue, num_batches, dtype):
+def test_on_random_data_unbiased(queue, num_batches, row_count, column_count, dtype):
     from onedal.covariance import IncrementalEmpiricalCovariance
 
     seed = 77
-    size = (19999, 31)
     gen = np.random.default_rng(seed)
-    X = gen.uniform(low=-0.3, high=+0.7, size=size)
+    X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
     X = X.astype(dtype)
     X_split = np.array_split(X, num_batches)
     inccov = IncrementalEmpiricalCovariance()
@@ -120,15 +121,15 @@ def test_on_random_data_unbiased(queue, num_batches, dtype):
 
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
+@pytest.mark.parametrize("row_count", [100, 1000, 2000])
+@pytest.mark.parametrize("column_count", [10, 100, 200])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_on_random_data_biased(queue, num_batches, dtype):
+def test_on_random_data_biased(queue, num_batches, row_count, column_count, dtype):
     from onedal.covariance import IncrementalEmpiricalCovariance
 
     seed = 77
-    size = (19999, 31)
     gen = np.random.default_rng(seed)
-    X = gen.uniform(low=-0.3, high=+0.7, size=size)
-
+    X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
     X = X.astype(dtype)
     X_split = np.array_split(X, num_batches)
     inccov = IncrementalEmpiricalCovariance(bias=True)
