@@ -63,10 +63,10 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
             if hasattr(estimator, i) and callable(getattr(estimator, i))
         }
 
-        for i in funcs:
-            assert hasattr(funcs[i], "__onedal_n_jobs_decorated__") == (
-                i in estimator._n_jobs_supported_onedal_methods
-            ), f"{estimator}.{i} n_jobs decoration does not match {estimator} n_job supported methods"
+        for func_name, func in funcs.items():
+            assert hasattr(func, "__onedal_n_jobs_decorated__") == (
+                func_name in estimator._n_jobs_supported_onedal_methods
+            ), f"{estimator}.{func_name} n_jobs decoration does not match {estimator} n_jobs supported methods"
 
     caplog.set_level(logging.DEBUG, logger="sklearnex")
     estimator_kwargs = {"n_jobs": n_jobs}
