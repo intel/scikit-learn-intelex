@@ -112,7 +112,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm="by_default")
         self._partial_result = _backend.basic_statistics.compute.partial_compute_result()
 
-    def partial_fit(self, data, weights=None, queue=None):
+    def partial_fit(self, X, weights=None, queue=None):
         """
         Computes partial data for basic statistics
         from data batch X and saves it to `_partial_result`.
@@ -132,18 +132,18 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             Returns the instance itself.
         """
         if not hasattr(self, "_policy"):
-            self._policy = self._get_policy(queue, data)
+            self._policy = self._get_policy(queue, X)
         if not hasattr(self, "_onedal_params"):
-            dtype = get_dtype(data)
+            dtype = get_dtype(X)
             self._onedal_params = self._get_onedal_params(dtype)
 
-        data, weights = _convert_to_supported(self._policy, data, weights)
-        data_table, weights_table = to_table(data, weights)
+        X, weights = _convert_to_supported(self._policy, X, weights)
+        X_table, weights_table = to_table(X, weights)
         self._partial_result = _backend.basic_statistics.compute.partial_compute(
             self._policy,
             self._onedal_params,
             self._partial_result,
-            data_table,
+            X_table,
             weights_table,
         )
 
