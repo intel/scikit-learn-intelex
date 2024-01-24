@@ -21,7 +21,7 @@ from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.logistic_path import (
     LogisticRegression as LogisticRegression_daal4py,
 )
-from daal4py.sklearn.linear_model.logistic_path import daal4py_predict
+from daal4py.sklearn.linear_model.logistic_path import daal4py_fit, daal4py_predict
 
 
 class BaseLogisticRegression(ABC):
@@ -98,7 +98,7 @@ if daal_check_version((2024, "P", 1)):
                 l1_ratio=l1_ratio,
             )
 
-        _onedal_cpu_fit = LogisticRegression_daal4py.fit
+        _onedal_cpu_fit = daal4py_fit
 
         def fit(self, X, y, sample_weight=None):
             if sklearn_check_version("1.0"):
