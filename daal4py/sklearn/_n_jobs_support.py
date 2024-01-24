@@ -234,7 +234,7 @@ def control_n_jobs(decorated_methods: list = []):
             else:
                 warn(
                     f"{original_class.__name__}.{method_name} already has "
-                    "n_jobs support and will not be decorated."
+                    "oneDAL n_jobs support and will not be decorated."
                 )
 
         return original_class
