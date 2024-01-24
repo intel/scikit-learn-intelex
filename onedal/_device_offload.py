@@ -58,7 +58,7 @@ def _run_on_device(func, obj=None, *args, **kwargs):
         return func(obj, *args, **kwargs)
     return func(*args, **kwargs)
 
-\
+
 def support_usm_ndarray(freefunc=False):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
