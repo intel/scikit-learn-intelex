@@ -14,13 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
+import dpctl
 import numpy as np
 
 from sklearnex.basic_statistics import IncrementalBasicStatistics
 
 incbs = IncrementalBasicStatistics(result_options=["mean", "max", "sum"])
 
-# We do partial_fit for each batch and then print final result
+# We do partial_fit for each batch and then print final result.
 X_1 = np.array([[0, 1], [0, 1]])
 result = incbs.partial_fit(X_1)
 
@@ -35,9 +36,22 @@ print(f"Max:\n{result.max}")
 print(f"Sum:\n{result.sum}")
 
 # We put the whole data to fit method, it is split automatically and then
-# partial_fit is called for each batch
-incbs = IncrementalBasicStatistics(result_options=["mean", "max", "sum"])
+# partial_fit is called for each batch.
+incbs = IncrementalBasicStatistics(result_options=["mean", "max", "sum"], batch_size=3)
 X = np.array([[0, 1], [0, 1], [1, 2], [1, 1], [1, 2], [2, 3]])
+result = incbs.fit(X)
+
+print(f"Mean:\n{result.mean}")
+print(f"Max:\n{result.max}")
+print(f"Sum:\n{result.sum}")
+
+# We create GPU SyclQueue and then put data to dpctl tensor using
+# the queue. It allows us to do computation on GPU.
+incbs = IncrementalBasicStatistics(result_options=["mean", "max", "sum"], batch_size=3)
+queue = dpctl.SyclQueue("gpu")
+X = dpctl.tensor.asarray(
+    [[0, 1], [0, 1], [1, 2], [1, 1], [1, 2], [2, 3]], sycl_queue=queue
+)
 result = incbs.fit(X)
 
 print(f"Mean:\n{result.mean}")
