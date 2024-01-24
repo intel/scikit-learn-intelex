@@ -30,7 +30,6 @@ class BaseEmpiricalCovariance(metaclass=ABCMeta):
     def __init__(self, method="dense", bias=False):
         self.method = method
         self.bias = bias
-        self._module = _backend.covariance
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -97,9 +96,9 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = self._module.compute(policy, params, hparams.backend, to_table(X))
+            result = _backend.covariance.compute(policy, params, hparams.backend, to_table(X))
         else:
-            result = self._module.compute(policy, params, to_table(X))
+            result = _backend.covariance.compute(policy, params, to_table(X))
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

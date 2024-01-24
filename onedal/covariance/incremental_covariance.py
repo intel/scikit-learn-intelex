@@ -43,13 +43,13 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         X = _convert_to_supported(self._policy, X)
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
-        self._partial_result = self._module.partial_compute(
+        self._partial_result = _backend.covariance.partial_compute(
             self._policy, params, self._partial_result, table_X
         )
 
     def finalize_fit(self, queue=None):
         params = self._get_onedal_params(self._dtype)
-        result = self._module.finalize_compute(self._policy, params, self._partial_result)
+        result = _backend.covariance.finalize_compute(self._policy, params, self._partial_result)
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:
