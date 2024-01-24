@@ -1020,6 +1020,9 @@ if sklearn_check_version("0.24"):
             -----
             The SAGA solver supports both float64 and float32 bit arrays.
             """
+            return self.daal4py_fit(self, X, y, sample_weight)
+            
+        def daal4py_fit(self, X, y, sample_weight=None):
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
