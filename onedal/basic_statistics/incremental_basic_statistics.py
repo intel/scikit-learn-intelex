@@ -30,7 +30,6 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def __init__(self, result_options, algorithm):
         self.options = result_options
         self.algorithm = algorithm
-        self._module = _backend.basic_statistics.compute
 
     @staticmethod
     def get_all_result_options():
@@ -111,7 +110,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
     def __init__(self, result_options="all"):
         super().__init__(result_options, algorithm="by_default")
-        self._partial_result = self._module.partial_compute_result()
+        self._partial_result = _backend.basic_statistics.compute.partial_compute_result()
 
     def partial_fit(self, data, weights=None, queue=None):
         """
@@ -140,7 +139,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
         data, weights = _convert_to_supported(self._policy, data, weights)
         data_table, weights_table = to_table(data, weights)
-        self._partial_result = self._module.partial_compute(
+        self._partial_result = _backend.basic_statistics.compute.partial_compute(
             self._policy,
             self._onedal_params,
             self._partial_result,
@@ -163,7 +162,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
-        result = self._module.finalize_compute(
+        result = _backend.basic_statistics.compute.finalize_compute(
             self._policy, self._onedal_params, self._partial_result
         )
         options = self._get_result_options(self.options).split("|")
