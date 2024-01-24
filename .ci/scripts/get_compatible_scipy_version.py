@@ -20,8 +20,7 @@ from sys import version_info as python_version
 from daal4py.sklearn._utils import sklearn_check_version
 
 if sklearn_check_version("1.3") or python_version[1] > 11:
-    print("Scipy version is not specified for this sklearn/python version.", file=stderr)
-    print("scipy")
+    print("scipy==1.10.*")
 elif sklearn_check_version("1.2") or python_version[1] > 10:
     print("scipy==1.9.*")
 elif sklearn_check_version("1.1") or python_version[1] > 8:
