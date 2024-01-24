@@ -776,6 +776,22 @@ def __logistic_regression_path(
     return np.array(coefs), np.array(Cs), n_iter
 
 
+def daal4py_fit(self, X, y, sample_weight=None):
+    if sklearn_check_version("1.0"):
+        self._check_feature_names(X, reset=True)
+    if sklearn_check_version("1.2"):
+        self._validate_params()
+    which, what = logistic_module, "_logistic_regression_path"
+    replacer = logistic_regression_path
+    descriptor = getattr(which, what, None)
+    setattr(which, what, replacer)
+    try:
+        clf = LogisticRegression_original.fit(self, X, y, sample_weight)
+    finally:
+        setattr(which, what, descriptor)
+    return clf
+
+
 def daal4py_predict(self, X, resultsToEvaluate):
     check_is_fitted(self)
     if sklearn_check_version("1.0"):
@@ -1020,22 +1036,7 @@ if sklearn_check_version("0.24"):
             -----
             The SAGA solver supports both float64 and float32 bit arrays.
             """
-            return self.daal4py_fit(X, y, sample_weight)
-            
-        def daal4py_fit(self, X, y, sample_weight=None):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            if sklearn_check_version("1.2"):
-                self._validate_params()
-            which, what = logistic_module, "_logistic_regression_path"
-            replacer = logistic_regression_path
-            descriptor = getattr(which, what, None)
-            setattr(which, what, replacer)
-            try:
-                clf = LogisticRegression_original.fit(self, X, y, sample_weight)
-            finally:
-                setattr(which, what, descriptor)
-            return clf
+            return daal4py_fit(self, X, y, sample_weight)
 
         @support_usm_ndarray()
         def predict(self, X):
