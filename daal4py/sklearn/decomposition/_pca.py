@@ -55,6 +55,9 @@ else:
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {**PCA_original._parameter_constraints}
+
     def __init__(
         self,
         n_components=None,
