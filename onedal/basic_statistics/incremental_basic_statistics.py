@@ -68,11 +68,70 @@ class BaseBasicStatistics(metaclass=ABCMeta):
 
 
 class IncrementalBasicStatistics(BaseBasicStatistics):
-    def __init__(self, result_options="all", *, algorithm="by_default", **kwargs):
-        super().__init__(result_options, algorithm)
+    """
+    Incremental estimator for basic statistics based on oneDAL implementation.
+    Allows to compute basic statistics if data are splitted into batches.
+    Parameters
+    ----------
+    result_options: string or list, default='all'
+        List of statistics to compute
+
+    Attributes (are existing only if corresponding result option exists)
+    ----------
+        min : ndarray of shape (n_features,)
+            Minimum of each feature over all samples.
+
+        max : ndarray of shape (n_features,)
+            Maximum of each feature over all samples.
+
+        sum : ndarray of shape (n_features,)
+            Sum of each feature over all samples.
+
+        mean : ndarray of shape (n_features,)
+            Mean of each feature over all samples.
+
+        variance : ndarray of shape (n_features,)
+            Variance of each feature over all samples.
+
+        variation : ndarray of shape (n_features,)
+            Variation of each feature over all samples.
+
+        sum_squares : ndarray of shape (n_features,)
+            Sum of squares for each feature over all samples.
+
+        standard_deviation : ndarray of shape (n_features,)
+            Standard deviation of each feature over all samples.
+
+        sum_squares_centered : ndarray of shape (n_features,)
+            Centered sum of squares for each feature over all samples.
+
+        second_order_raw_moment : ndarray of shape (n_features,)
+            Second order moment of each feature over all samples.
+    """
+
+    def __init__(self, result_options="all"):
+        super().__init__(result_options, algorithm="by_default")
         self._partial_result = self._module.partial_compute_result()
 
     def partial_fit(self, data, weights=None, queue=None):
+        """
+        Computes partial data for basic statistics
+        from data batch X and saves it to `_partial_result`.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data batch, where `n_samples` is the number of samples
+            in the batch, and `n_features` is the number of features.
+
+        queue : dpctl.SyclQueue
+            If not None, use this queue for computations.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, data)
         if not hasattr(self, "_onedal_params"):
@@ -90,6 +149,20 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         )
 
     def finalize_fit(self, queue=None):
+        """
+        Finalizes basic statistics computation and obtains result
+        attributes from the current `_partial_result`.
+
+        Parameters
+        ----------
+        queue : dpctl.SyclQueue
+            Not used here, added for API conformance
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         result = self._module.finalize_compute(
             self._policy, self._onedal_params, self._partial_result
         )

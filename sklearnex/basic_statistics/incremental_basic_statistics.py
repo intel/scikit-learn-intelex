@@ -27,7 +27,7 @@ from onedal.basic_statistics import (
 @control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
 class IncrementalBasicStatistics:
     """
-    Incremental estimator for basix statistics.
+    Incremental estimator for basic statistics.
     Allows to compute basic statistics if data are splitted into batches.
     Parameters
     ----------
