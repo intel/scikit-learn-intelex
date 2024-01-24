@@ -1,5 +1,5 @@
 # ===============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,40 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from abc import ABCMeta
-
 import numpy as np
-from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
 
-from ..common._policy import _get_policy
-from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
+from .covariance import BaseEmpiricalCovariance
 
 
-class BaseEmpiricalCovariance(metaclass=ABCMeta):
-    def __init__(self, method="dense", bias=False):
-        self.method = method
-        self.bias = bias
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
-    def _get_onedal_params(self, dtype=np.float32):
-        params = {
-            "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.method,
-        }
-        if daal_check_version((2024, "P", 1)):
-            params["bias"] = self.bias
-
-        return params
-
-
-class EmpiricalCovariance(BaseEmpiricalCovariance):
-    """Covariance estimator.
+class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
+    """
+    Covariance estimator based on oneDAL implementation.
 
     Computes sample covariance matrix.
 
@@ -68,14 +46,20 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         Estimated covariance matrix
     """
 
-    def fit(self, X, queue=None):
-        """Fit the sample covariance matrix of X.
+    def __init__(self, method="dense", bias=False):
+        super().__init__(method, bias)
+        self._partial_result = _backend.covariance.partial_compute_result()
+
+    def partial_fit(self, X, queue=None):
+        """
+        Computes partial data for the covariance matrix
+        from data batch X and saves it to `_partial_result`.
 
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples, and
-            `n_features` is the number of features.
+            Training data batch, where `n_samples` is the number of samples
+            in the batch, and `n_features` is the number of features.
 
         queue : dpctl.SyclQueue
             If not None, use this queue for computations.
@@ -85,28 +69,45 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         self : object
             Returns the instance itself.
         """
-        policy = self._get_policy(queue, X)
-        X = check_array(X, dtype=[np.float64, np.float32])
+        if not hasattr(self, "_policy"):
+            self._policy = self._get_policy(queue, X)
+        if not hasattr(self, "_dtype"):
+            self._dtype = get_dtype(X)
         X = make2d(X)
         types = [np.float32, np.float64]
         if get_dtype(X) not in types:
             X = X.astype(np.float64)
-        X = _convert_to_supported(policy, X)
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
-        hparams = get_hyperparameters("covariance", "compute")
-        if hparams is not None and not hparams.is_default:
-            result = _backend.covariance.compute(
-                policy, params, hparams.backend, to_table(X)
-            )
-        else:
-            result = _backend.covariance.compute(policy, params, to_table(X))
+        X = _convert_to_supported(self._policy, X)
+        params = self._get_onedal_params(self._dtype)
+        table_X = to_table(X)
+        self._partial_result = _backend.covariance.partial_compute(
+            self._policy, params, self._partial_result, table_X
+        )
+
+    def finalize_fit(self, queue=None):
+        """
+        Finalizes covariance matrix and obtains `covariance_` and `location_`
+        attributes from the current `_partial_result`.
+
+        Parameters
+        ----------
+        queue : dpctl.SyclQueue
+            Not used here, added for API conformance
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
+        params = self._get_onedal_params(self._dtype)
+        result = _backend.covariance.finalize_compute(
+            self._policy, params, self._partial_result
+        )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:
-            self.covariance_ = (
-                from_table(result.cov_matrix) * (X.shape[0] - 1) / X.shape[0]
-            )
+            n_rows = self._partial_result.partial_n_rows
+            self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
 
         self.location_ = from_table(result.means).ravel()
 
