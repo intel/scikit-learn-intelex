@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.common.hyperparameters import get_hyperparameters
+import os
 
 from . import utils
 from ._config import config_context, get_config, set_config
@@ -50,12 +50,13 @@ __all__ = [
     "unpatch_sklearn",
     "utils",
 ]
+onedal_iface_flag = os.getenv("OFF_ONEDAL_IFACE", "0")
+if onedal_iface_flag == "0":
+    from onedal import _is_spmd_backend
+    from onedal.common.hyperparameters import get_hyperparameters
 
-
-from onedal import _is_spmd_backend
-
-if _is_spmd_backend:
-    __all__.append("spmd")
+    if _is_spmd_backend:
+        __all__.append("spmd")
 
 
 from ._utils import set_sklearn_ex_verbose
