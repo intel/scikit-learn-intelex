@@ -231,6 +231,11 @@ def control_n_jobs(decorated_methods: list = []):
                 # sign decorated method for testing and other purposes
                 decorated_method.__onedal_n_jobs_decorated__ = True
                 setattr(original_class, method_name, decorated_method)
+            else:
+                warn(
+                    f"{original_class.__name__}.{method_name} already has "
+                    "n_jobs support and will not be decorated."
+                )
 
         return original_class
 
