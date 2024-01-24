@@ -777,10 +777,6 @@ def __logistic_regression_path(
 
 
 def daal4py_fit(self, X, y, sample_weight=None):
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=True)
-    if sklearn_check_version("1.2"):
-        self._validate_params()
     which, what = logistic_module, "_logistic_regression_path"
     replacer = logistic_regression_path
     descriptor = getattr(which, what, None)
@@ -1036,6 +1032,10 @@ if sklearn_check_version("0.24"):
             -----
             The SAGA solver supports both float64 and float32 bit arrays.
             """
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=True)
+            if sklearn_check_version("1.2"):
+                self._validate_params()
             return daal4py_fit(self, X, y, sample_weight)
 
         @support_usm_ndarray()
