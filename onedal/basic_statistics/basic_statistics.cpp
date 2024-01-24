@@ -122,16 +122,6 @@ struct init_compute_ops_dispatcher<Policy, dal::basic_statistics::task::compute>
 };
 
 template <typename Policy, typename Task>
-void init_finalize_compute_ops(pybind11::module_& m) {
-    using namespace dal::basic_statistics;
-    using input_t = partial_compute_result<Task>;
-    m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
-        finalize_compute_ops ops(policy, data, params2desc{});
-        return fptype2t{ method2t{ Task{}, ops } }(params);
-    });
-}
-
-template <typename Policy, typename Task>
 void init_partial_compute_ops(py::module& m) {
     using prev_result_t = dal::basic_statistics::partial_compute_result<Task>;
     m.def("partial_compute", [](
@@ -146,6 +136,16 @@ void init_partial_compute_ops(py::module& m) {
             return fptype2t{ method2t{ Task{}, ops } }(params);
         }
     );
+}
+
+template <typename Policy, typename Task>
+void init_finalize_compute_ops(pybind11::module_& m) {
+    using namespace dal::basic_statistics;
+    using input_t = partial_compute_result<Task>;
+    m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
+        finalize_compute_ops ops(policy, data, params2desc{});
+        return fptype2t{ method2t{ Task{}, ops } }(params);
+    });
 }
 
 template <typename Policy, typename Task>
@@ -190,8 +190,8 @@ void init_partial_compute_result(py::module_& m) {
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_ops);
-ONEDAL_PY_DECLARE_INSTANTIATOR(init_finalize_compute_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_finalize_compute_ops);
 
 } // namespace basic_statistics
 
