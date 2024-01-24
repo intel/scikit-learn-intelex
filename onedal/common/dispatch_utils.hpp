@@ -23,6 +23,8 @@
 #include "oneapi/dal/train.hpp"
 #include "oneapi/dal/infer.hpp"
 #include "oneapi/dal/compute.hpp"
+#include "oneapi/dal/partial_compute.hpp"
+#include "oneapi/dal/finalize_compute.hpp"
 
 #define ONEDAL_PARAM_DISPATCH_VALUE(value, value_case, ops, ...) \
     if (value == value_case) {                                   \
@@ -158,6 +160,44 @@ struct infer_ops {
     auto operator()(const pybind11::dict& params) {
         auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
         return dal::infer(policy, desc, input);
+    }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+};
+
+template <typename Policy, typename Input, typename Ops>
+struct partial_compute_ops {
+    using Task = typename Input::task_t;
+    partial_compute_ops(const Policy& policy, const Input& input, const Ops& ops)
+        : policy(policy),
+          input(input),
+          ops(ops) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::partial_compute(policy, desc, input);
+    }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+};
+
+template <typename Policy, typename Input, typename Ops>
+struct finalize_compute_ops {
+    using Task = typename Input::task_t;
+    finalize_compute_ops(const Policy& policy, const Input& input, const Ops& ops)
+        : policy(policy),
+          input(input),
+          ops(ops) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::finalize_compute(policy, desc, input);
     }
 
     Policy policy;
