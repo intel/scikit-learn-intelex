@@ -26,7 +26,7 @@ if daal_check_version((2023, "P", 100)):
 
     def expected_sum(X):
         return np.sum(X, axis=0)
-    
+
     def expected_max(X):
         return np.max(X, axis=0)
 
@@ -57,7 +57,6 @@ if daal_check_version((2023, "P", 100)):
     def expected_second_order_raw_moment(X):
         return np.mean(np.square(X), axis=0)
 
-
     options_and_tests = [
         ("sum", expected_sum, (1e-5, 1e-7)),
         ("min", expected_min, (1e-5, 1e-7)),
@@ -68,9 +67,44 @@ if daal_check_version((2023, "P", 100)):
         ("sum_squares", expected_sum_squares, (1e-5, 1e-7)),
         ("sum_squares_centered", expected_sum_squares_centered, (1e-5, 1e-7)),
         ("standard_deviation", expected_standard_deviation, (2e-3, 6e-3)),
-        ("second_order_raw_moment", expected_second_order_raw_moment, (1e-5, 1e-7))
+        ("second_order_raw_moment", expected_second_order_raw_moment, (1e-5, 1e-7)),
     ]
-    
+
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("weighted", [True, False])
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    def test_multiple_options_on_gold_data(queue, weighted, dtype):
+        X = np.array([[0, 0], [1, 1]])
+        X = X.astype(dtype=dtype)
+        X_split = np.array_split(X, 2)
+        if weighted:
+            weights = np.array([1, 0.5])
+            weights = weights.astype(dtype=dtype)
+            weights_split = np.array_split(weights, 2)
+
+        incbs = IncrementalBasicStatistics()
+        for i in range(2):
+            if weighted:
+                incbs.partial_fit(X_split[i], weights_split[i], queue=queue)
+            else:
+                incbs.partial_fit(X_split[i], queue=queue)
+
+        result = incbs.finalize_fit()
+
+        if weighted:
+            expected_weighted_mean = np.array([0.25, 0.25])
+            expected_weighted_min = np.array([0, 0])
+            expected_weighted_max = np.array([0.5, 0.5])
+            assert_allclose(expected_weighted_mean, result.mean)
+            assert_allclose(expected_weighted_max, result.max)
+            assert_allclose(expected_weighted_min, result.min)
+        else:
+            expected_mean = np.array([0.5, 0.5])
+            expected_min = np.array([0, 0])
+            expected_max = np.array([1, 1])
+            assert_allclose(expected_mean, result.mean)
+            assert_allclose(expected_max, result.max)
+            assert_allclose(expected_min, result.min)
 
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("num_batches", [2, 10])
@@ -79,7 +113,9 @@ if daal_check_version((2023, "P", 100)):
     @pytest.mark.parametrize("column_count", [10, 100])
     @pytest.mark.parametrize("weighted", [True, False])
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_single_option(queue, num_batches, option, row_count, column_count, weighted, dtype):
+    def test_single_option_on_random_data(
+        queue, num_batches, option, row_count, column_count, weighted, dtype
+    ):
         result_option, function, tols = option
         fp32tol, fp64tol = tols
         seed = 77
@@ -99,7 +135,7 @@ if daal_check_version((2023, "P", 100)):
             else:
                 incbs.partial_fit(data_split[i], queue=queue)
         result = incbs.finalize_fit()
-        
+
         res = getattr(result, result_option)
         if weighted:
             weighted_data = np.diag(weights) @ data
@@ -116,7 +152,9 @@ if daal_check_version((2023, "P", 100)):
     @pytest.mark.parametrize("column_count", [10, 100])
     @pytest.mark.parametrize("weighted", [True, False])
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_multiple_options(queue, num_batches, row_count, column_count, weighted, dtype):
+    def test_multiple_options_on_random_data(
+        queue, num_batches, row_count, column_count, weighted, dtype
+    ):
         seed = 42
         gen = np.random.default_rng(seed)
         data = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
@@ -155,14 +193,15 @@ if daal_check_version((2023, "P", 100)):
         assert_allclose(gtr_max, res_max, rtol=tol, atol=tol)
         assert_allclose(gtr_sum, res_sum, rtol=tol, atol=tol)
 
-
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("num_batches", [2, 10])
     @pytest.mark.parametrize("row_count", [100, 1000])
     @pytest.mark.parametrize("column_count", [10, 100])
     @pytest.mark.parametrize("weighted", [True, False])
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_all_option(queue, num_batches, row_count, column_count, weighted, dtype):
+    def test_all_option_on_random_data(
+        queue, num_batches, row_count, column_count, weighted, dtype
+    ):
         seed = 77
         gen = np.random.default_rng(seed)
         data = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
@@ -180,10 +219,10 @@ if daal_check_version((2023, "P", 100)):
             else:
                 incbs.partial_fit(data_split[i], queue=queue)
         result = incbs.finalize_fit()
-        
+
         if weighted:
             weighted_data = np.diag(weights) @ data
-        
+
         for option in options_and_tests:
             result_option, function, tols = option
             print(result_option)
@@ -195,4 +234,3 @@ if daal_check_version((2023, "P", 100)):
                 gtr = function(data)
             tol = fp32tol if res.dtype == np.float32 else fp64tol
             assert_allclose(gtr, res, rtol=tol, atol=tol)
-
