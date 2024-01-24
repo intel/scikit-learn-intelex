@@ -100,8 +100,7 @@ class IncrementalBasicStatistics:
 
     def _onedal_partial_fit(self, X, weights, queue):
         onedal_params = {
-            "result_option": self._get_onedal_result_options(self.result_options),
-            "method": "by_default",
+            "result_options": self._get_onedal_result_options(self.result_options)
         }
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_basic_statistics(
