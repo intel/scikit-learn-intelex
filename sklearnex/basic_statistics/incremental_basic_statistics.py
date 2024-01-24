@@ -17,14 +17,14 @@
 import numpy as np
 from sklearn.utils import check_array, gen_batches
 
-from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from onedal._device_offload import support_usm_ndarray
 from onedal.basic_statistics import (
     IncrementalBasicStatistics as onedal_IncrementalBasicStatistics,
 )
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
 class IncrementalBasicStatistics:
     """
     Incremental estimator for basix statistics.
@@ -93,13 +93,11 @@ class IncrementalBasicStatistics:
         assert isinstance(onedal_options, str)
         return options
 
-    @run_with_n_jobs
     def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
-    @run_with_n_jobs
     def _onedal_partial_fit(self, X, weights, queue):
         onedal_params = {
             "result_option": self._get_onedal_result_options(self.result_options),
