@@ -24,7 +24,26 @@ from .covariance import BaseEmpiricalCovariance
 
 class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
     """
-    Incremental Covariance oneDAL implementation
+    Covariance estimator based on oneDAL implementation.
+
+    Computes sample covariance matrix.
+
+    Parameters
+    ----------
+    method : string, default="dense"
+        Specifies computation method. Available methods: "dense".
+
+    bias: bool, default=False
+        If True biased estimation of covariance is computed which equals to
+        the unbiased one multiplied by (n_samples - 1) / n_samples.
+
+    Attributes
+    ----------
+    location_ : ndarray of shape (n_features,)
+        Estimated location, i.e., the estimated mean.
+
+    covariance_ : ndarray of shape (n_features, n_features)
+        Estimated covariance matrix
     """
 
     def __init__(self, method="dense", bias=False):
@@ -32,6 +51,24 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self._partial_result = _backend.covariance.partial_compute_result()
 
     def partial_fit(self, X, queue=None):
+        """
+        Computes partial data for the covariance matrix
+        from data batch X and saves it to `_partial_result`.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data batch, where `n_samples` is the number of samples
+            in the batch, and `n_features` is the number of features.
+
+        queue : dpctl.SyclQueue
+            If not None, use this queue for computations.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
         if not hasattr(self, "_dtype"):
@@ -48,8 +85,24 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         )
 
     def finalize_fit(self, queue=None):
+        """
+        Finalizes covariance matrix and obtains `covariance_` and `location_`
+        attributes from the current `_partial_result`.
+
+        Parameters
+        ----------
+        queue : dpctl.SyclQueue
+            Not used here, added for API conformance
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         params = self._get_onedal_params(self._dtype)
-        result = _backend.covariance.finalize_compute(self._policy, params, self._partial_result)
+        result = _backend.covariance.finalize_compute(
+            self._policy, params, self._partial_result
+        )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:
