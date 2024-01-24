@@ -87,8 +87,6 @@ def _run_with_n_jobs(method):
             result = method(self, *args, **kwargs)
             return result
         # multiprocess parallel backends branch
-        cl = self.__class__
-        method_name = ".".join([cl.__module__, cl.__name__, method.__name__])
         # preemptive validation of n_jobs parameter is required
         # because '_run_with_n_jobs' decorator is applied on top of method
         # where validation takes place
@@ -121,8 +119,10 @@ def _run_with_n_jobs(method):
         old_n_threads = get_n_threads()
         if n_jobs != old_n_threads:
             logger = logging.getLogger("sklearnex")
+            cl = self.__class__
             logger.debug(
-                f"{method_name}: setting {n_jobs} threads (previous - {old_n_threads})"
+                f"{cl.__module__}.{cl.__name__}.{method.__name__}:"
+                " setting {n_jobs} threads (previous - {old_n_threads})"
             )
             set_n_threads(n_jobs)
         result = method(self, *args, **kwargs)
