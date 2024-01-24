@@ -121,8 +121,8 @@ def _run_with_n_jobs(method):
             logger = logging.getLogger("sklearnex")
             cl = self.__class__
             logger.debug(
-                f"{cl.__module__}.{cl.__name__}.{method.__name__}:"
-                " setting {n_jobs} threads (previous - {old_n_threads})"
+                f"{cl.__module__}.{cl.__name__}.{method.__name__}: "
+                "setting {n_jobs} threads (previous - {old_n_threads})"
             )
             set_n_threads(n_jobs)
         result = method(self, *args, **kwargs)
