@@ -225,10 +225,11 @@ def control_n_jobs(decorated_methods: list = []):
         # decorate methods to be run with applied n_jobs parameter
         for method_name in decorated_methods:
             method = getattr(original_class, method_name, None)
-            decorated_method = _run_with_n_jobs(method)
-            # sign decorated method for testing and other purposes
-            decorated_method.__onedal_n_jobs_decorated__ = True
-            setattr(original_class, method_name, decorated_method)
+            if not hasattr(method, "__onedal_n_jobs_decorated__"):
+                decorated_method = _run_with_n_jobs(method)
+                # sign decorated method for testing and other purposes
+                decorated_method.__onedal_n_jobs_decorated__ = True
+                setattr(original_class, method_name, decorated_method)
 
         return original_class
 
