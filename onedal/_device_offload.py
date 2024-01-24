@@ -58,14 +58,18 @@ def _run_on_device(func, obj=None, *args, **kwargs):
         return func(obj, *args, **kwargs)
     return func(*args, **kwargs)
 
-
+\
 def support_usm_ndarray(freefunc=False):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
             if _sklearnex_available:
                 usm_iface = _extract_usm_iface(*args, **kwargs)
                 data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-                hostkwargs["queue"] = data_queue
+                # Provided `queue` value more prior than
+                # input data's context.
+                # This also fixes double call of the decorator.
+                if hostkwargs["queue"] is None:
+                    hostkwargs["queue"] = data_queue
                 result = _run_on_device(func, obj, *hostargs, **hostkwargs)
                 if usm_iface is not None and hasattr(result, "__array_interface__"):
                     result = _copy_to_usm(data_queue, result)
