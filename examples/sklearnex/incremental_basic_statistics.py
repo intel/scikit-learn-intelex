@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import dpctl
 import numpy as np
 
 from sklearnex.basic_statistics import IncrementalBasicStatistics
