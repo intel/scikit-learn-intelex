@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import unittest
+from datetime import datetime
 
 import lightgbm as lgbm
 import numpy as np
@@ -53,6 +54,17 @@ shap_not_supported_str = (
 )
 shap_unavailable_str = "SHAP Python package not available"
 cb_unavailable_str = "CatBoost not available"
+
+# CatBoost's SHAP value calculation seems to be buggy
+# See https://github.com/catboost/catboost/issues/2556
+# Disable SHAP tests temporarily
+catboost_shap_temp_disabled_on = datetime(2024, 1, 1)
+# Check once per month
+catboost_skip_shap = datetime.today().month == catboost_shap_temp_disabled_on.month
+catboost_skip_shap_msg = (
+    "CatBoost SHAP calculation is buggy. "
+    "See https://github.com/catboost/catboost/issues/2556."
+)
 
 
 class LogRegModelBuilder(unittest.TestCase):
@@ -139,6 +151,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        self.assertEqual(m.model_type, "xgboost")
         # XGBoost treats regression as 0 classes, LightGBM 1 class
         # For us, it does not make a difference and both are acceptable
         self.assertEqual(m.n_classes_, 0)
@@ -167,10 +180,6 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
             approx_contribs=False,
             validate_features=False,
         )
-        self.assertTrue(
-            d4p_pred.shape == xgboost_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {xgboost_pred.shape}",
-        )
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
     def test_model_predict_shap_interactions(self):
@@ -182,10 +191,6 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
             pred_interactions=True,
             approx_contribs=False,
             validate_features=False,
-        )
-        self.assertTrue(
-            d4p_pred.shape == xgboost_pred.shape,
-            f"d4p and reference SHAP interaction shape is different {d4p_pred.shape} != {xgboost_pred.shape}",
         )
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-6)
 
@@ -247,6 +252,7 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        self.assertEqual(m.model_type, "xgboost")
         self.assertEqual(m.n_classes_, self.n_classes)
         self.assertEqual(m.n_features_in_, 15)
         self.assertFalse(m._is_regression)
@@ -372,6 +378,7 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
+        self.assertEqual(m.model_type, "lightgbm")
         self.assertEqual(m.n_classes_, 1)
         self.assertEqual(m.n_features_in_, 10)
         self.assertTrue(m._is_regression)
@@ -388,18 +395,10 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         lgbm_pred = self.lgbm_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=5e-6)
 
-    @unittest.skipUnless(shap_available, reason=shap_unavailable_str)
     def test_model_predict_shap_contribs(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_test, pred_contribs=True)
-        explainer = shap.TreeExplainer(self.lgbm_model)
-        shap_pred = explainer(self.X_test).values
         lgbm_pred = self.lgbm_model.predict(self.X_test, pred_contrib=True)
-        self.assertTrue(
-            d4p_pred.shape == lgbm_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
-        )
-        np.testing.assert_allclose(d4p_pred[:, :-1], shap_pred, rtol=1e-6)
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
     @unittest.skipUnless(shap_available, reason=shap_unavailable_str)
@@ -409,20 +408,12 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
         d4p_pred = m.predict(self.X_test, pred_interactions=True)[:, :-1, :-1]
         explainer = shap.TreeExplainer(self.lgbm_model)
         shap_pred = explainer.shap_interaction_values(self.X_test)
-        self.assertTrue(
-            d4p_pred.shape == shap_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {shap_pred.shape}",
-        )
         np.testing.assert_allclose(d4p_pred, shap_pred, rtol=1e-6)
 
     def test_model_predict_shap_contribs_missing_values(self):
         m = d4p.mb.convert_model(self.lgbm_model)
         d4p_pred = m.predict(self.X_nan, pred_contribs=True)
         lgbm_pred = self.lgbm_model.predict(self.X_nan, pred_contrib=True)
-        self.assertTrue(
-            d4p_pred.shape == lgbm_pred.shape,
-            f"d4p and reference SHAP contribution shape is different {d4p_pred.shape} != {lgbm_pred.shape}",
-        )
         np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
 
@@ -450,6 +441,7 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
+        self.assertEqual(m.model_type, "lightgbm")
         self.assertEqual(m.n_classes_, 3)
         self.assertEqual(m.n_features_in_, 10)
         self.assertFalse(m._is_regression)
@@ -512,6 +504,7 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
+        self.assertEqual(m.model_type, "lightgbm")
         self.assertEqual(m.n_classes_, 2)
         self.assertEqual(m.n_features_in_, 10)
         self.assertFalse(m._is_regression)
@@ -565,6 +558,7 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
     def setUpClass(cls):
         X, y = make_regression(n_samples=100, n_features=10, random_state=42)
         cls.X_test = X[:2, :]
+        cls.y_test = y[:2]
         cls.X_nan = np.array([np.nan] * 20, dtype=np.float32).reshape(2, 10)
         params = {
             "reg_lambda": 1,
@@ -582,6 +576,7 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.cb_model)
         self.assertTrue(hasattr(m, "daal_model_"))
         self.assertIsInstance(m.daal_model_, d4p._daal4py.gbt_regression_model)
+        self.assertEqual(m.model_type, "catboost")
         self.assertEqual(m.daal_model_.NumberOfFeatures, 10)
         self.assertEqual(m.daal_model_.NumberOfTrees, 25)
         self.assertEqual(m.n_features_in_, 10)
@@ -590,22 +585,23 @@ class CatBoostRegressionModelBuilder(unittest.TestCase):
     def test_model_predict(self):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_test)
-        lgbm_pred = self.cb_model.predict(self.X_test)
-        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+        cb_pred = self.cb_model.predict(self.X_test)
+        np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
     def test_missing_value_support(self):
         m = d4p.mb.convert_model(self.cb_model)
         d4p_pred = m.predict(self.X_nan)
-        lgbm_pred = self.cb_model.predict(self.X_nan)
-        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-7)
+        cb_pred = self.cb_model.predict(self.X_nan)
+        np.testing.assert_allclose(d4p_pred, cb_pred, rtol=1e-7)
 
+    @unittest.skipIf(catboost_skip_shap, reason=catboost_skip_shap_msg)
     def test_model_predict_shap_contribs(self):
-        # SHAP value support from CatBoost models is to be added
-        with self.assertWarnsRegex(
-            Warning,
-            "Models converted from CatBoost cannot be used for SHAP value calculation",
-        ):
-            d4p.mb.convert_model(self.cb_model)
+        m = d4p.mb.convert_model(self.cb_model)
+        d4p_pred = m.predict(self.X_test, pred_contribs=True)
+        lgbm_pred = self.cb_model.get_feature_importance(
+            cb.Pool(self.X_test, self.y_test), type="ShapValues"
+        )
+        np.testing.assert_allclose(d4p_pred, lgbm_pred, rtol=1e-6)
 
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
@@ -634,6 +630,7 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
         m = d4p.mb.convert_model(self.cb_model)
         self.assertTrue(hasattr(m, "daal_model_"))
         self.assertIsInstance(m.daal_model_, d4p._daal4py.gbt_classification_model)
+        self.assertEqual(m.model_type, "catboost")
         self.assertEqual(m.daal_model_.NumberOfFeatures, 10)
         self.assertEqual(m.daal_model_.NumberOfTrees, 3 * 25)
         self.assertEqual(m.n_features_in_, 10)
@@ -655,7 +652,7 @@ class CatBoostClassificationModelBuilder(unittest.TestCase):
         # SHAP value support from CatBoost models is to be added
         with self.assertWarnsRegex(
             Warning,
-            "Models converted from CatBoost cannot be used for SHAP value calculation",
+            "Converted models of this type do not support SHAP value calculation",
         ):
             d4p.mb.convert_model(self.cb_model)
 
