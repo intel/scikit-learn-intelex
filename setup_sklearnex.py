@@ -98,7 +98,6 @@ packages_with_tests = [
     "sklearnex.preview.covariance",
     "sklearnex.preview.cluster",
     "sklearnex.preview.decomposition",
-    "sklearnex.preview.linear_model",
     "sklearnex.svm",
     "sklearnex.utils",
 ]
