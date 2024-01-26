@@ -16,7 +16,12 @@
 
 import numpy as np
 import pytest
+import sklearn.covariance as covmodule
 from numpy.testing import assert_allclose
+from sklearn.covariance.tests.test_covariance import (
+    test_covariance,
+    test_EmpiricalCovariance_validates_mahalanobis,
+)
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -141,3 +146,15 @@ def test_sklearnex_fit_on_random_data(
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
+
+
+# Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
+@pytest.mark.parametrize(
+    "func", [test_covariance, test_EmpiricalCovariance_validates_mahalanobis]
+)
+def test_covariance_with_IncrementalEmpiricalCovariance(monkeypatch, func):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
+    class_name = "sklearn.covariance.tests.test_covariance.EmpiricalCovariance"
+    monkeypatch.setattr(class_name, IncrementalEmpiricalCovariance)
+    func()

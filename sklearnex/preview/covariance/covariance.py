@@ -102,20 +102,9 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
         return self
 
-    @wrap_output_data
-    def mahalanobis(self, X):
-        return dispatch(
-            self,
-            "mahalanobis",
-            {
-                "onedal": self.__class__._onedal_mahalanobis,
-                "sklearn": sklearn_EmpiricalCovariance.mahalanobis,
-            },
-            X,
-        )
-
     # This needs to be included to guarantee that we use the sklearnex pairwise_distances
-    def _onedal_mahalanobis(self, X):
+    @wrap_output_data
+    def mahalanobis(self, X, queue=None):
         if sklearn_check_version("1.2"):
             X = self._validate_data(X, reset=False, copy=self.copy)
         else:

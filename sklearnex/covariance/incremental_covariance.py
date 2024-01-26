@@ -28,6 +28,7 @@ from onedal._device_offload import support_usm_ndarray
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
+from sklearnex import config_context
 from sklearnex._device_offload import dispatch, wrap_output_data
 from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
 from sklearnex.metrics import pairwise_distances
@@ -134,9 +135,13 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
         if sklearn_check_version("1.2"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy, reset=False)
+            X = self._validate_data(
+                X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
+            )
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
+            X = check_array(
+                X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
+            )
 
         if not hasattr(self, "n_samples_seen_"):
             self.n_samples_seen_ = 0
@@ -202,15 +207,18 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._onedal_finalize_fit()
         return self
 
-    get_precision = sklearn_EmpiricalCovariance.get_precision
+    def get_precision(self):
+        return linalg.pinvh(self.covariance_, check_finite=False)
+
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
 
     # necessary to to use sklearnex pairwise_distances
-    def _onedal_mahalanobis(self, X):
+    @wrap_output_data
+    def mahalanobis(self, X):
         if sklearn_check_version("1.2"):
-            X = self._validate_data(X, reset=False, copy=self.copy)
+            self._validate_data(X, reset=False, copy=self.copy)
         else:
-            X = check_array(X, reset=False, copy=self.copy)
+            check_array(X, reset=False, copy=self.copy)
 
         precision = self.get_precision()
         with config_context(assume_finite=True):
@@ -220,19 +228,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             )
 
         return np.reshape(dist, (len(X),)) ** 2
-
-    @wrap_output_data
-    def mahalanobis(self, X):
-        dispatch(
-            self,
-            "mahalanobis",
-            {
-                "onedal": self.__class__._onedal_mahalanobis,
-                "sklearn": sklearn_EmpiricalCovariance.mahalanobis,
-            },
-            X,
-        )
-        return self
 
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
