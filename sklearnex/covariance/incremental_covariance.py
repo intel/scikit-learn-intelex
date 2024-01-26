@@ -18,7 +18,8 @@ import numbers
 
 import numpy as np
 from scipy import linalg
-from sklearn.covariance import EmpiricalCovariance as sklearn_EmpericalCovariance
+from sklearn.base import BaseEstimator
+from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -117,7 +118,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
 
-
     @support_usm_ndarray
     def partial_fit(self, X):
         """
@@ -207,7 +207,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         return self
 
     get_precision = sklearn_EmpiricalCovariance.get_precision
-    error_norm = wrap_output_data(sklearn_EmpericalCovariance.error_norm)
+    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
 
     # necessary to to use sklearnex pairwise_distances
     def _onedal_mahalanobis(self, X):
@@ -232,7 +232,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             "mahalanobis",
             {
                 "onedal": self.__class__._onedal_mahalanobis,
-                "sklearn": sklearn_EmpericalCovariance.mahalanobis,
+                "sklearn": sklearn_EmpiricalCovariance.mahalanobis,
             },
             X,
         )
