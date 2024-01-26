@@ -37,7 +37,6 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
 
-# TODO: consult with others whether this should support store_precision and assume_centered
 @control_n_jobs(decorated_methods=["partial_fit", "fit"])
 class IncrementalEmpiricalCovariance(BaseEstimator):
     """
