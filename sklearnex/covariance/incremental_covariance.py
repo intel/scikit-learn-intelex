@@ -118,7 +118,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
 
-    @support_usm_ndarray
     def partial_fit(self, X):
         """
         Incremental fit with X. All of X is processed as a single batch.
@@ -156,7 +155,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         return self
 
-    @support_usm_ndarray
     def fit(self, X, y=None):
         dispatch(
             self,
