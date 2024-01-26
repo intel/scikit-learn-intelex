@@ -36,8 +36,7 @@ class ReadCsvFunc(Protocol):
         skip_header: int = 0,
         dtype: DType = np.float32,
         max_rows: Optional[int] = None,
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
 
 class NpReadCsv:
