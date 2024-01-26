@@ -64,6 +64,9 @@ def get_patch_map():
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .covariance import (
+            IncrementalEmpiricalCovariance as IncrementalEmpericalCovariance_sklearnex,
+        )
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
@@ -253,6 +256,18 @@ def get_patch_map():
             ]
         ]
         mapping["localoutlierfactor"] = mapping["lof"]
+
+        # IncrementalEmpiricalCovariance
+        mapping["incrementalempiricalcovariance"] = [
+            [
+                (
+                    covariance_module,
+                    "IncrementalEmpericalCovariance",
+                    IncrementalEmpericalCovariance_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # Configs
         mapping["set_config"] = [
