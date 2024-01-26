@@ -65,7 +65,7 @@ def get_patch_map():
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
         from .covariance import (
-            IncrementalEmpiricalCovariance as IncrementalEmpericalCovariance_sklearnex,
+            IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
         )
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
@@ -262,8 +262,8 @@ def get_patch_map():
             [
                 (
                     covariance_module,
-                    "IncrementalEmpericalCovariance",
-                    IncrementalEmpericalCovariance_sklearnex,
+                    "IncrementalEmpiricalCovariance",
+                    IncrementalEmpiricalCovariance_sklearnex,
                 ),
                 None,
             ]
