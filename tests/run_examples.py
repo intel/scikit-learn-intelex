@@ -246,9 +246,11 @@ def run(exdir, logdir, args):
                             os.chdir(dirpath)
                             try:
                                 proc = subprocess.Popen(
-                                    execute_string
-                                    if IS_WIN
-                                    else ["/bin/bash", "-c", execute_string],
+                                    (
+                                        execute_string
+                                        if IS_WIN
+                                        else ["/bin/bash", "-c", execute_string]
+                                    ),
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
                                     shell=False,
