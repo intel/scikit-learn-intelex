@@ -40,6 +40,21 @@ To install Intel(R) Extension for Scikit-learn*, use one of the following scenar
 
 Check [System](https://intel.github.io/scikit-learn-intelex/latest/system-requirements.html) and [Memory](https://intel.github.io/scikit-learn-intelex/latest/memory-requirements.html) Requirements.
 
+## Supported Configurations
+
+| OS / Python version | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** | **Python 3.12** |
+| :------------------ | :------------: | :------------: |  :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+
+Applicable for:
+
+* PyPI
+* Anaconda Cloud from Conda-Forge Channel
+* Anaconda Cloud from Intel Channel
+* Anaconda Cloud from Main Channel
+
+
 
 ## Install via PIP
 
@@ -67,14 +82,6 @@ Install `scikit-learn-intelex`:
    pip install scikit-learn-intelex
    ```
 
-#### 📦 Supported Configurations for PyPI <!-- omit in toc -->
-
-| OS / Python version | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
-| :------------------ | :------------: | :------------: |  :------------: |  :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    | 
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
-
-
 ## Install from Anaconda Cloud
 
 To prevent version conflicts, we recommend to create and activate a new environment. 
@@ -99,15 +106,6 @@ To prevent version conflicts, we recommend to create and activate a new environm
   conda install scikit-learn-intelex
   ```
 
-
-#### 📦 Supported Configurations for Anaconda Cloud from Conda-Forge Channel <!-- omit in toc -->
-
-| OS / Python version     | **Python 3.8** | **Python 3.9** | **Python 3.10**|  **Python 3.11** |
-| :-----------------------| :------------: | :------------: | :------------: | :------------:   |
-|    **Linux**            |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
-|    **Windows**          |     [CPU]      |     [CPU]      |     [CPU]      |      [CPU]       |
-
-
 ### Install via Anaconda Cloud from Intel Channel
 
 We recommend this installation for the users of Intel® Distribution for Python.
@@ -130,14 +128,6 @@ We recommend this installation for the users of Intel® Distribution for Python.
   conda install scikit-learn-intelex
   ```
 
-#### 📦 Supported Configurations for Anaconda Cloud from Intel Channel <!-- omit in toc -->
-
-| OS / Python version | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
-| :------------------ | :------------: | :------------: |  :------------: |  :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    | 
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |
-
-
 ### Install via Anaconda Cloud from Main Channel
 
 > **_NOTE:_** You may not find the latest version on the Anaconda Main channel since it usually lags on versions deployed. 
@@ -155,15 +145,6 @@ We recommend this installation for the users of Intel® Distribution for Python.
   ```bash
   conda install scikit-learn-intelex
   ```
-
-#### 📦 Supported Configurations for Anaconda Cloud from Main Channel <!-- omit in toc -->
-
-| OS / Python version     | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** |
-| :-----------------------| :------------: | :------------: | :------------:  | :------------:  |
-| **Linux**               |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
-| **Windows**             |     [CPU]      |     [CPU]      |     [CPU]       |     [CPU]       |
-
-
 
 ## Build from Sources
 Intel(R) Extension for Scikit-learn* is easily built from the sources with the majority of the necessary prerequisites available with conda or pip. 
