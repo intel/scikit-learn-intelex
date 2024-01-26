@@ -20,7 +20,7 @@ from scipy import linalg
 from sklearn.utils import check_array, gen_batches
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpericalCovariance
 from sklearnex.metrics import pairwise_distances
-from sklearnex._device_offload import dispatch
+from sklearnex._device_offload import dispatch, wrap_output_data
 from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -35,7 +35,7 @@ if sklearn_check_version("1.2"):
 
 
 # TODO: consult with others whether this should support store_precision and assume_centered
-@control_n_jobs(decorated_methods=["partial_fit"])
+@control_n_jobs(decorated_methods=["partial_fit", "fit"])
 class IncrementalEmpiricalCovariance(BaseEstimator):
     """
     Incremental estimator for covariance.
@@ -86,7 +86,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self.covariance_ = self._onedal_estimator.covariance_
         self._need_to_finalize = False
 
-    @support_usm_ndarray()
     def _onedal_partial_fit(self, X, queue):
         onedal_params = {
             "method": "dense",
@@ -119,6 +118,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
 
+    @support_usm_ndarray
     def partial_fit(self, X):
         """
         Incremental fit with X. All of X is processed as a single batch.
@@ -156,6 +156,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         return self
 
+    @support_usm_ndarray
     def fit(self, X, y=None):
         dispatch(
             self,
@@ -207,10 +208,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         return self
 
     get_precision = sklearn_EmpiricalCovariance.get_precision
-    error_norm = sklearn_EmpericalCovariance.error_norm
+    error_norm = wrap_output_data(sklearn_EmpericalCovariance.error_norm)
 
     # necessary to to use sklearnex pairwise_distances
-    @wrap_output_data
     def _onedal_mahalanobis(self, X):
         if sklearn_check_version("1.2"):
             X = self._validate_data(X, reset=False, copy=self.copy)
@@ -226,6 +226,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         return np.reshape(dist, (len(X),)) ** 2
 
+    @wrap_output_data
     def mahalanobis(self, X):
         dispatch(
             self,
@@ -243,3 +244,4 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
     mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
+    error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__

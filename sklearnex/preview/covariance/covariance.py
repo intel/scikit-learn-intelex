@@ -20,11 +20,12 @@ from sklearn.utils import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
+from onedal._device_offload import support_usm_ndarray
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
 from sklearnex.metrics import pairwise_distances
 
-from ..._device_offload import dispatch
+from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 
@@ -81,6 +82,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
+    @support_usm_ndarray
     def fit(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -101,9 +103,9 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
         return self
 
-
+    @wrap_output_data
     def mahalanobis(self, X):
-        dispatch(
+        return dispatch(
             self,
             "mahalanobis",
             {
@@ -112,9 +114,6 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
             },
             X,
         )
-
-        return self
-
 
     # This needs to be included to guarantee that we use the sklearnex pairwise_distances
     def _onedal_mahalanobis(self, X):
@@ -132,6 +131,8 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
         return np.reshape(dist, (len(X),)) ** 2
 
+    error_norm = wrap_output_data(sklearn_EmpericalCovariance.error_norm)
 
     fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
     mahalanobis.__doc__ = sklearn_EmpericalCovariance.mahalanobis
+    error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
