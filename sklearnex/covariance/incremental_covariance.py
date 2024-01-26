@@ -33,7 +33,8 @@ from onedal.covariance import (
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
-# TODO: consult with others whether this should support store_precision and assume_centered 
+
+# TODO: consult with others whether this should support store_precision and assume_centered
 @control_n_jobs(decorated_methods=["partial_fit"])
 class IncrementalEmpiricalCovariance(BaseEstimator):
     """
@@ -73,7 +74,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self.copy = copy
 
     def _onedal_supported(self, method_name, *data):
-        patching_status =  PatchingConditionsChain("sklearn.covariance.{self.__class__.__name__}.{method_name}")
+        patching_status = PatchingConditionsChain(
+            "sklearn.covariance.{self.__class__.__name__}.{method_name}"
+        )
         return patching_status
 
     def _onedal_finalize_fit(self):
@@ -84,7 +87,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._need_to_finalize = False
 
     @support_usm_ndarray()
-    def _onedal_partial_fit(self, X, queue):        
+    def _onedal_partial_fit(self, X, queue):
         onedal_params = {
             "method": "dense",
             "bias": True,
@@ -97,7 +100,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     @property
     def covariance_(self):
         if hasattr(self, "_onedal_estimator"):
-            if self._need_to_finalize
+            if self._need_to_finalize:
                 self._onedal_finalize_fit()
             return self._onedal_estimator.covariance_
         else:
@@ -108,14 +111,13 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     @property
     def location_(self):
         if hasattr(self, "_onedal_estimator"):
-            if self._need_to_finalize
+            if self._need_to_finalize:
                 self._onedal_finalize_fit()
             return self._onedal_estimator.location_
         else:
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
-
 
     def partial_fit(self, X):
         """
@@ -132,10 +134,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self : object
             Returns the instance itself.
         """
-        if sklearn_check_version("1.2")
-            X = self._validate_data(X, dtype=[np.float64, np.float32],copy=self.copy)
+        if sklearn_check_version("1.2"):
+            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
-            X = check_array(X, dtype=[np.float64, np.float32],copy=self.copy)
+            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
 
         if not hasattr(self, "n_samples_seen_"):
             self.n_samples_seen_ = 0
@@ -152,8 +154,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             X,
         )
 
-        return self 
-
+        return self
 
     def fit(self, X, y=None):
         dispatch(
@@ -166,7 +167,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             X,
         )
 
-        return self     
+        return self
 
     def _onedal_fit(self, X, queue=None):
         """
@@ -184,12 +185,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
         self.n_samples_seen_ = 0
-        
-        if sklearn_check_version("1.2")
+
+        if sklearn_check_version("1.2"):
             self._validate_params()
-            X = self._validate_data(X, dtype=[np.float64, np.float32],copy=self.copy)
+            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
-            X = check_array(X, dtype=[np.float64, np.float32],copy=self.copy)
+            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
 
         n_samples, self.n_features_in_ = X.shape
 
@@ -235,7 +236,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             },
             X,
         )
-        return self  
+        return self
 
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
