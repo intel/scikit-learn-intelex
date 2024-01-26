@@ -15,13 +15,11 @@
 # ===============================================================================
 
 import numbers
+
 import numpy as np
 from scipy import linalg
-from sklearn.utils import check_array, gen_batches
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpericalCovariance
-from sklearnex.metrics import pairwise_distances
-from sklearnex._device_offload import dispatch, wrap_output_data
-from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
+from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -29,6 +27,9 @@ from onedal._device_offload import support_usm_ndarray
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
+from sklearnex._device_offload import dispatch, wrap_output_data
+from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
+from sklearnex.metrics import pairwise_distances
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
