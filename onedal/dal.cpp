@@ -22,6 +22,7 @@ namespace py = pybind11;
 namespace oneapi::dal::python {
 
 /* common */
+ONEDAL_PY_INIT_MODULE(dtype_dispatcher);
 ONEDAL_PY_INIT_MODULE(policy);
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
 ONEDAL_PY_INIT_MODULE(spmd_policy);
