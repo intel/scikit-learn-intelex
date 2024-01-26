@@ -30,7 +30,7 @@ from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
-@control_n_jobs(decorated_methods=["fit"])
+@control_n_jobs(decorated_methods=["fit", "mahalanobis"])
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     __doc__ = sklearn_EmpiricalCovariance.__doc__
 
