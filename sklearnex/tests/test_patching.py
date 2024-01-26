@@ -104,7 +104,7 @@ def _load_all_models(patched):
             and isclass(maybe_class)
             and issubclass(maybe_class, BaseEstimator)
         ):
-            models[patch_infos[0][0][1]]= maybe_class
+            models[patch_infos[0][0][1]] = maybe_class
 
     if patched:
         unpatch_sklearn()
