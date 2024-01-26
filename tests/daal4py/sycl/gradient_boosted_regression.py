@@ -17,6 +17,7 @@
 # daal4py Gradient Bossting Regression example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -79,19 +80,9 @@ def main(readcsv=read_csv, method="defaultDense"):
     maxIterations = 200
 
     # input data file
-    infile = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "df_regression_train.csv",
-    )
-    testfile = os.path.join(
-        "..", "..", "..", "examples", "daal4py", "data", "batch", "df_regression_test.csv"
-    )
+    data_path = Path(__file__).parent.parent / "data" / "batch"
+    infile = data_path / "df_regression_train.csv"
+    testfile = data_path / "df_regression_test.csv"
 
     # Read data. Let's use 13 features per observation
     train_indep_data = readcsv(infile, range(13), t=np.float32)

@@ -65,8 +65,9 @@ else:
     logdir = jp(runner_dir, "_results", "intel64")
 
 ex_log_dirs = [
-    (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
-    (jp(examples_rootdir, "sklearnex"), jp(logdir, "sklearnex")),
+    (jp(examples_rootdir, "cpu"), jp(logdir, "sklearnex")),
+    (jp(examples_rootdir, "gpu"), jp(logdir, "sklearnex")),
+    (jp(examples_rootdir, "multi-gpu"), jp(logdir, "sklearnex")),
     (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
@@ -203,7 +204,9 @@ def get_exe_cmd(ex, args):
         if not check_library(req_library[os.path.basename(ex)]):
             return None
 
-    if os.path.dirname(ex).endswith("sklearnex"):
+    if os.path.dirname(ex).endswith("multi-gpu") or os.path.dirname(ex).endswith(
+        "miscellaneous"
+    ):
         if args.nosklearnex:
             return None
         if not check_device(req_device[os.path.basename(ex)], available_devices):
@@ -212,6 +215,23 @@ def get_exe_cmd(ex, args):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
             return None
+
+    if os.path.dirname(ex).endswith("gpu"):
+        if args.nosklearnex:
+            return None
+        if not check_device(["gpu"], available_devices):
+            return None
+        if not check_version((2024, "P", 1), get_daal_version()):
+            return None
+        if not check_library(["dpctl"]):
+            return None
+
+    if os.path.dirname(ex).endswith("cpu"):
+        if args.nosklearnex:
+            return None
+        if not check_version((2024, "P", 1), get_daal_version()):
+            return None
+
     if not args.nodist and ex.endswith("spmd.py"):
         if IS_WIN:
             return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'

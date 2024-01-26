@@ -17,7 +17,7 @@
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
-utils_path = Path(__file__).parent.parent / "utils"
+utils_path = Path(__file__).parent / "utils"
 
 readcsv = SourceFileLoader("readcsv", str(utils_path / "readcsv.py")).load_module()
 

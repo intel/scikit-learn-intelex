@@ -20,6 +20,7 @@ import os
 
 # let's use a generator for getting stream from file (defined in stream.py)
 import sys
+from pathlib import Path
 
 import numpy as np
 
@@ -94,16 +95,8 @@ def to_numpy(data):
 
 def main(readcsv=None, method="defaultDense"):
     # read data from file
-    infile = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "covcormoments_dense.csv",
-    )
+    data_path = Path(__file__).parent.parent / "data" / "batch"
+    infile = data_path / "covcormoments_dense.csv"
 
     # Using of the classic way (computations on CPU)
     # Configure a low order moments object for streaming

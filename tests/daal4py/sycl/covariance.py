@@ -17,6 +17,7 @@
 # daal4py covariance example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -72,16 +73,8 @@ def to_numpy(data):
 
 
 def main(readcsv=read_csv, method="defaultDense"):
-    infile = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "covcormoments_dense.csv",
-    )
+    data_path = Path(__file__).parent.parent / "data" / "batch"
+    infile = data_path / "covcormoments_dense.csv"
 
     # Load the data
     data = readcsv(infile, range(10), t=np.float32)

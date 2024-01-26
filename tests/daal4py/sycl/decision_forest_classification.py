@@ -17,6 +17,7 @@
 # daal4py Decision Forest Classification example for shared memory systems
 
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -99,26 +100,9 @@ def to_numpy(data):
 def main(readcsv=read_csv, method="defaultDense"):
     nFeatures = 3
     # input data file
-    train_file = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "df_classification_train.csv",
-    )
-    predict_file = os.path.join(
-        "..",
-        "..",
-        "..",
-        "examples",
-        "daal4py",
-        "data",
-        "batch",
-        "df_classification_test.csv",
-    )
+    data_path = Path(__file__).parent.parent / "data" / "batch"
+    train_file = data_path / "df_classification_train.csv"
+    predict_file = data_path / "df_classification_test.csv"
 
     # Read train data. Let's use 3 features per observation
     train_data = readcsv(train_file, range(nFeatures), t=np.float32)

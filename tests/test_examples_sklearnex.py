@@ -22,7 +22,8 @@ from daal4py.sklearn._utils import get_daal_version
 
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
-examples_path = os.path.join(os.path.dirname(test_path), "examples", "sklearnex")
+examples_cpu_path = os.path.join(os.path.dirname(test_path), "examples", "cpu")
+examples_misc_path = os.path.join(os.path.dirname(test_path), "examples", "miscellaneous")
 
 print("Testing examples_sklearnex")
 # First item is major version - 2021,
@@ -39,7 +40,7 @@ class TestsklearnexExamples(unittest.TestCase):
     pass
 
 
-def test_generator(file):
+def test_generator(file, examples_path):
     def testit(self):
         # Run the script and capture its exit code
         process = subprocess.run(
@@ -57,14 +58,23 @@ def test_generator(file):
     print("Generating tests for " + os.path.splitext(file)[0])
 
 
-files = [
+files_cpu = [
     f
-    for f in os.listdir(examples_path)
+    for f in os.listdir(examples_cpu_path)
     if f.endswith(".py") and "spmd" not in f and "dpnp" not in f and "dpctl" not in f
 ]
 
-for file in files:
-    test_generator(file)
+for file in files_cpu:
+    test_generator(file, examples_cpu_path)
+
+files_misc = [
+    f
+    for f in os.listdir(examples_misc_path)
+    if f.endswith(".py") and "spmd" not in f and "dpnp" not in f and "dpctl" not in f
+]
+
+for file in files_misc:
+    test_generator(file, examples_misc_path)
 
 if __name__ == "__main__":
     unittest.main()
