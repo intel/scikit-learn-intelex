@@ -35,9 +35,7 @@ from sklearnex.neighbors import (
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_knn_classifier(dataframe, queue):
 
-    X = _convert_to_dataframe(
-        [[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe
-    )
+    X = _convert_to_dataframe([[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe([0, 0, 1, 1], sycl_queue=queue, target_df=dataframe)
     neigh = KNeighborsClassifier(n_neighbors=3).fit(X, y)
     y_test = _convert_to_dataframe([[1.1]], sycl_queue=queue, target_df=dataframe)
@@ -49,9 +47,7 @@ def test_sklearnex_import_knn_classifier(dataframe, queue):
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_knn_regression(dataframe, queue):
 
-    X = _convert_to_dataframe(
-        [[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe
-    )
+    X = _convert_to_dataframe([[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe([0, 0, 1, 1], sycl_queue=queue, target_df=dataframe)
     neigh = KNeighborsRegressor(n_neighbors=2).fit(X, y)
     y_test = _convert_to_dataframe([[1.5]], sycl_queue=queue, target_df=dataframe)

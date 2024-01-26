@@ -147,9 +147,11 @@ class NeighborsCommonBase(metaclass=ABCMeta):
             "k": self.n_neighbors if n_neighbors is None else n_neighbors,
             "voteWeights": "voteUniform" if weights == "uniform" else "voteDistance",
             "resultsToCompute": "computeIndicesOfNeighbors|computeDistances",
-            "resultsToEvaluate": "none"
-            if getattr(self, "_y", None) is None or _is_regressor(self)
-            else "computeClassLabels",
+            "resultsToEvaluate": (
+                "none"
+                if getattr(self, "_y", None) is None or _is_regressor(self)
+                else "computeClassLabels"
+            ),
         }
         if class_count != 0:
             params["nClasses"] = class_count
