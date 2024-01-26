@@ -22,6 +22,7 @@ from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
+from sklearnex.metrics import pairwise_distances
 
 from ..._device_offload import dispatch
 from ..._utils import PatchingConditionsChain, register_hyperparameters
@@ -59,7 +60,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         patching_status = PatchingConditionsChain(
             f"sklearn.covariance.{class_name}.{method_name}"
         )
-        if method_name == "fit":
+        if method_name in ["fit", "mahalanobis"]:
             (X,) = data
             patching_status.and_conditions(
                 [
@@ -84,9 +85,9 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("0.23"):
-            self._validate_data(X)
+            X = self._validate_data(X)
         else:
-            check_array(X)
+            X = check_array(X)
 
         dispatch(
             self,
@@ -100,4 +101,37 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
         return self
 
+
+    def mahalanobis(self, X):
+        dispatch(
+            self,
+            "mahalanobis",
+            {
+                "onedal": self.__class__._onedal_mahalanobis,
+                "sklearn": sklearn_EmpiricalCovariance.mahalanobis,
+            },
+            X,
+        )
+
+        return self
+
+
+    # This needs to be included to guarantee that we use the sklearnex pairwise_distances
+    def _onedal_mahalanobis(self, X):
+        if sklearn_check_version("1.2"):
+            X = self._validate_data(X, reset=False, copy=self.copy)
+        else:
+            X = check_array(X, reset=False, copy=self.copy)
+
+        precision = self.get_precision()
+        with config_context(assume_finite=True):
+            # compute mahalanobis distances
+            dist = pairwise_distances(
+                X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
+            )
+
+        return np.reshape(dist, (len(X),)) ** 2
+
+
     fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
+    mahalanobis.__doc__ = sklearn_EmpericalCovariance.mahalanobis

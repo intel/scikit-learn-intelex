@@ -14,18 +14,28 @@
 # limitations under the License.
 # ===============================================================================
 
+import numbers
 import numpy as np
+from scipy import linalg
 from sklearn.utils import check_array, gen_batches
+from sklearn.covariance import EmpiricalCovariance as sklearn_EmpericalCovariance
+from sklearnex.metrics import pairwise_distances
+from sklearnex._device_offload import dispatch
+from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal._device_offload import support_usm_ndarray
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
 
+if sklearn_check_version("1.2"):
+    from sklearn.utils._param_validation import Interval
 
+# TODO: consult with others whether this should support store_precision and assume_centered 
 @control_n_jobs(decorated_methods=["partial_fit"])
-class IncrementalEmpiricalCovariance:
+class IncrementalEmpiricalCovariance(BaseEstimator):
     """
     Incremental estimator for covariance.
     Allows to compute empirical covariance estimated by maximum
@@ -50,17 +60,31 @@ class IncrementalEmpiricalCovariance:
 
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
 
-    def __init__(self, batch_size=None):
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {
+            "batch_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "copy": ["boolean"],
+        }
+
+    def __init__(self, batch_size=None, copy=False):
         self._need_to_finalize = False  # If True then finalize compute should
         #      be called to obtain covariance_ or location_ from partial compute data
         self.batch_size = batch_size
+        self.copy = copy
+
+    def _onedal_supported(self, method_name, *data):
+        patching_status =  PatchingConditionsChain("sklearn.covariance.{self.__class__.__name__}.{method_name}")
+        return patching_status
 
     def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
+        self.location_ = self._onedal_estimator.location_
+        self.covariance_ = self._onedal_estimator.covariance_
         self._need_to_finalize = False
 
-    def _onedal_partial_fit(self, X, queue):
+    @support_usm_ndarray()
+    def _onedal_partial_fit(self, X, queue):        
         onedal_params = {
             "method": "dense",
             "bias": True,
@@ -72,18 +96,28 @@ class IncrementalEmpiricalCovariance:
 
     @property
     def covariance_(self):
-        if self._need_to_finalize:
-            self._onedal_finalize_fit()
-        return self._onedal_estimator.covariance_
+        if hasattr(self, "_onedal_estimator"):
+            if self._need_to_finalize
+                self._onedal_finalize_fit()
+            return self._onedal_estimator.covariance_
+        else:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute 'covariance_'"
+            )
 
     @property
     def location_(self):
-        if self._need_to_finalize:
-            self._onedal_finalize_fit()
-        return self._onedal_estimator.location_
+        if hasattr(self, "_onedal_estimator"):
+            if self._need_to_finalize
+                self._onedal_finalize_fit()
+            return self._onedal_estimator.location_
+        else:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute 'location_'"
+            )
 
-    @support_usm_ndarray()
-    def partial_fit(self, X, queue=None):
+
+    def partial_fit(self, X):
         """
         Incremental fit with X. All of X is processed as a single batch.
 
@@ -98,11 +132,43 @@ class IncrementalEmpiricalCovariance:
         self : object
             Returns the instance itself.
         """
-        X = check_array(X, dtype=[np.float64, np.float32])
-        self._onedal_partial_fit(X, queue)
-        return self
+        if sklearn_check_version("1.2")
+            X = self._validate_data(X, dtype=[np.float64, np.float32],copy=self.copy)
+        else:
+            X = check_array(X, dtype=[np.float64, np.float32],copy=self.copy)
 
-    def fit(self, X, queue=None):
+        if not hasattr(self, "n_samples_seen_"):
+            self.n_samples_seen_ = 0
+        else:
+            self.n_samples_seen_ += X.shape[0]
+
+        dispatch(
+            self,
+            "partial_fit",
+            {
+                "onedal": self.__class__._onedal_partial_fit,
+                "sklearn": None,
+            },
+            X,
+        )
+
+        return self 
+
+
+    def fit(self, X, y=None):
+        dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": None,
+            },
+            X,
+        )
+
+        return self     
+
+    def _onedal_fit(self, X, queue=None):
         """
         Fit the model with X, using minibatches of size batch_size.
 
@@ -117,14 +183,62 @@ class IncrementalEmpiricalCovariance:
         self : object
             Returns the instance itself.
         """
-        n_samples, n_features = X.shape
-        if self.batch_size is None:
-            batch_size_ = 5 * n_features
+        self.n_samples_seen_ = 0
+        
+        if sklearn_check_version("1.2")
+            self._validate_params()
+            X = self._validate_data(X, dtype=[np.float64, np.float32],copy=self.copy)
         else:
-            batch_size_ = self.batch_size
+            X = check_array(X, dtype=[np.float64, np.float32],copy=self.copy)
+
+        n_samples, self.n_features_in_ = X.shape
+
+        if self.batch_size is None:
+            self.batch_size_ = 5 * self.n_features_in_
+        else:
+            self.batch_size_ = self.batch_size
         for batch in gen_batches(n_samples, batch_size_):
             X_batch = X[batch]
-            self.partial_fit(X_batch, queue=queue)
+            self._onedal_partial_fit(X_batch, queue=queue)
+            self.n_samples_seen_ += X.shape[0]
 
         self._onedal_finalize_fit()
         return self
+
+    get_precision = sklearn_EmpiricalCovariance.get_precision
+    error_norm = sklearn_EmpericalCovariance.error_norm
+
+    # necessary to to use sklearnex pairwise_distances
+    @wrap_output_data
+    def _onedal_mahalanobis(self, X):
+        if sklearn_check_version("1.2"):
+            X = self._validate_data(X, reset=False, copy=self.copy)
+        else:
+            X = check_array(X, reset=False, copy=self.copy)
+
+        precision = self.get_precision()
+        with config_context(assume_finite=True):
+            # compute mahalanobis distances
+            dist = pairwise_distances(
+                X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
+            )
+
+        return np.reshape(dist, (len(X),)) ** 2
+
+    def mahalanobis(self, X):
+        dispatch(
+            self,
+            "mahalanobis",
+            {
+                "onedal": self.__class__._onedal_mahalanobis,
+                "sklearn": sklearn_EmpericalCovariance.mahalanobis,
+            },
+            X,
+        )
+        return self  
+
+    _onedal_cpu_supported = _onedal_supported
+    _onedal_gpu_supported = _onedal_supported
+
+    fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
+    mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
