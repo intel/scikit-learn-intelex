@@ -83,8 +83,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
-        self.location_ = self._onedal_estimator.location_
-        self.covariance_ = self._onedal_estimator.covariance_
         self._need_to_finalize = False
 
     def _onedal_partial_fit(self, X, queue):
@@ -118,6 +116,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
+
 
     @support_usm_ndarray
     def partial_fit(self, X):
@@ -168,7 +167,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             },
             X,
         )
-
         return self
 
     def _onedal_fit(self, X, queue=None):
