@@ -36,6 +36,7 @@ def parse_tests_tree(entry, prefix=""):
 
 
 tests_map = {
+    "tests/": "test_common.py",
     "cluster/tests": ["test_dbscan.py", "test_k_means.py"],
     "covariance/tests": "test_covariance.py",
     "decomposition/tests": "test_pca.py",

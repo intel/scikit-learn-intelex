@@ -65,7 +65,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
-            "batch_size": [Interval(numbers.Integral, 1, None, closed="left")],
+            "batch_size": [Interval(numbers.Integral, 1, None, closed="left"), None],
             "copy": ["boolean"],
         }
 
@@ -118,7 +118,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
 
-    def partial_fit(self, X):
+    def partial_fit(self, X, y=None):
         """
         Incremental fit with X. All of X is processed as a single batch.
 
@@ -134,12 +134,13 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
         if sklearn_check_version("1.2"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
+            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy, reset=False)
         else:
             X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
 
         if not hasattr(self, "n_samples_seen_"):
             self.n_samples_seen_ = 0
+            self.n_features_in_ = X.shape[1]
         else:
             self.n_samples_seen_ += X.shape[0]
 
@@ -190,13 +191,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         else:
             X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
 
-        n_samples, self.n_features_in_ = X.shape
+        self.batch_size_ = self.batch_size if self.batch_size else 5 * self.n_features_in_
 
-        if self.batch_size is None:
-            self.batch_size_ = 5 * self.n_features_in_
-        else:
-            self.batch_size_ = self.batch_size
-        for batch in gen_batches(n_samples, batch_size_):
+        for batch in gen_batches(X.shape[0], self.batch_size_):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
             self.n_samples_seen_ += X.shape[0]
