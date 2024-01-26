@@ -77,7 +77,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
-            "sklearn.covariance.{self.__class__.__name__}.{method_name}"
+            f"sklearn.covariance.{self.__class__.__name__}.{method_name}"
         )
         return patching_status
 
