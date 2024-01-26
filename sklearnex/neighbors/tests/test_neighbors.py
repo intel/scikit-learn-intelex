@@ -27,7 +27,7 @@ from onedal.tests.utils._dataframes_support import (
 from sklearnex.neighbors import (
     LocalOutlierFactor,
     KNeighborsClassifier,
-    KneighborsRegressor,
+    KNeighborsRegressor,
     NearestNeighbors,
 )
 
