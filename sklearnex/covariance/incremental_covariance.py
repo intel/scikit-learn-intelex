@@ -190,6 +190,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
             X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
+            self.n_features_in_ = X.shape[1]
 
         self.batch_size_ = self.batch_size if self.batch_size else 5 * self.n_features_in_
 
