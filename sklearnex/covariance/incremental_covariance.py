@@ -37,7 +37,7 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
 
-@control_n_jobs(decorated_methods=["partial_fit", "fit"])
+@control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
 class IncrementalEmpiricalCovariance(BaseEstimator):
     """
     Incremental estimator for covariance.
