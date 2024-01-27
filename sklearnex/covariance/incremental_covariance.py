@@ -147,19 +147,23 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self : object
             Returns the instance itself.
         """
+
+
+        first_pass = not hasattr(self, "n_samples_seen_")
+        
         if sklearn_check_version("1.2"):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
+                X, dtype=[np.float64, np.float32], reset=first_pass, copy=self.copy
             )
         else:
             X = check_array(
                 X, dtype=[np.float64, np.float32], copy=self.copy
             )
 
-        if not hasattr(self, "n_samples_seen_"):
+        if first_pass:
             self.n_samples_seen_ = 0
             self.n_features_in_ = X.shape[1]
         else:
