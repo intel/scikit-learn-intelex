@@ -14,6 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
+
 from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.utils import check_array
