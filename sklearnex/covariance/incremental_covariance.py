@@ -182,18 +182,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         return self
 
     def fit(self, X, y=None):
-        dispatch(
-            self,
-            "fit",
-            {
-                "onedal": self.__class__._onedal_fit,
-                "sklearn": None,
-            },
-            X,
-        )
-        return self
-
-    def _onedal_fit(self, X, queue=None):
         """
         Fit the model with X, using minibatches of size batch_size.
 
@@ -208,6 +196,19 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self : object
             Returns the instance itself.
         """
+
+        dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": None,
+            },
+            X,
+        )
+        return self
+
+    def _onedal_fit(self, X, queue=None):
         self.n_samples_seen_ = 0
         
         if sklearn_check_version("1.2"):
