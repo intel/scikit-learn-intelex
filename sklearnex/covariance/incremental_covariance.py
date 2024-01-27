@@ -215,7 +215,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
 
-    # necessary to to use sklearnex pairwise_distances
+    # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
     @wrap_output_data
     def mahalanobis(self, X):
         if sklearn_check_version("1.0"):
