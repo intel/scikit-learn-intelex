@@ -256,6 +256,5 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
-    fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
     mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
     error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
