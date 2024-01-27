@@ -23,6 +23,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal._device_offload import support_usm_ndarray
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
+from sklearnex import config_context
 from sklearnex.metrics import pairwise_distances
 
 from ..._device_offload import dispatch, wrap_output_data
