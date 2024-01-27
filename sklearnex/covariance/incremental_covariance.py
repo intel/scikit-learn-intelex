@@ -139,7 +139,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             )
         else:
             X = check_array(
-                X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
+                X, dtype=[np.float64, np.float32], copy=self.copy
             )
 
         if not hasattr(self, "n_samples_seen_"):
@@ -217,7 +217,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if sklearn_check_version("1.2"):
             self._validate_data(X, reset=False, copy=self.copy)
         else:
-            check_array(X, reset=False, copy=self.copy)
+            check_array(X, copy=self.copy)
 
         precision = self.get_precision()
         with config_context(assume_finite=True):
