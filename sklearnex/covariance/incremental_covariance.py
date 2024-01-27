@@ -196,8 +196,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         
         if sklearn_check_version("1.2"):
             self._validate_params()
-            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
-        elif sklearn_check_version("1.0"):
+            
+        if sklearn_check_version("1.0"):
             X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
             X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
