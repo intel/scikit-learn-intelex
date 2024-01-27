@@ -70,8 +70,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         }
 
     def __init__(self, batch_size=None, copy=False):
-        self._need_to_finalize = False  # If True then finalize compute should
-        #      be called to obtain covariance_ or location_ from partial compute data
         self.batch_size = batch_size
         self.copy = copy
 
@@ -101,6 +99,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if hasattr(self, "_onedal_estimator"):
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
+                self._need_to_finalize = False
             return self._onedal_estimator.covariance_
         else:
             raise AttributeError(
@@ -112,6 +111,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if hasattr(self, "_onedal_estimator"):
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
+                self._need_to_finalize = False
             return self._onedal_estimator.location_
         else:
             raise AttributeError(
@@ -133,7 +133,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self : object
             Returns the instance itself.
         """
-        if sklearn_check_version("1.2"):
+        if sklearn_check_version("1.2")
+            self._validate_params()
+            X = self._validate_data(
+                X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
+            )
+        elif sklearn_check_version("1.0"):
             X = self._validate_data(
                 X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
             )
@@ -188,9 +193,11 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
         self.n_samples_seen_ = 0
-
+        
         if sklearn_check_version("1.2"):
             self._validate_params()
+            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
+        elif sklearn_check_version("1.0"):
             X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
             X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
@@ -204,6 +211,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             self.n_samples_seen_ += X.shape[0]
 
         self._onedal_finalize_fit()
+        self._need_to_finalize = False
+
         return self
 
     def get_precision(self):
@@ -214,7 +223,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     # necessary to to use sklearnex pairwise_distances
     @wrap_output_data
     def mahalanobis(self, X):
-        if sklearn_check_version("1.2"):
+        if sklearn_check_version("1.0"):
             self._validate_data(X, reset=False, copy=self.copy)
         else:
             check_array(X, copy=self.copy)
