@@ -113,7 +113,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if hasattr(self, "_onedal_estimator"):
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
-                return self._onedal_estimator.covariance_
+            return self._onedal_estimator.covariance_
         else:
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute 'covariance_'"
