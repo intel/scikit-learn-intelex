@@ -51,6 +51,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         ``fit``. If ``batch_size`` is ``None``, then ``batch_size``
         is inferred from the data and set to ``5 * n_features``, to provide a
         balance between approximation accuracy and memory consumption.
+        
+    copy : bool, default=True
+        If False, X will be overwritten. ``copy=False`` can be used to
+        save memory but is unsafe for general use.
 
     Attributes
     ----------
@@ -59,6 +63,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     covariance_ : ndarray of shape (n_features, n_features)
         Estimated covariance matrix
+
+    batch_size_ : int
+        Inferred batch size from ``batch_size``.
+
+    n_features_in_ : int
+        Number of features seen during :term:`fit` `partial_fit`.
     """
 
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
