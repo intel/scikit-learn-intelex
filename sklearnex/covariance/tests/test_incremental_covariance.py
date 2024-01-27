@@ -16,7 +16,6 @@
 
 import numpy as np
 import pytest
-import sklearn.covariance as covmodule
 from numpy.testing import assert_allclose
 from sklearn.covariance.tests.test_covariance import (
     test_covariance,
@@ -150,11 +149,11 @@ def test_sklearnex_fit_on_random_data(
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
 @pytest.mark.parametrize(
-    "func", [test_covariance, test_EmpiricalCovariance_validates_mahalanobis]
+    "sklearn_test", [test_covariance, test_EmpiricalCovariance_validates_mahalanobis]
 )
-def test_covariance_with_IncrementalEmpiricalCovariance(monkeypatch, func):
+def test_IncrementalEmpiricalCovariance_against_sklearn(monkeypatch, sklearn_test):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     class_name = "sklearn.covariance.tests.test_covariance.EmpiricalCovariance"
     monkeypatch.setattr(class_name, IncrementalEmpiricalCovariance)
-    func()
+    sklearn_test()
