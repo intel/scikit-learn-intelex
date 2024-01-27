@@ -48,6 +48,15 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     Parameters
     ----------
+    store_precision : bool, default=True
+        Specifies if the estimated precision is stored.
+
+    assume_centered : bool, default=False
+        If True, data are not centered before computation.
+        Useful when working with data whose mean is almost, but not exactly
+        zero.
+        If False (default), data are centered before computation.
+    
     batch_size : int, default=None
         The number of samples to use for each batch. Only used when calling
         ``fit``. If ``batch_size`` is ``None``, then ``batch_size``
@@ -81,18 +90,36 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
+            "store_precision": ["boolean"],
+            "assume_centered": ["boolean"],
             "batch_size": [Interval(numbers.Integral, 1, None, closed="left"), None],
             "copy": ["boolean"],
         }
 
-    def __init__(self, batch_size=None, copy=True):
+    def __init__(self, *, store_precision=True, assume_centered=False, batch_size=None, copy=True):
         self.batch_size = batch_size
         self.copy = copy
+        self.store_precision = store_precision
+        self.assume_centered = assume_centered
 
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
             f"sklearn.covariance.{self.__class__.__name__}.{method_name}"
         )
+        if method_name == "fit":
+            patching_status.and_conditions(
+                [
+                    (
+                        self.assume_centered == False,
+                        "assume_centered parameter is not supported on oneDAL side",
+                    ),
+                    (
+                        self.store_precision == False,
+                        "precision matrix calculation is not supported on oneDAL side",
+                    ),
+                    (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
+                ]
+            )
         return patching_status
 
     def _onedal_finalize_fit(self):
@@ -204,7 +231,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": None,
+                "sklearn": sklearn_EmpiricalCovariance.fit,
             },
             X,
         )
