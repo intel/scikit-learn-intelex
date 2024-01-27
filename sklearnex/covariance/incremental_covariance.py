@@ -33,6 +33,8 @@ from sklearnex._device_offload import dispatch, wrap_output_data
 from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
 from sklearnex.metrics import pairwise_distances
 
+import warnings
+
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
@@ -222,6 +224,11 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         self.batch_size_ = self.batch_size if self.batch_size else 5 * self.n_features_in_
 
+        if X.shape[0] == 1:
+            warnings.warn(
+                "Only one sample available. You may want to reshape your data array"
+            )
+        
         for batch in gen_batches(X.shape[0], self.batch_size_):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
