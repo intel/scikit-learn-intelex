@@ -154,7 +154,7 @@ def do_unpatch(name, get_map=_get_map_of_algorithms):
                 which, what, _ = descriptor[0]
                 if descriptor[1]:
                     setattr(which, what, descriptor[1])
-                else:
+                elif hasattr(which, what):
                     delattr(which, what)
     else:
         raise ValueError("Has no patch for: " + name)
