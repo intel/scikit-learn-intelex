@@ -105,8 +105,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         }
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_covariance(**onedal_params)
-        self._onedal_estimator.partial_fit(X, queue)
-        self._need_to_finalize = True
+        try:
+            self._onedal_estimator.partial_fit(X, queue)
+        finally:
+            self._need_to_finalize = True
 
     @property
     def covariance_(self):
