@@ -79,7 +79,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             "copy": ["boolean"],
         }
 
-    def __init__(self, batch_size=None, copy=False):
+    def __init__(self, batch_size=None, copy=True):
         self.batch_size = batch_size
         self.copy = copy
 
