@@ -133,12 +133,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self : object
             Returns the instance itself.
         """
-        if sklearn_check_version("1.2")
+        if sklearn_check_version("1.2"):
             self._validate_params()
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
-            )
-        elif sklearn_check_version("1.0"):
+
+        if sklearn_check_version("1.0"):
             X = self._validate_data(
                 X, dtype=[np.float64, np.float32], reset=False, copy=self.copy
             )
