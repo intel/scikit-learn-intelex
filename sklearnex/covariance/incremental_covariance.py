@@ -107,7 +107,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
         if self.store_precision:
-            self.precision_ = linalg.pinvh(covariance, check_finite=False)
+            self.precision_ = linalg.pinvh(self._onedal_estimator.covariance_, check_finite=False)
         else:
             self.precision_ = None
 
