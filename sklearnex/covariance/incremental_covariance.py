@@ -97,7 +97,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         }
 
     get_precision = sklearn_EmpiricalCovariance.get_precision
-    score = sklearn_EmpiricalCovariance.score
+    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
+    score = wrap_output_data(sklearn_EmpiricalCovariance.score)
 
     def __init__(self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True):
         self.assume_centered = assume_centered
@@ -265,8 +266,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         return self
 
-    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
-
     # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
     @wrap_output_data
     def mahalanobis(self, X):
@@ -289,3 +288,5 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
     error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
+    score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__
+
