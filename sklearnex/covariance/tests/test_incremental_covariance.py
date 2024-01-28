@@ -149,7 +149,7 @@ def test_sklearnex_fit_on_random_data(
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
 @pytest.mark.parametrize(
-    "sklearn_test", [test_EmpiricalCovariance_validates_mahalanobis,]
+    "sklearn_test", [test_covariance, test_EmpiricalCovariance_validates_mahalanobis,]
 )
 def test_IncrementalEmpiricalCovariance_against_sklearn(monkeypatch, sklearn_test):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
