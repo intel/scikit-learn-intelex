@@ -50,6 +50,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     ----------
     store_precision : bool, default=False
         Specifies if the estimated precision is stored.
+            
+    assume_centered : bool, default=False
+        If True, data are not centered before computation.
+        Useful when working with data whose mean is almost, but not exactly
+        zero.
+        If False (default), data are centered before computation.
     
     batch_size : int, default=None
         The number of samples to use for each batch. Only used when calling
@@ -91,7 +97,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     get_precision = sklearn_EmpiricalCovariance.get_precision
 
-    def __init__(self, *, store_precision=False, batch_size=None, copy=True):
+    def __init__(self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True):
+        self.assume_centered = assume_centered
+        if self.assume_centered:
+            warnings.warn("Setting assume_centered=True reduces performance and is highly discouraged")
         self.store_precision = store_precision
         self.batch_size = batch_size
         self.copy = copy
@@ -106,6 +115,11 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
+        
+        if self.assume_centered:
+            location = self.onedal_estimator.location_
+            self.onedal_estimator.covariance_ += np.dot(location.T, location)
+            self.onedal_estimator.location_ = np.zeros(location.shape, dtype=location.dtype)
         if self.store_precision:
             self.precision_ = linalg.pinvh(self._onedal_estimator.covariance_, check_finite=False)
         else:
