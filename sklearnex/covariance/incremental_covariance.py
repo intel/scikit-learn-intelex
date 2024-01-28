@@ -48,7 +48,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     Parameters
     ----------
-    store_precision : bool, default=True
+    store_precision : bool, default=False
         Specifies if the estimated precision is stored.
     
     batch_size : int, default=None
