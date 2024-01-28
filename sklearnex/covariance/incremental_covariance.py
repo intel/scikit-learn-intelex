@@ -96,6 +96,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         }
 
     get_precision = sklearn_EmpiricalCovariance.get_precision
+    score = sklearn_EmpiricalCovariance.score
 
     def __init__(self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True):
         self.assume_centered = assume_centered
