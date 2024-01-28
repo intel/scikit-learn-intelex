@@ -120,9 +120,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._need_to_finalize = False
         
         if self.assume_centered:
-            location = self.onedal_estimator.location_
-            self.onedal_estimator.covariance_ += np.dot(location.T, location)
-            self.onedal_estimator.location_ = np.zeros(location.shape, dtype=location.dtype)
+            location = self._onedal_estimator.location_
+            self._onedal_estimator.covariance_ += np.dot(location.T, location)
+            self._onedal_estimator.location_ = np.zeros(location.shape, dtype=location.dtype)
         if self.store_precision:
             self.precision_ = linalg.pinvh(self._onedal_estimator.covariance_, check_finite=False)
         else:
