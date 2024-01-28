@@ -44,7 +44,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
-        self.covariance_ = self._onedal_estimator.covariance_
+        self._set_covariance( self._onedal_estimator.covariance_)
         self.location_ = self._onedal_estimator.location_
 
     _onedal_covariance = staticmethod(onedal_EmpiricalCovariance)
@@ -71,10 +71,6 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
                     (
                         self.assume_centered == False,
                         "assume_centered parameter is not supported on oneDAL side",
-                    ),
-                    (
-                        self.store_precision == False,
-                        "precision matrix calculation is not supported on oneDAL side",
                     ),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 ]
