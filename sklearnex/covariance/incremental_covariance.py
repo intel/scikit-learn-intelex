@@ -102,7 +102,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     def __init__(self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True):
         self.assume_centered = assume_centered
-        if self.assume_centered:
+        if not self.assume_centered == False:
             warnings.warn("Setting assume_centered=True reduces performance and is highly discouraged")
         self.store_precision = store_precision
         self.batch_size = batch_size
