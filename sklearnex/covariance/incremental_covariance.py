@@ -47,7 +47,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     likelihood method if data are splitted into batches.
 
     Parameters
-    ----------    
+    ----------
+    store_precision : bool, default=True
+        Specifies if the estimated precision is stored.
+    
     batch_size : int, default=None
         The number of samples to use for each batch. Only used when calling
         ``fit``. If ``batch_size`` is ``None``, then ``batch_size``
@@ -81,11 +84,15 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
+            "store_precision": ["boolean"],
             "batch_size": [Interval(numbers.Integral, 1, None, closed="left"), None],
             "copy": ["boolean"],
         }
 
-    def __init__(self, *, batch_size=None, copy=True):
+    get_precision = sklearn_EmpiricalCovariance.get_precision
+
+    def __init__(self, *, store_precision=False, batch_size=None, copy=True):
+        self.store_precision = store_precision
         self.batch_size = batch_size
         self.copy = copy
 
@@ -99,6 +106,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
+        if self.store_precision:
+            self.precision_ = linalg.pinvh(covariance, check_finite=False)
+        else:
+            self.precision_ = None
 
     def _onedal_partial_fit(self, X, queue):
         onedal_params = {
@@ -237,9 +248,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._onedal_finalize_fit()
 
         return self
-
-    def get_precision(self):
-        return linalg.pinvh(self.covariance_, check_finite=False)
 
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
 
