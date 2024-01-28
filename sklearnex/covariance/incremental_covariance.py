@@ -91,6 +91,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
             "store_precision": ["boolean"],
+            "assume_centered": ["boolean"],
             "batch_size": [Interval(numbers.Integral, 1, None, closed="left"), None],
             "copy": ["boolean"],
         }
