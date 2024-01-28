@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import numbers
+import warnings
 
 import numpy as np
 from scipy import linalg
@@ -33,8 +34,6 @@ from sklearnex._device_offload import dispatch, wrap_output_data
 from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
 from sklearnex.metrics import pairwise_distances
 
-import warnings
-
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
@@ -50,19 +49,19 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     ----------
     store_precision : bool, default=False
         Specifies if the estimated precision is stored.
-            
+
     assume_centered : bool, default=False
         If True, data are not centered before computation.
         Useful when working with data whose mean is almost, but not exactly
         zero.
         If False (default), data are centered before computation.
-    
+
     batch_size : int, default=None
         The number of samples to use for each batch. Only used when calling
         ``fit``. If ``batch_size`` is ``None``, then ``batch_size``
         is inferred from the data and set to ``5 * n_features``, to provide a
         balance between approximation accuracy and memory consumption.
-        
+
     copy : bool, default=True
         If False, X will be overwritten. ``copy=False`` can be used to
         save memory but is unsafe for general use.
@@ -100,7 +99,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
     score = wrap_output_data(sklearn_EmpiricalCovariance.score)
 
-    def __init__(self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True):
+    def __init__(
+        self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True
+    ):
         self.assume_centered = assume_centered
         self.store_precision = store_precision
         self.batch_size = batch_size
@@ -116,13 +117,17 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         assert hasattr(self, "_onedal_estimator")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
-        
+
         if self.assume_centered:
             location = self._onedal_estimator.location_
             self._onedal_estimator.covariance_ += np.dot(location.T, location)
-            self._onedal_estimator.location_ = np.zeros(location.shape, dtype=location.dtype)
+            self._onedal_estimator.location_ = np.zeros(
+                location.shape, dtype=location.dtype
+            )
         if self.store_precision:
-            self.precision_ = linalg.pinvh(self._onedal_estimator.covariance_, check_finite=False)
+            self.precision_ = linalg.pinvh(
+                self._onedal_estimator.covariance_, check_finite=False
+            )
         else:
             self.precision_ = None
 
@@ -176,9 +181,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
 
-
         first_pass = not hasattr(self, "n_samples_seen_")
-        
+
         if sklearn_check_version("1.2"):
             self._validate_params()
 
@@ -187,9 +191,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 X, dtype=[np.float64, np.float32], reset=first_pass, copy=self.copy
             )
         else:
-            X = check_array(
-                X, dtype=[np.float64, np.float32], copy=self.copy
-            )
+            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
 
         if first_pass:
             self.n_samples_seen_ = 0
@@ -238,10 +240,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     def _onedal_fit(self, X, queue=None):
         self.n_samples_seen_ = 0
-        
+
         if sklearn_check_version("1.2"):
             self._validate_params()
-            
+
         if sklearn_check_version("1.0"):
             X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
@@ -254,7 +256,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             warnings.warn(
                 "Only one sample available. You may want to reshape your data array"
             )
-        
+
         for batch in gen_batches(X.shape[0], self.batch_size_):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
@@ -287,4 +289,3 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
     error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
     score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__
-

@@ -15,7 +15,6 @@
 # ===============================================================================
 
 import numpy as np
-
 from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.utils import check_array
@@ -44,7 +43,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
-        self._set_covariance( self._onedal_estimator.covariance_)
+        self._set_covariance(self._onedal_estimator.covariance_)
         self.location_ = self._onedal_estimator.location_
 
     _onedal_covariance = staticmethod(onedal_EmpiricalCovariance)

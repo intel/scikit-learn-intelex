@@ -124,9 +124,7 @@ def test_sklearnex_partial_fit_on_random_data(
 @pytest.mark.parametrize("num_batches", [2, 10])
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_sklearnex_fit_on_random_data(
-    dataframe, queue, num_batches, row_count, dtype
-):
+def test_sklearnex_fit_on_random_data(dataframe, queue, num_batches, row_count, dtype):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     seed = 77
@@ -149,7 +147,11 @@ def test_sklearnex_fit_on_random_data(
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
 @pytest.mark.parametrize(
-    "sklearn_test", [test_covariance, test_EmpiricalCovariance_validates_mahalanobis,]
+    "sklearn_test",
+    [
+        test_covariance,
+        test_EmpiricalCovariance_validates_mahalanobis,
+    ],
 )
 def test_IncrementalEmpiricalCovariance_against_sklearn(monkeypatch, sklearn_test):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
