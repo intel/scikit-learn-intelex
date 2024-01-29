@@ -118,7 +118,7 @@ UNPATCHED_MODELS = _load_all_models(patched=False)
 
 @pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
 def test_is_patched_instance(estimator):
-    patched = PATCHED_MODEL[estimator]
-    unpatched = UNPATCHED_MODEL[estimator]
+    patched = PATCHED_MODELS[estimator]
+    unpatched = UNPATCHED_MODELS[estimator]
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
