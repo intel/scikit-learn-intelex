@@ -207,7 +207,7 @@ def _is_enabled(name, get_map=_get_map_of_algorithms):
         enabled = True
         for descriptor in get_map()[lname]:
             which, what, replacer = descriptor[0]
-            enabled = enabled and getattr(which, what) == replacer
+            enabled = enabled and getattr(which, what, None) == replacer
         return enabled
     else:
         raise ValueError("Has no patch for: " + name)
