@@ -83,9 +83,9 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("0.23"):
-            X = self._validate_data(X)
+            X = self._validate_data(X, force_all_finite=False)
         else:
-            X = check_array(X)
+            X = check_array(X, force_all_finite=False)
 
         dispatch(
             self,
