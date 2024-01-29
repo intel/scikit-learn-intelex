@@ -97,9 +97,9 @@ def daal4py_fit(estimator, X, fptype):
         "k": estimator.n_neighbors,
         "voteWeights": "voteUniform" if weights == "uniform" else "voteDistance",
         "resultsToCompute": "computeIndicesOfNeighbors|computeDistances",
-        "resultsToEvaluate": "none"
-        if getattr(estimator, "_y", None) is None
-        else "computeClassLabels",
+        "resultsToEvaluate": (
+            "none" if getattr(estimator, "_y", None) is None else "computeClassLabels"
+        ),
     }
     if hasattr(estimator, "classes_"):
         params["nClasses"] = len(estimator.classes_)
@@ -175,9 +175,9 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
         "k": n_neighbors,
         "voteWeights": "voteUniform" if weights == "uniform" else "voteDistance",
         "resultsToCompute": "computeIndicesOfNeighbors|computeDistances",
-        "resultsToEvaluate": "none"
-        if getattr(estimator, "_y", None) is None
-        else "computeClassLabels",
+        "resultsToEvaluate": (
+            "none" if getattr(estimator, "_y", None) is None else "computeClassLabels"
+        ),
     }
     if hasattr(estimator, "classes_"):
         params["nClasses"] = len(estimator.classes_)
