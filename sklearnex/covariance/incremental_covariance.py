@@ -185,12 +185,13 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
+        # finite check occurs on onedal side
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], reset=first_pass, copy=self.copy
+                X, dtype=[np.float64, np.float32], reset=first_pass, copy=self.copy, force_all_finite=False
             )
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
+            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False)
 
         if first_pass:
             self.n_samples_seen_ = 0
@@ -243,10 +244,11 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
+        # finite check occurs on onedal side
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
+            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False)
         else:
-            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy)
+            X = check_array(X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False)
             self.n_features_in_ = X.shape[1]
 
         self.batch_size_ = self.batch_size if self.batch_size else 5 * self.n_features_in_

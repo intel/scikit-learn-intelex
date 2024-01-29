@@ -29,7 +29,6 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex.covariance import IncrementalEmpiricalCovariance
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -149,35 +148,6 @@ def test_sklearnex_fit_on_random_data(dataframe, queue, num_batches, row_count, 
     assert_allclose(expected_means, result.location_, atol=1e-6)
 
 
-def swap_estimator_sklearn_test(sklearn_test, skname, estimator):
-
-    args = list(*args)
-    if not ("monkeypatch" in args):
-        args = ["monkeypatch"] + args
-
-    @wraps(sklearn_test)
-    def wrapper(args, **kwargs):
-        estname = estimator.__name__
-        monkeypatch.setattr(".".join([func.__module__, skname]), estimator)
-        try:
-            sklearn_test(args, **kwargs)
-        except Exception as e:
-            raise type(e)(
-                f"sklearn test from {func.__module__} with '{estname}' as '{skname}': "
-                + str(e),
-                sys.exc_info()[2],
-            )
-
-    return wrapper
-
-
-for i in [test_covariance, test_EmpiricalCovariance_validates_mahalanobis]:
-    new_test = swap_estimator_sklearn_test(
-        i, "EmpiricalCovariance", IncrementalEmpiricalCovariance
-    )
-    vars()[i.__name__] = new_test
-
-
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
 @pytest.mark.parametrize(
     "sklearn_test",
@@ -189,6 +159,6 @@ for i in [test_covariance, test_EmpiricalCovariance_validates_mahalanobis]:
 def test_IncrementalEmpiricalCovariance_against_sklearn(monkeypatch, sklearn_test):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
-    class_name = "sklearn.covariance.tests.test_covariance.EmpiricalCovariance"
+    class_name = ".".join([sklearn_test.__module__, "EmpiricalCovariance"])
     monkeypatch.setattr(class_name, IncrementalEmpiricalCovariance)
     sklearn_test()
