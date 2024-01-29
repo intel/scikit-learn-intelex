@@ -56,7 +56,7 @@ def test_sklearnex_import_knn_regression(dataframe, queue):
     assert_allclose(pred, [0.5])
 
 
-@pytest.mark.parameterize(
+@pytest.mark.parametrize(
     estimator,
     [LocalOutlierFactor, KNeighborsClassifier, KneighborsRegressor, NearestNeighbors],
 )
