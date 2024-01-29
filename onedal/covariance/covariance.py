@@ -19,7 +19,7 @@ import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
-from onedal._utils import _check_array
+from onedal.utils import _check_array
 
 from ..common._policy import _get_policy
 from ..common.hyperparameters import get_hyperparameters
