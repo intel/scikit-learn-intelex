@@ -14,6 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
+import warnings
+
 import numpy as np
 from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
@@ -48,6 +50,11 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     _onedal_covariance = staticmethod(onedal_EmpiricalCovariance)
 
     def _onedal_fit(self, X, queue=None):
+        if X.shape[0] == 1:
+            warnings.warn(
+                "Only one sample available. You may want to reshape your data array"
+            )
+
         onedal_params = {
             "method": "dense",
             "bias": True,
