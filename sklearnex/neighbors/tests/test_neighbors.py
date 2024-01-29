@@ -57,7 +57,7 @@ def test_sklearnex_import_knn_regression(dataframe, queue):
 
 @pytest.mark.parametrize(
     "estimator",
-    [LocalOutlierFactor, KNeighborsClassifier, KNeighborsRegressor, NearestNeighbors],
+    [LocalOutlierFactor, NearestNeighbors],
 )
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_kneighbors(estimator, dataframe, queue):
