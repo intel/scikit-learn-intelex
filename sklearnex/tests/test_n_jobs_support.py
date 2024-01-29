@@ -84,7 +84,10 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
         if method_name == "fit":
             continue
         method = getattr(estimator_instance, method_name)
-        check_method(X, method=method, caplog=caplog)
+        if len(inspect.signature(method).parameters) == 0:
+            check_method(method=method, caplog=caplog)
+        else:
+            check_method(X, method=method, caplog=caplog)
     # check if correct methods were decorated
     check_methods_decoration(estimator_class)
     check_methods_decoration(estimator_instance)
