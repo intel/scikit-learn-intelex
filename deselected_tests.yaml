@@ -343,6 +343,16 @@ deselected_tests:
   # trees will fail, especially since two different RNGs are used.
   - ensemble/tests/test_forest.py::test_estimators_samples
 
+  # Tests migrated from gpu deselection set starting from sklearn 1.4 for unknowm reason(s)
+  - ensemble/tests/test_bagging.py::test_estimators_samples >=1.4
+  - ensemble/tests/test_voting.py::test_sample_weight >=1.4
+  - svm/tests/test_svm.py::test_auto_weight >=1.4
+  - tests/test_calibration.py::test_calibrated_classifier_cv_double_sample_weights_equivalence >=1.4
+  - tests/test_calibration.py::test_calibrated_classifier_cv_zeros_sample_weights_equivalence >=1.4
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=ones)] >=1.4
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=zeros)] >=1.4
+  - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data >=1.4
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:

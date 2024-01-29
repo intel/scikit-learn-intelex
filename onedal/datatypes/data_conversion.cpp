@@ -164,7 +164,7 @@ dal::table convert_to_table(PyObject *obj) {
                 "[convert_to_table] Numpy input Could not convert Python object to onedal table.");
         }
     }
-    else if (strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0) {
+    else if (strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0 || strcmp(Py_TYPE(obj)->tp_name, "csr_array") == 0) {
         PyObject *py_data = PyObject_GetAttrString(obj, "data");
         PyObject *py_column_indices = PyObject_GetAttrString(obj, "indices");
         PyObject *py_row_indices = PyObject_GetAttrString(obj, "indptr");
