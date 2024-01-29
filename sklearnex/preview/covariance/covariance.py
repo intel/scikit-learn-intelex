@@ -118,7 +118,10 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         return np.reshape(dist, (len(X),)) ** 2
 
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
+    score = wrap_output_data(sklearn_EmpiricalCovariance.score)
+
 
     fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
     mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis
     error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
+    score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__
