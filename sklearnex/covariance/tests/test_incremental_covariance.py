@@ -14,6 +14,9 @@
 # limitations under the License.
 # ===============================================================================
 
+import sys
+from functools import wrap
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
@@ -143,6 +146,35 @@ def test_sklearnex_fit_on_random_data(dataframe, queue, num_batches, row_count, 
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
+
+
+def swap_estimator_sklearn_test(sklearn_test, skname, estimator):
+
+    args = list(*args)
+    if not ("monkeypatch" in args):
+        args = ["monkeypatch"] + args
+
+    @wraps(sklearn_test)
+    def wrapper(args, **kwargs):
+        estname = estimator.__name__
+        monkeypatch.setattr(".".join([func.__module__, skname]), estimator)
+        try:
+            sklearn_test(args, **kwargs)
+        except Exception as e:
+            raise type(e)(
+                f"sklearn test from {func.__module__} with '{estname}' as '{skname}': "
+                + str(e),
+                sys.exc_info()[2],
+            )
+
+    return wrapper
+
+
+for i in [test_covariance, test_EmpiricalCovariance_validates_mahalanobis]:
+    new_test = swap_estimator_sklearn_test(
+        i, "EmpiricalCovariance", IncrementalEmpiricalCovariance
+    )
+    vars()[i.__name__] = new_test
 
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
