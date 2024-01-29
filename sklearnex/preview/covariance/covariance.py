@@ -80,6 +80,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
+    @support_usm_ndarray
     def fit(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
