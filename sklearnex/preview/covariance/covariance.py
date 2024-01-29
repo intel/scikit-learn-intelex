@@ -120,7 +120,6 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
     score = wrap_output_data(sklearn_EmpiricalCovariance.score)
 
-
     fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
     mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis
     error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
