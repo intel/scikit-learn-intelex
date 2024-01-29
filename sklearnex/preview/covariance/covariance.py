@@ -21,7 +21,6 @@ from sklearn.utils import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal._device_offload import support_usm_ndarray
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
 from sklearnex import config_context
@@ -80,7 +79,6 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
-    @support_usm_ndarray
     def fit(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
