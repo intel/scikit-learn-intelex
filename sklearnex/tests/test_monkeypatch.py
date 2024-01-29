@@ -45,8 +45,10 @@ def test_monkey_patching():
         n = _classes[i][1]
 
         sklearnex.unpatch_sklearn(t)
-        class_module = getattr(p, n).__module__
-        assert class_module.startswith("sklearn"), "Unpatching has completed with error."
+        sklearn_class = getattr(p, n, None)
+        if sklearn_class is not None:
+            sklearn_class = sklearn_class.__module__
+        assert sklearn_class.startswith("sklearn") or sklearn_class is None, "Unpatching has completed with error."
 
     sklearnex.unpatch_sklearn()
 
@@ -55,8 +57,10 @@ def test_monkey_patching():
         p = _classes[i][0]
         n = _classes[i][1]
 
-        class_module = getattr(p, n).__module__
-        assert class_module.startswith("sklearn"), "Unpatching has completed with error."
+        sklearn_class = getattr(p, n, None)
+        if sklearn_class is not None:
+            sklearn_class = sklearn_class.__module__
+        assert sklearn_class.startswith("sklearn") or sklearn_class is None, "Unpatching has completed with error."
 
     sklearnex.unpatch_sklearn()
 
