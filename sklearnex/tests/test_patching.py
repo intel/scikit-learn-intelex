@@ -98,7 +98,7 @@ def _load_all_models(patched):
 
     models = {}
     for patch_infos in get_patch_map().values():
-        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
+        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1], None)
         if (
             maybe_class is not None
             and isclass(maybe_class)
