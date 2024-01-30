@@ -96,7 +96,6 @@ if daal_check_version((2024, "P", 100)):
             return U, S, Vt
 
         def _onedal_fit(self, X, queue=None):
-
             X = self._validate_data(
                 X,
                 dtype=[np.float64, np.float32],
@@ -182,10 +181,7 @@ if daal_check_version((2024, "P", 100)):
                             self._is_solver_compatible_with_onedal(shape_tuple),
                             f"Only 'full' svd solver is supported.",
                         ),
-                        (
-                            issparse(X),
-                            "oneDAL PCA does not support sparse data"
-                        ),
+                        (issparse(X), "oneDAL PCA does not support sparse data"),
                     ]
                 )
                 return patching_status
