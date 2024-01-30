@@ -44,15 +44,15 @@ def test_sklearnex_import(dataframe, queue):
     ]
 
     pca = PCA(n_components=2, svd_solver="full")
-    pca_fit = pca.fit(X)
-    X_transformed = pca_fit.transform(X)
-    X_fit_transformed = pca.fit_transform(X)
+    pca.fit(X)
+    X_transformed = pca.transform(X)
+    X_fit_transformed = PCA(n_components=2, svd_solver="full").fit_transform(X)
 
     if daal_check_version((2024, "P", 100)):
         assert "sklearnex" in pca.__module__
-        assert hasattr(pca_fit, "_onedal_estimator")
+        assert hasattr(pca, "_onedal_estimator")
     else:
-        assert "daal4py" in pca_fit.__module__
-    assert_allclose(_as_numpy(pca_fit.singular_values_), [6.30061232, 0.54980396])
-    assert_allclose(_as_numpy(X_transformed), X_transformed_expected)
-    assert_allclose(_as_numpy(X_fit_transformed), X_transformed_expected)
+        assert "daal4py" in pca.__module__
+    assert_allclose(_as_numpy(pca.singular_values_), [6.30061232, 0.54980396])
+    assert_allclose(X_transformed_expected, _as_numpy(X_transformed))
+    assert_allclose(X_transformed_expected, _as_numpy(X_fit_transformed))
