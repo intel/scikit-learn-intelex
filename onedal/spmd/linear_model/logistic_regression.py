@@ -19,15 +19,10 @@ from abc import ABC
 from onedal.linear_model import LogisticRegression as LogisticRegression_Batch
 
 from ..._device_offload import support_usm_ndarray
-from ...common._spmd_policy import _get_spmd_policy
+from .._common import BaseEstimatorSPMD
 
 
-class BaseLogisticRegressionSPMD(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
-
-
-class LogisticRegression(BaseLogisticRegressionSPMD, LogisticRegression_Batch):
+class LogisticRegression(BaseEstimatorSPMD, LogisticRegression_Batch):
     @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue)
