@@ -81,7 +81,6 @@ class BaseDBSCAN(ClusterMixin):
             ).ravel()
         else:
             self.core_sample_indices_ = np.array([], dtype=np.intc)
-        self.core_sample_indices_ = self.core_sample_indices_.astype(np.intc)
         self.components_ = np.take(X, self.core_sample_indices_, axis=0)
         self.n_features_in_ = X.shape[1]
         return self
