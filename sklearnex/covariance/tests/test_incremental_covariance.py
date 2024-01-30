@@ -98,7 +98,7 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, batch_size, dtype):
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_partial_fit_on_random_data(
-    dataframe, queue, num_batches, row_count, dtype
+    dataframe, queue, num_batches, row_count, column_count, dtype
 ):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
@@ -127,7 +127,9 @@ def test_sklearnex_partial_fit_on_random_data(
 @pytest.mark.parametrize("row_count", [10, 100])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_sklearnex_fit_on_random_data(dataframe, queue, num_batches, row_count, dtype):
+def test_sklearnex_fit_on_random_data(
+    dataframe, queue, num_batches, row_count, column_count, dtype
+):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     seed = 77
