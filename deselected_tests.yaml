@@ -730,7 +730,7 @@ gpu:
   - tests/test_calibration.py::test_calibrated_classifier_cv_double_sample_weights_equivalence
   - tests/test_calibration.py::test_calibrated_classifier_cv_zeros_sample_weights_equivalence
   - tests/test_common.py::test_estimators[FeatureAgglomeration()-check_parameters_default_constructible]
-  - tests/test_lof.py::test_novelty_true_common_tests[LocalOutlierFactor(novelty=True)-check_methods_subset_invariance]
+  - neighbors/tests/test_lof.py::test_novelty_true_common_tests[LocalOutlierFactor(novelty=True)-check_methods_subset_invariance]
   - tests/test_common.py::test_transformers_get_feature_names_out[StackingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
   - tests/test_common.py::test_transformers_get_feature_names_out[VotingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
   - tests/test_common.py::test_f_contiguous_array_estimator[TSNE]
