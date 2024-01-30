@@ -106,9 +106,9 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
         return self
 
-    # This needs to be included to guarantee that we use the sklearnex pairwise_distances
+    # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
     @wrap_output_data
-    def mahalanobis(self, X, queue=None):
+    def mahalanobis(self, X):
         if sklearn_check_version("1.0"):
             X = self._validate_data(X, reset=False)
         else:
