@@ -180,7 +180,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
 
-        first_pass = not hasattr(self, "n_samples_seen_")
+        first_pass = not hasattr(self, "n_samples_seen_") and self.n_samples_seen_ == 0
 
         if sklearn_check_version("1.2"):
             self._validate_params()
