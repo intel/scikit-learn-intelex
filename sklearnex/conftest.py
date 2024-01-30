@@ -28,6 +28,6 @@ def pytest_runtest_call(item):
         sklearnex_logger.removeHandler(log_handler)
 
         if "fallback to original Scikit-learn" in log_stream.getvalue():
-            raise TypeError("test evaluated with sklearn via fallback")
+            raise TypeError("sklearnex test evaluated with sklearn via fallback")
     else:
         yield
