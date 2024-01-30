@@ -29,7 +29,7 @@ def pytest_runtest_call(item):
 
         if "fallback to original Scikit-learn" in log_stream.getvalue():
             raise TypeError(
-                "sklearnex test evaluated with sklearn via fallback mechanism"
+                "test did not properly evaluate sklearnex functionality and fell back to sklearn"
             )
     else:
         yield
