@@ -14,8 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.linear_model import LogisticRegression as LogisticRegression_Batch
 
 from ..._device_offload import support_usm_ndarray
