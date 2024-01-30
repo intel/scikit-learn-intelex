@@ -251,7 +251,9 @@ def mk_var(name="", typ="", const="", dflt=None, inpt=False, algo=None, doc=None
             self.init_member = (
                 "_{}({})".format(d4pname, "NULL" if ptr else "")
                 if inpt
-                else "_{0}({0})".format(d4pname) if name else ""
+                else "_{0}({0})".format(d4pname)
+                if name
+                else ""
             )
             self.assign_member = "_{0} = {0}".format(d4pname) if name else ""
             self.todaal_member = todaal_member if name else ""
