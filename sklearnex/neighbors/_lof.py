@@ -157,8 +157,8 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
                 "sklearn": sklearn_LocalOutlierFactor.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
