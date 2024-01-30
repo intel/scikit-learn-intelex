@@ -94,7 +94,8 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, batch_size, dtype):
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
-@pytest.mark.parametrize("row_count", [100, 1000])
+@pytest.mark.parametrize("row_count", [10, 100])
+@pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_partial_fit_on_random_data(
     dataframe, queue, num_batches, row_count, dtype
@@ -102,7 +103,6 @@ def test_sklearnex_partial_fit_on_random_data(
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     seed = 77
-    column_count = 10
     gen = np.random.default_rng(seed)
     X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
     X = X.astype(dtype)
@@ -124,13 +124,13 @@ def test_sklearnex_partial_fit_on_random_data(
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
-@pytest.mark.parametrize("row_count", [100, 1000])
+@pytest.mark.parametrize("row_count", [10, 100])
+@pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_fit_on_random_data(dataframe, queue, num_batches, row_count, dtype):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     seed = 77
-    column_count = 10
     gen = np.random.default_rng(seed)
     X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
     X = X.astype(dtype)
