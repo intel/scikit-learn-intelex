@@ -14,20 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.linear_model import LinearRegression as LinearRegression_Batch
 
 from ..._device_offload import support_usm_ndarray
-from ...common._spmd_policy import _get_spmd_policy
+from .._common import BaseEstimatorSPMD
 
 
-class BaseLinearRegressionSPMD(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
-
-
-class LinearRegression(BaseLinearRegressionSPMD, LinearRegression_Batch):
+class LinearRegression(BaseEstimatorSPMD, LinearRegression_Batch):
     @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue)

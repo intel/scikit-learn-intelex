@@ -140,12 +140,19 @@ def _daal4py_fit_enet(self, X, y_, check_input):
         or _normalize
         and not np.allclose(X_scale, np.ones(X.shape[1]))
     ):
-        warnings.warn(
-            "Gram matrix was provided but X was centered"
-            " to fit intercept, "
-            "or X was normalized : recomputing Gram matrix.",
-            UserWarning,
-        )
+        if sklearn_check_version("1.4"):
+            warnings.warn(
+                "Gram matrix was provided but X was centered"
+                " to fit intercept: recomputing Gram matrix.",
+                UserWarning,
+            )
+        else:
+            warnings.warn(
+                "Gram matrix was provided but X was centered"
+                " to fit intercept, "
+                "or X was normalized : recomputing Gram matrix.",
+                UserWarning,
+            )
 
     mse_alg = daal4py.optimization_solver_mse(
         numberOfTerms=X.shape[0], fptype=_fptype, method="defaultDense"
@@ -821,6 +828,7 @@ class Lasso(Lasso_original):
     __doc__ = Lasso_original.__doc__
 
     if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {**Lasso_original._parameter_constraints}
 
         def __init__(
             self,
