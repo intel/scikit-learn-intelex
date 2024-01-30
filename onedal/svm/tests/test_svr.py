@@ -49,23 +49,23 @@ def _restore_from_saved(md, saved_dict):
         setattr(md, check_f, saved_dict[check_f])
 
 
-# def test_estimator():
-#    def dummy(*args, **kwargs):
-#        pass
-#
-#    md = sklearn.utils.estimator_checks
-#    saved = _replace_and_save(
-#        md,
-#        [
-#            "check_sample_weights_invariance",  # Max absolute difference: 0.0002
-#            "check_estimators_fit_returns_self",  # ???
-#            "check_regressors_train",  # Cannot get data type from empty metadata
-#            "check_estimators_unfitted",  # expected NotFittedError from sklearn
-#        ],
-#        dummy,
-#    )
-#    check_estimator(SVR())
-#    _restore_from_saved(md, saved)
+def test_estimator():
+   def dummy(*args, **kwargs):
+       pass
+
+   md = sklearn.utils.estimator_checks
+   saved = _replace_and_save(
+       md,
+       [
+           "check_sample_weights_invariance",  # Max absolute difference: 0.0002
+           "check_estimators_fit_returns_self",  # ???
+           "check_regressors_train",  # Cannot get data type from empty metadata
+           "check_estimators_unfitted",  # expected NotFittedError from sklearn
+       ],
+       dummy,
+   )
+   check_estimator(SVR())
+   _restore_from_saved(md, saved)
 
 
 @pass_if_not_implemented_for_gpu(reason="svr is not implemented")
