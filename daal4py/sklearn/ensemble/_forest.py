@@ -152,11 +152,9 @@ def check_sample_weight(sample_weight, X, dtype=None):
 
 
 class RandomForestBase:
-    def fit(self, X, y, sample_weight=None):
-        ...
+    def fit(self, X, y, sample_weight=None): ...
 
-    def predict(self, X):
-        ...
+    def predict(self, X): ...
 
     def _check_parameters(self) -> None:
         if not self.bootstrap and self.max_samples is not None:
@@ -830,9 +828,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
         if self.oob_score:
-            parameters[
-                "resultsToCompute"
-            ] = "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+            parameters["resultsToCompute"] = (
+                "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+            )
 
         if daal_check_version((2023, "P", 200)):
             parameters["binningStrategy"] = self.binningStrategy
@@ -1367,9 +1365,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
         if self.oob_score:
-            parameters[
-                "resultsToCompute"
-            ] = "computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
+            parameters["resultsToCompute"] = (
+                "computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
+            )
 
         if daal_check_version((2023, "P", 200)):
             parameters["binningStrategy"] = self.binningStrategy
