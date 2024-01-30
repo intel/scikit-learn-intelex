@@ -140,7 +140,7 @@ def do_patch(name, get_map=_get_map_of_algorithms):
         for descriptor in get_map()[lname]:
             which, what, replacer = descriptor[0]
             if descriptor[1] is None:
-                descriptor[1] = getattr(which, what)
+                descriptor[1] = getattr(which, what, None)
             setattr(which, what, replacer)
     else:
         raise ValueError("Has no patch for: " + name)
