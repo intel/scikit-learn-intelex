@@ -23,7 +23,7 @@ from onedal.neighbors import KNeighborsClassifier
 from onedal.tests.utils._device_selection import get_queues
 
 
-@pytest.mark.parametrize("queue", get_queues("cpu"))
+@pytest.mark.parametrize("queue", get_queues())
 def test_iris(queue):
     iris = datasets.load_iris()
     clf = KNeighborsClassifier(2).fit(iris.data, iris.target, queue=queue)
