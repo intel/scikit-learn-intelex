@@ -22,6 +22,7 @@ from functools import wraps
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
 
+
 # As these tests are validating the operation of patch_sklearn and
 # unpatch_sklearn, failures in these functions have global impacts on other
 # tests. This function provides another way to overwrite changes to sklearn made
