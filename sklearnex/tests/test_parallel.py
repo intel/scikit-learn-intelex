@@ -17,8 +17,6 @@ import pytest
 
 from sklearnex import config_context, patch_sklearn, unpatch_sklearn
 
-
-
 try:
     import dpctl
 
@@ -37,11 +35,10 @@ except (ImportError, ModuleNotFoundError):
 def test_config_context_in_parallel():
     try:
         patch_sklearn()
-    
+
         from sklearn.datasets import make_classification
         from sklearn.ensemble import BaggingClassifier
         from sklearn.svm import SVC
-
 
         x, y = make_classification(random_state=42)
         try:
@@ -54,4 +51,3 @@ def test_config_context_in_parallel():
             pass
     finally:
         unpatch_sklearn()
-
