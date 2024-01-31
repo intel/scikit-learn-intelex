@@ -249,7 +249,7 @@ def test_preview_namespace():
         # This call sets preview which cannot be undone
         # via sklearnex and has global impact. The
         # SKLEARNEX_PREVIEW environment variable must be
-        # manually deleted at end of test.
+        # manually deleted at end of test if necessary.
         sklearnex.patch_sklearn(preview=True)
         from sklearnex.dispatcher import _is_preview_enabled
 
