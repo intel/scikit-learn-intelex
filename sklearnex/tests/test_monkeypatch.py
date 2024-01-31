@@ -34,8 +34,11 @@ def reset_sklearn_on_completion(test):
             result = test(*args, **kwargs)
         finally:
             for i in sys.modules.copy():
-                if i.startswith("sklearn.") or i == "sklearn":
+                if i.startswith("sklearn."):
                     importlib.reload(sys.modules[i])
+            # Do sklearn last due to dependencies
+            if "sklearn" in sys.modules:
+                importlib.reload(sys.modules["sklearn"])
         return result
 
     return test_wrapper
