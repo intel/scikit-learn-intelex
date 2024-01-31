@@ -14,10 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-import importlib
-import os
-import sys
-
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
 
