@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+
 import gc
 import logging
 import tracemalloc
@@ -75,6 +76,8 @@ class RocAucEstimator:
 
 
 # add all daal4py estimators enabled in patching (except banned)
+
+
 def get_patched_estimators(ban_list, output_list):
     patched_estimators = get_patch_map().values()
     for listing in patched_estimators:
@@ -156,6 +159,7 @@ def split_train_inference(kf, x, y, estimator):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         # TODO: add parameters for all estimators to prevent
         # fallback to stock scikit-learn with default parameters
+
         alg = estimator()
         alg.fit(x_train, y_train)
         if hasattr(alg, "predict"):
@@ -166,7 +170,6 @@ def split_train_inference(kf, x, y, estimator):
             alg.kneighbors(x_test)
         del alg, x_train, x_test, y_train, y_test
         mem_tracks.append(tracemalloc.get_traced_memory()[0])
-
     return mem_tracks
 
 
@@ -217,7 +220,10 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
         "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
     )
 
+
 # disable fallback check as logging impacts memory use
+
+
 @pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("data_transform_function", data_transforms)
 @pytest.mark.parametrize("estimator", estimators)
