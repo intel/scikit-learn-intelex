@@ -17,7 +17,6 @@
 import importlib
 import os
 import sys
-from functools import wraps
 
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
