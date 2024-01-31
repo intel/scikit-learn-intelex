@@ -34,7 +34,7 @@ def reset_sklearn_on_completion(test):
             result = test(*args, **kwargs)
         finally:
             for i in sys.modules.copy():
-                if i.startswith("sklearn."):
+                if i.startswith("sklearn.") or i == "sklearn":
                     importlib.reload(sys.modules[i])
         return result
 
