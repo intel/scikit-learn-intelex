@@ -217,7 +217,7 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
         "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
     )
 
-
+@pytest.mark.allow_sklearn_fallback # disable as logging impacts memory use
 @pytest.mark.parametrize("data_transform_function", data_transforms)
 @pytest.mark.parametrize("estimator", estimators)
 @pytest.mark.parametrize("data_shape", data_shapes)
