@@ -123,9 +123,6 @@ if daal_check_version((2024, "P", 100)):
 
         @wrap_output_data
         def transform(self, X, y=None):
-            return _transform(self, X, y=None)
-
-        def _transform(self, X, y=None, validate=True):
             return dispatch(
                 self,
                 "transform",
@@ -134,18 +131,15 @@ if daal_check_version((2024, "P", 100)):
                     "sklearn": sklearn_PCA.transform,
                 },
                 X,
-                validate,
             )
 
-        def _onedal_transform(self, X, validate, queue=None):
+        def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
-            if validate:
-                X = self._validate_data(
-                    X,
-                    dtype=[np.float64, np.float32],
-                    reset=False,
-                )
-
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                reset=False,
+            )
             self._validate_n_features_in_after_fitting(X)
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
@@ -156,7 +150,7 @@ if daal_check_version((2024, "P", 100)):
             U, S, Vt = self._fit(X)
             if U is None:
                 # oneDAL PCA was fit
-                X_transformed = self._transform(X, y, validate=False)
+                X_transformed = self.transform(X, y)
                 return X_transformed
             else:
                 # Scikit-learn PCA was fit
