@@ -14,8 +14,21 @@
 # limitations under the License.
 # ===============================================================================
 
+import importlib
 import sklearnex
+import sys
 from daal4py.sklearn._utils import daal_check_version
+
+
+# As these tests are validating the operation of patch_sklearn and
+# unpatch_sklearn, failures in these functions have global impacts on other
+# tests. This function provides another way to overwrite changes to sklearn made
+# by sklearnex and guarantees that these tests remain hermetic. All tests in
+# this file must end with this function.
+def reset_sklearn():
+    for i in sys.modules.copy():
+        if i.startswith("sklearn."):
+            importlib.reload(sys.modules[i])
 
 
 def test_monkey_patching():
@@ -83,6 +96,8 @@ def test_monkey_patching():
     finally:
         sklearnex.unpatch_sklearn()
 
+    reset_sklearn()
+
 
 def test_patch_by_list_simple():
     try:
@@ -102,6 +117,8 @@ def test_patch_by_list_simple():
         assert SVC.__module__.startswith("sklearn")
     finally:
         sklearnex.unpatch_sklearn()
+
+    reset_sklearn()
 
 
 def test_patch_by_list_many_estimators():
@@ -125,6 +142,8 @@ def test_patch_by_list_many_estimators():
 
     finally:
         sklearnex.unpatch_sklearn()
+
+    reset_sklearn()
 
 
 def test_unpatch_by_list_many_estimators():
@@ -168,6 +187,8 @@ def test_unpatch_by_list_many_estimators():
     finally:
         sklearnex.unpatch_sklearn()
 
+    reset_sklearn()
+
 
 def test_patching_checker():
     for name in [None, "SVC", "PCA"]:
@@ -191,6 +212,8 @@ def test_patching_checker():
     assert len(patching_status_map) == len(sklearnex.get_patch_names())
     for status in patching_status_map.values():
         assert not status
+
+    reset_sklearn()
 
 
 def test_preview_namespace():
@@ -256,3 +279,5 @@ def test_preview_namespace():
         assert "sklearnex" in svc.__module__
     finally:
         sklearnex.unpatch_sklearn()
+
+    reset_sklearn()
