@@ -183,7 +183,7 @@ def test_patched_function_signatures(function):
         ), f"Signature of {func} does not match sklearn"
 
 
-@pytest.mark.parametrize("name", PATCHED_MODELS.keys())
+@pytest.mark.parametrize("name", UNPATCHED_MODELS.keys())
 def test_is_patched_instance(name):
     patched = PATCHED_MODELS[name]()
     unpatched = UNPATCHED_MODELS[name]()
