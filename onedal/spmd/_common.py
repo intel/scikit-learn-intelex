@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = ["cluster", "covariance", "decomposition"]
+from abc import ABC
+
+from ..common._spmd_policy import _get_spmd_policy
+
+
+class BaseEstimatorSPMD(ABC):
+    def _get_policy(self, queue, *data):
+        return _get_spmd_policy(queue)

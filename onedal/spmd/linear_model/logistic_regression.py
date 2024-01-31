@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,25 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.cluster import DBSCAN as DBSCAN_Batch
+from onedal.linear_model import LogisticRegression as LogisticRegression_Batch
 
+from ..._device_offload import support_usm_ndarray
 from .._common import BaseEstimatorSPMD
 
 
-class DBSCAN(BaseEstimatorSPMD, DBSCAN_Batch):
-    pass
+class LogisticRegression(BaseEstimatorSPMD, LogisticRegression_Batch):
+    @support_usm_ndarray()
+    def fit(self, X, y, queue=None):
+        return super().fit(X, y, queue)
+
+    @support_usm_ndarray()
+    def predict(self, X, queue=None):
+        return super().predict(X, queue)
+
+    @support_usm_ndarray()
+    def predict_proba(self, X, queue=None):
+        return super().predict_proba(X, queue)
+
+    @support_usm_ndarray()
+    def predict_log_proba(self, X, queue=None):
+        return super().predict_log_proba(X, queue)
