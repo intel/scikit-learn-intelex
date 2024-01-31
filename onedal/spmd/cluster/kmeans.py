@@ -14,20 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.cluster import KMeans as KMeans_Batch
 
 from ..._device_offload import support_usm_ndarray
-from ...common._spmd_policy import _get_spmd_policy
+from .._common import BaseEstimatorSPMD
 
 
-class BaseKMeansSPMD(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
-
-
-class KMeans(BaseKMeansSPMD, KMeans_Batch):
+class KMeans(BaseEstimatorSPMD, KMeans_Batch):
     @support_usm_ndarray()
     def fit(self, X, queue=None):
         return super().fit(X, queue)
