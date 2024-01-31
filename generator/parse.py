@@ -256,9 +256,9 @@ class typedef_parser(object):
         m = re.match(r"\s*typedef(\s+(struct|typename))?\s+(.+)\s+(\w+).*", elem)
         if m:
             if ctxt.curr_class:
-                ctxt.gdict["classes"][ctxt.curr_class].typedefs[
-                    m.group(4).strip()
-                ] = m.group(3).strip()
+                ctxt.gdict["classes"][ctxt.curr_class].typedefs[m.group(4).strip()] = (
+                    m.group(3).strip()
+                )
             else:
                 ctxt.gdict["typedefs"][m.group(4).strip()] = m.group(3).strip()
             return True

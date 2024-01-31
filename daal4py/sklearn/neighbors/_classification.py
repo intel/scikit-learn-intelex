@@ -81,9 +81,9 @@ def daal4py_classifier_predict(estimator, X, base_predict):
             "method": "defaultDense",
             "k": estimator.n_neighbors,
             "nClasses": len(estimator.classes_),
-            "voteWeights": "voteUniform"
-            if estimator.weights == "uniform"
-            else "voteDistance",
+            "voteWeights": (
+                "voteUniform" if estimator.weights == "uniform" else "voteDistance"
+            ),
             "resultsToEvaluate": "computeClassLabels",
             "resultsToCompute": "",
         }
