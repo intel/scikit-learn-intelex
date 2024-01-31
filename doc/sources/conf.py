@@ -65,7 +65,6 @@ extensions = [
     "nbsphinx",
     "sphinx_tabs.tabs",
     "notfound.extension",
-    "sphinx_copybutton",
     "sphinx_design",
 ]
 
