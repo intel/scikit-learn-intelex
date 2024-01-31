@@ -270,7 +270,7 @@ def test_preview_namespace():
     finally:
         sklearnex.unpatch_sklearn()
         if not flag:
-            del os.environ["SKLEARNEX_PREVIEW"]
+            os.environ.pop("SKLEARNEX_PREVIEW", None)
 
     # no patching behavior
     lr, pca, dbscan, svc, rfc = get_estimators()
