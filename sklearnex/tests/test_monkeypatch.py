@@ -21,6 +21,7 @@ from functools import wraps
 
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
+from sklearnex.dispatcher import _is_preview_enabled
 
 
 # As these tests are validating the operation of patch_sklearn and
@@ -32,6 +33,7 @@ def reset_sklearn_on_completion(test):
     @wraps(test)
     def test_wrapper(*args, **kwargs):
         try:
+            flag = _is_preview_enabled()
             result = test(*args, **kwargs)
         finally:
             for module_name in sys.modules.copy():
@@ -40,6 +42,9 @@ def reset_sklearn_on_completion(test):
             # Do sklearn last due to dependencies
             if "sklearn" in sys.modules:
                 importlib.reload(sys.modules["sklearn"])
+            if not flag:
+                os.environ.pop("SKLEARNEX_PREVIEW", None)
+
         return result
 
     return test_wrapper
@@ -242,13 +247,9 @@ def test_preview_namespace():
             RandomForestClassifier(),
         )
 
-    from sklearnex.dispatcher import _is_preview_enabled
-
-    # behavior with enabled preview
-    flag = _is_preview_enabled()
     try:
-        # This call sets preview which cannot be undone
-        # via sklearnex and has global impact. The
+        # This call sets preview which can possibly not be
+        # undone via sklearnex and has global impact. The
         # SKLEARNEX_PREVIEW environment variable must be
         # manually deleted at end of test if necessary.
         sklearnex.patch_sklearn(preview=True)
@@ -269,8 +270,6 @@ def test_preview_namespace():
 
     finally:
         sklearnex.unpatch_sklearn()
-        if not flag:
-            os.environ.pop("SKLEARNEX_PREVIEW", None)
 
     # no patching behavior
     lr, pca, dbscan, svc, rfc = get_estimators()
