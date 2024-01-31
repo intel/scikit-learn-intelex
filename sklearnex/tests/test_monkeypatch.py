@@ -21,8 +21,6 @@ from functools import wraps
 
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
-from sklearnex.dispatcher import _is_preview_enabled
-
 
 # As these tests are validating the operation of patch_sklearn and
 # unpatch_sklearn, failures in these functions have global impacts on other
@@ -243,6 +241,8 @@ def test_preview_namespace():
             RandomForestClassifier(),
         )
 
+    from sklearnex.dispatcher import _is_preview_enabled
+
     # behavior with enabled preview
     flag = _is_preview_enabled()
     try:
@@ -251,7 +251,6 @@ def test_preview_namespace():
         # SKLEARNEX_PREVIEW environment variable must be
         # manually deleted at end of test if necessary.
         sklearnex.patch_sklearn(preview=True)
-        from sklearnex.dispatcher import _is_preview_enabled
 
         assert _is_preview_enabled()
 
