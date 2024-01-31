@@ -16,6 +16,7 @@
 
 import importlib
 import sys
+from functools import wraps
 
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
@@ -25,13 +26,22 @@ from daal4py.sklearn._utils import daal_check_version
 # unpatch_sklearn, failures in these functions have global impacts on other
 # tests. This function provides another way to overwrite changes to sklearn made
 # by sklearnex and guarantees that these tests remain hermetic. All tests in
-# this file must end with this function.
-def reset_sklearn():
-    for i in sys.modules.copy():
-        if i.startswith("sklearn."):
-            importlib.reload(sys.modules[i])
+# this file must be decorated with reset_sklearn_on_completion
+def reset_sklearn_on_completion(test):
+    @wraps(test)
+    def test_wrapper(*args, **kwargs):
+        try:
+            result = test(*args, **kwargs)
+        finally:
+            for i in sys.modules.copy():
+                if i.startswith("sklearn."):
+                    importlib.reload(sys.modules[i])
+        return result
+
+    return test_wrapper
 
 
+@reset_sklearn_on_completion
 def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()
     _values = sklearnex.get_patch_map().values()
@@ -97,9 +107,8 @@ def test_monkey_patching():
     finally:
         sklearnex.unpatch_sklearn()
 
-    reset_sklearn()
 
-
+@reset_sklearn_on_completion
 def test_patch_by_list_simple():
     try:
         sklearnex.patch_sklearn(["LogisticRegression"])
@@ -119,9 +128,8 @@ def test_patch_by_list_simple():
     finally:
         sklearnex.unpatch_sklearn()
 
-    reset_sklearn()
 
-
+@reset_sklearn_on_completion
 def test_patch_by_list_many_estimators():
     try:
         sklearnex.patch_sklearn(["LogisticRegression", "SVC"])
@@ -144,9 +152,8 @@ def test_patch_by_list_many_estimators():
     finally:
         sklearnex.unpatch_sklearn()
 
-    reset_sklearn()
 
-
+@reset_sklearn_on_completion
 def test_unpatch_by_list_many_estimators():
     try:
         sklearnex.patch_sklearn()
@@ -188,9 +195,8 @@ def test_unpatch_by_list_many_estimators():
     finally:
         sklearnex.unpatch_sklearn()
 
-    reset_sklearn()
 
-
+@reset_sklearn_on_completion
 def test_patching_checker():
     for name in [None, "SVC", "PCA"]:
         try:
@@ -214,9 +220,8 @@ def test_patching_checker():
     for status in patching_status_map.values():
         assert not status
 
-    reset_sklearn()
 
-
+@reset_sklearn_on_completion
 def test_preview_namespace():
     def get_estimators():
         from sklearn.cluster import DBSCAN
@@ -280,5 +285,3 @@ def test_preview_namespace():
         assert "sklearnex" in svc.__module__
     finally:
         sklearnex.unpatch_sklearn()
-
-    reset_sklearn()
