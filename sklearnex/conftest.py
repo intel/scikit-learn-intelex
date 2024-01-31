@@ -19,17 +19,21 @@ def pytest_runtest_call(item):
         log_handler = logging.StreamHandler(log_stream)
         sklearnex_logger = logging.getLogger("sklearnex")
         level = sklearnex_logger.level
+        sklearnex_stderr_handler = sklearnex_logger.handlers
+        sklearnex_logger.handlers = []
         sklearnex_logger.addHandler(log_handler)
         sklearnex_logger.setLevel(logging.INFO)
+        log_handler.setLevel(logging.INFO)
 
         yield
 
-        log_handler.setLevel(level)
+        sklearnex_logger.handlers = sklearnex_stderr_handler
+        sklearnex_logger.setLevel(level)
         sklearnex_logger.removeHandler(log_handler)
-
-        if "fallback to original Scikit-learn" in log_stream.getvalue():
+        text = log_stream.getvalue()
+        if "fallback to original Scikit-learn" in text:
             raise TypeError(
-                "test did not properly evaluate sklearnex functionality and fell back to sklearn"
+                f"test did not properly evaluate sklearnex functionality and fell back to sklearn:\n{text}"
             )
     else:
         yield
