@@ -15,11 +15,13 @@
 # ===============================================================================
 
 import importlib
+import os
 import sys
 from functools import wraps
 
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
+from sklearnex.dispatcher import _is_preview_enabled
 
 
 # As these tests are validating the operation of patch_sklearn and
@@ -242,7 +244,12 @@ def test_preview_namespace():
         )
 
     # behavior with enabled preview
+    flag = _is_preview_enabled()
     try:
+        # This call sets preview which cannot be undone
+        # via sklearnex and has global impact. The
+        # SKLEARNEX_PREVIEW environment variable must be
+        # manually deleted at end of test.
         sklearnex.patch_sklearn(preview=True)
         from sklearnex.dispatcher import _is_preview_enabled
 
@@ -262,6 +269,8 @@ def test_preview_namespace():
 
     finally:
         sklearnex.unpatch_sklearn()
+        if not flag:
+            del os.environ["SKLEARNEX_PREVIEW"]
 
     # no patching behavior
     lr, pca, dbscan, svc, rfc = get_estimators()
