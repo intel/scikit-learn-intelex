@@ -21,37 +21,8 @@ from functools import wraps
 
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
-from sklearnex.dispatcher import _is_preview_enabled
 
 
-# As these tests are validating the operation of patch_sklearn and
-# unpatch_sklearn, failures in these functions have global impacts on other
-# tests. This function provides another way to overwrite changes to sklearn made
-# by sklearnex and guarantees that these tests remain hermetic. All tests in
-# this file must be decorated with reset_sklearn_on_completion
-def reset_sklearn_on_completion(test):
-    @wraps(test)
-    def test_wrapper(*args, **kwargs):
-        try:
-            flag = _is_preview_enabled()
-            result = test(*args, **kwargs)
-        finally:
-            for module_name in sys.modules.copy():
-                if module_name.startswith("sklearn."):
-                    importlib.reload(sys.modules[module_name])
-            # Do sklearn last due to dependencies
-            if "sklearn" in sys.modules:
-                importlib.reload(sys.modules["sklearn"])
-            importlib.invalidate_caches()    
-            if not flag:
-                os.environ.pop("SKLEARNEX_PREVIEW", None)
-
-        return result
-
-    return test_wrapper
-
-
-#@reset_sklearn_on_completion
 def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()
     _values = sklearnex.get_patch_map().values()
@@ -118,7 +89,6 @@ def test_monkey_patching():
         sklearnex.unpatch_sklearn()
 
 
-#@reset_sklearn_on_completion
 def test_patch_by_list_simple():
     try:
         sklearnex.patch_sklearn(["LogisticRegression"])
@@ -139,7 +109,6 @@ def test_patch_by_list_simple():
         sklearnex.unpatch_sklearn()
 
 
-#@reset_sklearn_on_completion
 def test_patch_by_list_many_estimators():
     try:
         sklearnex.patch_sklearn(["LogisticRegression", "SVC"])
@@ -163,7 +132,6 @@ def test_patch_by_list_many_estimators():
         sklearnex.unpatch_sklearn()
 
 
-#@reset_sklearn_on_completion
 def test_unpatch_by_list_many_estimators():
     try:
         sklearnex.patch_sklearn()
@@ -206,7 +174,6 @@ def test_unpatch_by_list_many_estimators():
         sklearnex.unpatch_sklearn()
 
 
-#@reset_sklearn_on_completion
 def test_patching_checker():
     for name in [None, "SVC", "PCA"]:
         try:
@@ -231,7 +198,6 @@ def test_patching_checker():
         assert not status
 
 
-#@reset_sklearn_on_completion
 def test_preview_namespace():
     def get_estimators():
         from sklearn.cluster import DBSCAN
@@ -248,11 +214,9 @@ def test_preview_namespace():
             RandomForestClassifier(),
         )
 
+    from sklearnex.dispatcher import _is_preview_enabled
+
     try:
-        # This call sets preview which can possibly not be
-        # undone via sklearnex and has global impact. The
-        # SKLEARNEX_PREVIEW environment variable must be
-        # manually deleted at end of test if necessary.
         sklearnex.patch_sklearn(preview=True)
 
         assert _is_preview_enabled()
