@@ -55,7 +55,8 @@ return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
 # TODO: investigate why test_monkeypatch.py might cause failures of other tests
-pytest --verbose --pyargs sklearnex
+pytest --verbose --pyargs --deselect sklearnex/tests/test_monkeypatch.py sklearnex
+pytest --verbose --pyargs sklearnex.tests.test_monkeypatch
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
