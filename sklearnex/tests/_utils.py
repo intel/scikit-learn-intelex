@@ -36,7 +36,7 @@ from sklearnex.neighbors import (
     LocalOutlierFactor,
     NearestNeighbors,
 )
-from sklearnex.svm import SVC
+from sklearnex.svm import SVC, NuSVC
 
 
 def _load_all_models(patched, estimator=True):
@@ -81,6 +81,7 @@ SPECIAL_INSTANCES = {
     for i in [
         LocalOutlierFactor(novelty=True),
         SVC(probability=True),
+        NuSVC(probability=True),
         KNeighborsClassifier(algorithm="brute"),
         KNeighborsRegressor(algorithm="brute"),
         NearestNeighbors(algorithm="brute"),
