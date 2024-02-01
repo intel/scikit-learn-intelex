@@ -94,7 +94,9 @@ def remove_duplicated_estimators(estimators_list):
     return estimators_map.values()
 
 
-BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
+BANNED_ESTIMATORS = (
+    "IncrementalEmpiricalCovariance", # dataframe_f issues
+    "TSNE",)  # too slow for using in testing on common data size
 estimators = [
     PreviewPCA,
     TrainTestSplitEstimator,
