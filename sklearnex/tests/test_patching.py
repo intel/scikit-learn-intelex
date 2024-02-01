@@ -117,7 +117,7 @@ PATCHED_MODELS = _load_all_models(patched=True)
 UNPATCHED_MODELS = _load_all_models(patched=False)
 
 
-@pytest.mark.parametrize("name", PATCHED_MODELS.keys())
+@pytest.mark.parametrize("name", UNPATCHED_MODELS.keys())
 def test_is_patched_instance(name):
     patched = PATCHED_MODELS[name]()
     unpatched = UNPATCHED_MODELS[name]()
