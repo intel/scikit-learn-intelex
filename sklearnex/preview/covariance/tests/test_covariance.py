@@ -25,7 +25,6 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 
-@pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("macro_block", [None, 1024])
 def test_sklearnex_import_covariance(dataframe, queue, macro_block):
