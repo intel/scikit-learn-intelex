@@ -246,7 +246,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
+        if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
         return dispatch(
             self,
@@ -256,8 +256,8 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
                 "sklearn": sklearn_KNeighborsClassifier.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     @wrap_output_data
