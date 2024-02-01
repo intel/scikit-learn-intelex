@@ -14,10 +14,10 @@
 # limitations under the License.
 # ===============================================================================
 
+from ._lof import LocalOutlierFactor
 from .knn_classification import KNeighborsClassifier
 from .knn_regression import KNeighborsRegressor
 from .knn_unsupervised import NearestNeighbors
-from .lof import LocalOutlierFactor
 
 __all__ = [
     "KNeighborsClassifier",
