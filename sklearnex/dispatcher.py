@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ==============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -70,6 +69,7 @@ def get_patch_map():
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
+        from .linear_model import LogisticRegression as LogisticRegression_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -81,9 +81,6 @@ def get_patch_map():
             EmpiricalCovariance as EmpiricalCovariance_sklearnex,
         )
         from .preview.decomposition import PCA as PCA_sklearnex
-        from .preview.linear_model import (
-            LogisticRegression as LogisticRegression_sklearnex,
-        )
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
@@ -120,21 +117,6 @@ def get_patch_map():
                 ]
             ]
 
-            # LogisticRegression
-            mapping.pop("logisticregression")
-            mapping.pop("log_reg")
-            mapping["log_reg"] = [
-                [
-                    (
-                        linear_model_module,
-                        "LogisticRegression",
-                        LogisticRegression_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["logisticregression"] = mapping["log_reg"]
-
         # DBSCAN
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
@@ -161,6 +143,24 @@ def get_patch_map():
             ]
         ]
         mapping["linearregression"] = mapping["linear"]
+
+        # Logistic Regression
+
+        mapping.pop("logisticregression")
+        mapping.pop("log_reg")
+        mapping.pop("logistic")
+        mapping.pop("_logistic_regression_path")
+        mapping["log_reg"] = [
+            [
+                (
+                    linear_model_module,
+                    "LogisticRegression",
+                    LogisticRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["logisticregression"] = mapping["log_reg"]
 
         # kNN
         mapping.pop("knn_classifier")
