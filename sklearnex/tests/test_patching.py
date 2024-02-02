@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import inspect
 import importlib
 import io
 import logging
@@ -183,14 +184,6 @@ def test_patched_function_signatures(function):
         ), f"Signature of {func} does not match sklearn"
 
 
-@pytest.mark.parametrize("name", UNPATCHED_MODELS.keys())
-def test_is_patched_instance(name):
-    patched = PATCHED_MODELS[name]()
-    unpatched = UNPATCHED_MODELS[name]()
-    assert is_patched_instance(patched), f"{patched} is a patched instance"
-    assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
-
-
 def test_patch_map_match():
     # This rule applies to functions and classes which are out of preview.
     # Items listed in a matching submodule's __all__ attribute should be
@@ -236,3 +229,22 @@ def test_patch_map_match():
                 del patched[module]
 
     assert patched == {}, f"{patched.keys()} were not properly patched"
+
+    
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
+def test_is_patched_instance(estimator):
+    patched = PATCHED_MODELS[estimator]
+    unpatched = UNPATCHED_MODELS[estimator]
+    assert is_patched_instance(patched), f"{patched} is a patched instance"
+    assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
+
+
+@pytest.mark.parametrize("member", ["_onedal_cpu_supported", "_onedal_gpu_supported"])
+@pytest.mark.parametrize(
+    "name",
+    [i for i in PATCHED_MODELS.keys() if "sklearnex" in PATCHED_MODELS[i].__module__],
+)
+def test_onedal_supported_member(name, member):
+    patched = PATCHED_MODELS[name]
+    sig = str(inspect.signature(getattr(patched, member)))
+    assert "(self, method_name, *data)" == sig
