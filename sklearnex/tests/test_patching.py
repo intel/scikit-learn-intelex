@@ -77,10 +77,16 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
-            rng.integers(2, size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+            rng.integers(2, size=1000),
+            sycl_queue=queue,
+            target_df=dataframe,
+            dtype=dtype,
         )
         y = _convert_to_dataframe(
-            rng.integers(2, size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+            rng.integers(2, size=1000),
+            sycl_queue=queue,
+            target_df=dataframe,
+            dtype=dtype,
         )
 
         _ = roc_auc_score(X, y)
@@ -99,7 +105,9 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
+def test_standard_estimator_patching(
+    caplog, dataframe, queue, dtype, estimator, method
+):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
@@ -230,7 +238,7 @@ def test_patch_map_match():
 
     assert patched == {}, f"{patched.keys()} were not properly patched"
 
-    
+
 @pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
 def test_is_patched_instance(estimator):
     patched = PATCHED_MODELS[estimator]
