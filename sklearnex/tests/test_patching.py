@@ -146,7 +146,7 @@ def test_docstring_patching_match(estimator):
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
-        assert patched_docstrings[i] is not None or unpatched_docstrings[i] is None
+        assert patched_docstrings[i] is None == unpatched_docstrings[i] is None
 
 
 @pytest.mark.parametrize("member", ["_onedal_cpu_supported", "_onedal_gpu_supported"])
