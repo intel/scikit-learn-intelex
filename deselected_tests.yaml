@@ -441,8 +441,8 @@ gpu:
   - ensemble/tests/test_bagging.py::test_gridsearch
   - ensemble/tests/test_bagging.py::test_estimators_samples
   - ensemble/tests/test_common.py::test_ensemble_heterogeneous_estimators_behavior
-  - ensemble/tests/test_forest.py::test_min_samples_split[RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_min_weight_fraction_leaf
+  #- ensemble/tests/test_forest.py::test_min_samples_split[RandomForestClassifier]
+  #- ensemble/tests/test_forest.py::test_min_weight_fraction_leaf
   - ensemble/tests/test_voting.py::test_parallel_fit
   - ensemble/tests/test_voting.py::test_sample_weight
 
@@ -640,8 +640,8 @@ gpu:
   - model_selection/tests/test_search.py::test_random_search_cv_results
 
   # Segmentation faults on GPU
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob
-  - ensemble/tests/test_forest.py::test_forest_regressor_oob
+  #- ensemble/tests/test_forest.py::test_forest_classifier_oob
+  #- ensemble/tests/test_forest.py::test_forest_regressor_oob
   - tests/test_common.py::test_search_cv
   - manifold/tests/test_t_sne.py::test_n_iter_without_progress
 
@@ -738,13 +738,13 @@ gpu:
 
   # GPU ensemble (Random Forest and Extra Trees) algorithms have a different
   # implementation compared to CPU and require further validation
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float64]
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float32]
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float32]
-  - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float32]
-  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float64]
-  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float32]
+  #- ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float64]
+  #- ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float32]
+  #- ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
+  #- ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float32]
+  #- ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float32]
+  #- ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float64]
+  #- ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float32]
 
   # GPU implementation of Extra Trees doesn't support sample_weights
   # comparisons to GPU with sample weights will use different algorithms
