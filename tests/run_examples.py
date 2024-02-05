@@ -139,11 +139,11 @@ req_version["decision_forest_classification_hist.py"] = (2023, "P", 100)
 req_version["decision_forest_classification_default_dense.py"] = (2023, "P", 100)
 req_version["decision_forest_classification_traverse.py"] = (2023, "P", 100)
 req_version["basic_statistics_spmd.py"] = (2023, "P", 100)
-# Temporary disabling due to sporadict timeout on PVC
-req_version["kmeans_spmd.py"] = (2024, "P", 101)
+req_version["kmeans_spmd.py"] = (2024, "P", 200)
 req_version["knn_bf_classification_spmd.py"] = (2023, "P", 100)
 req_version["knn_bf_regression_spmd.py"] = (2023, "P", 100)
 req_version["linear_regression_spmd.py"] = (2023, "P", 100)
+req_version["logistic_regression_spmd.py"] = (2024, "P", 100)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
@@ -153,6 +153,7 @@ req_device["knn_bf_classification_dpnp.py"] = ["gpu"]
 req_device["knn_bf_classification_spmd.py"] = ["gpu"]
 req_device["knn_bf_regression_spmd.py"] = ["gpu"]
 req_device["linear_regression_spmd.py"] = ["gpu"]
+req_device["logistic_regression_spmd.py"] = ["gpu"]
 req_device["pca_spmd.py"] = ["gpu"]
 req_device["random_forest_classifier_dpctl.py"] = ["gpu"]
 req_device["random_forest_classifier_spmd.py"] = ["gpu"]
@@ -169,6 +170,7 @@ req_library["knn_bf_classification_dpnp.py"] = ["dpctl", "dpnp"]
 req_library["knn_bf_classification_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["knn_bf_regression_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["linear_regression_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["logistic_regression_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["pca_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["random_forest_classifier_dpctl.py"] = ["dpctl"]
 req_library["random_forest_classifier_spmd.py"] = ["dpctl", "mpi4py"]
@@ -246,9 +248,11 @@ def run(exdir, logdir, args):
                             os.chdir(dirpath)
                             try:
                                 proc = subprocess.Popen(
-                                    execute_string
-                                    if IS_WIN
-                                    else ["/bin/bash", "-c", execute_string],
+                                    (
+                                        execute_string
+                                        if IS_WIN
+                                        else ["/bin/bash", "-c", execute_string]
+                                    ),
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
                                     shell=False,

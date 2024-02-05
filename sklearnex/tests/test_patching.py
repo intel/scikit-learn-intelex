@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import inspect
 import os
 import pathlib
 import re
@@ -99,7 +100,7 @@ def _load_all_models(patched):
 
     models = {}
     for patch_infos in get_patch_map().values():
-        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
+        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1], None)
         if (
             maybe_class is not None
             and isclass(maybe_class)
@@ -117,18 +118,18 @@ PATCHED_MODELS = _load_all_models(patched=True)
 UNPATCHED_MODELS = _load_all_models(patched=False)
 
 
-@pytest.mark.parametrize("name", PATCHED_MODELS.keys())
-def test_is_patched_instance(name):
-    patched = PATCHED_MODELS[name]()
-    unpatched = UNPATCHED_MODELS[name]()
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
+def test_is_patched_instance(estimator):
+    patched = PATCHED_MODELS[estimator]
+    unpatched = UNPATCHED_MODELS[estimator]
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
 
 
-@pytest.mark.parametrize("name", PATCHED_MODELS.keys())
-def test_docstring_patching_match(name):
-    patched = PATCHED_MODELS[name]
-    unpatched = UNPATCHED_MODELS[name]
+@pytest.mark.parametrize("estimator", PATCHED_MODELS.keys())
+def test_docstring_patching_match(estimator):
+    patched = PATCHED_MODELS[estimator]
+    unpatched = UNPATCHED_MODELS[estimator]
     patched_docstrings = {
         i: getattr(patched, i).__doc__
         for i in dir(patched)
@@ -143,12 +144,25 @@ def test_docstring_patching_match(name):
     # check class docstring match if a docstring is available
     assert patched.__doc__ is not None or unpatched.__doc__ is None
     if patched.__doc__ != unpatched.__doc__:
-        warnings.warn(f"class {name} has a custom docstring which does not match sklearn")
+        warnings.warn(
+            f"class {estimator} has a custom docstring which does not match sklearn"
+        )
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
         assert patched_docstrings[i] is not None or unpatched_docstrings[i] is None
         if patched_docstrings[i] != unpatched_docstrings[i]:
             warnings.warn(
-                f"{name}.{i} has a custom docstring which does not match sklearn"
+                f"{estimator}.{i} has a custom docstring which does not match sklearn"
             )
+
+
+@pytest.mark.parametrize("member", ["_onedal_cpu_supported", "_onedal_gpu_supported"])
+@pytest.mark.parametrize(
+    "name",
+    [i for i in PATCHED_MODELS.keys() if "sklearnex" in PATCHED_MODELS[i].__module__],
+)
+def test_onedal_supported_member(name, member):
+    patched = PATCHED_MODELS[name]
+    sig = str(inspect.signature(getattr(patched, member)))
+    assert "(self, method_name, *data)" == sig

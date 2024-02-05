@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -31,7 +30,8 @@ from sklearn.neighbors._kd_tree import KDTree
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
-from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 from onedal.utils import _check_array, _num_features, _num_samples
 
@@ -96,7 +96,7 @@ else:
             )
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "kneighbors"])
 class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
     __doc__ = sklearn_NearestNeighbors.__doc__
     if sklearn_check_version("1.2"):
@@ -152,8 +152,8 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
                 "sklearn": sklearn_NearestNeighbors.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     @wrap_output_data
@@ -182,7 +182,6 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
 
         return result
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, y=None, queue=None):
         onedal_params = {
             "n_neighbors": self.n_neighbors,
@@ -204,11 +203,9 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
 
         self._save_attributes()
 
-    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
 
-    @run_with_n_jobs
     def _onedal_kneighbors(
         self, X=None, n_neighbors=None, return_distance=True, queue=None
     ):

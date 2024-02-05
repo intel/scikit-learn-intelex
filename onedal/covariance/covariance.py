@@ -13,20 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from abc import ABCMeta
 
 import numpy as np
-from sklearn.base import BaseEstimator
-from sklearn.utils import check_array
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
+from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal import _backend
+from onedal.utils import _check_array
 
 from ..common._policy import _get_policy
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
-class EmpiricalCovariance(BaseEstimator):
+class BaseEmpiricalCovariance(metaclass=ABCMeta):
+    def __init__(self, method="dense", bias=False):
+        self.method = method
+        self.bias = bias
+
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
+
+    def _get_onedal_params(self, dtype=np.float32):
+        params = {
+            "fptype": "float" if dtype == np.float32 else "double",
+            "method": self.method,
+        }
+        if daal_check_version((2024, "P", 1)):
+            params["bias"] = self.bias
+
+        return params
+
+
+class EmpiricalCovariance(BaseEmpiricalCovariance):
     """Covariance estimator.
 
     Computes sample covariance matrix.
@@ -49,23 +68,6 @@ class EmpiricalCovariance(BaseEstimator):
         Estimated covariance matrix
     """
 
-    def __init__(self, method="dense", bias=False):
-        self.method = method
-        self.bias = bias
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
-    def _get_onedal_params(self, dtype=np.float32):
-        params = {
-            "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.method,
-        }
-        if daal_check_version((2024, "P", 1)):
-            params["bias"] = self.bias
-
-        return params
-
     def fit(self, X, queue=None):
         """Fit the sample covariance matrix of X.
 
@@ -84,20 +86,17 @@ class EmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
         policy = self._get_policy(queue, X)
-        X = check_array(X, dtype=[np.float64, np.float32])
-        X = make2d(X)
-        types = [np.float32, np.float64]
-        if get_dtype(X) not in types:
-            X = X.astype(np.float64)
+        X = _check_array(X, dtype=[np.float64, np.float32])
         X = _convert_to_supported(policy, X)
         dtype = get_dtype(X)
-        module = _backend.covariance
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = module.compute(policy, params, hparams.backend, to_table(X))
+            result = _backend.covariance.compute(
+                policy, params, hparams.backend, to_table(X)
+            )
         else:
-            result = module.compute(policy, params, to_table(X))
+            result = _backend.covariance.compute(policy, params, to_table(X))
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:
