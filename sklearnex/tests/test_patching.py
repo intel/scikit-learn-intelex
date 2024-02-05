@@ -174,8 +174,8 @@ def test_standard_estimator_signatures(estimator):
         est_method = getattr(est, method)
         unpatched_est_method = getattr(unpatched_est, method)
         if callable(unpatched_est_method):
-            assert str(signature(est_method)) == str(
-                signature(unpatched_est_method)
+            assert str(signature(unpatched_est_method)) == str(
+                signature(est_method)
             ).replace(
                 "sklearnex.", "sklearn."
             ), f"Signature of {estimator}.{method} does not match sklearn"
