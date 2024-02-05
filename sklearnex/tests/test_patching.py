@@ -142,7 +142,7 @@ def test_docstring_patching_match(estimator):
     }
 
     # check class docstring match if a docstring is available
-    assert patched.__doc__ is not None or unpatched.__doc__ is None
+    assert patched.__doc__ is None == unpatched.__doc__ is None
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
