@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,29 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = [
-    "basic_statistics",
-    "cluster",
-    "covariance",
-    "decomposition",
-    "ensemble",
-    "linear_model",
-    "neighbors",
-]
+import dpctl
+import dpctl.tensor as dpt
+import numpy as np
+from mpi4py import MPI
+
+from sklearnex.spmd.covariance import EmpiricalCovariance
+
+
+def get_data(data_seed):
+    ns, nf = 3000, 3
+    drng = np.random.default_rng(data_seed)
+    X = drng.random(size=(ns, nf))
+    return X
+
+
+q = dpctl.SyclQueue("gpu")
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+
+X = get_data(rank)
+dpt_X = dpt.asarray(X, usm_type="device", sycl_queue=q)
+
+cov = EmpiricalCovariance().fit(dpt_X)
+
+print(f"Computed covariance values on rank {rank}:\n", cov.covariance_)
