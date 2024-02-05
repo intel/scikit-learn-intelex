@@ -142,23 +142,11 @@ def test_docstring_patching_match(estimator):
     }
 
     # check class docstring match if a docstring is available
-    assert (
-        patched.__doc__ is not None or unpatched.__doc__ is None
-    ), f"class {estimator} docstring does not match sklearn"
-    if patched.__doc__ != unpatched.__doc__:
-        warnings.warn(
-            f"class {estimator} has a custom docstring which does not match sklearn"
-        )
+    assert patched.__doc__ is not None or unpatched.__doc__ is None
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
-        assert (
-            patched_docstrings[i] is not None or unpatched_docstrings[i] is None
-        ), f"{estimator}.{i} docstring does not match sklearn"
-        if patched_docstrings[i] != unpatched_docstrings[i]:
-            warnings.warn(
-                f"{estimator}.{i} has a custom docstring which does not match sklearn"
-            )
+        assert patched_docstrings[i] is not None or unpatched_docstrings[i] is None
 
 
 @pytest.mark.parametrize("member", ["_onedal_cpu_supported", "_onedal_gpu_supported"])
