@@ -14,8 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-import inspect
 import importlib
+import inspect
 import io
 import logging
 import os
@@ -105,9 +105,7 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(
-    caplog, dataframe, queue, dtype, estimator, method
-):
+def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
