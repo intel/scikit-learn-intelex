@@ -138,7 +138,7 @@ def test_docstring_patching_match(estimator):
     unpatched_docstrings = {
         i: getattr(unpatched, i).__doc__
         for i in dir(unpatched)
-        if not i.startswith("_") and not i.endswith("_") and hasattr(patched, i)
+        if not i.startswith("_") and not i.endswith("_") and hasattr(unpatched, i)
     }
 
     # check class docstring match if a docstring is available
