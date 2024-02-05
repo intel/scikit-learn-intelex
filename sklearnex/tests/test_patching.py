@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import inspect
 import os
 import pathlib
 import re
@@ -96,15 +97,15 @@ def _load_all_models(patched):
     if patched:
         patch_sklearn()
 
-    models = []
+    models = {}
     for patch_infos in get_patch_map().values():
-        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
+        maybe_class = getattr(patch_infos[0][0][0], patch_infos[0][0][1], None)
         if (
             maybe_class is not None
             and isclass(maybe_class)
             and issubclass(maybe_class, BaseEstimator)
         ):
-            models.append(maybe_class())
+            models[patch_infos[0][0][1]] = maybe_class
 
     if patched:
         unpatch_sklearn()
@@ -116,7 +117,20 @@ PATCHED_MODELS = _load_all_models(patched=True)
 UNPATCHED_MODELS = _load_all_models(patched=False)
 
 
-@pytest.mark.parametrize(("patched", "unpatched"), zip(PATCHED_MODELS, UNPATCHED_MODELS))
-def test_is_patched_instance(patched, unpatched):
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
+def test_is_patched_instance(estimator):
+    patched = PATCHED_MODELS[estimator]
+    unpatched = UNPATCHED_MODELS[estimator]
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
+
+
+@pytest.mark.parametrize("member", ["_onedal_cpu_supported", "_onedal_gpu_supported"])
+@pytest.mark.parametrize(
+    "name",
+    [i for i in PATCHED_MODELS.keys() if "sklearnex" in PATCHED_MODELS[i].__module__],
+)
+def test_onedal_supported_member(name, member):
+    patched = PATCHED_MODELS[name]
+    sig = str(inspect.signature(getattr(patched, member)))
+    assert "(self, method_name, *data)" == sig

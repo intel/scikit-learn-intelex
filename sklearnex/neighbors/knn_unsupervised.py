@@ -151,8 +151,8 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
                 "sklearn": sklearn_NearestNeighbors.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     @wrap_output_data
