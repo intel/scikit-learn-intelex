@@ -19,6 +19,7 @@ from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
 from ..._device_offload import support_usm_ndarray
 from .._common import BaseEstimatorSPMD
 
+
 class EmpiricalCovariance(BaseEstimatorSPMD, EmpiricalCovariance_Batch):
     @support_usm_ndarray()
     def fit(self, X, queue=None):
