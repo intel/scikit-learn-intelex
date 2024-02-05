@@ -126,23 +126,25 @@ def test_is_patched_instance(estimator):
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
 
 
-@pytest.mark.parametrize("estimator", PATCHED_MODELS.keys())
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
 def test_docstring_patching_match(estimator):
     patched = PATCHED_MODELS[estimator]
     unpatched = UNPATCHED_MODELS[estimator]
     patched_docstrings = {
         i: getattr(patched, i).__doc__
         for i in dir(patched)
-        if not i.startswith("_") and not i.endswith("_")
+        if not i.startswith("_") and not i.endswith("_") and hasattr(patched, i)
     }
     unpatched_docstrings = {
         i: getattr(unpatched, i).__doc__
         for i in dir(unpatched)
-        if not i.startswith("_") and not i.endswith("_")
+        if not i.startswith("_") and not i.endswith("_") and hasattr(patched, i)
     }
 
     # check class docstring match if a docstring is available
-    assert patched.__doc__ is not None or unpatched.__doc__ is None
+    assert (
+        patched.__doc__ is not None or unpatched.__doc__ is None
+    ), f"class {estimator} docstring does not match sklearn"
     if patched.__doc__ != unpatched.__doc__:
         warnings.warn(
             f"class {estimator} has a custom docstring which does not match sklearn"
@@ -150,7 +152,9 @@ def test_docstring_patching_match(estimator):
 
     # check class attribute docstrings
     for i in unpatched_docstrings:
-        assert patched_docstrings[i] is not None or unpatched_docstrings[i] is None
+        assert (
+            patched_docstrings[i] is not None or unpatched_docstrings[i] is None
+        ), f"{estimator}.{i} docstring does not match sklearn"
         if patched_docstrings[i] != unpatched_docstrings[i]:
             warnings.warn(
                 f"{estimator}.{i} has a custom docstring which does not match sklearn"
