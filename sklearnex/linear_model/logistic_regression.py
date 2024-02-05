@@ -330,14 +330,10 @@ if daal_check_version((2024, "P", 1)):
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
 
-        LogisticRegression.fit.__doc__ = sklearn_LogisticRegression.fit.__doc__
-        LogisticRegression.predict.__doc__ = sklearn_LogisticRegression.predict.__doc__
-        LogisticRegression.predict_proba.__doc__ = (
-            sklearn_LogisticRegression.predict_proba.__doc__
-        )
-        LogisticRegression.predict_log_proba.__doc__ = (
-            sklearn_LogisticRegression.predict_log_proba.__doc__
-        )
+        fit.__doc__ = sklearn_LogisticRegression.fit.__doc__
+        predict.__doc__ = sklearn_LogisticRegression.predict.__doc__
+        predict_proba.__doc__ = sklearn_LogisticRegression.predict_proba.__doc__
+        predict_log_proba.__doc__ = sklearn_LogisticRegression.predict_log_proba.__doc__
 
 else:
     LogisticRegression = LogisticRegression_daal4py
