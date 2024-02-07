@@ -455,12 +455,12 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         # This should only trigger if the user uses this class directly.
         if (
             self.estimator.__class__ == DecisionTreeClassifier
-            and self._onedal_factory != onedal_RandomForestClassifier
+            and not isinstance(self._onedal_factory, onedal_RandomForestClassifier)
         ):
             self._onedal_factory = onedal_RandomForestClassifier
         elif (
             self.estimator.__class__ == ExtraTreeClassifier
-            and self._onedal_factory != onedal_ExtraTreesClassifier
+            and not isinstance(self._onedal_factory, onedal_ExtraTreesClassifier)
         ):
             self._onedal_factory = onedal_ExtraTreesClassifier
 
@@ -845,12 +845,12 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
         # This should only trigger if the user uses this class directly.
         if (
             self.estimator.__class__ == DecisionTreeRegressor
-            and self._onedal_factory != onedal_RandomForestRegressor
+            and not isinstance(self._onedal_factory, onedal_RandomForestRegressor)
         ):
             self._onedal_factory = onedal_RandomForestRegressor
         elif (
             self.estimator.__class__ == ExtraTreeRegressor
-            and self._onedal_factory != onedal_ExtraTreesRegressor
+            and not isinstance(self._onedal_factory, onedal_ExtraTreesRegressor)
         ):
             self._onedal_factory = onedal_ExtraTreesRegressor
 
@@ -1136,7 +1136,6 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 @control_n_jobs(decorated_methods=["fit", "predict", "predict_proba"])
 class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
-    _onedal_factory = onedal_RandomForestClassifier
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -1210,6 +1209,7 @@ class RandomForestClassifier(ForestClassifier):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.monotonic_cst = monotonic_cst
+            self._onedal_factory = onedal_RandomForestClassifier
 
     elif sklearn_check_version("1.0"):
 
@@ -1273,6 +1273,7 @@ class RandomForestClassifier(ForestClassifier):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_RandomForestClassifier
 
     else:
 
@@ -1341,12 +1342,12 @@ class RandomForestClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_RandomForestClassifier
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
 class RandomForestRegressor(ForestRegressor):
     __doc__ = sklearn_RandomForestRegressor.__doc__
-    _onedal_factory = onedal_RandomForestRegressor
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -1418,6 +1419,7 @@ class RandomForestRegressor(ForestRegressor):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.monotonic_cst = monotonic_cst
+            self._onedal_factory = onedal_RandomForestRegressor
 
     elif sklearn_check_version("1.0"):
 
@@ -1479,6 +1481,7 @@ class RandomForestRegressor(ForestRegressor):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_RandomForestRegressor
 
     else:
 
@@ -1542,12 +1545,12 @@ class RandomForestRegressor(ForestRegressor):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_RandomForestRegressor
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "predict_proba"])
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
-    _onedal_factory = onedal_ExtraTreesClassifier
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -1621,6 +1624,7 @@ class ExtraTreesClassifier(ForestClassifier):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.monotonic_cst = monotonic_cst
+            self._onedal_factory = onedal_ExtraTreesClassifier
 
     elif sklearn_check_version("1.0"):
 
@@ -1684,6 +1688,7 @@ class ExtraTreesClassifier(ForestClassifier):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_ExtraTreesClassifier
 
     else:
 
@@ -1752,12 +1757,12 @@ class ExtraTreesClassifier(ForestClassifier):
             self.min_bin_size = min_bin_size
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_ExtraTreesClassifier
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
 class ExtraTreesRegressor(ForestRegressor):
     __doc__ = sklearn_ExtraTreesRegressor.__doc__
-    _onedal_factory = onedal_ExtraTreesRegressor
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -1829,6 +1834,7 @@ class ExtraTreesRegressor(ForestRegressor):
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
             self.monotonic_cst = monotonic_cst
+            self._onedal_factory = onedal_ExtraTreesRegressor
 
     elif sklearn_check_version("1.0"):
 
@@ -1890,6 +1896,7 @@ class ExtraTreesRegressor(ForestRegressor):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_ExtraTreesRegressor
 
     else:
 
@@ -1953,6 +1960,7 @@ class ExtraTreesRegressor(ForestRegressor):
             self.ccp_alpha = ccp_alpha
             self.max_bins = max_bins
             self.min_bin_size = min_bin_size
+            self._onedal_factory = onedal_ExtraTreesRegressor
 
 
 # Allow for isinstance calls without inheritance changes using ABCMeta
