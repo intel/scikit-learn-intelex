@@ -108,6 +108,10 @@ if(IFACE STREQUAL "host")
 elseif(IFACE STREQUAL "dpc")
     set(TARGET "_onedal_py_dpc")
 
+    if(WIN32)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=link")
+    endif()
+
     if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
         set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
     endif()
