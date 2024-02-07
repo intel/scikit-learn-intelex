@@ -17,6 +17,7 @@
 
 # System imports
 import os
+import shutil
 import sys
 import time
 
@@ -51,8 +52,7 @@ if dal_root is None:
 
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
-dpcpp = True if "DPCPPROOT" in os.environ else False
-dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
+dpcpp = shutil.which("icpx") is not None
 
 try:
     import dpctl
