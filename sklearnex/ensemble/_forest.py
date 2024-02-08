@@ -453,14 +453,12 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         # The estimator is checked against the class attribute for conformance.
         # This should only trigger if the user uses this class directly.
-        if (
-            self.estimator.__class__ == DecisionTreeClassifier
-            and not isinstance(self._onedal_factory, onedal_RandomForestClassifier)
+        if self.estimator.__class__ == DecisionTreeClassifier and not isinstance(
+            self._onedal_factory, onedal_RandomForestClassifier
         ):
             self._onedal_factory = onedal_RandomForestClassifier
-        elif (
-            self.estimator.__class__ == ExtraTreeClassifier
-            and not isinstance(self._onedal_factory, onedal_ExtraTreesClassifier)
+        elif self.estimator.__class__ == ExtraTreeClassifier and not isinstance(
+            self._onedal_factory, onedal_ExtraTreesClassifier
         ):
             self._onedal_factory = onedal_ExtraTreesClassifier
 
@@ -843,14 +841,12 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         # The splitter is checked against the class attribute for conformance
         # This should only trigger if the user uses this class directly.
-        if (
-            self.estimator.__class__ == DecisionTreeRegressor
-            and not isinstance(self._onedal_factory, onedal_RandomForestRegressor)
+        if self.estimator.__class__ == DecisionTreeRegressor and not isinstance(
+            self._onedal_factory, onedal_RandomForestRegressor
         ):
             self._onedal_factory = onedal_RandomForestRegressor
-        elif (
-            self.estimator.__class__ == ExtraTreeRegressor
-            and not isinstance(self._onedal_factory, onedal_ExtraTreesRegressor)
+        elif self.estimator.__class__ == ExtraTreeRegressor and not isinstance(
+            self._onedal_factory, onedal_ExtraTreesRegressor
         ):
             self._onedal_factory = onedal_ExtraTreesRegressor
 
