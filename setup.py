@@ -565,6 +565,7 @@ if ONEDAL_VERSION >= 20230200:
 if build_distribute:
     packages_with_tests += [
         "onedal.spmd",
+        "onedal.spmd.covariance",
         "onedal.spmd.decomposition",
         "onedal.spmd.ensemble",
     ]

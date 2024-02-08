@@ -105,6 +105,7 @@ packages_with_tests = [
 if build_distribute:
     packages_with_tests += [
         "sklearnex.spmd",
+        "sklearnex.spmd.covariance",
         "sklearnex.spmd.decomposition",
         "sklearnex.spmd.ensemble",
     ]
