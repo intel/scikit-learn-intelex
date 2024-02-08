@@ -17,6 +17,12 @@
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
 
+# General use of patch_sklearn and unpatch_sklearn in pytest is not recommended.
+# It changes global state and can impact the operation of other tests. This file
+# specifically tests patch_sklearn and unpatch_sklearn and is exempt from this.
+# If sklearnex patching is necessary in testing, use the 'with_sklearnex' pytest
+# fixture.
+
 
 def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()

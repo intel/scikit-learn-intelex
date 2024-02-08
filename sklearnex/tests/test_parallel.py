@@ -33,21 +33,16 @@ except (ImportError, ModuleNotFoundError):
     "'dpctl' module is required for test.",
 )
 def test_config_context_in_parallel(with_sklearnex):
+    from sklearn.datasets import make_classification
+    from sklearn.ensemble import BaggingClassifier
+    from sklearn.svm import SVC
+
+    x, y = make_classification(random_state=42)
     try:
-        patch_sklearn()
-
-        from sklearn.datasets import make_classification
-        from sklearn.ensemble import BaggingClassifier
-        from sklearn.svm import SVC
-
-        x, y = make_classification(random_state=42)
-        try:
-            with config_context(target_offload="gpu", allow_fallback_to_host=False):
-                BaggingClassifier(SVC(), n_jobs=2).fit(x, y)
-            raise ValueError(
-                "'SyclQueueCreationError' wasn't raised " "for non-existing 'gpu' device"
-            )
-        except dpctl._sycl_queue.SyclQueueCreationError:
-            pass
-    finally:
-        unpatch_sklearn()
+        with config_context(target_offload="gpu", allow_fallback_to_host=False):
+            BaggingClassifier(SVC(), n_jobs=2).fit(x, y)
+        raise ValueError(
+            "'SyclQueueCreationError' wasn't raised " "for non-existing 'gpu' device"
+        )
+    except dpctl._sycl_queue.SyclQueueCreationError:
+        pass
