@@ -418,7 +418,7 @@ Hardware Requirements
       - Intel® GPU drivers
 
 
-.. tip:: Intel(R) processors provide better performance then other CPUs. Read more about hardware comparison in our :ref:`blogs <blogs>`.
+.. tip:: Intel(R) processors provide better performance than other CPUs. Read more about hardware comparison in our :ref:`blogs <blogs>`.
 
 
 Software Requirements
