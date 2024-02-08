@@ -140,10 +140,60 @@ elseif(IFACE STREQUAL "dpc")
         endif()
     endif()
 
+    list(APPEND COMPILE_DEFINITIONS
+        "ONEDAL_DATA_PARALLEL"
+        "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
+
+    # TODO:
+    # remove for dpc backend.
+    if(ONEDAL_DPCTL_INTEGRATION)
+        list(APPEND COMPILE_DEFINITIONS
+             "ONEDAL_DPCTL_INTEGRATION")
+    endif()
+
+elseif(IFACE STREQUAL "spmd_dpc")
+    set(TARGET "_onedal_py_spmd_dpc")
+
+    if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
+        set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
+    endif()
+
+    if(CMAKE_C_COMPILER MATCHES ".*icpx" OR CMAKE_C_COMPILER MATCHES ".*icx")
+        set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS}")
+    endif()
+
+    set(ONEDAL_LIBRARIES "")
+    if(WIN32)
+        list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll.${ONEDAL_MAJOR_BINARY}")
+        list(APPEND ONEDAL_LIBRARIES "onedal_core_dll.${ONEDAL_MAJOR_BINARY}")
+    elseif(APPLE)
+        list(APPEND ONEDAL_LIBRARIES "onedal_dpc.${ONEDAL_MAJOR_BINARY}")
+        list(APPEND ONEDAL_LIBRARIES "onedal_core.${ONEDAL_MAJOR_BINARY}")
+        list(APPEND ONEDAL_LIBRARIES "onedal_thread.${ONEDAL_MAJOR_BINARY}")
+    else()
+        list(APPEND ONEDAL_LIBRARIES "-l:libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}")
+        list(APPEND ONEDAL_LIBRARIES "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}")
+        list(APPEND ONEDAL_LIBRARIES "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
+    endif()
+
+    # TODO:
+    # remove if not required.
+    if(oneDAL_USE_PARAMETERS_LIB)
+        if(WIN32)
+            list(APPEND ONEDAL_LIBRARIES "onedal_core_parameters_dpc_dll.${ONEDAL_MAJOR_BINARY}")
+        elseif(APPLE)
+            list(APPEND ONEDAL_LIBRARIES "onedal_parameters_dpc.${ONEDAL_MAJOR_BINARY}")
+        else()
+            list(APPEND ONEDAL_LIBRARIES "-l:libonedal_parameters_dpc.so.${ONEDAL_MAJOR_BINARY}")
+        endif()
+    endif()
+
     if(ONEDAL_DIST_SPMD)
         set(MPI_LIBRARY ${MPI_LIBS})
     endif()
 
+    # todo:
+    # remove ONEDAL_DATA_PARALLEL
     list(APPEND COMPILE_DEFINITIONS
         "ONEDAL_DATA_PARALLEL"
         "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")

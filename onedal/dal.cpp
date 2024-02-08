@@ -22,47 +22,89 @@ namespace py = pybind11;
 namespace oneapi::dal::python {
 
 /* common */
-ONEDAL_PY_INIT_MODULE(policy);
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-ONEDAL_PY_INIT_MODULE(spmd_policy);
-#endif
+    ONEDAL_PY_INIT_MODULE(spmd_policy);
 
-/* datatypes*/
-ONEDAL_PY_INIT_MODULE(table);
-ONEDAL_PY_INIT_MODULE(table_metadata);
+    /* algorithms */
+    ONEDAL_PY_INIT_MODULE(covariance);
+    ONEDAL_PY_INIT_MODULE(dbscan);
+    ONEDAL_PY_INIT_MODULE(ensemble);
+    ONEDAL_PY_INIT_MODULE(decomposition);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    ONEDAL_PY_INIT_MODULE(basic_statistics);
+    ONEDAL_PY_INIT_MODULE(linear_model);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    ONEDAL_PY_INIT_MODULE(kmeans_init);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    ONEDAL_PY_INIT_MODULE(kmeans);
+    ONEDAL_PY_INIT_MODULE(kmeans_common);
+    ONEDAL_PY_INIT_MODULE(neighbors);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    ONEDAL_PY_INIT_MODULE(logistic_regression);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+#else // ONEDAL_DATA_PARALLEL_SPMD
+    ONEDAL_PY_INIT_MODULE(policy);
+    /* datatypes*/
+    ONEDAL_PY_INIT_MODULE(table);
+    ONEDAL_PY_INIT_MODULE(table_metadata);
 
-/* primitives */
-ONEDAL_PY_INIT_MODULE(get_tree);
-ONEDAL_PY_INIT_MODULE(linear_kernel);
-ONEDAL_PY_INIT_MODULE(rbf_kernel);
-ONEDAL_PY_INIT_MODULE(polynomial_kernel);
-ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
+    /* primitives */
+    ONEDAL_PY_INIT_MODULE(get_tree);
+    ONEDAL_PY_INIT_MODULE(linear_kernel);
+    ONEDAL_PY_INIT_MODULE(rbf_kernel);
+    ONEDAL_PY_INIT_MODULE(polynomial_kernel);
+    ONEDAL_PY_INIT_MODULE(sigmoid_kernel);
 
-/* algorithms */
-ONEDAL_PY_INIT_MODULE(covariance);
-ONEDAL_PY_INIT_MODULE(dbscan);
-ONEDAL_PY_INIT_MODULE(ensemble);
-ONEDAL_PY_INIT_MODULE(decomposition);
+    /* algorithms */
+    ONEDAL_PY_INIT_MODULE(covariance);
+    ONEDAL_PY_INIT_MODULE(dbscan);
+    ONEDAL_PY_INIT_MODULE(ensemble);
+    ONEDAL_PY_INIT_MODULE(decomposition);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    ONEDAL_PY_INIT_MODULE(basic_statistics);
+    ONEDAL_PY_INIT_MODULE(linear_model);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    ONEDAL_PY_INIT_MODULE(kmeans_init);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    ONEDAL_PY_INIT_MODULE(kmeans);
+    ONEDAL_PY_INIT_MODULE(kmeans_common);
+    ONEDAL_PY_INIT_MODULE(neighbors);
+    ONEDAL_PY_INIT_MODULE(svm);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    ONEDAL_PY_INIT_MODULE(logistic_regression);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+#endif // ONEDAL_DATA_PARALLEL_SPMD
+
+// TODO:
+// exclude for spmd policy backend.
+
+#ifdef ONEDAL_DATA_PARALLEL_SPMD
+PYBIND11_MODULE(_onedal_py_spmd_dpc, m) {
+    init_spmd_policy(m);
+
+    init_covariance(m);
+    init_dbscan(m);
+    init_decomposition(m);
+    init_ensemble(m);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-ONEDAL_PY_INIT_MODULE(basic_statistics);
-ONEDAL_PY_INIT_MODULE(linear_model);
+    init_basic_statistics(m);
+    init_linear_model(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-ONEDAL_PY_INIT_MODULE(kmeans_init);
+    init_kmeans_init(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-ONEDAL_PY_INIT_MODULE(kmeans);
-ONEDAL_PY_INIT_MODULE(kmeans_common);
-ONEDAL_PY_INIT_MODULE(neighbors);
-ONEDAL_PY_INIT_MODULE(svm);
+    init_kmeans(m);
+    init_kmeans_common(m);
+    init_neighbors(m);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
-ONEDAL_PY_INIT_MODULE(logistic_regression);
+    init_logistic_regression(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
-
+}
+#else
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
-#ifdef ONEDAL_DATA_PARALLEL_SPMD
-    init_spmd_policy(m);
-#endif
 #else
 PYBIND11_MODULE(_onedal_py_host, m) {
 #endif
@@ -94,6 +136,6 @@ PYBIND11_MODULE(_onedal_py_host, m) {
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
     init_logistic_regression(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+#endif // ONEDAL_DATA_PARALLEL_SPMD
 }
-
 } // namespace oneapi::dal::python
