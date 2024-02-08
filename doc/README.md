@@ -27,7 +27,7 @@ To build Inte(R) Extension for Scikit-Learn documentation locally:
 
 		git clone https://github.com/intel/scikit-learn-intelex.git
 
-2. Install requried Python packages using `pip`:
+2. Install required Python packages using `pip`:
 
 		pip install -r requirements-doc.txt
 
