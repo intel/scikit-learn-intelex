@@ -15,8 +15,6 @@
 # ==============================================================================
 import pytest
 
-from sklearnex import config_context, patch_sklearn, unpatch_sklearn
-
 try:
     import dpctl
 
