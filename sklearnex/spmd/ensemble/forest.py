@@ -25,10 +25,7 @@ from ...ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
 class RandomForestClassifier(RandomForestClassifier_Batch):
     __doc__ = RandomForestClassifier_Batch.__doc__
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._onedal_factory = onedal_RandomForestClassifier
+    _onedal_factory = onedal_RandomForestClassifier
 
     def _onedal_cpu_supported(self, method_name, *data):
         # TODO:
@@ -53,10 +50,7 @@ class RandomForestClassifier(RandomForestClassifier_Batch):
 
 class RandomForestRegressor(RandomForestRegressor_Batch):
     __doc__ = RandomForestRegressor_Batch.__doc__
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._onedal_factory = onedal_RandomForestRegressor
+    _onedal_factory = onedal_RandomForestRegressor
 
     def _onedal_cpu_supported(self, method_name, *data):
         # TODO:
