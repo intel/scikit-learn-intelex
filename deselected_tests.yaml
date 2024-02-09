@@ -441,8 +441,6 @@ gpu:
   - ensemble/tests/test_bagging.py::test_gridsearch
   - ensemble/tests/test_bagging.py::test_estimators_samples
   - ensemble/tests/test_common.py::test_ensemble_heterogeneous_estimators_behavior
-  #- ensemble/tests/test_forest.py::test_min_samples_split[RandomForestClassifier]
-  #- ensemble/tests/test_forest.py::test_min_weight_fraction_leaf
   - ensemble/tests/test_voting.py::test_parallel_fit
   - ensemble/tests/test_voting.py::test_sample_weight
 
