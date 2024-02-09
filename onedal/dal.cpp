@@ -81,61 +81,62 @@ namespace oneapi::dal::python {
 // exclude for spmd policy backend.
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-PYBIND11_MODULE(_onedal_py_spmd_dpc, m) {
-    init_spmd_policy(m);
+    PYBIND11_MODULE(_onedal_py_spmd_dpc, m) {
+        init_spmd_policy(m);
 
-    init_covariance(m);
-    init_dbscan(m);
-    init_decomposition(m);
-    init_ensemble(m);
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-    init_basic_statistics(m);
-    init_linear_model(m);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-    init_kmeans_init(m);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-    init_kmeans(m);
-    init_kmeans_common(m);
-    init_neighbors(m);
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
-    init_logistic_regression(m);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
-}
+        init_covariance(m);
+        init_dbscan(m);
+        init_decomposition(m);
+        init_ensemble(m);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+        init_basic_statistics(m);
+        init_linear_model(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+        init_kmeans_init(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+        init_kmeans(m);
+        init_kmeans_common(m);
+        init_neighbors(m);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+        init_logistic_regression(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    }
 #else
-#ifdef ONEDAL_DATA_PARALLEL
-PYBIND11_MODULE(_onedal_py_dpc, m) {
-#else
-PYBIND11_MODULE(_onedal_py_host, m) {
-#endif
-    init_policy(m);
-    init_table(m);
-    init_table_metadata(m);
+    #ifdef ONEDAL_DATA_PARALLEL
+    PYBIND11_MODULE(_onedal_py_dpc, m) {
+    #else
+    PYBIND11_MODULE(_onedal_py_host, m) {
+    #endif
+        init_policy(m);
+        init_table(m);
+        init_table_metadata(m);
+    
+        init_linear_kernel(m);
+        init_rbf_kernel(m);
+        init_polynomial_kernel(m);
+        init_sigmoid_kernel(m);
+        init_get_tree(m);
 
-    init_linear_kernel(m);
-    init_rbf_kernel(m);
-    init_polynomial_kernel(m);
-    init_sigmoid_kernel(m);
-    init_get_tree(m);
-
-    init_covariance(m);
-    init_dbscan(m);
-    init_decomposition(m);
-    init_ensemble(m);
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-    init_basic_statistics(m);
-    init_linear_model(m);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-    init_kmeans_init(m);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-    init_kmeans(m);
-    init_kmeans_common(m);
-    init_neighbors(m);
-    init_svm(m);
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
-    init_logistic_regression(m);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+        init_covariance(m);
+        init_dbscan(m);
+        init_decomposition(m);
+        init_ensemble(m);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+        init_basic_statistics(m);
+        init_linear_model(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+        init_kmeans_init(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+        init_kmeans(m);
+        init_kmeans_common(m);
+        init_neighbors(m);
+        init_svm(m);
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+        init_logistic_regression(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    }
 #endif // ONEDAL_DATA_PARALLEL_SPMD
-}
+
 } // namespace oneapi::dal::python

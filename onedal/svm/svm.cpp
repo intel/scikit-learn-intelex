@@ -239,12 +239,14 @@ ONEDAL_PY_INIT_MODULE(svm) {
         types<task::classification, task::regression, task::nu_classification, task::nu_regression>;
     auto sub = m.def_submodule("svm");
 
-    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
-    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
+    #ifndef ONEDAL_DATA_PARALLEL_SPMD
+        ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
+        ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
 
-    ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
-    ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
-    ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
+        ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
+        ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
+        ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
+    #endif
 }
 
 ONEDAL_PY_TYPE2STR(dal::svm::task::classification, "classification");

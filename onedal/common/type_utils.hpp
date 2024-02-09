@@ -51,12 +51,13 @@ struct type_to_str;
 
 ONEDAL_PY_TYPE2STR(dal::detail::host_policy, "");
 
-#ifdef ONEDAL_DATA_PARALLEL_SPMD
-ONEDAL_PY_TYPE2STR(dal::detail::spmd_policy<dal::detail::data_parallel_policy>, "");
-using policy_list_spmd = types<dal::detail::spmd_policy<dal::detail::data_parallel_policy>>;
-#elif ONEDAL_DATA_PARALLEL
+#ifdef ONEDAL_DATA_PARALLEL
 ONEDAL_PY_TYPE2STR(dal::detail::data_parallel_policy, "");
 using policy_list = types<dal::detail::host_policy, dal::detail::data_parallel_policy>;
+ONEDAL_PY_TYPE2STR(dal::detail::spmd_policy<dal::detail::data_parallel_policy>, "");
+#ifdef ONEDAL_DATA_PARALLEL_SPMD
+using policy_list_spmd = types<dal::detail::spmd_policy<dal::detail::data_parallel_policy>>;
+#endif
 #else
 using policy_list = types<dal::detail::host_policy>;
 #endif

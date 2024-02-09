@@ -332,11 +332,11 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
-#endif // ONEDAL_DATA_PARALLEL_SPMD
 
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
+#endif // ONEDAL_DATA_PARALLEL_SPMD
 }
 
 } // namespace oneapi::dal::python
