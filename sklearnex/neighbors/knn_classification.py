@@ -143,6 +143,7 @@ else:
 
 @control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "kneighbors"])
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
+    __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsClassifier_._parameter_constraints}
 
@@ -246,7 +247,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
+        if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
         return dispatch(
             self,
@@ -256,8 +257,8 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
                 "sklearn": sklearn_KNeighborsClassifier.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     @wrap_output_data
@@ -330,3 +331,9 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         self._fit_method = self._onedal_estimator._fit_method
         self.outputs_2d_ = self._onedal_estimator.outputs_2d_
         self._tree = self._onedal_estimator._tree
+
+    fit.__doc__ = sklearn_KNeighborsClassifier.fit.__doc__
+    predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
+    predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
+    kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
+    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__

@@ -139,6 +139,7 @@ else:
 
 @control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
 class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
+    __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsRegressor_._parameter_constraints}
 
@@ -227,7 +228,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
+        if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
         return dispatch(
             self,
@@ -237,8 +238,8 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
                 "sklearn": sklearn_KNeighborsRegressor.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     @wrap_output_data
@@ -306,3 +307,8 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
         self._y = self._onedal_estimator._y
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree
+
+    fit.__doc__ = sklearn_KNeighborsRegressor.__doc__
+    predict.__doc__ = sklearn_KNeighborsRegressor.predict.__doc__
+    kneighbors.__doc__ = sklearn_KNeighborsRegressor.kneighbors.__doc__
+    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
