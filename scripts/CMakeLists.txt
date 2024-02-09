@@ -108,6 +108,11 @@ if(IFACE STREQUAL "host")
 elseif(IFACE STREQUAL "dpc")
     set(TARGET "_onedal_py_dpc")
 
+    # FIXME: icx>=2024.1 and pybind11 don't work correctly with IPO
+    if(WIN32)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+    endif()
+
     if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
         set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
     endif()
