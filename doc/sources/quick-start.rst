@@ -21,7 +21,7 @@
 Quick Start
 ####################
 
-Get ready to elevate your scikit-learn code with |intelex| and experience the benefits of accelerated performance in just four steps. 
+Get ready to elevate your scikit-learn code with |intelex| and experience the benefits of accelerated performance in just a few simple steps. 
 
 Compatibility with Scikit-learn*
 ---------------------------------
