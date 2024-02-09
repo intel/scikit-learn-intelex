@@ -161,7 +161,7 @@ class BaseForest(ABC):
         self._cached_estimators_ = None
 
         # Compute
-        self._onedal_estimator = self.__class__._onedal_factory(**onedal_params)
+        self._onedal_estimator = self._onedal_factory(**onedal_params)
         self._onedal_estimator.fit(X, np.ravel(y), sample_weight, queue=queue)
 
         self._save_attributes()
@@ -456,11 +456,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         if self.estimator.__class__ == DecisionTreeClassifier and not isinstance(
             self._onedal_factory, onedal_RandomForestClassifier
         ):
-            self._onedal_factory = onedal_RandomForestClassifier
+            _onedal_factory = onedal_RandomForestClassifier
         elif self.estimator.__class__ == ExtraTreeClassifier and not isinstance(
             self._onedal_factory, onedal_ExtraTreesClassifier
         ):
-            self._onedal_factory = onedal_ExtraTreesClassifier
+            _onedal_factory = onedal_ExtraTreesClassifier
 
         if self._onedal_factory is None:
             raise TypeError(f" oneDAL estimator has not been set.")
@@ -844,11 +844,11 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
         if self.estimator.__class__ == DecisionTreeRegressor and not isinstance(
             self._onedal_factory, onedal_RandomForestRegressor
         ):
-            self._onedal_factory = onedal_RandomForestRegressor
+            _onedal_factory = onedal_RandomForestRegressor
         elif self.estimator.__class__ == ExtraTreeRegressor and not isinstance(
             self._onedal_factory, onedal_ExtraTreesRegressor
         ):
-            self._onedal_factory = onedal_ExtraTreesRegressor
+            _onedal_factory = onedal_ExtraTreesRegressor
 
         if self._onedal_factory is None:
             raise TypeError(f" oneDAL estimator has not been set.")
