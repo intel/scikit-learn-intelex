@@ -486,7 +486,11 @@ def _predict(self, X, sample_weight=None):
 
     X = _daal4py_check_test_data(self, X)
 
-    if sklearn_check_version("1.3") and sample_weight == "deprecated":
+    if (
+        sklearn_check_version("1.3")
+        and isinstance(sample_weight, str)
+        and sample_weight == "deprecated"
+    ):
         sample_weight = None
 
     _patching_status = PatchingConditionsChain("sklearn.cluster.KMeans.predict")
