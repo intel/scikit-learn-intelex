@@ -113,7 +113,11 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
 
         if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
-        elif estimator == "Ridge" and method in ["predict", "score"] and dtype in DTYPES[-2:]:
+        elif (
+            estimator == "Ridge"
+            and method in ["predict", "score"]
+            and dtype in DTYPES[-2:]
+        ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
