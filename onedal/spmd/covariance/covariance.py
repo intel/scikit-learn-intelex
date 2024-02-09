@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = [
-    "basic_statistics",
-    "cluster",
-    "covariance",
-    "decomposition",
-    "ensemble",
-    "linear_model",
-    "neighbors",
-]
+from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
+
+from ..._device_offload import support_usm_ndarray
+from .._common import BaseEstimatorSPMD
+
+
+class EmpiricalCovariance(BaseEstimatorSPMD, EmpiricalCovariance_Batch):
+    @support_usm_ndarray()
+    def fit(self, X, queue=None):
+        return super().fit(X, queue)
