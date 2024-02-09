@@ -15,6 +15,8 @@
 # ==============================================================================
 import pytest
 
+from sklearnex import config_context
+
 try:
     import dpctl
 
