@@ -14,14 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 100)):
     import numpy as np
     import pytest
     from numpy.testing import assert_allclose
 
-    from onedal.basic_statistics import BasicStatistics
+    from onedal.basic_statistics import IncrementalBasicStatistics
     from onedal.tests.utils._device_selection import get_queues
 
     options_and_tests = [
@@ -46,10 +46,15 @@ if daal_check_version((2023, "P", 100)):
         data = gen.uniform(low=-0.3, high=+0.7, size=(s_count, f_count))
         data = data.astype(dtype=dtype)
 
-        alg = BasicStatistics(result_options=result_option)
-        res = alg.fit(data, queue=queue)
+        incbs = IncrementalBasicStatistics(result_options=result_option)
 
-        res, gtr = getattr(res, result_option), function(data, axis=0)
+        data_split = np.array_split(data, 2)
+        for i in range(2):
+            incbs.partial_fit(data_split[i], queue=queue)
+
+        result = incbs.finalize_fit()
+
+        res, gtr = getattr(result, result_option), function(data, axis=0)
 
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, rtol=tol)
@@ -58,16 +63,21 @@ if daal_check_version((2023, "P", 100)):
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     def test_multiple_options_uniform(queue, dtype):
         seed = 42
-        s_count, f_count = 700, 29
+        s_count, f_count = 70000, 29
 
         gen = np.random.default_rng(seed)
         data = gen.uniform(low=-0.5, high=+0.6, size=(s_count, f_count))
         data = data.astype(dtype=dtype)
 
-        alg = BasicStatistics(result_options=["mean", "max", "sum"])
-        res = alg.fit(data, queue=queue)
+        incbs = IncrementalBasicStatistics(result_options=["mean", "max", "sum"])
 
-        res_mean, res_max, res_sum = res.mean, res.max, res.sum
+        data_split = np.array_split(data, 2)
+        for i in range(2):
+            incbs.partial_fit(data_split[i], queue=queue)
+
+        result = incbs.finalize_fit()
+
+        res_mean, res_max, res_sum = result.mean, result.max, result.sum
         gtr_mean, gtr_max, gtr_sum = (
             np.mean(data, axis=0),
             np.max(data, axis=0),
@@ -97,11 +107,17 @@ if daal_check_version((2023, "P", 100)):
         data = data.astype(dtype=dtype)
         weights = weights.astype(dtype=dtype)
 
-        alg = BasicStatistics(result_options=result_option)
-        res = alg.fit(data, weights, queue=queue)
+        incbs = IncrementalBasicStatistics(result_options=result_option)
 
-        weighted = np.diag(weights) @ data
-        res, gtr = getattr(res, result_option), function(weighted, axis=0)
+        data_split = np.array_split(data, 2)
+        weights_split = np.array_split(weights, 2)
+        for i in range(2):
+            incbs.partial_fit(data_split[i], weights_split[i], queue=queue)
+
+        result = incbs.finalize_fit()
+
+        weighted_data = np.diag(weights) @ data
+        res, gtr = getattr(result, result_option), function(weighted_data, axis=0)
 
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, rtol=tol)
