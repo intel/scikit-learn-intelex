@@ -182,7 +182,7 @@ Installation
 
 .. contents:: :local:
 
-.. tip:: To prevent version conflicts, we recommend to create and activate a new environment for |intelex|. 
+.. tip:: To prevent version conflicts, we recommend creating and activating a new environment for |intelex|. 
 
 Install from PyPI 
 **********************
