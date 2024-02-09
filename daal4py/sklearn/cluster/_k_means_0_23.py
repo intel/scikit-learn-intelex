@@ -654,9 +654,7 @@ class KMeans(KMeans_original):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
-    def predict(
-        self, X, sample_weight="depcrecated" if sklearn_check_version("1.3") else None
-    ):
+    def predict(self, X, sample_weight="deprecated" if sklearn_check_version("1.3") else None):
         """
         Predict the closest cluster each sample in X belongs to.
 
