@@ -114,11 +114,11 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
 
-        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
-        est.fit(X, y)
-
         if not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
+        est.fit(X, y)
 
         if method != "score":
             getattr(est, method)(X)
