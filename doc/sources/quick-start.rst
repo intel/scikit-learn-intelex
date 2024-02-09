@@ -83,7 +83,7 @@ This example shows how to patch Intel(R) extension for Scikit-Learn by modifing 
 .. code-block:: python
   :caption: Example: Drop-In Patching
    
-  import numpy as np
+    import numpy as np
     from sklearnex import patch_sklearn
     patch_sklearn()
 
