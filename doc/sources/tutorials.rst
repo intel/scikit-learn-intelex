@@ -48,7 +48,7 @@ Tutorials
       :link: https://community.intel.com/t5/Blogs/Tech-Innovation/Artificial-Intelligence-AI/Getting-started-with-classical-Machine-Learning-Frameworks-using/post/1450139
       :padding: 1
 
-      Uncomplicated way of installing Intel® Extension for Scikit-learn* on Google Colaboratory.     
+      Simple Installation of Intel® Extension for Scikit-learn* on Google Colaboratory.     
 
    .. grid-item-card:: Accelerate Machine Learning Workloads: K-means and GPairs Algorithms
       :link: https://www.intel.com/content/www/us/en/developer/videos/accelerate-ml-workloads-k-means-gpairs-algorithms.html
