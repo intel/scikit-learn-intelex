@@ -174,10 +174,14 @@ def test_standard_estimator_signatures(estimator):
         est_method = getattr(est, method)
         unpatched_est_method = getattr(unpatched_est, method)
         if callable(unpatched_est_method):
-            regex = fr"sklearn\S*{estimator}" #needed due to differences in module structure
+            regex = (
+                rf"sklearn\S*{estimator}"  # needed due to differences in module structure
+            )
             patched_sig = re.sub(regex, estimator, str(signature(est_method)))
             unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
-            assert unpatched_sig == patched_sig, f"Signature of {estimator}.{method} does not match sklearn"
+            assert (
+                unpatched_sig == patched_sig
+            ), f"Signature of {estimator}.{method} does not match sklearn"
 
 
 @pytest.mark.parametrize("function", UNPATCHED_FUNCTIONS.keys())
