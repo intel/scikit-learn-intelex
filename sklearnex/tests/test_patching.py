@@ -159,7 +159,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     ), f"sklearnex patching issue in {estimator}.{method} with log: \n{caplog.text}"
 
 
-@pytest.mark.parametrize("estimator", PATCHED_MODELS.keys())
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
 def test_standard_estimator_signatures(estimator):
     est = PATCHED_MODELS[estimator]()
     unpatched_est = UNPATCHED_MODELS[estimator]()
@@ -174,14 +174,13 @@ def test_standard_estimator_signatures(estimator):
         est_method = getattr(est, method)
         unpatched_est_method = getattr(unpatched_est, method)
         if callable(unpatched_est_method):
-            assert str(signature(unpatched_est_method)) == str(
-                signature(est_method)
-            ).replace(
-                "sklearnex.", "sklearn."
-            ), f"Signature of {estimator}.{method} does not match sklearn"
+            regex = fr"sklearn\S*{estimator}" #needed due to differences in module structure
+            patched_sig = re.sub(regex, estimator, str(signature(est_method)))
+            unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
+            assert unpatched_sig == patched_sig, f"Signature of {estimator}.{method} does not match sklearn"
 
 
-@pytest.mark.parametrize("function", PATCHED_FUNCTIONS.keys())
+@pytest.mark.parametrize("function", UNPATCHED_FUNCTIONS.keys())
 def test_patched_function_signatures(function):
     func = PATCHED_FUNCTIONS[function]
     unpatched_func = UNPATCHED_FUNCTIONS[function]
