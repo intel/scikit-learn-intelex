@@ -174,9 +174,7 @@ def test_standard_estimator_signatures(estimator):
         est_method = getattr(est, method)
         unpatched_est_method = getattr(unpatched_est, method)
         if callable(unpatched_est_method):
-            regex = (
-                rf"sklearn\S*{estimator}"  # needed due to differences in module structure
-            )
+            regex = rf"sklearn|daal4py\S*{estimator}"  # needed due to differences in module structure
             patched_sig = re.sub(regex, estimator, str(signature(est_method)))
             unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
             assert (
@@ -200,7 +198,7 @@ def test_patch_map_match():
     # Items listed in a matching submodule's __all__ attribute should be
     # in get_patch_map. There should not be any missing or additional elements.
 
-    def list_submodules(string):
+    def list_all_attr(string):
         try:
             modules = set(importlib.import_module(string).__all__)
         except ModuleNotFoundError:
@@ -212,8 +210,8 @@ def test_patch_map_match():
 
     patched = {**PATCHED_MODELS, **PATCHED_FUNCTIONS}
 
-    sklearnex__all__ = list_submodules("sklearnex")
-    sklearn__all__ = list_submodules("sklearn")
+    sklearnex__all__ = list_all_attr("sklearnex")
+    sklearn__all__ = list_all_attr("sklearn")
 
     module_map = {i: i for i in sklearnex__all__.intersection(sklearn__all__)}
 
@@ -225,8 +223,8 @@ def test_patch_map_match():
             del patched[i]
 
     for module in module_map:
-        sklearn_module__all__ = list_submodules("sklearn." + module_map[module])
-        sklearnex_module__all__ = list_submodules("sklearnex." + module)
+        sklearn_module__all__ = list_all_attr("sklearn." + module_map[module])
+        sklearnex_module__all__ = list_all_attr("sklearnex." + module)
         intersect = sklearnex_module__all__.intersection(sklearn_module__all__)
 
         assert (
