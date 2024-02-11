@@ -76,6 +76,9 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
+    if dtype in DTYPES[-2:]:
+        pytest.skip("Windows issue with unsigned ints")
+    
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
