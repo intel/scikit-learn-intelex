@@ -21,6 +21,7 @@ import glob
 # System imports
 import os
 import pathlib
+import shutil
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -84,8 +85,7 @@ trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
 mpi_root = None if no_dist else os.environ["MPIROOT"]
-dpcpp = True if "DPCPPROOT" in os.environ else False
-dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
+dpcpp = shutil.which("icpx") is not None
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
