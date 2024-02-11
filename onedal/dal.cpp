@@ -61,9 +61,37 @@ ONEDAL_PY_INIT_MODULE(logistic_regression);
 #ifdef ONEDAL_DATA_PARALLEL
 PYBIND11_MODULE(_onedal_py_dpc, m) {
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
+<<<<<<< HEAD
     init_spmd_policy(m);
 #endif
 #else
+=======
+PYBIND11_MODULE(_onedal_py_spmd_dpc, m) {
+    init_spmd_policy(m);
+
+    init_covariance(m);
+    init_dbscan(m);
+    init_decomposition(m);
+    init_ensemble(m);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+    init_basic_statistics(m);
+    init_linear_model(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    init_kmeans_init(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    init_kmeans(m);
+    init_kmeans_common(m);
+    init_neighbors(m);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    init_logistic_regression(m);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+}
+#else
+#ifdef ONEDAL_DATA_PARALLEL
+PYBIND11_MODULE(_onedal_py_dpc, m) {
+#else
+>>>>>>> parent of 2c8fcc5c (manually excluded spmpolicy iface compilation)
 PYBIND11_MODULE(_onedal_py_host, m) {
 #endif
     init_policy(m);
@@ -94,6 +122,12 @@ PYBIND11_MODULE(_onedal_py_host, m) {
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
     init_logistic_regression(m);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+<<<<<<< HEAD
 }
 
 } // namespace oneapi::dal::python
+=======
+#endif // ONEDAL_DATA_PARALLEL_SPMD
+}
+} // namespace oneapi::dal::python
+>>>>>>> parent of 2c8fcc5c (manually excluded spmpolicy iface compilation)

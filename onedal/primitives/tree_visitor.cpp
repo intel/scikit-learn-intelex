@@ -322,8 +322,7 @@ ONEDAL_PY_INIT_MODULE(get_tree) {
 
     using task_list = types<task::classification, task::regression>;
     auto sub = m.def_submodule("get_tree");
-    #ifndef ONEDAL_DATA_PARALLEL_SPMD
-        ONEDAL_PY_INSTANTIATE(init_get_tree_state, sub, task_list);
-    #endif
+
+    ONEDAL_PY_INSTANTIATE(init_get_tree_state, sub, task_list);
 }
 } // namespace oneapi::dal::python
