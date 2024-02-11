@@ -446,13 +446,13 @@ def get_onedal_py_libs():
     # TODO:
     # add for no_dist
     libs = [f"_onedal_py_host{ext_suffix}", f"_onedal_py_dpc{ext_suffix}"]
-    if build_distribute:
-        libs += [f"_onedal_py_spmd_dpc{ext_suffix}"]
+    # if build_distribute:
+    #     libs += [f"_onedal_py_spmd_dpc{ext_suffix}"]
     if IS_WIN:
         ext_suffix_lib = ext_suffix.replace(".dll", ".lib")
         libs += [f"_onedal_py_host{ext_suffix_lib}", f"_onedal_py_dpc{ext_suffix_lib}"]
-        if build_distribute:
-            libs += [f"_onedal_py_spmd_dpc{ext_suffix_lib}"]
+        # if build_distribute:
+        #     libs += [f"_onedal_py_spmd_dpc{ext_suffix_lib}"]
     return libs
 
 
@@ -487,13 +487,13 @@ class custom_build:
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
                 )
-                if not no_dist:
-                    build_backend.custom_build_cmake_clib(
-                        iface="spmd_dpc",
-                        onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
-                        no_dist=no_dist,
-                        use_parameters_lib=use_parameters_lib,
-                    )
+                # if not no_dist:
+                #     build_backend.custom_build_cmake_clib(
+                #         iface="spmd_dpc",
+                #         onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
+                #         no_dist=no_dist,
+                #         use_parameters_lib=use_parameters_lib,
+                #     )
 
     def post_build(self):
         if IS_MAC:
