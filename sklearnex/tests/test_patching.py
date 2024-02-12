@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+
 import importlib
 import inspect
 import io
@@ -59,7 +60,6 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
         )
 
         _ = pairwise_distances(X.reshape(1, -1), metric=metric)
-
     assert all(
         [
             "running accelerated version" in i.message
@@ -78,7 +78,6 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
 def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     if dtype in DTYPES[-2:]:
         pytest.skip("Windows issue with unsigned ints")
-    
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
@@ -95,7 +94,6 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
         )
 
         _ = roc_auc_score(X, y)
-
     assert all(
         [
             "running accelerated version" in i.message
@@ -110,7 +108,9 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
+def test_standard_estimator_patching(
+    caplog, dataframe, queue, dtype, estimator, method
+):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
@@ -121,10 +121,11 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and method in ["predict", "score"]
             and dtype in DTYPES[-2:]
         ):
-            pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
+            pytest.skip(
+                "Windows segmentation fault for Ridge.predict for unsigned ints"
+            )
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
-
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
@@ -132,7 +133,6 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             getattr(est, method)(X)
         else:
             est.score(X, y)
-
     assert all(
         [
             "running accelerated version" in i.message
@@ -149,6 +149,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
     # prepare logging
+
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
@@ -157,12 +158,10 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
 
         if not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
-
         if method != "score":
             getattr(est, method)(X)
         else:
             est.score(X, y)
-
     assert all(
         [
             "running accelerated version" in i.message
@@ -178,6 +177,7 @@ def test_standard_estimator_signatures(estimator):
     unpatched_est = UNPATCHED_MODELS[estimator]()
 
     # all public sklearn methods should have signature matches in sklearnex
+
     unpatched_est_methods = [
         i
         for i in dir(unpatched_est)
@@ -189,7 +189,9 @@ def test_standard_estimator_signatures(estimator):
         if callable(unpatched_est_method):
             regex = rf"(?:sklearn|daal4py)\S*{estimator}"  # needed due to differences in module structure
             patched_sig = re.sub(regex, estimator, str(signature(est_method)))
-            unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
+            unpatched_sig = re.sub(
+                regex, estimator, str(signature(unpatched_est_method))
+            )
             assert (
                 unpatched_sig == patched_sig
             ), f"Signature of {estimator}.{method} does not match sklearn"
@@ -220,7 +222,6 @@ def test_patch_map_match():
 
     if os.getenv("SKLEARNEX_PREVIEW") is not None:
         pytest.skip("preview sklearnex has been activated")
-
     patched = {**PATCHED_MODELS, **PATCHED_FUNCTIONS}
 
     sklearnex__all__ = list_all_attr("sklearnex")
@@ -231,10 +232,10 @@ def test_patch_map_match():
     # _assert_all_finite and _logistic_regression_path patch internal
     # sklearn functions which aren't exposed. These are not available in
     # __all__ and require more careful anaylsis.
+
     for i in patched.copy():
         if i.startswith("_"):
             del patched[i]
-
     for module in module_map:
         sklearn_module__all__ = list_all_attr("sklearn." + module_map[module])
         sklearnex_module__all__ = list_all_attr("sklearnex." + module)
@@ -249,7 +250,6 @@ def test_patch_map_match():
                 del patched[i]
             else:
                 del patched[module]
-
     assert patched == {}, f"{patched.keys()} were not properly patched"
 
 
@@ -277,9 +277,11 @@ def test_docstring_patching_match(estimator):
     }
 
     # check class docstring match if a docstring is available
+
     assert (patched.__doc__ is None) == (unpatched.__doc__ is None)
 
     # check class attribute docstrings
+
     for i in unpatched_docstrings:
         assert (patched_docstrings[i] is None) == (unpatched_docstrings[i] is None)
 
