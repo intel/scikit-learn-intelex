@@ -108,9 +108,7 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(
-    caplog, dataframe, queue, dtype, estimator, method
-):
+def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
@@ -121,9 +119,7 @@ def test_standard_estimator_patching(
             and method in ["predict", "score"]
             and dtype in DTYPES[-2:]
         ):
-            pytest.skip(
-                "Windows segmentation fault for Ridge.predict for unsigned ints"
-            )
+            pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
@@ -189,9 +185,7 @@ def test_standard_estimator_signatures(estimator):
         if callable(unpatched_est_method):
             regex = rf"(?:sklearn|daal4py)\S*{estimator}"  # needed due to differences in module structure
             patched_sig = re.sub(regex, estimator, str(signature(est_method)))
-            unpatched_sig = re.sub(
-                regex, estimator, str(signature(unpatched_est_method))
-            )
+            unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
             assert (
                 unpatched_sig == patched_sig
             ), f"Signature of {estimator}.{method} does not match sklearn"
