@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import inspect
 import os
 import pathlib
 import re
@@ -122,3 +123,37 @@ def test_is_patched_instance(estimator):
     unpatched = UNPATCHED_MODELS[estimator]
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
+
+
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
+def test_docstring_patching_match(estimator):
+    patched = PATCHED_MODELS[estimator]
+    unpatched = UNPATCHED_MODELS[estimator]
+    patched_docstrings = {
+        i: getattr(patched, i).__doc__
+        for i in dir(patched)
+        if not i.startswith("_") and not i.endswith("_") and hasattr(patched, i)
+    }
+    unpatched_docstrings = {
+        i: getattr(unpatched, i).__doc__
+        for i in dir(unpatched)
+        if not i.startswith("_") and not i.endswith("_") and hasattr(unpatched, i)
+    }
+
+    # check class docstring match if a docstring is available
+    assert (patched.__doc__ is None) == (unpatched.__doc__ is None)
+
+    # check class attribute docstrings
+    for i in unpatched_docstrings:
+        assert (patched_docstrings[i] is None) == (unpatched_docstrings[i] is None)
+
+
+@pytest.mark.parametrize("member", ["_onedal_cpu_supported", "_onedal_gpu_supported"])
+@pytest.mark.parametrize(
+    "name",
+    [i for i in PATCHED_MODELS.keys() if "sklearnex" in PATCHED_MODELS[i].__module__],
+)
+def test_onedal_supported_member(name, member):
+    patched = PATCHED_MODELS[name]
+    sig = str(inspect.signature(getattr(patched, member)))
+    assert "(self, method_name, *data)" == sig

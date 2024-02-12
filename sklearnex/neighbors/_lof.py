@@ -137,11 +137,50 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     @available_if(sklearn_LocalOutlierFactor._check_novelty_fit_predict)
     @wrap_output_data
     def fit_predict(self, X, y=None):
+        """Fit the model to the training set X and return the labels.
+
+        **Not available for novelty detection (when novelty is set to True).**
+        Label is 1 for an inlier and -1 for an outlier according to the LOF
+        score and the contamination parameter.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features), default=None
+            The query sample or samples to compute the Local Outlier Factor
+            w.r.t. the training samples.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        Returns
+        -------
+        is_inlier : ndarray of shape (n_samples,)
+            Returns -1 for anomalies/outliers and 1 for inliers.
+        """
         return self.fit(X)._predict()
 
     @available_if(sklearn_LocalOutlierFactor._check_novelty_predict)
     @wrap_output_data
     def predict(self, X=None):
+        """Predict the labels (1 inlier, -1 outlier) of X according to LOF.
+
+        **Only available for novelty detection (when novelty is set to True).**
+        This method allows to generalize prediction to *new observations* (not
+        in the training set). Note that the result of ``clf.fit(X)`` then
+        ``clf.predict(X)`` with ``novelty=True`` may differ from the result
+        obtained by ``clf.fit_predict(X)`` with ``novelty=False``.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The query sample or samples to compute the Local Outlier Factor
+            w.r.t. the training samples.
+
+        Returns
+        -------
+        is_inlier : ndarray of shape (n_samples,)
+            Returns -1 for anomalies/outliers and +1 for inliers.
+        """
         return self._predict(X)
 
     @wrap_output_data
@@ -162,6 +201,4 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         )
 
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
-    fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
-    predict.__doc__ = sklearn_LocalOutlierFactor.predict.__doc__
     kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
