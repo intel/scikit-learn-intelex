@@ -45,11 +45,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_rf_regression(dataframe, queue):
     from sklearnex.ensemble import RandomForestRegressor
 
@@ -59,17 +55,17 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
     assert "sklearnex" in rf.__module__
     pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
-    if daal_check_version((2024, "P", 0)):
-        assert_allclose([-6.971], pred, atol=1e-2)
+
+    if queue is not None and queue.sycl_device.is_gpu:
+        assert_allclose([-0.011208], pred, atol=1e-2)
     else:
-        assert_allclose([-6.839], pred, atol=1e-2)
+        if daal_check_version((2024, "P", 0)):
+            assert_allclose([-6.971], pred, atol=1e-2)
+        else:
+            assert_allclose([-6.839], pred, atol=1e-2)
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_et_classifier(dataframe, queue):
     from sklearnex.ensemble import ExtraTreesClassifier
 
@@ -90,11 +86,7 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_et_regression(dataframe, queue):
     from sklearnex.ensemble import ExtraTreesRegressor
 
@@ -114,4 +106,8 @@ def test_sklearnex_import_et_regression(dataframe, queue):
             ]
         )
     )
-    assert_allclose([0.445], pred, atol=1e-2)
+
+    if queue is not None and queue.sycl_device.is_gpu:
+        assert_allclose([1.909769], pred, atol=1e-2)
+    else:
+        assert_allclose([0.445], pred, atol=1e-2)
