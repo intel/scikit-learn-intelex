@@ -17,6 +17,7 @@
 __all__ = [
     "basic_statistics",
     "cluster",
+    "covariance",
     "decomposition",
     "ensemble",
     "linear_model",
