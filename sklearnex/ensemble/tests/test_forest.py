@@ -58,7 +58,7 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
 
     if queue is not None and queue.sycl_device.is_gpu:
         assert_allclose([-0.011208], pred, atol=1e-2)
-    else:    
+    else:
         if daal_check_version((2024, "P", 0)):
             assert_allclose([-6.971], pred, atol=1e-2)
         else:
@@ -106,8 +106,8 @@ def test_sklearnex_import_et_regression(dataframe, queue):
             ]
         )
     )
-    
+
     if queue is not None and queue.sycl_device.is_gpu:
         assert_allclose([1.909769], pred, atol=1e-2)
-    else:    
+    else:
         assert_allclose([0.445], pred, atol=1e-2)
