@@ -95,7 +95,7 @@ def gen_models_info(algorithms):
         # split handles SPECIAL_INSTANCES or custom inputs
         # custom sklearn inputs must be a dict of estimators
         # with keys set by the __str__ method
-        est = UNPATCHED_MODELS[i.split("(")[0]]()
+        est = UNPATCHED_MODELS[i.split("(")[0]]
 
         methods = []
         candidates = set(
@@ -103,7 +103,7 @@ def gen_models_info(algorithms):
         )
 
         for mixin, method, _ in mixin_map:
-            if isinstance(est, mixin):
+            if issubclass(est, mixin):
                 methods += list(candidates.intersection(set(method)))
 
         methods = list(set(methods))  # return only unique values
