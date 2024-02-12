@@ -157,7 +157,8 @@ def custom_build_cmake_clib(
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
 
-    if iface == "dpc" or iface == "spmd_dpc":
+    if iface in ["dpc", "spmd_dpc"]:
+
         if IS_WIN:
             cxx = "icx"
         else:
