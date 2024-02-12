@@ -40,18 +40,20 @@ from sklearnex.svm import SVC, NuSVC
 
 
 def _load_all_models(patched, estimator=True):
-    if patched:
-        patch_sklearn()
 
-    models = {}
-    for patch_infos in get_patch_map().values():
-        candidate = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
-        if candidate is not None and isclass(candidate) == estimator:
-            if not estimator or issubclass(candidate, BaseEstimator):
-                models[patch_infos[0][0][1]] = candidate
+    try:
+        if patched:
+            patch_sklearn()
 
-    if patched:
-        unpatch_sklearn()
+        models = {}
+        for patch_infos in get_patch_map().values():
+            candidate = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
+            if candidate is not None and isclass(candidate) == estimator:
+                if not estimator or issubclass(candidate, BaseEstimator):
+                    models[patch_infos[0][0][1]] = candidate
+    finally:
+        if patched:
+            unpatch_sklearn()
 
     return models
 
