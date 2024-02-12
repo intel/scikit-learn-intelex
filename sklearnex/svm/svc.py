@@ -200,6 +200,8 @@ class SVC(sklearn_SVC, BaseSVC):
             self._check_proba()
             return self._predict_proba
 
+        predict_proba.__doc__ = sklearn_SVC.predict_proba.__doc__
+
     @wrap_output_data
     def _predict_proba(self, X):
         sklearn_pred_proba = (
@@ -231,6 +233,8 @@ class SVC(sklearn_SVC, BaseSVC):
             },
             X,
         )
+
+    decision_function.__doc__ = sklearn_SVC.decision_function.__doc__
 
     def _onedal_gpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
