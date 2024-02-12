@@ -21,8 +21,6 @@ import io
 import logging
 import os
 import re
-import time
-import warnings
 from inspect import signature
 
 import numpy as np
