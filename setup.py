@@ -487,7 +487,7 @@ class custom_build:
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
                 )
-                if not no_dist:
+                if build_distribute:
                     build_backend.custom_build_cmake_clib(
                         iface="spmd_dpc",
                         onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
