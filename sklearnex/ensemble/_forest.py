@@ -745,7 +745,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                         or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
-                    (sample_weight is not None, "sample_weight is not supported."),
+                    (sample_weight is None, "sample_weight is not supported."),
                 ]
             )
 
@@ -1052,7 +1052,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                         or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
-                    (sample_weight is not None, "sample_weight is not supported."),
+                    (sample_weight is None, "sample_weight is not supported."),
                 ]
             )
 
