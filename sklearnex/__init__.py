@@ -41,6 +41,7 @@ __all__ = [
     "linear_model",
     "manifold",
     "metrics",
+    "model_selection",
     "neighbors",
     "patch_sklearn",
     "set_config",
