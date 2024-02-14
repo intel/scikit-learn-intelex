@@ -18,10 +18,10 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
 from onedal import _backend
 
+from ..common._base import BaseEstimator
 from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 
@@ -94,7 +94,7 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         return {k: from_table(v).ravel() for k, v in res.items()}
 
 
-class BasicStatistics(BaseBasicStatistics):
+class BasicStatistics(BaseEstimator, BaseBasicStatistics):
     """
     Basic Statistics oneDAL implementation.
     """
@@ -103,9 +103,15 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def compute(self, data, weights=None, queue=None):
-        return super()._compute(data, weights, _backend.basic_statistics.compute, queue)
+        return super()._compute(
+            data, weights, self._get_backend("basic_statistics", "compute", None), queue
+        )
 
     def compute_raw(self, data_table, weights_table, policy, dtype=np.float32):
         return super()._compute_raw(
-            data_table, weights_table, _backend.basic_statistics.compute, policy, dtype
+            data_table,
+            weights_table,
+            self._get_backend("basic_statistics", "compute", None),
+            policy,
+            dtype,
         )

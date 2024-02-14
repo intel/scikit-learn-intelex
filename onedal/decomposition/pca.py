@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import sklearn_check_version
 
 from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
