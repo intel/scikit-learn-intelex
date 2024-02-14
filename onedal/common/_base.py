@@ -16,18 +16,15 @@
 
 from abc import ABC
 
-from onedal import _spmd_backend
+from onedal import _backend
 
-from ..common._common import _get_backend
-from ..common._spmd_policy import _get_spmd_policy
-
-# TODO:
-# rename this file to _base.py
+from ._common import _get_backend
+from ._policy import _get_policy
 
 
-class BaseEstimatorSPMD(ABC):
+class BaseEstimator(ABC):
     def _get_backend(self, module, submodule, method, *args, **kwargs):
-        return _get_backend(_spmd_backend, module, submodule, method, *args, **kwargs)
+        return _get_backend(_backend, module, submodule, method, *args, **kwargs)
 
     def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
+        return _get_policy(queue, *data)
