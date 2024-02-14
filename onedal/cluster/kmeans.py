@@ -20,6 +20,9 @@ from abc import ABC
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
+
+# TODO:
+# add wrapper. Do not import _backend directly in estimators modules.
 from onedal import _backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -37,11 +40,13 @@ from sklearn.utils.validation import check_is_fitted
 
 from onedal.basic_statistics import BasicStatistics
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..utils import _check_array, _is_arraylike_not_scalar
 
 
-class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
+class _BaseKMeans(
+    onedal_BaseEstimator, TransformerMixin, ClusterMixin, BaseEstimator, ABC
+):
     def __init__(
         self,
         n_clusters,
@@ -135,9 +140,6 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             )
             self._n_init = 1
         assert self.algorithm == "lloyd"
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _get_onedal_params(self, dtype=np.float32):
         thr = self._tol if hasattr(self, "_tol") else self.tol
@@ -247,7 +249,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             if best_inertia is None:
                 return True
             else:
-                mod = _backend.kmeans_common
+                mod = self._get_backend("kmeans_common", None, None)
                 better_inertia = inertia < best_inertia
                 same_clusters = mod._is_same_clustering(
                     labels, best_labels, self.n_clusters
@@ -327,7 +329,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         self.n_iter_ = 0
         self.inertia_ = 0
 
-        self.model_ = _backend.kmeans.clustering.model()
+        self.model_ = self._get_backend("kmeans", "clustering", "model")
         self.model_.centroids = to_table(self._cluster_centers_)
         self.n_features_in_ = self.model_.centroids.column_count
         self.labels_ = np.arange(self.model_.centroids.row_count)
@@ -385,7 +387,7 @@ class KMeans(_BaseKMeans):
         assert self.algorithm == "lloyd"
 
     def fit(self, X, queue=None):
-        return super()._fit(X, _backend.kmeans.clustering, queue)
+        return super()._fit(X, self._get_backend("kmeans", "clustering", None), queue)
 
     def predict(self, X, queue=None):
         """Predict the closest cluster each sample in X belongs to.
@@ -404,7 +406,7 @@ class KMeans(_BaseKMeans):
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        return super()._predict(X, _backend.kmeans.clustering, queue)
+        return super()._predict(X, self._get_backend("kmeans", "clustering", None), queue)
 
     def fit_predict(self, X, queue=None):
         """Compute cluster centers and predict cluster index for each sample.
