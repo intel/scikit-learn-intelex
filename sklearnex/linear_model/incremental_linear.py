@@ -187,7 +187,9 @@ class IncrementalLinearRegression(BaseEstimator):
 
     def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
-        is_good_for_onedal = self.n_samples_seen_ >= self.n_features_in_ + int(self.fit_intercept)
+        is_good_for_onedal = self.n_samples_seen_ >= self.n_features_in_ + int(
+            self.fit_intercept
+        )
         if not is_good_for_onedal:
             raise ValueError("Not enough samples to finalize")
         self._onedal_estimator.finalize_fit()
