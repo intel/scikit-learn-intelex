@@ -17,7 +17,7 @@
 from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
 from ..._device_offload import support_usm_ndarray
-from .._common import BaseEstimatorSPMD
+from .._base import BaseEstimatorSPMD
 
 
 class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):

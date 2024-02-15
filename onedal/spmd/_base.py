@@ -21,9 +21,6 @@ from onedal import _spmd_backend
 from ..common._common import _get_backend
 from ..common._spmd_policy import _get_spmd_policy
 
-# TODO:
-# rename this file to _base.py
-
 
 class BaseEstimatorSPMD(ABC):
     def _get_backend(self, module, submodule, method, *args, **kwargs):
