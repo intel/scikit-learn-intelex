@@ -16,6 +16,7 @@
 
 import os
 import sys
+import warnings
 from functools import lru_cache
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
@@ -313,7 +314,9 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
+def patch_sklearn(
+    name=None, verbose=True, global_patch=False, preview=False, no_msg=False
+):
     if preview:
         os.environ["SKLEARNEX_PREVIEW"] = "enabled_via_patch_sklearn"
     if not sklearn_check_version("0.22"):
@@ -321,6 +324,14 @@ def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
             "Intel(R) Extension for Scikit-learn* patches apply "
             "for scikit-learn >= 0.22 only ..."
         )
+
+    if not no_msg and "sklearn" in sys.modules.keys():
+        msg = (
+            "sklearn or some parts of it are already loaded. "
+            "patch_sklearn() only affects classes imported *after* calling it. "
+            "To retrieve patched entities, make sure to call patch_sklearn() before any import statements from sklearn."
+        )
+        warnings.warn(msg)
 
     if global_patch:
         from sklearnex.glob.dispatcher import patch_sklearn_global
