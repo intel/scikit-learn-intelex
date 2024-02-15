@@ -77,9 +77,6 @@ namespace oneapi::dal::python {
     #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 
-// TODO:
-// exclude for spmd policy backend.
-
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
     PYBIND11_MODULE(_onedal_py_spmd_dpc, m) {
         init_spmd_policy(m);

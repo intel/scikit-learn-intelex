@@ -106,8 +106,6 @@ class PCA(BaseEstimator):
         return self
 
     def _create_model(self):
-        # TODO:
-        # check for the ()
         m = self._get_backend("decomposition", "dim_reduction", "model")
         m.eigenvectors = to_table(self.components_)
         self._onedal_model = m

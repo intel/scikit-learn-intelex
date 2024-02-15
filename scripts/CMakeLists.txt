@@ -149,8 +149,6 @@ elseif(IFACE STREQUAL "dpc")
         "ONEDAL_DATA_PARALLEL"
         "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
 
-    # TODO:
-    # remove for dpc backend.
     if(ONEDAL_DPCTL_INTEGRATION)
         list(APPEND COMPILE_DEFINITIONS
              "ONEDAL_DPCTL_INTEGRATION")
@@ -181,8 +179,6 @@ elseif(IFACE STREQUAL "spmd_dpc")
         list(APPEND ONEDAL_LIBRARIES "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
     endif()
 
-    # TODO:
-    # remove if not required.
     if(oneDAL_USE_PARAMETERS_LIB)
         if(WIN32)
             list(APPEND ONEDAL_LIBRARIES "onedal_core_parameters_dpc_dll.${ONEDAL_MAJOR_BINARY}")

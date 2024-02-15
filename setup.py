@@ -443,8 +443,6 @@ def build_oneapi_backend():
 
 def get_onedal_py_libs():
     ext_suffix = get_config_vars("EXT_SUFFIX")[0]
-    # TODO:
-    # add for no_dist
     libs = [f"_onedal_py_host{ext_suffix}", f"_onedal_py_dpc{ext_suffix}"]
     if build_distribute:
         libs += [f"_onedal_py_spmd_dpc{ext_suffix}"]
