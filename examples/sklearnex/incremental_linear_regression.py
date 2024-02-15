@@ -28,7 +28,7 @@ X_2, y_2 = np.array([[2, 3]]), np.array([6])
 result = inclin.partial_fit(X_2, y_2)
 
 X_3, y_3 = np.array([[0, 2], [1, 3], [2, 4]]), np.array([3, 5, 7])
-result = inclin.partial_fit(X_3)
+result = inclin.partial_fit(X_3, y_3)
 
 print(f"Coefs:\n{result.coef_}")
 print(f"Intercept:\n{result.intercept_}")
@@ -39,7 +39,7 @@ inclin = IncrementalLinearRegression(batch_size=3)
 X, y = np.array([[0, 1], [1, 2], [2, 3], [0, 2], [1, 3], [2, 4]]), np.array(
     [2, 4, 6, 3, 5, 7]
 )
-result = inclin.fit(X)
+result = inclin.fit(X, y)
 
 print(f"Coefs:\n{result.coef_}")
 print(f"Intercept:\n{result.intercept_}")
