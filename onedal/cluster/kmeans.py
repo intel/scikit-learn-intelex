@@ -20,9 +20,6 @@ from abc import ABC
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-
-# TODO:
-# add wrapper. Do not import _backend directly in estimators modules.
 from onedal import _backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -81,8 +78,6 @@ class _BaseKMeans(
                 f"match the number of features of the data {X.shape[1]}."
             )
 
-    # TODO:
-    # generelize creating other models with required backends.
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 

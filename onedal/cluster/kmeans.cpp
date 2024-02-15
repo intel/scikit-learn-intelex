@@ -176,14 +176,14 @@ ONEDAL_PY_INIT_MODULE(kmeans) {
     #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
         ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list_spmd, task_list);
         ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list_spmd, task_list);
-    #endif
-#else // defined(ONEDAL_DATA_PARALLEL_SPMD) && defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+#else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
-#endif // defined(ONEDAL_DATA_PARALLEL_SPMD) && defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+#endif // ONEDAL_DATA_PARALLEL_SPMD
 }
 
 ONEDAL_PY_TYPE2STR(dal::kmeans::task::clustering, "clustering");

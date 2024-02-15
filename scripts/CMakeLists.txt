@@ -154,8 +154,6 @@ elseif(IFACE STREQUAL "dpc" OR IFACE STREQUAL "spmd_dpc")
         set(MPI_LIBRARY ${MPI_LIBS})
     endif()
 
-    # TODO:
-    # add duplicat for Onedal's ONEDAL_DATA_PARALLEL flag.
     list(APPEND COMPILE_DEFINITIONS
         "ONEDAL_DATA_PARALLEL"
         "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
