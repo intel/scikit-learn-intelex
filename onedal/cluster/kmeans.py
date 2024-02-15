@@ -81,13 +81,21 @@ class _BaseKMeans(
                 f"match the number of features of the data {X.shape[1]}."
             )
 
+    # TODO:
+    # generelize creating other models with required backends.
+    def _get_kmeans_init(self, cluster_count, seed, algorithm):
+        return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
+
+    def _get_basic_statistics_backend(self, result_options):
+        return BasicStatistics(result_options)
+
     def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
         # TODO: Support CSR in Basic Statistics
         dummy = to_table(None)
-        bs = BasicStatistics("variance")
+        bs = self._get_basic_statistics_backend("variance")
         res = bs.compute_raw(X_table, dummy, policy, dtype)
         mean_var = from_table(res["variance"]).mean()
         return mean_var * rtol
@@ -172,12 +180,12 @@ class _BaseKMeans(
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
 
         if isinstance(init, str) and init == "k-means++":
-            alg = KMeansInit(
+            alg = self._get_kmeans_init(
                 cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_dense"
             )
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif isinstance(init, str) and init == "random":
-            alg = KMeansInit(
+            alg = self._get_kmeans_init(
                 cluster_count=n_clusters, seed=random_seed, algorithm="random_dense"
             )
             centers_table = alg.compute_raw(X_table, policy, dtype)

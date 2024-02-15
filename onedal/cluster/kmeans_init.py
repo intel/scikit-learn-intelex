@@ -46,9 +46,6 @@ if daal_check_version((2023, "P", 200)):
             else:
                 self.local_trials_count = local_trials_count
 
-        def _get_policy(self, queue, *data):
-            return _get_policy(queue, *data)
-
         def _get_onedal_params(self, dtype=np.float32):
             return {
                 "fptype": "float" if dtype == np.float32 else "double",
