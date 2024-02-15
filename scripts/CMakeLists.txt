@@ -67,7 +67,7 @@ if(ONEDAL_DPCTL_INTEGRATION)
     message(STATUS "DPCTL_INCLUDE_DIR:" ${DPCTL_INCLUDE_DIR})
 endif()
 
-if(ONEDAL_DIST_SPMD)
+if(IFACE STREQUAL "spmd_dpc")
     message(STATUS "MPI_INCLUDE_DIRS:" ${MPI_INCLUDE_DIRS})
     message(STATUS "MPI_LIBRARY_DIR:" ${MPI_LIBRARY_DIR})
 endif()
@@ -105,8 +105,13 @@ if(IFACE STREQUAL "host")
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
 
-elseif(IFACE STREQUAL "dpc")
-    set(TARGET "_onedal_py_dpc")
+elseif(IFACE STREQUAL "dpc" OR IFACE STREQUAL "spmd_dpc")
+
+    if(IFACE STREQUAL "spmd_dpc")
+        set(TARGET "_onedal_py_spmd_dpc")
+    else()
+        set(TARGET "_onedal_py_dpc")
+    endif()
 
     # FIXME: icx>=2024.1 and pybind11 don't work correctly with IPO
     if(WIN32)
@@ -145,51 +150,7 @@ elseif(IFACE STREQUAL "dpc")
         endif()
     endif()
 
-    list(APPEND COMPILE_DEFINITIONS
-        "ONEDAL_DATA_PARALLEL"
-        "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
-
-    if(ONEDAL_DPCTL_INTEGRATION)
-        list(APPEND COMPILE_DEFINITIONS
-             "ONEDAL_DPCTL_INTEGRATION")
-    endif()
-
-elseif(IFACE STREQUAL "spmd_dpc")
-    set(TARGET "_onedal_py_spmd_dpc")
-
-    if(CMAKE_CXX_COMPILER MATCHES ".*icpx" OR CMAKE_CXX_COMPILER MATCHES ".*icx")
-        set(CMAKE_CXX_FLAGS "-fsycl ${CMAKE_CXX_FLAGS}")
-    endif()
-
-    if(CMAKE_C_COMPILER MATCHES ".*icpx" OR CMAKE_C_COMPILER MATCHES ".*icx")
-        set(CMAKE_C_FLAGS "-fsycl ${CMAKE_C_FLAGS}")
-    endif()
-
-    set(ONEDAL_LIBRARIES "")
-    if(WIN32)
-        list(APPEND ONEDAL_LIBRARIES "onedal_dpc_dll.${ONEDAL_MAJOR_BINARY}")
-        list(APPEND ONEDAL_LIBRARIES "onedal_core_dll.${ONEDAL_MAJOR_BINARY}")
-    elseif(APPLE)
-        list(APPEND ONEDAL_LIBRARIES "onedal_dpc.${ONEDAL_MAJOR_BINARY}")
-        list(APPEND ONEDAL_LIBRARIES "onedal_core.${ONEDAL_MAJOR_BINARY}")
-        list(APPEND ONEDAL_LIBRARIES "onedal_thread.${ONEDAL_MAJOR_BINARY}")
-    else()
-        list(APPEND ONEDAL_LIBRARIES "-l:libonedal_dpc.so.${ONEDAL_MAJOR_BINARY}")
-        list(APPEND ONEDAL_LIBRARIES "-l:libonedal_core.so.${ONEDAL_MAJOR_BINARY}")
-        list(APPEND ONEDAL_LIBRARIES "-l:libonedal_thread.so.${ONEDAL_MAJOR_BINARY}")
-    endif()
-
-    if(oneDAL_USE_PARAMETERS_LIB)
-        if(WIN32)
-            list(APPEND ONEDAL_LIBRARIES "onedal_core_parameters_dpc_dll.${ONEDAL_MAJOR_BINARY}")
-        elseif(APPLE)
-            list(APPEND ONEDAL_LIBRARIES "onedal_parameters_dpc.${ONEDAL_MAJOR_BINARY}")
-        else()
-            list(APPEND ONEDAL_LIBRARIES "-l:libonedal_parameters_dpc.so.${ONEDAL_MAJOR_BINARY}")
-        endif()
-    endif()
-
-    if(ONEDAL_DIST_SPMD)
+    if(IFACE STREQUAL "spmd_dpc")
         set(MPI_LIBRARY ${MPI_LIBS})
     endif()
 
@@ -204,7 +165,7 @@ elseif(IFACE STREQUAL "spmd_dpc")
              "ONEDAL_DPCTL_INTEGRATION")
     endif()
 
-    if(ONEDAL_DIST_SPMD)
+    if(IFACE STREQUAL "spmd_dpc")
         list(APPEND COMPILE_DEFINITIONS
              "ONEDAL_DATA_PARALLEL_SPMD")
     endif()
@@ -236,7 +197,7 @@ if(ONEDAL_DPCTL_INTEGRATION)
 list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${DPCTL_INCLUDE_DIR})
 endif()
 
-if(ONEDAL_DIST_SPMD)
+if(IFACE STREQUAL "spmd_dpc")
 list(APPEND EXTERNAL_LINK_LIBRARIES ${MPI_LIBRARY})
 list(APPEND EXTERNAL_LINK_DIRECTORIES ${MPI_LIBRARY_DIR})
 list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${MPI_INCLUDE_DIRS})

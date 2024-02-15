@@ -158,7 +158,6 @@ def custom_build_cmake_clib(
     numpy_include = np.get_include()
 
     if iface in ["dpc", "spmd_dpc"]:
-
         if IS_WIN:
             cxx = "icx"
         else:
@@ -219,7 +218,6 @@ def custom_build_cmake_clib(
             "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
             "-DMPI_LIBS=" + MPI_LIBS,
-            "-DONEDAL_DIST_SPMD:BOOL=ON",
         ]
 
     cpu_count = multiprocessing.cpu_count()
