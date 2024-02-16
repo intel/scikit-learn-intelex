@@ -635,6 +635,7 @@ class ElasticNet(ElasticNet_original):
         def __init__(
             self,
             alpha=1.0,
+            *,
             l1_ratio=0.5,
             fit_intercept=True,
             precompute=False,
@@ -665,6 +666,7 @@ class ElasticNet(ElasticNet_original):
         def __init__(
             self,
             alpha=1.0,
+            *,
             l1_ratio=0.5,
             fit_intercept=True,
             normalize="deprecated" if sklearn_check_version("1.0") else False,
@@ -833,6 +835,7 @@ class Lasso(Lasso_original):
         def __init__(
             self,
             alpha=1.0,
+            *,
             fit_intercept=True,
             precompute=False,
             copy_X=True,
@@ -862,6 +865,7 @@ class Lasso(Lasso_original):
         def __init__(
             self,
             alpha=1.0,
+            *,
             fit_intercept=True,
             normalize="deprecated" if sklearn_check_version("1.0") else False,
             precompute=False,

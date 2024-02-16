@@ -105,6 +105,7 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
     @_deprecate_positional_args
     def __init__(
         self,
+        *,
         n_neighbors=5,
         radius=1.0,
         algorithm="auto",

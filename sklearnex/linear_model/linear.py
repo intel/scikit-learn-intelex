@@ -100,6 +100,7 @@ if daal_check_version((2023, "P", 100)):
 
             def __init__(
                 self,
+                *,
                 fit_intercept=True,
                 copy_X=True,
                 n_jobs=None,
