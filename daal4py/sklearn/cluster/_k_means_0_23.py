@@ -542,6 +542,7 @@ class KMeans(KMeans_original):
         _parameter_constraints: dict = {**KMeans_original._parameter_constraints}
 
     if sklearn_check_version("1.1"):
+
         @_deprecate_positional_args
         def __init__(
             self,
