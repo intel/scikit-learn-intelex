@@ -66,11 +66,11 @@ def _load_all_models(with_sklearnex=True, estimator=True):
     return models
 
 
-PATCHED_MODELS = _load_all_models(patch_sklearn=True)
-UNPATCHED_MODELS = _load_all_models(patched_sklearn=False)
+PATCHED_MODELS = _load_all_models(with_sklearnex=True)
+UNPATCHED_MODELS = _load_all_models(with_sklearnex=False)
 
-PATCHED_FUNCTIONS = _load_all_models(patch_sklearn=True, estimator=False)
-UNPATCHED_FUNCTIONS = _load_all_models(patch_sklearn=False, estimator=False)
+PATCHED_FUNCTIONS = _load_all_models(with_sklearnex=True, estimator=False)
+UNPATCHED_FUNCTIONS = _load_all_models(with_sklearnex=False, estimator=False)
 
 mixin_map = [
     [
