@@ -196,12 +196,10 @@ def test_standard_estimator_signatures(estimator):
 @pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
 def test_standard_estimator_init_signatures(estimator):
     # remove n_jobs due to estimator patching for sklearnex (known deviation)
-    patched_sig = str(signature(PATCHED_MODELS[estimator].__init__)).replace(
-        ", n_jobs=None", ""
-    )
-    unpatched_sig = str(signature(UNPATCHED_MODELS[estimator].__init__)).replace(
-        ", n_jobs=None", ""
-    )
+    patched_sig = str(signature(PATCHED_MODELS[estimator].__init__))
+    patched_sig = patched_sig.replace(", n_jobs=None", "")
+    unpatched_sig = str(signature(UNPATCHED_MODELS[estimator].__init__))
+    unpatched_sig = unpatched_sig.replace(", n_jobs=None", "")
     assert (
         patched_sig == unpatched_sig
     ), f"Signature of {estimator}.__init__ does not match sklearn"
