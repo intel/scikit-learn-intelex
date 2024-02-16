@@ -359,3 +359,18 @@ def test_onedal_supported_member(name, member):
     patched = PATCHED_MODELS[name]
     sig = str(inspect.signature(getattr(patched, member)))
     assert "(self, method_name, *data)" == sig
+
+
+def test_check_entity_loaded():
+    # Test when sklearn is not loaded
+    assert check_entity_loaded(modules={}) is None
+
+    # Load sklearn and test again
+    import sklearn
+
+    assert check_entity_loaded() is not None
+
+    # Test with a specific class from sklearn
+    from sklearn.linear_model import LogisticRegression
+
+    assert check_entity_loaded("LogisticRegression") is not None

@@ -14,12 +14,16 @@
 # limitations under the License.
 # ==============================================================================
 
+import logging
 import os
 import sys
-import warnings
+import types
 from functools import lru_cache
+from typing import Any, Optional
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+
+logger = logging.getLogger("sklearnex")
 
 
 def _is_new_patching_available():
@@ -314,6 +318,55 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
+def check_entity_loaded(
+    name: Optional[str] = None, modules: Optional[dict[str, Any]] = None
+) -> Optional[str]:
+    """
+    This function checks if a specified module or class is already loaded in sys.modules.
+
+    Parameters:
+    name (str, optional): The name of the module or class to check. If no name is provided, the function checks for 'sklearn'.
+
+    Returns:
+    str: A warning message if the specified module or class is already loaded, indicating that patch_sklearn()
+    should be called before any import statements from that module or class. If the module or class is not loaded,
+    the function returns None.
+
+    Example:
+    >>> check_entity_loaded()
+    'sklearn or some parts of it are already loaded. patch_sklearn() only affects classes imported *after* calling it.
+    To retrieve patched entities, make sure to call patch_sklearn() before any import statements from sklearn.'
+
+    >>> check_entity_loaded(name='LogisticRegression')
+    'LogisticRegression or some parts of it are already loaded. patch_sklearn() only affects classes imported *after*
+    calling it. To retrieve patched entities, make sure to call patch_sklearn() before any import statements from LogisticRegression.'
+    """
+    modules = modules if modules is not None else sys.modules
+    if name is None and "sklearn" in modules.keys():
+        return (
+            f"sklearn or some parts of it are already loaded. "
+            "patch_sklearn() only affects classes imported *after* calling it. "
+            "To retrieve patched entities, make sure to call patch_sklearn() before any import statements from {name}."
+        )
+    elif name is not None:
+        loaded_classes = []
+        for key, module in sys.modules.items():
+            if "sklearn" in key and isinstance(module, types.ModuleType):
+                loaded_classes.extend(
+                    [
+                        cls.__name__
+                        for cls in vars(module).values()
+                        if isinstance(cls, type)
+                    ]
+                )
+        if name in loaded_classes:
+            return (
+                f"{name} or some parts of it are already loaded. "
+                "patch_sklearn() only affects classes imported *after* calling it. "
+                "To retrieve patched entities, make sure to call patch_sklearn() before any import statements from {name}."
+            )
+
+
 def patch_sklearn(
     name=None, verbose=True, global_patch=False, preview=False, no_msg=False
 ):
@@ -325,13 +378,8 @@ def patch_sklearn(
             "for scikit-learn >= 0.22 only ..."
         )
 
-    if not no_msg and "sklearn" in sys.modules.keys():
-        msg = (
-            "sklearn or some parts of it are already loaded. "
-            "patch_sklearn() only affects classes imported *after* calling it. "
-            "To retrieve patched entities, make sure to call patch_sklearn() before any import statements from sklearn."
-        )
-        warnings.warn(msg)
+    if not no_msg and (msg := check_entity_loaded(name)) is not None:
+        logger.warning(msg)
 
     if global_patch:
         from sklearnex.glob.dispatcher import patch_sklearn_global

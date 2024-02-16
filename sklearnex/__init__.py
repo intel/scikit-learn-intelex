@@ -19,6 +19,7 @@ from onedal.common.hyperparameters import get_hyperparameters
 from . import utils
 from ._config import config_context, get_config, set_config
 from .dispatcher import (
+    check_entity_loaded,
     get_patch_map,
     get_patch_names,
     is_patched_instance,
@@ -30,6 +31,7 @@ from .dispatcher import (
 __all__ = [
     "basic_statistics",
     "cluster",
+    "check_entity_loaded",
     "config_context",
     "decomposition",
     "ensemble",
