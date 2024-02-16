@@ -39,13 +39,13 @@ from sklearnex.neighbors import (
 from sklearnex.svm import SVC, NuSVC
 
 
-def _load_all_models(patch_sklearn=True, estimator=True):
+def _load_all_models(with_sklearnex=True, estimator=True):
     # insure that patch state is correct as dictated by patch_sklearn boolean
     # and return it to the previous state no matter what occurs.
     already_patched_map = sklearn_is_patched(return_map=True)
     already_patched = any(already_patched_map.values())
     try:
-        if patch_sklearn:
+        if with_sklearnex:
             patch_sklearn()
         elif already_patched:
             unpatch_sklearn()
@@ -57,7 +57,7 @@ def _load_all_models(patch_sklearn=True, estimator=True):
                 if not estimator or issubclass(candidate, BaseEstimator):
                     models[patch_infos[0][0][1]] = candidate
     finally:
-        if patch_sklearn:
+        if with_sklearnex:
             unpatch_sklearn()
         # both branches are now in an unpatched state, repatch as necessary
         if already_patched:
