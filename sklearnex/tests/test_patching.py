@@ -38,6 +38,7 @@ from _utils import (
     gen_models_info,
 )
 
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -188,12 +189,32 @@ def test_standard_estimator_signatures(estimator):
             patched_sig = re.sub(regex, estimator, str(signature(est_method)))
             unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
             assert (
-                unpatched_sig == patched_sig
+                patched_sig == unpatched_sig
             ), f"Signature of {estimator}.{method} does not match sklearn"
 
 
-@pytest.mark.parametrize("function", UNPATCHED_FUNCTIONS.keys())
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
+def test_standard_estimator_init_signatures(estimator):
+    patched_sig = str(signature(PATCHED_MODELS[estimator].__init__))
+    unpatched_sig = str(signature(UNPATCHED_MODELS[estimator].__init__))
+    assert (
+        unpatched_sig == patched_sig
+    ), f"Signature of {estimator}.__init__ does not match sklearn"
+
+
+@pytest.mark.parametrize(
+    "function",
+    [
+        i
+        for i in UNPATCHED_FUNCTIONS.keys()
+        if not i in ["test_train_split", "set_config", "config_context"]
+    ],
+)
 def test_patched_function_signatures(function):
+    # certain functions are dropped from the test
+    # as they add functionality to the underlying sklearn function
+    if not sklearn_check_version("1.1") and function == "_assert_all_finite":
+        pytest.skip("Sklearn versioning not added to _assert_all_finite")
     func = PATCHED_FUNCTIONS[function]
     unpatched_func = UNPATCHED_FUNCTIONS[function]
 
