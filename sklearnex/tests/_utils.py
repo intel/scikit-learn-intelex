@@ -39,7 +39,7 @@ from sklearnex.neighbors import (
 from sklearnex.svm import SVC, NuSVC
 
 
-def _load_all_models(patch_sklearn, estimator=True):
+def _load_all_models(patch_sklearn=True, estimator=True):
     # insure that patch state is correct as dictated by patch_sklearn boolean
     # and return it to the previous state no matter what occurs.
     already_patched_map = is_sklearn_patched(return_map=True)
@@ -66,11 +66,11 @@ def _load_all_models(patch_sklearn, estimator=True):
     return models
 
 
-PATCHED_MODELS = _load_all_models(patched=True)
-UNPATCHED_MODELS = _load_all_models(patched=False)
+PATCHED_MODELS = _load_all_models(patch_sklearn=True)
+UNPATCHED_MODELS = _load_all_models(patched_sklearn=False)
 
-PATCHED_FUNCTIONS = _load_all_models(patched=True, estimator=False)
-UNPATCHED_FUNCTIONS = _load_all_models(patched=True, estimator=False)
+PATCHED_FUNCTIONS = _load_all_models(patch_sklearn=True, estimator=False)
+UNPATCHED_FUNCTIONS = _load_all_models(patch_sklearn=False, estimator=False)
 
 mixin_map = [
     [
