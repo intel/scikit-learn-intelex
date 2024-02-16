@@ -541,8 +541,6 @@ class KMeans(KMeans_original):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KMeans_original._parameter_constraints}
 
-    if sklearn_check_version("1.1"):
-
         @_deprecate_positional_args
         def __init__(
             self,
@@ -583,7 +581,7 @@ class KMeans(KMeans_original):
             verbose=0,
             random_state=None,
             copy_x=True,
-            algorithm="auto",
+            algorithm="lloyd" if sklearn_check_version("1.1") else "auto",
         ):
             super(KMeans, self).__init__(
                 n_clusters=n_clusters,

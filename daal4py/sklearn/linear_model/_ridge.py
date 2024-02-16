@@ -292,7 +292,7 @@ class Ridge(Ridge_original, _BaseRidge):
             normalize="deprecated",
             copy_X=True,
             max_iter=None,
-            tol=1e-4 if sklearn_check_version("1.1") else 1e-3,
+            tol=1e-3,
             solver="auto",
             positive=False,
             random_state=None,
