@@ -29,7 +29,7 @@ from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
 
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
-from sklearnex import get_patch_map, is_sklearn_patched, patch_sklearn, unpatch_sklearn
+from sklearnex import get_patch_map, sklearn_is_patched, patch_sklearn, unpatch_sklearn
 from sklearnex.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
@@ -42,7 +42,7 @@ from sklearnex.svm import SVC, NuSVC
 def _load_all_models(patch_sklearn=True, estimator=True):
     # insure that patch state is correct as dictated by patch_sklearn boolean
     # and return it to the previous state no matter what occurs.
-    already_patched_map = is_sklearn_patched(return_map=True)
+    already_patched_map = sklearn_is_patched(return_map=True)
     already_patched = any(already_patched.values())
     try:
         if patch_sklearn:
