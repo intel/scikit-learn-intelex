@@ -18,8 +18,16 @@ from abc import ABC
 
 from onedal import _backend
 
-from ._common import _get_backend
 from ._policy import _get_policy
+
+
+def _get_backend(backend, module, submodule, method, *args, **kwargs):
+    result = getattr(backend, module)
+    if submodule:
+        result = getattr(result, submodule)
+    if method:
+        return getattr(result, method)(*args, **kwargs)
+    return result
 
 
 class BaseEstimator(ABC):

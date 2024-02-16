@@ -29,7 +29,6 @@ from daal4py import (
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import (
     _check_array,
