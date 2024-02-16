@@ -39,11 +39,16 @@ from sklearnex.neighbors import (
 from sklearnex.svm import SVC, NuSVC
 
 
-def _load_all_models(patched, estimator=True):
-
+def _load_all_models(patch_sklearn, estimator=True):
+    # insure that patch state is correct as dictated by patch_sklearn boolean
+    # and return it to the previous state no matter what occurs.
+    already_patched_map = is_sklearn_patched(return_map=True)
+    already_patched = any(already_patched.values())
     try:
-        if patched:
+        if patch_sklearn:
             patch_sklearn()
+        elif already_patched:
+            unpatch_sklearn()
 
         models = {}
         for patch_infos in get_patch_map().values():
@@ -52,8 +57,11 @@ def _load_all_models(patched, estimator=True):
                 if not estimator or issubclass(candidate, BaseEstimator):
                     models[patch_infos[0][0][1]] = candidate
     finally:
-        if patched:
+        if patch_sklearn:
             unpatch_sklearn()
+        # both branches are now in an unpatched state, repatch as necessary
+        if already_patched:
+            patch_sklearn(name=[i for i in already_patched_map if already_patched_map[i]])
 
     return models
 
@@ -79,7 +87,7 @@ mixin_map = [
 
 
 SPECIAL_INSTANCES = {
-    i.__str__(): i
+    str(i): i
     for i in [
         LocalOutlierFactor(novelty=True),
         SVC(probability=True),
@@ -99,16 +107,15 @@ def gen_models_info(algorithms):
         # with keys set by the __str__ method
         est = UNPATCHED_MODELS[i.split("(")[0]]
 
-        methods = []
+        methods = set()
         candidates = set(
             [i for i in dir(est) if not i.startswith("_") and not i.endswith("_")]
         )
 
         for mixin, method, _ in mixin_map:
             if issubclass(est, mixin):
-                methods += list(candidates.intersection(set(method)))
+                methods |= candidates & set(method)
 
-        methods = list(set(methods))  # return only unique values
         output += [[i, j] for j in methods]
     return output
 
