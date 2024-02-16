@@ -193,8 +193,24 @@ def test_standard_estimator_signatures(estimator):
             ), f"Signature of {estimator}.{method} does not match sklearn"
 
 
-@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
+@pytest.mark.parametrize(
+    "estimator",
+    [
+        i
+        for i in UNPATCHED_MODELS.keys()
+        if not i
+        in [
+            "PCA",
+            "RandomForestRegressor",
+            "RandomForestClassifier",
+            "ExtraTreesRegressor",
+            "ExtraTreesClassifier",
+        ]
+    ],
+)
 def test_standard_estimator_init_signatures(estimator):
+    # Several estimators have additional parameters that are user-accessible
+    # which are sklearnex-specific. They will fail and are removed from tests.
     # remove n_jobs due to estimator patching for sklearnex (known deviation)
     patched_sig = str(signature(PATCHED_MODELS[estimator].__init__))
     patched_sig = patched_sig.replace(", n_jobs=None", "")
