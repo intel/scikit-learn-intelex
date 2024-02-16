@@ -21,6 +21,7 @@ import io
 import logging
 import os
 import re
+import sys
 from inspect import signature
 
 import numpy as np
@@ -75,7 +76,7 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
 )
 def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
-    if dtype in DTYPES[-2:]:
+    if dtype in DTYPES[-2] and sys.platform == "win32":
         pytest.skip("Windows issue with unsigned ints")
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
@@ -116,6 +117,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         elif (
             estimator == "Ridge"
             and method in ["predict", "score"]
+            and sys.platform == "win32"
             and dtype in DTYPES[-2:]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
