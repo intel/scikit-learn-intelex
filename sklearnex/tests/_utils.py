@@ -29,7 +29,7 @@ from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
 
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
-from sklearnex import get_patch_map, patch_sklearn, unpatch_sklearn
+from sklearnex import get_patch_map, is_sklearn_patched, patch_sklearn, unpatch_sklearn
 from sklearnex.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
