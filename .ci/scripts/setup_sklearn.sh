@@ -31,5 +31,5 @@ if [ "$sklearn_version" == "main" ]; then
     # install sklearn from main branch of git repo
     pip install git+https://github.com/scikit-learn/scikit-learn.git@main
 else
-    sed -i.bak -E "s/scikit-learn==[0-9]+\.[0-9]+\.[0-9]+/scikit-learn==${sklearn_version}.*/" requirements-test.txt
+    sed -i.bak -E "s/scikit-learn==[0-9a-zA-Z.]* ;/scikit-learn==${sklearn_version}.* ;/" requirements-test.txt
 fi
