@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
@@ -31,7 +30,7 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
-class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
+class BaseLinearRegression(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, fit_intercept, copy_X, algorithm):
         self.fit_intercept = fit_intercept
