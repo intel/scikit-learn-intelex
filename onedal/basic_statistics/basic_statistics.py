@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
 from onedal import _backend
 
