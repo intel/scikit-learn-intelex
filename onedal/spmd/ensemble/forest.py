@@ -18,6 +18,7 @@ from onedal.ensemble import RandomForestClassifier as RandomForestClassifier_Bat
 from onedal.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
 from .._common import BaseEstimatorSPMD
+from onedal import _spmd_backend
 
 
 class RandomForestClassifier(BaseEstimatorSPMD, RandomForestClassifier_Batch):
@@ -25,4 +26,20 @@ class RandomForestClassifier(BaseEstimatorSPMD, RandomForestClassifier_Batch):
 
 
 class RandomForestRegressor(BaseEstimatorSPMD, RandomForestRegressor_Batch):
-    pass
+    def fit(self, X, y, sample_weight=None, queue=None):
+        if sample_weight is not None:
+            if hasattr(sample_weight, "__array__"):
+                sample_weight[sample_weight == 0.0] = 1.0
+            sample_weight = [sample_weight]
+        return super()._fit(
+            X,
+            y,
+            sample_weight,
+            _spmd_backend.decision_forest.regression,
+            queue,
+        )
+
+    def predict(self, X, queue=None):
+        return (
+            super()._predict(X, _spmd_backend.decision_forest.regression, queue).ravel()
+        )

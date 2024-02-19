@@ -18,7 +18,6 @@ import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
 from math import ceil
-from numbers import Number
 
 import numpy as np
 from sklearn.ensemble import BaseEnsemble
@@ -589,16 +588,12 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             X,
             y,
             sample_weight,
-            self._get_backend("decision_forest", "regression", None),
+            _backend.decision_forest.regression,
             queue,
         )
 
     def predict(self, X, queue=None):
-        return (
-            super()
-            ._predict(X, self._get_backend("decision_forest", "regression", None), queue)
-            .ravel()
-        )
+        return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
 
 
 class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
