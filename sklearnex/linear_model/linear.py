@@ -100,7 +100,6 @@ if daal_check_version((2023, "P", 100)):
 
             def __init__(
                 self,
-                *,
                 fit_intercept=True,
                 copy_X=True,
                 n_jobs=None,
@@ -117,7 +116,6 @@ if daal_check_version((2023, "P", 100)):
 
             def __init__(
                 self,
-                *,
                 fit_intercept=True,
                 normalize="deprecated" if sklearn_check_version("1.0") else False,
                 copy_X=True,

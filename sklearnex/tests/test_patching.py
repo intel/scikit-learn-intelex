@@ -193,29 +193,31 @@ def test_standard_estimator_signatures(estimator):
             ), f"Signature of {estimator}.{method} does not match sklearn"
 
 
-@pytest.mark.parametrize(
-    "estimator",
-    [
-        i
-        for i in UNPATCHED_MODELS.keys()
-        if not i
-        in [
-            "PCA",
-            "RandomForestRegressor",
-            "RandomForestClassifier",
-            "ExtraTreesRegressor",
-            "ExtraTreesClassifier",
-        ]
-    ],
-)
+@pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
 def test_standard_estimator_init_signatures(estimator):
     # Several estimators have additional parameters that are user-accessible
     # which are sklearnex-specific. They will fail and are removed from tests.
     # remove n_jobs due to estimator patching for sklearnex (known deviation)
     patched_sig = str(signature(PATCHED_MODELS[estimator].__init__))
-    patched_sig = patched_sig.replace(", n_jobs=None", "")
     unpatched_sig = str(signature(UNPATCHED_MODELS[estimator].__init__))
-    unpatched_sig = unpatched_sig.replace(", n_jobs=None", "")
+
+    # Sklearnex allows for positional kwargs and n_jobs, when sklearn doesn't
+    for kwarg in [", n_jobs=None", ", *"]:
+        patched_sig = unpatched_sig.replace(kwarg, "")
+        unpatched_sig = unpatched_sig.replace(kwarg, "")
+
+    # Special sklearnex-specific kwargs are removed from signatures here
+    if estimator == "PCA":
+        pass
+    elif estimator in [
+        "RandomForestRegressor",
+        "RandomForestClassifier",
+        "ExtraTreesRegressor",
+        "ExtraTreesClassifier",
+    ]:
+        for kwarg in [", min_bin_size=1", ", max_bins=256"]:
+            patched_sig = unpatched_sig.replace(kwarg, "")
+
     assert (
         patched_sig == unpatched_sig
     ), f"Signature of {estimator}.__init__ does not match sklearn"

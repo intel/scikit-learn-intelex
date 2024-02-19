@@ -264,7 +264,6 @@ class Ridge(Ridge_original, _BaseRidge):
         def __init__(
             self,
             alpha=1.0,
-            *,
             fit_intercept=True,
             copy_X=True,
             max_iter=None,
@@ -287,7 +286,6 @@ class Ridge(Ridge_original, _BaseRidge):
         def __init__(
             self,
             alpha=1.0,
-            *,
             fit_intercept=True,
             normalize="deprecated",
             copy_X=True,
