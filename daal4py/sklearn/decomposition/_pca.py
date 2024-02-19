@@ -100,7 +100,6 @@ class PCA(PCA_original):
             self.svd_solver = svd_solver
             self.tol = tol
             self.iterated_power = iterated_power
-
             self.random_state = random_state
 
     def _validate_n_components(self, n_components, n_samples, n_features):
