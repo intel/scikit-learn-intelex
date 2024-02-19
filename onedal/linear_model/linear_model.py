@@ -19,7 +19,7 @@ from numbers import Number
 
 import numpy as np
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
+from daal4py.sklearn._utils import get_dtype, make2d
 from onedal import _backend
 
 from ..common._estimator_checks import _check_is_fitted

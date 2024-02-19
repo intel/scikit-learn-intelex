@@ -21,20 +21,8 @@ from math import ceil
 from numbers import Number
 
 import numpy as np
-from scipy import sparse as sp
 from sklearn.ensemble import BaseEnsemble
-from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import (
-    check_array,
-    check_random_state,
-    compute_sample_weight,
-    deprecated,
-)
-from sklearn.utils.validation import (
-    _num_samples,
-    check_consistent_length,
-    check_is_fitted,
-)
+from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal import _backend
