@@ -58,27 +58,50 @@ class PCA(PCA_original):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**PCA_original._parameter_constraints}
 
-    def __init__(
-        self,
-        n_components=None,
-        copy=True,
-        whiten=False,
-        svd_solver="auto",
-        tol=0.0,
-        iterated_power="auto",
-        n_oversamples=10,
-        power_iteration_normalizer="auto",
-        random_state=None,
-    ):
-        self.n_components = n_components
-        self.copy = copy
-        self.whiten = whiten
-        self.svd_solver = svd_solver
-        self.tol = tol
-        self.iterated_power = iterated_power
-        self.n_oversamples = n_oversamples
-        self.power_iteration_normalizer = power_iteration_normalizer
-        self.random_state = random_state
+    if sklearn_check_version("1.1"):
+
+        def __init__(
+            self,
+            n_components=None,
+            copy=True,
+            whiten=False,
+            svd_solver="auto",
+            tol=0.0,
+            iterated_power="auto",
+            n_oversamples=10,
+            power_iteration_normalizer="auto",
+            random_state=None,
+        ):
+            self.n_components = n_components
+            self.copy = copy
+            self.whiten = whiten
+            self.svd_solver = svd_solver
+            self.tol = tol
+            self.iterated_power = iterated_power
+            self.n_oversamples = n_oversamples
+            self.power_iteration_normalizer = power_iteration_normalizer
+            self.random_state = random_state
+
+    else:
+
+        def __init__(
+            self,
+            n_components=None,
+            copy=True,
+            whiten=False,
+            svd_solver="auto",
+            tol=0.0,
+            iterated_power="auto",
+            random_state=None,
+        ):
+            self.n_components = n_components
+            self.copy = copy
+            self.whiten = whiten
+            self.svd_solver = svd_solver
+            self.tol = tol
+            self.iterated_power = iterated_power
+
+            self.random_state = random_state
 
     def _validate_n_components(self, n_components, n_samples, n_features):
         if n_components == "mle":
