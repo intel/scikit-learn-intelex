@@ -207,9 +207,7 @@ def test_standard_estimator_init_signatures(estimator):
         unpatched_sig = unpatched_sig.replace(kwarg, "")
 
     # Special sklearnex-specific kwargs are removed from signatures here
-    if estimator == "PCA":
-        pass
-    elif estimator in [
+    if estimator in [
         "RandomForestRegressor",
         "RandomForestClassifier",
         "ExtraTreesRegressor",
