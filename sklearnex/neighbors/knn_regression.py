@@ -14,20 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
-
-from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
-from sklearn.neighbors._kd_tree import KDTree
-
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
 
-import numpy as np
-from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._regression import (
     KNeighborsRegressor as sklearn_KNeighborsRegressor,
 )
@@ -35,7 +27,6 @@ from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestN
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from onedal.neighbors import KNeighborsRegressor as onedal_KNeighborsRegressor
-from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase

@@ -15,13 +15,11 @@
 # ===============================================================================
 
 import numbers
-from math import sqrt
 
 import numpy as np
 from scipy.sparse import issparse
-from sklearn.base import BaseEstimator
 from sklearn.utils.extmath import stable_cumsum
-from sklearn.utils.validation import check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version

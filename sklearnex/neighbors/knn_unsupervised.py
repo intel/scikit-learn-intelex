@@ -19,21 +19,13 @@ try:
 except ImportError:
     from distutils.version import LooseVersion as Version
 
-import warnings
-
-import numpy as np
 from sklearn import __version__ as sklearn_version
-from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._base import VALID_METRICS
-from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
-from sklearn.neighbors._kd_tree import KDTree
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
-from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
