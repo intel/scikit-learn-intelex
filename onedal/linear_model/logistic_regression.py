@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
 from daal4py.sklearn._utils import get_dtype, make2d
 from onedal import _backend
@@ -36,7 +35,7 @@ from ..utils import (
 )
 
 
-class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
+class BaseLogisticRegression(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, tol, C, fit_intercept, solver, max_iter, algorithm):
         self.tol = tol
