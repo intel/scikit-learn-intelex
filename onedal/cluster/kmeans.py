@@ -29,7 +29,7 @@ if daal_check_version((2023, "P", 200)):
 else:
     from sklearn.cluster import _kmeans_plusplus
 
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_array, check_random_state
@@ -41,7 +41,7 @@ from ..common._policy import _get_policy
 from ..utils import _check_array, _is_arraylike_not_scalar
 
 
-class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
+class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
     def __init__(
         self,
         n_clusters,
