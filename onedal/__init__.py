@@ -42,16 +42,26 @@ except ImportError:
 
     _is_dpc_backend = False
 
+_is_spmd_backend = False
+
+if _is_dpc_backend:
+    try:
+        import onedal._onedal_py_spmd_dpc as _spmd_backend
+
+        _is_spmd_backend = True
+    except ImportError:
+        _is_spmd_backend = False
+
 
 __all__ = ["covariance", "decomposition", "ensemble", "neighbors", "primitives", "svm"]
 
-if _is_dpc_backend:
+if _is_spmd_backend:
     __all__.append("spmd")
 
 if daal_check_version((2023, "P", 100)):
     __all__ += ["basic_statistics", "linear_model"]
 
-    if _is_dpc_backend:
+    if _is_spmd_backend:
         __all__ += [
             "spmd.basic_statistics",
             "spmd.decomposition",
@@ -62,5 +72,5 @@ if daal_check_version((2023, "P", 100)):
 if daal_check_version((2023, "P", 200)):
     __all__ += ["cluster"]
 
-    if _is_dpc_backend:
+    if _is_spmd_backend:
         __all__ += ["spmd.cluster"]

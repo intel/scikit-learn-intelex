@@ -157,7 +157,7 @@ def custom_build_cmake_clib(
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
 
-    if iface == "dpc":
+    if iface in ["dpc", "spmd_dpc"]:
         if IS_WIN:
             cxx = "icx"
         else:
@@ -165,7 +165,7 @@ def custom_build_cmake_clib(
     elif cxx is None:
         raise RuntimeError("CXX compiler shall be specified")
 
-    build_distribute = iface == "dpc" and dpctl_available and not no_dist and IS_LIN
+    build_distribute = iface == "spmd_dpc" and dpctl_available and not no_dist and IS_LIN
 
     log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
 
@@ -218,7 +218,6 @@ def custom_build_cmake_clib(
             "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
             "-DMPI_LIBS=" + MPI_LIBS,
-            "-DONEDAL_DIST_SPMD:BOOL=ON",
         ]
 
     cpu_count = multiprocessing.cpu_count()
