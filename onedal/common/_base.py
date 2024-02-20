@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +14,25 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = [
-    "basic_statistics",
-    "cluster",
-    "covariance",
-    "decomposition",
-    "ensemble",
-    "linear_model",
-    "neighbors",
-]
+from abc import ABC
+
+from onedal import _backend
+
+from ._policy import _get_policy
+
+
+def _get_backend(backend, module, submodule, method, *args, **kwargs):
+    result = getattr(backend, module)
+    if submodule:
+        result = getattr(result, submodule)
+    if method:
+        return getattr(result, method)(*args, **kwargs)
+    return result
+
+
+class BaseEstimator(ABC):
+    def _get_backend(self, module, submodule, method, *args, **kwargs):
+        return _get_backend(_backend, module, submodule, method, *args, **kwargs)
+
+    def _get_policy(self, queue, *data):
+        return _get_policy(queue, *data)
