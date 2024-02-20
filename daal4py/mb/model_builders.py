@@ -290,10 +290,7 @@ class GBTDAALModel(GBTDAALBaseModel):
     @available_if(_check_proba)
     def predict_proba(self, X):
         fptype = getFPType(X)
-        if self._is_regression:
-            raise NotImplementedError("Can't predict probabilities for regression task")
-        else:
-            return self._predict_classification(X, fptype, "computeClassProbabilities")
+        return self._predict_classification(X, fptype, "computeClassProbabilities")
 
 
 def convert_model(model):
