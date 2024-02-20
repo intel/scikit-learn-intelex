@@ -18,28 +18,23 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
-from onedal import _backend
+from daal4py.sklearn._utils import get_dtype, make2d
 
+from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import RegressorMixin
-from ..common._policy import _get_policy
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
-class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
+class BaseLinearRegression(onedal_BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, fit_intercept, copy_X, algorithm):
         self.fit_intercept = fit_intercept
         self.algorithm = algorithm
         self.copy_X = copy_X
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
@@ -198,8 +193,12 @@ class LinearRegression(RegressorMixin, BaseLinearRegression):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
 
     def fit(self, X, y, queue=None):
-        return super()._fit(X, y, _backend.linear_model.regression, queue)
+        return super()._fit(
+            X, y, self._get_backend("linear_model", "regression", None), queue
+        )
 
     def predict(self, X, queue=None):
-        y = super()._predict(X, _backend.linear_model.regression, queue)
+        y = super()._predict(
+            X, self._get_backend("linear_model", "regression", None), queue
+        )
         return y

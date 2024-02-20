@@ -14,7 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
@@ -33,7 +32,6 @@ from sklearnex.neighbors import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_knn_classifier(dataframe, queue):
-
     X = _convert_to_dataframe([[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe([0, 0, 1, 1], sycl_queue=queue, target_df=dataframe)
     neigh = KNeighborsClassifier(n_neighbors=3).fit(X, y)
@@ -45,7 +43,6 @@ def test_sklearnex_import_knn_classifier(dataframe, queue):
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_knn_regression(dataframe, queue):
-
     X = _convert_to_dataframe([[0], [1], [2], [3]], sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe([0, 0, 1, 1], sycl_queue=queue, target_df=dataframe)
     neigh = KNeighborsRegressor(n_neighbors=2).fit(X, y)
@@ -61,7 +58,6 @@ def test_sklearnex_import_knn_regression(dataframe, queue):
     [LocalOutlierFactor, NearestNeighbors],
 )
 def test_sklearnex_kneighbors(estimator, dataframe, queue):
-
     X = [[0, 0, 2], [1, 0, 0], [0, 0, 1]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     test = _convert_to_dataframe([[0, 0, 1.3]], sycl_queue=queue, target_df=dataframe)
@@ -74,7 +70,6 @@ def test_sklearnex_kneighbors(estimator, dataframe, queue):
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_lof(dataframe, queue):
-
     X = [[7, 7, 7], [1, 0, 0], [0, 0, 1], [0, 0, 1]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     lof = LocalOutlierFactor(n_neighbors=2)

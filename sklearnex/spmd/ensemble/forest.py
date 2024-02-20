@@ -14,8 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.spmd.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.spmd.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 
