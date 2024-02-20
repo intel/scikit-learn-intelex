@@ -18,21 +18,17 @@ from abc import ABCMeta
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal import _backend
 from onedal.utils import _check_array
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
-class BaseEmpiricalCovariance(metaclass=ABCMeta):
+class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
     def __init__(self, method="dense", bias=False):
         self.method = method
         self.bias = bias
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _get_onedal_params(self, dtype=np.float32):
         params = {
@@ -92,11 +88,19 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = _backend.covariance.compute(
-                policy, params, hparams.backend, to_table(X)
+            result = self._get_backend(
+                "covariance",
+                None,
+                "compute",
+                policy,
+                params,
+                hparams.backend,
+                to_table(X),
             )
         else:
-            result = _backend.covariance.compute(policy, params, to_table(X))
+            result = self._get_backend(
+                "covariance", None, "compute", policy, params, to_table(X)
+            )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

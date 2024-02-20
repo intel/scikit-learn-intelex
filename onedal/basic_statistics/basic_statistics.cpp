@@ -159,12 +159,11 @@ ONEDAL_PY_INIT_MODULE(basic_statistics) {
     using task_list = types<dal::basic_statistics::task::compute>;
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task_list);
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
-#endif // ONEDAL_DATA_PARALLEL_SPMD
-
     ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
+#endif // ONEDAL_DATA_PARALLEL_SPMD
 }
 
 ONEDAL_PY_TYPE2STR(dal::basic_statistics::task::compute, "compute");
