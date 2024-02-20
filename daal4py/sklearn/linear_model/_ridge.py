@@ -267,7 +267,7 @@ class Ridge(Ridge_original, _BaseRidge):
             fit_intercept=True,
             copy_X=True,
             max_iter=None,
-            tol=1e-3,
+            tol=1e-4,
             solver="auto",
             positive=False,
             random_state=None,
