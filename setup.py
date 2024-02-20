@@ -24,7 +24,7 @@ import pathlib
 import shutil
 import sys
 import time
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from distutils.sysconfig import get_config_vars
 from os.path import join as jp
 
@@ -444,9 +444,13 @@ def build_oneapi_backend():
 def get_onedal_py_libs():
     ext_suffix = get_config_vars("EXT_SUFFIX")[0]
     libs = [f"_onedal_py_host{ext_suffix}", f"_onedal_py_dpc{ext_suffix}"]
+    if build_distribute:
+        libs += [f"_onedal_py_spmd_dpc{ext_suffix}"]
     if IS_WIN:
         ext_suffix_lib = ext_suffix.replace(".dll", ".lib")
         libs += [f"_onedal_py_host{ext_suffix_lib}", f"_onedal_py_dpc{ext_suffix_lib}"]
+        if build_distribute:
+            libs += [f"_onedal_py_spmd_dpc{ext_suffix_lib}"]
     return libs
 
 
@@ -481,6 +485,13 @@ class custom_build:
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
                 )
+                if build_distribute:
+                    build_backend.custom_build_cmake_clib(
+                        iface="spmd_dpc",
+                        onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
+                        no_dist=no_dist,
+                        use_parameters_lib=use_parameters_lib,
+                    )
 
     def post_build(self):
         if IS_MAC:

@@ -67,7 +67,19 @@ if(ONEDAL_DPCTL_INTEGRATION)
     message(STATUS "DPCTL_INCLUDE_DIR:" ${DPCTL_INCLUDE_DIR})
 endif()
 
-if(ONEDAL_DIST_SPMD)
+if(IFACE STREQUAL "dpc")
+    set(IFACE_IS_DPC ON)
+else()
+    set(IFACE_IS_DPC OFF)
+endif()
+
+if(IFACE STREQUAL "spmd_dpc")
+    set(IFACE_IS_SPMD_DPC ON)
+else()
+    set(IFACE_IS_SPMD_DPC OFF)
+endif()
+
+if(IFACE_IS_SPMD_DPC)
     message(STATUS "MPI_INCLUDE_DIRS:" ${MPI_INCLUDE_DIRS})
     message(STATUS "MPI_LIBRARY_DIR:" ${MPI_LIBRARY_DIR})
 endif()
@@ -105,8 +117,13 @@ if(IFACE STREQUAL "host")
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
 
-elseif(IFACE STREQUAL "dpc")
-    set(TARGET "_onedal_py_dpc")
+elseif(IFACE_IS_DPC OR IFACE_IS_SPMD_DPC)
+
+    if(IFACE_IS_SPMD_DPC)
+        set(TARGET "_onedal_py_spmd_dpc")
+    else()
+        set(TARGET "_onedal_py_dpc")
+    endif()
 
     # FIXME: icx>=2024.1 and pybind11 don't work correctly with IPO
     if(WIN32)
@@ -145,7 +162,7 @@ elseif(IFACE STREQUAL "dpc")
         endif()
     endif()
 
-    if(ONEDAL_DIST_SPMD)
+    if(IFACE_IS_SPMD_DPC)
         set(MPI_LIBRARY ${MPI_LIBS})
     endif()
 
@@ -158,7 +175,7 @@ elseif(IFACE STREQUAL "dpc")
              "ONEDAL_DPCTL_INTEGRATION")
     endif()
 
-    if(ONEDAL_DIST_SPMD)
+    if(IFACE_IS_SPMD_DPC)
         list(APPEND COMPILE_DEFINITIONS
              "ONEDAL_DATA_PARALLEL_SPMD")
     endif()
@@ -190,7 +207,7 @@ if(ONEDAL_DPCTL_INTEGRATION)
 list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${DPCTL_INCLUDE_DIR})
 endif()
 
-if(ONEDAL_DIST_SPMD)
+if(IFACE_IS_SPMD_DPC)
 list(APPEND EXTERNAL_LINK_LIBRARIES ${MPI_LIBRARY})
 list(APPEND EXTERNAL_LINK_DIRECTORIES ${MPI_LIBRARY_DIR})
 list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${MPI_INCLUDE_DIRS})
