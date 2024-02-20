@@ -46,7 +46,6 @@ __all__ = [
     "patch_sklearn",
     "set_config",
     "sklearn_is_patched",
-    "sklearn_is_patchedget_patch_map",
     "svm",
     "unpatch_sklearn",
     "utils",
