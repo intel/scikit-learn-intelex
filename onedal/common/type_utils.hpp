@@ -49,18 +49,17 @@ struct is_type_list<types<Args...>> : public std::true_type {};
 template <typename T>
 struct type_to_str;
 
-ONEDAL_PY_TYPE2STR(dal::detail::host_policy, "");
-
-#ifdef ONEDAL_DATA_PARALLEL
-ONEDAL_PY_TYPE2STR(dal::detail::data_parallel_policy, "");
-ONEDAL_PY_TYPE2STR(dal::detail::spmd_policy<dal::detail::data_parallel_policy>, "");
-
-using policy_list = types<dal::detail::host_policy, dal::detail::data_parallel_policy>;
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-using policy_list_spmd = types<dal::detail::host_policy, dal::detail::data_parallel_policy, dal::detail::spmd_policy<dal::detail::data_parallel_policy>>;
-#endif
+    ONEDAL_PY_TYPE2STR(dal::detail::spmd_policy<dal::detail::data_parallel_policy>, "");
+    using policy_spmd = types<dal::detail::spmd_policy<dal::detail::data_parallel_policy>>;
 #else
-using policy_list = types<dal::detail::host_policy>;
+    ONEDAL_PY_TYPE2STR(dal::detail::host_policy, "");
+    #ifdef ONEDAL_DATA_PARALLEL
+    ONEDAL_PY_TYPE2STR(dal::detail::data_parallel_policy, "");
+    using policy_list = types<dal::detail::host_policy, dal::detail::data_parallel_policy>;
+    #else
+    using policy_list = types<dal::detail::host_policy>;
+    #endif
 #endif
 
 } // namespace oneapi::dal::python

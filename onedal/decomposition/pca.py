@@ -16,15 +16,19 @@
 
 import numpy as np
 
+<<<<<<< HEAD
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal import _backend
+=======
+from daal4py.sklearn._utils import sklearn_check_version
+>>>>>>> f29586a (ENH: separating spmd backend lib from dpc backend (#1702))
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
-class PCA:
+class PCA(BaseEstimator):
     def __init__(
         self, n_components=None, is_deterministic=True, method="precomputed", copy=True
     ):
@@ -40,9 +44,6 @@ class PCA:
             "is_deterministic": self.is_deterministic,
         }
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
     def fit(self, X, queue):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -57,22 +58,33 @@ class PCA:
         params = self.get_onedal_params(X)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            cov_result = _backend.covariance.compute(
+            cov_result = self._get_backend(
+                "covariance",
+                None,
+                "compute",
                 policy,
                 {"fptype": params["fptype"], "method": "dense"},
                 hparams.backend,
                 to_table(X),
             )
         else:
-            cov_result = _backend.covariance.compute(
+            cov_result = self._get_backend(
+                "covariance",
+                None,
+                "compute",
                 policy,
                 {"fptype": params["fptype"], "method": "dense"},
                 to_table(X),
             )
         covariance_matrix = from_table(cov_result.cov_matrix)
         self.mean_ = from_table(cov_result.means)
-        result = _backend.decomposition.dim_reduction.train(
-            policy, params, to_table(covariance_matrix)
+        result = self._get_backend(
+            "decomposition",
+            "dim_reduction",
+            "train",
+            policy,
+            params,
+            to_table(covariance_matrix),
         )
 
         self.n_components_ = self.n_components
@@ -99,7 +111,7 @@ class PCA:
         return self
 
     def _create_model(self):
-        m = _backend.decomposition.dim_reduction.model()
+        m = self._get_backend("decomposition", "dim_reduction", "model")
         m.eigenvectors = to_table(self.components_)
         self._onedal_model = m
         return m
@@ -110,7 +122,7 @@ class PCA:
 
         X = _convert_to_supported(policy, X)
         params = self.get_onedal_params(X)
-        result = _backend.decomposition.dim_reduction.infer(
-            policy, params, model, to_table(X)
+        result = self._get_backend(
+            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
         )
         return from_table(result.transformed_data)
