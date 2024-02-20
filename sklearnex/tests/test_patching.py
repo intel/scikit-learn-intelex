@@ -226,7 +226,7 @@ def test_standard_estimator_init_signatures(estimator):
     [
         i
         for i in UNPATCHED_FUNCTIONS.keys()
-        if not i in ["train_test_split", "set_config", "config_context"]
+        if i not in ["train_test_split", "set_config", "config_context"]
     ],
 )
 def test_patched_function_signatures(function):
