@@ -17,7 +17,6 @@
 
 import importlib
 import inspect
-import io
 import logging
 import os
 import re
