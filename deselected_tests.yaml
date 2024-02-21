@@ -359,6 +359,15 @@ deselected_tests:
   - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=zeros)] >=1.4
   - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data >=1.4
 
+  # New failing sklearn1.4.1 tests for kmeans associated with incorrect n_iter_ values in daal4py
+  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-dense] >=1.4
+  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-sparse_matrix] >=1.4
+  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-sparse_array] >=1.4
+  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-dense] >=1.4
+  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_matrix] >=1.4
+  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_array] >=1.4
+
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:
@@ -447,8 +456,6 @@ gpu:
   - ensemble/tests/test_bagging.py::test_gridsearch
   - ensemble/tests/test_bagging.py::test_estimators_samples
   - ensemble/tests/test_common.py::test_ensemble_heterogeneous_estimators_behavior
-  - ensemble/tests/test_forest.py::test_min_samples_split[RandomForestClassifier]
-  - ensemble/tests/test_forest.py::test_min_weight_fraction_leaf
   - ensemble/tests/test_voting.py::test_parallel_fit
   - ensemble/tests/test_voting.py::test_sample_weight
 
@@ -646,8 +653,6 @@ gpu:
   - model_selection/tests/test_search.py::test_random_search_cv_results
 
   # Segmentation faults on GPU
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob
-  - ensemble/tests/test_forest.py::test_forest_regressor_oob
   - tests/test_common.py::test_search_cv
   - manifold/tests/test_t_sne.py::test_n_iter_without_progress
 
@@ -712,7 +717,6 @@ gpu:
   - tests/test_multioutput.py::test_classifier_chain_tuple_order[tuple]
   - tests/test_pipeline.py::test_pipeline_methods_anova
   - tests/test_pipeline.py::test_pipeline_methods_pca_svm
-  - tests/test_pipeline.py::test_pipeline_score_samples_pca_lof
   - tests/test_pipeline.py::test_score_samples_on_pipeline_without_score_samples
   - tests/test_pipeline.py::test_pipeline_methods_preprocessing_svm
   - tests/test_pipeline.py::test_pipeline_transform
@@ -737,21 +741,31 @@ gpu:
   - tests/test_calibration.py::test_calibrated_classifier_cv_double_sample_weights_equivalence
   - tests/test_calibration.py::test_calibrated_classifier_cv_zeros_sample_weights_equivalence
   - tests/test_common.py::test_estimators[FeatureAgglomeration()-check_parameters_default_constructible]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimator_sparse_data]
+  - neighbors/tests/test_lof.py::test_novelty_true_common_tests[LocalOutlierFactor(novelty=True)-check_methods_subset_invariance]
   - tests/test_common.py::test_transformers_get_feature_names_out[StackingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
   - tests/test_common.py::test_transformers_get_feature_names_out[VotingRegressor(estimators=[('est1',Ridge(alpha=0.1)),('est2',Ridge(alpha=1))])]
   - tests/test_common.py::test_f_contiguous_array_estimator[TSNE]
   - manifold/tests/test_t_sne.py::test_tsne_works_with_pandas_output
 
-  # GPU ensemble (Random Forest and Extra Trees) algorithms have a different
-  # implementation compared to CPU and require further validation
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float64]
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesClassifier-gini-float32]
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
-  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float32]
-  - ensemble/tests/test_forest.py::test_importances[RandomForestClassifier-gini-float32]
-  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float64]
-  - ensemble/tests/test_forest.py::test_importances[RandomForestRegressor-squared_error-float32]
+  # GPU Forest algorithm implementation does not follow certain Scikit-learn standards
+  - ensemble/tests/test_forest.py::test_max_leaf_nodes_max_depth
+  - ensemble/tests/test_forest.py::test_min_samples_split[ExtraTreesClassifier]
+  - ensemble/tests/test_forest.py::test_min_samples_split[RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_min_samples_split[ExtraTreesRegressor]
+  - ensemble/tests/test_forest.py::test_max_samples_boundary_regressors
+
+  # numerical issues in GPU Forest algorithms which require further investigation
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X0-y0-0.9-array-ExtraTreesClassifier]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X0-y0-0.9-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-ExtraTreesClassifier]
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X2-y2-0.65-array-RandomForestClassifier]
+  - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor]
+  - ensemble/tests/test_stacking.py::test_stacking_regressor_drop_estimator
+  - ensemble/tests/test_voting.py::test_predict_on_toy_problem[42]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_class_weight_classifiers]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=zeros)]
+  - tests/test_common.py::test_estimators[RandomForestRegressor()-check_regressor_data_not_an_array]
 
   # GPU implementation of Extra Trees doesn't support sample_weights
   # comparisons to GPU with sample weights will use different algorithms
@@ -767,17 +781,10 @@ gpu:
   - manifold/tests/test_t_sne.py::test_binary_perplexity_stability
   - manifold/tests/test_t_sne.py::test_gradient_bh_multithread_match_sequential
   - neighbors/tests/test_kde.py::test_kernel_density_sampling
-  - neighbors/tests/test_lof.py
-  - tests/test_common.py::test_check_n_features_in_after_fitting[LocalOutlierFactor()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[NearestNeighbors()]
-  - tests/test_common.py::test_f_contiguous_array_estimator[LocalOutlierFactor]
-  - tests/test_common.py::test_estimators[NearestNeighbors()-
+  - tests/test_common.py::test_estimators[NearestNeighbors()] 
   - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv0]
   - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv1]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_outliers_fit_predict]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit_idempotent]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit_check_is_fitted]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_n_features_in]
   - manifold/tests/test_t_sne.py::test_barnes_hut_angle
   # KNeighborsRegressor
   - ensemble/tests/test_bagging.py::test_regression
@@ -1052,8 +1059,6 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_regressor_predict_on_arraylikes
   # `precomputed` metric is not implemented for DBSCAN
   - neighbors/tests/test_neighbors_pipeline.py::test_dbscan
-  - neighbors/tests/test_neighbors_pipeline.py::test_lof_novelty_false
-  - neighbors/tests/test_neighbors_pipeline.py::test_lof_novelty_true
   - neighbors/tests/test_neighbors_pipeline.py::test_kneighbors_regressor
   # unsorted svm
   - svm/tests/test_svm.py::test_libsvm_iris
@@ -1178,22 +1183,6 @@ gpu:
   - tests/test_common.py::test_estimators[DBSCAN()-check_n_features_in]
   - tests/test_common.py::test_estimators[DBSCAN()-check_fit1d]
   - tests/test_common.py::test_estimators[DBSCAN()-check_fit2d_predict1d]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_dtypes]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit_score_takes_y]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_fit_returns_self]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_fit_returns_self(readonly_memmap=True)]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_dtype_object]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_pipeline_consistency]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_nan_inf]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_overwrite_params]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_estimators_pickle]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_methods_sample_order_invariance]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_methods_subset_invariance]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit2d_1sample]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit2d_1feature]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_dict_unchanged]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_dont_overwrite_parameters]
-  - tests/test_common.py::test_estimators[LocalOutlierFactor()-check_fit2d_predict1d]
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
   # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview

@@ -14,20 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
-
-from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
-from sklearn.neighbors._kd_tree import KDTree
-
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
 
-import numpy as np
-from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._regression import (
     KNeighborsRegressor as sklearn_KNeighborsRegressor,
 )
@@ -35,7 +27,6 @@ from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestN
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from onedal.neighbors import KNeighborsRegressor as onedal_KNeighborsRegressor
-from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
@@ -139,6 +130,7 @@ else:
 
 @control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
 class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
+    __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsRegressor_._parameter_constraints}
 
@@ -227,7 +219,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
+        if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
         return dispatch(
             self,
@@ -237,8 +229,8 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
                 "sklearn": sklearn_KNeighborsRegressor.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     @wrap_output_data
@@ -306,3 +298,8 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
         self._y = self._onedal_estimator._y
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree
+
+    fit.__doc__ = sklearn_KNeighborsRegressor.__doc__
+    predict.__doc__ = sklearn_KNeighborsRegressor.predict.__doc__
+    kneighbors.__doc__ = sklearn_KNeighborsRegressor.kneighbors.__doc__
+    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__

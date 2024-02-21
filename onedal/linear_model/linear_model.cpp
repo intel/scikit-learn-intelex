@@ -68,8 +68,9 @@ auto get_onedal_result_options(const py::dict& params) {
             else if (match.str() == "coefficients") {
                 onedal_options = onedal_options | result_options::coefficients;
             }
-            else
+            else {
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
+            }
         }
     }
     catch (std::regex_error& e) {
@@ -250,12 +251,11 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
     auto sub = m.def_submodule("linear_model");
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list_spmd, task_list);
-    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
-#endif // ONEDAL_DATA_PARALLEL_SPMD
 
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
@@ -263,6 +263,8 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     ONEDAL_PY_INSTANTIATE(init_train_hyperparameters, sub, task_list);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+#endif // ONEDAL_DATA_PARALLEL_SPMD
+
 }
 
 ONEDAL_PY_TYPE2STR(dal::linear_regression::task::regression, "regression");
