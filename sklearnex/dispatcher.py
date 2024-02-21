@@ -120,6 +120,9 @@ def get_patch_map_core(preview=False):
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import (
+            IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
+        )
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
@@ -272,6 +275,18 @@ def get_patch_map_core(preview=False):
             ]
         ]
         mapping["localoutlierfactor"] = mapping["lof"]
+
+        # IncrementalEmpiricalCovariance
+        mapping["incrementallinearregression"] = [
+            [
+                (
+                    covariance_module,
+                    "IncrementalLinearRegression",
+                    IncrementalLinearRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # Configs
         mapping["set_config"] = [
