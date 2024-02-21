@@ -39,7 +39,7 @@ class PCA(BaseEstimator):
             "is_deterministic": self.is_deterministic,
         }
 
-    def fit(self, X, queue):
+    def fit(self, X, y=None, queue=None):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
@@ -111,7 +111,7 @@ class PCA(BaseEstimator):
         self._onedal_model = m
         return m
 
-    def predict(self, X, queue):
+    def predict(self, X, queue=None):
         policy = self._get_policy(queue, X)
         model = self._create_model()
 

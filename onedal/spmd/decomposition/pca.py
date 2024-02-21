@@ -22,9 +22,9 @@ from .._common import BaseEstimatorSPMD
 
 class PCA(BaseEstimatorSPMD, PCABatch):
     @support_usm_ndarray()
-    def fit(self, X, queue):
-        return super().fit(X, queue)
+    def fit(self, X, y=None, queue=None):
+        return super().fit(X, queue=queue)
 
     @support_usm_ndarray()
     def predict(self, X, queue):
-        return super().predict(X, queue)
+        return super().predict(X, queue=queue)

@@ -22,5 +22,5 @@ from .._common import BaseEstimatorSPMD
 
 class EmpiricalCovariance(BaseEstimatorSPMD, EmpiricalCovariance_Batch):
     @support_usm_ndarray()
-    def fit(self, X, queue=None):
-        return super().fit(X, queue)
+    def fit(self, X, y=None, queue=None):
+        return super().fit(X, queue=queue)

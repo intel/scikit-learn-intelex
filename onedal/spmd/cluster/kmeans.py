@@ -38,7 +38,7 @@ class KMeans(BaseEstimatorSPMD, KMeans_Batch):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
     @support_usm_ndarray()
-    def fit(self, X, queue=None):
+    def fit(self, X, y=None, queue=None):
         return super().fit(X, queue)
 
     @support_usm_ndarray()
@@ -46,7 +46,7 @@ class KMeans(BaseEstimatorSPMD, KMeans_Batch):
         return super().predict(X, queue)
 
     @support_usm_ndarray()
-    def fit_predict(self, X, queue=None):
+    def fit_predict(self, X, y=None, queue=None):
         return super().fit_predict(X, queue)
 
     def transform(self, X):
