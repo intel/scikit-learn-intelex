@@ -581,7 +581,7 @@ class KMeans(KMeans_original):
             verbose=0,
             random_state=None,
             copy_x=True,
-            algorithm="lloyd" if sklearn_check_version("1.1") else "auto",
+            algorithm="lloyd",
         ):
             super(KMeans, self).__init__(
                 n_clusters=n_clusters,
