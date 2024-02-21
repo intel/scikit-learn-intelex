@@ -23,7 +23,8 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.extmath import stable_cumsum
 from sklearn.utils.validation import check_array, check_is_fitted
 
-from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array
 
 from ..._device_offload import dispatch
@@ -43,7 +44,7 @@ from onedal.decomposition import PCA as onedal_PCA
 
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "transform"])
 class PCA(sklearn_PCA):
     __doc__ = sklearn_PCA.__doc__
 
@@ -220,7 +221,6 @@ class PCA(sklearn_PCA):
     def _onedal_gpu_supported(self, method_name, *data):
         return self._onedal_supported(method_name, *data)
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, y=None, queue=None):
         if self.n_components == "mle" or self.n_components is None:
             onedal_n_components = min(X.shape)
@@ -244,11 +244,9 @@ class PCA(sklearn_PCA):
 
         return U, S, V
 
-    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue)
 
-    @run_with_n_jobs
     def _onedal_transform(self, X):
         X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False)
 

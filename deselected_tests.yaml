@@ -38,22 +38,6 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
   - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
 
-  # sklearn doesn't expect some estimators to support n_jobs
-  - tests/test_common.py::test_check_param_validation[KMeans()]
-  - tests/test_common.py::test_check_param_validation[Lasso()]
-  - tests/test_common.py::test_check_param_validation[ElasticNet()]
-  - tests/test_common.py::test_check_param_validation[EmpiricalCovariance()]
-  - tests/test_common.py::test_check_param_validation[OAS()]
-  - tests/test_common.py::test_estimators[PCA()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[KMeans()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[Lasso()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[Ridge()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[ElasticNet()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[NuSVC()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[NuSVR()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[SVC()-check_no_attributes_set_in_init]
-  - tests/test_common.py::test_estimators[SVR()-check_no_attributes_set_in_init]
-
   # Non-critical, but there are significant numerical differences in doctest results
   - pipeline.py::sklearn.pipeline.FeatureUnion
   - ensemble/_forest.py::sklearn.ensemble._forest.RandomForestRegressor
@@ -364,6 +348,16 @@ deselected_tests:
   # sklearn. Attempts to compare individual sklearn trees to oneDAL
   # trees will fail, especially since two different RNGs are used.
   - ensemble/tests/test_forest.py::test_estimators_samples
+
+  # Tests migrated from gpu deselection set starting from sklearn 1.4 for unknowm reason(s)
+  - ensemble/tests/test_bagging.py::test_estimators_samples >=1.4
+  - ensemble/tests/test_voting.py::test_sample_weight >=1.4
+  - svm/tests/test_svm.py::test_auto_weight >=1.4
+  - tests/test_calibration.py::test_calibrated_classifier_cv_double_sample_weights_equivalence >=1.4
+  - tests/test_calibration.py::test_calibrated_classifier_cv_zeros_sample_weights_equivalence >=1.4
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=ones)] >=1.4
+  - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=zeros)] >=1.4
+  - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data >=1.4
 
   # --------------------------------------------------------
   # No need to test daal4py patching

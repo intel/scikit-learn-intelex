@@ -1,5 +1,5 @@
 # ===============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,14 +17,11 @@
 import logging
 from abc import ABC
 
-import sklearn.linear_model._logistic as logistic_module
-
 from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.logistic_path import (
-    LogisticRegression,
-    daal4py_predict,
-    logistic_regression_path,
+    LogisticRegression as LogisticRegression_daal4py,
 )
+from daal4py.sklearn.linear_model.logistic_path import daal4py_fit, daal4py_predict
 
 
 class BaseLogisticRegression(ABC):
@@ -43,14 +40,18 @@ if daal_check_version((2024, "P", 1)):
     from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
     from sklearn.utils.validation import check_X_y
 
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
     from onedal.utils import _num_features, _num_samples
 
-    from ..._device_offload import dispatch, wrap_output_data
-    from ..._utils import PatchingConditionsChain, get_patch_message
-    from ...utils.validation import _assert_all_finite
+    from .._device_offload import dispatch, wrap_output_data
+    from .._utils import PatchingConditionsChain, get_patch_message
+    from ..utils.validation import _assert_all_finite
 
+    @control_n_jobs(
+        decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]
+    )
     class LogisticRegression(sklearn_LogisticRegression, BaseLogisticRegression):
         __doc__ = sklearn_LogisticRegression.__doc__
         intercept_, coef_, n_iter_ = None, None, None
@@ -96,6 +97,8 @@ if daal_check_version((2024, "P", 1)):
                 n_jobs=n_jobs,
                 l1_ratio=l1_ratio,
             )
+
+        _onedal_cpu_fit = daal4py_fit
 
         def fit(self, X, y, sample_weight=None):
             if sklearn_check_version("1.0"):
@@ -160,10 +163,8 @@ if daal_check_version((2024, "P", 1)):
         def _test_type_and_finiteness(self, X_in):
             X = np.asarray(X_in)
 
-            dtype = X.dtype
-            if "complex" in str(type(dtype)):
+            if np.iscomplexobj(X):
                 return False
-
             try:
                 _assert_all_finite(X)
             except BaseException:
@@ -268,15 +269,6 @@ if daal_check_version((2024, "P", 1)):
             }
             self._onedal_estimator = onedal_LogisticRegression(**onedal_params)
 
-        def _onedal_cpu_fit(self, X, y, sample_weight):
-            which, what = logistic_module, "_logistic_regression_path"
-            replacer = logistic_regression_path
-            descriptor = getattr(which, what, None)
-            setattr(which, what, replacer)
-            clf = super().fit(X, y, sample_weight)
-            setattr(which, what, descriptor)
-            return clf
-
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return self._onedal_cpu_fit(X, y, sample_weight)
@@ -313,38 +305,27 @@ if daal_check_version((2024, "P", 1)):
                 return daal4py_predict(self, X, "computeClassLabels")
 
             X = self._validate_data(X, accept_sparse=False, reset=False)
-            if not hasattr(self, "_onedal_estimator"):
-                self._initialize_onedal_estimator()
-                self._onedal_estimator.coef_ = self.coef_
-                self._onedal_estimator.intercept_ = self.intercept_
-                self._onedal_estimator.classes_ = self.classes_
-
+            assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict(X, queue=queue)
 
         def _onedal_predict_proba(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
-            X = self._validate_data(X, accept_sparse=False, reset=False)
-            if not hasattr(self, "_onedal_estimator"):
-                self._initialize_onedal_estimator()
-                self._onedal_estimator.coef_ = self.coef_
-                self._onedal_estimator.intercept_ = self.intercept_
 
+            X = self._validate_data(X, accept_sparse=False, reset=False)
+            assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_proba(X, queue=queue)
 
         def _onedal_predict_log_proba(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
-            X = self._validate_data(X, accept_sparse=False, reset=False)
-            if not hasattr(self, "_onedal_estimator"):
-                self._initialize_onedal_estimator()
-                self._onedal_estimator.coef_ = self.coef_
-                self._onedal_estimator.intercept_ = self.intercept_
 
+            X = self._validate_data(X, accept_sparse=False, reset=False)
+            assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
 
 else:
-    from daal4py.sklearn.linear_model import LogisticRegression
+    LogisticRegression = LogisticRegression_daal4py
 
     logging.warning(
         "Sklearnex LogisticRegression requires oneDAL version >= 2024.0.1 "
