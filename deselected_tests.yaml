@@ -359,14 +359,6 @@ deselected_tests:
   - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=zeros)] >=1.4
   - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data >=1.4
 
-  # New failing sklearn1.4.1 tests for kmeans associated with incorrect n_iter_ values in daal4py
-  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-dense] >=1.4
-  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-sparse_matrix] >=1.4
-  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-sparse_array] >=1.4
-  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-dense] >=1.4
-  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_matrix] >=1.4
-  - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_array] >=1.4
-
 
   # --------------------------------------------------------
   # No need to test daal4py patching
