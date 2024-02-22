@@ -40,6 +40,8 @@ def get_patch_map_core(preview=False):
         mapping = get_patch_map_core().copy()
 
         if _is_new_patching_available():
+            import sklearn.covariance as covariance_module
+            
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.covariance import (
@@ -86,7 +88,6 @@ def get_patch_map_core(preview=False):
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.cluster as cluster_module
-        import sklearn.covariance as covariance_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
