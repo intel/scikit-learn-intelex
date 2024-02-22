@@ -280,7 +280,7 @@ def get_patch_map_core(preview=False):
         mapping["incrementallinearregression"] = [
             [
                 (
-                    covariance_module,
+                    linear_model_module,
                     "IncrementalLinearRegression",
                     IncrementalLinearRegression_sklearnex,
                 ),
