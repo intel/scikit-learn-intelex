@@ -53,7 +53,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip setuptools
       pip install isort black[jupyter]==24.1.1
-      isort --check . && black --check .
+      isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: Linux
   dependsOn: Lint
