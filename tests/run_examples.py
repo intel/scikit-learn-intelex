@@ -143,7 +143,7 @@ req_version["kmeans_spmd.py"] = (2024, "P", 200)
 req_version["knn_bf_classification_spmd.py"] = (2023, "P", 100)
 req_version["knn_bf_regression_spmd.py"] = (2023, "P", 100)
 req_version["linear_regression_spmd.py"] = (2023, "P", 100)
-req_version["logistic_regression_spmd.py"] = (2024, "P", 100)
+req_version["logistic_regression_spmd.py"] = (2024, "P", 400)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
