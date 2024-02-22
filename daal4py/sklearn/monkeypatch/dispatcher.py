@@ -54,7 +54,6 @@ from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _assert_all_finite
 
 
-@lru_cache(maxsize=None)
 def _get_map_of_algorithms():
     mapping = {
         "pca": [[(decomposition_module, "PCA", PCA_daal4py), None]],
@@ -198,7 +197,6 @@ def disable(name=None, get_map=_get_map_of_algorithms):
     else:
         for key in get_map():
             do_unpatch(key, get_map)
-        get_map.cache_clear()
 
 
 def _is_enabled(name, get_map=_get_map_of_algorithms):

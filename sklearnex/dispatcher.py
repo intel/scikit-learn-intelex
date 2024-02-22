@@ -31,8 +31,7 @@ def _is_preview_enabled():
     return os.environ.get("SKLEARNEX_PREVIEW") is not None
 
 
-@lru_cache(maxsize=None)
-def get_patch_map_core(preview=False):
+def get_patch_map():
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
 
     mapping = _get_map_of_algorithms().copy()
@@ -87,7 +86,7 @@ def get_patch_map_core(preview=False):
         from .svm import NuSVR as NuSVR_sklearnex
 
         # Patch for mapping
-        if preview:
+        if _is_preview_enabled():
             # PCA
             mapping.pop("pca")
             mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
@@ -274,16 +273,6 @@ def get_patch_map_core(preview=False):
             [(parallel_module, "_FuncWrapper", _FuncWrapper_sklearnex), None]
         ]
     return mapping
-
-
-# This is necessary to properly cache the patch_map when
-# using preview.
-def get_patch_map():
-    preview = _is_preview_enabled()
-    return get_patch_map_core(preview=preview)
-
-
-get_patch_map.cache_clear = get_patch_map_core.cache_clear
 
 
 def get_patch_names():
