@@ -55,12 +55,12 @@ def get_patch_map_core(preview=False):
             # element[1] to None should NOT be done. This may lose track of
             # the unpatched sklearn estimator or function.
             # PCA
-            decomposition_module, _, _ = mapping["pca"][0]
-            mapping["pca"][0] = (decomposition_module, "PCA", PCA_sklearnex)
+            decomposition_module, _, _ = mapping["pca"][0][0]
+            mapping["pca"][0][0] = (decomposition_module, "PCA", PCA_sklearnex)
 
             # KMeans
-            cluster_module, _, _ = mapping["kmeans"][0]
-            mapping["kmeans"][0] = (cluster_module, "kmeans", KMeans_sklearnex)
+            cluster_module, _, _ = mapping["kmeans"][0][0]
+            mapping["kmeans"][0][0] = (cluster_module, "kmeans", KMeans_sklearnex)
 
             # Covariance
             mapping["empiricalcovariance"] = [
