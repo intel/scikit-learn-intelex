@@ -110,7 +110,12 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
     def __init__(self, result_options="all"):
         super().__init__(result_options, algorithm="by_default")
-        self._partial_result = _backend.basic_statistics.compute.partial_compute_result()
+        module = _backend.basic_statistics.compute
+        self._partial_result = module.partial_compute_result()
+
+    def _reset(self):
+        module = _backend.basic_statistics.compute
+        self._partial_result = module.partial_train_result()
 
     def partial_fit(self, X, weights=None, queue=None):
         """

@@ -15,17 +15,26 @@
 # ==============================================================================
 
 import numpy as np
+from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from onedal._device_offload import support_usm_ndarray
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.basic_statistics import (
     IncrementalBasicStatistics as onedal_IncrementalBasicStatistics,
 )
 
+from .._device_offload import dispatch
+from .._utils import PatchingConditionsChain
+
+if sklearn_check_version("1.2"):
+    from sklearn.utils._param_validation import Interval, StrOptions
+
+import numbers
+
 
 @control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
-class IncrementalBasicStatistics:
+class IncrementalBasicStatistics(BaseEstimator):
     """
     Incremental estimator for basic statistics.
     Allows to compute basic statistics if data are splitted into batches.
@@ -75,6 +84,29 @@ class IncrementalBasicStatistics:
 
     _onedal_incremental_basic_statistics = staticmethod(onedal_IncrementalBasicStatistics)
 
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {
+            "result_options": [
+                StrOptions(
+                    {
+                        "all",
+                        "min",
+                        "max",
+                        "sum",
+                        "mean",
+                        "variance",
+                        "variation",
+                        "sum_squares",
+                        "standard_deviation",
+                        "sum_squares_centered",
+                        "second_order_raw_moment",
+                    }
+                ),
+                list,
+            ],
+            "batch_size": [Interval(numbers.Integral, 1, None, closed="left"), None],
+        }
+
     def __init__(self, result_options="all", batch_size=None):
         if result_options == "all":
             self.result_options = (
@@ -84,6 +116,15 @@ class IncrementalBasicStatistics:
             self.result_options = result_options
         self._need_to_finalize = False
         self.batch_size = batch_size
+
+    def _onedal_supported(self, method_name, *data):
+        patching_status = PatchingConditionsChain(
+            f"sklearn.covariance.{self.__class__.__name__}.{method_name}"
+        )
+        return patching_status
+
+    _onedal_cpu_supported = _onedal_supported
+    _onedal_gpu_supported = _onedal_supported
 
     def _get_onedal_result_options(self, options):
         if isinstance(options, list):
@@ -99,6 +140,27 @@ class IncrementalBasicStatistics:
         self._need_to_finalize = False
 
     def _onedal_partial_fit(self, X, weights, queue):
+        first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
+
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                reset=first_pass,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                copy=self.copy_X,
+            )
+
+        if first_pass:
+            self.n_samples_seen_ = X.shape[0]
+            self.n_features_in_ = X.shape[1]
+        else:
+            self.n_samples_seen_ += X.shape[0]
+
         onedal_params = {
             "result_options": self._get_onedal_result_options(self.result_options)
         }
@@ -108,6 +170,36 @@ class IncrementalBasicStatistics:
             )
         self._onedal_estimator.partial_fit(X, weights, queue)
         self._need_to_finalize = True
+
+    def _onedal_fit(self, X, weights, queue=None):
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(X, dtype=[np.float64, np.float32])
+        else:
+            X = check_array(X, dtype=[np.float64, np.float32])
+
+        n_samples, n_features = X.shape
+        if self.batch_size is None:
+            self.batch_size_ = 5 * n_features
+        else:
+            self.batch_size_ = self.batch_size
+
+        self.n_samples_seen_ = 0
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator._reset()
+
+        for batch in gen_batches(X.shape[0], self.batch_size_):
+            X_batch = X[batch]
+            weights_batch = weights[batch] if weights is not None else None
+            self._onedal_partial_fit(X_batch, weights_batch, queue=queue)
+
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+
+        self.n_features_in_ = X.shape[1]
+
+        self._onedal_finalize_fit()
+
+        return self
 
     def __getattr__(self, attr):
         result_options = self.__dict__["result_options"]
@@ -125,8 +217,7 @@ class IncrementalBasicStatistics:
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
 
-    @support_usm_ndarray()
-    def partial_fit(self, X, weights=None, queue=None):
+    def partial_fit(self, X, weights=None):
         """Incremental fit with X. All of X is processed as a single batch.
 
         Parameters
@@ -143,15 +234,19 @@ class IncrementalBasicStatistics:
         self : object
             Returns the instance itself.
         """
-        X = check_array(X, dtype=[np.float64, np.float32])
-        if weights is not None:
-            weights = check_array(
-                weights, dtype=[np.float64, np.float32], ensure_2d=False
-            )
-        self._onedal_partial_fit(X, weights, queue)
+        dispatch(
+            self,
+            "partial_fit",
+            {
+                "onedal": self.__class__._onedal_partial_fit,
+                "sklearn": None,
+            },
+            X,
+            weights,
+        )
         return self
 
-    def fit(self, X, weights=None, queue=None):
+    def fit(self, X, weights=None):
         """Compute statistics with X, using minibatches of size batch_size.
 
         Parameters
@@ -168,18 +263,14 @@ class IncrementalBasicStatistics:
         self : object
             Returns the instance itself.
         """
-        n_samples, n_features = X.shape
-        if self.batch_size is None:
-            batch_size_ = 5 * n_features
-        else:
-            batch_size_ = self.batch_size
-        for batch in gen_batches(n_samples, batch_size_):
-            X_batch = X[batch]
-            if weights is not None:
-                weights_batch = weights[batch]
-                self.partial_fit(X_batch, weights_batch, queue=queue)
-            else:
-                self.partial_fit(X_batch, queue=queue)
-
-        self._onedal_finalize_fit()
+        dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": None,
+            },
+            X,
+            weights,
+        )
         return self
