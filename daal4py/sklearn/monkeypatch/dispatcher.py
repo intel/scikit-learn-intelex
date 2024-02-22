@@ -53,6 +53,7 @@ from ..neighbors import NearestNeighbors as NearestNeighbors_daal4py
 from ..svm.svm import SVC as SVC_daal4py
 from ..utils.validation import _assert_all_finite
 
+
 @lru_cache(maxsize=None)
 def _get_map_of_algorithms():
     mapping = {
@@ -198,6 +199,7 @@ def disable(name=None, get_map=_get_map_of_algorithms):
         for key in get_map():
             do_unpatch(key, get_map)
         get_map.cache_clear()
+
 
 def _is_enabled(name, get_map=_get_map_of_algorithms):
     lname = name.lower()
