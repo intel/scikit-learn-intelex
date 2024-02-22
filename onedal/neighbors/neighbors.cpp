@@ -315,8 +315,8 @@ ONEDAL_PY_INIT_MODULE(neighbors) {
     auto sub = m.def_submodule("neighbors");
 
 #if defined(ONEDAL_DATA_PARALLEL_SPMD) && defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
-    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list_spmd, task_list);
-    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
 #else // defined(ONEDAL_DATA_PARALLEL_SPMD) && defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);

@@ -18,7 +18,7 @@ from abc import ABC
 
 from onedal import _spmd_backend
 
-from ..common._common import _get_backend
+from ..common._base import _get_backend
 from ..common._spmd_policy import _get_spmd_policy
 
 

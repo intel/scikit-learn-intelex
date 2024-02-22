@@ -44,9 +44,7 @@ from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..utils import _check_array, _is_arraylike_not_scalar
 
 
-class _BaseKMeans(
-    onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC
-):
+class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def __init__(
         self,
         n_clusters,
@@ -81,8 +79,6 @@ class _BaseKMeans(
                 f"match the number of features of the data {X.shape[1]}."
             )
 
-    # TODO:
-    # generelize creating other models with required backends.
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 

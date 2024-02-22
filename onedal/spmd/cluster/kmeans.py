@@ -26,6 +26,14 @@ class KMeansInit(BaseEstimatorSPMD, KMeansInit_Batch):
     pass
 
 
+class KMeansInit(BaseEstimatorSPMD, KMeansInit_Batch):
+    """
+    KMeansInit oneDAL implementation for SPMD iface.
+    """
+
+    pass
+
+
 class KMeans(BaseEstimatorSPMD, KMeans_Batch):
     def _get_basic_statistics_backend(self, result_options):
         return BasicStatistics(result_options)
