@@ -76,7 +76,7 @@ def get_daal_version() -> DaalVersionTuple:
     return int(dv()[0:4]), str(dv()[10:11]), int(dv()[4:8])
 
 
-@functools.cache
+@functools.lru_cache(maxsize=256, typed=False)
 def daal_check_version(
     required_version: Tuple[Any, ...],
     daal_version: Tuple[Any, ...] = get_daal_version(),
@@ -106,7 +106,7 @@ def daal_check_version(
     return False
 
 
-@functools.cache
+@functools.lru_cache(maxsize=256, typed=False)
 def sklearn_check_version(ver):
     if hasattr(Version(ver), "base_version"):
         base_sklearn_version = Version(sklearn_version).base_version
