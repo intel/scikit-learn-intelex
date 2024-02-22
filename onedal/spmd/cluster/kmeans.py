@@ -23,10 +23,6 @@ from .._base import BaseEstimatorSPMD
 
 
 class KMeansInit(BaseEstimatorSPMD, KMeansInit_Batch):
-    pass
-
-
-class KMeansInit(BaseEstimatorSPMD, KMeansInit_Batch):
     """
     KMeansInit oneDAL implementation for SPMD iface.
     """

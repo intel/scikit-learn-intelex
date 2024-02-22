@@ -18,7 +18,6 @@ from abc import ABC
 
 from onedal import _backend
 
-from ._common import _get_backend
 from ._policy import _get_policy
 
 

@@ -117,15 +117,9 @@ if(IFACE STREQUAL "host")
 
     list(APPEND COMPILE_DEFINITIONS "NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION")
 
-<<<<<<< HEAD
-elseif(IFACE STREQUAL "dpc" OR IFACE STREQUAL "spmd_dpc")
-
-    if(IFACE STREQUAL "spmd_dpc")
-=======
 elseif(IFACE_IS_DPC OR IFACE_IS_SPMD_DPC)
 
     if(IFACE_IS_SPMD_DPC)
->>>>>>> master
         set(TARGET "_onedal_py_spmd_dpc")
     else()
         set(TARGET "_onedal_py_dpc")
@@ -168,11 +162,7 @@ elseif(IFACE_IS_DPC OR IFACE_IS_SPMD_DPC)
         endif()
     endif()
 
-<<<<<<< HEAD
-    if(IFACE STREQUAL "spmd_dpc")
-=======
     if(IFACE_IS_SPMD_DPC)
->>>>>>> master
         set(MPI_LIBRARY ${MPI_LIBS})
     endif()
 
@@ -187,11 +177,7 @@ elseif(IFACE_IS_DPC OR IFACE_IS_SPMD_DPC)
              "ONEDAL_DPCTL_INTEGRATION")
     endif()
 
-<<<<<<< HEAD
-    if(IFACE STREQUAL "spmd_dpc")
-=======
     if(IFACE_IS_SPMD_DPC)
->>>>>>> master
         list(APPEND COMPILE_DEFINITIONS
              "ONEDAL_DATA_PARALLEL_SPMD")
     endif()
@@ -223,11 +209,7 @@ if(ONEDAL_DPCTL_INTEGRATION)
 list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${DPCTL_INCLUDE_DIR})
 endif()
 
-<<<<<<< HEAD
-if(IFACE STREQUAL "spmd_dpc")
-=======
 if(IFACE_IS_SPMD_DPC)
->>>>>>> master
 list(APPEND EXTERNAL_LINK_LIBRARIES ${MPI_LIBRARY})
 list(APPEND EXTERNAL_LINK_DIRECTORIES ${MPI_LIBRARY_DIR})
 list(APPEND EXTERNAL_INCLUDE_DIRECTORIES ${MPI_INCLUDE_DIRS})
