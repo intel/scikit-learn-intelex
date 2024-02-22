@@ -31,11 +31,57 @@ def _is_preview_enabled():
     return os.environ.get("SKLEARNEX_PREVIEW") is not None
 
 
-def get_patch_map():
+@lru_cache(maxsize=None)
+def get_patch_map_core(preview=False):
+
+    if preview:
+        # use recursion to guarantee that states of preview
+        # and non-preview are aligned in the lru_cache.
+        mapping = get_patch_map_core().copy()
+
+        if _is_new_patching_available():
+            # Preview classes for patching
+            from .preview.cluster import KMeans as KMeans_sklearnex
+            from .preview.covariance import (
+                EmpiricalCovariance as EmpiricalCovariance_sklearnex,
+            )
+            from .preview.decomposition import PCA as PCA_sklearnex
+
+            # Since state of lru_cache without preview cannot be guaranteed
+            # to not have already enabled sklearnex algorithms when preview
+            # is placed, removing the dictionary key and setting the mapping
+            # element[1] to None should NOT be done. This may lose track of
+            # the unpatched sklearn estimator or function.
+
+            # PCA
+            decomposition_module, _, _ = mapping["pca"][0]
+            mapping["pca"][0] = (decomposition_module, "PCA", PCA_sklearnex)
+
+            # KMeans
+            cluster_module, _, _ = mapping["kmeans"][0]
+            mapping["kmeans"][0] = (cluster_module, "kmeans", KMeans_sklearnex)
+
+            # Covariance
+            mapping["empiricalcovariance"] = [
+                [
+                    (
+                        covariance_module,
+                        "EmpiricalCovariance",
+                        EmpiricalCovariance_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+        return mapping
+
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
 
     mapping = _get_map_of_algorithms().copy()
 
+    # NOTE: Use of daal4py _get_map_of_algorithms and
+    # get_patch_map/get_patch_map_core should not be used concurrently.
+    # The setting of elements to None below may cause loss of state
+    # when interacting with sklearn.
     if _is_new_patching_available():
         # Scikit-learn* modules
         import sklearn as base_module
@@ -73,48 +119,10 @@ def get_patch_map():
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
-
-        # Preview classes for patching
-        from .preview.cluster import KMeans as KMeans_sklearnex
-        from .preview.covariance import (
-            EmpiricalCovariance as EmpiricalCovariance_sklearnex,
-        )
-        from .preview.decomposition import PCA as PCA_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
-
-        # Patch for mapping
-        if _is_preview_enabled():
-            # PCA
-            mapping.pop("pca")
-            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
-
-            # KMeans
-            mapping.pop("kmeans")
-            mapping["kmeans"] = [
-                [
-                    (
-                        cluster_module,
-                        "KMeans",
-                        KMeans_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-
-            # Covariance
-            mapping["empiricalcovariance"] = [
-                [
-                    (
-                        covariance_module,
-                        "EmpiricalCovariance",
-                        EmpiricalCovariance_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
 
         # DBSCAN
         mapping.pop("dbscan")
@@ -275,6 +283,16 @@ def get_patch_map():
     return mapping
 
 
+# This is necessary to properly cache the patch_map when
+# using preview.
+def get_patch_map():
+    preview = _is_preview_enabled()
+    return get_patch_map_core(preview=preview)
+
+
+get_patch_map.cache_clear = get_patch_map_core.cache_clear
+
+
 def get_patch_names():
     return list(get_patch_map().keys())
 
@@ -306,7 +324,9 @@ def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
                 algorithm, verbose=False, deprecation=False, get_map=get_patch_map
             )
     else:
-        patch_sklearn_orig(name, verbose=False, deprecation=False, get_map=get_patch_map)
+        patch_sklearn_orig(
+            name, verbose=False, deprecation=False, get_map=get_patch_map
+        )
 
     if verbose and sys.stderr is not None:
         sys.stderr.write(
@@ -353,7 +373,9 @@ def sklearn_is_patched(name=None, return_map=False):
                 )
             return is_patched
     else:
-        return sklearn_is_patched_orig(name, get_map=get_patch_map, return_map=return_map)
+        return sklearn_is_patched_orig(
+            name, get_map=get_patch_map, return_map=return_map
+        )
 
 
 def is_patched_instance(instance: object) -> bool:
