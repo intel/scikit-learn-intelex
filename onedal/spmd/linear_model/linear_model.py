@@ -23,8 +23,8 @@ from .._common import BaseEstimatorSPMD
 class LinearRegression(BaseEstimatorSPMD, LinearRegression_Batch):
     @support_usm_ndarray()
     def fit(self, X, y, queue=None):
-        return super().fit(X, y, queue)
+        return super().fit(X, y, queue=queue)
 
     @support_usm_ndarray()
     def predict(self, X, queue=None):
-        return super().predict(X, queue)
+        return super().predict(X, queue=queue)

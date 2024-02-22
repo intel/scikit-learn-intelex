@@ -26,5 +26,5 @@ class PCA(BaseEstimatorSPMD, PCABatch):
         return super().fit(X, queue=queue)
 
     @support_usm_ndarray()
-    def predict(self, X, queue):
+    def predict(self, X, queue=None):
         return super().predict(X, queue=queue)
