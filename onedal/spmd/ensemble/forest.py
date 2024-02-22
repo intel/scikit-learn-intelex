@@ -17,7 +17,7 @@
 from onedal.ensemble import RandomForestClassifier as RandomForestClassifier_Batch
 from onedal.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
-from .._common import BaseEstimatorSPMD
+from .._base import BaseEstimatorSPMD
 
 
 class RandomForestClassifier(BaseEstimatorSPMD, RandomForestClassifier_Batch):
