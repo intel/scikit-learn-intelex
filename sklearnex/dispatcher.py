@@ -44,8 +44,9 @@ def get_patch_map_core(preview=False):
 
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
-            from .preview.covariance import \
-                EmpiricalCovariance as EmpiricalCovariance_sklearnex
+            from .preview.covariance import (
+                EmpiricalCovariance as EmpiricalCovariance_sklearnex,
+            )
             from .preview.decomposition import PCA as PCA_sklearnex
 
             # Since state of lru_cache without preview cannot be guaranteed
@@ -108,24 +109,15 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
-        from .ensemble import \
-            ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
-        from .ensemble import \
-            ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
-        from .ensemble import \
-            RandomForestClassifier as RandomForestClassifier_sklearnex
-        from .ensemble import \
-            RandomForestRegressor as RandomForestRegressor_sklearnex
-        from .linear_model import \
-            LinearRegression as LinearRegression_sklearnex
-        from .linear_model import \
-            LogisticRegression as LogisticRegression_sklearnex
-        from .neighbors import \
-            KNeighborsClassifier as KNeighborsClassifier_sklearnex
-        from .neighbors import \
-            KNeighborsRegressor as KNeighborsRegressor_sklearnex
-        from .neighbors import \
-            LocalOutlierFactor as LocalOutlierFactor_sklearnex
+        from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
+        from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
+        from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
+        from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import LinearRegression as LinearRegression_sklearnex
+        from .linear_model import LogisticRegression as LogisticRegression_sklearnex
+        from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
+        from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
+        from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
@@ -332,9 +324,7 @@ def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
                 algorithm, verbose=False, deprecation=False, get_map=get_patch_map
             )
     else:
-        patch_sklearn_orig(
-            name, verbose=False, deprecation=False, get_map=get_patch_map
-        )
+        patch_sklearn_orig(name, verbose=False, deprecation=False, get_map=get_patch_map)
 
     if verbose and sys.stderr is not None:
         sys.stderr.write(
@@ -381,9 +371,7 @@ def sklearn_is_patched(name=None, return_map=False):
                 )
             return is_patched
     else:
-        return sklearn_is_patched_orig(
-            name, get_map=get_patch_map, return_map=return_map
-        )
+        return sklearn_is_patched_orig(name, get_map=get_patch_map, return_map=return_map)
 
 
 def is_patched_instance(instance: object) -> bool:
