@@ -263,21 +263,20 @@ def test_patch_map_match():
 
     module_map = {i: i for i in sklearnex__all__.intersection(sklearn__all__)}
 
-    # _assert_all_finite and _logistic_regression_path patch internal
-    # sklearn functions which aren't exposed. These are not available in
-    # __all__ and require more careful anaylsis.
+    # _assert_all_finite patches an internal sklearn function which isn't
+    # exposed via __all__ in sklearn. It is a special case where this rule
+    # is not applied (e.g. it is grandfathered in).
+    del patched["_assert_all_finite"]
 
+    # remove all scikit-learn-intelex-only estimators
     for i in patched.copy():
-        if i.startswith("_"):
+        if i not in UNPATCHED_MODELS and i not in UNPATCHED_FUNCTIONS:
             del patched[i]
+
     for module in module_map:
         sklearn_module__all__ = list_all_attr("sklearn." + module_map[module])
         sklearnex_module__all__ = list_all_attr("sklearnex." + module)
         intersect = sklearnex_module__all__.intersection(sklearn_module__all__)
-
-        assert (
-            intersect == sklearnex_module__all__
-        ), f"{sklearnex_module__all__ - intersect} should not be in sklearnex.{module}.__all__"
 
         for i in intersect:
             if i:
