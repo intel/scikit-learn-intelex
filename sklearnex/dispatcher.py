@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import copy
 import os
 import sys
 from functools import lru_cache
@@ -40,8 +39,7 @@ def get_patch_map_core(preview=False):
         # and non-preview are aligned in the lru_cache.
         # The two lru_cache dicts are actually one underneath.
         # Preview is always secondary and only modifies the
-        # original. This is not the case between daal4py and
-        # sklearnex which have separate dicts via deepcopy.
+        # original.
         mapping = get_patch_map_core().copy()
 
         if _is_new_patching_available():
@@ -61,11 +59,17 @@ def get_patch_map_core(preview=False):
             # the unpatched sklearn estimator or function.
             # PCA
             decomposition_module, _, _ = mapping["pca"][0][0]
-            mapping["pca"][0][0] = (decomposition_module, "PCA", PCA_sklearnex)
+            sklearn_obj = mapping["pca"][1]
+            mapping.pop("pca")
+            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), sklearn_obj]]
 
             # KMeans
             cluster_module, _, _ = mapping["kmeans"][0][0]
-            mapping["kmeans"][0][0] = (cluster_module, "kmeans", KMeans_sklearnex)
+            sklearn_obj = mapping["kmeans"][1]
+            mapping.pop("kmeans")
+            mapping["kmeans"] = [
+                [(cluster_module, "kmeans", KMeans_sklearnex), sklearn_obj]
+            ]
 
             # Covariance
             mapping["empiricalcovariance"] = [
@@ -82,7 +86,7 @@ def get_patch_map_core(preview=False):
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
 
-    mapping = copy.deepcopy(_get_map_of_algorithms())
+    mapping = _get_map_of_algorithms().copy()
 
     # NOTE: Use of daal4py _get_map_of_algorithms and
     # get_patch_map/get_patch_map_core should not be used concurrently.
