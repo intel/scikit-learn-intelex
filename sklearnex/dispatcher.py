@@ -38,8 +38,10 @@ def get_patch_map_core(preview=False):
         # use recursion to guarantee that states of preview
         # and non-preview are aligned in the lru_cache.
         mapping = get_patch_map_core().copy()
+        print("preview enabled")
 
         if _is_new_patching_available():
+            print("through if statement")
             import sklearn.covariance as covariance_module
 
             # Preview classes for patching
