@@ -18,7 +18,9 @@ import io
 import logging
 
 import pytest
+
 from sklearnex import patch_sklearn, unpatch_sklearn
+
 
 def pytest_configure(config):
     config.addinivalue_line(
