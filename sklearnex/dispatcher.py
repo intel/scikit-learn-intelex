@@ -35,11 +35,12 @@ def _is_preview_enabled():
 def get_patch_map_core(preview=False):
 
     if preview:
-        # use recursion to guarantee that states of preview
-        # and non-preview are aligned in the lru_cache.
+        # use recursion to guarantee that state of preview
+        # and non-preview maps are done at the same time.
         # The two lru_cache dicts are actually one underneath.
-        # Preview is always secondary and only modifies the
-        # original.
+        # Preview is always secondary. Both sklearnex patch
+        # maps are referring to the daal4py dict unless the
+        # key has been replaced. Use with caution.
         mapping = get_patch_map_core().copy()
 
         if _is_new_patching_available():
@@ -52,11 +53,11 @@ def get_patch_map_core(preview=False):
             )
             from .preview.decomposition import PCA as PCA_sklearnex
 
-            # Since state of lru_cache without preview cannot be guaranteed
-            # to not have already enabled sklearnex algorithms when preview
-            # is placed, removing the dictionary key and setting the mapping
-            # element[1] to None should NOT be done. This may lose track of
-            # the unpatched sklearn estimator or function.
+            # Since the state of the lru_cache without preview cannot be
+            # guaranteed to not have already enabled sklearnex algorithms
+            # when preview is used, setting the mapping element[1] to None
+            # should NOT be done. This may lose track of the unpatched
+            # sklearn estimator or function.
             # PCA
             decomposition_module, _, _ = mapping["pca"][0][0]
             sklearn_obj = mapping["pca"][0][1]
@@ -86,12 +87,15 @@ def get_patch_map_core(preview=False):
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
 
+    # NOTE: this is a shallow copy of a dict, modification is dangerous
     mapping = _get_map_of_algorithms().copy()
 
     # NOTE: Use of daal4py _get_map_of_algorithms and
     # get_patch_map/get_patch_map_core should not be used concurrently.
     # The setting of elements to None below may cause loss of state
-    # when interacting with sklearn.
+    # when interacting with sklearn. A dictionary key must not be
+    # modified but totally replaced, otherwise it will cause chaos.
+    # Hence why pop is being used.
     if _is_new_patching_available():
         # Scikit-learn* modules
         import sklearn as base_module
