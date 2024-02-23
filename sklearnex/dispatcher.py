@@ -293,6 +293,9 @@ def get_patch_map():
 get_patch_map.cache_clear = get_patch_map_core.cache_clear
 
 
+get_patch_map.cache_info = get_patch_map_core.cache_info
+
+
 def get_patch_names():
     return list(get_patch_map().keys())
 
