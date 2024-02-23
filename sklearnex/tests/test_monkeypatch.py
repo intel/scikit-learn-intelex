@@ -255,6 +255,8 @@ def test_preview_namespace():
 
     # default patching behavior
     try:
+        print(sklearnex.get_patch_map.cache_info())
+        assert not _is_preview_enabled()
         sklearnex.patch_sklearn()
         assert not _is_preview_enabled()
         print(sklearnex.get_patch_map.cache_info())
