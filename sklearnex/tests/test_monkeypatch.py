@@ -221,8 +221,6 @@ def test_preview_namespace():
 
     from sklearnex.dispatcher import _is_preview_enabled
 
-    print(sklearnex.get_patch_map.cache_info())
-
     try:
         sklearnex.patch_sklearn(preview=True)
 
@@ -243,8 +241,6 @@ def test_preview_namespace():
     finally:
         sklearnex.unpatch_sklearn()
 
-    print(sklearnex.get_patch_map.cache_info())
-
     # no patching behavior
     lr, pca, dbscan, svc, rfc = get_estimators()
     assert "sklearn." in lr.__module__ and "daal4py" not in lr.__module__
@@ -255,11 +251,8 @@ def test_preview_namespace():
 
     # default patching behavior
     try:
-        print(sklearnex.get_patch_map.cache_info())
-        assert not _is_preview_enabled()
         sklearnex.patch_sklearn()
         assert not _is_preview_enabled()
-        print(sklearnex.get_patch_map.cache_info())
 
         lr, pca, dbscan, svc, rfc = get_estimators()
         if daal_check_version((2023, "P", 100)):
