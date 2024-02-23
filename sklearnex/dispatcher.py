@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import copy
 import os
 import sys
 from functools import lru_cache
@@ -37,11 +38,13 @@ def get_patch_map_core(preview=False):
     if preview:
         # use recursion to guarantee that states of preview
         # and non-preview are aligned in the lru_cache.
+        # The two lru_cache dicts are actually one underneath.
+        # Preview is always secondary and only modifies the
+        # original. This is not the case between daal4py and
+        # sklearnex which have separate dicts via deepcopy.
         mapping = get_patch_map_core().copy()
-        print("preview enabled")
 
         if _is_new_patching_available():
-            print("through if statement")
             import sklearn.covariance as covariance_module
 
             # Preview classes for patching
@@ -79,7 +82,7 @@ def get_patch_map_core(preview=False):
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
 
-    mapping = _get_map_of_algorithms().copy()
+    mapping = copy.deepcopy(_get_map_of_algorithms())
 
     # NOTE: Use of daal4py _get_map_of_algorithms and
     # get_patch_map/get_patch_map_core should not be used concurrently.
