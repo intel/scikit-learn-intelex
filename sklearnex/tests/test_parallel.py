@@ -15,7 +15,7 @@
 # ==============================================================================
 import pytest
 
-from sklearnex import config_context, patch_sklearn, unpatch_sklearn
+from sklearnex import config_context
 
 try:
     import dpctl
@@ -32,7 +32,7 @@ except (ImportError, ModuleNotFoundError):
     "to see raised 'SyclQueueCreationError'. "
     "'dpctl' module is required for test.",
 )
-def test_config_context_in_parallel():
+def test_config_context_in_parallel(with_sklearnex):
     try:
         patch_sklearn()
 

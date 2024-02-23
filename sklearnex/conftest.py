@@ -19,6 +19,7 @@ import logging
 
 import pytest
 
+from sklearnex import patch_sklearn, unpatch_sklearn
 
 def pytest_configure(config):
     config.addinivalue_line(
@@ -53,3 +54,10 @@ def pytest_runtest_call(item):
             )
     else:
         yield
+
+
+@pytest.fixture
+def with_sklearnex():
+    patch_sklearn()
+    yield
+    unpatch_sklearn()
