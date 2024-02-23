@@ -52,7 +52,7 @@ def _load_all_models(with_sklearnex=True, estimator=True):
 
         models = {}
         for patch_infos in get_patch_map().values():
-            candidate = getattr(patch_infos[0][0][0], patch_infos[0][0][1])
+            candidate = getattr(patch_infos[0][0][0], patch_infos[0][0][1], None)
             if candidate is not None and isclass(candidate) == estimator:
                 if not estimator or issubclass(candidate, BaseEstimator):
                     models[patch_infos[0][0][1]] = candidate
@@ -105,7 +105,7 @@ def gen_models_info(algorithms):
         # split handles SPECIAL_INSTANCES or custom inputs
         # custom sklearn inputs must be a dict of estimators
         # with keys set by the __str__ method
-        est = UNPATCHED_MODELS[i.split("(")[0]]
+        est = PATCHED_MODELS[i.split("(")[0]]
 
         methods = set()
         candidates = set(
