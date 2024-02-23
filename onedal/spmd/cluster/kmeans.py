@@ -19,7 +19,7 @@ from onedal.cluster import KMeansInit as KMeansInit_Batch
 from onedal.spmd.basic_statistics import BasicStatistics
 
 from ..._device_offload import support_usm_ndarray
-from .._common import BaseEstimatorSPMD
+from .._base import BaseEstimatorSPMD
 
 
 class KMeansInit(BaseEstimatorSPMD, KMeansInit_Batch):

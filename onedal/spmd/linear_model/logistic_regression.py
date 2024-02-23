@@ -17,7 +17,7 @@
 from onedal.linear_model import LogisticRegression as LogisticRegression_Batch
 
 from ..._device_offload import support_usm_ndarray
-from .._common import BaseEstimatorSPMD
+from .._base import BaseEstimatorSPMD
 
 
 class LogisticRegression(BaseEstimatorSPMD, LogisticRegression_Batch):
