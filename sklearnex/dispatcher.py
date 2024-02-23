@@ -59,13 +59,13 @@ def get_patch_map_core(preview=False):
             # the unpatched sklearn estimator or function.
             # PCA
             decomposition_module, _, _ = mapping["pca"][0][0]
-            sklearn_obj = mapping["pca"][1]
+            sklearn_obj = mapping["pca"][0][1]
             mapping.pop("pca")
             mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), sklearn_obj]]
 
             # KMeans
             cluster_module, _, _ = mapping["kmeans"][0][0]
-            sklearn_obj = mapping["kmeans"][1]
+            sklearn_obj = mapping["kmeans"][0][1]
             mapping.pop("kmeans")
             mapping["kmeans"] = [
                 [(cluster_module, "kmeans", KMeans_sklearnex), sklearn_obj]
