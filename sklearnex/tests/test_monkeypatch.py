@@ -220,6 +220,7 @@ def test_preview_namespace():
         )
 
     from sklearnex.dispatcher import _is_preview_enabled
+
     print(sklearnex.get_patch_map.cache_info())
 
     try:
@@ -241,9 +242,8 @@ def test_preview_namespace():
 
     finally:
         sklearnex.unpatch_sklearn()
-    
-    print(sklearnex.get_patch_map.cache_info())
 
+    print(sklearnex.get_patch_map.cache_info())
 
     # no patching behavior
     lr, pca, dbscan, svc, rfc = get_estimators()
