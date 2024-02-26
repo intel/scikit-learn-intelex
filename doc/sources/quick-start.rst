@@ -26,12 +26,7 @@ Get ready to elevate your scikit-learn code with |intelex| and experience the be
 Compatibility with Scikit-learn*
 ---------------------------------
 
-Intel(R) Extension for Scikit-learn is compatible with the following versions of scikit-learn:
-
-* 1.0.X
-* 1.1.X
-* 1.2.X 
-* 1.3.X
+Intel(R) Extension for Scikit-learn is compatible with the last four versions of scikit-learn.
 
 Integrate |intelex|
 --------------------
@@ -441,6 +436,13 @@ Software Requirements
       .. important::
          
          If you use accelerators, refer to `oneAPI DPC++/C++ Compiler System Requirements <https://www.intel.com/content/www/us/en/developer/articles/system-requirements/intel-oneapi-dpcpp-system-requirements.html>`_.
+
+Intel(R) Extension for Scikit-learn is compatible with the last four versions of scikit-learn:
+
+* 1.0.X
+* 1.1.X
+* 1.2.X 
+* 1.3.X
 
 Memory Requirements
 **********************
