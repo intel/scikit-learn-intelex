@@ -330,7 +330,7 @@ Follow the steps below to build and install the completed package:
 
 1. Check prerequisites:
 
-   * `daal4py <https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md>`_ >= 2021.4
+   * `daal4py <https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md>`_ version to match the version of sklearnex that you build
    * Python version >= 3.8, <= 3.12
 
 2. Set environment variables:
