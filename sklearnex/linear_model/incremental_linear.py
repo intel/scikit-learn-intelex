@@ -102,7 +102,7 @@ class IncrementalLinearRegression(BaseEstimator):
         _parameter_constraints: dict = {
             "fit_intercept": ["boolean"],
             "copy_X": ["boolean"],
-            "n_jobs": [Interval(numbers.Integral, 1, None, closed="left"), None],
+            "n_jobs": [Interval(numbers.Integral, -1, None, closed="left"), None],
             "batch_size": [Interval(numbers.Integral, 1, None, closed="left"), None],
         }
 

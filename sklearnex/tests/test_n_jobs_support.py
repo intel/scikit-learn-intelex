@@ -32,7 +32,7 @@ ESTIMATORS = set(
     )
 )
 
-X, Y = make_classification(n_samples=40, n_features=4, random_state=42)
+X, y = make_classification(n_samples=40, n_features=4, random_state=42)
 
 
 @pytest.mark.parametrize("estimator_class", ESTIMATORS)
@@ -79,15 +79,27 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     check_estimator_doc(estimator_instance)
     # check `n_jobs` log entry for supported methods
     # `fit` call is required before other methods
-    check_method(X, Y, method=estimator_instance.fit, caplog=caplog)
+    # `partial_fit` is checked last if necessary
+    if "y" in inspect.signature(estimator_instance.fit).parameters:
+        check_method(X, y, method=estimator_instance.fit, caplog=caplog)
+    else:
+        check_method(X, method=estimator_instance.fit, caplog=caplog)
+
     for method_name in estimator_instance._n_jobs_supported_onedal_methods:
-        if method_name == "fit":
+        if method_name in {"fit", "partial_fit"}:
             continue
         method = getattr(estimator_instance, method_name)
         if len(inspect.signature(method).parameters) == 0:
             check_method(method=method, caplog=caplog)
         else:
             check_method(X, method=method, caplog=caplog)
+
+    if "partial_fit" in estimator_instance._n_jobs_supported_onedal_methods:
+        if "y" in inspect.signature(estimator_instance.partial_fit).parameters:
+            check_method(X, y, method=estimator_instance.partial_fit, caplog=caplog)
+        else:
+            check_method(X, method=estimator_instance.partial_fit, caplog=caplog)
+
     # check if correct methods were decorated
     check_methods_decoration(estimator_class)
     check_methods_decoration(estimator_instance)
