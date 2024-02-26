@@ -17,7 +17,7 @@
 from onedal.decomposition.pca import PCA as PCABatch
 
 from ..._device_offload import support_usm_ndarray
-from .._common import BaseEstimatorSPMD
+from .._base import BaseEstimatorSPMD
 
 
 class PCA(BaseEstimatorSPMD, PCABatch):
