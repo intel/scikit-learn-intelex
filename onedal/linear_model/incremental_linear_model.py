@@ -17,7 +17,6 @@
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
-from onedal import _backend
 
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -27,16 +26,16 @@ from .linear_model import BaseLinearRegression
 
 class IncrementalLinearRegression(BaseLinearRegression):
     def __init__(self, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
-        module = _backend.linear_model.regression
+        module = self._get_backend("linear_model", "regression")
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
         self._partial_result = module.partial_train_result()
 
     def _reset(self):
-        module = _backend.linear_model.regression
+        module = self._get_backend("linear_model", "regression")
         self._partial_result = module.partial_train_result()
 
     def partial_fit(self, X, y, queue=None):
-        module = _backend.linear_model.regression
+        module = self._get_backend("linear_model", "regression")
 
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
@@ -74,7 +73,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
             )
 
     def finalize_fit(self):
-        module = _backend.linear_model.regression
+        module = self._get_backend("linear_model", "regression")
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             result = module.finalize_train(
