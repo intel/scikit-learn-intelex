@@ -29,10 +29,6 @@ from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
-    """
-    Base class for LinearRegression oneDAL implementation.
-    """
-
     @abstractmethod
     def __init__(self, fit_intercept, copy_X, algorithm):
         self.fit_intercept = fit_intercept
@@ -182,6 +178,12 @@ class LinearRegression(BaseLinearRegression):
         module = self._get_backend("linear_model", "regression")
 
         # TODO Fix _check_X_y to make sure this conversion is there
+        if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
+            raise TypeError("Not enough samples to fit")
+        module = self._get_backend("linear_model", "regression")
+
+        policy = self._get_policy(queue, X, y)
+
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
 
