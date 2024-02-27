@@ -14,43 +14,30 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype, make2d
-from onedal import _backend
 
-<<<<<<< HEAD
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
-=======
-from ..common._estimator_checks import _check_is_fitted
-from ..common._policy import _get_policy
->>>>>>> fdafe0f7 (Refactor linear regression)
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
-<<<<<<< HEAD
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     """
     Base class for LinearRegression oneDAL implementation.
     """
 
-=======
-class BaseLinearRegression(ABC):
->>>>>>> fdafe0f7 (Refactor linear regression)
     @abstractmethod
     def __init__(self, fit_intercept, copy_X, algorithm):
         self.fit_intercept = fit_intercept
         self.algorithm = algorithm
         self.copy_X = copy_X
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
@@ -62,11 +49,7 @@ class BaseLinearRegression(ABC):
         }
 
     def _create_model(self, policy):
-<<<<<<< HEAD
         module = self._get_backend("linear_model", "regression")
-=======
-        module = _backend.linear_model.regression
->>>>>>> fdafe0f7 (Refactor linear regression)
         model = module.model()
 
         coefficients = self.coef_
@@ -109,7 +92,6 @@ class BaseLinearRegression(ABC):
         return model
 
     def predict(self, X, queue=None):
-<<<<<<< HEAD
         """
         Predict using the linear model.
         Parameters
@@ -126,21 +108,14 @@ class BaseLinearRegression(ABC):
             Returns predicted values.
         """
         module = self._get_backend("linear_model", "regression")
-=======
-        module = _backend.linear_model.regression
->>>>>>> fdafe0f7 (Refactor linear regression)
 
         _check_is_fitted(self)
 
         policy = self._get_policy(queue, X)
 
-<<<<<<< HEAD
-=======
         if isinstance(X, np.ndarray):
             X = np.asarray(X)
 
-        # Finiteness is checked in the sklearnex wrapper
->>>>>>> fdafe0f7 (Refactor linear regression)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=False, ensure_2d=False
         )
@@ -189,7 +164,6 @@ class LinearRegression(BaseLinearRegression):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
 
     def fit(self, X, y, queue=None):
-<<<<<<< HEAD
         """
         Fit linear model.
         Parameters
@@ -211,12 +185,7 @@ class LinearRegression(BaseLinearRegression):
         module = self._get_backend("linear_model", "regression")
 
         # TODO Fix _check_X_y to make sure this conversion is there
-=======
-        module = _backend.linear_model.regression
 
-        policy = self._get_policy(queue, X, y)
-
->>>>>>> fdafe0f7 (Refactor linear regression)
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
 
@@ -227,16 +196,10 @@ class LinearRegression(BaseLinearRegression):
 
         y = np.asarray(y).astype(dtype=dtype)
 
-<<<<<<< HEAD
         X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
 
         policy = self._get_policy(queue, X, y)
 
-=======
-        # Finiteness is checked in the sklearnex wrapper
-        X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
-
->>>>>>> fdafe0f7 (Refactor linear regression)
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
         X, y = _convert_to_supported(policy, X, y)
