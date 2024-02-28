@@ -240,7 +240,6 @@ class LinearRegression(sklearn_LinearRegression):
                 (n_samples > 0, "Number of samples is less than 1."),
                 (not issparse(*data), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
-                (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."),
             ]
         )
         if not dal_ready:
