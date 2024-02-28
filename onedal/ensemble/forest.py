@@ -18,18 +18,19 @@ import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
 from math import ceil
-from numbers import Number
 
 import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
-from daal4py.sklearn._utils import daal_check_version
-from onedal import _backend
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from sklearnex import get_hyperparameters
+from sklearnex._utils import register_hyperparameters
 
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
+from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import (
     _check_array,
@@ -357,7 +358,12 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        result = module.infer(policy, params, model, to_table(X))
+        hparams = get_hyperparameters("decision_forest", "infer")
+        if hparams is not None and not hparams.is_default:
+            result = module.train(policy, params, hparams.backend, to_table(X))
+        else:
+            result = module.infer(policy, params, model, to_table(X))
+
         y = from_table(result.responses)
         return y
 
@@ -378,6 +384,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         return y
 
 
+@register_hyperparameters({"predict": get_hyperparameters("decision_forest", "infer")})
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(
         self,

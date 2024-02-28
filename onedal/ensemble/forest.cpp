@@ -227,7 +227,7 @@ void init_train_ops(py::module_& m) {
               using namespace decision_forest;
               using input_t = train_input<Task>;
 
-              train_ops ops(policy, input_t{ data, responses}, params2desc{});
+              train_ops ops(policy, input_t{ data, responses }, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }
@@ -309,6 +309,49 @@ void init_infer_result(py::module_& m) {
     }
 }
 
+// #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+template <typename Task>
+void init_infer_hyperparameters(py::module_& m) {
+    using namespace dal::decision_forest::detail;
+    using infer_hyperparams_t = infer_parameters<Task>;
+
+    auto cls =
+        py::class_<infer_hyperparams_t>(m, "infer_hyperparameters")
+            .def(py::init())
+            .def("set_block_size",
+                 [](infer_hyperparams_t& self, int64_t block_size) {
+                     self.set_block_size(block_size);
+                 })
+            .def("get_block_size",
+                 [](const infer_hyperparams_t& self) {
+                     return self.get_block_size();
+                 })
+            .def("set_min_trees_for_threading",
+                 [](infer_hyperparams_t& self, int64_t trees) {
+                     self.set_min_trees_for_threading(trees);
+                 })
+            .def("get_min_trees_for_threading",
+                 [](const infer_hyperparams_t& self) {
+                     return self.get_min_trees_for_threading();
+                 })
+            .def("set_min_number_of_rows_for_vect_seq_compute",
+                 [](infer_hyperparams_t& self, int64_t rows) {
+                     self.set_min_number_of_rows_for_vect_seq_compute(rows);
+                 })
+            .def("get_min_number_of_rows_for_vect_seq_compute",
+                 [](const infer_hyperparams_t& self) {
+                     return self.get_min_number_of_rows_for_vect_seq_compute();
+                 })
+            .def("set_scale_factor_for_vect_parallel_compute",
+                 [](infer_hyperparams_t& self, double factor) {
+                     self.set_scale_factor_for_vect_parallel_compute(factor);
+                 })
+            .def("get_scale_factor_for_vect_parallel_compute", [](const infer_hyperparams_t& self) {
+                return self.get_scale_factor_for_vect_parallel_compute();
+            });
+}
+// #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+
 ONEDAL_PY_TYPE2STR(decision_forest::task::classification, "classification");
 ONEDAL_PY_TYPE2STR(decision_forest::task::regression, "regression");
 
@@ -317,6 +360,9 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
+// #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_hyperparameters);
+// #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
 ONEDAL_PY_INIT_MODULE(ensemble) {
     using namespace decision_forest;
@@ -335,6 +381,11 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
     ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
+
+    // #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+    ONEDAL_PY_INSTANTIATE(init_infer_hyperparameters, sub, task_list);
+    // #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 }
 
