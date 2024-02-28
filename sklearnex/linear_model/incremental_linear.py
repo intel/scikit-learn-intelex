@@ -360,7 +360,7 @@ class IncrementalLinearRegression(BaseEstimator):
 
         return dispatch(
             self,
-            "fit",
+            "predict",
             {
                 "onedal": self.__class__._onedal_predict,
                 "sklearn": None,
