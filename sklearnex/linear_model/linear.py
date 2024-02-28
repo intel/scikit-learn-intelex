@@ -18,10 +18,7 @@ import logging
 from abc import ABC
 
 import numpy as np
-<<<<<<< HEAD
 from sklearn.exceptions import NotFittedError
-=======
->>>>>>> fdafe0f7 (Refactor linear regression)
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -88,7 +85,6 @@ class LinearRegression(sklearn_LinearRegression):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-<<<<<<< HEAD
         # It is necessary to properly update coefs for predict if we
         # fallback to sklearn in dispatch
         if hasattr(self, "_onedal_estimator"):
@@ -130,47 +126,6 @@ class LinearRegression(sklearn_LinearRegression):
     def _test_type_and_finiteness(self, X_in):
         X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
 
-=======
-        dispatch(
-            self,
-            "fit",
-            {
-                "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_LinearRegression.fit,
-            },
-            X,
-            y,
-            sample_weight,
-        )
-        return self
-
-    @wrap_output_data
-    def predict(self, X):
-        """
-        Predict using the linear model.
-        Parameters
-        ----------
-        X : array-like or sparse matrix, shape (n_samples, n_features)
-            Samples.
-        Returns
-        -------
-        C : array, shape (n_samples, n_targets)
-            Returns predicted values.
-        """
-        return dispatch(
-            self,
-            "predict",
-            {
-                "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_LinearRegression.predict,
-            },
-            X,
-        )
-
-    def _test_type_and_finiteness(self, X_in):
-        X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
-
->>>>>>> fdafe0f7 (Refactor linear regression)
         dtype = X.dtype
         if "complex" in str(type(dtype)):
             return False
@@ -255,10 +210,6 @@ class LinearRegression(sklearn_LinearRegression):
                 (n_samples > 0, "Number of samples is less than 1."),
                 (not issparse(*data), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
-<<<<<<< HEAD
-=======
-                (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."),
->>>>>>> fdafe0f7 (Refactor linear regression)
             ]
         )
         if not dal_ready:
