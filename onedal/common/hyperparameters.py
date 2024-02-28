@@ -84,10 +84,7 @@ if daal_check_version((2024, "P", 0)):
         }
 
     hyperparameters_backend = {
-        (
-            "linear_regression",
-            "train",
-        ): _backend.linear_model.regression.train_hyperparameters(),
+        ("linear_regression", "train"): _backend.linear_model.regression.train_hyperparameters(),
         ("covariance", "compute"): _backend.covariance.compute_hyperparameters(),
         ("decision_forest", "infer"): _backend.decision_forest.infer_hyperparameters(),
     }

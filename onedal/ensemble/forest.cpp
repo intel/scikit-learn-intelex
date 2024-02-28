@@ -234,6 +234,25 @@ void init_train_ops(py::module_& m) {
 
 template <typename Policy, typename Task>
 void init_infer_ops(py::module_& m) {
+    // #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+    using infer_hyperparams_t = decision_forest::detail::infer_parameters<Task>;
+    m.def("infer",
+          [](const Policy& policy,
+             const py::dict& params,
+             const infer_hyperparams_t& hyperparams,
+             const decision_forest::model<Task>& model,
+             const table& data) {
+              using namespace decision_forest;
+              using input_t = infer_input<Task>;
+
+              infer_ops_with_hyperparams ops(policy,
+                                             input_t{ model, data },
+                                             params2desc{},
+                                             hyperparams);
+              return fptype2t{ method2t{ Task{}, ops } }(params);
+          });
+    // #endif
+
     m.def("infer",
           [](const Policy& policy,
              const py::dict& params,
@@ -383,7 +402,7 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 
     // #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
-    ONEDAL_PY_INSTANTIATE(init_infer_hyperparameters, sub, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_hyperparameters, sub, task::classification);
     // #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
 #endif // ONEDAL_DATA_PARALLEL_SPMD

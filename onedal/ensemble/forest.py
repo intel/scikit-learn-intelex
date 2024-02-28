@@ -360,7 +360,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         params = self._get_onedal_params(X)
         hparams = get_hyperparameters("decision_forest", "infer")
         if hparams is not None and not hparams.is_default:
-            result = module.train(policy, params, hparams.backend, to_table(X))
+            result = module.infer(policy, params, hparams.backend, model, to_table(X))
         else:
             result = module.infer(policy, params, model, to_table(X))
 
