@@ -234,7 +234,7 @@ void init_train_ops(py::module_& m) {
 
 template <typename Policy, typename Task>
 void init_infer_ops(py::module_& m) {
-    // #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
     using infer_hyperparams_t = decision_forest::detail::infer_parameters<Task>;
     m.def("infer",
           [](const Policy& policy,
@@ -251,7 +251,7 @@ void init_infer_ops(py::module_& m) {
                                              hyperparams);
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
-    // #endif
+#endif
 
     m.def("infer",
           [](const Policy& policy,
@@ -328,7 +328,7 @@ void init_infer_result(py::module_& m) {
     }
 }
 
-// #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 template <typename Task>
 void init_infer_hyperparameters(py::module_& m) {
     using namespace dal::decision_forest::detail;
@@ -369,7 +369,7 @@ void init_infer_hyperparameters(py::module_& m) {
                 return self.get_scale_factor_for_vect_parallel_compute();
             });
 }
-// #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
 ONEDAL_PY_TYPE2STR(decision_forest::task::classification, "classification");
 ONEDAL_PY_TYPE2STR(decision_forest::task::regression, "regression");
@@ -379,9 +379,9 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
-// #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_hyperparameters);
-// #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
 ONEDAL_PY_INIT_MODULE(ensemble) {
     using namespace decision_forest;
@@ -401,9 +401,9 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
     ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 
-    // #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
     ONEDAL_PY_INSTANTIATE(init_infer_hyperparameters, sub, task::classification);
-    // #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 }
