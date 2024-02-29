@@ -94,10 +94,7 @@ def remove_duplicated_estimators(estimators_list):
     return estimators_map.values()
 
 
-BANNED_ESTIMATORS = (
-    "LocalOutlierFactor",  # fails on ndarray_c for sklearn > 1.0
-    "TSNE",  # too slow for using in testing on common data size
-)
+BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
 estimators = [
     PCA,
     TrainTestSplitEstimator,

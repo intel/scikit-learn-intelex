@@ -21,27 +21,15 @@ from math import ceil
 from numbers import Number
 
 import numpy as np
-from scipy import sparse as sp
 from sklearn.ensemble import BaseEnsemble
-from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import (
-    check_array,
-    check_random_state,
-    compute_sample_weight,
-    deprecated,
-)
-from sklearn.utils.validation import (
-    _num_samples,
-    check_consistent_length,
-    check_is_fitted,
-)
+from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal import _backend
 
+from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import (
     _check_array,
@@ -52,7 +40,7 @@ from ..utils import (
 )
 
 
-class BaseForest(BaseEnsemble, metaclass=ABCMeta):
+class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
@@ -349,9 +337,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         return sample_weight
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
     def _fit(self, X, y, sample_weight, module, queue):
         X, y = _check_X_y(
             X,
@@ -516,16 +501,24 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
-            X, y, sample_weight, _backend.decision_forest.classification, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        pred = super()._predict(X, _backend.decision_forest.classification, queue)
+        pred = super()._predict(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(X, _backend.decision_forest.classification, queue)
+        return super()._predict_proba(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -593,11 +586,19 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                 sample_weight[sample_weight == 0.0] = 1.0
             sample_weight = [sample_weight]
         return super()._fit(
-            X, y, sample_weight, _backend.decision_forest.regression, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "regression", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
+        return (
+            super()
+            ._predict(X, self._get_backend("decision_forest", "regression", None), queue)
+            .ravel()
+        )
 
 
 class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
@@ -673,16 +674,24 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
-            X, y, sample_weight, _backend.decision_forest.classification, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        pred = super()._predict(X, _backend.decision_forest.classification, queue)
+        pred = super()._predict(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(X, _backend.decision_forest.classification, queue)
+        return super()._predict_proba(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
 
 class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -750,8 +759,16 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                 sample_weight[sample_weight == 0.0] = 1.0
             sample_weight = [sample_weight]
         return super()._fit(
-            X, y, sample_weight, _backend.decision_forest.regression, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "regression", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
+        return (
+            super()
+            ._predict(X, self._get_backend("decision_forest", "regression", None), queue)
+            .ravel()
+        )

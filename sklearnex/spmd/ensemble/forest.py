@@ -14,8 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.spmd.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.spmd.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 
@@ -23,16 +21,9 @@ from ...ensemble import RandomForestClassifier as RandomForestClassifier_Batch
 from ...ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
 
-class BaseForestSPMD(ABC):
-    def _onedal_classifier(self, **onedal_params):
-        return onedal_RandomForestClassifier(**onedal_params)
-
-    def _onedal_regressor(self, **onedal_params):
-        return onedal_RandomForestRegressor(**onedal_params)
-
-
-class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
+class RandomForestClassifier(RandomForestClassifier_Batch):
     __doc__ = RandomForestClassifier_Batch.__doc__
+    _onedal_factory = onedal_RandomForestClassifier
 
     def _onedal_cpu_supported(self, method_name, *data):
         # TODO:
@@ -55,8 +46,9 @@ class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
         return ready
 
 
-class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
+class RandomForestRegressor(RandomForestRegressor_Batch):
     __doc__ = RandomForestRegressor_Batch.__doc__
+    _onedal_factory = onedal_RandomForestRegressor
 
     def _onedal_cpu_supported(self, method_name, *data):
         # TODO:

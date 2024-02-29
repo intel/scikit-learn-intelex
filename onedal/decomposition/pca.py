@@ -18,14 +18,18 @@ import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
 from sklearn.utils.extmath import stable_cumsum
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
-from onedal import _backend
+from daal4py.sklearn._utils import sklearn_check_version
 
+<<<<<<< HEAD
 from ..common._policy import _get_policy
+=======
+from ..common._base import BaseEstimator
+from ..common.hyperparameters import get_hyperparameters
+>>>>>>> main
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
-class PCA:
+class PCA(BaseEstimator):
     def __init__(
         self,
         n_components=None,
@@ -51,6 +55,7 @@ class PCA:
             "whiten": self.whiten,
         }
 
+<<<<<<< HEAD
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
@@ -84,6 +89,8 @@ class PCA:
         else:
             return 0.0
 
+=======
+>>>>>>> main
     def fit(self, X, queue):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -130,7 +137,7 @@ class PCA:
         return self
 
     def _create_model(self):
-        m = _backend.decomposition.dim_reduction.model()
+        m = self._get_backend("decomposition", "dim_reduction", "model")
         m.eigenvectors = to_table(self.components_)
         m.means = to_table(self.mean_)
         if self.whiten:
@@ -143,9 +150,15 @@ class PCA:
         model = self._create_model()
 
         X = _convert_to_supported(policy, X)
+<<<<<<< HEAD
 
         params = self.get_onedal_params(X, stage="predict")
         result = _backend.decomposition.dim_reduction.infer(
             policy, params, model, to_table(X)
+=======
+        params = self.get_onedal_params(X)
+        result = self._get_backend(
+            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
+>>>>>>> main
         )
         return from_table(result.transformed_data)

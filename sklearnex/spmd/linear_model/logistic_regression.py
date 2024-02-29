@@ -14,11 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
+from onedal.spmd.linear_model import LogisticRegression
 
-from ..common._spmd_policy import _get_spmd_policy
-
-
-class BaseEstimatorSPMD(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.

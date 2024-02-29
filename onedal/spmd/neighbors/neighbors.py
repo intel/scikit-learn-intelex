@@ -18,7 +18,7 @@ from onedal.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
 from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
 from ..._device_offload import support_usm_ndarray
-from .._common import BaseEstimatorSPMD
+from .._base import BaseEstimatorSPMD
 
 
 class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
