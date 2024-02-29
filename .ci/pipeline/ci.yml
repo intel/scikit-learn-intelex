@@ -17,7 +17,7 @@
 trigger:
   branches:
     include:
-    - master
+    - main
     - rls/*
   paths:
     exclude:
@@ -28,7 +28,7 @@ trigger:
 pr:
   branches:
     include:
-    - master
+    - main
     - rls/*
   paths:
     exclude:
@@ -37,7 +37,6 @@ pr:
     - .ci/pipeline/docs.yml
 
 variables:
-  MACOSX_DEPLOYMENT_TARGET: '10.15'
   PYTHON: 'python'
   ARGS: '1'
   SHELLOPTS: 'errexit:pipefail'
@@ -53,10 +52,11 @@ jobs:
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
-      pip install isort black[jupyter]
-      isort --check . && black --check .
+      pip install isort black[jupyter]==24.1.1
+      isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: Linux
+  dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
     matrix:
@@ -72,28 +72,15 @@ jobs:
       Python3.11_Sklearn1.3:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.3'
-      Python3.12_Sklearn1.3:
+      Python3.12_Sklearn1.4:
         PYTHON_VERSION: '3.12'
-        SKLEARN_VERSION: '1.3'
+        SKLEARN_VERSION: '1.4'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
-- job: MacOS
-  timeoutInMinutes: 120
-  strategy:
-    matrix:
-      Python3.10_Sklearn1.2:
-        PYTHON_VERSION: '3.10'
-        SKLEARN_VERSION: '1.2'
-      Python3.11_Sklearn1.3:
-        PYTHON_VERSION: '3.11'
-        SKLEARN_VERSION: '1.3'
-  pool:
-    vmImage: 'macos-12'
-  steps:
-  - template: build-and-test-mac.yml
 - job: Windows
+  dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
     matrix:
@@ -109,9 +96,9 @@ jobs:
       Python3.11_Sklearn1.3:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.3'
-      Python3.12_Sklearn1.3:
+      Python3.12_Sklearn1.4:
         PYTHON_VERSION: '3.12'
-        SKLEARN_VERSION: '1.3'
+        SKLEARN_VERSION: '1.4'
   pool:
     vmImage: 'windows-latest'
   steps:

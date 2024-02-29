@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-# ===============================================================================
-# Copyright 2023 Intel Corporation
+# ==============================================================================
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ===============================================================================
+# ==============================================================================
 
-from .logistic_regression import LogisticRegression
+from onedal.spmd.linear_model import LogisticRegression
 
-__all__ = ["LogisticRegression"]
+# TODO:
+# Currently it uses `onedal` module interface.
+# Add sklearnex dispatching.

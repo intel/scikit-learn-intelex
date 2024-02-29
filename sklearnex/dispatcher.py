@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ==============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -33,11 +32,70 @@ def _is_preview_enabled():
 
 
 @lru_cache(maxsize=None)
-def get_patch_map():
+def get_patch_map_core(preview=False):
+
+    if preview:
+        # use recursion to guarantee that state of preview
+        # and non-preview maps are done at the same time.
+        # The two lru_cache dicts are actually one underneath.
+        # Preview is always secondary. Both sklearnex patch
+        # maps are referring to the daal4py dict unless the
+        # key has been replaced. Use with caution.
+        mapping = get_patch_map_core().copy()
+
+        if _is_new_patching_available():
+            import sklearn.covariance as covariance_module
+
+            # Preview classes for patching
+            from .preview.cluster import KMeans as KMeans_sklearnex
+            from .preview.covariance import (
+                EmpiricalCovariance as EmpiricalCovariance_sklearnex,
+            )
+            from .preview.decomposition import PCA as PCA_sklearnex
+
+            # Since the state of the lru_cache without preview cannot be
+            # guaranteed to not have already enabled sklearnex algorithms
+            # when preview is used, setting the mapping element[1] to None
+            # should NOT be done. This may lose track of the unpatched
+            # sklearn estimator or function.
+            # PCA
+            decomposition_module, _, _ = mapping["pca"][0][0]
+            sklearn_obj = mapping["pca"][0][1]
+            mapping.pop("pca")
+            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), sklearn_obj]]
+
+            # KMeans
+            cluster_module, _, _ = mapping["kmeans"][0][0]
+            sklearn_obj = mapping["kmeans"][0][1]
+            mapping.pop("kmeans")
+            mapping["kmeans"] = [
+                [(cluster_module, "kmeans", KMeans_sklearnex), sklearn_obj]
+            ]
+
+            # Covariance
+            mapping["empiricalcovariance"] = [
+                [
+                    (
+                        covariance_module,
+                        "EmpiricalCovariance",
+                        EmpiricalCovariance_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+        return mapping
+
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
 
+    # NOTE: this is a shallow copy of a dict, modification is dangerous
     mapping = _get_map_of_algorithms().copy()
 
+    # NOTE: Use of daal4py _get_map_of_algorithms and
+    # get_patch_map/get_patch_map_core should not be used concurrently.
+    # The setting of elements to None below may cause loss of state
+    # when interacting with sklearn. A dictionary key must not be
+    # modified but totally replaced, otherwise it will cause chaos.
+    # Hence why pop is being used.
     if _is_new_patching_available():
         # Scikit-learn* modules
         import sklearn as base_module
@@ -69,55 +127,15 @@ def get_patch_map():
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
+        from .linear_model import LogisticRegression as LogisticRegression_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
-
-        # Preview classes for patching
-        from .preview.cluster import KMeans as KMeans_sklearnex
-        from .preview.decomposition import PCA as PCA_sklearnex
-        from .preview.linear_model import (
-            LogisticRegression as LogisticRegression_sklearnex,
-        )
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
-
-        # Patch for mapping
-        if _is_preview_enabled():
-            # PCA
-            mapping.pop("pca")
-            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
-
-            # KMeans
-            mapping.pop("kmeans")
-            mapping["kmeans"] = [
-                [
-                    (
-                        cluster_module,
-                        "KMeans",
-                        KMeans_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-
-            # LogisticRegression
-            mapping.pop("logisticregression")
-            mapping.pop("log_reg")
-            mapping["log_reg"] = [
-                [
-                    (
-                        linear_model_module,
-                        "LogisticRegression",
-                        LogisticRegression_sklearnex,
-                    ),
-                    None,
-                ]
-            ]
-            mapping["logisticregression"] = mapping["log_reg"]
 
         # DBSCAN
         mapping.pop("dbscan")
@@ -145,6 +163,24 @@ def get_patch_map():
             ]
         ]
         mapping["linearregression"] = mapping["linear"]
+
+        # Logistic Regression
+
+        mapping.pop("logisticregression")
+        mapping.pop("log_reg")
+        mapping.pop("logistic")
+        mapping.pop("_logistic_regression_path")
+        mapping["log_reg"] = [
+            [
+                (
+                    linear_model_module,
+                    "LogisticRegression",
+                    LogisticRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+        mapping["logisticregression"] = mapping["log_reg"]
 
         # kNN
         mapping.pop("knn_classifier")
@@ -258,6 +294,19 @@ def get_patch_map():
             [(parallel_module, "_FuncWrapper", _FuncWrapper_sklearnex), None]
         ]
     return mapping
+
+
+# This is necessary to properly cache the patch_map when
+# using preview.
+def get_patch_map():
+    preview = _is_preview_enabled()
+    return get_patch_map_core(preview=preview)
+
+
+get_patch_map.cache_clear = get_patch_map_core.cache_clear
+
+
+get_patch_map.cache_info = get_patch_map_core.cache_info
 
 
 def get_patch_names():

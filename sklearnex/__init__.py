@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ==============================================================================
 # Copyright 2021 Intel Corporation
 #
@@ -42,20 +41,20 @@ __all__ = [
     "linear_model",
     "manifold",
     "metrics",
+    "model_selection",
     "neighbors",
     "patch_sklearn",
     "set_config",
     "sklearn_is_patched",
-    "sklearn_is_patchedget_patch_map",
     "svm",
     "unpatch_sklearn",
     "utils",
 ]
 
 
-from onedal import _is_dpc_backend
+from onedal import _is_spmd_backend
 
-if _is_dpc_backend:
+if _is_spmd_backend:
     __all__.append("spmd")
 
 

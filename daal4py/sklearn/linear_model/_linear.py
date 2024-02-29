@@ -36,19 +36,17 @@ import logging
 
 import daal4py
 
+from .._n_jobs_support import control_n_jobs
 from .._utils import (
     PatchingConditionsChain,
-    control_n_jobs,
     get_dtype,
     get_patch_message,
     getFPType,
     is_DataFrame,
     make2d,
-    run_with_n_jobs,
 )
 
 
-@run_with_n_jobs
 def _daal4py_fit(self, X, y_):
     y = make2d(y_)
     X_fptype = getFPType(X)
@@ -86,7 +84,6 @@ def _daal4py_fit(self, X, y_):
     return self
 
 
-@run_with_n_jobs
 def _daal4py_predict(self, X):
     X = make2d(X)
     _fptype = getFPType(self.coef_)
@@ -258,7 +255,7 @@ def _predict_linear(self, X):
     return _daal4py_predict(self, X)
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class LinearRegression(LinearRegression_original):
     __doc__ = LinearRegression_original.__doc__
 

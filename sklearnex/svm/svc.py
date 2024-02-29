@@ -20,7 +20,8 @@ from sklearn.exceptions import NotFittedError
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 
-from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs, sklearn_check_version
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
@@ -32,7 +33,9 @@ if sklearn_check_version("1.0"):
 from onedal.svm import SVC as onedal_SVC
 
 
-@control_n_jobs
+@control_n_jobs(
+    decorated_methods=["fit", "predict", "_predict_proba", "decision_function"]
+)
 class SVC(sklearn_SVC, BaseSVC):
     __doc__ = sklearn_SVC.__doc__
 
@@ -197,6 +200,8 @@ class SVC(sklearn_SVC, BaseSVC):
             self._check_proba()
             return self._predict_proba
 
+        predict_proba.__doc__ = sklearn_SVC.predict_proba.__doc__
+
     @wrap_output_data
     def _predict_proba(self, X):
         sklearn_pred_proba = (
@@ -229,6 +234,8 @@ class SVC(sklearn_SVC, BaseSVC):
             X,
         )
 
+    decision_function.__doc__ = sklearn_SVC.decision_function.__doc__
+
     def _onedal_gpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
@@ -258,7 +265,6 @@ class SVC(sklearn_SVC, BaseSVC):
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         onedal_params = {
             "C": self.C,
@@ -282,11 +288,9 @@ class SVC(sklearn_SVC, BaseSVC):
             self._fit_proba(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
-    @run_with_n_jobs
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
 
-    @run_with_n_jobs
     def _onedal_predict_proba(self, X, queue=None):
         if getattr(self, "clf_prob", None) is None:
             raise NotFittedError(
@@ -301,6 +305,5 @@ class SVC(sklearn_SVC, BaseSVC):
         with config_context(**cfg):
             return self.clf_prob.predict_proba(X)
 
-    @run_with_n_jobs
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ==============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,4 +14,4 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = ["cluster", "decomposition", "linear_model"]
+__all__ = ["cluster", "covariance", "decomposition"]

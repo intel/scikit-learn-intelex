@@ -14,17 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.cluster import DBSCAN as DBSCAN_Batch
 
-from ...common._spmd_policy import _get_spmd_policy
+from .._base import BaseEstimatorSPMD
 
 
-class BaseDBSCANspmd(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
-
-
-class DBSCAN(BaseDBSCANspmd, DBSCAN_Batch):
+class DBSCAN(BaseEstimatorSPMD, DBSCAN_Batch):
     pass

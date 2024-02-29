@@ -17,6 +17,7 @@
 
 # System imports
 import os
+import shutil
 import sys
 import time
 
@@ -51,8 +52,7 @@ if dal_root is None:
 
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
-dpcpp = True if "DPCPPROOT" in os.environ else False
-dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
+dpcpp = shutil.which("icpx") is not None
 
 try:
     import dpctl
@@ -85,6 +85,7 @@ with open("README.md", "r", encoding="utf8") as f:
 packages_with_tests = [
     "sklearnex",
     "sklearnex.cluster",
+    "sklearnex.covariance",
     "sklearnex.decomposition",
     "sklearnex.ensemble",
     "sklearnex.glob",
@@ -94,9 +95,9 @@ packages_with_tests = [
     "sklearnex.model_selection",
     "sklearnex.neighbors",
     "sklearnex.preview",
+    "sklearnex.preview.covariance",
     "sklearnex.preview.cluster",
     "sklearnex.preview.decomposition",
-    "sklearnex.preview.linear_model",
     "sklearnex.svm",
     "sklearnex.utils",
 ]
@@ -104,6 +105,7 @@ packages_with_tests = [
 if build_distribute:
     packages_with_tests += [
         "sklearnex.spmd",
+        "sklearnex.spmd.covariance",
         "sklearnex.spmd.decomposition",
         "sklearnex.spmd.ensemble",
     ]

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # ===============================================================================
 # Copyright 2023 Intel Corporation
 #
@@ -15,7 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 

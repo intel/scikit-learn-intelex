@@ -35,13 +35,8 @@ from sklearn.utils.validation import (
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import (
-    PatchingConditionsChain,
-    control_n_jobs,
-    getFPType,
-    run_with_n_jobs,
-    sklearn_check_version,
-)
+from .._n_jobs_support import control_n_jobs
+from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
 if sklearn_check_version("1.1"):
     from sklearn.utils.validation import _check_sample_weight, _is_arraylike_not_scalar
@@ -491,6 +486,13 @@ def _predict(self, X, sample_weight=None):
 
     X = _daal4py_check_test_data(self, X)
 
+    if (
+        sklearn_check_version("1.3")
+        and isinstance(sample_weight, str)
+        and sample_weight == "deprecated"
+    ):
+        sample_weight = None
+
     _patching_status = PatchingConditionsChain("sklearn.cluster.KMeans.predict")
     _patching_status.and_conditions(
         [
@@ -532,7 +534,7 @@ def _predict(self, X, sample_weight=None):
         ]
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class KMeans(KMeans_original):
     __doc__ = KMeans_original.__doc__
 
@@ -579,7 +581,7 @@ class KMeans(KMeans_original):
             verbose=0,
             random_state=None,
             copy_x=True,
-            algorithm="auto",
+            algorithm="lloyd" if sklearn_check_version("1.1") else "auto",
         ):
             super(KMeans, self).__init__(
                 n_clusters=n_clusters,
@@ -626,7 +628,6 @@ class KMeans(KMeans_original):
             )
 
     @support_usm_ndarray()
-    @run_with_n_jobs
     def fit(self, X, y=None, sample_weight=None):
         """
         Compute k-means clustering.
@@ -657,8 +658,9 @@ class KMeans(KMeans_original):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
-    @run_with_n_jobs
-    def predict(self, X, sample_weight=None):
+    def predict(
+        self, X, sample_weight="deprecated" if sklearn_check_version("1.3") else None
+    ):
         """
         Predict the closest cluster each sample in X belongs to.
 

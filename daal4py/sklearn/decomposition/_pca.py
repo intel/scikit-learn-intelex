@@ -26,13 +26,8 @@ from sklearn.utils.validation import check_is_fitted
 import daal4py
 
 from .._device_offload import support_usm_ndarray
-from .._utils import (
-    PatchingConditionsChain,
-    control_n_jobs,
-    getFPType,
-    run_with_n_jobs,
-    sklearn_check_version,
-)
+from .._n_jobs_support import control_n_jobs
+from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
 if sklearn_check_version("1.4"):
     from sklearn.utils._array_api import get_namespace
@@ -56,31 +51,56 @@ else:
     from sklearn.decomposition.pca import _infer_dimension_
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit", "transform"])
 class PCA(PCA_original):
     __doc__ = PCA_original.__doc__
 
-    def __init__(
-        self,
-        n_components=None,
-        copy=True,
-        whiten=False,
-        svd_solver="auto",
-        tol=0.0,
-        iterated_power="auto",
-        n_oversamples=10,
-        power_iteration_normalizer="auto",
-        random_state=None,
-    ):
-        self.n_components = n_components
-        self.copy = copy
-        self.whiten = whiten
-        self.svd_solver = svd_solver
-        self.tol = tol
-        self.iterated_power = iterated_power
-        self.n_oversamples = n_oversamples
-        self.power_iteration_normalizer = power_iteration_normalizer
-        self.random_state = random_state
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {**PCA_original._parameter_constraints}
+
+    if sklearn_check_version("1.1"):
+
+        def __init__(
+            self,
+            n_components=None,
+            copy=True,
+            whiten=False,
+            svd_solver="auto",
+            tol=0.0,
+            iterated_power="auto",
+            n_oversamples=10,
+            power_iteration_normalizer="auto",
+            random_state=None,
+        ):
+            self.n_components = n_components
+            self.copy = copy
+            self.whiten = whiten
+            self.svd_solver = svd_solver
+            self.tol = tol
+            self.iterated_power = iterated_power
+            self.n_oversamples = n_oversamples
+            self.power_iteration_normalizer = power_iteration_normalizer
+            self.random_state = random_state
+
+    else:
+
+        def __init__(
+            self,
+            n_components=None,
+            copy=True,
+            whiten=False,
+            svd_solver="auto",
+            tol=0.0,
+            iterated_power="auto",
+            random_state=None,
+        ):
+            self.n_components = n_components
+            self.copy = copy
+            self.whiten = whiten
+            self.svd_solver = svd_solver
+            self.tol = tol
+            self.iterated_power = iterated_power
+            self.random_state = random_state
 
     def _validate_n_components(self, n_components, n_samples, n_features):
         if n_components == "mle":
@@ -102,7 +122,6 @@ class PCA(PCA_original):
                     "was of type=%r" % (n_components, type(n_components))
                 )
 
-    @run_with_n_jobs
     def _fit_full_daal4py(self, X, n_components):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -339,7 +358,6 @@ class PCA(PCA_original):
         _patching_status.write_log()
         return result
 
-    @run_with_n_jobs
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
         if sklearn_check_version("0.22"):
             check_is_fitted(self)

@@ -3,16 +3,19 @@ name: renovate-validation
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - .github/workflows/renovate-validation.yml
       - .github/renovate.json
   push:
     branches:
-      - master
+      - main
     paths:
       - .github/workflows/renovate-validation.yml
       - .github/renovate.json
+
+permissions:
+  contents: read
 
 jobs:
   validate:
