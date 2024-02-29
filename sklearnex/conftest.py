@@ -19,7 +19,7 @@ import logging
 
 import pytest
 
-from sklearnex import get_config, patch_sklearn, set_config, unpatch_sklearn
+from sklearnex import config_context, patch_sklearn, unpatch_sklearn
 
 
 def pytest_configure(config):
