@@ -36,12 +36,6 @@ from _utils import (
     gen_dataset,
     gen_models_info,
 )
-
-from daal4py.sklearn._utils import sklearn_check_version
-from onedal.tests.utils._dataframes_support import (
-    _convert_to_dataframe,
-    get_dataframes_and_queues,
-)
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -49,6 +43,12 @@ from sklearn.base import (
     OutlierMixin,
     RegressorMixin,
     TransformerMixin,
+)
+
+from daal4py.sklearn._utils import sklearn_check_version
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
 )
 from sklearnex import is_patched_instance
 from sklearnex.dispatcher import _is_preview_enabled
