@@ -27,8 +27,10 @@ def pytest_configure(config):
         "markers", "allow_sklearn_fallback: mark test to not check for sklearnex usage"
     )
     config.addinivalue_line(
-        "markers", "allow_fallback_to_cpu: mark test to allow for sklearnex to fallback to cpu"
+        "markers",
+        "allow_fallback_to_cpu: mark test to allow for sklearnex to fallback to cpu",
     )
+
 
 def sklearn_guard(item):
     if not item.get_closest_marker("allow_sklearn_fallback"):
@@ -64,14 +66,12 @@ def cpu_guard(item):
             yield sklearn_guard(item)
     else:
         yield sklearn_guard(item)
-        
+
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_call(item):
-    # setup logger to check for fallbacks. cpu_guard will yield
-    # sklearn_guard
+    # setup logger to check for sklearn fallback
     yield cpu_guard(item)
-
 
 
 @pytest.fixture
