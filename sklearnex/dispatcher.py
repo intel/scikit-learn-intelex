@@ -19,7 +19,7 @@ import os
 import sys
 import types
 from functools import lru_cache
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
@@ -319,7 +319,7 @@ def get_patch_names():
 
 
 def check_entity_loaded(
-    name: Optional[str] = None, modules: Optional[dict[str, Any]] = None
+    name: Optional[str] = None, modules: Optional[Dict[str, Any]] = None
 ) -> Optional[str]:
     """
     This function checks if a specified module or class is already loaded in sys.modules.
