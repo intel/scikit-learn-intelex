@@ -143,7 +143,6 @@ class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
             self._onedal_finalize_fit()
-        X = check_array(X, dtype=[np.float64, np.float32])
         return self._onedal_estimator.predict(X, queue)
 
     def _onedal_partial_fit(self, X, y, queue=None):
