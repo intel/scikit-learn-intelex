@@ -29,6 +29,9 @@ from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
+    """
+    Base class for LinearRegression oneDAL implementation.
+    """
     @abstractmethod
     def __init__(self, fit_intercept, copy_X, algorithm):
         self.fit_intercept = fit_intercept
@@ -90,6 +93,21 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         return model
 
     def predict(self, X, queue=None):
+        """
+        Predict using the linear model.
+        Parameters
+        ----------
+        X : array-like or sparse matrix, shape (n_samples, n_features)
+            Samples.
+
+        queue : dpctl.SyclQueue
+            If not None, uses this queue for computations.
+
+        Returns
+        -------
+        C : array, shape (n_samples, n_targets)
+            Returns predicted values.
+        """
         module = self._get_backend("linear_model", "regression")
 
         _check_is_fitted(self)
@@ -126,6 +144,19 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 class LinearRegression(BaseLinearRegression):
     """
     Linear Regression oneDAL implementation.
+
+    Parameters
+    ----------
+    fit_intercept : bool, default=True
+        Whether to calculate the intercept for this model. If set
+        to False, no intercept will be used in calculations
+        (i.e. data is expected to be centered).
+    
+    copy_X : bool, default=True
+        If True, X will be copied; else, it may be overwritten.
+
+    algorithm : string, default="norm_eq"
+        Algorithm used for computation on oneDAL side
     """
 
     def __init__(
@@ -134,6 +165,24 @@ class LinearRegression(BaseLinearRegression):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
 
     def fit(self, X, y, queue=None):
+        """
+        Fit linear model.
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training data.
+
+        y : array-like of shape (n_samples,) or (n_samples, n_targets)
+            Target values. Will be cast to X's dtype if necessary.
+
+        queue : dpctl.SyclQueue
+            If not None, use this queue for computations.
+            
+        Returns
+        -------
+        self : object
+            Fitted Estimator.
+        """
         module = self._get_backend("linear_model", "regression")
 
         if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
