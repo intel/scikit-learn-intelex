@@ -117,6 +117,11 @@ class LinearRegression(sklearn_LinearRegression):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
+        # It is necessary to properly update coefs for predict if we 
+        # fallback to sklearn in dispatch
+        if hasattr(self, "_onedal_estimator"):
+            del self._onedal_estimator
+
         dispatch(
             self,
             "fit",
