@@ -18,8 +18,8 @@ import logging
 from abc import ABC
 
 import numpy as np
-from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 from sklearn.exceptions import NotFittedError
+from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -118,7 +118,7 @@ class LinearRegression(sklearn_LinearRegression):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        # It is necessary to properly update coefs for predict if we 
+        # It is necessary to properly update coefs for predict if we
         # fallback to sklearn in dispatch
         if hasattr(self, "_onedal_estimator"):
             del self._onedal_estimator
@@ -151,7 +151,7 @@ class LinearRegression(sklearn_LinearRegression):
         """
         if not hasattr(self, "coef_"):
             raise NotFittedError
-        
+
         return dispatch(
             self,
             "predict",
