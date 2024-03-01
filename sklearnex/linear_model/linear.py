@@ -21,6 +21,7 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 from sklearn.exceptions import NotFittedError
+from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
