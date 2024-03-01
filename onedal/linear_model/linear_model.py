@@ -136,6 +136,9 @@ class LinearRegression(BaseLinearRegression):
     def fit(self, X, y, queue=None):
         module = self._get_backend("linear_model", "regression")
 
+        if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
+            raise TypeError("Not enough samples to fit")
+
         policy = self._get_policy(queue, X, y)
 
         if not isinstance(X, np.ndarray):
