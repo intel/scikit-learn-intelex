@@ -87,6 +87,9 @@ class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
     n_samples_seen_ : int
         The number of samples processed by the estimator. Will be reset on
         new calls to fit, but increments across ``partial_fit`` calls.
+        It should be not less than `n_features_in_` if `fit_intercept`
+        is False and not less than `n_features_in_` + 1 if `fit_intercept`
+        is True to obtain regression coefficients.
 
     batch_size_ : int
         Inferred batch size from ``batch_size``.
@@ -319,7 +322,10 @@ class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
         ----------
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples and
-            `n_features` is the number of features.
+            `n_features` is the number of features. It is necessary for
+            `n_samples` to be not less than `n_features` if `fit_intercept`
+            is False and not less than `n_features` + 1 if `fit_intercept`
+            is True
 
         y : array-like of shape (n_samples,) or (n_samples, n_targets)
             Target values, where `n_samples` is the number of samples and
@@ -330,6 +336,9 @@ class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
         self : object
             Returns the instance itself.
         """
+        is_good_for_onedal = X.shape[0] >= X.shape[1] + int(self.fit_intercept)
+        if not is_good_for_onedal:
+            raise ValueError("Not enough samples to run oneDAL backend")
 
         dispatch(
             self,
