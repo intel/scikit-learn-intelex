@@ -32,6 +32,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     """
     Base class for LinearRegression oneDAL implementation.
     """
+
     @abstractmethod
     def __init__(self, fit_intercept, copy_X, algorithm):
         self.fit_intercept = fit_intercept
@@ -149,11 +150,7 @@ class LinearRegression(BaseLinearRegression):
         Whether to calculate the intercept for this model. If set
         to False, no intercept will be used in calculations
         (i.e. data is expected to be centered).
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 8518ea24 (Update docstrings)
     copy_X : bool, default=True
         If True, X will be copied; else, it may be overwritten.
 
@@ -179,11 +176,7 @@ class LinearRegression(BaseLinearRegression):
 
         queue : dpctl.SyclQueue
             If not None, use this queue for computations.
-<<<<<<< HEAD
 
-=======
-            
->>>>>>> 8518ea24 (Update docstrings)
         Returns
         -------
         self : object
