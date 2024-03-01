@@ -19,6 +19,7 @@ from abc import ABC
 
 import numpy as np
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+from sklearn.exceptions import NotFittedError
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -148,6 +149,9 @@ class LinearRegression(sklearn_LinearRegression):
         C : array, shape (n_samples, n_targets)
             Returns predicted values.
         """
+        if not hasattr(self, "coef_"):
+            raise NotFittedError
+        
         return dispatch(
             self,
             "predict",
