@@ -23,4 +23,4 @@ from .._base import BaseEstimatorSPMD
 class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
     @support_usm_ndarray()
     def compute(self, data, weights=None, queue=None):
-        return super().compute(data, weights, queue)
+        return super().compute(data, weights=weights, queue=queue)

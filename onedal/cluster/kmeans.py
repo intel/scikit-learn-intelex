@@ -387,7 +387,7 @@ class KMeans(_BaseKMeans):
         self.algorithm = algorithm
         assert self.algorithm == "lloyd"
 
-    def fit(self, X, queue=None):
+    def fit(self, X, y=None, queue=None):
         return super()._fit(X, self._get_backend("kmeans", "clustering", None), queue)
 
     def predict(self, X, queue=None):
@@ -409,7 +409,7 @@ class KMeans(_BaseKMeans):
         """
         return super()._predict(X, self._get_backend("kmeans", "clustering", None), queue)
 
-    def fit_predict(self, X, queue=None):
+    def fit_predict(self, X, y=None, queue=None):
         """Compute cluster centers and predict cluster index for each sample.
 
         Convenience method; equivalent to calling fit(X) followed by
@@ -420,14 +420,17 @@ class KMeans(_BaseKMeans):
         X : array-like of shape (n_samples, n_features)
             New data to transform.
 
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
         Returns
         -------
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        return self.fit(X, queue).labels_
+        return self.fit(X, queue=queue).labels_
 
-    def fit_transform(self, X, queue=None):
+    def fit_transform(self, X, y=None, queue=None):
         """Compute clustering and transform X to cluster-distance space.
 
         Equivalent to fit(X).transform(X), but more efficiently implemented.
@@ -436,6 +439,9 @@ class KMeans(_BaseKMeans):
         ----------
         X : array-like of shape (n_samples, n_features)
             New data to transform.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
@@ -491,7 +497,7 @@ def k_means(
         random_state=random_state,
         copy_x=copy_x,
         algorithm=algorithm,
-    ).fit(X, queue)
+    ).fit(X, queue=queue)
     if return_n_iter:
         return est.cluster_centers_, est.labels_, est.inertia_, est.n_iter_
     else:
