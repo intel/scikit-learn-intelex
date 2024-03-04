@@ -373,4 +373,4 @@ def test_check_entity_loaded():
     # Test with a specific class from sklearn
     from sklearn.linear_model import LogisticRegression
 
-    assert check_entity_loaded("LogisticRegression") is not None
+    assert "LogisticRegression" in check_entity_loaded("LogisticRegression")

@@ -38,7 +38,6 @@ def _is_preview_enabled():
 
 @lru_cache(maxsize=None)
 def get_patch_map_core(preview=False):
-
     if preview:
         # use recursion to guarantee that state of preview
         # and non-preview maps are done at the same time.
@@ -341,14 +340,8 @@ def check_entity_loaded(
     'LogisticRegression or some parts of it are already loaded. patch_sklearn() only affects classes imported *after*
     calling it. To retrieve patched entities, make sure to call patch_sklearn() before any import statements from LogisticRegression.'
     """
-    modules = modules if modules is not None else sys.modules
-    if name is None and "sklearn" in modules.keys():
-        return (
-            f"sklearn or some parts of it are already loaded. "
-            "patch_sklearn() only affects classes imported *after* calling it. "
-            "To retrieve patched entities, make sure to call patch_sklearn() before any import statements from {name}."
-        )
-    elif name is not None:
+
+    def _get_loaded_classes():
         loaded_classes = []
         for key, module in sys.modules.items():
             if "sklearn" in key and isinstance(module, types.ModuleType):
@@ -359,12 +352,21 @@ def check_entity_loaded(
                         if isinstance(cls, type)
                     ]
                 )
-        if name in loaded_classes:
-            return (
-                f"{name} or some parts of it are already loaded. "
-                "patch_sklearn() only affects classes imported *after* calling it. "
-                "To retrieve patched entities, make sure to call patch_sklearn() before any import statements from {name}."
-            )
+        return loaded_classes
+
+    # list of all loaded modules, uses sys.modules per default
+    modules = modules if modules is not None else sys.modules
+
+    # is `name` or anything from sklearn already loaded?
+    loaded = name is None and "sklearn" in modules.keys()
+    loaded |= name is not None and name in _get_loaded_classes()
+
+    if loaded:
+        return (
+            f"{name or 'sklearn'} or some parts of it are already loaded. "
+            "patch_sklearn() only affects classes imported *after* calling it. "
+            "To retrieve patched entities, make sure to call patch_sklearn() before any import statements from sklearn."
+        )
 
 
 def patch_sklearn(
