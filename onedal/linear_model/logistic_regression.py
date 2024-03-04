@@ -54,7 +54,11 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
             "max_iter": self.max_iter,
             "C": self.C,
             "optimizer": self.solver,
-            "result_option": (intercept + "coefficients|iterations_count"),
+            "result_option": (
+                intercept + "coefficients|iterations_count" + "|inner_iterations_count"
+                if self.solver == "newton-cg"
+                else ""
+            ),
         }
 
     def _fit(self, X, y, module, queue):
@@ -84,6 +88,8 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
         self._onedal_model = result.model
         self.n_iter_ = np.array([result.iterations_count])
+        if self.solver == "newton-cg":
+            self.n_inner_iter_ = result.inner_iterations_count
 
         coeff = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = coeff[:, 1:], coeff[:, 0]
