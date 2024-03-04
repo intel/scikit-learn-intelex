@@ -36,6 +36,14 @@ from _utils import (
     gen_dataset,
     gen_models_info,
 )
+from sklearn.base import (
+    BaseEstimator,
+    ClassifierMixin,
+    ClusterMixin,
+    OutlierMixin,
+    RegressorMixin,
+    TransformerMixin,
+)
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.tests.utils._dataframes_support import (
@@ -292,6 +300,29 @@ def test_is_patched_instance(estimator):
     unpatched = UNPATCHED_MODELS[estimator]
     assert is_patched_instance(patched), f"{patched} is a patched instance"
     assert not is_patched_instance(unpatched), f"{unpatched} is an unpatched instance"
+
+
+@pytest.mark.parametrize("estimator", PATCHED_MODELS.keys())
+def test_if_estimator_inherits_sklearn(estimator):
+    est = PATCHED_MODELS[estimator]
+    if estimator in UNPATCHED_MODELS:
+        assert issubclass(
+            est, UNPATCHED_MODELS[estimator]
+        ), f"{estimator} does not inherit from the patched sklearn estimator"
+    else:
+        assert issubclass(est, BaseEstimator)
+        assert any(
+            [
+                issubclass(est, i)
+                for i in [
+                    ClassifierMixin,
+                    ClusterMixin,
+                    OutlierMixin,
+                    RegressorMixin,
+                    TransformerMixin,
+                ]
+            ]
+        ), f"{estimator} does not inherit a sklearn Mixin"
 
 
 @pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
