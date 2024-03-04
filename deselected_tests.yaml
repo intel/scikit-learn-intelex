@@ -1109,6 +1109,14 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
 
+  # Deselected tests for incremental algorithms
+  # Need to rework getting policy to correctly obtain it for method without data (finalize_fit)
+  # and avoid keeping it in class attribute, also need to investigate how to implement
+  # partial result serialization
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle]
+  # There are not enough data to run onedal backend
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
+
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
   - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
