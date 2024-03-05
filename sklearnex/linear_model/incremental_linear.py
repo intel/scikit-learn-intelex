@@ -216,6 +216,11 @@ class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
             )
 
         n_samples, n_features = X.shape
+
+        is_good_for_onedal = X.shape[0] >= X.shape[1] + int(self.fit_intercept)
+        if not is_good_for_onedal:
+            raise ValueError("Not enough samples to run oneDAL backend")
+
         if self.batch_size is None:
             self.batch_size_ = 5 * n_features
         else:
@@ -336,9 +341,6 @@ class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
         self : object
             Returns the instance itself.
         """
-        is_good_for_onedal = X.shape[0] >= X.shape[1] + int(self.fit_intercept)
-        if not is_good_for_onedal:
-            raise ValueError("Not enough samples to run oneDAL backend")
 
         dispatch(
             self,
