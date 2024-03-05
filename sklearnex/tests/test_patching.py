@@ -18,7 +18,6 @@
 import importlib
 import inspect
 import logging
-import os
 import re
 import sys
 from inspect import signature
@@ -50,7 +49,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex import is_patched_instance
+from sklearnex import check_entity_loaded, is_patched_instance
 from sklearnex.dispatcher import _is_preview_enabled
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 
