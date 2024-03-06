@@ -149,8 +149,6 @@ class LinearRegression(sklearn_LinearRegression):
         C : array, shape (n_samples, n_targets)
             Returns predicted values.
         """
-        if not hasattr(self, "coef_"):
-            raise NotFittedError
 
         return dispatch(
             self,
@@ -313,6 +311,13 @@ class LinearRegression(sklearn_LinearRegression):
             super().fit(X, y)
 
     def _onedal_predict(self, X, queue=None):
+        if not hasattr(self, "coef_"):
+            msg = (
+                "This %(name)s instance is not fitted yet. Call 'fit' with "
+                "appropriate arguments before using this estimator."
+            )
+            raise NotFittedError(msg % {"name": self.__class__.__name__})
+
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
 
