@@ -33,7 +33,6 @@ def _is_preview_enabled():
 
 @lru_cache(maxsize=None)
 def get_patch_map_core(preview=False):
-
     if preview:
         # use recursion to guarantee that state of preview
         # and non-preview maps are done at the same time.
@@ -57,7 +56,6 @@ def get_patch_map_core(preview=False):
             # when preview is used, setting the mapping element[1] to None
             # should NOT be done. This may lose track of the unpatched
             # sklearn estimator or function.
-
             # KMeans
             cluster_module, _, _ = mapping["kmeans"][0][0]
             sklearn_obj = mapping["kmeans"][0][1]

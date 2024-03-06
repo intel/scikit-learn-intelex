@@ -20,9 +20,8 @@ from sklearn.utils.extmath import stable_cumsum
 
 from daal4py.sklearn._utils import sklearn_check_version
 
-from ..common._policy import _get_policy
 from ..common._base import BaseEstimator
-
+from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
@@ -51,7 +50,6 @@ class PCA(BaseEstimator):
             "is_deterministic": self.is_deterministic,
             "whiten": self.whiten,
         }
-
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
@@ -86,7 +84,6 @@ class PCA(BaseEstimator):
         else:
             return 0.0
 
-
     def fit(self, X, y=None, queue=None):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -107,9 +104,7 @@ class PCA(BaseEstimator):
         self.variances_ = from_table(result.variances)
         self.components_ = from_table(result.eigenvectors)
         self.singular_values_ = from_table(result.singular_values).ravel()
-        self.explained_variance_ = np.maximum(
-            from_table(result.eigenvalues).ravel(), 0
-        )
+        self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
         self.explained_variance_ratio_ = from_table(
             result.explained_variances_ratio
         ).ravel()
@@ -146,7 +141,7 @@ class PCA(BaseEstimator):
         model = self._create_model()
         X = _convert_to_supported(policy, X)
         params = self.get_onedal_params(X, stage="predict")
-    
+
         result = self._get_backend(
             "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
         )
