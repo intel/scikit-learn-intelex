@@ -18,7 +18,8 @@ import numbers
 import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin, MultiOutputMixin
+from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
+from sklearn.exceptions import NotFittedError
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -125,6 +126,13 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     _onedal_gpu_supported = _onedal_supported
 
     def _onedal_predict(self, X, queue=None):
+        if not hasattr(self, "coef_"):
+            msg = (
+                "This %(name)s instance is not fitted yet. Call 'fit' with "
+                "appropriate arguments before using this estimator."
+            )
+            raise NotFittedError(msg % {"name": self.__class__.__name__})
+
         if sklearn_check_version("1.2"):
             self._validate_params()
 
