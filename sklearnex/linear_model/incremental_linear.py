@@ -133,14 +133,12 @@ class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
-                force_all_finite=False,
             )
         else:
             X = check_array(
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
-                force_all_finite=False,
             )
 
         assert hasattr(self, "_onedal_estimator")
