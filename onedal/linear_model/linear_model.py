@@ -29,6 +29,10 @@ from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
+    """
+    Base class for LinearRegression oneDAL implementation.
+    """
+
     @abstractmethod
     def __init__(self, fit_intercept, copy_X, algorithm):
         self.fit_intercept = fit_intercept
