@@ -350,6 +350,7 @@ if daal_check_version((2024, "P", 100)):
                 )
 
         fit.__doc__ = sklearn_PCA.fit.__doc__
+        transform.__doc__ = sklearn_PCA.transform.__doc__
         fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
 
 else:
