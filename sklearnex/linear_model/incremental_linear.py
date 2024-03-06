@@ -128,8 +128,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     def _onedal_predict(self, X, queue=None):
         if not hasattr(self, "coef_"):
             msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' with "
-                "appropriate arguments before using this estimator."
+                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
+                "with appropriate arguments before using this estimator."
             )
             raise NotFittedError(msg % {"name": self.__class__.__name__})
 
