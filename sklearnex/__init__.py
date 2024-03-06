@@ -52,9 +52,9 @@ __all__ = [
 ]
 
 
-from onedal import _is_dpc_backend
+from onedal import _is_spmd_backend
 
-if _is_dpc_backend:
+if _is_spmd_backend:
     __all__.append("spmd")
 
 

@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import functools
 import os
 import sys
 import warnings
@@ -75,23 +76,24 @@ def get_daal_version() -> DaalVersionTuple:
     return int(dv()[0:4]), str(dv()[10:11]), int(dv()[4:8])
 
 
+@functools.lru_cache(maxsize=256, typed=False)
 def daal_check_version(
     required_version: Tuple[Any, ...],
-    _get_daal_version: Callable[[], DaalVersionTuple] = get_daal_version,
+    daal_version: Tuple[Any, ...] = get_daal_version(),
 ) -> bool:
     """Check daal version provided as (MAJOR, STATUS, MINOR+PATCH)
 
     This function also accepts a list or tuple of daal versions. It will return true if
-    any version in the list/tuple is <= `_get_daal_version()`.
+    any version in the list/tuple is <= `daal_version`.
     """
     if isinstance(required_version[0], (list, tuple)):
-        # a list of version candidates was provided, recursively check if any is <= _get_daal_version
+        # a list of version candidates was provided, recursively check if any is <= daal_version
         return any(
-            map(lambda ver: daal_check_version(ver, _get_daal_version), required_version)
+            map(lambda ver: daal_check_version(ver, daal_version), required_version)
         )
 
     major_required, status_required, patch_required = required_version
-    major, status, patch = _get_daal_version()
+    major, status, patch = daal_version
 
     if status != status_required:
         return False
@@ -104,19 +106,14 @@ def daal_check_version(
     return False
 
 
-sklearn_versions_map = {}
-
-
+@functools.lru_cache(maxsize=256, typed=False)
 def sklearn_check_version(ver):
-    if ver in sklearn_versions_map.keys():
-        return sklearn_versions_map[ver]
     if hasattr(Version(ver), "base_version"):
         base_sklearn_version = Version(sklearn_version).base_version
         res = bool(Version(base_sklearn_version) >= Version(ver))
     else:
         # packaging module not available
         res = bool(Version(sklearn_version) >= Version(ver))
-    sklearn_versions_map[ver] = res
     return res
 
 
