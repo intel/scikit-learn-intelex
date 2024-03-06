@@ -20,12 +20,9 @@ from sklearn.utils.extmath import stable_cumsum
 
 from daal4py.sklearn._utils import sklearn_check_version
 
-<<<<<<< HEAD
 from ..common._policy import _get_policy
-=======
 from ..common._base import BaseEstimator
-from ..common.hyperparameters import get_hyperparameters
->>>>>>> main
+
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
@@ -55,7 +52,7 @@ class PCA(BaseEstimator):
             "whiten": self.whiten,
         }
 
-<<<<<<< HEAD
+
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)
 
@@ -89,9 +86,8 @@ class PCA(BaseEstimator):
         else:
             return 0.0
 
-=======
->>>>>>> main
-    def fit(self, X, queue):
+
+    def fit(self, X, y=None, queue=None):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
 
@@ -103,19 +99,19 @@ class PCA(BaseEstimator):
         X = _convert_to_supported(policy, X)
 
         params = self.get_onedal_params(X)
-        pca_result = _backend.decomposition.dim_reduction.train(
-            policy, params, to_table(X)
+        result = self._get_backend(
+            "decomposition", "dim_reduction", "train", policy, params, to_table(X)
         )
 
-        self.mean_ = from_table(pca_result.means).ravel()
-        self.variances_ = from_table(pca_result.variances)
-        self.components_ = from_table(pca_result.eigenvectors)
-        self.singular_values_ = from_table(pca_result.singular_values).ravel()
+        self.mean_ = from_table(result.means).ravel()
+        self.variances_ = from_table(result.variances)
+        self.components_ = from_table(result.eigenvectors)
+        self.singular_values_ = from_table(result.singular_values).ravel()
         self.explained_variance_ = np.maximum(
-            from_table(pca_result.eigenvalues).ravel(), 0
+            from_table(result.eigenvalues).ravel(), 0
         )
         self.explained_variance_ratio_ = from_table(
-            pca_result.explained_variances_ratio
+            result.explained_variances_ratio
         ).ravel()
         self.n_samples_ = n_samples
         self.n_features_ = n_features
@@ -145,20 +141,13 @@ class PCA(BaseEstimator):
         self._onedal_model = m
         return m
 
-    def predict(self, X, queue):
+    def predict(self, X, queue=None):
         policy = self._get_policy(queue, X)
         model = self._create_model()
-
         X = _convert_to_supported(policy, X)
-<<<<<<< HEAD
-
         params = self.get_onedal_params(X, stage="predict")
-        result = _backend.decomposition.dim_reduction.infer(
-            policy, params, model, to_table(X)
-=======
-        params = self.get_onedal_params(X)
+    
         result = self._get_backend(
             "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
->>>>>>> main
         )
         return from_table(result.transformed_data)

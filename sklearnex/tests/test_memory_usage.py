@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+
 import gc
 import logging
 import tracemalloc
@@ -28,7 +29,6 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
 from sklearnex import get_patch_map
-from sklearnex.decomposition import PCA
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.model_selection import train_test_split
 from sklearnex.utils import _assert_all_finite
@@ -75,6 +75,8 @@ class RocAucEstimator:
 
 
 # add all daal4py estimators enabled in patching (except banned)
+
+
 def get_patched_estimators(ban_list, output_list):
     patched_estimators = get_patch_map().values()
     for listing in patched_estimators:
@@ -96,7 +98,6 @@ def remove_duplicated_estimators(estimators_list):
 
 BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
 estimators = [
-    PCA,
     TrainTestSplitEstimator,
     FiniteCheckEstimator,
     CosineDistancesEstimator,
@@ -153,6 +154,7 @@ def split_train_inference(kf, x, y, estimator):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         # TODO: add parameters for all estimators to prevent
         # fallback to stock scikit-learn with default parameters
+
         alg = estimator()
         alg.fit(x_train, y_train)
         if hasattr(alg, "predict"):
@@ -163,7 +165,6 @@ def split_train_inference(kf, x, y, estimator):
             alg.kneighbors(x_test)
         del alg, x_train, x_test, y_train, y_test
         mem_tracks.append(tracemalloc.get_traced_memory()[0])
-
     return mem_tracks
 
 
@@ -215,6 +216,10 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
     )
 
 
+# disable fallback check as logging impacts memory use
+
+
+@pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("data_transform_function", data_transforms)
 @pytest.mark.parametrize("estimator", estimators)
 @pytest.mark.parametrize("data_shape", data_shapes)
