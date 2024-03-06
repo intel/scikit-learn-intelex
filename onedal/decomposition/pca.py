@@ -21,7 +21,6 @@ from sklearn.utils.extmath import stable_cumsum
 from daal4py.sklearn._utils import sklearn_check_version
 
 from ..common._base import BaseEstimator
-from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
@@ -51,8 +50,6 @@ class PCA(BaseEstimator):
             "whiten": self.whiten,
         }
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _resolve_n_components_for_training(self, shape_tuple):
         if self.n_components is None or self.n_components == "mle":
