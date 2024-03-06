@@ -50,7 +50,6 @@ class PCA(BaseEstimator):
             "whiten": self.whiten,
         }
 
-
     def _resolve_n_components_for_training(self, shape_tuple):
         if self.n_components is None or self.n_components == "mle":
             return min(shape_tuple)
