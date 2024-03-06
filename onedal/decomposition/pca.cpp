@@ -87,14 +87,14 @@ void init_train_result(py::module_& m) {
     py::class_<result_t>(m, "train_result")
         .def(py::init())
         .DEF_ONEDAL_PY_PROPERTY(model, result_t)
-        .def_property_readonly("eigenvectors", &result_t::get_eigenvectors);
+        .def_property_readonly("eigenvectors", &result_t::get_eigenvectors)
         .def_property_readonly("eigenvalues", &result_t::get_eigenvalues)
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240100
         .def_property_readonly("singular_values", &result_t::get_singular_values)
         .def_property_readonly("explained_variances_ratio", &result_t::get_explained_variances_ratio)
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240100
         .def_property_readonly("means", &result_t::get_means)
-        .def_property_readonly("variances", &result_t::get_variances)
+        .def_property_readonly("variances", &result_t::get_variances);
 
 }
 
@@ -157,7 +157,6 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
         ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
         ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
     #endif
-
 }
 
 ONEDAL_PY_TYPE2STR(dal::pca::task::dim_reduction, "dim_reduction");
