@@ -353,6 +353,14 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_matrix] >=1.4
   - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_array] >=1.4
 
+  # Deselected tests for incremental algorithms
+  # Need to rework getting policy to correctly obtain it for method without data (finalize_fit)
+  # and avoid keeping it in class attribute, also need to investigate how to implement
+  # partial result serialization
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle]
+  # There are not enough data to run onedal backend
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
+
 
   # --------------------------------------------------------
   # No need to test daal4py patching
