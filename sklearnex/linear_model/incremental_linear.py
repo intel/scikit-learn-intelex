@@ -18,7 +18,7 @@ import numbers
 import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, RegressorMixin, MultiOutputMixin
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -45,7 +45,7 @@ from .._utils import PatchingConditionsChain, register_hyperparameters
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
 )
-class IncrementalLinearRegression(RegressorMixin, BaseEstimator):
+class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimator):
     """
     Incremental estimator for linear regression.
     Allows to train linear regression if data are splitted into batches.
