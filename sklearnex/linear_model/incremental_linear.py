@@ -126,13 +126,6 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     _onedal_gpu_supported = _onedal_supported
 
     def _onedal_predict(self, X, queue=None):
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
-                "with appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
         if sklearn_check_version("1.2"):
             self._validate_params()
 
@@ -373,6 +366,12 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         C : array, shape (n_samples, n_targets)
             Returns predicted values.
         """
+        if not hasattr(self, "coef_"):
+            msg = (
+                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
+                "with appropriate arguments before using this estimator."
+            )
+            raise NotFittedError(msg % {"name": self.__class__.__name__})
 
         return dispatch(
             self,
