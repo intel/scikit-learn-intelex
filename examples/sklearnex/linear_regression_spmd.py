@@ -39,7 +39,7 @@ def generate_X_y(ns, data_seed):
 
 
 def get_train_data(rank):
-    return generate_X_y(101, rank)
+    return generate_X_y(132, rank)
 
 
 def get_test_data(rank):
