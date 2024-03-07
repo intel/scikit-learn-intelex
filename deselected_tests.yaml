@@ -1118,7 +1118,6 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
 
-
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
   - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
