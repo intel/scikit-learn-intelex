@@ -193,7 +193,7 @@ if daal_check_version((2024, "P", 100)):
             )
 
             if method_name == "fit":
-                shape_tuple, _is_shape_compatible = self._get_shape(X)
+                shape_tuple, _is_shape_compatible = self._get_shape_compatibility(X)
                 patching_status.and_conditions(
                     [
                         (
@@ -230,7 +230,7 @@ if daal_check_version((2024, "P", 100)):
         def _onedal_gpu_supported(self, method_name, *data):
             return self._onedal_supported(method_name, *data)
 
-        def _get_shape(self, X):
+        def _get_shape_compatibility(self, X):
             _is_shape_compatible = False
             _empty_shape = (0, 0)
             if hasattr(X, "shape"):
