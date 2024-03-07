@@ -52,6 +52,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         module = self._get_backend("linear_model", "regression")
         model = module.model()
 
+        coefficients = self.coef_
+        dtype = get_dtype(coefficients)
+
         if coefficients.ndim == 2:
             n_features_in = coefficients.shape[1]
             n_targets_in = coefficients.shape[0]
