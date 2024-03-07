@@ -197,6 +197,9 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         self._need_to_finalize = False
 
     def _onedal_fit(self, X, y, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+
         if sklearn_check_version("1.0"):
             X, y = self._validate_data(
                 X, y, dtype=[np.float64, np.float32], copy=self.copy_X, multi_output=True
