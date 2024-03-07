@@ -113,9 +113,6 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         policy = self._get_policy(queue, X)
 
-        if isinstance(X, np.ndarray):
-            X = np.asarray(X)
-
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=False, ensure_2d=False
         )
@@ -185,9 +182,11 @@ class LinearRegression(BaseLinearRegression):
         module = self._get_backend("linear_model", "regression")
 
         # TODO Fix _check_X_y to make sure this conversion is there
-
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
+
+        if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
+            raise TypeError("Not enough samples to fit")
 
         dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
