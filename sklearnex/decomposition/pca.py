@@ -29,7 +29,7 @@ if daal_check_version((2024, "P", 100)):
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
 
-    from .._device_offload import dispatch, wrap_output_data
+    from .._device_offload import dispatch, support_usm_ndarray
     from .._utils import PatchingConditionsChain
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
@@ -143,7 +143,7 @@ if daal_check_version((2024, "P", 100)):
 
             return U, S, Vt
 
-        @wrap_output_data
+        @support_usm_ndarray()
         def transform(self, X):
             return dispatch(
                 self,
@@ -168,6 +168,7 @@ if daal_check_version((2024, "P", 100)):
 
             return self._onedal_estimator.predict(X, queue=queue)
 
+        @support_usm_ndarray()
         def fit_transform(self, X, y=None):
             U, S, Vt = self._fit(X)
             if U is None:
