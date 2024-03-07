@@ -1191,7 +1191,6 @@ gpu:
   # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
   - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
 
-
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
   - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
