@@ -28,8 +28,9 @@ if daal_check_version((2024, "P", 100)):
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
+    from onedal._device_offload import support_usm_ndarray
 
-    from .._device_offload import dispatch, support_usm_ndarray
+    from .._device_offload import dispatch
     from .._utils import PatchingConditionsChain
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
