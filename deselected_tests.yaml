@@ -366,6 +366,7 @@ deselected_tests:
   # and avoid keeping it in class attribute, also need to investigate how to implement
   # partial result serialization
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle(readonly_memmap=True)]
   # There are not enough data to run onedal backend
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
 
@@ -1190,13 +1191,6 @@ gpu:
   # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
   - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
 
-  # Deselected tests for incremental algorithms
-  # Need to rework getting policy to correctly obtain it for method without data (finalize_fit)
-  # and avoid keeping it in class attribute, also need to investigate how to implement
-  # partial result serialization
-  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle]
-  # There are not enough data to run onedal backend
-  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
 
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
