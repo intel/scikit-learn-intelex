@@ -186,7 +186,7 @@ class LinearRegression(BaseLinearRegression):
             X = np.asarray(X)
 
         if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
-            raise TypeError("Not enough samples to fit")
+            raise ValueError("Not enough samples to fit")
 
         dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
