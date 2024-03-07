@@ -52,11 +52,6 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         module = self._get_backend("linear_model", "regression")
         model = module.model()
 
-        coefficients = self.coef_
-        dtype = get_dtype(coefficients)
-        if not isinstance(coefficients, np.ndarray):
-            coefficients = np.asarray(coefficients, dtype=dtype)
-
         if coefficients.ndim == 2:
             n_features_in = coefficients.shape[1]
             n_targets_in = coefficients.shape[0]
@@ -114,9 +109,6 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         _check_is_fitted(self)
 
         policy = self._get_policy(queue, X)
-
-        if isinstance(X, np.ndarray):
-            X = np.asarray(X)
 
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=False, ensure_2d=False
@@ -186,13 +178,12 @@ class LinearRegression(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
-        if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
-            raise TypeError("Not enough samples to fit")
-
-        policy = self._get_policy(queue, X, y)
-
+        # TODO Fix _check_X_y to make sure this conversion is there
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
+
+        if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
+            raise TypeError("Not enough samples to fit")
 
         dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
@@ -201,8 +192,9 @@ class LinearRegression(BaseLinearRegression):
 
         y = np.asarray(y).astype(dtype=dtype)
 
-        # Finiteness is checked in the sklearnex wrapper
         X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
+
+        policy = self._get_policy(queue, X, y)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
