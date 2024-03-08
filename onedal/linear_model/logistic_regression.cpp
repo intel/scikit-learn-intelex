@@ -95,9 +95,12 @@ auto get_onedal_result_options(const py::dict& params) {
             else if (match.str() == "iterations_count") {
                 onedal_options = onedal_options | result_options::iterations_count;
             }
+#if ONEDAL_VERSION >= 20240400
             else if (match.str() == "inner_iterations_count") {
                 onedal_options = onedal_options | result_options::inner_iterations_count;
-            } else {
+            }
+#endif 
+            else {
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
             }
         }
@@ -210,7 +213,9 @@ void init_train_result(py::module_& m) {
                    .DEF_ONEDAL_PY_PROPERTY(intercept, result_t)
                    .DEF_ONEDAL_PY_PROPERTY(coefficients, result_t)
                    .DEF_ONEDAL_PY_PROPERTY(iterations_count, result_t)
+#if ONEDAL_VERSION >= 20240400
                    .DEF_ONEDAL_PY_PROPERTY(inner_iterations_count, result_t)
+#endif
                    .DEF_ONEDAL_PY_PROPERTY(packed_coefficients, result_t)
                    .DEF_ONEDAL_PY_PROPERTY(result_options, result_t);
 }
