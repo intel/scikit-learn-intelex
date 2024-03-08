@@ -32,8 +32,8 @@ class BaseLogisticRegression(ABC):
         self.intercept_ = self._onedal_estimator.intercept_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_iter_ = self._onedal_estimator.n_iter_
-        if self.solver:
-            self.n_inner_iter_ = self._onedal_estimator.n_inner_iter_
+        if hasattr(self._onedal_estimator, "_n_inner_iter"):
+            self._n_inner_iter = self._onedal_estimator._n_inner_iter
 
 
 if daal_check_version((2024, "P", 1)):
