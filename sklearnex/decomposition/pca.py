@@ -39,7 +39,7 @@ if daal_check_version((2024, "P", 100)):
 
     from onedal.decomposition import PCA as onedal_PCA
 
-    @control_n_jobs(decorated_methods=["fit", "transform"])
+    @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
         __doc__ = sklearn_PCA.__doc__
 
