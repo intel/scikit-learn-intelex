@@ -57,6 +57,22 @@ struct method2t {
     Ops ops;
 };
 
+template <typename Task, typename Ops>
+struct incrementalmethod2t {
+    incrementalmethod2t(const Task& task, const Ops& ops) : ops(ops) {}
+
+    template <typename Float>
+    auto operator()(const py::dict& params) {
+        using namespace dal::pca;
+
+        const auto method = params["method"].cast<std::string>();
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "cov", ops, Float, method::cov);
+        ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
+    }
+
+    Ops ops;
+};
+
 template <typename Task>
 void init_model(py::module_& m) {
     using namespace dal::pca;
@@ -95,7 +111,19 @@ void init_train_result(py::module_& m) {
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240100
         .def_property_readonly("means", &result_t::get_means)
         .def_property_readonly("variances", &result_t::get_variances);
+}
 
+template <typename Task>
+void init_partial_train_result(py::module_& m) {
+    using namespace dal::pca;
+    using result_t = partial_train_result<Task>;
+
+    py::class_<result_t>(m, "partial_train_result")
+        .def(py::init())
+        .DEF_ONEDAL_PY_PROPERTY(partial_n_rows, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(partial_crossproduct, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(partial_sum, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(auxiliary_table, result_t);
 }
 
 template <typename Task>
@@ -120,6 +148,32 @@ void init_train_ops(py::module& m) {
 }
 
 template <typename Policy, typename Task>
+void init_partial_train_ops(py::module& m) {
+    using prev_result_t = dal::pca::partial_train_result<Task>;
+    m.def("partial_train", [](
+        const Policy& policy,
+        const py::dict& params,
+        const prev_result_t& prev,
+        const table& data) {
+            using namespace dal::pca;
+            using input_t = partial_train_input<Task>;
+            partial_train_ops ops(policy, input_t{ prev, data }, params2desc{});
+            return fptype2t{ incrementalmethod2t{ Task{}, ops } }(params);
+        }
+    );
+};
+
+template <typename Policy, typename Task>
+void init_finalize_train_ops(py::module& m) {
+    using input_t = dal::pca::partial_train_result<Task>;
+    m.def("finalize_train", [](const Policy& policy, const py::dict& params, const input_t& data) {
+            finalize_train_ops ops(policy, data, params2desc{});
+            return fptype2t{ incrementalmethod2t{ Task{}, ops } }(params);
+        }
+    );
+};
+
+template <typename Policy, typename Task>
 void init_infer_ops(py::module_& m) {
     m.def("infer",
           [](const Policy& policy,
@@ -136,8 +190,11 @@ void init_infer_ops(py::module_& m) {
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_result);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_train_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_train_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_train_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_finalize_train_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_infer_ops);
 } // namespace decomposition
 
@@ -155,7 +212,11 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
         ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
         ONEDAL_PY_INSTANTIATE(init_model, sub, task_list);
         ONEDAL_PY_INSTANTIATE(init_train_result, sub, task_list);
+        ONEDAL_PY_INSTANTIATE(init_partial_train_result, sub, task_list);
         ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
+        ONEDAL_PY_INSTANTIATE(init_partial_train_ops, sub, policy_list, task_list);
+        ONEDAL_PY_INSTANTIATE(init_finalize_train_ops, sub, policy_list, task_list);
+        ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
     #endif
 }
 

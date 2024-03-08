@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,22 @@
 # limitations under the License.
 # ==============================================================================
 
-from .incremental_pca import IncrementalPCA
-from .pca import PCA
+import pytest
+from onedal.decomposition import IncrementalPCA
+from onedal.tests.utils._device_selection import get_queues
+import numpy as np
 
-__all__ = ["IncrementalPCA", "PCA"]
+
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_on_gold_data(queue, dtype):
+    X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
+    X = X.astype(dtype=dtype)
+    X_split = np.array_split(X, 2)
+    incpca = IncrementalPCA()
+
+    for i in range(2):
+        incpca.partial_fit(X_split[i], queue=queue)
+
+    result = incpca.finalize_fit()
+    
