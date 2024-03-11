@@ -61,7 +61,7 @@ def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
     X = (np.finfo(dtype).max * rand.random_sample(shape)).astype(dtype)
 
     if check:
-        loc = np.randint(0, X.size - 1)
+        loc = rand.randint(0, X.size - 1)
         X.reshape((-1,))[loc] = float(check)
 
     try:
@@ -83,7 +83,7 @@ def test_assert_finite_random_shape_and_location(dtype, allow_nan, check, seed):
     X = (np.finfo(dtype).max * rand.random_sample(rand.randint(lb, ub))).astype(dtype)
 
     if check:
-        loc = np.randint(0, X.size - 1)
+        loc = rand.randint(0, X.size - 1)
         X[loc] = float(check)
 
     try:
