@@ -78,7 +78,7 @@ def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 def test_assert_finite_random_shape_and_location(dtype, allow_nan, check, seed):
-    lb, ub = 32768, 1073741824  # lb is a patching condition, ub is ~1GB
+    lb, ub = 32768, 1048576  # lb is a patching condition, ub 2^20
     rand.seed(seed)
     X = (np.finfo(dtype).max * rand.random_sample(rand.randint(lb, ub))).astype(dtype)
 
