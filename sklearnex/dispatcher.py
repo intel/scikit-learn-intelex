@@ -369,9 +369,7 @@ def check_entity_loaded(
         )
 
 
-def patch_sklearn(
-    name=None, verbose=True, global_patch=False, preview=False, no_msg=False
-):
+def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
     if preview:
         os.environ["SKLEARNEX_PREVIEW"] = "enabled_via_patch_sklearn"
     if not sklearn_check_version("0.22"):
@@ -380,7 +378,7 @@ def patch_sklearn(
             "for scikit-learn >= 0.22 only ..."
         )
 
-    if not no_msg and (msg := check_entity_loaded(name)) is not None:
+    if verbose and (msg := check_entity_loaded(name)) is not None:
         logger.warning(msg)
 
     if global_patch:
