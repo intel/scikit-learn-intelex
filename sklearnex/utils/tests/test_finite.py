@@ -55,8 +55,8 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
 )
 @pytest.mark.parameterize("allow_nan", [False, True])
 @pytest.mark.parameterize("check", ["inf", "NaN", None])
-def test_assert_finite_random_location(dtype, shape, allow_nan, check):
-    seed = int(time.time())
+@pytest.mark.parameterize("seed", [0, int(time.time())])
+def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
     rand.seed(seed)
     X = (np.finfo(dtype).max * rand.random_sample(shape)).astype(dtype)
 
@@ -77,8 +77,8 @@ def test_assert_finite_random_location(dtype, shape, allow_nan, check):
 @pytest.mark.parameterize("dtype", [np.float32, np.float64])
 @pytest.mark.parameterize("allow_nan", [False, True])
 @pytest.mark.parameterize("check", ["inf", "NaN", None])
-def test_assert_finite_random_shape_and_location(dtype, allow_nan, check):
-    seed = int(time.time())
+@pytest.mark.parameterize("seed", [0, int(time.time())])
+def test_assert_finite_random_shape_and_location(dtype, allow_nan, check, seed):
     lb, ub = 32768, 1073741824  # lb is a patching condition, ub is ~1GB
     rand.seed(seed)
     X = (np.finfo(dtype).max * rand.random_sample(rand.randint(lb, ub))).astype(dtype)
