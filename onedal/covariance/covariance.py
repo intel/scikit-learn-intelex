@@ -64,7 +64,7 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         Estimated covariance matrix
     """
 
-    def fit(self, X, queue=None):
+    def fit(self, X, y=None, queue=None):
         """Fit the sample covariance matrix of X.
 
         Parameters
@@ -72,6 +72,9 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples, and
             `n_features` is the number of features.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
 
         queue : dpctl.SyclQueue
             If not None, use this queue for computations.

@@ -52,7 +52,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             "covariance", None, "partial_compute_result"
         )
 
-    def partial_fit(self, X, queue=None):
+    def partial_fit(self, X, y=None, queue=None):
         """
         Computes partial data for the covariance matrix
         from data batch X and saves it to `_partial_result`.
@@ -62,6 +62,9 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         X : array-like of shape (n_samples, n_features)
             Training data batch, where `n_samples` is the number of samples
             in the batch, and `n_features` is the number of features.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
 
         queue : dpctl.SyclQueue
             If not None, use this queue for computations.

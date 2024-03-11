@@ -54,9 +54,7 @@ pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
-# TODO: investigate why test_monkeypatch.py might cause failures of other tests
-pytest --verbose --pyargs --deselect sklearnex/tests/test_monkeypatch.py ${daal4py_dir}/sklearnex
-pytest --verbose ${daal4py_dir}/sklearnex/tests/test_monkeypatch.py
+pytest --verbose --pyargs sklearnex
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
