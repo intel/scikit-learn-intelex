@@ -123,7 +123,7 @@ def gen_models_info(algorithms):
 def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
     dataset = None
     name = estimator.__class__.__name__
-    est = UNPATCHED_MODELS[name]
+    est = PATCHED_MODELS[name]
     for mixin, _, data in mixin_map:
         if issubclass(est, mixin) and data is not None:
             dataset = data
