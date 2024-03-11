@@ -73,7 +73,6 @@ def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
         print(f"SEED: {seed}")
 
 
-
 @pytest.mark.parameterize("dtype", [np.float32, np.float64])
 @pytest.mark.parameterize("allow_nan", [False, True])
 @pytest.mark.parameterize("check", ["inf", "NaN", None])
