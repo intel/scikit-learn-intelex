@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import time
+
 import numpy as np
 import numpy.random as rand
 import pytest
