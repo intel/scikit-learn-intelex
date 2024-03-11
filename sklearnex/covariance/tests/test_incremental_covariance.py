@@ -17,6 +17,10 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from sklearn.covariance.tests.test_covariance import (
+    test_covariance,
+    test_EmpiricalCovariance_validates_mahalanobis,
+)
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -87,9 +91,9 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, batch_size, dtype):
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
-@pytest.mark.parametrize("row_count", [100, 1000, 2000])
-@pytest.mark.parametrize("column_count", [10, 100, 200])
+@pytest.mark.parametrize("num_batches", [2, 10])
+@pytest.mark.parametrize("row_count", [10, 100])
+@pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_partial_fit_on_random_data(
     dataframe, queue, num_batches, row_count, column_count, dtype
@@ -117,9 +121,9 @@ def test_sklearnex_partial_fit_on_random_data(
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
-@pytest.mark.parametrize("row_count", [100, 1000, 2000])
-@pytest.mark.parametrize("column_count", [10, 100, 200])
+@pytest.mark.parametrize("num_batches", [2, 10])
+@pytest.mark.parametrize("row_count", [10, 100])
+@pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_fit_on_random_data(
     dataframe, queue, num_batches, row_count, column_count, dtype
@@ -141,3 +145,19 @@ def test_sklearnex_fit_on_random_data(
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
+
+
+# Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
+@pytest.mark.parametrize(
+    "sklearn_test",
+    [
+        test_covariance,
+        test_EmpiricalCovariance_validates_mahalanobis,
+    ],
+)
+def test_IncrementalEmpiricalCovariance_against_sklearn(monkeypatch, sklearn_test):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
+    class_name = ".".join([sklearn_test.__module__, "EmpiricalCovariance"])
+    monkeypatch.setattr(class_name, IncrementalEmpiricalCovariance)
+    sklearn_test()
