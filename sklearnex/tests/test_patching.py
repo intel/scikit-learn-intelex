@@ -62,10 +62,13 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
-            rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+            rng.random(size=1000).reshape(1, -1),
+            sycl_queue=queue,
+            target_df=dataframe,
+            dtype=dtype,
         )
 
-        _ = pairwise_distances(X.reshape(1, -1), metric=metric)
+        _ = pairwise_distances(X, metric=metric)
     assert all(
         [
             "running accelerated version" in i.message
