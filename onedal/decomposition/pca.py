@@ -53,7 +53,11 @@ class PCA(BaseEstimator):
     def _resolve_n_components_for_training(self, shape_tuple):
         if self.n_components is None or self.n_components == "mle":
             return min(shape_tuple)
-        elif isinstance(self.n_components, float) and self.n_components > 0.0 and self.n_components <= 1.0:
+        elif (
+            isinstance(self.n_components, float)
+            and self.n_components > 0.0
+            and self.n_components <= 1.0
+        ):
             return min(shape_tuple)
         elif isinstance(self.n_components, int) and self.n_components >= 1:
             return self.n_components
