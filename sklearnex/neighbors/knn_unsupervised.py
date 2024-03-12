@@ -143,7 +143,7 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
                 "onedal": self.__class__._onedal_kneighbors,
                 "sklearn": sklearn_NearestNeighbors.kneighbors,
             },
-            X=X,
+            X,
             n_neighbors=n_neighbors,
             return_distance=return_distance,
         )
@@ -199,7 +199,7 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_kneighbors(
-        self, X=None, n_neighbors=None, return_distance=True, queue=None
+        self, X, n_neighbors=None, return_distance=True, queue=None
     ):
         return self._onedal_estimator.kneighbors(
             X, n_neighbors, return_distance, queue=queue
