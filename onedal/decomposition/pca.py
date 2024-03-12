@@ -59,7 +59,7 @@ class PCA(BaseEstimator):
             and self.n_components <= 1.0
         ):
             return min(shape_tuple)
-        elif isinstance(self.n_components, int) and self.n_components >= 1:
+        else:
             return self.n_components
 
     def _resolve_n_components_for_result(self, shape_tuple):
