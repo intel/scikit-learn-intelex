@@ -95,6 +95,31 @@ def daal_check_version(
     return False
 
 
+def daal_require_version_wrapper(required_version: DaalVersionTuple) -> Callable:
+    """
+    Decorator factory that returns a decorator which wraps another decorator,
+    only executing it if DAAL version meets the required_version.
+
+    Args:
+        required_version (DaalVersionTuple): The version tuple required to execute the decorated function.
+
+    Returns:
+        Callable: A decorator function.
+    """
+
+    def decorator_wrapper(decorator: Callable) -> Callable:
+        def wrapper(*args, **kwargs):
+            if daal_check_version(required_version):
+                return decorator(*args, **kwargs)
+            else:
+                # return the original function
+                return args[0]
+
+        return wrapper
+
+    return decorator_wrapper
+
+
 @functools.lru_cache(maxsize=256, typed=False)
 def sklearn_check_version(ver):
     if hasattr(Version(ver), "base_version"):

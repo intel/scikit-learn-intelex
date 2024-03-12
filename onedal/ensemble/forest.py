@@ -23,7 +23,11 @@ import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import (
+    daal_check_version,
+    daal_require_version_wrapper,
+    sklearn_check_version,
+)
 from sklearnex import get_hyperparameters
 from sklearnex._utils import register_hyperparameters
 
@@ -388,6 +392,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         return y
 
 
+@daal_require_version_wrapper((2024, "P", 300))
 @register_hyperparameters({"predict": get_hyperparameters("decision_forest", "infer")})
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(
