@@ -207,8 +207,7 @@ def _copy_to_usm(queue, array):
         return usm_ndarray(array.shape, array.dtype, buffer=mem)
     else:
         if isinstance(array, Iterable):
-            for i in range(len(array)):
-                array[i] = _copy_to_usm(queue, array[i])
+            array = [_copy_to_usm(queue, i) for i in array]
         return array
 
 
