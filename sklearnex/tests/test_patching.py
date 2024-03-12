@@ -117,7 +117,9 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
-        if estimator == "TSNE" and method == "fit_transform":
+        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
+            pytest.skip("Hardware does not support fp16 SYCL testing")
+        elif estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
         elif (
             estimator == "Ridge"
@@ -151,7 +153,10 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     # prepare logging
 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
-        est = SPECIAL_INSTANCES[estimator]
+        est = SPECIAL_INSTANCES[estimator
+        
+        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
+            pytest.skip("Hardware does not support fp16 SYCL testing")
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
