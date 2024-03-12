@@ -16,6 +16,7 @@
 
 import logging
 import sys
+from collections.abc import Iterable
 from functools import wraps
 
 import numpy as np
@@ -200,9 +201,15 @@ def _copy_to_usm(queue, array):
         raise RuntimeError(
             "dpctl need to be installed to work " "with __sycl_usm_array_interface__"
         )
-    mem = MemoryUSMDevice(array.nbytes, queue=queue)
-    mem.copy_from_host(array.tobytes())
-    return usm_ndarray(array.shape, array.dtype, buffer=mem)
+    if hasattr(array, "nbytes"):
+        mem = MemoryUSMDevice(array.nbytes, queue=queue)
+        mem.copy_from_host(array.tobytes())
+        return usm_ndarray(array.shape, array.dtype, buffer=mem)
+    else:
+        if isinstance(array, Iterable):
+            for i in range(len(array)):
+                array[i] = _copy_to_usm(queue, array[i])
+        return array
 
 
 def wrap_output_data(func):
