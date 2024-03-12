@@ -108,12 +108,13 @@ def daal_require_version_wrapper(required_version: DaalVersionTuple) -> Callable
     """
 
     def decorator_wrapper(decorator: Callable) -> Callable:
-        def wrapper(*args, **kwargs):
+        def wrapper(*decorator_args, **decorator_kwargs):
             if daal_check_version(required_version):
-                return decorator(*args, **kwargs)
+                # invoke the decorator
+                return decorator(*decorator_args, **decorator_kwargs)
             else:
-                # return the original function
-                return args[0]
+                # return the original, unchanged input without going through decorator
+                return lambda x: x
 
         return wrapper
 
