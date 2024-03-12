@@ -62,7 +62,7 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
-        
+
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
             rng.random(size=1000).reshape(1, -1),
@@ -116,7 +116,9 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
+def test_standard_estimator_patching(
+    caplog, dataframe, queue, dtype, estimator, method
+):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
@@ -130,7 +132,9 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and sys.platform == "win32"
             and dtype in [np.uint32, np.uint64]
         ):
-            pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
+            pytest.skip(
+                "Windows segmentation fault for Ridge.predict for unsigned ints"
+            )
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
@@ -157,7 +161,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
-        
+
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
 
@@ -197,7 +201,9 @@ def test_standard_estimator_signatures(estimator):
         if callable(unpatched_est_method):
             regex = rf"(?:sklearn|daal4py)\S*{estimator}"  # needed due to differences in module structure
             patched_sig = re.sub(regex, estimator, str(signature(est_method)))
-            unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
+            unpatched_sig = re.sub(
+                regex, estimator, str(signature(unpatched_est_method))
+            )
             assert (
                 patched_sig == unpatched_sig
             ), f"Signature of {estimator}.{method} does not match sklearn"
