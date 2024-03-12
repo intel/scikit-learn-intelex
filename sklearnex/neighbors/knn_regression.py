@@ -228,7 +228,7 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
                 "onedal": self.__class__._onedal_kneighbors,
                 "sklearn": sklearn_KNeighborsRegressor.kneighbors,
             },
-            X,
+            X=X,
             n_neighbors=n_neighbors,
             return_distance=return_distance,
         )
