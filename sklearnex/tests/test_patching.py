@@ -132,9 +132,7 @@ def test_standard_estimator_patching(
             and sys.platform == "win32"
             and dtype in [np.uint32, np.uint64]
         ):
-            pytest.skip(
-                "Windows segmentation fault for Ridge.predict for unsigned ints"
-            )
+            pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
@@ -201,9 +199,7 @@ def test_standard_estimator_signatures(estimator):
         if callable(unpatched_est_method):
             regex = rf"(?:sklearn|daal4py)\S*{estimator}"  # needed due to differences in module structure
             patched_sig = re.sub(regex, estimator, str(signature(est_method)))
-            unpatched_sig = re.sub(
-                regex, estimator, str(signature(unpatched_est_method))
-            )
+            unpatched_sig = re.sub(regex, estimator, str(signature(unpatched_est_method)))
             assert (
                 patched_sig == unpatched_sig
             ), f"Signature of {estimator}.{method} does not match sklearn"
