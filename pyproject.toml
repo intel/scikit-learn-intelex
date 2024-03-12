@@ -22,4 +22,4 @@ extend-ignore = 'E203'
 
 [tool.isort]
 profile = "black"
-line_length = 90
+line_length = 200
