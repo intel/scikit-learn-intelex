@@ -60,6 +60,9 @@ from sklearnex.metrics import pairwise_distances, roc_auc_score
 @pytest.mark.parametrize("metric", ["cosine", "correlation"])
 def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
+        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
+            pytest.skip("Hardware does not support fp16 SYCL testing")
+        
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
             rng.random(size=1000).reshape(1, -1),
