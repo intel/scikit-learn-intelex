@@ -14,10 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+import gc
 import logging
 import os
 import sys
-import types
 from functools import lru_cache
 from typing import Any, Dict, Optional
 
@@ -317,9 +317,33 @@ def get_patch_names():
     return list(get_patch_map().keys())
 
 
-def check_entity_loaded(
-    name: Optional[str] = None, modules: Optional[Dict[str, Any]] = None
-) -> Optional[str]:
+def is_instance_in_memory(class_name: str, defining_module: str = "sklearn") -> bool:
+    """
+    This function checks if an instance of a given class is loaded anywhere in local or global scope.
+
+    Parameters:
+    class_name (str): The name of the class to check for instances of.
+
+    Returns:
+    bool: True if an instance of the class is in memory, False otherwise.
+    """
+
+    def conditions(x: object):
+        try:
+            return (
+                hasattr(x, "__name__")
+                and hasattr(x, "__module__")
+                and isinstance(x.__module__, str)
+                and x.__module__.startswith(f"{defining_module}.")
+            )
+        except Exception:
+            return False
+
+    loaded_names_from_module = [x.__name__ for x in gc.get_objects() if conditions(x)]
+    return class_name in loaded_names_from_module
+
+
+def check_entity_loaded(name: Optional[str] = None) -> Optional[str]:
     """
     This function checks if a specified module or class is already loaded in sys.modules.
 
@@ -341,25 +365,13 @@ def check_entity_loaded(
     calling it. To retrieve patched entities, make sure to call patch_sklearn() before any import statements from LogisticRegression.'
     """
 
-    def _get_loaded_classes():
-        loaded_classes = []
-        for key, module in sys.modules.items():
-            if "sklearn" in key and isinstance(module, types.ModuleType):
-                loaded_classes.extend(
-                    [
-                        cls.__name__
-                        for cls in vars(module).values()
-                        if isinstance(cls, type)
-                    ]
-                )
-        return loaded_classes
-
-    # list of all loaded modules, uses sys.modules per default
-    modules = modules if modules is not None else sys.modules
-
     # is `name` or anything from sklearn already loaded?
-    loaded = name is None and "sklearn" in modules.keys()
-    loaded |= name is not None and name in _get_loaded_classes()
+    if name is None:
+        loaded = any(
+            [is_instance_in_memory(class_name) for class_name in get_patch_map().keys()]
+        )
+    else:
+        loaded = is_instance_in_memory(name)
 
     if loaded:
         return (
