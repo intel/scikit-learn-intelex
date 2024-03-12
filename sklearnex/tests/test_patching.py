@@ -156,7 +156,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     # prepare logging
 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
-        est = SPECIAL_INSTANCES[estimator
+        est = SPECIAL_INSTANCES[estimator]
         
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
