@@ -34,7 +34,6 @@ from sklearnex._utils import register_hyperparameters
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import (
     _check_array,
@@ -42,6 +41,15 @@ from ..utils import (
     _check_X_y,
     _column_or_1d,
     _validate_targets,
+)
+
+# Decision Forest inference hyperparameters, available as of 2024.P.300
+# defined once to avoid multiple version checks
+# defined as dunder variable to hide it from forest module
+__decision_forest_infer_hparams = (
+    get_hyperparameters("decision_forest", "infer")
+    if daal_check_version((2024, "P", 300))
+    else None
 )
 
 
@@ -362,11 +370,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        hparams = (
-            get_hyperparameters("decision_forest", "infer")
-            if daal_check_version((2024, "P", 300))
-            else None
-        )
+        hparams = __decision_forest_infer_hparams
         if hparams is not None and not hparams.is_default:
             result = module.infer(policy, params, hparams.backend, model, to_table(X))
         else:
@@ -393,7 +397,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
 
 
 @daal_require_version_wrapper((2024, "P", 300))
-@register_hyperparameters({"predict": get_hyperparameters("decision_forest", "infer")})
+@register_hyperparameters({"predict": __decision_forest_infer_hparams})
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(
         self,
