@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import logging
+from typing import Any, Dict, Tuple
 from warnings import warn
 
 from daal4py.sklearn._utils import daal_check_version
@@ -83,14 +84,17 @@ if daal_check_version((2024, "P", 0)):
             for method in filter(lambda f: f.startswith(prefix), dir(obj))
         }
 
-    hyperparameters_backend = {
+    hyperparameters_backend: Dict[Tuple[str, str], Any] = {
         (
             "linear_regression",
             "train",
         ): _backend.linear_model.regression.train_hyperparameters(),
         ("covariance", "compute"): _backend.covariance.compute_hyperparameters(),
-        ("decision_forest", "infer"): _backend.decision_forest.infer_hyperparameters(),
     }
+    if daal_check_version((2024, "P", 3)):
+        hyperparameters_backend[("decision_forest", "infer")] = (
+            _backend.decision_forest.infer_hyperparameters(),
+        )
     hyperparameters_map = {}
 
     for (algorithm, op), hyperparameters in hyperparameters_backend.items():
