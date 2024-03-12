@@ -358,7 +358,11 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        hparams = get_hyperparameters("decision_forest", "infer")
+        hparams = (
+            get_hyperparameters("decision_forest", "infer")
+            if daal_check_version((2024, "P", 300))
+            else None
+        )
         if hparams is not None and not hparams.is_default:
             result = module.infer(policy, params, hparams.backend, model, to_table(X))
         else:
