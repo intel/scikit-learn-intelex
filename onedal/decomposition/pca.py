@@ -53,9 +53,9 @@ class PCA(BaseEstimator):
     def _resolve_n_components_for_training(self, shape_tuple):
         if self.n_components is None or self.n_components == "mle":
             return min(shape_tuple)
-        elif 0 < self.n_components < 1:
+        elif isinstance(self.n_components, float) and self.n_components > 0.0 and self.n_components <= 1.0:
             return min(shape_tuple)
-        else:
+        elif isinstance(self.n_components, int) and self.n_components >= 1:
             return self.n_components
 
     def _resolve_n_components_for_result(self, shape_tuple):
@@ -63,9 +63,11 @@ class PCA(BaseEstimator):
             return min(shape_tuple)
         elif self.n_components == "mle":
             return _infer_dimension(self.explained_variance_, shape_tuple[0])
-        elif 0 < self.n_components < 1:
+        elif 0.0 < self.n_components < 1.0:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
             return np.searchsorted(ratio_cumsum, self.n_components, side="right") + 1
+        elif isinstance(self.n_components, float) and self.n_components == 1.0:
+            return min(shape_tuple)
         else:
             return self.n_components
 
