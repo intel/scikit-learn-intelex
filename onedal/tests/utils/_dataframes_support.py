@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import pandas
 import pytest
 
 try:
@@ -37,11 +38,13 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter_="numpy,pandas,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
     dataframes_and_queues = []
     if "numpy" in dataframe_filter_:
         dataframes_and_queues.append(pytest.param("numpy", None, id="numpy"))
+    if "pandas" in dataframe_filter_:
+        dataframes_and_queues.append(pytest.param("pandas", None, id="pandas"))
 
     def get_df_and_q(dataframe: str):
         df_and_q = []
@@ -72,6 +75,9 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
     # `sycl_queue` arg is ignored.
     if target_df == "numpy":
         return np.asarray(obj, *args, **kwargs)
+    # Pandas Dataframe
+    if target_df == "pandas":
+        return pandas.DataFrame(obj, *args, **kwargs)
     # DPNP ndarray.
     if target_df == "dpnp":
         return dpnp.asarray(
