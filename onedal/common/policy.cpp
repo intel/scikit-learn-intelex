@@ -34,10 +34,6 @@ ONEDAL_PY_INIT_MODULE(policy) {
             auto* queue = reinterpret_cast<sycl::queue*>(address_of_queue);
             return detail::data_parallel_policy(*queue);
         }))
-        .def(py::init([](const std::string& filter_string) {
-            sycl::queue q { sycl::ext::oneapi::filter_selector(filter_string) };
-            return detail::data_parallel_policy(q);
-        }))
         .def("get_device_name", [](const detail::data_parallel_policy& self) {
             if (self.get_queue().get_device().is_gpu()) {
                 return "gpu";
