@@ -251,7 +251,7 @@ void init_infer_ops(py::module_& m) {
                                              hyperparams);
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
-#endif
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
     m.def("infer",
           [](const Policy& policy,
