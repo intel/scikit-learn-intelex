@@ -287,11 +287,10 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
     def _onedal_kneighbors(
         self, X=None, n_neighbors=None, return_distance=True, queue=None
     ):
-        retu = self._onedal_estimator.kneighbors(
+        return self._onedal_estimator.kneighbors(
             X, n_neighbors, return_distance, queue=queue
         )
-        print(retu, len(retu))
-        return retu
+
 
     def _save_attributes(self):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
