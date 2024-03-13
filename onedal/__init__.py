@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +18,7 @@
 import platform
 
 from daal4py.sklearn._utils import daal_check_version
-    
+
 if "Windows" in platform.system():
     import os
     import site
@@ -25,13 +26,13 @@ if "Windows" in platform.system():
 
     plt_arch = platform.machine()
     arch_dir = None
-    if plt_arch=="x86_64":
+    if plt_arch == "x86_64":
         arch_dir = "intel64"
     elif plt_arch == "aarch64":
         arch_dir = "arm"
     else:
         arch_dir = plt_arch
- 
+
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
     if sys.version_info.minor >= 8:

@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2014 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,13 +17,13 @@
 
 import argparse
 import os
+import platform as plt
 import struct
 import subprocess
 import sys
 from collections import defaultdict
 from os.path import join as jp
 from time import gmtime, strftime
-import platform as plt
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
@@ -60,7 +61,7 @@ else:
 
 plt_arch = plt.machine()
 arch_dir = None
-if plt_arch=="x86_64":
+if plt_arch == "x86_64":
     arch_dir = "intel64"
 elif plt_arch == "aarch64":
     arch_dir = "arm"

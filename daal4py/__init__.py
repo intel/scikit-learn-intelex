@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2014 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,13 +24,13 @@ if "Windows" in platform.system():
 
     plt_arch = platform.machine()
     arch_dir = None
-    if plt_arch=="x86_64":
+    if plt_arch == "x86_64":
         arch_dir = "intel64"
     elif plt_arch == "aarch64":
         arch_dir = "arm"
     else:
         arch_dir = plt_arch
-    
+
     current_path = os.path.dirname(__file__)
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")

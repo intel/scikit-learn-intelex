@@ -1,4 +1,3 @@
-
 #! /usr/bin/env python
 # ==============================================================================
 # Copyright 2014 Intel Corporation
@@ -23,6 +22,7 @@ import glob
 # System imports
 import os
 import pathlib
+import platform as plt
 import shutil
 import sys
 import time
@@ -39,7 +39,6 @@ from setuptools.command.build_ext import build_ext as _build_ext
 import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
 from scripts.version import get_onedal_version
-import platform as plt
 
 try:
     from ctypes.utils import find_library
@@ -55,7 +54,7 @@ n_threads = int(os.environ.get("NTHREADS", os.cpu_count() or 1))
 
 plt_arch = plt.machine()
 arch_dir = None
-if plt_arch=="x86_64":
+if plt_arch == "x86_64":
     arch_dir = "intel64"
 elif plt_arch == "aarch64":
     arch_dir = "arm"

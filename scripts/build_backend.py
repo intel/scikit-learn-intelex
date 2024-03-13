@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,13 +18,14 @@
 
 import multiprocessing
 import os
+import platform as plt
 import subprocess
 import sys
 from distutils import log
 from distutils.sysconfig import get_config_var, get_python_inc
 from math import floor
 from os.path import join as jp
-import platform as plt
+
 import numpy as np
 
 IS_WIN = False
@@ -166,10 +168,10 @@ def custom_build_cmake_clib(
             assert MPI_LIBS, "Couldn't find MPI library"
         else:
             MPI_LIBS = "mpi"
-    
+
     plt_arch = plt.machine()
     arch_dir = None
-    if plt_arch=="x86_64":
+    if plt_arch == "x86_64":
         arch_dir = "intel64"
     elif plt_arch == "aarch64":
         arch_dir = "arm"
