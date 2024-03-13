@@ -79,7 +79,7 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         return np.asarray(obj, *args, **kwargs)
     # Pandas Dataframe
     if target_df == "pandas":
-        return pandas.DataFrame(obj, *args, **kwargs)
+        return pandas.DataFrame(obj, *args, **kwargs).squeeze()
     # DPNP ndarray.
     if target_df == "dpnp":
         return dpnp.asarray(
