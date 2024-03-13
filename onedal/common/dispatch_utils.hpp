@@ -195,7 +195,7 @@ struct infer_ops_with_hyperparams {
     Hyperparams hyperparams;
 };
 
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
 template <typename Policy, typename Input, typename Ops>
 struct partial_compute_ops {
