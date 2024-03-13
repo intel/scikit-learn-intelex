@@ -57,7 +57,7 @@ from sklearnex.metrics import pairwise_distances, roc_auc_score
 
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 @pytest.mark.parametrize("metric", ["cosine", "correlation"])
 def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
@@ -81,7 +81,7 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     "dtype", [i for i in DTYPES if "32" in i.__name__ or "64" in i.__name__]
 )
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     if dtype in [np.uint32, np.uint64] and sys.platform == "win32":
@@ -113,7 +113,7 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
 
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
@@ -149,7 +149,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
 
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
