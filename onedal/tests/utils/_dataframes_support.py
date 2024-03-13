@@ -65,6 +65,8 @@ def _as_numpy(obj, *args, **kwargs):
         return obj.asnumpy(*args, **kwargs)
     if dpctl_available and isinstance(obj, dpt.usm_ndarray):
         return dpt.to_numpy(obj, *args, **kwargs)
+    if isinstance(obj, pd.DataFrame) or isinstance(obj, pd.Series):
+        return obj.to_array(*args, **kwargs)
     return np.asarray(obj, *args, **kwargs)
 
 
