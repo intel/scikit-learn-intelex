@@ -47,7 +47,7 @@ def test_sklearnex_import_linear(dataframe, queue, macro_block):
     assert "sklearnex" in linreg.__module__
     assert linreg.n_features_in_ == 2
     assert_allclose(_as_numpy(linreg.intercept_), 3.0)
-    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0])
+    assert_allclose(_as_numpy(linreg.coef_).squeeze(), [1.0, 2.0])
 
 
 def test_sklearnex_import_ridge():
