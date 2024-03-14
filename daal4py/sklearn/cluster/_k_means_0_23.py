@@ -208,7 +208,7 @@ def _daal4py_k_means_fit(
         maxIterations=numIterations,
         accuracyThreshold=abs_tol,
         fptype=X_fptype,
-        resultsToEvaluate="computeCentroids",
+        resultsToEvaluate="computeCentroids|computeAssignments|computeExactObjectiveFunction",
         method=method,
     )
 

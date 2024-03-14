@@ -50,6 +50,28 @@ class PCA(BaseEstimator):
             "whiten": self.whiten,
         }
 
+    def _validate_n_components(self, n_components, n_samples, n_features):
+        if n_components is None:
+            n_components = min(n_samples, n_features)
+        if n_components == "mle":
+            if n_samples < n_features:
+                raise ValueError(
+                    "n_components='mle' is only supported if n_samples >= n_features"
+                )
+        elif not 0 <= n_components <= min(n_samples, n_features):
+            raise ValueError(
+                "n_components=%r must be between 0 and "
+                "min(n_samples, n_features)=%r with "
+                "svd_solver='full'" % (n_components, min(n_samples, n_features))
+            )
+        elif n_components >= 1:
+            if not isinstance(n_components, numbers.Integral):
+                raise ValueError(
+                    "n_components=%r must be of type int "
+                    "when greater than or equal to 1, "
+                    "was of type=%r" % (n_components, type(n_components))
+                )
+
     def _resolve_n_components_for_training(self, shape_tuple):
         if self.n_components is None or self.n_components == "mle":
             return min(shape_tuple)
@@ -89,6 +111,7 @@ class PCA(BaseEstimator):
     def fit(self, X, y=None, queue=None):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
+        self._validate_n_components(self.n_components, n_samples, n_features)
 
         policy = self._get_policy(queue, X)
         # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
