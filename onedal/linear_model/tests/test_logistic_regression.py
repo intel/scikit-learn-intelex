@@ -14,7 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2024, "P", 1)):
     import numpy as np

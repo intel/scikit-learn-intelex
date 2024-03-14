@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.cluster import DBSCAN as DBSCAN_Batch
+from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
 
+from ..._device_offload import support_usm_ndarray
 from .._base import BaseEstimatorSPMD
 
 
-class DBSCAN(BaseEstimatorSPMD, DBSCAN_Batch):
-    pass
+class EmpiricalCovariance(BaseEstimatorSPMD, EmpiricalCovariance_Batch):
+    @support_usm_ndarray()
+    def fit(self, X, y=None, queue=None):
+        return super().fit(X, queue=queue)
