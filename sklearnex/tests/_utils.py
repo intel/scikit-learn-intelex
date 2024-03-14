@@ -134,9 +134,14 @@ def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
         X, y = load_diabetes(return_X_y=True)
     else:
         raise ValueError("Unknown dataset type")
-
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
+    try:
+        X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
+        y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
+    except ValueError:
+        # Pandas float to int not allowed
+        X = _convert_to_dataframe(X.astype(dtype), sycl_queue=queue, target_df=target_df)
+        y = _convert_to_dataframe(y.astype(dtype), sycl_queue=queue, target_df=target_df)
+        
     return X, y
 
 
