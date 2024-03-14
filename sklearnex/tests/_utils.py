@@ -134,7 +134,7 @@ def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
         X, y = load_diabetes(return_X_y=True)
     else:
         raise ValueError("Unknown dataset type")
-    if target_df != "pandas":
+    if target_df != "pandas" or not np.issubdtype(dtype, np.integer):
         X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
         y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
     else:
