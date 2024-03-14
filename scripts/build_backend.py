@@ -165,7 +165,7 @@ def custom_build_cmake_clib(
     elif cxx is None:
         raise RuntimeError("CXX compiler shall be specified")
 
-    build_distribute = iface == "spmd_dpc" and dpctl_available and not no_dist and IS_LIN
+    build_distribute = iface == "spmd_dpc" and not no_dist and IS_LIN
 
     log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
 
