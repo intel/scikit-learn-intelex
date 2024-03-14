@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import numbers
+
 import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
 from sklearn.utils.extmath import stable_cumsum

@@ -125,8 +125,6 @@ if daal_check_version((2024, "P", 100)):
                 copy=self.copy,
             )
 
-            self._validate_n_components(self.n_components, X.shape[0], X.shape[1])
-
             onedal_params = {
                 "n_components": self.n_components,
                 "is_deterministic": True,
@@ -295,28 +293,6 @@ if daal_check_version((2024, "P", 100)):
                 return True
             else:
                 return False
-
-        def _validate_n_components(self, n_components, n_samples, n_features):
-            if n_components is None:
-                n_components = min(n_samples, n_features)
-            if n_components == "mle":
-                if n_samples < n_features:
-                    raise ValueError(
-                        "n_components='mle' is only supported if n_samples >= n_features"
-                    )
-            elif not 0 <= n_components <= min(n_samples, n_features):
-                raise ValueError(
-                    "n_components=%r must be between 0 and "
-                    "min(n_samples, n_features)=%r with "
-                    "svd_solver='full'" % (n_components, min(n_samples, n_features))
-                )
-            elif n_components >= 1:
-                if not isinstance(n_components, numbers.Integral):
-                    raise ValueError(
-                        "n_components=%r must be of type int "
-                        "when greater than or equal to 1, "
-                        "was of type=%r" % (n_components, type(n_components))
-                    )
 
         def _save_attributes(self):
             self.n_samples_ = self._onedal_estimator.n_samples_
