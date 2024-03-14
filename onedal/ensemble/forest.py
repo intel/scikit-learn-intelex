@@ -23,11 +23,7 @@ import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
-from daal4py.sklearn._utils import (
-    daal_check_version,
-    daal_require_version_wrapper,
-    sklearn_check_version,
-)
+from daal4py.sklearn._utils import daal_check_version, daal_require_version_wrapper
 from sklearnex import get_hyperparameters
 from sklearnex._utils import register_hyperparameters
 
