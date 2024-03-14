@@ -338,8 +338,8 @@ void init_infer_hyperparameters(py::module_& m) {
         py::class_<infer_hyperparams_t>(m, "infer_hyperparameters")
             .def(py::init())
             .def("set_block_size_multiplier",
-                 [](infer_hyperparams_t& self, int64_t block_size) {
-                     self.set_block_size_multiplier(block_size);
+                 [](infer_hyperparams_t& self, int64_t multiplier) {
+                     self.set_block_size_multiplier(multiplier);
                  })
             .def("get_block_size_multiplier",
                  [](const infer_hyperparams_t& self) {
