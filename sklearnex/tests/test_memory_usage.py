@@ -31,7 +31,6 @@ from sklearn.model_selection import KFold
 from sklearnex import get_patch_map
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.model_selection import train_test_split
-from sklearnex.preview.decomposition import PCA as PreviewPCA
 from sklearnex.utils import _assert_all_finite
 
 
@@ -99,7 +98,6 @@ def remove_duplicated_estimators(estimators_list):
 
 BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
 estimators = [
-    PreviewPCA,
     TrainTestSplitEstimator,
     FiniteCheckEstimator,
     CosineDistancesEstimator,
