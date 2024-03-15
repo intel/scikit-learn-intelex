@@ -234,7 +234,7 @@ def test_preview_namespace():
         else:
             assert "daal4py" in lr.__module__
 
-        assert "sklearnex.preview" in pca.__module__
+        assert "sklearnex" in pca.__module__
         assert "sklearnex" in dbscan.__module__
         assert "sklearnex" in svc.__module__
 
@@ -260,7 +260,7 @@ def test_preview_namespace():
         else:
             assert "daal4py" in lr.__module__
 
-        assert "daal4py" in pca.__module__
+        assert "sklearnex" in pca.__module__
         assert "sklearnex" in rfc.__module__
         assert "sklearnex" in dbscan.__module__
         assert "sklearnex" in svc.__module__
