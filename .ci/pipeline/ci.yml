@@ -52,10 +52,11 @@ jobs:
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
-      pip install isort black[jupyter]
-      isort --check . && black --check .
+      pip install isort black[jupyter]==24.1.1
+      isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: Linux
+  dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
     matrix:
@@ -79,6 +80,7 @@ jobs:
   steps:
   - template: build-and-test-lnx.yml
 - job: Windows
+  dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
     matrix:

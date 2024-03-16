@@ -453,14 +453,12 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         # The estimator is checked against the class attribute for conformance.
         # This should only trigger if the user uses this class directly.
-        if (
-            self.estimator.__class__ == DecisionTreeClassifier
-            and self._onedal_factory != onedal_RandomForestClassifier
+        if self.estimator.__class__ == DecisionTreeClassifier and not issubclass(
+            self._onedal_factory, onedal_RandomForestClassifier
         ):
             self._onedal_factory = onedal_RandomForestClassifier
-        elif (
-            self.estimator.__class__ == ExtraTreeClassifier
-            and self._onedal_factory != onedal_ExtraTreesClassifier
+        elif self.estimator.__class__ == ExtraTreeClassifier and not issubclass(
+            self._onedal_factory, onedal_ExtraTreesClassifier
         ):
             self._onedal_factory = onedal_ExtraTreesClassifier
 
@@ -747,7 +745,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                         or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
-                    (sample_weight is not None, "sample_weight is not supported."),
+                    (sample_weight is None, "sample_weight is not supported."),
                 ]
             )
 
@@ -843,14 +841,12 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         # The splitter is checked against the class attribute for conformance
         # This should only trigger if the user uses this class directly.
-        if (
-            self.estimator.__class__ == DecisionTreeRegressor
-            and self._onedal_factory != onedal_RandomForestRegressor
+        if self.estimator.__class__ == DecisionTreeRegressor and not issubclass(
+            self._onedal_factory, onedal_RandomForestRegressor
         ):
             self._onedal_factory = onedal_RandomForestRegressor
-        elif (
-            self.estimator.__class__ == ExtraTreeRegressor
-            and self._onedal_factory != onedal_ExtraTreesRegressor
+        elif self.estimator.__class__ == ExtraTreeRegressor and not issubclass(
+            self._onedal_factory, onedal_ExtraTreesRegressor
         ):
             self._onedal_factory = onedal_ExtraTreesRegressor
 
@@ -1056,7 +1052,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                         or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
-                    (sample_weight is not None, "sample_weight is not supported."),
+                    (sample_weight is None, "sample_weight is not supported."),
                 ]
             )
 
