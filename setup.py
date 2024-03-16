@@ -89,23 +89,7 @@ dpcpp = shutil.which("icpx") is not None
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
-try:
-    import dpctl
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    import importlib.util
-
-    try:
-        dpctl_include = os.path.join(
-            importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
-        )
-        dpctl_available = dpctl_include is not None
-    except AttributeError:
-        dpctl_available = False
-
-build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
-
+build_distribute = dpcpp and not no_dist and IS_LIN
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 ONEDAL_LIBDIRS = [daal_lib_dir]

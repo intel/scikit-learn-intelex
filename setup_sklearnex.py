@@ -54,22 +54,7 @@ trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
 dpcpp = shutil.which("icpx") is not None
 
-try:
-    import dpctl
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    import importlib.util
-
-    try:
-        dpctl_include = os.path.join(
-            importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
-        )
-        dpctl_available = dpctl_include is not None
-    except AttributeError:
-        dpctl_available = False
-
-build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
+build_distribute = dpcpp and not no_dist and IS_LIN
 
 ONEDAL_VERSION = get_onedal_version(dal_root)
 
