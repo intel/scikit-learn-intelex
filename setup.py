@@ -21,9 +21,10 @@ import glob
 # System imports
 import os
 import pathlib
+import shutil
 import sys
 import time
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from distutils.sysconfig import get_config_vars
 from os.path import join as jp
 
@@ -84,28 +85,11 @@ trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
 mpi_root = None if no_dist else os.environ["MPIROOT"]
-dpcpp = True if "DPCPPROOT" in os.environ else False
-dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
+dpcpp = shutil.which("icpx") is not None
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
-try:
-    import dpctl
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    import importlib.util
-
-    try:
-        dpctl_include = os.path.join(
-            importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
-        )
-        dpctl_available = dpctl_include is not None
-    except AttributeError:
-        dpctl_available = False
-
-build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
-
+build_distribute = dpcpp and not no_dist and IS_LIN
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 ONEDAL_LIBDIRS = [daal_lib_dir]
@@ -444,9 +428,13 @@ def build_oneapi_backend():
 def get_onedal_py_libs():
     ext_suffix = get_config_vars("EXT_SUFFIX")[0]
     libs = [f"_onedal_py_host{ext_suffix}", f"_onedal_py_dpc{ext_suffix}"]
+    if build_distribute:
+        libs += [f"_onedal_py_spmd_dpc{ext_suffix}"]
     if IS_WIN:
         ext_suffix_lib = ext_suffix.replace(".dll", ".lib")
         libs += [f"_onedal_py_host{ext_suffix_lib}", f"_onedal_py_dpc{ext_suffix_lib}"]
+        if build_distribute:
+            libs += [f"_onedal_py_spmd_dpc{ext_suffix_lib}"]
     return libs
 
 
@@ -481,6 +469,13 @@ class custom_build:
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
                 )
+                if build_distribute:
+                    build_backend.custom_build_cmake_clib(
+                        iface="spmd_dpc",
+                        onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
+                        no_dist=no_dist,
+                        use_parameters_lib=use_parameters_lib,
+                    )
 
     def post_build(self):
         if IS_MAC:
@@ -575,6 +570,7 @@ if ONEDAL_VERSION >= 20240001:
 if build_distribute:
     packages_with_tests += [
         "onedal.spmd",
+        "onedal.spmd.covariance",
         "onedal.spmd.decomposition",
         "onedal.spmd.ensemble",
     ]

@@ -14,20 +14,12 @@
 # limitations under the License.
 # ===============================================================================
 
-import warnings
-
-from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
-from sklearn.neighbors._kd_tree import KDTree
-
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
 
-import numpy as np
-from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._classification import (
     KNeighborsClassifier as sklearn_KNeighborsClassifier,
 )
@@ -35,7 +27,6 @@ from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestN
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
-from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
@@ -143,6 +134,7 @@ else:
 
 @control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "kneighbors"])
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
+    __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**KNeighborsClassifier_._parameter_constraints}
 
@@ -330,3 +322,9 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         self._fit_method = self._onedal_estimator._fit_method
         self.outputs_2d_ = self._onedal_estimator.outputs_2d_
         self._tree = self._onedal_estimator._tree
+
+    fit.__doc__ = sklearn_KNeighborsClassifier.fit.__doc__
+    predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
+    predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
+    kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
+    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__

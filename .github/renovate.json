@@ -1,7 +1,7 @@
 {
   "dependencyDashboard": false,
   "extends": [
-    "config:base",
+    "config:recommended",
     ":preserveSemverRanges"
   ],
   "pip_requirements": {

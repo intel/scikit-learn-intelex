@@ -16,15 +16,11 @@
 
 import numpy as np
 import pytest
-import sklearn.utils.estimator_checks
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy import sparse as sp
-from sklearn import datasets, metrics
+from sklearn import datasets
 from sklearn.base import clone as clone_estimator
-from sklearn.datasets import make_blobs, make_classification
-from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.model_selection import train_test_split
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn.datasets import make_classification
 
 from onedal.svm import SVC, SVR
 from onedal.tests.utils._device_selection import (

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2023 Intel Corporation
+* Copyright 2024 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -38,8 +38,9 @@ inline std::uint32_t get_id(Iter first, Iter it) {
 }
 
 std::optional<std::uint32_t> get_device_id(const sycl::device& device) {
-    const auto first = get_devices().cbegin();
-    const auto sentinel = get_devices().cend();
+    const auto devices = get_devices();
+    const auto first = devices.cbegin();
+    const auto sentinel = devices.cend();
     auto iter = std::find(first, sentinel, device);
     if (iter != sentinel) {
         return get_id(first, iter);
@@ -51,8 +52,9 @@ std::optional<std::uint32_t> get_device_id(const sycl::device& device) {
 
 std::optional<sycl::device> get_device_by_id(std::uint32_t device_id) {
     auto casted = detail::integral_cast<std::size_t>(device_id);
-    if (casted < get_devices().size()) {
-        return get_devices().at(casted);
+    const auto devices = get_devices();
+    if (casted < devices.size()) {
+        return devices.at(casted);
     }
     else {
         return {};

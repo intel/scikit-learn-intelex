@@ -87,6 +87,7 @@ def test_libsvm_parameters(queue, array_constr, dtype):
     _test_libsvm_parameters(queue, array_constr, dtype)
 
 
+@pass_if_not_implemented_for_gpu(reason="class weights are not implemented")
 @pytest.mark.parametrize(
     "queue",
     get_queues("cpu")
