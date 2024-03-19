@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # ==============================================================================
 # Copyright 2014 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,7 +73,7 @@ ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
 ONEDAL_2023_0_1 = 2023 * 10000 + 0 * 100 + 1
 is_onedal_iface = (
-    os.environ.get("OFF_ONEDAL_IFACE") is None and ONEDAL_VERSION >= ONEDAL_2021_3
+    os.environ.get("OFF_ONEDAL_IFACE", "0") == "0" and ONEDAL_VERSION >= ONEDAL_2021_3
 )
 
 d4p_version = (
