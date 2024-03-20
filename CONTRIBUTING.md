@@ -36,7 +36,21 @@ Make sure your ``.gitconfig`` is set up correctly so you can use `git commit -s`
 `git config --global user.email kate.developer@company.com`
  
 ### Before Contributing Changes
+Standard acronyms to start the commit message with are
+API: an (incompatible) API change
+BLD: change related to building scikit-learn-intelex
+BUG: bug fix
+DEP: deprecate something, or remove a deprecated object
+DEV: development tool or utility
+DOC: documentation
+ENH: enhancement
+MAINT: maintenance commit (refactoring, typos, etc.)
+REV: revert an earlier commit
+STY: style fix (whitespace, PEP8)
+TST: addition or modification of tests
+REL: related to releasing scikit-learn-intelex
 
+Public CI is enabled for the repository. Your PR should pass all of our checks. We will review your contribution and, if any additional fixes or modifications are necessary, we may give some feedback to guide you. When accepted, your pull request will be merged into our GitHub repository.
 * Make sure you can build the product and run all the tests with your patch. 
 * For a larger feature, provide a relevant test. 
 * Document your code. Our project uses reStructuredText for documentation.  
