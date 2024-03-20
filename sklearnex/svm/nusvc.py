@@ -21,13 +21,19 @@ from sklearn.utils.validation import _deprecate_positional_args
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
-from .._device_offload import dispatch, wrap_output_data
+from .._device_offload import dispatch, dpctl_available, dpnp_available, wrap_output_data
 from ._common import BaseSVC
 
 if sklearn_check_version("1.0"):
     from sklearn.utils.metaestimators import available_if
 
 from onedal.svm import NuSVC as onedal_NuSVC
+
+if dpctl_available:
+    import dpctl.tensor as dpt
+
+if dpnp_available:
+    import dpnp
 
 
 @control_n_jobs(
@@ -191,12 +197,60 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             """
             return self._predict_proba(X)
 
+        @available_if(sklearn_NuSVC._check_proba)
+        def predict_log_proba(self, X):
+            """Compute log probabilities of possible outcomes for samples in X.
+
+            The model need to have probability information computed at training
+            time: fit with attribute `probability` set to True.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features) or \
+                    (n_samples_test, n_samples_train)
+                For kernel="precomputed", the expected shape of X is
+                (n_samples_test, n_samples_train).
+
+            Returns
+            -------
+            T : ndarray of shape (n_samples, n_classes)
+                Returns the log-probabilities of the sample for each class in
+                the model. The columns correspond to the classes in sorted
+                order, as they appear in the attribute :term:`classes_`.
+
+            Notes
+            -----
+            The probability model is created using cross validation, so
+            the results can be slightly different than those obtained by
+            predict. Also, it will produce meaningless results on very small
+            datasets.
+            """
+            log_ufunc = np.log
+
+            if hasattr(X, "__sycl_usm_array_interface__"):
+                if dpctl_available and isinstance(X, dpt.usm_ndarray):
+                    log_ufunc = dpt.log
+                elif dpnp_available and isinstance(X, dpnp.ndarray):
+                    log_ufunc = dpnp.log
+
+            return log_ufunc(self.predict_proba(X))
+
     else:
 
         @property
         def predict_proba(self):
             self._check_proba()
             return self._predict_proba
+
+        def _predict_log_proba(self, X):
+            log_ufunc = np.log
+
+            if hasattr(X, "__sycl_usm_array_interface__"):
+                if dpctl_available and isinstance(X, dpt.usm_ndarray):
+                    log_ufunc = dpt.log
+                elif dpnp_available and isinstance(X, dpnp.ndarray):
+                    log_ufunc = dpnp.log
+            return log_ufunc(self.predict_proba(X))
 
         predict_proba.__doc__ = sklearn_NuSVC.predict_proba.__doc__
 
