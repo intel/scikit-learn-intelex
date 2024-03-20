@@ -669,7 +669,17 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 log_ufunc = dpt.log
             elif dpnp_available and isinstance(X, dpnp.ndarray):
                 log_ufunc = dpnp.log
-        return log_ufunc(self.predict_proba(X))
+
+        proba = self.predict_proba(X)
+
+        if self.n_outputs_ == 1:
+            return log_ufunc(proba)
+
+        else:
+            for k in range(self.n_outputs_):
+                proba[k] = log_ufunc(proba[k])
+
+            return proba
 
     fit.__doc__ = sklearn_ForestClassifier.fit.__doc__
     predict.__doc__ = sklearn_ForestClassifier.predict.__doc__

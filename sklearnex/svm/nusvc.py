@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
