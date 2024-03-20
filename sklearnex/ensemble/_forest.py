@@ -65,13 +65,19 @@ from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
 from .._config import get_config
-from .._device_offload import dispatch, wrap_output_data
+from .._device_offload import dispatch, dpctl_available, dpnp_available, wrap_output_data
 from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 if sklearn_check_version("1.4"):
     from daal4py.sklearn.utils import _assert_all_finite
+
+if dpctl_available:
+    import dpctl.tensor as dpt
+
+if dpnp_available:
+    import dpnp
 
 
 class BaseForest(ABC):
@@ -655,9 +661,20 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             X,
         )
 
+    def predict_log_proba(self, X):
+        log_ufunc = np.log
+
+        if hasattr(X, "__sycl_usm_array_interface__"):
+            if dpctl_available and isinstance(X, dpt.usm_ndarray):
+                log_ufunc = dpt.log
+            elif dpnp_available and isinstance(X, dpnp.ndarray):
+                log_ufunc = dpnp.log
+        return log_ufunc(self.predict_proba(X))
+
     fit.__doc__ = sklearn_ForestClassifier.fit.__doc__
     predict.__doc__ = sklearn_ForestClassifier.predict.__doc__
     predict_proba.__doc__ = sklearn_ForestClassifier.predict_proba.__doc__
+    predict_log_proba.__doc__ = sklearn_ForestClassifier.predict_log_proba.__doc__
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
