@@ -16,7 +16,7 @@
 
 import logging
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from functools import wraps
 
 import numpy as np
@@ -26,12 +26,20 @@ try:
     from dpctl.memory import MemoryUSMDevice, as_usm_memory
     from dpctl.tensor import usm_ndarray
 
+    # needed to guarantee classification estimator
+    # score method support
+    Sequence.register(usm_ndarray)
+
     dpctl_available = True
 except ImportError:
     dpctl_available = False
 
 try:
     import dpnp
+
+    # needed to guarantee classification estimator
+    # score method support
+    Sequence.register(dpnp.ndarray)
 
     dpnp_available = True
 except ImportError:

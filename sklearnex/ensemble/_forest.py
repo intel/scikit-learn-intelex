@@ -673,21 +673,12 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.3"):
-            if hasattr(X, "__sycl_usm_array_interface__") or hasattr(
-                y, "__sycl_usm_array_interface__"
-            ):
-                with config_context(array_api_dispatch=True):
-                    return super().score(X, y, sample_weight)
-
-        else:
-            # scikit-learn internals will cast inputs to numpy arrays for classification
-            # causing performance degredation. Use of score with array_api inputs only
-            # recommended for sklearn >= 1.3
-            if hasattr(X, "__sycl_usm_array_interface__") and not isinstance(X, Sequence):
-                Sequence.register(type(X))
-            if hasattr(y, "__sycl_usm_array_interface__") and not isinstance(y, Sequence):
-                Sequence.register(type(y))
+        if sklearn_check_version("1.3") and (
+            hasattr(X, "__sycl_usm_array_interface__")
+            or hasattr(y, "__sycl_usm_array_interface__")
+        ):
+            with config_context(array_api_dispatch=True):
+                return super().score(X, y, sample_weight)
 
         return super().score(X, y, sample_weight)
 
