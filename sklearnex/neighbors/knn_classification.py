@@ -133,7 +133,7 @@ else:
             self.weights = _check_weights(weights)
 
 
-@control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba", "kneighbors"])
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
