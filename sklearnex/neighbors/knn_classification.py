@@ -20,6 +20,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
 
+from sklearn.metrics import accuracy_score
 from sklearn.neighbors._classification import (
     KNeighborsClassifier as sklearn_KNeighborsClassifier,
 )
@@ -205,8 +206,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         )
         return self
 
-    @wrap_output_data
-    def predict(self, X):
+    def _predict(self, X):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
@@ -219,6 +219,8 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             },
             X,
         )
+
+    predict = wrap_output_data(_predict)
 
     @wrap_output_data
     def predict_proba(self, X):
@@ -234,6 +236,10 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             },
             X,
         )
+
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
@@ -326,5 +332,6 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     fit.__doc__ = sklearn_KNeighborsClassifier.fit.__doc__
     predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
     predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
+    score.__doc__ = sklearn_KNeighborsClassifier.score.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__

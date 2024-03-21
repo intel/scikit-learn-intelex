@@ -17,6 +17,7 @@
 import numpy as np
 from scipy import sparse as sp
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC as sklearn_SVC
 from sklearn.utils.validation import _deprecate_positional_args
 
@@ -40,7 +41,7 @@ if dpnp_available:
 
 
 @control_n_jobs(
-    decorated_methods=["fit", "predict", "_predict_proba", "decision_function"]
+    decorated_methods=["fit", "_predict", "_predict_proba", "decision_function"]
 )
 class SVC(sklearn_SVC, BaseSVC):
     __doc__ = sklearn_SVC.__doc__
@@ -87,39 +88,6 @@ class SVC(sklearn_SVC, BaseSVC):
         )
 
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit the SVM model according to the given training data.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features) \
-                or (n_samples, n_samples)
-            Training vectors, where `n_samples` is the number of samples
-            and `n_features` is the number of features.
-            For kernel="precomputed", the expected shape of X is
-            (n_samples, n_samples).
-
-        y : array-like of shape (n_samples,)
-            Target values (class labels in classification, real numbers in
-            regression).
-
-        sample_weight : array-like of shape (n_samples,), default=None
-            Per-sample weights. Rescale C per sample. Higher weights
-            force the classifier to put more emphasis on these points.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-
-        Notes
-        -----
-        If X and y are not C-ordered and contiguous arrays of np.float64 and
-        X is not a scipy.sparse.csr_matrix, X and/or y may be copied.
-
-        If X is a dense array, then the other methods will not support sparse
-        matrices as input.
-        """
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("1.0"):
@@ -137,24 +105,7 @@ class SVC(sklearn_SVC, BaseSVC):
         )
         return self
 
-    @wrap_output_data
-    def predict(self, X):
-        """
-        Perform regression on samples in X.
-
-        For an one-class model, +1 (inlier) or -1 (outlier) is returned.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            For kernel="precomputed", the expected shape of X is
-            (n_samples_test, n_samples_train).
-
-        Returns
-        -------
-        y_pred : ndarray of shape (n_samples,)
-            The predicted values.
-        """
+    def _predict(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(
@@ -166,6 +117,16 @@ class SVC(sklearn_SVC, BaseSVC):
             },
             X,
         )
+
+    predict = wrap_output_data(_predict)
+
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
+
+    fit.__doc__ = sklearn_SVC.fit.__doc__
+    predict.__doc__ = sklearn_SVC.predict.__doc__
+    score.__doc__ = sklearn_SVC.score.__doc__
 
     if sklearn_check_version("1.0"):
 

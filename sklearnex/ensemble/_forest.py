@@ -17,7 +17,6 @@
 import numbers
 import warnings
 from abc import ABC
-from collections.abc import Sequence
 
 import numpy as np
 from scipy import sparse as sp
@@ -28,6 +27,7 @@ from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClass
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
 from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
+from sklearn.metrics import accuracy_score
 from sklearn.tree import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,
@@ -65,7 +65,6 @@ except ModuleNotFoundError:
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
-from .._config import config_context
 from .._device_offload import dispatch, dpctl_available, dpnp_available, wrap_output_data
 from .._utils import PatchingConditionsChain
 
@@ -609,8 +608,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         return patching_status, X, y, sample_weight
 
-    @wrap_output_data
-    def predict(self, X):
+    def _predict(self, X):
         return dispatch(
             self,
             "predict",
@@ -620,6 +618,8 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             },
             X,
         )
+
+    predict = wrap_output_data(_predict)
 
     @wrap_output_data
     def predict_proba(self, X):
@@ -673,19 +673,13 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.3") and (
-            hasattr(X, "__sycl_usm_array_interface__")
-            or hasattr(y, "__sycl_usm_array_interface__")
-        ):
-            with config_context(array_api_dispatch=True):
-                return super().score(X, y, sample_weight)
-
-        return super().score(X, y, sample_weight)
+        return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
 
     fit.__doc__ = sklearn_ForestClassifier.fit.__doc__
     predict.__doc__ = sklearn_ForestClassifier.predict.__doc__
     predict_proba.__doc__ = sklearn_ForestClassifier.predict_proba.__doc__
     predict_log_proba.__doc__ = sklearn_ForestClassifier.predict_log_proba.__doc__
+    score.__doc__ = sklearn_ForestClassifier.score.__doc__
 
     def _onedal_cpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -1157,7 +1151,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
 
 
-@control_n_jobs(decorated_methods=["fit", "predict", "predict_proba"])
+@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba"])
 class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
     _onedal_factory = onedal_RandomForestClassifier
@@ -1568,7 +1562,7 @@ class RandomForestRegressor(ForestRegressor):
             self.min_bin_size = min_bin_size
 
 
-@control_n_jobs(decorated_methods=["fit", "predict", "predict_proba"])
+@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba"])
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
     _onedal_factory = onedal_ExtraTreesClassifier
