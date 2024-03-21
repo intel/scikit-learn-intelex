@@ -112,8 +112,4 @@ def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
 
     y_pred = linreg.predict(X)
 
-    # TODO Implement more clear way to transfer dpctl/dpnp arrays to host
-    _, hostdata = _transfer_to_host(queue, y_pred)
-    y_pred = hostdata[0]
-
-    assert_allclose(gtr, y_pred, rtol=1e-5)
+    assert_allclose(gtr, _as_numpy(y_pred), rtol=1e-5)
