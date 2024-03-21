@@ -164,6 +164,12 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
+            if hasattr(y, "__sycl_usm_array_interface__"):
+                if hasattr(y, "__array_namespace__"):
+                    y = y.__array_namespace__().asnumpy(y)
+                else:
+                    y = y.asnumpy()
+
             return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
 
         def _test_type_and_finiteness(self, X_in):

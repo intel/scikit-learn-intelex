@@ -239,6 +239,12 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        if hasattr(y, "__sycl_usm_array_interface__"):
+            if hasattr(y, "__array_namespace__"):
+                y = y.__array_namespace__().asnumpy(y)
+            else:
+                y = y.asnumpy()
+
         return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
 
     @wrap_output_data
