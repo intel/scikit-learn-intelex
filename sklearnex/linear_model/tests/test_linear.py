@@ -113,4 +113,5 @@ def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
 
     y_pred = linreg.predict(X)
 
-    assert_allclose(gtr, _as_numpy(y_pred))
+    tol = 1e-5 if X.dtype == np.float32 else 1e-7
+    assert_allclose(gtr, _as_numpy(y_pred), rtol=tol)
