@@ -17,6 +17,7 @@
 import numbers
 import warnings
 from abc import ABC
+from collections.abc import Sequence
 
 import numpy as np
 from scipy import sparse as sp
@@ -64,7 +65,7 @@ except ModuleNotFoundError:
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 
-from .._config import get_config
+from .._config import config_context
 from .._device_offload import dispatch, dpctl_available, dpnp_available, wrap_output_data
 from .._utils import PatchingConditionsChain
 
@@ -179,15 +180,6 @@ class BaseForest(ABC):
 
         return self
 
-    def _fit_proba(self, X, y, sample_weight=None, queue=None):
-        params = self.get_params()
-        self.__class__(**params)
-
-        # We use stock metaestimators below, so the only way
-        # to pass a queue is using config_context.
-        cfg = get_config()
-        cfg["target_offload"] = queue
-
     def _save_attributes(self):
         if self.oob_score:
             self.oob_score_ = self._onedal_estimator.oob_score_
@@ -210,8 +202,6 @@ class BaseForest(ABC):
         self._validate_estimator()
         return self
 
-    # TODO:
-    # move to onedal modul.
     def _check_parameters(self):
         if isinstance(self.min_samples_leaf, numbers.Integral):
             if not 1 <= self.min_samples_leaf:
@@ -680,6 +670,25 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 proba[k] = log_ufunc(proba[k])
 
             return proba
+
+    def score(self, X, y, sample_weight=None):
+        if sklearn_check_version("1.3"):
+            if hasattr(X, "__sycl_usm_array_interface__") or hasattr(
+                y, "__sycl_usm_array_interface__"
+            ):
+                with config_context(array_api_dispatch=True):
+                    return super().score(X, y, sample_weight)
+
+        else:
+            # scikit-learn internals will cast inputs to numpy arrays for classification
+            # causing performance degredation. Use of score with array_api inputs only
+            # recommended for sklearn >= 1.3
+            if hasattr(X, "__sycl_usm_array_interface__") and not isinstance(X, Sequence):
+                Sequence.register(type(X))
+            if hasattr(y, "__sycl_usm_array_interface__") and not isinstance(y, Sequence):
+                Sequence.register(type(y))
+
+        return super().score(X, y, sample_weight)
 
     fit.__doc__ = sklearn_ForestClassifier.fit.__doc__
     predict.__doc__ = sklearn_ForestClassifier.predict.__doc__
