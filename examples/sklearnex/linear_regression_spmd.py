@@ -39,7 +39,7 @@ def generate_X_y(ns, data_seed):
 
 
 def get_train_data(rank):
-    return generate_X_y(132, rank)
+    return generate_X_y(101, rank)
 
 
 def get_test_data(rank):
@@ -52,7 +52,7 @@ size = comm.Get_size()
 
 if size < 2:
     warn(
-        "This example was intentionally " "designed to run in distributed mode only",
+        "This example was intentionally designed to run in distributed mode only",
         RuntimeWarning,
     )
 
