@@ -671,6 +671,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
             return proba
 
+    @wrap_output_data
     def score(self, X, y, sample_weight=None):
         if sklearn_check_version("1.3"):
             if hasattr(X, "__sycl_usm_array_interface__") or hasattr(
