@@ -145,7 +145,7 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
 @pytest.mark.parametrize("num_targets", [1, 2])
 @pytest.mark.parametrize("num_blocks", [1, 10])
 @pytest.mark.parametrize("macro_block", [None, 1024])
-@pytest.mark.parametrize("dtype", [np.float32])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_partial_fit_on_random_data(
     dataframe,
     queue,
