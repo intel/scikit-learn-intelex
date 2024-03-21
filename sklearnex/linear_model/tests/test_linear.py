@@ -51,8 +51,10 @@ def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
     assert hasattr(linreg, "_onedal_estimator")
     assert "sklearnex" in linreg.__module__
     assert linreg.n_features_in_ == 2
-    assert_allclose(_as_numpy(linreg.intercept_), 3.0, atol=1e-5)
-    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], atol=1e-5)
+
+    tol = 1e-5 if X.dtype == np.float32 else 1e-7
+    assert_allclose(_as_numpy(linreg.intercept_), 3.0, rtol=tol)
+    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
 
 
 def test_sklearnex_import_ridge():
@@ -90,7 +92,6 @@ def test_sklearnex_import_elastic():
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
-    from sklearnex._device_offload import _transfer_to_host
     from sklearnex.linear_model import LinearRegression
 
     seed = 42
@@ -112,4 +113,4 @@ def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
 
     y_pred = linreg.predict(X)
 
-    assert_allclose(gtr, _as_numpy(y_pred), rtol=1e-5)
+    assert_allclose(gtr, _as_numpy(y_pred))
