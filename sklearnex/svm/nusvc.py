@@ -104,8 +104,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
         return self
 
-    @wrap_output_data
-    def predict(self, X):
+    def _predict(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(
