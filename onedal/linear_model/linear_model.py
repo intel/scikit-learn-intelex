@@ -25,6 +25,7 @@ from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..spmd._base import BaseEstimatorSPMD
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
@@ -185,8 +186,9 @@ class LinearRegression(BaseLinearRegression):
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
 
-        if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
-            raise ValueError("Not enough samples to fit")
+        if not issubclass(self.__class__, BaseEstimatorSPMD):
+            if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
+                raise ValueError("Not enough samples to fit")
 
         dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
