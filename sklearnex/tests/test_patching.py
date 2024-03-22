@@ -63,7 +63,7 @@ from sklearnex.metrics import pairwise_distances, roc_auc_score
 def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
-        if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
+        if dataframe == "pandas":
             X = _convert_to_dataframe(
                 rng.random(size=1000).astype(dtype).reshape(1, -1),
                 sycl_queue=queue,
@@ -96,7 +96,7 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
 
-        if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
+        if dataframe == "pandas":
             X = _convert_to_dataframe(
                 rng.integers(2, size=1000).astype(dtype),
                 sycl_queue=queue,
