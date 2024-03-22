@@ -52,15 +52,9 @@ IS_LIN = False
 dal_root = os.environ.get("DALROOT")
 n_threads = int(os.environ.get("NTHREADS", os.cpu_count() or 1))
 
-plt_arch = plt.machine()
-arch_dir = None
-if plt_arch == "x86_64":
-    arch_dir = "intel64"
-elif plt_arch == "aarch64":
-    arch_dir = "arm"
-else:
-    arch_dir = plt_arch
-
+arch_dir = plt.machine()
+plt_dict = {"x86_64":"intel64", "aarch64":"arm"}
+arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
