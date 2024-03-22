@@ -169,15 +169,9 @@ def custom_build_cmake_clib(
         else:
             MPI_LIBS = "mpi"
 
-    plt_arch = plt.machine()
-    arch_dir = None
-    if plt_arch == "x86_64":
-        arch_dir = "intel64"
-    elif plt_arch == "aarch64":
-        arch_dir = "arm"
-    else:
-        arch_dir = plt_arch
-
+    arch_dir = plt.machine()
+    plt_dict = {"x86_64":"intel64", "aarch64":"arm"}
+    arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
     use_parameters_arg = "yes" if use_parameters_lib else "no"
     log.info(f"Build using parameters library: {use_parameters_arg}")
 
