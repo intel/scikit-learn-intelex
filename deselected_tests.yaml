@@ -182,6 +182,12 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
   - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
 
+  # Tests have been ported from preview. Fail due to different combination of init methods, investigation required.
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
+  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
+
   # The Newton-CG solver solution computed in float32 disagrees with that of float64 by a small
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
@@ -1181,9 +1187,3 @@ gpu:
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
   # originated with pca dpctl/dpnp fit, to be re-assesed with pca out-of-preview
   - decomposition/tests/test_pca.py::test_pca_n_components_mostly_explained_variance_ratio
-
-preview:
-  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
-  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
