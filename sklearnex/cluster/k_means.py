@@ -221,10 +221,8 @@ if daal_check_version((2023, "P", 200)):
                         self.algorithm in supported_algs,
                         "Only lloyd algorithm is supported.",
                     ),
-                    (not issparse(self.init), "Sparse init values are not supported"),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (sample_weight is None, "Sample weight is not None."),
-                    (not issparse(X), "Sparse input is not supported."),
                 ]
             )
 
@@ -255,7 +253,7 @@ if daal_check_version((2023, "P", 200)):
 
             X = self._validate_data(
                 X,
-                accept_sparse=False,
+                accept_sparse="csr",
                 dtype=[np.float64, np.float32],
             )
 
@@ -281,7 +279,7 @@ if daal_check_version((2023, "P", 200)):
             )
 
             supported_algs = ["auto", "full", "lloyd"]
-            dense_centers = not issparse(self.cluster_centers_)
+            # dense_centers = not issparse(self.cluster_centers_)
 
             patching_status.and_conditions(
                 [
@@ -289,8 +287,7 @@ if daal_check_version((2023, "P", 200)):
                         self.algorithm in supported_algs,
                         "Only lloyd algorithm is supported.",
                     ),
-                    (dense_centers, "Sparse clusters is not supported."),
-                    (not issparse(X), "Sparse input is not supported."),
+                    # (dense_centers, "Sparse clusters is not supported."),
                 ]
             )
 
@@ -315,7 +312,7 @@ if daal_check_version((2023, "P", 200)):
 
         def _onedal_predict(self, X, queue=None):
             X = self._validate_data(
-                X, accept_sparse=False, reset=False, dtype=[np.float64, np.float32]
+                X, accept_sparse="csr", reset=False, dtype=[np.float64, np.float32], accept_large_sparse=False,
             )
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
