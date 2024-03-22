@@ -219,7 +219,7 @@ if dpnp_available:
         elif isinstance(array, Iterable):
             for i in range(len(array)):
                 array[i] = _covert_to_dpnp(array[i])
-            return array
+        return array
 
 
 def wrap_output_data(func):
