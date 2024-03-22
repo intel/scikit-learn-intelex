@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -46,14 +47,11 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, fit_intercept, macro_block
     inclin.fit(X_df, y_df)
 
     y_pred = inclin.predict(X_df)
-    # TODO Implement more clear way to transfer dpctl/dpnp arrays to host
-    _, hostdata = _transfer_to_host(queue, y_pred)
-    y_pred = hostdata[0]
 
     assert_allclose(inclin.coef_, [1], rtol=1e-6, atol=1e-6)
     if fit_intercept:
         assert_allclose(inclin.intercept_, [0], atol=2e-6)
-    assert_allclose(y_pred, y, rtol=1e-6, atol=1e-6)
+    assert_allclose(_as_numpy(y_pred), y, rtol=1e-6, atol=1e-6)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -91,11 +89,8 @@ def test_sklearnex_partial_fit_on_gold_data(
 
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_pred = inclin.predict(X_df)
-    # TODO Implement more clear way to transfer dpctl/dpnp arrays to host
-    _, hostdata = _transfer_to_host(queue, y_pred)
-    y_pred = hostdata[0]
 
-    assert_allclose(y_pred, y, rtol=1e-6, atol=1e-6)
+    assert_allclose(_as_numpy(y_pred), y, rtol=1e-6, atol=1e-6)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -133,10 +128,8 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
 
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_pred = inclin.predict(X_df)
-    # TODO Implement more clear way to transfer dpctl/dpnp arrays to host
-    _, hostdata = _transfer_to_host(queue, y_pred)
-    y_pred = hostdata[0]
-    assert_allclose(y_pred, y, rtol=1e-6, atol=1e-6)
+
+    assert_allclose(_as_numpy(y_pred), y, rtol=1e-6, atol=1e-6)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -193,10 +186,7 @@ def test_sklearnex_partial_fit_on_random_data(
     gtr = X_test @ coef + intercept[np.newaxis, :]
     X_test_df = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
 
-    # TODO Implement more clear way to transfer dpctl/dpnp arrays to host
     y_pred = inclin.predict(X_test_df)
-    _, hostdata = _transfer_to_host(queue, y_pred)
-    y_pred = hostdata[0]
 
     tol = 2e-4 if y_pred.dtype == np.float32 else 1e-7
-    assert_allclose(gtr, y_pred, rtol=tol)
+    assert_allclose(gtr, _as_numpy(y_pred), rtol=tol)
