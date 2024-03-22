@@ -297,7 +297,7 @@ if daal_check_version((2023, "P", 200)):
             return patching_status
 
         @wrap_output_data
-        def predict(self, X):
+        def predict(self, X, sample_weight=None):
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):

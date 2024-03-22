@@ -39,8 +39,8 @@ def pytest_runtest_call(item):
         sklearnex_stderr_handler = sklearnex_logger.handlers
         sklearnex_logger.handlers = []
         sklearnex_logger.addHandler(log_handler)
-        sklearnex_logger.setLevel(logging.INFO)
-        log_handler.setLevel(logging.INFO)
+        sklearnex_logger.setLevel(logging.DEBUG)
+        log_handler.setLevel(logging.DEBUG)
 
         yield
 

@@ -37,7 +37,7 @@ def test_sklearnex_import(dataframe, queue):
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
 
     kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
-    if daal_check_version((2024, "P", 200)):
+    if daal_check_version((2023, "P", 200)):
         assert "sklearnex" in kmeans.__module__
     else:
         assert "daal4py" in kmeans.__module__
