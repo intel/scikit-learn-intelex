@@ -22,14 +22,9 @@ if "Windows" in platform.system():
     import site
     import sys
 
-    plt_arch = platform.machine()
-    arch_dir = None
-    if plt_arch == "x86_64":
-        arch_dir = "intel64"
-    elif plt_arch == "aarch64":
-        arch_dir = "arm"
-    else:
-        arch_dir = plt_arch
+    arch_dir = platform.machine()
+    plt_dict = {"x86_64":"intel64", "aarch64":"arm"}
+    arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 
     current_path = os.path.dirname(__file__)
     path_to_env = site.getsitepackages()[0]
