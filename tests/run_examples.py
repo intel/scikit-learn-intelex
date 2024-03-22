@@ -59,15 +59,9 @@ elif sys.platform in ["win32", "cygwin"]:
 else:
     assert False, sys.platform + " not supported"
 
-plt_arch = plt.machine()
-arch_dir = None
-if plt_arch == "x86_64":
-    arch_dir = "intel64"
-elif plt_arch == "aarch64":
-    arch_dir = "arm"
-else:
-    arch_dir = plt_arch
-
+arch_dir = plt.machine()
+plt_dict = {"x86_64":"intel64", "aarch64":"arm"}
+arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 assert 8 * struct.calcsize("P") in [32, 64]
 
 if 8 * struct.calcsize("P") == 32:
