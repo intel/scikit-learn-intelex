@@ -46,7 +46,6 @@ def get_patch_map_core(preview=False):
             import sklearn.covariance as covariance_module
 
             # Preview classes for patching
-            from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
@@ -56,13 +55,6 @@ def get_patch_map_core(preview=False):
             # when preview is used, setting the mapping element[1] to None
             # should NOT be done. This may lose track of the unpatched
             # sklearn estimator or function.
-            # KMeans
-            cluster_module, _, _ = mapping["kmeans"][0][0]
-            sklearn_obj = mapping["kmeans"][0][1]
-            mapping.pop("kmeans")
-            mapping["kmeans"] = [
-                [(cluster_module, "kmeans", KMeans_sklearnex), sklearn_obj]
-            ]
 
             # Covariance
             mapping["empiricalcovariance"] = [
@@ -114,6 +106,7 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .cluster import KMeans as KMeans_sklearnex
         from .decomposition import PCA as PCA_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
@@ -133,6 +126,10 @@ def get_patch_map_core(preview=False):
         # DBSCAN
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
+
+        # DBSCAN
+        mapping.pop("kmeans")
+        mapping["kmeans"] = [[(cluster_module, "KMeans", KMeans_sklearnex), None]]
 
         # PCA
         mapping.pop("pca")

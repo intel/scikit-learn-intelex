@@ -142,7 +142,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             self._n_init = 1
         assert self.algorithm == "lloyd"
 
-    def _get_onedal_params(self, dtype=np.float32):
+    def _get_onedal_params(self, dtype=np.float32, result_options = None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
             "fptype": "float" if dtype == np.float32 else "double",
@@ -151,6 +151,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             "max_iteration_count": self.max_iter,
             "cluster_count": self.n_clusters,
             "accuracy_threshold": thr,
+            "result_options": "" if result_options is None else result_options,
         }
 
     def _get_params_and_input(self, X, policy):
@@ -340,7 +341,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
     def _predict_raw(self, X_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(dtype)
+        params = self._get_onedal_params(dtype, result_options="computeAssignments")
 
         result = module.infer(policy, params, self.model_, X_table)
 
