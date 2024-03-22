@@ -23,7 +23,7 @@ if "Windows" in platform.system():
     import sys
 
     arch_dir = platform.machine()
-    plt_dict = {"x86_64":"intel64", "aarch64":"arm"}
+    plt_dict = {"x86_64": "intel64", "aarch64": "arm"}
     arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 
     current_path = os.path.dirname(__file__)
