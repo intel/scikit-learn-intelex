@@ -189,8 +189,8 @@ if daal_check_version((2024, "P", 100)):
             if hasattr(X, "__sycl_usm_array_interface__"):
                 if hasattr(X, "__array_namespace__"):
                     X = X.__array_namespace__().asnumpy(X)
-            else:
-                X = X.asnumpy()
+                else:
+                    X = X.asnumpy()
 
             return super().score_samples(X)
 
