@@ -142,7 +142,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             self._n_init = 1
         assert self.algorithm == "lloyd"
 
-    def _get_onedal_params(self, dtype=np.float32, result_options = None):
+    def _get_onedal_params(self, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
             "fptype": "float" if dtype == np.float32 else "double",

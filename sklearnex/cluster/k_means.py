@@ -20,6 +20,7 @@ from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 200)):
     from abc import ABC
+
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.cluster import KMeans as sklearn_KMeans
@@ -94,7 +95,6 @@ if daal_check_version((2023, "P", 200)):
             self.inertia_ = self._inertia_
             self.cluster_centers_ = self._cluster_centers_
             self._is_in_fit = False
-
 
     @control_n_jobs(decorated_methods=["fit", "predict"])
     class KMeans(sklearn_KMeans, BaseKMeans):
@@ -352,7 +352,8 @@ if daal_check_version((2023, "P", 200)):
         fit.__doc__ = sklearn_KMeans.fit.__doc__
         predict.__doc__ = sklearn_KMeans.predict.__doc__
         fit_transform.__doc__ = sklearn_KMeans.fit_transform.__doc__
-        transform.__doc__ = sklearn_KMeans.transform.__doc__ 
+        transform.__doc__ = sklearn_KMeans.transform.__doc__
+
 else:
     from daal4py.sklearn.cluster import KMeans
 
