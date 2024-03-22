@@ -171,7 +171,7 @@ if daal_check_version((2024, "P", 100)):
             U, S, Vt = self._fit(X)
             if U is None:
                 # oneDAL PCA was fit
-                X_transformed = self._onedal_transform(X)
+                X_transformed = self.transform(X)
                 return X_transformed
             else:
                 # Scikit-learn PCA was fit
@@ -183,26 +183,6 @@ if daal_check_version((2024, "P", 100)):
                     U *= S[: self.n_components_]
 
                 return U
-
-        @wrap_output_data
-        def score_samples(self, X):
-            if hasattr(X, "__sycl_usm_array_interface__"):
-                if hasattr(X, "__array_namespace__"):
-                    X = X.__array_namespace__().asnumpy(X)
-                else:
-                    X = X.asnumpy()
-
-            return super().score_samples(X)
-
-        @wrap_output_data
-        def score(self, X, y=None):
-            if hasattr(X, "__sycl_usm_array_interface__"):
-                if hasattr(X, "__array_namespace__"):
-                    X = X.__array_namespace__().asnumpy(X)
-                else:
-                    X = X.asnumpy()
-
-            return super().score(X)
 
         def _onedal_supported(self, method_name, X):
             class_name = self.__class__.__name__
@@ -349,8 +329,6 @@ if daal_check_version((2024, "P", 100)):
         fit.__doc__ = sklearn_PCA.fit.__doc__
         transform.__doc__ = sklearn_PCA.transform.__doc__
         fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
-        score.__doc__ = sklearn_PCA.score.__doc__
-        score_samples.__doc__ = sklearn_PCA.score_samples.__doc__
 
 else:
     from daal4py.sklearn.decomposition import PCA
