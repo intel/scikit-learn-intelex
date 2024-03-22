@@ -124,24 +124,6 @@ def custom_build_cmake_clib(
 ):
     import pybind11
 
-    try:
-        import dpctl
-
-        dpctl_available = dpctl.__version__ >= "0.14"
-        dpctl_include = dpctl.get_include()
-    except ImportError:
-        import importlib.util
-
-        try:
-            dpctl_include = os.path.join(
-                importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
-            )
-            dpctl_available = dpctl_include is not None
-        except AttributeError:
-            dpctl_available = False
-
-    log.info(f"Is DPCTL available: {str(dpctl_available)}")
-
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
 
@@ -165,7 +147,7 @@ def custom_build_cmake_clib(
     elif cxx is None:
         raise RuntimeError("CXX compiler shall be specified")
 
-    build_distribute = iface == "spmd_dpc" and dpctl_available and not no_dist and IS_LIN
+    build_distribute = iface == "spmd_dpc" and not no_dist and IS_LIN
 
     log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
 
@@ -206,12 +188,6 @@ def custom_build_cmake_clib(
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
         "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_arg,
     ]
-
-    if dpctl_available:
-        cmake_args += [
-            "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
-            "-DONEDAL_DPCTL_INTEGRATION:BOOL=ON",
-        ]
 
     if build_distribute:
         cmake_args += [

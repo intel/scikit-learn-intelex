@@ -144,6 +144,13 @@ def test_input_format_f_contiguous_pandas(queue, dtype):
     _test_input_format_f_contiguous_pandas(queue, dtype)
 
 
+# TODO:
+# Currently `dpctl_to_table` is not used in onedal estimators.
+# The test will be enabled after future data management update, that brings
+# re-impl of conversions between onedal tables and usm ndarrays.
+@pytest.mark.skip(
+    reason="Currently removed. Will be enabled after data management update"
+)
 @pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
@@ -171,6 +178,13 @@ def test_input_format_c_contiguous_dpctl(queue, dtype):
     assert x_dpt_from_table.flags.c_contiguous
 
 
+# TODO:
+# Currently `dpctl_to_table` is not used in onedal estimators.
+# The test will be enabled after future data management update, that brings
+# re-impl of conversions between onedal tables and usm ndarrays.
+@pytest.mark.skip(
+    reason="Currently removed. Will be enabled after data management update"
+)
 @pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
