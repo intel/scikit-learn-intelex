@@ -63,9 +63,14 @@ from sklearnex.metrics import pairwise_distances, roc_auc_score
 def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
-        X = _convert_to_dataframe(
-            rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
-        )
+        if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
+            X = _convert_to_dataframe(
+                rng.random(size=1000).astype(dtype), sycl_queue=queue, target_df=dataframe
+            )
+        else:
+            X = _convert_to_dataframe(
+                rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+            )
 
         _ = pairwise_distances(X.reshape(1, -1), metric=metric)
     assert all(
@@ -88,18 +93,31 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
         pytest.skip("Windows issue with unsigned ints")
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
-        X = _convert_to_dataframe(
-            rng.integers(2, size=1000),
-            sycl_queue=queue,
-            target_df=dataframe,
-            dtype=dtype,
-        )
-        y = _convert_to_dataframe(
-            rng.integers(2, size=1000),
-            sycl_queue=queue,
-            target_df=dataframe,
-            dtype=dtype,
-        )
+
+        if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
+            X = _convert_to_dataframe(
+                rng.integers(2, size=1000).astype(dtype),
+                sycl_queue=queue,
+                target_df=dataframe,
+            )
+            y = _convert_to_dataframe(
+                rng.integers(2, size=1000).astype(dtype),
+                sycl_queue=queue,
+                target_df=dataframe,
+            )
+        else:
+            X = _convert_to_dataframe(
+                rng.integers(2, size=1000),
+                sycl_queue=queue,
+                target_df=dataframe,
+                dtype=dtype,
+            )
+            y = _convert_to_dataframe(
+                rng.integers(2, size=1000),
+                sycl_queue=queue,
+                target_df=dataframe,
+                dtype=dtype,
+            )
 
         _ = roc_auc_score(X, y)
     assert all(
