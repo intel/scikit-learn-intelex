@@ -65,14 +65,16 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
         rng = nprnd.default_rng()
         if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
             X = _convert_to_dataframe(
-                rng.random(size=1000).astype(dtype), sycl_queue=queue, target_df=dataframe
+                rng.random(size=1000).astype(dtype).reshape(1, -1),
+                sycl_queue=queue,
+                target_df=dataframe,
             )
         else:
             X = _convert_to_dataframe(
                 rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
-            )
+            ).reshape(1, -1)
 
-        _ = pairwise_distances(X.reshape(1, -1), metric=metric)
+        _ = pairwise_distances(X, metric=metric)
     assert all(
         [
             "running accelerated version" in i.message
