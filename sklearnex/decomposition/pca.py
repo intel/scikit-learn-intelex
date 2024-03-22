@@ -194,6 +194,16 @@ if daal_check_version((2024, "P", 100)):
 
             return super().score_samples(X)
 
+        @wrap_output_data
+        def score(self, X, y=None):
+            if hasattr(X, "__sycl_usm_array_interface__"):
+                if hasattr(X, "__array_namespace__"):
+                    X = X.__array_namespace__().asnumpy(X)
+                else:
+                    X = X.asnumpy()
+
+            return super().score(X)
+
         def _onedal_supported(self, method_name, X):
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
@@ -339,6 +349,7 @@ if daal_check_version((2024, "P", 100)):
         fit.__doc__ = sklearn_PCA.fit.__doc__
         transform.__doc__ = sklearn_PCA.transform.__doc__
         fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
+        score.__doc__ = sklearn_PCA.score.__doc__
         score_samples.__doc__ = sklearn_PCA.score_samples.__doc__
 
 else:
