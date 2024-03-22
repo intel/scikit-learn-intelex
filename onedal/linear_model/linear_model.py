@@ -182,12 +182,6 @@ class LinearRegression(BaseLinearRegression):
         module = self._get_backend("linear_model", "regression")
 
         # TODO Fix _check_X_y to make sure this conversion is there
-        if X.shape[1] + int(self.fit_intercept) > X.shape[0]:
-            raise TypeError("Not enough samples to fit")
-        module = self._get_backend("linear_model", "regression")
-
-        policy = self._get_policy(queue, X, y)
-
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
 
