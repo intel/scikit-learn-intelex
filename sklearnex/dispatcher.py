@@ -55,7 +55,6 @@ def get_patch_map_core(preview=False):
             # when preview is used, setting the mapping element[1] to None
             # should NOT be done. This may lose track of the unpatched
             # sklearn estimator or function.
-
             # Covariance
             mapping["empiricalcovariance"] = [
                 [
