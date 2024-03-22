@@ -684,29 +684,5 @@ class KMeans(KMeans_original):
         """
         return _predict(self, X, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
-    def fit_predict(self, X, y=None, sample_weight=None):
-        """
-        Compute cluster centers and predict cluster index for each sample.
-
-        Convenience method; equivalent to calling fit(X) followed by
-        predict(X).
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            New data to transform.
-
-        y : Ignored
-            Not used, present here for API consistency by convention.
-
-        sample_weight : array-like of shape (n_samples,), default=None
-            The weights for each observation in X. If None, all observations
-            are assigned equal weight.
-
-        Returns
-        -------
-        labels : ndarray of shape (n_samples,)
-            Index of the cluster each sample belongs to.
-        """
-        return super().fit_predict(X, y, sample_weight)
+    fit_predict = support_usm_ndarray()(KMeans_original.fit_predict)
+    score = support_usm_ndarray()(KMeans_original.score)
