@@ -211,6 +211,17 @@ def _copy_to_usm(queue, array):
         return array
 
 
+if dpnp_available:
+
+    def _convert_to_dpnp(array):
+        if isinstance(array, usm_ndarray):
+            return dpnp.array(array, copy=False)
+        elif isinstance(array, Iterable):
+            for i in range(len(array)):
+                array[i] = _covert_to_dpnp(array[i])
+            return array
+
+
 def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -223,7 +234,7 @@ def wrap_output_data(func):
         if usm_iface is not None:
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
-                result = dpnp.array(result, copy=False)
+                result = _convert_to_dpnp(array)
         return result
 
     return wrapper
