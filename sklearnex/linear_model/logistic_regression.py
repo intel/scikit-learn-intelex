@@ -346,6 +346,7 @@ if daal_check_version((2024, "P", 1)):
         predict.__doc__ = sklearn_LogisticRegression.predict.__doc__
         predict_proba.__doc__ = sklearn_LogisticRegression.predict_proba.__doc__
         predict_log_proba.__doc__ = sklearn_LogisticRegression.predict_log_proba.__doc__
+        score.__doc__ = sklearn_LogisticRegression.score.__doc__
 
 else:
     LogisticRegression = LogisticRegression_daal4py
