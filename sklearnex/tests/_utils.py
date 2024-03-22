@@ -136,16 +136,12 @@ def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
         raise ValueError("Unknown dataset type")
     if target_df == "pandas" and np.issubdtype(dtype, np.integer):
         # Pandas float to int not allowed
-        X = _convert_to_dataframe(
-            X.astype(dtype), sycl_queue=queue, target_df=target_df
-        )
-        y = _convert_to_dataframe(
-            y.astype(dtype), sycl_queue=queue, target_df=target_df
-        )
-    else:            
+        X = _convert_to_dataframe(X.astype(dtype), sycl_queue=queue, target_df=target_df)
+        y = _convert_to_dataframe(y.astype(dtype), sycl_queue=queue, target_df=target_df)
+    else:
         X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
         y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
-        
+
     return X, y
 
 
