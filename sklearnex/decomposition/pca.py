@@ -171,8 +171,7 @@ if daal_check_version((2024, "P", 100)):
             U, S, Vt = self._fit(X)
             if U is None:
                 # oneDAL PCA was fit
-                X_transformed = self.transform(X)
-                return X_transformed
+                return self.transform(X)
             else:
                 # Scikit-learn PCA was fit
                 U = U[:, : self.n_components_]
