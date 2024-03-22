@@ -218,7 +218,7 @@ if dpnp_available:
             return dpnp.array(array, copy=False)
         elif isinstance(array, Iterable):
             for i in range(len(array)):
-                array[i] = _covert_to_dpnp(array[i])
+                array[i] = _convert_to_dpnp(array[i])
         return array
 
 
