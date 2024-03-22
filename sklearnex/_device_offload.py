@@ -234,7 +234,7 @@ def wrap_output_data(func):
         if usm_iface is not None:
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
-                result = _convert_to_dpnp(array)
+                result = _convert_to_dpnp(result)
         return result
 
     return wrapper
