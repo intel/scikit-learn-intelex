@@ -20,7 +20,6 @@ from numbers import Number, Real
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.base import BaseEstimator
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal import _backend
@@ -45,7 +44,7 @@ class SVMtype(Enum):
     nu_svr = 3
 
 
-class BaseSVM(BaseEstimator, metaclass=ABCMeta):
+class BaseSVM(metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
