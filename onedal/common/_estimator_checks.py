@@ -22,7 +22,10 @@ def _check_is_fitted(estimator, attributes=None, *, msg=None):
             "appropriate arguments before using this estimator."
         )
 
-    if not hasattr(estimator, "fit"):
+    if not (
+        hasattr(estimator, "fit")
+        or (hasattr(estimator, "partial_fit") and hasattr(estimator, "finalize_fit"))
+    ):
         raise TypeError("%s is not an estimator instance." % (estimator))
 
     if attributes is not None:
