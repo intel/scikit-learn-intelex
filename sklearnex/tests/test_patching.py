@@ -62,6 +62,8 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
+        elif queue and queue.sycl_device.is_gpu:
+            pytest.skip("pairwise_distances does not support GPU queues")
 
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
@@ -131,6 +133,8 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and dtype in [np.uint32, np.uint64]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
+        elif estimator == "KMeans" and queue and queue.sycl_device.is_gpu:
+            pytest.skip("KMeans does not support GPU queues")
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)

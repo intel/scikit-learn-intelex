@@ -173,6 +173,19 @@ def pairwise_distances(
             "or a callable" % (metric, _VALID_METRICS)
         )
 
+    if hasattr(X, "__sycl_usm_array_interface__"):
+        if hasattr(X, "__array_namespace__"):
+            X = X.__array_namespace__().asnumpy(X)
+        else:
+            X = X.asnumpy()
+
+    if hasattr(Y, "__sycl_usm_array_interface__"):
+        if hasattr(Y, "__array_namespace__"):
+            Y = Y.__array_namespace__().asnumpy(Y)
+        else:
+            Y = Y.asnumpy()
+
+
     X = _daal_check_array(
         X, accept_sparse=["csr", "csc", "coo"], force_all_finite=force_all_finite
     )
