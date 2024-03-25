@@ -67,6 +67,7 @@ if _is_dpc_backend:
         device = policy._queue.sycl_device
 
         def convert_or_pass(x):
+            raise ValueError(x.dtype)
             if (x is not None) and (x.dtype == np.float64):
                 warnings.warn(
                     "Data will be converted into float32 from "
