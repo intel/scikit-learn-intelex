@@ -65,7 +65,7 @@ def _daal4py_correlation_distance_dense(X):
     return res.correlationDistance
 
 
-@support_usm_ndarray(freefunc=True)	
+@support_usm_ndarray(freefunc=True)
 def pairwise_distances(
     X, Y=None, metric="euclidean", *, n_jobs=None, force_all_finite=True, **kwds
 ):
