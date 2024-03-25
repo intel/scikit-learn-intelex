@@ -65,6 +65,7 @@ def _daal4py_correlation_distance_dense(X):
     return res.correlationDistance
 
 
+@support_usm_ndarray(freefunc=True)	
 def pairwise_distances(
     X, Y=None, metric="euclidean", *, n_jobs=None, force_all_finite=True, **kwds
 ):
@@ -171,7 +172,6 @@ def pairwise_distances(
             "Unknown metric %s. Valid metrics are %s, or 'precomputed', "
             "or a callable" % (metric, _VALID_METRICS)
         )
-
 
     X = _daal_check_array(
         X, accept_sparse=["csr", "csc", "coo"], force_all_finite=force_all_finite
