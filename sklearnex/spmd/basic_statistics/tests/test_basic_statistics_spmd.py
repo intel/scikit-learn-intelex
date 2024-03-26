@@ -28,7 +28,10 @@ except (ImportError, ModuleNotFoundError):
     mpi_libs_available = False
 
 
-@pytest.mark.skipif(not mpi_libs_available or not gpu_is_available)
+@pytest.mark.skipif(
+    not mpi_libs_available or not gpu_is_available,
+    reason="GPU device and MPI libs required for test",
+)
 @pytest.mark.mpi
 def test_easy():
     # Import spmd algo and necessary modules
