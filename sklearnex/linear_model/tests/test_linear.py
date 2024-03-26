@@ -46,8 +46,9 @@ def test_sklearnex_import_linear(dataframe, queue, macro_block):
         assert hasattr(linreg, "_onedal_estimator")
     assert "sklearnex" in linreg.__module__
     assert linreg.n_features_in_ == 2
-    assert_allclose(_as_numpy(linreg.intercept_), 3.0)
-    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0])
+    tol = 1e-5 if linreg.intercept_.dtype == np.float32 else 1e-7
+    assert_allclose(_as_numpy(linreg.intercept_), 3.0, rtol=tol)
+    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
 
 
 def test_sklearnex_import_ridge():
