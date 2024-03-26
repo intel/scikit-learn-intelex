@@ -24,19 +24,17 @@ import types
 import numpy as np
 import pandas as pd
 import pytest
+from _utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator
 from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
-from _utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
-
+from onedal import _is_dpc_backend
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-
-from onedal import _is_dpc_backend
 
 if _is_dpc_backend:
     from onedal import get_used_memory
