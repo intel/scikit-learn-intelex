@@ -121,8 +121,8 @@ std::uint32_t get_device_id(const sycl::queue& queue) {
     }
 }
 
-std::size_t get_free_memory(const sycl::queue& queue){
-    const auto& device = queue.get_device();
+std::size_t get_free_memory(const py::object& syclobj){
+    const auto& device =  get_queue_from_python(syclobj).get_device();
     return device.get_info<sycl::ext::intel::info::device::free_memory>();
 }
 
