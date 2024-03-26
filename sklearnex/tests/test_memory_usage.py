@@ -20,6 +20,7 @@ import os
 import tracemalloc
 import types
 from functools import partial
+from inspect import isclass
 
 import numpy as np
 import pandas as pd
@@ -107,7 +108,7 @@ def split_train_inference(kf, x, y, estimator, queue=None):
             x_train, x_test = x.iloc[train_index], x.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-        if issubclass(estimator, BaseEstimator):
+        if isclass(estimator) and issubclass(estimator, BaseEstimator):
             alg = estimator()
             flag = True
         elif isinstance(estimator, BaseEstimator):
