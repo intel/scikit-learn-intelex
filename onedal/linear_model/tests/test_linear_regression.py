@@ -14,134 +14,136 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version
+import numpy as np
+import pytest
+from numpy.testing import assert_allclose, assert_array_equal
+from sklearn.datasets import load_diabetes
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
 
-if daal_check_version((2023, "P", 100)):
-    import numpy as np
-    import pytest
-    from numpy.testing import assert_allclose, assert_array_equal
-    from sklearn.datasets import load_diabetes
-    from sklearn.metrics import mean_squared_error
-    from sklearn.model_selection import train_test_split
+from onedal.linear_model import LinearRegression
+from onedal.tests.utils._device_selection import get_queues
 
-    from onedal.linear_model import LinearRegression
-    from onedal.tests.utils._device_selection import get_queues
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_diabetes(queue, dtype):
-        X, y = load_diabetes(return_X_y=True)
-        X, y = X.astype(dtype), y.astype(dtype)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, train_size=0.8, random_state=777
-        )
-        model = LinearRegression(fit_intercept=True)
-        model.fit(X_train, y_train, queue=queue)
-        y_pred = model.predict(X_test, queue=queue)
-        assert mean_squared_error(y_test, y_pred) < 2396
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_diabetes(queue, dtype):
+    X, y = load_diabetes(return_X_y=True)
+    X, y = X.astype(dtype), y.astype(dtype)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, train_size=0.8, random_state=777
+    )
+    model = LinearRegression(fit_intercept=True)
+    model.fit(X_train, y_train, queue=queue)
+    y_pred = model.predict(X_test, queue=queue)
+    assert mean_squared_error(y_test, y_pred) < 2396
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_pickle(queue, dtype):
-        X, y = load_diabetes(return_X_y=True)
-        X, y = X.astype(dtype), y.astype(dtype)
-        model = LinearRegression(fit_intercept=True)
-        model.fit(X, y, queue=queue)
-        expected = model.predict(X, queue=queue)
 
-        import pickle
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_pickle(queue, dtype):
+    X, y = load_diabetes(return_X_y=True)
+    X, y = X.astype(dtype), y.astype(dtype)
+    model = LinearRegression(fit_intercept=True)
+    model.fit(X, y, queue=queue)
+    expected = model.predict(X, queue=queue)
 
-        dump = pickle.dumps(model)
-        model2 = pickle.loads(dump)
+    import pickle
 
-        assert isinstance(model2, model.__class__)
-        result = model2.predict(X, queue=queue)
+    dump = pickle.dumps(model)
+    model2 = pickle.loads(dump)
 
-        assert_array_equal(expected, result)
+    assert isinstance(model2, model.__class__)
+    result = model2.predict(X, queue=queue)
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_full_results(queue, dtype):
-        seed = 42
-        f_count, r_count = 19, 7
-        s_count, t_count = 3500, 1999
+    assert_array_equal(expected, result)
 
-        gen = np.random.default_rng(seed)
-        intp = gen.random(size=r_count, dtype=dtype)
-        coef = gen.random(size=(r_count, f_count), dtype=dtype).T
 
-        X = gen.random(size=(s_count, f_count), dtype=dtype)
-        y = X @ coef + intp[np.newaxis, :]
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_full_results(queue, dtype):
+    seed = 42
+    f_count, r_count = 19, 7
+    s_count, t_count = 3500, 1999
 
-        model = LinearRegression(fit_intercept=True)
-        model.fit(X, y, queue=queue)
+    gen = np.random.default_rng(seed)
+    intp = gen.random(size=r_count, dtype=dtype)
+    coef = gen.random(size=(r_count, f_count), dtype=dtype).T
 
-        if queue.sycl_device.is_gpu:
-            tol = 5e-3 if model.coef_.dtype == np.float32 else 1e-5
-        else:
-            tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
-        assert_allclose(coef, model.coef_.T, rtol=tol)
+    X = gen.random(size=(s_count, f_count), dtype=dtype)
+    y = X @ coef + intp[np.newaxis, :]
 
-        tol = 2e-3 if model.intercept_.dtype == np.float32 else 1e-5
-        assert_allclose(intp, model.intercept_, rtol=tol)
+    model = LinearRegression(fit_intercept=True)
+    model.fit(X, y, queue=queue)
 
-        Xt = gen.random(size=(t_count, f_count), dtype=dtype)
-        gtr = Xt @ coef + intp[np.newaxis, :]
+    if queue.sycl_device.is_gpu:
+        tol = 5e-3 if model.coef_.dtype == np.float32 else 1e-5
+    else:
+        tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
+    assert_allclose(coef, model.coef_.T, rtol=tol)
 
-        res = model.predict(Xt, queue=queue)
+    tol = 2e-3 if model.intercept_.dtype == np.float32 else 1e-5
+    assert_allclose(intp, model.intercept_, rtol=tol)
 
-        tol = 2e-4 if res.dtype == np.float32 else 1e-7
-        assert_allclose(gtr, res, rtol=tol)
+    Xt = gen.random(size=(t_count, f_count), dtype=dtype)
+    gtr = Xt @ coef + intp[np.newaxis, :]
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_no_intercept_results(queue, dtype):
-        seed = 42
-        f_count, r_count = 19, 7
-        s_count, t_count = 3500, 1999
+    res = model.predict(Xt, queue=queue)
 
-        gen = np.random.default_rng(seed)
-        coef = gen.random(size=(r_count, f_count), dtype=dtype).T
+    tol = 2e-4 if res.dtype == np.float32 else 1e-7
+    assert_allclose(gtr, res, rtol=tol)
 
-        X = gen.random(size=(s_count, f_count), dtype=dtype)
-        y = X @ coef
 
-        model = LinearRegression(fit_intercept=False)
-        model.fit(X, y, queue=queue)
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_no_intercept_results(queue, dtype):
+    seed = 42
+    f_count, r_count = 19, 7
+    s_count, t_count = 3500, 1999
 
-        if queue.sycl_device.is_gpu:
-            tol = 3e-3 if model.coef_.dtype == np.float32 else 1e-7
-        else:
-            tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-7
-        assert_allclose(coef, model.coef_.T, rtol=tol)
+    gen = np.random.default_rng(seed)
+    coef = gen.random(size=(r_count, f_count), dtype=dtype).T
 
-        Xt = gen.random(size=(t_count, f_count), dtype=dtype)
-        gtr = Xt @ coef
+    X = gen.random(size=(s_count, f_count), dtype=dtype)
+    y = X @ coef
 
-        res = model.predict(Xt, queue=queue)
+    model = LinearRegression(fit_intercept=False)
+    model.fit(X, y, queue=queue)
 
-        tol = 5e-5 if res.dtype == np.float32 else 1e-7
-        assert_allclose(gtr, res, rtol=tol)
+    if queue.sycl_device.is_gpu:
+        tol = 3e-3 if model.coef_.dtype == np.float32 else 1e-7
+    else:
+        tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-7
+    assert_allclose(coef, model.coef_.T, rtol=tol)
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-    def test_reconstruct_model(queue, dtype):
-        seed = 42
-        s_count = 3500
-        f_count, r_count = 14, 9
+    Xt = gen.random(size=(t_count, f_count), dtype=dtype)
+    gtr = Xt @ coef
 
-        gen = np.random.default_rng(seed)
-        intp = gen.random(size=r_count, dtype=dtype)
-        coef = gen.random(size=(r_count, f_count), dtype=dtype).T
+    res = model.predict(Xt, queue=queue)
 
-        X = gen.random(size=(s_count, f_count), dtype=dtype)
-        gtr = X @ coef + intp[np.newaxis, :]
+    tol = 5e-5 if res.dtype == np.float32 else 1e-7
+    assert_allclose(gtr, res, rtol=tol)
 
-        model = LinearRegression(fit_intercept=True)
-        model.coef_ = coef.T
-        model.intercept_ = intp
 
-        res = model.predict(X, queue=queue)
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_reconstruct_model(queue, dtype):
+    seed = 42
+    s_count = 3500
+    f_count, r_count = 14, 9
 
-        tol = 1e-5 if res.dtype == np.float32 else 1e-7
-        assert_allclose(gtr, res, rtol=tol)
+    gen = np.random.default_rng(seed)
+    intp = gen.random(size=r_count, dtype=dtype)
+    coef = gen.random(size=(r_count, f_count), dtype=dtype).T
+
+    X = gen.random(size=(s_count, f_count), dtype=dtype)
+    gtr = X @ coef + intp[np.newaxis, :]
+
+    model = LinearRegression(fit_intercept=True)
+    model.coef_ = coef.T
+    model.intercept_ = intp
+
+    res = model.predict(X, queue=queue)
+
+    tol = 1e-5 if res.dtype == np.float32 else 1e-7
+    assert_allclose(gtr, res, rtol=tol)

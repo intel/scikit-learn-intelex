@@ -14,6 +14,14 @@
 # limitations under the License.
 #===============================================================================
 
+schedules:
+- cron: '0 6 * * *'
+  displayName: Nightly
+  branches:
+    include:
+    - main
+  always: true
+
 variables:
   COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
   DESCRIPTION: Nightly
