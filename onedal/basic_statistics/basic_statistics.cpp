@@ -74,15 +74,41 @@ auto get_onedal_result_options(const py::dict& params) {
             re);
 
         for (std::sregex_iterator it = first; it != last; ++it) {
-            const auto str = it->str();
-            const auto match = result_option_registry.find(str);
-            if (match == result_option_registry.cend()) {
+            std::smatch match = *it;
+            if (match.str() == "min") {
+                onedal_options = onedal_options | result_options::min;
+            }
+            else if (match.str() == "max") {
+                onedal_options = onedal_options | result_options::max;
+            }
+            else if (match.str() == "sum") {
+                onedal_options = onedal_options | result_options::sum;
+            }
+            else if (match.str() == "mean") {
+                onedal_options = onedal_options | result_options::mean;
+            }
+            else if (match.str() == "variance") {
+                onedal_options = onedal_options | result_options::variance;
+            }
+            else if (match.str() == "variation") {
+                onedal_options = onedal_options | result_options::variation;
+            }
+            else if (match.str() == "sum_squares") {
+                onedal_options = onedal_options | result_options::sum_squares;
+            }
+            else if (match.str() == "standard_deviation") {
+                onedal_options = onedal_options | result_options::standard_deviation;
+            }
+            else if (match.str() == "sum_squares_centered") {
+                onedal_options = onedal_options | result_options::sum_squares_centered;
+            }
+            else if (match.str() == "second_order_raw_moment") {
+                onedal_options = onedal_options | result_options::second_order_raw_moment;
+            }
+            else {
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
-            } else {
-                onedal_options = onedal_options | match->second;
             }
         }
-    }
     catch (std::regex_error& e) {
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
