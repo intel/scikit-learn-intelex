@@ -210,6 +210,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
 
     except RuntimeError:
         pytest.skip("GPU memory tracing is not available")
+        
     finally:
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
             if status is None:
