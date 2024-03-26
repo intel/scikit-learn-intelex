@@ -14,12 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-
 import gc
 import logging
 import os
 import tracemalloc
 import types
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -40,54 +40,34 @@ if _is_dpc_backend:
     from onedal import get_used_memory
 
 
-class TrainTestSplitEstimator:
-    def __init__(self):
-        pass
-
-    def fit(self, x, y):
-        train_test_split(x, y)
+BANNED_LIST = ("TSNE",)  # too slow for using in testing on common data size
 
 
-class FiniteCheckEstimator:
-    def __init__(self):
-        pass
+def gen_functions(functions):
+    func_dict = functions.copy()
 
-    def fit(self, x, y):
-        _assert_all_finite(x)
-        _assert_all_finite(y)
+    roc_auc_score = func_dict.pop("roc_auc_score")
+    func_dict["roc_auc_score"] = lambda y: roc_auc_score(
+        y, np.zeros(shape=y.shape, dtype=np.int32)
+    )
 
-
-class PairwiseDistancesEstimator:
-    def fit(self, x, y):
-        pairwise_distances(x, metric=self.metric)
-
-
-class CosineDistancesEstimator(PairwiseDistancesEstimator):
-    def __init__(self):
-        self.metric = "cosine"
-
-
-class CorrelationDistancesEstimator(PairwiseDistancesEstimator):
-    def __init__(self):
-        self.metric = "correlation"
+    pairwise_distances = func_dict.pop("pairwise_distances")
+    func_dict["pairwise_distances(metric='cosine')"] = partial(
+        pairwise_distances, metric="cosine"
+    )
+    func_dict["pairwise_distances(metric='correlation')"] = partial(
+        pairwise_distances, metric="correlation"
+    )
+    return func_dict
 
 
-class RocAucEstimator:
-    def __init__(self):
-        pass
+FUNCTIONS = gen_functions(PATCHED_FUNCTIONS)
 
-    def fit(self, x, y):
-        print(roc_auc_score(y, np.zeros(shape=y.shape, dtype=np.int32)))
-
-
-BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
 ESTIMATORS = {
     k: v
-    for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES}.items()
-    if not k in BANNED_ESTIMATORS
+    for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES, **FUNCTIONS}.items()
+    if not k in BANNED_LIST
 }
-# NEED TO MAKE FUNCTIONS HERE USING PARTIAL
-
 
 data_shapes = [(1000, 100), (2000, 50)]
 
@@ -123,19 +103,29 @@ def split_train_inference(kf, x, y, estimator, queue=None):
             x_train, x_test = x.iloc[train_index], x.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-        try:
+        if issubclass(estimator, BaseEstimator):
             alg = estimator()
-        except:
+            flag = True
+        elif isinstance(estimator, BaseEstimator):
             alg = clone(estimator)
+            flag = True
+        else:
+            flag = False
 
-        alg.fit(x_train, y_train)
-        if hasattr(alg, "predict"):
-            alg.predict(x_test)
-        elif hasattr(alg, "transform"):
-            alg.transform(x_test)
-        elif hasattr(alg, "kneighbors"):
-            alg.kneighbors(x_test)
-        del alg, x_train, x_test, y_train, y_test
+        if flag:
+            alg.fit(x_train, y_train)
+            if hasattr(alg, "predict"):
+                alg.predict(x_test)
+            elif hasattr(alg, "transform"):
+                alg.transform(x_test)
+            elif hasattr(alg, "kneighbors"):
+                alg.kneighbors(x_test)
+            del alg
+        else:
+            for data in [x_train, y_train, x_test, y_test]:
+                alg(data)
+
+        del x_train, x_test, y_train, y_test, flag
         mem_tracks.append(get_traced_memory(queue))
     return mem_tracks
 
@@ -200,7 +190,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("estimator", ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
-def test_estimator_memory_leaks(estimator, dataframe, queue, order, data_shape):
+def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     if order == "F":
         func = np.asfortranarray
     elif order == "C":
@@ -215,32 +205,6 @@ def test_estimator_memory_leaks(estimator, dataframe, queue, order, data_shape):
         _kfold_function_template(
             ESTIMATORS[estimator], dataframe, data_shape, queue, func
         )
-
-    except RuntimeError:
-        pytest.skip("GPU memory tracing is not available")
-    finally:
-        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
-            del os.environ["ZES_ENABLE_SYSMAN"]
-
-
-@pytest.mark.allow_sklearn_fallback
-@pytest.mark.parametrize("order", ["F", "C"])
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("func", FUNCTIONS.keys())
-@pytest.mark.parametrize("data_shape", data_shapes)
-def test_function_memory_leaks(func, dataframe, queue, order, data_shape):
-    if order == "F":
-        func = np.asfortranarray
-    elif order == "C":
-        func = np.ascontiguousarray
-    else:
-        func = None
-
-    try:
-        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
-            os.environ["ZES_ENABLE_SYSMAN"] = "1"
-
-        _kfold_function_template(FUNCTIONS[funcs], dataframe, data_shape, queue, func)
 
     except RuntimeError:
         pytest.skip("GPU memory tracing is not available")
