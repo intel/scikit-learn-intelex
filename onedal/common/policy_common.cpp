@@ -121,6 +121,11 @@ std::uint32_t get_device_id(const sycl::queue& queue) {
     }
 }
 
+std::size_t get_free_memory(const sycl::queue& queue){
+    const auto& device = queue.get_device();
+    return device.get_info<sycl::ext::intel::info::device::free_memory>();
+}
+
 dp_policy_t make_dp_policy(std::uint32_t id) {
     sycl::queue queue = get_queue_by_device_id(id);
     return dp_policy_t{ std::move(queue) };
