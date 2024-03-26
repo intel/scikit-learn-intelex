@@ -127,7 +127,7 @@ def get_patch_map_core(preview=False):
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
 
-        # DBSCAN
+        # KMeans
         mapping.pop("kmeans")
         mapping["kmeans"] = [[(cluster_module, "KMeans", KMeans_sklearnex), None]]
 
