@@ -14,22 +14,29 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
-
-#define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
-
 #include <pybind11/pybind11.h>
-#include <numpy/arrayobject.h>
 
-#include "oneapi/dal/table/common.hpp"
+#include "onedal/interop/utils/common.hpp"
 
-namespace oneapi::dal::python {
+#include "onedal/interop/dlpack/dlpack_utils.hpp"
+#include "onedal/interop/dlpack/dlpack_helper.hpp"
 
 namespace py = pybind11;
 
-dal::table convert_from_dptensor(py::object obj);
-py::dict construct_sua_iface(const dal::table& input);
+namespace oneapi::dal::python::interop::dlpack {
 
-void define_sycl_usm_array_property(py::class_<dal::table>& t);
+void instantiate_dlpack_helper(py::module& pm) {
+    pm.def("get_shape", [](const py::capsule& caps) -> py::tuple {
+        const std::int64_t dim_count = get_dim_count(caps);
 
-} // namespace oneapi::dal::python
+        py::tuple result(dim_count);
+
+        for (std::int64_t i = 0l; i != dim_count; ++i) {
+            result[i] = py::cast(get_count_by_dim(i, caps));
+        }
+
+        return result;
+    });
+}
+
+} // namespace oneapi::dal::python::interop::dlpack

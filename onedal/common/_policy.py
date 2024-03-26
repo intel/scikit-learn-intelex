@@ -39,6 +39,18 @@ def _get_policy(queue, *data):
         return _HostInteropPolicy()
 
 
+def _are_equal_devices(*policies):
+    if len(policies) > 1:
+        first = policies[0]
+        gtr = first.get_device_id()
+        for p in policies[1:]:
+            if gtr != p.get_device_id():
+                return False
+    # Nothing to compare or
+    # policies are equal
+    return True
+
+
 def _get_queue(*data):
     if len(data) > 0 and hasattr(data[0], "__sycl_usm_array_interface__"):
         # Assume that all data reside on the same device
