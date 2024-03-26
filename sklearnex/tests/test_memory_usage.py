@@ -73,6 +73,7 @@ data_shapes = [(1000, 100), (2000, 50)]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
 N_SPLITS = 10
+ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
 def gen_clsf_data(n_samples, n_features):
@@ -191,12 +192,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 @pytest.mark.parametrize("estimator", ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
-    if order == "F":
-        func = np.asfortranarray
-    elif order == "C":
-        func = np.ascontiguousarray
-    else:
-        func = None
+    func = ORDER_DICT[order]
 
     try:
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
