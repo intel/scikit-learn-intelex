@@ -198,7 +198,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     func = ORDER_DICT[order]
 
     try:
-        
+
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
             status = os.getenv("ZES_ENABLE_SYSMAN")
             if status != "1":
