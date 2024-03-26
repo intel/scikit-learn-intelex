@@ -240,9 +240,7 @@ def test_function_memory_leaks(func, dataframe, queue, order, data_shape):
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
             os.environ["ZES_ENABLE_SYSMAN"] = "1"
 
-        _kfold_function_template(
-            FUNCTIONS[funcs], dataframe, data_shape, queue, func
-        )
+        _kfold_function_template(FUNCTIONS[funcs], dataframe, data_shape, queue, func)
 
     except RuntimeError:
         pytest.skip("GPU memory tracing is not available")
