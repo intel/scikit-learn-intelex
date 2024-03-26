@@ -14,8 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-import pytest
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
 try:
@@ -35,11 +35,12 @@ except (ImportError, ModuleNotFoundError):
 @pytest.mark.mpi
 def test_easy():
     # Import spmd algo and necessary modules
-    from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
-    from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
-    from mpi4py import MPI
     import dpctl.tensor as dpt
     from dpctl import SyclQueue
+    from mpi4py import MPI
+
+    from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
+    from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
 
     # create sycl queue and gather communicator details
     q = SyclQueue("gpu")
