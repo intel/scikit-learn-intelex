@@ -37,7 +37,7 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 if _is_dpc_backend:
-    from onedal import get_used_memory
+    from onedal._backend import get_used_memory
 
 
 BANNED_LIST = ("TSNE",)  # too slow for using in testing on common data size
