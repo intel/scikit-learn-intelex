@@ -26,7 +26,7 @@ import pandas as pd
 import pytest
 from _utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from scipy.stats import pearsonr
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, clone
 from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
@@ -124,7 +124,7 @@ def split_train_inference(kf, x, y, estimator, queue=None):
         try:
             alg = estimator()
         except:
-            alg = estimator.clone()
+            alg = clone(estimator)
 
         alg.fit(x_train, y_train)
         if hasattr(alg, "predict"):
