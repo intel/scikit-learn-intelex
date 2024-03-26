@@ -86,6 +86,8 @@ ESTIMATORS = {
     for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES}.items()
     if not k in BANNED_ESTIMATORS
 }
+# NEED TO MAKE FUNCTIONS HERE USING PARTIAL
+
 
 data_shapes = [(1000, 100), (2000, 50)]
 
@@ -239,7 +241,7 @@ def test_function_memory_leaks(func, dataframe, queue, order, data_shape):
             os.environ["ZES_ENABLE_SYSMAN"] = "1"
 
         _kfold_function_template(
-            ESTIMATORS[estimator], dataframe, data_shape, queue, func
+            FUNCTIONS[funcs], dataframe, data_shape, queue, func
         )
 
     except RuntimeError:
