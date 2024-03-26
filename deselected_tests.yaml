@@ -289,14 +289,14 @@ deselected_tests:
   # Some values in PCA.components_ (in the last component) aren't equal (0.6 on average
   # for absolute error in this test) because of different implementations of PCA.
   # The results are also not stable.
-  #- decomposition/tests/test_incremental_pca.py::test_whitening
+  - decomposition/tests/test_incremental_pca.py::test_whitening
 
   # Stability issue with max absolute difference: 0.00015992. Remove in the next release.
   #- decomposition/tests/test_pca.py::test_pca_dtype_preservation >=0.24,<1.0
 
   # The test fails because of changing of 'auto' strategy in PCA to improve performance.
   # 'randomized' PCA expected, but 'full' is given.
-  #- decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
+  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
 
   # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
   # Assertion error in check_estimator (PoorScoreLogisticRegression())
