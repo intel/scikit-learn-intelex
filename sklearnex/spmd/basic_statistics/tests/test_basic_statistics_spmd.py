@@ -47,7 +47,17 @@ def test_easy():
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    data = np.array([[0., 0., 0.], [0., 1., 2.], [0., 2., 4.], [0., 3., 8.], [0., 4., 16.], [0., 5., 32.], [0., 6., 64.],])
+    data = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [0.0, 1.0, 2.0],
+            [0.0, 2.0, 4.0],
+            [0.0, 3.0, 8.0],
+            [0.0, 4.0, 16.0],
+            [0.0, 5.0, 32.0],
+            [0.0, 6.0, 64.0],
+        ]
+    )
     data_rows, data_cols = data.shape
 
     # divide data across ranks and move to dpt tensor
