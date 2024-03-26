@@ -38,10 +38,15 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 if _is_dpc_backend:
-    from onedal._backend import get_used_memory
+    from onedal import _backend
 
 
-BANNED_LIST = ("TSNE",)  # too slow for using in testing on common data size
+BANNED_LIST = (
+    "TSNE",  # too slow for using in testing on common data size
+    "config_context",  # does not malloc
+    "get_config",  # does not malloc
+    "set_config",  # does not malloc
+)
 
 
 def gen_functions(functions):
@@ -93,7 +98,7 @@ def gen_clsf_data(n_samples, n_features):
 
 def get_traced_memory(queue=None):
     if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
-        return get_used_memory(queue)
+        return _backend.get_used_memory(queue)
     else:
         return tracemalloc.get_traced_memory()[0]
 
@@ -163,10 +168,15 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
         )
     mem_before_gc = get_traced_memory(queue)
     mem_diff = mem_before_gc - mem_before
+    if isinstance(estimator, BaseEstimator):
+        name = str(estimator)
+    else:
+        name = estimator.__name__
+
     message = (
         "Size of extra allocated memory {} using garbage collector "
         f"is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data"
-        f"\n\tAlgorithm: {estimator.__name__}"
+        f"\n\tAlgorithm: {name}"
         f"\n\tInput data size: {data_memory_size} bytes"
         "\n\tExtra allocated memory size: {} bytes"
         " / {} %"
