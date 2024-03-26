@@ -174,7 +174,7 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
 
   # In scikit-learn, these algorithms are not included in this test. However, scikit-learn-intelex
-  # does and throws an error. This is due to t#he different structure of the transformer.__module__.split(".").
+  # does and throws an error. This is due to the different structure of the transformer.__module__.split(".").
   - tests/test_common.py::test_transformers_get_feature_names_out[KMeans()] >=1.0
   #- tests/test_common.py::test_transformers_get_feature_names_out[PCA()] >=1.0
 
@@ -313,7 +313,7 @@ deselected_tests:
   - tests/test_config.py::test_config_context
 
   # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
-  #- tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
+  - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
 
   # Some scikit-learn-intelex docstrings differ from scikit-learn.
   - tests/test_docstrings.py >=1.0.2
