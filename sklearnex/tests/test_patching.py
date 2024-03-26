@@ -95,31 +95,25 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
         pytest.skip("Windows issue with unsigned ints")
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
+        X = rng.integers(2, size=1000)
+        y = rng.integers(2, size=1000)
 
         if dataframe == "pandas":
-            X = _convert_to_dataframe(
-                rng.integers(2, size=1000).astype(dtype),
-                sycl_queue=queue,
-                target_df=dataframe,
-            )
-            y = _convert_to_dataframe(
-                rng.integers(2, size=1000).astype(dtype),
-                sycl_queue=queue,
-                target_df=dataframe,
-            )
-        else:
-            X = _convert_to_dataframe(
-                rng.integers(2, size=1000),
-                sycl_queue=queue,
-                target_df=dataframe,
-                dtype=dtype,
-            )
-            y = _convert_to_dataframe(
-                rng.integers(2, size=1000),
-                sycl_queue=queue,
-                target_df=dataframe,
-                dtype=dtype,
-            )
+            X = X.astype(dtype)
+            y = y.astype(dtype)
+
+        X = _convert_to_dataframe(
+            X,
+            sycl_queue=queue,
+            target_df=dataframe,
+            dtype=dtype,
+        )
+        y = _convert_to_dataframe(
+            y,
+            sycl_queue=queue,
+            target_df=dataframe,
+            dtype=dtype,
+        )
 
         _ = roc_auc_score(X, y)
     assert all(
