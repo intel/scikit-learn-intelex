@@ -127,7 +127,7 @@ def split_train_inference(kf, x, y, estimator, queue=None):
             del alg
         else:
             for data in [x_train, y_train, x_test, y_test]:
-                alg(data)
+                estimator(data)
 
         del x_train, x_test, y_train, y_test, flag
         mem_tracks.append(get_traced_memory(queue))
@@ -210,7 +210,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
 
     except RuntimeError:
         pytest.skip("GPU memory tracing is not available")
-        
+
     finally:
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
             if status is None:
