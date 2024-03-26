@@ -19,8 +19,9 @@ import pytest
 from numpy.testing import assert_allclose
 
 try:
-    import dpctl
-    import mpi4py
+    import dpctl.tensor as dpt
+    from dpctl import SyclQueue
+    from mpi4py import MPI
 
     mpi_libs_available = True
     gpu_is_available = dpctl.has_gpu_devices()
@@ -34,11 +35,7 @@ except (ImportError, ModuleNotFoundError):
 )
 @pytest.mark.mpi
 def test_easy():
-    # Import spmd algo and necessary modules
-    import dpctl.tensor as dpt
-    from dpctl import SyclQueue
-    from mpi4py import MPI
-
+    # Import spmd and batch algo
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
 
