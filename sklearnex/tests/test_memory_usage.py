@@ -17,6 +17,7 @@
 
 import gc
 import logging
+import os
 import tracemalloc
 import types
 
@@ -28,10 +29,17 @@ from sklearn.base import BaseEstimator
 from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
-from sklearnex import get_patch_map
-from sklearnex.metrics import pairwise_distances, roc_auc_score
-from sklearnex.model_selection import train_test_split
-from sklearnex.utils import _assert_all_finite
+from _utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
+
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
+
+from onedal import _is_dpc_backend
+
+if _is_dpc_backend:
+    from onedal import get_used_memory
 
 
 class TrainTestSplitEstimator:
@@ -74,57 +82,12 @@ class RocAucEstimator:
         print(roc_auc_score(y, np.zeros(shape=y.shape, dtype=np.int32)))
 
 
-# add all daal4py estimators enabled in patching (except banned)
-
-
-def get_patched_estimators(ban_list, output_list):
-    patched_estimators = get_patch_map().values()
-    for listing in patched_estimators:
-        estimator, name = listing[0][0][2], listing[0][0][1]
-        if not isinstance(estimator, types.FunctionType):
-            if name not in ban_list:
-                if issubclass(estimator, BaseEstimator):
-                    if hasattr(estimator, "fit"):
-                        output_list.append(estimator)
-
-
-def remove_duplicated_estimators(estimators_list):
-    estimators_map = {}
-    for estimator in estimators_list:
-        full_name = f"{estimator.__module__}.{estimator.__name__}"
-        estimators_map[full_name] = estimator
-    return estimators_map.values()
-
-
 BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
-estimators = [
-    TrainTestSplitEstimator,
-    FiniteCheckEstimator,
-    CosineDistancesEstimator,
-    CorrelationDistancesEstimator,
-    RocAucEstimator,
-]
-get_patched_estimators(BANNED_ESTIMATORS, estimators)
-estimators = remove_duplicated_estimators(estimators)
-
-
-def ndarray_c(x, y):
-    return np.ascontiguousarray(x), y
-
-
-def ndarray_f(x, y):
-    return np.asfortranarray(x), y
-
-
-def dataframe_c(x, y):
-    return pd.DataFrame(np.ascontiguousarray(x)), pd.Series(y)
-
-
-def dataframe_f(x, y):
-    return pd.DataFrame(np.asfortranarray(x)), pd.Series(y)
-
-
-data_transforms = [ndarray_c, ndarray_f, dataframe_c, dataframe_f]
+ESTIMATORS = {
+    k: v
+    for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES}.items()
+    if not k in BANNED_ESTIMATORS
+}
 
 data_shapes = [(1000, 100), (2000, 50)]
 
@@ -143,7 +106,14 @@ def gen_clsf_data(n_samples, n_features):
     )
 
 
-def split_train_inference(kf, x, y, estimator):
+def get_traced_memory(queue=None):
+    if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+        return get_used_memory(queue)
+    else:
+        return tracemalloc.get_traced_memory()[0]
+
+
+def split_train_inference(kf, x, y, estimator, queue=None):
     mem_tracks = []
     for train_index, test_index in kf.split(x):
         if isinstance(x, np.ndarray):
@@ -164,20 +134,24 @@ def split_train_inference(kf, x, y, estimator):
         elif hasattr(alg, "kneighbors"):
             alg.kneighbors(x_test)
         del alg, x_train, x_test, y_train, y_test
-        mem_tracks.append(tracemalloc.get_traced_memory()[0])
+        mem_tracks.append(get_traced_memory(queue))
     return mem_tracks
 
 
-def _kfold_function_template(estimator, data_transform_function, data_shape):
+def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    x, y, data_memory_size = gen_clsf_data(n_samples, n_features)
+    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
     kf = KFold(n_splits=N_SPLITS)
-    x, y = data_transform_function(x, y)
+    if func:
+        X = func(X)
 
-    mem_before, _ = tracemalloc.get_traced_memory()
-    mem_tracks = split_train_inference(kf, x, y, estimator)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+
+    mem_before = get_traced_memory(queue)
+    mem_tracks = split_train_inference(kf, X, y, estimator, queue=queue)
     mem_iter_diffs = np.array(mem_tracks[1:]) - np.array(mem_tracks[:-1])
     mem_incr_mean, mem_incr_std = mem_iter_diffs.mean(), mem_iter_diffs.std()
     mem_incr_mean, mem_incr_std = round(mem_incr_mean), round(mem_incr_std)
@@ -190,7 +164,7 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
             "Memory usage increase per iteration: "
             f"{mem_incr_mean}±{mem_incr_std} bytes"
         )
-    mem_before_gc, _ = tracemalloc.get_traced_memory()
+    mem_before_gc = get_traced_memory(queue)
     mem_diff = mem_before_gc - mem_before
     message = (
         "Size of extra allocated memory {} using garbage collector "
@@ -207,7 +181,7 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
             )
         )
     gc.collect()
-    mem_after, _ = tracemalloc.get_traced_memory()
+    mem_after = get_traced_memory(queue)
     tracemalloc.stop()
     mem_diff = mem_after - mem_before
 
@@ -220,8 +194,28 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
 
 
 @pytest.mark.allow_sklearn_fallback
-@pytest.mark.parametrize("data_transform_function", data_transforms)
-@pytest.mark.parametrize("estimator", estimators)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("estimator", ESTIMATORS)
 @pytest.mark.parametrize("data_shape", data_shapes)
-def test_memory_leaks(estimator, data_transform_function, data_shape):
-    _kfold_function_template(estimator, data_transform_function, data_shape)
+def test_estimator_memory_leaks(estimator, dataframe, queue, order, data_shape):
+    if order == "F":
+        func = np.asfortranarray
+    elif order == "C":
+        func = np.ascontiguousarray
+    else:
+        func = None
+
+    try:
+        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+            os.environ["ZES_ENABLE_SYSMAN"] = "1"
+
+        _kfold_function_template(
+            ESTIMATORS[estimator], dataframe, data_shape, queue, func
+        )
+
+    except RuntimeError:
+        pytest.skip("GPU memory tracing is not available")
+    finally:
+        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+            del os.environ["ZES_ENABLE_SYSMAN"]
