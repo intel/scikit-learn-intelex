@@ -114,16 +114,18 @@ def get_traced_memory(queue=None):
 def split_train_inference(kf, x, y, estimator, queue=None):
     mem_tracks = []
     for train_index, test_index in kf.split(x):
-        if isinstance(x, np.ndarray):
+        if isinstance(x, np.ndarray) or queue:
             x_train, x_test = x[train_index], x[test_index]
             y_train, y_test = y[train_index], y[test_index]
         elif isinstance(x, pd.core.frame.DataFrame):
             x_train, x_test = x.iloc[train_index], x.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-        # TODO: add parameters for all estimators to prevent
-        # fallback to stock scikit-learn with default parameters
 
-        alg = estimator()
+        try:
+            alg = estimator()
+        except:
+            alg = estimator.clone()
+
         alg.fit(x_train, y_train)
         if hasattr(alg, "predict"):
             alg.predict(x_test)
@@ -194,9 +196,37 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 @pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("estimator", ESTIMATORS)
+@pytest.mark.parametrize("estimator", ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_estimator_memory_leaks(estimator, dataframe, queue, order, data_shape):
+    if order == "F":
+        func = np.asfortranarray
+    elif order == "C":
+        func = np.ascontiguousarray
+    else:
+        func = None
+
+    try:
+        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+            os.environ["ZES_ENABLE_SYSMAN"] = "1"
+
+        _kfold_function_template(
+            ESTIMATORS[estimator], dataframe, data_shape, queue, func
+        )
+
+    except RuntimeError:
+        pytest.skip("GPU memory tracing is not available")
+    finally:
+        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+            del os.environ["ZES_ENABLE_SYSMAN"]
+
+
+@pytest.mark.allow_sklearn_fallback
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("func", FUNCTIONS.keys())
+@pytest.mark.parametrize("data_shape", data_shapes)
+def test_function_memory_leaks(func, dataframe, queue, order, data_shape):
     if order == "F":
         func = np.asfortranarray
     elif order == "C":
