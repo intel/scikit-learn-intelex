@@ -109,6 +109,7 @@ auto get_onedal_result_options(const py::dict& params) {
                 ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
             }
         }
+    }
     catch (std::regex_error& e) {
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
