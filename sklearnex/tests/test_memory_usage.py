@@ -198,8 +198,11 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     func = ORDER_DICT[order]
 
     try:
+        
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
-            os.environ["ZES_ENABLE_SYSMAN"] = "1"
+            status = os.getenv("ZES_ENABLE_SYSMAN")
+            if status != "1":
+                os.environ["ZES_ENABLE_SYSMAN"] = "1"
 
         _kfold_function_template(
             ESTIMATORS[estimator], dataframe, data_shape, queue, func
@@ -209,4 +212,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
         pytest.skip("GPU memory tracing is not available")
     finally:
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
-            del os.environ["ZES_ENABLE_SYSMAN"]
+            if status is None:
+                del os.environ["ZES_ENABLE_SYSMAN"]
+            else:
+                os.environ["ZES_ENABLE_SYSMAN"] = status
