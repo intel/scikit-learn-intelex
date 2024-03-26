@@ -69,7 +69,10 @@ ESTIMATORS = {
     if not k in BANNED_LIST
 }
 
-data_shapes = [(1000, 100), (2000, 50)]
+data_shapes = [
+    pytest.param((1000, 100), id="(1000, 100)"),
+    pytest.param((2000, 50), id="(2000, 50)"),
+]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
 N_SPLITS = 10
