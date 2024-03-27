@@ -19,7 +19,6 @@ import logging
 import os
 import tracemalloc
 import types
-from functools import partial
 from inspect import isclass
 
 import numpy as np
@@ -53,17 +52,23 @@ def gen_functions(functions):
     func_dict = functions.copy()
 
     roc_auc_score = func_dict.pop("roc_auc_score")
-    func_dict["roc_auc_score"] = lambda y: roc_auc_score(
+    func_dict["roc_auc_score"] = lambda x, y: roc_auc_score(
         y, np.zeros(shape=y.shape, dtype=np.int32)
     )
 
     pairwise_distances = func_dict.pop("pairwise_distances")
-    func_dict["pairwise_distances(metric='cosine')"] = partial(
-        pairwise_distances, metric="cosine"
+    func_dict["pairwise_distances(metric='cosine')"] = lambda x, y: pairwise_distances(
+        x, metric="cosine"
     )
-    func_dict["pairwise_distances(metric='correlation')"] = partial(
-        pairwise_distances, metric="correlation"
+    func_dict["pairwise_distances(metric='correlation')"] = (
+        lambda x, y: pairwise_distances(x, metric="correlation")
     )
+
+    _assert_all_finite = func_dict.pop("_assert_all_finite")
+    func_dict["_assert_all_finite"] = lambda x, y: [
+        _assert_all_finite(x),
+        _assert_all_finite(y),
+    ]
     return func_dict
 
 
@@ -132,8 +137,7 @@ def split_train_inference(kf, x, y, estimator, queue=None):
                 alg.kneighbors(x_test)
             del alg
         else:
-            for data in [x_train, y_train, x_test, y_test]:
-                estimator(data)
+            estimator(x_train, y_train)
 
         del x_train, x_test, y_train, y_test, flag
         mem_tracks.append(get_traced_memory(queue))
