@@ -323,60 +323,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
 Build from Sources
 **********************
 
-You can build Intel® Extension for Scikit-learn* from  sources in the `Intel(R) Extension for Scikit-learn* repository <https://github.com/intel/scikit-learn-intelex>`_.
-
-
-Follow the steps below to build and install the completed package:
-
-1. Check prerequisites:
-
-   * `daal4py <https://github.com/intel/scikit-learn-intelex/blob/master/daal4py/INSTALL.md>`_ version to match the version of sklearnex that you build
-   * Python version >= 3.8, <= 3.12
-
-2. Set environment variables:
-
-   * ``SKLEARNEX_VERSION`` - This variable sets the version of the package
-   * ``DALROOT`` - This variable sets the path to oneAPI Data Analytics Library (oneDAL)
-
-3. Build |intelex|
-
-   .. list-table:: 
-      :header-rows: 1
-      :align: left
-
-      * - Build option
-        - Commands
-        - Notes
-      * - Install the extension
-        - 
-          :: 
-                
-             cd <checkout-dir>
-             python setup_sklearnex.py install
-          
-        - The ``develop`` mode creates a ``.egg-link`` in the deployment directory to the source code directory. Use the link to edit the source code and see the changes without reinstalling the package for each change.
-      * - Install the extension in development mode
-        - 
-          :: 
-                
-             cd <checkout-dir>
-             python setup.py develop
-        - Keys ``--single-version-externally-managed`` and ``--no-deps`` are required so that daal4py is not downloaded after installation of |intelex|.
-          The ``--single-version-externally-managed`` option is employed with Python packages to direct the ``setuptools`` module in 
-          generating a Python package that can be effortlessly handled by the host's package manager.
-      * - Install the extension without downloading daal4py
-        - 
-          ::
-              
-             cd <checkout-dir>
-             python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
-        -         
-      * - Install the extension without downloading daal4py in development mode
-        -
-         ::   
-             cd <checkout-dir>
-             python setup_sklearnex.py develop --no-deps
-        -
+See `Installation instructions <https://github.com/intel/scikit-learn-intelex/blob/main/INSTALL.md>`_ to build |intelex| from the sources.
 
 Install Intel*(R) AI Tools
 ****************************
