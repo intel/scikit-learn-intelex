@@ -111,19 +111,17 @@ def get_traced_memory(queue=None):
 def split_train_inference(kf, x, y, estimator, queue=None):
     mem_tracks = []
     for train_index, test_index in kf.split(x):
-        if isinstance(x, np.ndarray):
-            x_train, x_test = x[train_index], x[test_index]
-            y_train, y_test = y[train_index], y[test_index]
-        elif hasattr(x, "__array_namespace__"):
-            xp = x.__array_namespace__()
+
+        if isinstance(x, pd.core.frame.DataFrame):
+            x_train, x_test = x.iloc[train_index], x.iloc[test_index]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        else:
+            xp = x.__array_namespace__() if hasattr(x, "__array_namespace__") else np
             x_train = xp.take(x, xp.asarray(train_index), axis=0)
             y_train = xp.take(y, xp.asarray(train_index), axis=0)
             x_test = xp.take(x, xp.asarray(test_index), axis=0)
             y_test = xp.take(y, xp.asarray(test_index), axis=0)
             del xp
-        elif isinstance(x, pd.core.frame.DataFrame):
-            x_train, x_test = x.iloc[train_index], x.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
         if isclass(estimator) and issubclass(estimator, BaseEstimator):
             alg = estimator()
