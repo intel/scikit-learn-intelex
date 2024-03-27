@@ -35,6 +35,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from sklearnex._device_offload import wrap_output_data
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -45,7 +46,12 @@ BANNED_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
+    "SVC(probability=True)" # F numpy (investigate _fit_proba)
 )
+
+# Modify sklearn's KFold split to support dpctl/dpnp arrays
+
+KFold.split = wrap_output_data(KFold.split)
 
 
 def gen_functions(functions):
@@ -117,10 +123,10 @@ def split_train_inference(kf, x, y, estimator, queue=None):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         else:
             xp = x.__array_namespace__() if hasattr(x, "__array_namespace__") else np
-            x_train = xp.take(x, xp.asarray(train_index), axis=0)
-            y_train = xp.take(y, xp.asarray(train_index), axis=0)
-            x_test = xp.take(x, xp.asarray(test_index), axis=0)
-            y_test = xp.take(y, xp.asarray(test_index), axis=0)
+            x_train = xp.take(x, train_index, axis=0)
+            y_train = xp.take(y, train_index, axis=0)
+            x_test = xp.take(x, test_index, axis=0)
+            y_test = xp.take(y, test_index, axis=0)
             del xp
 
         if isclass(estimator) and issubclass(estimator, BaseEstimator):
@@ -222,6 +228,10 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     # which causes issues with kfolds.
     try:
 
+        # GPUs with Level-Zero drivers can access the status of free
+        # memory via SYCL when the ZES_ENABLE_SYSMAN environment
+        # variable is defined. This is necessary to do the memory 
+        # tracing on GPUs.
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
             status = os.getenv("ZES_ENABLE_SYSMAN")
             if status != "1":
