@@ -280,14 +280,14 @@ if daal_check_version((2023, "P", 200)):
                 f"sklearn.cluster.{class_name}.predict"
             )
 
-            supported_algs = ["auto", "full", "lloyd"]
+            supported_algs = ["auto", "full", "lloyd", "elkan"]
             dense_centers = not issparse(self.cluster_centers_)
 
             patching_status.and_conditions(
                 [
                     (
                         self.algorithm in supported_algs,
-                        "Only lloyd algorithm is supported.",
+                        "Only lloyd algorithm is supported, elkan is computed using lloyd",
                     ),
                     (dense_centers, "Sparse clusters is not supported."),
                     (not issparse(X), "Sparse input is not supported."),
