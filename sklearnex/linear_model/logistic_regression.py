@@ -38,6 +38,7 @@ if daal_check_version((2024, "P", 1)):
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
+    from sklearn.metrics import accuracy_score
     from sklearn.utils.validation import check_X_y
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -50,7 +51,7 @@ if daal_check_version((2024, "P", 1)):
     from ..utils.validation import _assert_all_finite
 
     @control_n_jobs(
-        decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]
+        decorated_methods=["fit", "_predict", "predict_proba", "predict_log_proba"]
     )
     class LogisticRegression(sklearn_LogisticRegression, BaseLogisticRegression):
         __doc__ = sklearn_LogisticRegression.__doc__
@@ -118,8 +119,7 @@ if daal_check_version((2024, "P", 1)):
             )
             return self
 
-        @wrap_output_data
-        def predict(self, X):
+        def _predict(self, X):
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
             return dispatch(
@@ -131,6 +131,8 @@ if daal_check_version((2024, "P", 1)):
                 },
                 X,
             )
+
+        predict = wrap_output_data(_predict)
 
         @wrap_output_data
         def predict_proba(self, X):
@@ -159,6 +161,16 @@ if daal_check_version((2024, "P", 1)):
                 },
                 X,
             )
+
+        @wrap_output_data
+        def score(self, X, y, sample_weight=None):
+            if hasattr(y, "__sycl_usm_array_interface__"):
+                if hasattr(y, "__array_namespace__"):
+                    y = y.__array_namespace__().asnumpy(y)
+                else:
+                    y = y.asnumpy()
+
+            return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
 
         def _test_type_and_finiteness(self, X_in):
             X = np.asarray(X_in)
@@ -334,6 +346,7 @@ if daal_check_version((2024, "P", 1)):
         predict.__doc__ = sklearn_LogisticRegression.predict.__doc__
         predict_proba.__doc__ = sklearn_LogisticRegression.predict_proba.__doc__
         predict_log_proba.__doc__ = sklearn_LogisticRegression.predict_log_proba.__doc__
+        score.__doc__ = sklearn_LogisticRegression.score.__doc__
 
 else:
     LogisticRegression = LogisticRegression_daal4py
