@@ -46,6 +46,7 @@ BANNED_LIST = (
     "get_config",  # does not malloc
     "set_config",  # does not malloc
     "SVC(probability=True)",  # F numpy (investigate _fit_proba)
+    "NuSVC(probability=True)", # F numpy (investigate _fit_proba)
 )
 
 
