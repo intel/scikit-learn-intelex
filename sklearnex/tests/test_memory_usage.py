@@ -35,7 +35,6 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex._device_offload import wrap_output_data
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -48,10 +47,6 @@ BANNED_LIST = (
     "set_config",  # does not malloc
     "SVC(probability=True)",  # F numpy (investigate _fit_proba)
 )
-
-# Modify sklearn's KFold split to support dpctl/dpnp arrays
-
-KFold.split = wrap_output_data(KFold.split)
 
 
 def gen_functions(functions):
@@ -114,20 +109,21 @@ def get_traced_memory(queue=None):
         return tracemalloc.get_traced_memory()[0]
 
 
+def take(x, index, axis=0, queue=None):
+    if hasattr(x, "__array_namespace__"):
+        xp = x.__array_namespace__()
+        return xp.take(x, xp.asarray(index, device=queue), axis=axis)
+    else:
+        return x.take(index, axis=axis)
+
+
 def split_train_inference(kf, x, y, estimator, queue=None):
     mem_tracks = []
     for train_index, test_index in kf.split(x):
-
-        if isinstance(x, pd.core.frame.DataFrame):
-            x_train, x_test = x.iloc[train_index], x.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-        else:
-            xp = x.__array_namespace__() if hasattr(x, "__array_namespace__") else np
-            x_train = xp.take(x, train_index, axis=0)
-            y_train = xp.take(y, train_index, axis=0)
-            x_test = xp.take(x, test_index, axis=0)
-            y_test = xp.take(y, test_index, axis=0)
-            del xp
+        x_train = take(x, train_index, queue=queue)
+        y_train = take(y, train_index, queue=queue)
+        x_test = take(x, test_index, queue=queue)
+        y_test = take(y, test_index, queue=queue)
 
         if isclass(estimator) and issubclass(estimator, BaseEstimator):
             alg = estimator()
