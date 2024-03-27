@@ -15,7 +15,7 @@
 .. *******************************************************************************/
 
 ########################
-Performance Tuning Guide
+Tuning Guide
 ########################
 
 The performance of some algorithms changes based on the parameters that are used.
