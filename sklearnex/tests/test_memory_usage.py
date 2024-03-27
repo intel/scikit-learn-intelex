@@ -46,7 +46,7 @@ BANNED_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    "SVC(probability=True)" # F numpy (investigate _fit_proba)
+    "SVC(probability=True)",  # F numpy (investigate _fit_proba)
 )
 
 # Modify sklearn's KFold split to support dpctl/dpnp arrays
@@ -230,7 +230,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
 
         # GPUs with Level-Zero drivers can access the status of free
         # memory via SYCL when the ZES_ENABLE_SYSMAN environment
-        # variable is defined. This is necessary to do the memory 
+        # variable is defined. This is necessary to do the memory
         # tracing on GPUs.
         if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
             status = os.getenv("ZES_ENABLE_SYSMAN")
