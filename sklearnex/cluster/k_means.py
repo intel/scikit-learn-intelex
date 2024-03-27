@@ -212,14 +212,14 @@ if daal_check_version((2023, "P", 200)):
 
             sample_count = _num_samples(X)
             self._algorithm = self.algorithm
-            supported_algs = ["auto", "full", "lloyd"]
+            supported_algs = ["auto", "full", "lloyd", "elkan"]
             correct_count = self.n_clusters < sample_count
 
             patching_status.and_conditions(
                 [
                     (
                         self.algorithm in supported_algs,
-                        "Only lloyd algorithm is supported.",
+                        "Only lloyd algorithm is supported, elkan is computed using lloyd",
                     ),
                     (not issparse(self.init), "Sparse init values are not supported"),
                     (correct_count, "n_clusters is smaller than number of samples"),
@@ -302,7 +302,6 @@ if daal_check_version((2023, "P", 200)):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
                 self._validate_params()
-
             return dispatch(
                 self,
                 "predict",
@@ -320,6 +319,12 @@ if daal_check_version((2023, "P", 200)):
                 reset=False,
                 dtype=[np.float64, np.float32],
             )
+            if sklearn_check_version("1.3") and sample_weight is not None:
+                warnings.warn(
+                    "'sample_weight' was deprecated in version 1.3 and "
+                    "will be removed in 1.5.",
+                    FutureWarning,
+                )
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
                 self._onedal_estimator.cluster_centers_ = self.cluster_centers_
