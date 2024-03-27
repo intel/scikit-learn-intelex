@@ -15,13 +15,7 @@
 # ==============================================================================
 import pytest
 
-from sklearnex import config_context, patch_sklearn
-
-patch_sklearn()
-
-from sklearn.datasets import make_classification
-from sklearn.ensemble import BaggingClassifier
-from sklearn.svm import SVC
+from sklearnex import config_context
 
 try:
     import dpctl
@@ -38,7 +32,11 @@ except (ImportError, ModuleNotFoundError):
     "to see raised 'SyclQueueCreationError'. "
     "'dpctl' module is required for test.",
 )
-def test_config_context_in_parallel():
+def test_config_context_in_parallel(with_sklearnex):
+    from sklearn.datasets import make_classification
+    from sklearn.ensemble import BaggingClassifier
+    from sklearn.svm import SVC
+
     x, y = make_classification(random_state=42)
     try:
         with config_context(target_offload="gpu", allow_fallback_to_host=False):

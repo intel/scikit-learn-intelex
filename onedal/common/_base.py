@@ -16,9 +16,23 @@
 
 from abc import ABC
 
-from ..common._spmd_policy import _get_spmd_policy
+from onedal import _backend
+
+from ._policy import _get_policy
 
 
-class BaseEstimatorSPMD(ABC):
+def _get_backend(backend, module, submodule=None, method=None, *args, **kwargs):
+    result = getattr(backend, module)
+    if submodule:
+        result = getattr(result, submodule)
+    if method:
+        return getattr(result, method)(*args, **kwargs)
+    return result
+
+
+class BaseEstimator(ABC):
+    def _get_backend(self, module, submodule=None, method=None, *args, **kwargs):
+        return _get_backend(_backend, module, submodule, method, *args, **kwargs)
+
     def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
+        return _get_policy(queue, *data)

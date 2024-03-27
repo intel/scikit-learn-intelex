@@ -35,7 +35,6 @@
 #define ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(name) \
     { throw std::runtime_error("Invalid value for parameter <" #name ">"); }
 
-
 namespace oneapi::dal::python {
 
 template <typename Ops>

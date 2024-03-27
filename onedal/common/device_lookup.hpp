@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2021 Intel Corporation
+* Copyright 2024 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,27 +14,18 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "onedal/primitives/kernel_functions.hpp"
+#include <cstdint>
+#include <optional>
 
-namespace py = pybind11;
+#include "oneapi/dal/detail/policy.hpp"
 
 namespace oneapi::dal::python {
 
-ONEDAL_PY_DECLARE_INSTANTIATOR(init_kernel_result);
-ONEDAL_PY_DECLARE_INSTANTIATOR(init_kernel_compute_ops);
+#ifdef ONEDAL_DATA_PARALLEL
 
-ONEDAL_PY_INIT_MODULE(linear_kernel) {
-    using namespace dal::detail;
-    using namespace linear_kernel;
-    using input_t = compute_input<task::compute>;
-    using result_t = compute_result<task::compute>;
-    using param2desc_t = kernel_params2desc<descriptor>;
+std::optional<sycl::device> get_device_by_id(std::uint32_t id);
+std::optional<std::uint32_t> get_device_id(const sycl::device& device);
 
-    auto sub = m.def_submodule("linear_kernel");
-    #ifndef ONEDAL_DATA_PARALLEL_SPMD
-        ONEDAL_PY_INSTANTIATE(init_kernel_result, sub, result_t);
-        ONEDAL_PY_INSTANTIATE(init_kernel_compute_ops, sub, policy_list, input_t, result_t, param2desc_t, method::dense);
-    #endif
-}
+#endif // ONEDAL_DATA_PARALLEL
 
 } // namespace oneapi::dal::python
