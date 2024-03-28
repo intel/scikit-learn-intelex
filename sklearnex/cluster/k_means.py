@@ -272,7 +272,7 @@ if daal_check_version((2023, "P", 200)):
 
             self._save_attributes()
 
-        def _onedal_predict_supported(self, method_name, X):
+        def _onedal_predict_supported(self, method_name, X, sample_weight):
             assert method_name == "predict"
 
             class_name = self.__class__.__name__
@@ -297,7 +297,9 @@ if daal_check_version((2023, "P", 200)):
             return patching_status
 
         @wrap_output_data
-        def predict(self, X, sample_weight=None):
+        def predict(
+            self, X, sample_weight="deprecated" if sklearn_check_version("1.3") else None
+        ):
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
@@ -310,21 +312,30 @@ if daal_check_version((2023, "P", 200)):
                     "sklearn": sklearn_KMeans.predict,
                 },
                 X,
+                sample_weight,
             )
 
-        def _onedal_predict(self, X, queue=None):
+        def _onedal_predict(self, X, sample_weight=None, queue=None):
             X = self._validate_data(
                 X,
                 accept_sparse=False,
                 reset=False,
                 dtype=[np.float64, np.float32],
             )
+            if (
+                sklearn_check_version("1.3")
+                and isinstance(sample_weight, str)
+                and sample_weight == "deprecated"
+            ):
+                sample_weight = None
+
             if sklearn_check_version("1.3") and sample_weight is not None:
                 warnings.warn(
                     "'sample_weight' was deprecated in version 1.3 and "
                     "will be removed in 1.5.",
                     FutureWarning,
                 )
+
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
                 self._onedal_estimator.cluster_centers_ = self.cluster_centers_
