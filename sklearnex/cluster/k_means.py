@@ -145,7 +145,7 @@ if daal_check_version((2023, "P", 200)):
                 verbose=0,
                 random_state=None,
                 copy_x=True,
-                algorithm="auto",
+                algorithm="lloyd" if sklearn_check_version("1.1") else "auto",
             ):
                 super().__init__(
                     n_clusters=n_clusters,
