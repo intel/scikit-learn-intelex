@@ -57,17 +57,24 @@ from sklearnex.metrics import pairwise_distances, roc_auc_score
 
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 @pytest.mark.parametrize("metric", ["cosine", "correlation"])
 def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
-        X = _convert_to_dataframe(
-            rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
-        )
+        if dataframe == "pandas":
+            X = _convert_to_dataframe(
+                rng.random(size=1000).astype(dtype).reshape(1, -1),
+                sycl_queue=queue,
+                target_df=dataframe,
+            )
+        else:
+            X = _convert_to_dataframe(
+                rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+            ).reshape(1, -1)
 
-        _ = pairwise_distances(X.reshape(1, -1), metric=metric)
+        _ = pairwise_distances(X, metric=metric)
     assert all(
         [
             "running accelerated version" in i.message
@@ -81,21 +88,28 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     "dtype", [i for i in DTYPES if "32" in i.__name__ or "64" in i.__name__]
 )
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     if dtype in [np.uint32, np.uint64] and sys.platform == "win32":
         pytest.skip("Windows issue with unsigned ints")
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
+        X = rng.integers(2, size=1000)
+        y = rng.integers(2, size=1000)
+
+        if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
+            X = X.astype(dtype)
+            y = y.astype(dtype)
+
         X = _convert_to_dataframe(
-            rng.integers(2, size=1000),
+            X,
             sycl_queue=queue,
             target_df=dataframe,
             dtype=dtype,
         )
         y = _convert_to_dataframe(
-            rng.integers(2, size=1000),
+            y,
             sycl_queue=queue,
             target_df=dataframe,
             dtype=dtype,
@@ -113,7 +127,7 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
 
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
@@ -149,7 +163,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
 
 @pytest.mark.parametrize("dtype", DTYPES)
 @pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
+    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy,pandas")
 )
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):

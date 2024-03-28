@@ -73,8 +73,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         coefficients, intercept = make2d(coefficients), make2d(intercept)
         coefficients = coefficients.T if n_targets_in == 1 else coefficients
 
-        assert coefficients.shape == (n_targets_in, n_features_in)
-        assert intercept.shape == (n_targets_in, 1)
+        assert coefficients.shape == (
+            n_targets_in,
+            n_features_in,
+        ), f"{coefficients.shape}, {n_targets_in}, {n_features_in}"
+        assert intercept.shape == (n_targets_in, 1), f"{intercept.shape}, {n_targets_in}"
 
         desired_shape = (n_targets_in, n_features_in + 1)
         packed_coefficients = np.zeros(desired_shape, dtype=dtype)

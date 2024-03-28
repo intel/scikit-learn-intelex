@@ -51,6 +51,7 @@ inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
 }
 
 std::uint32_t get_device_id(const dp_policy_t& policy);
+std::size_t get_used_memory(const py::object& syclobj);
 std::string get_device_name(const dp_policy_t& policy);
 
 #endif // ONEDAL_DATA_PARALLEL

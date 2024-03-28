@@ -14,122 +14,82 @@
 # limitations under the License.
 # ==============================================================================
 
-
 import gc
 import logging
+import os
 import tracemalloc
 import types
+from inspect import isclass
 
 import numpy as np
 import pandas as pd
 import pytest
+from _utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from scipy.stats import pearsonr
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, clone
 from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
-from sklearnex import get_patch_map
-from sklearnex.metrics import pairwise_distances, roc_auc_score
-from sklearnex.model_selection import train_test_split
-from sklearnex.utils import _assert_all_finite
+from onedal import _is_dpc_backend
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
+
+if _is_dpc_backend:
+    from onedal import _backend
 
 
-class TrainTestSplitEstimator:
-    def __init__(self):
-        pass
-
-    def fit(self, x, y):
-        train_test_split(x, y)
-
-
-class FiniteCheckEstimator:
-    def __init__(self):
-        pass
-
-    def fit(self, x, y):
-        _assert_all_finite(x)
-        _assert_all_finite(y)
+BANNED_LIST = (
+    "TSNE",  # too slow for using in testing on common data size
+    "config_context",  # does not malloc
+    "get_config",  # does not malloc
+    "set_config",  # does not malloc
+    "SVC(probability=True)",  # F numpy (investigate _fit_proba)
+    "NuSVC(probability=True)",  # F numpy (investigate _fit_proba)
+)
 
 
-class PairwiseDistancesEstimator:
-    def fit(self, x, y):
-        pairwise_distances(x, metric=self.metric)
+def gen_functions(functions):
+    func_dict = functions.copy()
+
+    roc_auc_score = func_dict.pop("roc_auc_score")
+    func_dict["roc_auc_score"] = lambda x, y: roc_auc_score(
+        y, np.zeros(shape=y.shape, dtype=np.int32)
+    )
+
+    pairwise_distances = func_dict.pop("pairwise_distances")
+    func_dict["pairwise_distances(metric='cosine')"] = lambda x, y: pairwise_distances(
+        x, metric="cosine"
+    )
+    func_dict["pairwise_distances(metric='correlation')"] = (
+        lambda x, y: pairwise_distances(x, metric="correlation")
+    )
+
+    _assert_all_finite = func_dict.pop("_assert_all_finite")
+    func_dict["_assert_all_finite"] = lambda x, y: [
+        _assert_all_finite(x),
+        _assert_all_finite(y),
+    ]
+    return func_dict
 
 
-class CosineDistancesEstimator(PairwiseDistancesEstimator):
-    def __init__(self):
-        self.metric = "cosine"
+FUNCTIONS = gen_functions(PATCHED_FUNCTIONS)
 
+ESTIMATORS = {
+    k: v
+    for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES, **FUNCTIONS}.items()
+    if not k in BANNED_LIST
+}
 
-class CorrelationDistancesEstimator(PairwiseDistancesEstimator):
-    def __init__(self):
-        self.metric = "correlation"
-
-
-class RocAucEstimator:
-    def __init__(self):
-        pass
-
-    def fit(self, x, y):
-        print(roc_auc_score(y, np.zeros(shape=y.shape, dtype=np.int32)))
-
-
-# add all daal4py estimators enabled in patching (except banned)
-
-
-def get_patched_estimators(ban_list, output_list):
-    patched_estimators = get_patch_map().values()
-    for listing in patched_estimators:
-        estimator, name = listing[0][0][2], listing[0][0][1]
-        if not isinstance(estimator, types.FunctionType):
-            if name not in ban_list:
-                if issubclass(estimator, BaseEstimator):
-                    if hasattr(estimator, "fit"):
-                        output_list.append(estimator)
-
-
-def remove_duplicated_estimators(estimators_list):
-    estimators_map = {}
-    for estimator in estimators_list:
-        full_name = f"{estimator.__module__}.{estimator.__name__}"
-        estimators_map[full_name] = estimator
-    return estimators_map.values()
-
-
-BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
-estimators = [
-    TrainTestSplitEstimator,
-    FiniteCheckEstimator,
-    CosineDistancesEstimator,
-    CorrelationDistancesEstimator,
-    RocAucEstimator,
+data_shapes = [
+    pytest.param((1000, 100), id="(1000, 100)"),
+    pytest.param((2000, 50), id="(2000, 50)"),
 ]
-get_patched_estimators(BANNED_ESTIMATORS, estimators)
-estimators = remove_duplicated_estimators(estimators)
-
-
-def ndarray_c(x, y):
-    return np.ascontiguousarray(x), y
-
-
-def ndarray_f(x, y):
-    return np.asfortranarray(x), y
-
-
-def dataframe_c(x, y):
-    return pd.DataFrame(np.ascontiguousarray(x)), pd.Series(y)
-
-
-def dataframe_f(x, y):
-    return pd.DataFrame(np.asfortranarray(x)), pd.Series(y)
-
-
-data_transforms = [ndarray_c, ndarray_f, dataframe_c, dataframe_f]
-
-data_shapes = [(1000, 100), (2000, 50)]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
 N_SPLITS = 10
+ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
 def gen_clsf_data(n_samples, n_features):
@@ -143,41 +103,69 @@ def gen_clsf_data(n_samples, n_features):
     )
 
 
-def split_train_inference(kf, x, y, estimator):
+def get_traced_memory(queue=None):
+    if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+        return _backend.get_used_memory(queue)
+    else:
+        return tracemalloc.get_traced_memory()[0]
+
+
+def take(x, index, axis=0, queue=None):
+    if hasattr(x, "__array_namespace__"):
+        xp = x.__array_namespace__()
+        return xp.take(x, xp.asarray(index, device=queue), axis=axis)
+    else:
+        return x.take(index, axis=axis)
+
+
+def split_train_inference(kf, x, y, estimator, queue=None):
     mem_tracks = []
     for train_index, test_index in kf.split(x):
-        if isinstance(x, np.ndarray):
-            x_train, x_test = x[train_index], x[test_index]
-            y_train, y_test = y[train_index], y[test_index]
-        elif isinstance(x, pd.core.frame.DataFrame):
-            x_train, x_test = x.iloc[train_index], x.iloc[test_index]
-            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-        # TODO: add parameters for all estimators to prevent
-        # fallback to stock scikit-learn with default parameters
+        x_train = take(x, train_index, queue=queue)
+        y_train = take(y, train_index, queue=queue)
+        x_test = take(x, test_index, queue=queue)
+        y_test = take(y, test_index, queue=queue)
 
-        alg = estimator()
-        alg.fit(x_train, y_train)
-        if hasattr(alg, "predict"):
-            alg.predict(x_test)
-        elif hasattr(alg, "transform"):
-            alg.transform(x_test)
-        elif hasattr(alg, "kneighbors"):
-            alg.kneighbors(x_test)
-        del alg, x_train, x_test, y_train, y_test
-        mem_tracks.append(tracemalloc.get_traced_memory()[0])
+        if isclass(estimator) and issubclass(estimator, BaseEstimator):
+            alg = estimator()
+            flag = True
+        elif isinstance(estimator, BaseEstimator):
+            alg = clone(estimator)
+            flag = True
+        else:
+            flag = False
+
+        if flag:
+            alg.fit(x_train, y_train)
+            if hasattr(alg, "predict"):
+                alg.predict(x_test)
+            elif hasattr(alg, "transform"):
+                alg.transform(x_test)
+            elif hasattr(alg, "kneighbors"):
+                alg.kneighbors(x_test)
+            del alg
+        else:
+            estimator(x_train, y_train)
+
+        del x_train, x_test, y_train, y_test, flag
+        mem_tracks.append(get_traced_memory(queue))
     return mem_tracks
 
 
-def _kfold_function_template(estimator, data_transform_function, data_shape):
+def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    x, y, data_memory_size = gen_clsf_data(n_samples, n_features)
+    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
     kf = KFold(n_splits=N_SPLITS)
-    x, y = data_transform_function(x, y)
+    if func:
+        X = func(X)
 
-    mem_before, _ = tracemalloc.get_traced_memory()
-    mem_tracks = split_train_inference(kf, x, y, estimator)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+
+    mem_before = get_traced_memory(queue)
+    mem_tracks = split_train_inference(kf, X, y, estimator, queue=queue)
     mem_iter_diffs = np.array(mem_tracks[1:]) - np.array(mem_tracks[:-1])
     mem_incr_mean, mem_incr_std = mem_iter_diffs.mean(), mem_iter_diffs.std()
     mem_incr_mean, mem_incr_std = round(mem_incr_mean), round(mem_incr_std)
@@ -190,12 +178,17 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
             "Memory usage increase per iteration: "
             f"{mem_incr_mean}±{mem_incr_std} bytes"
         )
-    mem_before_gc, _ = tracemalloc.get_traced_memory()
+    mem_before_gc = get_traced_memory(queue)
     mem_diff = mem_before_gc - mem_before
+    if isinstance(estimator, BaseEstimator):
+        name = str(estimator)
+    else:
+        name = estimator.__name__
+
     message = (
         "Size of extra allocated memory {} using garbage collector "
         f"is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data"
-        f"\n\tAlgorithm: {estimator.__name__}"
+        f"\n\tAlgorithm: {name}"
         f"\n\tInput data size: {data_memory_size} bytes"
         "\n\tExtra allocated memory size: {} bytes"
         " / {} %"
@@ -207,7 +200,7 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
             )
         )
     gc.collect()
-    mem_after, _ = tracemalloc.get_traced_memory()
+    mem_after = get_traced_memory(queue)
     tracemalloc.stop()
     mem_diff = mem_after - mem_before
 
@@ -220,8 +213,37 @@ def _kfold_function_template(estimator, data_transform_function, data_shape):
 
 
 @pytest.mark.allow_sklearn_fallback
-@pytest.mark.parametrize("data_transform_function", data_transforms)
-@pytest.mark.parametrize("estimator", estimators)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl")
+)
+@pytest.mark.parametrize("estimator", ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
-def test_memory_leaks(estimator, data_transform_function, data_shape):
-    _kfold_function_template(estimator, data_transform_function, data_shape)
+def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
+    func = ORDER_DICT[order]
+    # dpnp is disabled due to lack of support of "take function/method"
+    # which causes issues with kfolds.
+    try:
+
+        # GPUs with Level-Zero drivers can access the status of free
+        # memory via SYCL when the ZES_ENABLE_SYSMAN environment
+        # variable is defined. This is necessary to do the memory
+        # tracing on GPUs.
+        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+            status = os.getenv("ZES_ENABLE_SYSMAN")
+            if status != "1":
+                os.environ["ZES_ENABLE_SYSMAN"] = "1"
+
+        _kfold_function_template(
+            ESTIMATORS[estimator], dataframe, data_shape, queue, func
+        )
+
+    except RuntimeError:
+        pytest.skip("GPU memory tracing is not available")
+
+    finally:
+        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
+            if status is None:
+                del os.environ["ZES_ENABLE_SYSMAN"]
+            else:
+                os.environ["ZES_ENABLE_SYSMAN"] = status
