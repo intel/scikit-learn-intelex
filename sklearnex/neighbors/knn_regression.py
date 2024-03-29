@@ -17,9 +17,6 @@
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
-if not sklearn_check_version("1.2"):
-    from sklearn.neighbors._base import _check_weights
-
 from sklearn.neighbors._regression import (
     KNeighborsRegressor as sklearn_KNeighborsRegressor,
 )
@@ -31,108 +28,14 @@ from onedal.neighbors import KNeighborsRegressor as onedal_KNeighborsRegressor
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
 
-if sklearn_check_version("0.24"):
-
-    class KNeighborsRegressor_(sklearn_KNeighborsRegressor):
-        if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {
-                **sklearn_KNeighborsRegressor._parameter_constraints
-            }
-
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-            self.weights = (
-                weights if sklearn_check_version("1.0") else _check_weights(weights)
-            )
-
-elif sklearn_check_version("0.22"):
-    from sklearn.neighbors._base import SupervisedFloatMixin as BaseSupervisedFloatMixin
-
-    class KNeighborsRegressor_(sklearn_KNeighborsRegressor, BaseSupervisedFloatMixin):
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-            self.weights = _check_weights(weights)
-
-else:
-    from sklearn.neighbors.base import SupervisedFloatMixin as BaseSupervisedFloatMixin
-
-    class KNeighborsRegressor_(sklearn_KNeighborsRegressor, BaseSupervisedFloatMixin):
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-            self.weights = _check_weights(weights)
-
 
 @control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
-class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
+class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase):
     __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**KNeighborsRegressor_._parameter_constraints}
+        _parameter_constraints: dict = {
+            **sklearn_KNeighborsRegressor._parameter_constraints
+        }
 
     if sklearn_check_version("1.0"):
 
@@ -244,18 +147,10 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
             or getattr(self, "_tree", 0) is None
             and self._fit_method == "kd_tree"
         ):
-            if sklearn_check_version("0.24"):
-                sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
-            else:
-                sklearn_NearestNeighbors.fit(self, self._fit_X)
-        if sklearn_check_version("0.22"):
-            result = sklearn_NearestNeighbors.radius_neighbors(
-                self, X, radius, return_distance, sort_results
-            )
-        else:
-            result = sklearn_NearestNeighbors.radius_neighbors(
-                self, X, radius, return_distance
-            )
+            sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
+        result = sklearn_NearestNeighbors.radius_neighbors(
+            self, X, radius, return_distance, sort_results
+        )
 
         return result
 

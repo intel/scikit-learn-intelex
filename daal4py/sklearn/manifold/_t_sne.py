@@ -38,10 +38,7 @@ from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from ..neighbors import NearestNeighbors
 
-if sklearn_check_version("0.22"):
-    from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
-else:
-    from sklearn.manifold.t_sne import _joint_probabilities, _joint_probabilities_nn
+from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
 
 
 @control_n_jobs(decorated_methods=["fit"])
@@ -211,29 +208,16 @@ class TSNE(BaseTSNE):
                     )
 
         if self.method == "barnes_hut":
-            if sklearn_check_version("0.23"):
-                X = self._validate_data(
-                    X,
-                    accept_sparse=["csr"],
-                    ensure_min_samples=2,
-                    dtype=[np.float32, np.float64],
-                )
-            else:
-                X = check_array(
-                    X,
-                    accept_sparse=["csr"],
-                    ensure_min_samples=2,
-                    dtype=[np.float32, np.float64],
-                )
+            X = self._validate_data(
+                X,
+                accept_sparse=["csr"],
+                ensure_min_samples=2,
+                dtype=[np.float32, np.float64],
+            )
         else:
-            if sklearn_check_version("0.23"):
-                X = self._validate_data(
-                    X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float32, np.float64]
-                )
-            else:
-                X = check_array(
-                    X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float32, np.float64]
-                )
+            X = self._validate_data(
+                X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float32, np.float64]
+            )
 
         if self.metric == "precomputed":
             if isinstance(self._init, str) and self._init == "pca":
