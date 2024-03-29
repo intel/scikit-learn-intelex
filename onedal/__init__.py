@@ -25,7 +25,7 @@ if "Windows" in platform.system():
     import sys
 
     arch_dir = platform.machine()
-    plt_dict = {"x86_64": "intel64", "aarch64": "arm"}
+    plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
     arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")

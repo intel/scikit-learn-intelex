@@ -60,7 +60,7 @@ else:
     assert False, sys.platform + " not supported"
 
 arch_dir = plt.machine()
-plt_dict = {"x86_64": "intel64", "aarch64": "arm"}
+plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
 arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 assert 8 * struct.calcsize("P") in [32, 64]
 
