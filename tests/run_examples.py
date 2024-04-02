@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2014 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +17,7 @@
 
 import argparse
 import os
+import platform as plt
 import struct
 import subprocess
 import sys
@@ -57,12 +59,15 @@ elif sys.platform in ["win32", "cygwin"]:
 else:
     assert False, sys.platform + " not supported"
 
+arch_dir = plt.machine()
+plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 assert 8 * struct.calcsize("P") in [32, 64]
 
 if 8 * struct.calcsize("P") == 32:
     logdir = jp(runner_dir, "_results", "ia32")
 else:
-    logdir = jp(runner_dir, "_results", "intel64")
+    logdir = jp(runner_dir, "_results", arch_dir)
 
 ex_log_dirs = [
     (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
