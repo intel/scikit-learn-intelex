@@ -63,9 +63,7 @@ def gen_functions(functions):
     func_dict = functions.copy()
 
     roc_auc_score = func_dict.pop("roc_auc_score")
-    func_dict["roc_auc_score"] = lambda x, y: roc_auc_score(
-        y, np.zeros(shape=y.shape, dtype=np.int32)
-    )
+    func_dict["roc_auc_score"] = lambda x, y: roc_auc_score(y, y)
 
     pairwise_distances = func_dict.pop("pairwise_distances")
     func_dict["pairwise_distances(metric='cosine')"] = lambda x, y: pairwise_distances(
@@ -236,6 +234,8 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     func = ORDER_DICT[order]
+    if estimator == "_assert_all_finite" and queue is not None:
+        pytest.skip(f"{estimator} is not designed for device offloading")
 
     _kfold_function_template(
         CPU_ESTIMATORS[estimator], dataframe, data_shape, queue, func
