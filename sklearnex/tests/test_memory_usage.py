@@ -35,18 +35,27 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from onedal.tests.utils._device_selection import is_dpctl_available
 
 if _is_dpc_backend:
     from onedal import _backend
 
 
-BANNED_LIST = (
+CPU_BANNED_LIST = (
     "TSNE",  # too slow for using in testing on common data size
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
     "SVC(probability=True)",  # F numpy (investigate _fit_proba)
     "NuSVC(probability=True)",  # F numpy (investigate _fit_proba)
+)
+
+GPU_BANNED_LIST = (
+    "TSNE",  # too slow for using in testing on common data size
+    "RandomForestRegressor",  # too slow for using in testing on common data size
+    "config_context",  # does not malloc
+    "get_config",  # does not malloc
+    "set_config",  # does not malloc
 )
 
 
@@ -76,10 +85,16 @@ def gen_functions(functions):
 
 FUNCTIONS = gen_functions(PATCHED_FUNCTIONS)
 
-ESTIMATORS = {
+CPU_ESTIMATORS = {
     k: v
     for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES, **FUNCTIONS}.items()
-    if not k in BANNED_LIST
+    if not k in CPU_BANNED_LIST
+}
+
+GPU_ESTIMATORS = {
+    k: v
+    for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES}.items()
+    if not k in GPU_BANNED_LIST
 }
 
 data_shapes = [
@@ -214,36 +229,27 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 
 @pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("order", ["F", "C"])
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl")
-)
-@pytest.mark.parametrize("estimator", ESTIMATORS.keys())
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,pandas"))
+@pytest.mark.parametrize("estimator", CPU_ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     func = ORDER_DICT[order]
-    # dpnp is disabled due to lack of support of "take function/method"
-    # which causes issues with kfolds.
-    try:
 
-        # GPUs with Level-Zero drivers can access the status of free
-        # memory via SYCL when the ZES_ENABLE_SYSMAN environment
-        # variable is defined. This is necessary to do the memory
-        # tracing on GPUs.
-        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
-            status = os.getenv("ZES_ENABLE_SYSMAN")
-            if status != "1":
-                os.environ["ZES_ENABLE_SYSMAN"] = "1"
+    _kfold_function_template(
+        CPU_ESTIMATORS[estimator], dataframe, data_shape, queue, func
+    )
 
-        _kfold_function_template(
-            ESTIMATORS[estimator], dataframe, data_shape, queue, func
-        )
 
-    except RuntimeError:
-        pytest.skip("GPU memory tracing is not available")
+@pytest.mark.skipif(
+    os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_available("gpu")
+)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("dpctl"))
+@pytest.mark.parametrize("estimator", GPU_ESTIMATORS.keys())
+@pytest.mark.parametrize("data_shape", data_shapes)
+def test_sycl_memory_leaks(estimator, dataframe, queue, order, data_shape):
+    func = ORDER_DICT[order]
 
-    finally:
-        if _is_dpc_backend and queue and queue.sycl_device.is_gpu:
-            if status is None:
-                del os.environ["ZES_ENABLE_SYSMAN"]
-            else:
-                os.environ["ZES_ENABLE_SYSMAN"] = status
+    _kfold_function_template(
+        GPU_ESTIMATORS[estimator], dataframe, data_shape, queue, func
+    )
