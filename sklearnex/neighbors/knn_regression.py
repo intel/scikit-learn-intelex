@@ -188,7 +188,6 @@ class KNeighborsRegressor(KNeighborsRegressor_, KNeighborsDispatchingBase):
             )
 
     def fit(self, X, y):
-        self._fit_validation(X, y)
         dispatch(
             self,
             "fit",
