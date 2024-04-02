@@ -19,18 +19,18 @@
 import numpy as np
 from scipy import sparse as sp
 from sklearn.base import ClassifierMixin as BaseClassifierMixin
+from sklearn.neighbors._classification import (
+    KNeighborsClassifier as BaseKNeighborsClassifier,
+)
 from sklearn.utils.validation import check_array
 
 from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 from ._base import KNeighborsMixin, NeighborsBase, parse_auto_method, prediction_algorithm
 
-from sklearn.neighbors._classification import (
-    KNeighborsClassifier as BaseKNeighborsClassifier,
-)
-
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
+
 from sklearn.utils.validation import _deprecate_positional_args
 
 

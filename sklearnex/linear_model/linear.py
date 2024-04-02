@@ -312,5 +312,5 @@ class LinearRegression(sklearn_LinearRegression):
         self.__dict__["coef_"] = self._onedal_estimator.coef_
         self.__dict__["intercept_"] = self._onedal_estimator.intercept_
 
-    fit.__doc__ == sklearn_LinearRegression.fit.__doc__
-    predict.__doc__ == sklearn_LinearRegression.predict.__doc__
+    fit.__doc__ = sklearn_LinearRegression.fit.__doc__
+    predict.__doc__ = sklearn_LinearRegression.predict.__doc__

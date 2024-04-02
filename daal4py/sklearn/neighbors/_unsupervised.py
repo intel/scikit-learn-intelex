@@ -16,11 +16,11 @@
 
 # daal4py KNN scikit-learn-compatible classes
 
+from sklearn.neighbors import NearestNeighbors as BaseNearestNeighbors
+from sklearn.utils.validation import _deprecate_positional_args
+
 from .._device_offload import support_usm_ndarray
 from ._base import KNeighborsMixin, NeighborsBase, RadiusNeighborsMixin
-
-from sklearn.utils.validation import _deprecate_positional_args
-from sklearn.neighbors import NearestNeighbors as BaseNearestNeighbors
 
 
 class NearestNeighbors(KNeighborsMixin, RadiusNeighborsMixin, NeighborsBase):

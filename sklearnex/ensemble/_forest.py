@@ -25,6 +25,8 @@ from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifie
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
+from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifier
+from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
 from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
 from sklearn.tree import (
@@ -35,10 +37,7 @@ from sklearn.tree import (
 )
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
-from sklearn.utils.validation import (
-    check_array,
-    check_is_fitted,
-)
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import (
@@ -50,10 +49,6 @@ from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
 from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
-
-from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifier
-from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
-
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 

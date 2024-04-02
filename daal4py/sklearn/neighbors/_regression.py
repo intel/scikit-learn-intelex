@@ -17,17 +17,15 @@
 # daal4py KNN regression scikit-learn-compatible classes
 
 from sklearn.base import RegressorMixin
+from sklearn.neighbors._regression import KNeighborsRegressor as BaseKNeighborsRegressor
 
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
 from ._base import KNeighborsMixin, NeighborsBase
 
-from sklearn.neighbors._regression import (
-    KNeighborsRegressor as BaseKNeighborsRegressor,
-)
-
 if not sklearn_check_version("1.2"):
     from sklearn.neighbors._base import _check_weights
+
 from sklearn.utils.validation import _deprecate_positional_args
 
 

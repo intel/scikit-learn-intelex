@@ -23,6 +23,7 @@ import numpy as np
 from scipy.sparse import issparse
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE as BaseTSNE
+from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.utils import check_array, check_random_state
 from sklearn.utils.validation import check_non_negative
@@ -37,8 +38,6 @@ from daal4py.sklearn._utils import (
 from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from ..neighbors import NearestNeighbors
-
-from sklearn.manifold._t_sne import _joint_probabilities, _joint_probabilities_nn
 
 
 @control_n_jobs(decorated_methods=["fit"])

@@ -14,15 +14,14 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
-
 from sklearn.neighbors._classification import (
     KNeighborsClassifier as sklearn_KNeighborsClassifier,
 )
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 
 from .._device_offload import dispatch, wrap_output_data
