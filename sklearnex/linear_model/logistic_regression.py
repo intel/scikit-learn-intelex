@@ -39,6 +39,7 @@ if daal_check_version((2024, "P", 1)):
     from scipy.sparse import issparse
     from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
     from sklearn.metrics import accuracy_score
+    from sklearn.utils.multiclass import type_of_target
     from sklearn.utils.validation import check_X_y
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -210,6 +211,10 @@ if daal_check_version((2024, "P", 1)):
                     (self.warm_start == False, "Warm start is not supported."),
                     (self.l1_ratio is None, "l1 ratio is not supported."),
                     (sample_weight is None, "Sample weight is not supported."),
+                    (
+                        type_of_target(y) == "binary",
+                        "Only binary classification is supported",
+                    ),
                 ]
             )
 
