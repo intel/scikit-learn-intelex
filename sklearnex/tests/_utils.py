@@ -96,7 +96,7 @@ SPECIAL_INSTANCES = {
         KNeighborsClassifier(algorithm="brute"),
         KNeighborsRegressor(algorithm="brute"),
         NearestNeighbors(algorithm="brute"),
-        LogisticRegression(solver="newton-cg")
+        LogisticRegression(solver="newton-cg"),
     ]
 }
 
