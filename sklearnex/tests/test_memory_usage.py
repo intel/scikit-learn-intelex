@@ -229,7 +229,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 
 @pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("order", ["F", "C"])
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,pandas"))
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl","cpu"))
 @pytest.mark.parametrize("estimator", CPU_ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
@@ -245,10 +245,10 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     reason="SYCL device memory leak check requires the level zero sysman",
 )
 @pytest.mark.parametrize("order", ["F", "C"])
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("dpctl"))
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("dpctl","gpu"))
 @pytest.mark.parametrize("estimator", GPU_ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
-def test_sycl_memory_leaks(estimator, dataframe, queue, order, data_shape):
+def test_gpu_memory_leaks(estimator, dataframe, queue, order, data_shape):
     func = ORDER_DICT[order]
 
     _kfold_function_template(
