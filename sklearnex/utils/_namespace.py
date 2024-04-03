@@ -5,7 +5,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from .._device_offload import dpnp_available
 
 if sklearn_check_version("1.2"):
-    from sklearn.utils._array_api import get_namespace
+    from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
 
 if dpnp_available:
     import dpnp
@@ -74,6 +74,6 @@ def get_namespace(*arrays):
             raise ValueError(f"SYCL type not recognized: {sycl_type}")
 
     elif sklearn_check_version("1.2"):
-        return get_namespace(*arrays)
+        return sklearn_get_namespace(*arrays)
     else:
         return np, True
