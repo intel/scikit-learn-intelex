@@ -23,8 +23,9 @@ from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
+from sklearnex.utils._namespace import get_namespace
 
-from .._device_offload import dispatch, dpctl_available, dpnp_available, wrap_output_data
+from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
 from ._common import BaseSVC
 
@@ -32,12 +33,6 @@ if sklearn_check_version("1.0"):
     from sklearn.utils.metaestimators import available_if
 
 from onedal.svm import SVC as onedal_SVC
-
-if dpctl_available:
-    import dpctl.tensor as dpt
-
-if dpnp_available:
-    import dpnp
 
 
 @control_n_jobs(
@@ -201,15 +196,9 @@ class SVC(sklearn_SVC, BaseSVC):
             predict. Also, it will produce meaningless results on very small
             datasets.
             """
-            log_ufunc = np.log
+            xp, _ = get_namespace(X)
 
-            if hasattr(X, "__sycl_usm_array_interface__"):
-                if dpctl_available and isinstance(X, dpt.usm_ndarray):
-                    log_ufunc = dpt.log
-                elif dpnp_available and isinstance(X, dpnp.ndarray):
-                    log_ufunc = dpnp.log
-
-            return log_ufunc(self.predict_proba(X))
+            return xp.log(self.predict_proba(X))
 
     else:
 
