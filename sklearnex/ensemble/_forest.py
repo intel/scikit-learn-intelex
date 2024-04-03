@@ -826,7 +826,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             self._check_feature_names(X, reset=False)
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
-    def _onedal_score(X, y, sample_weight=None, queue=None):
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return accuracy_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
