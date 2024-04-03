@@ -1165,7 +1165,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
 
 
-@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba", "score"])
+@control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "score"])
 class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
     _onedal_factory = onedal_RandomForestClassifier
@@ -1576,7 +1576,7 @@ class RandomForestRegressor(ForestRegressor):
             self.min_bin_size = min_bin_size
 
 
-@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba", "score"])
+@control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "score"])
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
     _onedal_factory = onedal_ExtraTreesClassifier
