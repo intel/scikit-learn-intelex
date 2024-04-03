@@ -66,19 +66,13 @@ from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 from sklearnex.utils._namespace import get_namespace
 
-from .._device_offload import dispatch, dpctl_available, dpnp_available, wrap_output_data
+from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 if sklearn_check_version("1.4"):
     from daal4py.sklearn.utils import _assert_all_finite
-
-if dpctl_available:
-    import dpctl.tensor as dpt
-
-if dpnp_available:
-    import dpnp
 
 
 class BaseForest(ABC):
