@@ -118,7 +118,6 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         )
 
     def fit(self, X, y=None):
-        self._fit_validation(X, y)
         dispatch(
             self,
             "fit",

@@ -137,6 +137,9 @@ class KNeighborsDispatchingBase:
             self.n_features_in_ = X.data.shape[1]
 
     def _onedal_supported(self, device, method_name, *data):
+        if method_name == "fit":
+            self._fit_validation(data[0], data[1])
+
         class_name = self.__class__.__name__
         is_classifier = "Classifier" in class_name
         is_regressor = "Regressor" in class_name
