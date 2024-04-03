@@ -31,6 +31,10 @@
 #
 import os
 import sys
+import json
+
+with open('doc_version.json') as jsonFile:
+    doc_version = json.load(jsonFile)
 
 sys.path.insert(0, os.path.abspath("../"))
 
@@ -42,9 +46,9 @@ copyright = "Intel"
 author = "Intel"
 
 # The short X.Y version
-version = "2024.3.0"
+version = doc_version["version"]
 # The full version, including alpha/beta/rc tags
-release = "2024.3.0"
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -138,6 +142,10 @@ html_theme_options = {
     "titles_only": False,
 }
 
+html_context = {
+    "current_version":version,
+    "project_name":"scikit-learn-intelex"
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -147,6 +155,7 @@ html_static_path = ["_static"]
 
 def setup(app):
     app.add_css_file("custom.css")
+    app.add_js_file("version_switcher.js")
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
