@@ -41,7 +41,7 @@ if dpnp_available:
 
 
 @control_n_jobs(
-    decorated_methods=["fit", "_predict", "_predict_proba", "decision_function"]
+    decorated_methods=["fit", "predict", "_predict_proba", "decision_function", "score"]
 )
 class SVC(sklearn_SVC, BaseSVC):
     __doc__ = sklearn_SVC.__doc__
@@ -105,7 +105,8 @@ class SVC(sklearn_SVC, BaseSVC):
         )
         return self
 
-    def _predict(self, X):
+    @wrap_output_data
+    def predict(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(
@@ -122,13 +123,19 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if hasattr(y, "__sycl_usm_array_interface__"):
-            if hasattr(y, "__array_namespace__"):
-                y = y.__array_namespace__().asnumpy(y)
-            else:
-                y = y.asnumpy()
-
-        return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_SVC.score,
+            },
+            X,
+            y,
+            sample_weight,
+        )
 
     fit.__doc__ = sklearn_SVC.fit.__doc__
     predict.__doc__ = sklearn_SVC.predict.__doc__
@@ -328,3 +335,8 @@ class SVC(sklearn_SVC, BaseSVC):
 
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)
+
+    def _onedal_score(X, y, sample_weight, queue=None):
+        return accuracy_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )

@@ -52,7 +52,13 @@ if daal_check_version((2024, "P", 1)):
     from ..utils.validation import _assert_all_finite
 
     @control_n_jobs(
-        decorated_methods=["fit", "_predict", "predict_proba", "predict_log_proba"]
+        decorated_methods=[
+            "fit",
+            "predict",
+            "predict_proba",
+            "predict_log_proba",
+            "score",
+        ]
     )
     class LogisticRegression(sklearn_LogisticRegression, BaseLogisticRegression):
         __doc__ = sklearn_LogisticRegression.__doc__
@@ -120,7 +126,8 @@ if daal_check_version((2024, "P", 1)):
             )
             return self
 
-        def _predict(self, X):
+        @wrap_output_data
+        def predict(self, X):
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
             return dispatch(
@@ -132,8 +139,6 @@ if daal_check_version((2024, "P", 1)):
                 },
                 X,
             )
-
-        predict = wrap_output_data(_predict)
 
         @wrap_output_data
         def predict_proba(self, X):
@@ -165,13 +170,24 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
-            if hasattr(y, "__sycl_usm_array_interface__"):
-                if hasattr(y, "__array_namespace__"):
-                    y = y.__array_namespace__().asnumpy(y)
-                else:
-                    y = y.asnumpy()
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=False)
+            return dispatch(
+                self,
+                "score",
+                {
+                    "onedal": self.__class__._onedal_score,
+                    "sklearn": sklearn_LogisticRegression.score,
+                },
+                X,
+                y,
+                sample_weight,
+            )
 
-            return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
+        def _onedal_score(self, X, y, sample_weight, queue=None):
+            return accuracy_score(
+                y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+            )
 
         def _test_type_and_finiteness(self, X_in):
             X = np.asarray(X_in)

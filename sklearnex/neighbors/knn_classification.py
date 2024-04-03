@@ -133,7 +133,9 @@ else:
             self.weights = _check_weights(weights)
 
 
-@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba", "kneighbors"])
+@control_n_jobs(
+    decorated_methods=["fit", "predict", "predict_proba", "kneighbors", "score"]
+)
 class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
@@ -205,7 +207,8 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
         )
         return self
 
-    def _predict(self, X):
+    @wrap_output_data
+    def predict(self, X):
         check_is_fitted(self)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
@@ -218,8 +221,6 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             },
             X,
         )
-
-    predict = wrap_output_data(_predict)
 
     @wrap_output_data
     def predict_proba(self, X):
@@ -238,13 +239,20 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if hasattr(y, "__sycl_usm_array_interface__"):
-            if hasattr(y, "__array_namespace__"):
-                y = y.__array_namespace__().asnumpy(y)
-            else:
-                y = y.asnumpy()
-
-        return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
+        check_is_fitted(self)
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_KNeighborsClassifier.score,
+            },
+            X,
+            y,
+            sample_weight,
+        )
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
@@ -322,6 +330,11 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
     ):
         return self._onedal_estimator.kneighbors(
             X, n_neighbors, return_distance, queue=queue
+        )
+
+    def _onedal_score(self, X, y, sample_weight, queue=None):
+        return accuracy_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
     def _save_attributes(self):
