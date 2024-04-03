@@ -608,7 +608,8 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         return patching_status, X, y, sample_weight
 
-    def _predict(self, X):
+    @wrap_output_data
+    def predict(self, X):
         return dispatch(
             self,
             "predict",
@@ -618,8 +619,6 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             },
             X,
         )
-
-    predict = wrap_output_data(_predict)
 
     @wrap_output_data
     def predict_proba(self, X):
@@ -673,13 +672,17 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if hasattr(y, "__sycl_usm_array_interface__"):
-            if hasattr(y, "__array_namespace__"):
-                y = y.__array_namespace__().asnumpy(y)
-            else:
-                y = y.asnumpy()
-
-        return accuracy_score(y, self._predict(X), sample_weight=sample_weight)
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_ForestClassifier.score,
+            },
+            X,
+            y,
+            sample_weight,
+        )
 
     fit.__doc__ = sklearn_ForestClassifier.fit.__doc__
     predict.__doc__ = sklearn_ForestClassifier.predict.__doc__
@@ -712,7 +715,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 ]
             )
 
-        elif method_name in ["predict", "predict_proba"]:
+        elif method_name in ["predict", "predict_proba", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
@@ -777,7 +780,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 ]
             )
 
-        elif method_name in ["predict", "predict_proba"]:
+        elif method_name in ["predict", "predict_proba", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
@@ -834,6 +837,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return self._onedal_estimator.predict_proba(X, queue=queue)
+
+    def _onedal_score(X, y, sample_weight, queue=None):
+        return accuracy_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
 
 
 class ForestRegressor(sklearn_ForestRegressor, BaseForest):
@@ -1157,7 +1165,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
 
 
-@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba"])
+@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba", "score"])
 class RandomForestClassifier(ForestClassifier):
     __doc__ = sklearn_RandomForestClassifier.__doc__
     _onedal_factory = onedal_RandomForestClassifier
@@ -1568,7 +1576,7 @@ class RandomForestRegressor(ForestRegressor):
             self.min_bin_size = min_bin_size
 
 
-@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba"])
+@control_n_jobs(decorated_methods=["fit", "_predict", "predict_proba", "score"])
 class ExtraTreesClassifier(ForestClassifier):
     __doc__ = sklearn_ExtraTreesClassifier.__doc__
     _onedal_factory = onedal_ExtraTreesClassifier
