@@ -306,7 +306,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)
 
-    def _onedal_score(self, X, y, sample_weight, queue=queue):
+    def _onedal_score(self, X, y, sample_weight, queue=None):
         return accuracy_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
