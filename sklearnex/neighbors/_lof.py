@@ -198,7 +198,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             return_distance=return_distance,
         )
 
-    kneighbors = wrap_output_data(_kneighbors)    
+    kneighbors = wrap_output_data(_kneighbors)
 
     @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
     @wrap_output_data
