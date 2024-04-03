@@ -96,7 +96,7 @@ class SVC(sklearn_SVC, BaseSVC):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
         return self
 
@@ -127,7 +127,7 @@ class SVC(sklearn_SVC, BaseSVC):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
 
     fit.__doc__ = sklearn_SVC.fit.__doc__
@@ -317,7 +317,7 @@ class SVC(sklearn_SVC, BaseSVC):
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)
 
-    def _onedal_score(X, y, sample_weight, queue=None):
+    def _onedal_score(X, y, sample_weight=None, queue=None):
         return accuracy_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )

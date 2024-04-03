@@ -251,7 +251,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
 
     @wrap_output_data
@@ -332,7 +332,7 @@ class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
             X, n_neighbors, return_distance, queue=queue
         )
 
-    def _onedal_score(self, X, y, sample_weight, queue=None):
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return accuracy_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )

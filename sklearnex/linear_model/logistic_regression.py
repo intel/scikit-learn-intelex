@@ -181,10 +181,10 @@ if daal_check_version((2024, "P", 1)):
                 },
                 X,
                 y,
-                sample_weight,
+                sample_weight=sample_weight,
             )
 
-        def _onedal_score(self, X, y, sample_weight, queue=None):
+        def _onedal_score(self, X, y, sample_weight=None, queue=None):
             return accuracy_score(
                 y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
             )
