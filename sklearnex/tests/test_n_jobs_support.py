@@ -87,7 +87,7 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
         argnum = len(inspect.signature(method).parameters)
         if argnum == 0:
             check_method(method=method, caplog=caplog)
-        elif argum == 1:
+        elif argnum == 1:
             check_method(X, method=method, caplog=caplog)
         else:
             check_method(X, Y, method=method, caplog=caplog)
