@@ -114,8 +114,6 @@ class SVC(sklearn_SVC, BaseSVC):
             X,
         )
 
-    predict = wrap_output_data(_predict)
-
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
         if sklearn_check_version("1.0"):
