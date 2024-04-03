@@ -64,6 +64,7 @@ except ModuleNotFoundError:
 
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
+from sklearnex.utils._namespace import get_namespace
 
 from .._device_offload import dispatch, dpctl_available, dpnp_available, wrap_output_data
 from .._utils import PatchingConditionsChain
@@ -651,22 +652,15 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         )
 
     def predict_log_proba(self, X):
-        log_ufunc = np.log
-
-        if hasattr(X, "__sycl_usm_array_interface__"):
-            if dpctl_available and isinstance(X, dpt.usm_ndarray):
-                log_ufunc = dpt.log
-            elif dpnp_available and isinstance(X, dpnp.ndarray):
-                log_ufunc = dpnp.log
-
+        xp, _ = get_namespace(X)
         proba = self.predict_proba(X)
 
         if self.n_outputs_ == 1:
-            return log_ufunc(proba)
+            return xp.log(proba)
 
         else:
             for k in range(self.n_outputs_):
-                proba[k] = log_ufunc(proba[k])
+                proba[k] = xp.log(proba[k])
 
             return proba
 
