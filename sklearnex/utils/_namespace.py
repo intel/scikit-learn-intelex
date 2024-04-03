@@ -57,11 +57,7 @@ def get_namespace(*arrays):
     is_array_api : bool
         True of the arrays are containers that implement the Array API spec.
     """
-    sycl_type = {
-        type(x):x if hasattr(x, "__sycl_usm_array_interface__")
-        for x in arrays
-        if not isinstance(x, (bool, int, float, complex))
-    }
+    sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
 
     if len(sycl_type) > 1:
         raise ValueError(f"Multiple SYCL types for array inputs: {sycl_type}")
@@ -69,7 +65,7 @@ def get_namespace(*arrays):
     if sycl_type:
 
         (X,) = sycl_types.values()
-        
+
         if hasattr(X, "__array_namespace__"):
             return X.__array_namespace__(), True
         elif dpnp_available and isinstance(X, dpnp.ndarray):
@@ -81,5 +77,3 @@ def get_namespace(*arrays):
         return get_namespace(*arrays)
     else:
         return np, True
-    
-
