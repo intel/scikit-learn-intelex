@@ -206,14 +206,8 @@ class SVC(sklearn_SVC, BaseSVC):
             return self._predict_proba
 
         def _predict_log_proba(self, X):
-            log_ufunc = np.log
-
-            if hasattr(X, "__sycl_usm_array_interface__"):
-                if dpctl_available and isinstance(X, dpt.usm_ndarray):
-                    log_ufunc = dpt.log
-                elif dpnp_available and isinstance(X, dpnp.ndarray):
-                    log_ufunc = dpnp.log
-            return log_ufunc(self.predict_proba(X))
+            xp, _ = get_namespace(X)
+            return xp.log(self.predict_proba(X))
 
         predict_proba.__doc__ = sklearn_SVC.predict_proba.__doc__
 
