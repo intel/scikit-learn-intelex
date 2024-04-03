@@ -100,7 +100,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         return self
 
     def fit(self, X, y=None):
-        self._fit_validation(X, y)
         result = dispatch(
             self,
             "fit",
