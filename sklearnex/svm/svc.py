@@ -96,7 +96,7 @@ class SVC(sklearn_SVC, BaseSVC):
             },
             X,
             y,
-            sample_weight=sample_weight,
+            sample_weight,
         )
         return self
 
