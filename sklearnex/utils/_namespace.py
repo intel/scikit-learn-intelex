@@ -1,7 +1,6 @@
 import numpy as np
 
 from daal4py.sklearn._utils import sklearn_check_version
-from sklearnex import get_config
 
 from .._device_offload import dpnp_available
 
