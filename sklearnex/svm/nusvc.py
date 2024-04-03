@@ -22,7 +22,7 @@ from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
-from sklearnex.utils._namespace import get_namespace
+from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVC
