@@ -30,8 +30,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-import sys
 import json
+import sys
 
 with open('doc_version.json') as jsonFile:
     doc_version = json.load(jsonFile)
