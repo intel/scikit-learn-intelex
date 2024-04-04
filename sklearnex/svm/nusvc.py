@@ -129,10 +129,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             sample_weight=sample_weight,
         )
 
-    fit.__doc__ = sklearn_NuSVC.fit.__doc__
-    predict.__doc__ = sklearn_NuSVC.predict.__doc__
-    score.__doc__ = sklearn_NuSVC.score.__doc__
-
     if sklearn_check_version("1.0"):
 
         @available_if(sklearn_NuSVC._check_proba)
@@ -297,3 +293,4 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     fit.__doc__ = sklearn_NuSVC.fit.__doc__
     predict.__doc__ = sklearn_NuSVC.predict.__doc__
     decision_function.__doc__ = sklearn_NuSVC.decision_function.__doc__
+    score.__doc__ = sklearn_NuSVC.score.__doc__
