@@ -298,11 +298,9 @@ if daal_check_version((2024, "P", 100)):
             self.n_samples_ = self._onedal_estimator.n_samples_
             if sklearn_check_version("1.2"):
                 self.n_features_in_ = self._onedal_estimator.n_features_
-            elif sklearn_check_version("0.24"):
-                self.n_features_ = self._onedal_estimator.n_features_
-                self.n_features_in_ = self._onedal_estimator.n_features_
             else:
                 self.n_features_ = self._onedal_estimator.n_features_
+                self.n_features_in_ = self._onedal_estimator.n_features_
             self.n_components_ = self._onedal_estimator.n_components_
             self.components_ = self._onedal_estimator.components_
             self.mean_ = self._onedal_estimator.mean_

@@ -98,8 +98,7 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     # only for dual_gap computation, it is not required for Intel(R) oneAPI
     # Data Analytics Library
     self._X = X
-    if sklearn_check_version("0.23"):
-        self.n_features_in_ = X.shape[1]
+    self.n_features_in_ = X.shape[1]
     self._y = y
 
     penalty_L1 = np.asarray(self.alpha * self.l1_ratio, dtype=X.dtype)
@@ -253,13 +252,12 @@ def _daal4py_predict_enet(self, X):
     elastic_net_palg = daal4py.elastic_net_prediction(
         fptype=_fptype, method="defaultDense"
     )
-    if sklearn_check_version("0.23"):
-        if self.n_features_in_ != X.shape[1]:
-            raise ValueError(
-                f"X has {X.shape[1]} features, "
-                f"but ElasticNet is expecting "
-                f"{self.n_features_in_} features as input"
-            )
+    if self.n_features_in_ != X.shape[1]:
+        raise ValueError(
+            f"X has {X.shape[1]} features, "
+            f"but ElasticNet is expecting "
+            f"{self.n_features_in_} features as input"
+        )
     elastic_net_res = elastic_net_palg.compute(X, self.daal_model_)
 
     res = elastic_net_res.prediction
@@ -279,8 +277,7 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     # only for dual_gap computation, it is not required for Intel(R) oneAPI
     # Data Analytics Library
     self._X = X
-    if sklearn_check_version("0.23"):
-        self.n_features_in_ = X.shape[1]
+    self.n_features_in_ = X.shape[1]
     self._y = y
 
     # normalizing and centering
@@ -419,13 +416,12 @@ def _daal4py_predict_lasso(self, X):
     lasso_palg = daal4py.lasso_regression_prediction(
         fptype=_fptype, method="defaultDense"
     )
-    if sklearn_check_version("0.23"):
-        if self.n_features_in_ != X.shape[1]:
-            raise ValueError(
-                f"X has {X.shape[1]} features, "
-                f"but Lasso is expecting "
-                f"{self.n_features_in_} features as input"
-            )
+    if self.n_features_in_ != X.shape[1]:
+        raise ValueError(
+            f"X has {X.shape[1]} features, "
+            f"but Lasso is expecting "
+            f"{self.n_features_in_} features as input"
+        )
     lasso_res = lasso_palg.compute(X, self.daal_model_)
 
     res = lasso_res.prediction
@@ -517,12 +513,9 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
     if not _dal_ready:
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        if sklearn_check_version("0.23"):
-            res_new = super(class_inst, self).fit(
-                X, y, sample_weight=sample_weight, check_input=check_input
-            )
-        else:
-            res_new = super(class_inst, self).fit(X, y, check_input=check_input)
+        res_new = super(class_inst, self).fit(
+            X, y, sample_weight=sample_weight, check_input=check_input
+        )
         self._gap = res_new.dual_gap_
         return res_new
     self.n_iter_ = None
@@ -558,12 +551,9 @@ def _fit(self, X, y, sample_weight=None, check_input=True):
         if hasattr(self, "daal_model_"):
             del self.daal_model_
         logging.info(_function_name + ": " + get_patch_message("sklearn_after_daal"))
-        if sklearn_check_version("0.23"):
-            res_new = super(class_inst, self).fit(
-                X, y, sample_weight=sample_weight, check_input=check_input
-            )
-        else:
-            res_new = super(class_inst, self).fit(X, y, check_input=check_input)
+        res_new = super(class_inst, self).fit(
+            X, y, sample_weight=sample_weight, check_input=check_input
+        )
         self._gap = res_new.dual_gap_
         return res_new
     return res
@@ -692,94 +682,12 @@ class ElasticNet(ElasticNet_original):
                 selection=selection,
             )
 
-    if sklearn_check_version("0.23"):
-
-        @support_usm_ndarray()
-        def fit(self, X, y, sample_weight=None, check_input=True):
-            """
-            Fit model with coordinate descent.
-
-            Parameters
-            ----------
-            X : {ndarray, sparse matrix} of (n_samples, n_features)
-                Data.
-
-            y : {ndarray, sparse matrix} of shape (n_samples,) or \
-                (n_samples, n_targets)
-                Target. Will be cast to X's dtype if necessary.
-
-            sample_weight : float or array-like of shape (n_samples,), default=None
-                Sample weights. Internally, the `sample_weight` vector will be
-                rescaled to sum to `n_samples`.
-
-                .. versionadded:: 0.23
-
-            check_input : bool, default=True
-                Allow to bypass several input checking.
-                Don't use this parameter unless you know what you do.
-
-            Returns
-            -------
-            self : object
-                Fitted estimator.
-
-            Notes
-            -----
-            Coordinate descent is an algorithm that considers each column of
-            data at a time hence it will automatically convert the X input
-            as a Fortran-contiguous numpy array if necessary.
-
-            To avoid memory re-allocation it is advised to allocate the
-            initial data in memory directly using that format.
-            """
-            return _fit(self, X, y, sample_weight=sample_weight, check_input=check_input)
-
-    else:
-
-        @support_usm_ndarray()
-        def fit(self, X, y, check_input=True):
-            """
-            Fit model with coordinate descent.
-
-            Parameters
-            ----------
-            X : ndarray or scipy.sparse matrix, (n_samples, n_features)
-                Data
-
-            y : ndarray, shape (n_samples,) or (n_samples, n_targets)
-                Target. Will be cast to X's dtype if necessary
-
-            check_input : boolean, (default=True)
-                Allow to bypass several input checking.
-                Don't use this parameter unless you know what you do.
-
-            Notes
-            -----
-
-            Coordinate descent is an algorithm that considers each column of
-            data at a time hence it will automatically convert the X input
-            as a Fortran-contiguous numpy array if necessary.
-
-            To avoid memory re-allocation it is advised to allocate the
-            initial data in memory directly using that format.
-            """
-            return _fit(self, X, y, check_input=check_input)
+    @support_usm_ndarray()
+    def fit(self, X, y, sample_weight=None, check_input=True):
+        return _fit(self, X, y, sample_weight=sample_weight, check_input=check_input)
 
     @support_usm_ndarray()
     def predict(self, X):
-        """Predict using the linear model
-
-        Parameters
-        ----------
-        X : array-like or sparse matrix, shape = (n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        C : array, shape = (n_samples,)
-            Returns predicted values.
-        """
-
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
 
@@ -821,6 +729,9 @@ class ElasticNet(ElasticNet_original):
     @dual_gap_.deleter
     def dual_gap_(self):
         self._gap = None
+
+    fit.__doc__ = ElasticNet_original.fit.__doc__
+    predict.__doc__ = ElasticNet_original.predict.__doc__
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
@@ -888,93 +799,12 @@ class Lasso(Lasso_original):
                 selection=selection,
             )
 
-    if sklearn_check_version("0.23"):
-
-        @support_usm_ndarray()
-        def fit(self, X, y, sample_weight=None, check_input=True):
-            """
-            Fit model with coordinate descent.
-
-            Parameters
-            ----------
-            X : {ndarray, sparse matrix} of (n_samples, n_features)
-                Data.
-
-            y : {ndarray, sparse matrix} of shape (n_samples,) or \
-                (n_samples, n_targets)
-                Target. Will be cast to X's dtype if necessary.
-
-            sample_weight : float or array-like of shape (n_samples,), default=None
-                Sample weights. Internally, the `sample_weight` vector will be
-                rescaled to sum to `n_samples`.
-
-                .. versionadded:: 0.23
-
-            check_input : bool, default=True
-                Allow to bypass several input checking.
-                Don't use this parameter unless you know what you do.
-
-            Returns
-            -------
-            self : object
-                Fitted estimator.
-
-            Notes
-            -----
-            Coordinate descent is an algorithm that considers each column of
-            data at a time hence it will automatically convert the X input
-            as a Fortran-contiguous numpy array if necessary.
-
-            To avoid memory re-allocation it is advised to allocate the
-            initial data in memory directly using that format.
-            """
-            return _fit(self, X, y, sample_weight, check_input)
-
-    else:
-
-        @support_usm_ndarray()
-        def fit(self, X, y, check_input=True):
-            """
-            Fit model with coordinate descent.
-
-            Parameters
-            ----------
-            X : ndarray or scipy.sparse matrix, (n_samples, n_features)
-                Data
-
-            y : ndarray, shape (n_samples,) or (n_samples, n_targets)
-                Target. Will be cast to X's dtype if necessary
-
-            check_input : boolean, (default=True)
-                Allow to bypass several input checking.
-                Don't use this parameter unless you know what you do.
-
-            Notes
-            -----
-
-            Coordinate descent is an algorithm that considers each column of
-            data at a time hence it will automatically convert the X input
-            as a Fortran-contiguous numpy array if necessary.
-
-            To avoid memory re-allocation it is advised to allocate the
-            initial data in memory directly using that format.
-            """
-            return _fit(self, X, y, check_input)
+    @support_usm_ndarray()
+    def fit(self, X, y, sample_weight=None, check_input=True):
+        return _fit(self, X, y, sample_weight, check_input)
 
     @support_usm_ndarray()
     def predict(self, X):
-        """Predict using the linear model
-
-        Parameters
-        ----------
-        X : array-like or sparse matrix, shape = (n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        C : array, shape = (n_samples,)
-            Returns predicted values.
-        """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         X = check_array(
@@ -1013,3 +843,6 @@ class Lasso(Lasso_original):
     @dual_gap_.deleter
     def dual_gap_(self):
         self._gap = None
+
+    fit.__doc__ = Lasso_original.fit.__doc__
+    predict.__doc__ = Lasso_original.predict.__doc__
