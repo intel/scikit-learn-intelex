@@ -38,13 +38,13 @@ sys.path.insert(0, os.path.abspath("../"))
 # -- Project information -----------------------------------------------------
 
 project = "Intel(R) Extension for Scikit-learn*"
-copyright = "2023, Intel"
+copyright = "Intel"
 author = "Intel"
 
 # The short X.Y version
-version = "2023.2"
+version = "2024.3.0"
 # The full version, including alpha/beta/rc tags
-release = "2023.2"
+release = "2024.3.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -65,6 +65,8 @@ extensions = [
     "nbsphinx",
     "sphinx_tabs.tabs",
     "notfound.extension",
+    "sphinx_design",
+    "sphinx_copybutton",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -129,7 +131,7 @@ html_theme_options = {
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,
     "vcs_pageview_mode": "",
-    "collapse_navigation": True,
+    "collapse_navigation": False,
     "sticky_navigation": True,
     "navigation_depth": -1,
     "includehidden": True,
