@@ -130,10 +130,6 @@ class SVC(sklearn_SVC, BaseSVC):
             sample_weight=sample_weight,
         )
 
-    fit.__doc__ = sklearn_SVC.fit.__doc__
-    predict.__doc__ = sklearn_SVC.predict.__doc__
-    score.__doc__ = sklearn_SVC.score.__doc__
-
     if sklearn_check_version("1.0"):
 
         @available_if(sklearn_SVC._check_proba)
@@ -325,3 +321,4 @@ class SVC(sklearn_SVC, BaseSVC):
     fit.__doc__ = sklearn_SVC.fit.__doc__
     predict.__doc__ = sklearn_SVC.predict.__doc__
     decision_function.__doc__ = sklearn_SVC.decision_function.__doc__
+    score.__doc__ = sklearn_SVC.score.__doc__
