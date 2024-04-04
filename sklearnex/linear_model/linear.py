@@ -61,7 +61,7 @@ class LinearRegression(sklearn_LinearRegression):
                 positive=positive,
             )
 
-    elif sklearn_check_version("0.24"):
+    else:
 
         def __init__(
             self,
@@ -79,40 +79,7 @@ class LinearRegression(sklearn_LinearRegression):
                 positive=positive,
             )
 
-    else:
-
-        def __init__(
-            self,
-            fit_intercept=True,
-            normalize=False,
-            copy_X=True,
-            n_jobs=None,
-        ):
-            super().__init__(
-                fit_intercept=fit_intercept,
-                normalize=normalize,
-                copy_X=copy_X,
-                n_jobs=n_jobs,
-            )
-
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit linear model.
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            Training data.
-        y : array-like of shape (n_samples,) or (n_samples, n_targets)
-            Target values. Will be cast to X's dtype if necessary.
-        sample_weight : array-like of shape (n_samples,), default=None
-            Individual weights for each sample.
-            .. versionadded:: 0.17
-                parameter *sample_weight* support to LinearRegression.
-        Returns
-        -------
-        self : object
-            Fitted Estimator.
-        """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         if sklearn_check_version("1.2"):
@@ -138,17 +105,6 @@ class LinearRegression(sklearn_LinearRegression):
 
     @wrap_output_data
     def predict(self, X):
-        """
-        Predict using the linear model.
-        Parameters
-        ----------
-        X : array-like or sparse matrix, shape (n_samples, n_features)
-            Samples.
-        Returns
-        -------
-        C : array, shape (n_samples, n_targets)
-            Returns predicted values.
-        """
 
         if not hasattr(self, "coef_"):
             msg = (
@@ -355,3 +311,6 @@ class LinearRegression(sklearn_LinearRegression):
         self._sparse = False
         self.__dict__["coef_"] = self._onedal_estimator.coef_
         self.__dict__["intercept_"] = self._onedal_estimator.intercept_
+
+    fit.__doc__ = sklearn_LinearRegression.fit.__doc__
+    predict.__doc__ = sklearn_LinearRegression.predict.__doc__
