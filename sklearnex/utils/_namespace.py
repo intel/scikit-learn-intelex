@@ -64,7 +64,7 @@ def get_namespace(*arrays):
 
     if sycl_type:
 
-        (X,) = sycl_types.values()
+        (X,) = sycl_type.values()
 
         if hasattr(X, "__array_namespace__"):
             return X.__array_namespace__(), True
