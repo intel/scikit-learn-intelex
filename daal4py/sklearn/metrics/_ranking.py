@@ -20,6 +20,9 @@ from functools import partial
 
 import numpy as np
 from scipy import sparse as sp
+from sklearn.metrics._base import _average_binary_score
+from sklearn.metrics._ranking import _binary_roc_auc_score
+from sklearn.metrics._ranking import _multiclass_roc_auc_score as multiclass_roc_auc_score
 from sklearn.preprocessing import label_binarize
 from sklearn.utils import check_array
 from sklearn.utils.multiclass import is_multilabel
@@ -29,15 +32,6 @@ import daal4py as d4p
 from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, get_patch_message, sklearn_check_version
 from ..utils.validation import _assert_all_finite
-
-if sklearn_check_version("0.22"):
-    from sklearn.metrics._base import _average_binary_score
-    from sklearn.metrics._ranking import _binary_roc_auc_score
-    from sklearn.metrics._ranking import (
-        _multiclass_roc_auc_score as multiclass_roc_auc_score,
-    )
-else:
-    from sklearn.metrics.ranking import roc_auc_score as multiclass_roc_auc_score
 
 if sklearn_check_version("1.3"):
     from sklearn.utils._param_validation import (

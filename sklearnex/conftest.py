@@ -32,7 +32,6 @@ def pytest_configure(config):
 def pytest_runtest_call(item):
     # setup logger to check for sklearn fallback
     if not item.get_closest_marker("allow_sklearn_fallback"):
-
         log_stream = io.StringIO()
         log_handler = logging.StreamHandler(log_stream)
         sklearnex_logger = logging.getLogger("sklearnex")

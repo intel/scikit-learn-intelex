@@ -43,7 +43,7 @@ if daal_check_version((2024, "P", 1)):
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
-    from onedal.utils import _num_features, _num_samples
+    from onedal.utils import _num_samples
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
@@ -72,9 +72,9 @@ if daal_check_version((2024, "P", 1)):
             intercept_scaling=1,
             class_weight=None,
             random_state=None,
-            solver="lbfgs" if sklearn_check_version("0.22") else "liblinear",
+            solver="lbfgs",
             max_iter=100,
-            multi_class="auto" if sklearn_check_version("0.22") else "ovr",
+            multi_class="auto",
             verbose=0,
             warm_start=False,
             n_jobs=None,

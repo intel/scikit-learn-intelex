@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +23,7 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 
 def _is_new_patching_available():
-    return os.environ.get("OFF_ONEDAL_IFACE") is None and daal_check_version(
+    return os.environ.get("OFF_ONEDAL_IFACE", "0") == "0" and daal_check_version(
         (2021, "P", 300)
     )
 
@@ -33,7 +34,6 @@ def _is_preview_enabled():
 
 @lru_cache(maxsize=None)
 def get_patch_map_core(preview=False):
-
     if preview:
         # use recursion to guarantee that state of preview
         # and non-preview maps are done at the same time.
@@ -51,19 +51,12 @@ def get_patch_map_core(preview=False):
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
-            from .preview.decomposition import PCA as PCA_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
             # when preview is used, setting the mapping element[1] to None
             # should NOT be done. This may lose track of the unpatched
             # sklearn estimator or function.
-            # PCA
-            decomposition_module, _, _ = mapping["pca"][0][0]
-            sklearn_obj = mapping["pca"][0][1]
-            mapping.pop("pca")
-            mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), sklearn_obj]]
-
             # KMeans
             cluster_module, _, _ = mapping["kmeans"][0][0]
             sklearn_obj = mapping["kmeans"][0][1]
@@ -122,6 +115,7 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .decomposition import PCA as PCA_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
@@ -140,6 +134,10 @@ def get_patch_map_core(preview=False):
         # DBSCAN
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
+
+        # PCA
+        mapping.pop("pca")
+        mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
 
         # SVM
         mapping.pop("svm")
@@ -316,10 +314,10 @@ def get_patch_names():
 def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
     if preview:
         os.environ["SKLEARNEX_PREVIEW"] = "enabled_via_patch_sklearn"
-    if not sklearn_check_version("0.22"):
+    if not sklearn_check_version("0.24"):
         raise NotImplementedError(
             "Intel(R) Extension for Scikit-learn* patches apply "
-            "for scikit-learn >= 0.22 only ..."
+            "for scikit-learn >= 0.24 only ..."
         )
 
     if global_patch:
