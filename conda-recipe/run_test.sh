@@ -54,7 +54,7 @@ pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
-pytest --verbose --pyargs sklearnex
+pytest --durations=0 --verbose --pyargs sklearnex
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
