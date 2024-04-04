@@ -25,6 +25,8 @@ from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifie
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
+from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifier
+from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
 from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
 from sklearn.metrics import accuracy_score
@@ -36,12 +38,7 @@ from sklearn.tree import (
 )
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
-from sklearn.utils.validation import (
-    check_array,
-    check_consistent_length,
-    check_is_fitted,
-    check_X_y,
-)
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import (
@@ -53,15 +50,6 @@ from onedal.ensemble import ExtraTreesClassifier as onedal_ExtraTreesClassifier
 from onedal.ensemble import ExtraTreesRegressor as onedal_ExtraTreesRegressor
 from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassifier
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
-
-# try catch needed for changes in structures observed in Scikit-learn around v0.22
-try:
-    from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifier
-    from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
-except ModuleNotFoundError:
-    from sklearn.ensemble.forest import ForestClassifier as sklearn_ForestClassifier
-    from sklearn.ensemble.forest import ForestRegressor as sklearn_ForestRegressor
-
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
 from sklearnex.utils import get_namespace
@@ -79,24 +67,14 @@ class BaseForest(ABC):
     _onedal_factory = None
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sklearn_check_version("0.24"):
-            X, y = self._validate_data(
-                X,
-                y,
-                multi_output=False,
-                accept_sparse=False,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-            )
-        else:
-            X, y = check_X_y(
-                X,
-                y,
-                accept_sparse=False,
-                dtype=[np.float64, np.float32],
-                multi_output=False,
-                force_all_finite=False,
-            )
+        X, y = self._validate_data(
+            X,
+            y,
+            multi_output=False,
+            accept_sparse=False,
+            dtype=[np.float64, np.float32],
+            force_all_finite=False,
+        )
 
         if sample_weight is not None:
             sample_weight = self.check_sample_weight(sample_weight, X)
@@ -540,18 +518,14 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             )
 
         if patching_status.get_status():
-            if sklearn_check_version("0.24"):
-                X, y = self._validate_data(
-                    X,
-                    y,
-                    multi_output=True,
-                    accept_sparse=True,
-                    dtype=[np.float64, np.float32],
-                    force_all_finite=False,
-                )
-            else:
-                X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
-                y = check_array(y, ensure_2d=False, dtype=X.dtype, force_all_finite=False)
+            X, y = self._validate_data(
+                X,
+                y,
+                multi_output=True,
+                accept_sparse=True,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+            )
 
             if y.ndim == 2 and y.shape[1] == 1:
                 warnings.warn(
@@ -820,8 +794,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
         check_is_fitted(self, "_onedal_estimator")
 
-        if sklearn_check_version("0.23"):
-            self._check_n_features(X, reset=False)
+        self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return self._onedal_estimator.predict_proba(X, queue=queue)
@@ -940,18 +913,14 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             )
 
         if patching_status.get_status():
-            if sklearn_check_version("0.24"):
-                X, y = self._validate_data(
-                    X,
-                    y,
-                    multi_output=True,
-                    accept_sparse=True,
-                    dtype=[np.float64, np.float32],
-                    force_all_finite=False,
-                )
-            else:
-                X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
-                y = check_array(y, ensure_2d=False, dtype=X.dtype, force_all_finite=False)
+            X, y = self._validate_data(
+                X,
+                y,
+                multi_output=True,
+                accept_sparse=True,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+            )
 
             if y.ndim == 2 and y.shape[1] == 1:
                 warnings.warn(

@@ -293,3 +293,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         return accuracy_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
+
+    fit.__doc__ = sklearn_NuSVC.fit.__doc__
+    predict.__doc__ = sklearn_NuSVC.predict.__doc__
+    decision_function.__doc__ = sklearn_NuSVC.decision_function.__doc__

@@ -321,3 +321,7 @@ class SVC(sklearn_SVC, BaseSVC):
         return accuracy_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
+
+    fit.__doc__ = sklearn_SVC.fit.__doc__
+    predict.__doc__ = sklearn_SVC.predict.__doc__
+    decision_function.__doc__ = sklearn_SVC.decision_function.__doc__
