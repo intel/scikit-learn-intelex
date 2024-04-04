@@ -32,7 +32,7 @@ from .common import KNeighborsDispatchingBase
 @control_n_jobs(
     decorated_methods=["fit", "predict", "predict_proba", "kneighbors", "score"]
 )
-class KNeighborsClassifier(KNeighborsClassifier_, KNeighborsDispatchingBase):
+class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBase):
     __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
