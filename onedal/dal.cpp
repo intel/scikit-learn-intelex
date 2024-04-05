@@ -46,6 +46,7 @@ namespace oneapi::dal::python {
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INIT_MODULE(policy);
     /* datatypes*/
+    ONEDAL_PY_INIT_MODULE(interop);
     ONEDAL_PY_INIT_MODULE(table);
     ONEDAL_PY_INIT_MODULE(table_metadata);
 
@@ -106,6 +107,8 @@ namespace oneapi::dal::python {
     PYBIND11_MODULE(_onedal_py_host, m) {
     #endif
         init_policy(m);
+
+        init_interop(m);
         init_table(m);
         init_table_metadata(m);
     

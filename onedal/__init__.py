@@ -57,7 +57,15 @@ if _is_dpc_backend:
         _is_spmd_backend = False
 
 
-__all__ = ["covariance", "decomposition", "ensemble", "neighbors", "primitives", "svm"]
+__all__ = [
+    "covariance",
+    "decomposition",
+    "ensemble",
+    "interop",
+    "neighbors",
+    "primitives",
+    "svm",
+]
 
 if _is_spmd_backend:
     __all__.append("spmd")
