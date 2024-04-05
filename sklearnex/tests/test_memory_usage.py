@@ -249,7 +249,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
     os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_available("gpu"),
     reason="SYCL device memory leak check requires the level zero sysman",
 )
-@pytest.mark.parametrize("queue", get_dataframes_and_queues("dpctl", "gpu"))
+@pytest.mark.parametrize("queue", get_queues("gpu"))
 @pytest.mark.parametrize("estimator", GPU_ESTIMATORS.keys())
 @pytest.mark.parametrize("order", ["C", "F"])
 @pytest.mark.parametrize("data_shape", data_shapes)
