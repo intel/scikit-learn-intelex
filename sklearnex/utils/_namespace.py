@@ -19,10 +19,10 @@ def get_namespace(*arrays):
     construct such containers using the `numpy.array_api` namespace
     for instance.
 
-    This will return the namespace of SYCL-related arrays which
-    define the __sycl_usm_array_interface__ attribute regardless of
-    array_api support, the configuration of array_api_dispatch,
-    or scikit-learn version.
+    This function will return the namespace of SYCL-related arrays
+    which define the __sycl_usm_array_interface__ attribute
+    regardless of array_api support, the configuration of
+    array_api_dispatch, or scikit-learn version.
 
     See: https://numpy.org/neps/nep-0047-array-api-standard.html
 
