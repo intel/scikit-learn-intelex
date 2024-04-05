@@ -34,7 +34,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from onedal.tests.utils._device_selection import  get_queues, is_dpctl_available
+from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
 from sklearnex import config_context
 from sklearnex.tests._utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 
@@ -54,11 +54,11 @@ CPU_BANNED_LIST = (
 GPU_BANNED_LIST = (
     "TSNE",  # too slow for using in testing on common data size
     "RandomForestRegressor",  # too slow for using in testing on common data size
-    "KMeans", # gpu operation not supported
+    "KMeans",  # gpu operation not supported
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    ""
+    "",
 )
 
 
@@ -259,6 +259,4 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
         pytest.skip("Avoid a segmentation fault in Extra Trees algorithms")
 
     with config_context(target_offload=queue):
-        _kfold_function_template(
-            GPU_ESTIMATORS[estimator], dataframe, data_shape, queue, func
-        )
+        _kfold_function_template(GPU_ESTIMATORS[estimator], None, data_shape, queue, func)
