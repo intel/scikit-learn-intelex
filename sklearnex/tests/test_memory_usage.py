@@ -24,7 +24,6 @@ from inspect import isclass
 import numpy as np
 import pandas as pd
 import pytest
-from _utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, clone
 from sklearn.datasets import make_classification
@@ -36,6 +35,7 @@ from onedal.tests.utils._dataframes_support import (
     get_dataframes_and_queues,
 )
 from onedal.tests.utils._device_selection import is_dpctl_available
+from sklearnex.tests._utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 
 if _is_dpc_backend:
     from onedal import _backend
