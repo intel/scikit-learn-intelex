@@ -55,9 +55,9 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
             "C": self.C,
             "optimizer": self.solver,
             "result_option": (
-                intercept + "coefficients|iterations_count" + "|inner_iterations_count"
-                if self.solver == "newton-cg"
-                else ""
+                intercept
+                + "coefficients|iterations_count"
+                + ("|inner_iterations_count" if self.solver == "newton-cg" else "")
             ),
         }
 
@@ -88,6 +88,8 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
         self._onedal_model = result.model
         self.n_iter_ = np.array([result.iterations_count])
+
+        # _n_inner_iter is the total number of cg-solver iterations
         if daal_check_version((2024, "P", 300)) and self.solver == "newton-cg":
             self._n_inner_iter = result.inner_iterations_count
 
