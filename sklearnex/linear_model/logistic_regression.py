@@ -249,7 +249,12 @@ if daal_check_version((2024, "P", 1)):
             return patching_status
 
         def _onedal_gpu_predict_supported(self, method_name, *data):
-            assert method_name in ["predict", "predict_proba", "predict_log_proba"]
+            assert method_name in [
+                "predict",
+                "predict_proba",
+                "predict_log_proba",
+                "score",
+            ]
             assert len(data) == 1
 
             class_name = self.__class__.__name__
@@ -284,7 +289,7 @@ if daal_check_version((2024, "P", 1)):
         def _onedal_gpu_supported(self, method_name, *data):
             if method_name == "fit":
                 return self._onedal_gpu_fit_supported(method_name, *data)
-            if method_name in ["predict", "predict_proba", "predict_log_proba"]:
+            if method_name in ["predict", "predict_proba", "predict_log_proba", "score"]:
                 return self._onedal_gpu_predict_supported(method_name, *data)
             raise RuntimeError(
                 f"Unknown method {method_name} in {self.__class__.__name__}"

@@ -262,7 +262,7 @@ class SVC(sklearn_SVC, BaseSVC):
         if method_name == "fit":
             patching_status.and_conditions(conditions)
             return patching_status
-        if method_name in ["predict", "predict_proba", "decision_function"]:
+        if method_name in ["predict", "predict_proba", "decision_function", "score"]:
             conditions.append(
                 (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained")
             )

@@ -26,16 +26,6 @@ from inspect import signature
 import numpy as np
 import numpy.random as nprnd
 import pytest
-from _utils import (
-    DTYPES,
-    PATCHED_FUNCTIONS,
-    PATCHED_MODELS,
-    SPECIAL_INSTANCES,
-    UNPATCHED_FUNCTIONS,
-    UNPATCHED_MODELS,
-    gen_dataset,
-    gen_models_info,
-)
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -53,6 +43,17 @@ from onedal.tests.utils._dataframes_support import (
 from sklearnex import is_patched_instance
 from sklearnex.dispatcher import _is_preview_enabled
 from sklearnex.metrics import pairwise_distances, roc_auc_score
+
+from ._utils import (
+    DTYPES,
+    PATCHED_FUNCTIONS,
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    UNPATCHED_FUNCTIONS,
+    UNPATCHED_MODELS,
+    gen_dataset,
+    gen_models_info,
+)
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
