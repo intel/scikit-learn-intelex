@@ -18,19 +18,11 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-try:
-    import dpctl.tensor as dpt
-    from dpctl import SyclQueue
-    from mpi4py import MPI
-
-    mpi_libs_available = True
-    gpu_is_available = dpctl.has_gpu_devices()
-except (ImportError, ModuleNotFoundError):
-    mpi_libs_available = False
+from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_dpt
 
 
 @pytest.mark.skipif(
-    not mpi_libs_available or not gpu_is_available,
+    not mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
@@ -38,12 +30,6 @@ def test_easy():
     # Import spmd and batch algo
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
-
-    # create sycl queue and gather communicator details
-    q = SyclQueue("gpu")
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
 
     data = np.array(
         [
@@ -56,14 +42,8 @@ def test_easy():
             [0.0, 6.0, 64.0],
         ]
     )
-    data_rows, data_cols = data.shape
 
-    # divide data across ranks and move to dpt tensor
-    local_start = rank * data_rows // size
-    local_end = (1 + rank) * data_rows // size
-    local_data = data[local_start:local_end]
-
-    local_dpt_data = dpt.asarray(local_data, usm_type="device", sycl_queue=q)
+    local_dpt_data = get_local_dpt(data)
 
     # ensure results of batch algo match spmd
     spmd_result = BasicStatistics_SPMD().compute(local_dpt_data)
