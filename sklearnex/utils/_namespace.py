@@ -73,6 +73,8 @@ def get_namespace(*arrays):
     is_array_api : bool
         True of the arrays are containers that implement the Array API spec.
     """
+
+    # sycl support designed to work regardless of array_api_dispatch sklearn global value
     sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
 
     if len(sycl_type) > 1:
