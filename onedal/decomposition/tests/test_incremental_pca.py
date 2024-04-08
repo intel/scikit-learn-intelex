@@ -14,12 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
 import pytest
+from numpy.testing import assert_allclose
+
+from daal4py.sklearn._utils import daal_check_version
 from onedal.decomposition import IncrementalPCA
 from onedal.tests.utils._device_selection import get_queues
-import numpy as np
-from numpy.testing import assert_allclose
-from daal4py.sklearn._utils import daal_check_version
 
 
 @pytest.mark.parametrize("queue", get_queues())
@@ -78,6 +79,10 @@ def test_on_gold_data(queue, is_deterministic, num_blocks, dtype):
             assert np.abs(abs_dot_product - 1.0) < tol
 
             if np.dot(result.components_[i], expected_components_[i]) < 0:
-                assert_allclose(-transformed_data[i], expected_transformed_data[i], rtol=tol, atol=tol)
+                assert_allclose(
+                    -transformed_data[i], expected_transformed_data[i], rtol=tol, atol=tol
+                )
             else:
-                assert_allclose(transformed_data[i], expected_transformed_data[i], rtol=tol, atol=tol)
+                assert_allclose(
+                    transformed_data[i], expected_transformed_data[i], rtol=tol, atol=tol
+                )

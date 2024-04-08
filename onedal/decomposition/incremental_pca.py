@@ -21,10 +21,16 @@ from daal4py.sklearn._utils import get_dtype
 from ..datatypes import _convert_to_supported, from_table, to_table
 from .pca import BasePCA
 
+
 class IncrementalPCA(BasePCA):
 
     def __init__(
-        self, n_components=None, is_deterministic=True, method="cov", batch_size=None, whiten=False
+        self,
+        n_components=None,
+        is_deterministic=True,
+        method="cov",
+        batch_size=None,
+        whiten=False,
     ):
         self.n_components = n_components
         self.method = method
@@ -82,7 +88,7 @@ class IncrementalPCA(BasePCA):
             self._policy, self._params, self._partial_result, X_table
         )
         return self
-        
+
     def finalize_fit(self):
         module = self._get_backend("decomposition", "dim_reduction")
         result = module.finalize_train(self._policy, self._params, self._partial_result)
@@ -90,9 +96,7 @@ class IncrementalPCA(BasePCA):
         self.variances_ = from_table(result.variances)
         self.components_ = from_table(result.eigenvectors)
         self.singular_values_ = from_table(result.singular_values).ravel()
-        self.explained_variance_ = np.maximum(
-            from_table(result.eigenvalues).ravel(), 0
-        )
+        self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
         self.explained_variance_ratio_ = from_table(
             result.explained_variances_ratio
         ).ravel()

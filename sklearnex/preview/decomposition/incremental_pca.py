@@ -14,16 +14,18 @@
 # limitations under the License.
 # ===============================================================================
 
-from onedal.decomposition import IncrementalPCA as onedal_IncrementalPCA
-from sklearn.decomposition import IncrementalPCA as sklearn_IncrementalPCA
+import warnings
+
 import numpy as np
-from sklearnex._device_offload import dispatch, wrap_output_data
-from sklearnex._utils import PatchingConditionsChain
+from sklearn.decomposition import IncrementalPCA as sklearn_IncrementalPCA
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
-import warnings
+from onedal.decomposition import IncrementalPCA as onedal_IncrementalPCA
+from sklearnex._device_offload import dispatch, wrap_output_data
+from sklearnex._utils import PatchingConditionsChain
+
 
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "transform", "_onedal_finalize_fit"]
@@ -32,10 +34,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
 
     def __init__(self, n_components=None, *, whiten=False, copy=True, batch_size=None):
         super().__init__(
-            n_components=n_components,
-            whiten=whiten,
-            copy=copy,
-            batch_size=batch_size
+            n_components=n_components, whiten=whiten, copy=copy, batch_size=batch_size
         )
         self._need_to_finalize = False
 
@@ -52,24 +51,18 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         self._onedal_fit(X, queue)
         return self._onedal_transform(X, queue)
 
-
     def _onedal_partial_fit(self, X, check_input=True, queue=None):
         first_pass = not hasattr(self, "components_")
 
         if check_input:
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], reset=first_pass
-            )
+            X = self._validate_data(X, dtype=[np.float64, np.float32], reset=first_pass)
 
         if not hasattr(self, "n_samples_seen_"):
             self.n_samples_seen_ = 0
             self.mean_ = 0.0
             self.var_ = 0.0
 
-        onedal_params = {
-            "n_components": self.n_components,
-            "whiten": self.whiten
-        }
+        onedal_params = {"n_components": self.n_components, "whiten": self.whiten}
 
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_pca(**onedal_params)
@@ -81,15 +74,12 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
-
     def _onedal_fit(self, X, queue=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], copy=self.copy
-            )
+            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
             X = check_array(
                 X,
@@ -136,8 +126,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             "explained_variance_",
             "explained_variance_ratio_",
             "n_components_",
-            "components_"
-            "noise_variance_"
+            "components_" "noise_variance_",
         }
         if attr in need_to_finalize_attrs:
             if self._need_to_finalize:
@@ -171,7 +160,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute 'mean_'"
             )
-        
+
     @property
     def singular_values_(self):
         if hasattr(self, "_onedal_estimator"):
@@ -195,7 +184,6 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             check_input,
         )
         return self
-        
 
     def fit(self, X, y=None):
         dispatch(
@@ -208,7 +196,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             X,
         )
         return self
-    
+
     @wrap_output_data
     def transform(self, X):
         return dispatch(
@@ -233,10 +221,8 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             X,
         )
 
-    
     __doc__ = sklearn_IncrementalPCA.__doc__
     fit.__doc__ = sklearn_IncrementalPCA.fit.__doc__
     fit_transform.__doc__ = sklearn_IncrementalPCA.fit_transform.__doc__
     transform.__doc__ = sklearn_IncrementalPCA.transform.__doc__
     partial_fit.__doc__ = sklearn_IncrementalPCA.partial_fit.__doc__
-

@@ -14,8 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABCMeta, abstractmethod
 import numbers
+from abc import ABCMeta, abstractmethod
 
 import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
@@ -31,7 +31,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
     """
     Base class for PCA oneDAL implementation.
     """
-    
+
     def __init__(
         self,
         n_components=None,
@@ -56,7 +56,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
             "is_deterministic": self.is_deterministic,
             "whiten": self.whiten,
         }
-    
+
     def _validate_n_components(self, n_components, n_samples, n_features):
         if n_components is None:
             n_components = min(n_samples, n_features)
@@ -134,10 +134,10 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
             "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
         )
         return from_table(result.transformed_data)
-    
+
 
 class PCA(BasePCA):
-    
+
     def fit(self, X, y=None, queue=None):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
