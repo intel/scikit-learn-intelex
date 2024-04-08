@@ -33,7 +33,9 @@ def is_native_homogen(entity) -> bool:
 
 
 def is_python_homogen(entity) -> bool:
-    conditions = [buffer.is_buffer_table,]
+    conditions = [
+        buffer.is_buffer_table,
+    ]
     return any(map(lambda check: check(entity), conditions))
 
 

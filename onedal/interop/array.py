@@ -25,7 +25,9 @@ make_array = onedal._backend.data_management.make_array
 
 
 def is_python_array(entity) -> bool:
-    conditions = [buffer.is_buffer_array, ]
+    conditions = [
+        buffer.is_buffer_array,
+    ]
     return any(map(lambda check: check(entity), conditions))
 
 
