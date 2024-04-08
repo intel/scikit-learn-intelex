@@ -18,8 +18,6 @@ import numpy as np
 
 import onedal
 import onedal.interop.buffer as buffer
-import onedal.interop.dlpack as dlpack
-import onedal.interop.sua as sua
 from onedal.common._policy import _are_equal_devices, _HostInteropPolicy
 from onedal.interop.utils import is_host_policy
 
@@ -27,7 +25,7 @@ make_array = onedal._backend.data_management.make_array
 
 
 def is_python_array(entity) -> bool:
-    conditions = [sua.is_sua_array, dlpack.is_dlpack_array, buffer.is_buffer_array]
+    conditions = [buffer.is_buffer_array, ]
     return any(map(lambda check: check(entity), conditions))
 
 
@@ -45,11 +43,7 @@ def is_array_entity(entity) -> bool:
 
 def to_array_python(entity):
     assert is_python_array(entity)
-    if sua.is_sua_array(entity):
-        result = sua.to_array(entity)
-    elif dlpack.is_dlpack_array(entity):
-        result = dlpack.to_array(entity)
-    elif buffer.is_buffer_array(entity):
+    if buffer.is_buffer_array(entity):
         result = buffer.to_array(entity)
     else:
         raise ValueError("Unable to convert to array from python")
@@ -98,8 +92,10 @@ def from_array_native(array):
     device = policy.get_device_name()
     if is_host_policy(policy):
         result = buffer.from_array(array)
-    elif device in ["cpu", "gpu"]:
-        result = sua.from_array(array)
+    # TODO:
+    # will be updated.
+    # elif device in ["cpu", "gpu"]:
+    #     result = sua.from_array(array)
     else:
         raise ValueError("Unable to convert from array to python")
     assert is_python_array(result)

@@ -16,8 +16,6 @@
 
 import onedal
 import onedal.interop.buffer as buffer
-import onedal.interop.dlpack as dlpack
-import onedal.interop.sua as sua
 from onedal.interop.utils import is_host_policy
 
 from .array import is_array_entity, to_array
@@ -35,7 +33,7 @@ def is_native_homogen(entity) -> bool:
 
 
 def is_python_homogen(entity) -> bool:
-    conditions = [sua.is_sua_table, dlpack.is_dlpack_table, buffer.is_buffer_table]
+    conditions = [buffer.is_buffer_table,]
     return any(map(lambda check: check(entity), conditions))
 
 
@@ -58,11 +56,7 @@ def to_homogen_table_native(entity) -> homogen_table:
 
 def to_homogen_table_python(entity) -> homogen_table:
     assert is_python_homogen(entity)
-    if sua.is_sua_table(entity):
-        return sua.to_homogen_table(entity)
-    elif dlpack.is_dlpack_table(entity):
-        return dlpack.to_homogen_table(entity)
-    elif buffer.is_buffer_table(entity):
+    if buffer.is_buffer_table(entity):
         return buffer.to_homogen_table(entity)
     else:
         raise ValueError("Not a python homogen table")
@@ -89,8 +83,6 @@ def from_homogen_table_native(table):
     device = policy.get_device_name()
     if is_host_policy(policy):
         return buffer.from_homogen_table(table)
-    elif device in ["cpu", "gpu"]:
-        return sua.from_homogen_table(table)
     else:
         raise ValueError("unknown device")
 

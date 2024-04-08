@@ -72,6 +72,8 @@ def check_by_sampling(generator, numpy_array, onedal_array):
     np.testing.assert_equal(onedal_samples, numpy_array[sample_indices])
 
 
+# TODO:
+# update test.
 @pytest.mark.parametrize("backend", ["dlpack", "native", "buffer"])
 @pytest.mark.parametrize("count", [1, 5, 10, 50, 1000, 4999, 100001])
 @pytest.mark.parametrize("dtype", get_dtype_list())
