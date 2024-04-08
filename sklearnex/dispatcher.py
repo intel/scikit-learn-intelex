@@ -273,12 +273,14 @@ def get_patch_map_core(preview=False):
         mapping["randomforestregressor"] = mapping["random_forest_regressor"]
 
         mapping["incrementalpca"] = [
-            (
-                decomposition_module,
-                "IncrementalPCA",
-                IncrementalPCA_sklearnex,
-            ),
-            None,
+            [
+                (
+                    decomposition_module,
+                    "IncrementalPCA",
+                    IncrementalPCA_sklearnex,
+                ),
+                None,
+            ]
         ]
 
         # LocalOutlierFactor
