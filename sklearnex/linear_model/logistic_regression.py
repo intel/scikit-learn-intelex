@@ -255,7 +255,6 @@ if daal_check_version((2024, "P", 1)):
                 "predict_log_proba",
                 "score",
             ]
-            assert len(data) == 1
 
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
@@ -269,7 +268,7 @@ if daal_check_version((2024, "P", 1)):
             dal_ready = patching_status.and_conditions(
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
-                    (not issparse(*data), "Sparse input is not supported."),
+                    (not any([issparse(i) for i in data]), "Sparse input is not supported."),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
                     (
                         hasattr(self, "_onedal_estimator"),
