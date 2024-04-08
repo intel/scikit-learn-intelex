@@ -17,97 +17,19 @@
 # daal4py KNN regression scikit-learn-compatible classes
 
 from sklearn.base import RegressorMixin
+from sklearn.neighbors._regression import KNeighborsRegressor as BaseKNeighborsRegressor
 
 from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
 from ._base import KNeighborsMixin, NeighborsBase
 
-if sklearn_check_version("0.22"):
-    from sklearn.neighbors._regression import (
-        KNeighborsRegressor as BaseKNeighborsRegressor,
-    )
+if not sklearn_check_version("1.2"):
+    from sklearn.neighbors._base import _check_weights
 
-    if not sklearn_check_version("1.2"):
-        from sklearn.neighbors._base import _check_weights
-    from sklearn.utils.validation import _deprecate_positional_args
-else:
-    from sklearn.neighbors.base import _check_weights
-    from sklearn.neighbors.regression import (
-        KNeighborsRegressor as BaseKNeighborsRegressor,
-    )
-
-    def _deprecate_positional_args(f):
-        return f
+from sklearn.utils.validation import _deprecate_positional_args
 
 
-if sklearn_check_version("0.24"):
-
-    class KNeighborsRegressor_(KNeighborsMixin, RegressorMixin, NeighborsBase):
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-
-else:
-    if sklearn_check_version("0.22"):
-        from sklearn.neighbors._base import (
-            SupervisedFloatMixin as BaseSupervisedFloatMixin,
-        )
-    else:
-        from sklearn.neighbors.base import (
-            SupervisedFloatMixin as BaseSupervisedFloatMixin,
-        )
-
-    class KNeighborsRegressor_(
-        NeighborsBase, KNeighborsMixin, BaseSupervisedFloatMixin, RegressorMixin
-    ):
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-
-
-class KNeighborsRegressor(KNeighborsRegressor_):
+class KNeighborsRegressor(KNeighborsMixin, RegressorMixin, NeighborsBase):
     __doc__ = BaseKNeighborsRegressor.__doc__
 
     @_deprecate_positional_args
@@ -143,41 +65,13 @@ class KNeighborsRegressor(KNeighborsRegressor_):
 
     @support_usm_ndarray()
     def fit(self, X, y):
-        """
-        Fit the k-nearest neighbors regressor from the training dataset.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
-                (n_samples, n_samples) if metric='precomputed'
-            Training data.
-        y : {array-like, sparse matrix} of shape (n_samples,) or \
-                (n_samples, n_outputs)
-            Target values.
-
-        Returns
-        -------
-        self : KNeighborsRegressor
-            The fitted k-nearest neighbors regressor.
-        """
         return NeighborsBase._fit(self, X, y)
 
     @support_usm_ndarray()
     def predict(self, X):
-        """
-        Predict the target for the provided data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_queries, n_features), \
-                or (n_queries, n_indexed) if metric == 'precomputed'
-            Test samples.
-
-        Returns
-        -------
-        y : ndarray of shape (n_queries,) or (n_queries, n_outputs), dtype=int
-            Target values.
-        """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return BaseKNeighborsRegressor.predict(self, X)
+
+    fit.__doc__ = BaseKNeighborsRegressor.fit.__doc__
+    predict.__doc__ = BaseKNeighborsRegressor.predict.__doc__
