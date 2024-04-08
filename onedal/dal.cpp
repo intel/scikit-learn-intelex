@@ -45,10 +45,10 @@ namespace oneapi::dal::python {
     #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INIT_MODULE(policy);
-    /* datatypes*/
+    /* data management */
+    ONEDAL_PY_INIT_MODULE(data_management);
+    ONEDAL_PY_INIT_MODULE(dtype_dispatcher);
     ONEDAL_PY_INIT_MODULE(interop);
-    ONEDAL_PY_INIT_MODULE(table);
-    ONEDAL_PY_INIT_MODULE(table_metadata);
 
     /* primitives */
     ONEDAL_PY_INIT_MODULE(get_tree);
@@ -108,9 +108,10 @@ namespace oneapi::dal::python {
     #endif
         init_policy(m);
 
+        init_data_management(m);
+        init_dtype_dispatcher(m);
         init_interop(m);
-        init_table(m);
-        init_table_metadata(m);
+
     
         init_linear_kernel(m);
         init_rbf_kernel(m);

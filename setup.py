@@ -565,7 +565,7 @@ if ONEDAL_VERSION >= 20230200:
 
 if ONEDAL_VERSION >= 20240001:
     packages_with_tests += [
-        # "onedal.data_management",
+        "onedal.data_management",
         "onedal.interop",
         "onedal.interop.buffer",
         "onedal.interop.utils",

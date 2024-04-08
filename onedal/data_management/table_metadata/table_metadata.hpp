@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2023 Intel Corporation
+* Copyright 2024 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,22 +14,12 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
-
-#define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
-
 #include <pybind11/pybind11.h>
-#include <numpy/arrayobject.h>
-
-#include "oneapi/dal/table/common.hpp"
-
-namespace oneapi::dal::python {
 
 namespace py = pybind11;
 
-dal::table convert_from_dptensor(py::object obj);
-py::dict construct_sua_iface(const dal::table& input);
+namespace oneapi::dal::python::data_management {
 
-void define_sycl_usm_array_property(py::class_<dal::table>& t);
+void instantiate_table_metadata(py::module& pm);
 
-} // namespace oneapi::dal::python
+} // namespace oneapi::dal::python::data_management
