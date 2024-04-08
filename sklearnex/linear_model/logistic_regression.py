@@ -261,7 +261,7 @@ if daal_check_version((2024, "P", 1)):
                 f"sklearn.linear_model.{class_name}.{method_name}"
             )
 
-            n_samples = _num_samples(*data)
+            n_samples = _num_samples(data[0])
             model_is_sparse = issparse(self.coef_) or (
                 self.fit_intercept and issparse(self.intercept_)
             )
