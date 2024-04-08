@@ -66,6 +66,7 @@ GPU_BANNED_LIST = (
     "NuSVC",  # does not support GPU offloading (fails silently)
     "LinearRegression",  # Falls back to sklearn due to dataset, must look why
     "LogisticRegression",  # default parameters not supported, see solver=newton-cg
+    "NuSVC(probability=True)",  # does not support GPU offloading (fails silently)
 )
 
 
