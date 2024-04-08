@@ -102,7 +102,7 @@ CPU_ESTIMATORS = {
 
 GPU_ESTIMATORS = {
     k: v
-    for k, v in {**SPECIAL_INSTANCES, **PATCHED_MODELS}.items()
+    for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES}.items()
     if not k in GPU_BANNED_LIST
 }
 
