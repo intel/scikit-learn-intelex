@@ -14,4 +14,4 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = ["cluster", "covariance"]
+__all__ = ["cluster", "covariance", "decomposition"]

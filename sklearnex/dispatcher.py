@@ -120,6 +120,7 @@ def get_patch_map_core(preview=False):
             IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
         )
         from .decomposition import PCA as PCA_sklearnex
+        from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
@@ -270,6 +271,15 @@ def get_patch_map_core(preview=False):
         ]
         mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
         mapping["randomforestregressor"] = mapping["random_forest_regressor"]
+
+        mapping["incrementalpca"] = [
+            (
+                decomposition_module,
+                "IncrementalPCA",
+                IncrementalPCA_sklearnex,
+            ),
+            None,
+        ]
 
         # LocalOutlierFactor
         mapping["lof"] = [
