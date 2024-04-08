@@ -14,17 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal import _backend
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
-from onedal import _backend
 
-from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
+from .pca import BasePCA
 
-#TODO Add BasePCA class when refactoring of onedal.decomposition.PCA will be finished
-class IncrementalPCA:
+class IncrementalPCA(BasePCA):
 
     def __init__(
         self, n_components=None, is_deterministic=True, method="cov", batch_size=None, whiten=False
@@ -34,27 +31,12 @@ class IncrementalPCA:
         self.is_deterministic = is_deterministic
         self.batch_size = batch_size
         self.whiten = whiten
-        self._partial_result = _backend.decomposition.dim_reduction.partial_train_result()
+        module = self._get_backend("decomposition", "dim_reduction")
+        self._partial_result = module.partial_train_result()
 
-    def _get_onedal_params(self, dtype=np.float32):
-        return {
-            "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.method,
-            "n_components": self.n_components_,
-            "is_deterministic": self.is_deterministic,
-        }
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
-    def _create_model(self):
-        model = _backend.decomposition.dim_reduction.model()
-        model.eigenvectors = to_table(self.components_)
-        model.means = to_table(self.mean_)
-        if self.whiten:
-            model.eigenvalues = to_table(self.explained_variance_)
-        self._onedal_model = model
-        return model
+    def _reset(self):
+        module = self._get_backend("decomposition", "dim_reduction")
+        self._partial_result = module.partial_train_result()
 
     def partial_fit(self, X, queue):
         first_pass = not hasattr(self, "components_")
@@ -83,13 +65,13 @@ class IncrementalPCA:
         else:
             self.n_components_ = self.n_components
 
-        module = _backend.decomposition.dim_reduction
+        module = self._get_backend("decomposition", "dim_reduction")
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
-            self._params = self._get_onedal_params(self._dtype)
+            self._params = self._get_onedal_params(X)
 
         if self.components_ is None:
             self.n_components_ = min(n_samples, n_features)
@@ -101,12 +83,9 @@ class IncrementalPCA:
         )
         return self
         
-
-
     def finalize_fit(self):
-        module = _backend.decomposition.dim_reduction
+        module = self._get_backend("decomposition", "dim_reduction")
         result = module.finalize_train(self._policy, self._params, self._partial_result)
-        print(dir(result))
         self.mean_ = from_table(result.means).ravel()
         self.variances_ = from_table(result.variances)
         self.components_ = from_table(result.eigenvectors)
@@ -119,15 +98,3 @@ class IncrementalPCA:
         ).ravel()
 
         return self
-
-
-    def transform(self, X, queue):
-        policy = self._get_policy(queue, X)
-        model = self._create_model()
-
-        X = _convert_to_supported(policy, X)
-        params = self._get_onedal_params(X)
-        result = _backend.decomposition.dim_reduction.infer(
-            policy, params, model, to_table(X)
-        )
-        return from_table(result.transformed_data)
