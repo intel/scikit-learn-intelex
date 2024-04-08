@@ -102,7 +102,7 @@ CPU_ESTIMATORS = {
 
 GPU_ESTIMATORS = {
     k: v
-    for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES}.items()
+    for k, v in {**SPECIAL_INSTANCES, **PATCHED_MODELS}.items()
     if not k in GPU_BANNED_LIST
 }
 
@@ -259,7 +259,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
 )
 @pytest.mark.parametrize("queue", get_queues("gpu"))
 @pytest.mark.parametrize("estimator", GPU_ESTIMATORS.keys())
-@pytest.mark.parametrize("order", ["C", "F"])
+@pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_gpu_memory_leaks(estimator, queue, order, data_shape):
     func = ORDER_DICT[order]
