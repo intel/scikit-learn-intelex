@@ -58,14 +58,14 @@ GPU_BANNED_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    "Ridge", # does not support GPU offloading (fails silently)
-    "ElasticNet", # does not support GPU offloading (fails silently)
+    "Ridge",  # does not support GPU offloading (fails silently)
+    "ElasticNet",  # does not support GPU offloading (fails silently)
     "Lasso",  # does not support GPU offloading (fails silently)
-    "SVR", # does not support GPU offloading (fails silently)
-    "NuSVR", # does not support GPU offloading (fails silently)
-    "NuSVC", # does not support GPU offloading (fails silently)
-    "LinearRegression", # Falls back to sklearn due to dataset, must look why
-    "LogisticRegression", # default parameters not supported, see solver=newton-cg
+    "SVR",  # does not support GPU offloading (fails silently)
+    "NuSVR",  # does not support GPU offloading (fails silently)
+    "NuSVC",  # does not support GPU offloading (fails silently)
+    "LinearRegression",  # Falls back to sklearn due to dataset, must look why
+    "LogisticRegression",  # default parameters not supported, see solver=newton-cg
 )
 
 
