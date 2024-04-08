@@ -276,7 +276,7 @@ def get_patch_map_core(preview=False):
         ]
         mapping["localoutlierfactor"] = mapping["lof"]
 
-        # IncrementalEmpiricalCovariance
+        # IncrementalLinearRegression
         mapping["incrementallinearregression"] = [
             [
                 (

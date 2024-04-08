@@ -53,7 +53,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
 
     def partial_fit(self, X, y, queue=None):
         """
-        Computes partial data for basic statistics
+        Computes partial data for linear regression
         from data batch X and saves it to `_partial_result`.
         Parameters
         ----------
