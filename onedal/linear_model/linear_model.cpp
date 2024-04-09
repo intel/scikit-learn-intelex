@@ -85,9 +85,7 @@ struct params2desc {
 
         const auto intercept = params["intercept"].cast<bool>();
 
-        auto desc = linear_regression::descriptor<Float,
-                                             linear_regression::method::norm_eq,
-                                             linear_regression::task::regression>(intercept)
+        auto desc = linear_regression::descriptor<Float, Method, Task>(intercept)
             .set_result_options(get_onedal_result_options(params));
         return desc;
     }
