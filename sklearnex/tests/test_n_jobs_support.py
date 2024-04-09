@@ -86,7 +86,7 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
         check_method(X, method=estimator_instance.fit, caplog=caplog)
 
     for method_name in estimator_instance._n_jobs_supported_onedal_methods:
-        if method_name in {"fit", "partial_fit"}:
+        if method_name in ("fit", "partial_fit"):
             continue
         method = getattr(estimator_instance, method_name)
         argdict = inspect.signature(method).parameters
