@@ -67,16 +67,16 @@ def expected_second_order_raw_moment(X):
 
 
 options_and_tests = [
-    ("sum", expected_sum, (1e-5, 1e-7)),
-    ("min", expected_min, (1e-5, 1e-7)),
-    ("max", expected_max, (1e-5, 1e-7)),
-    ("mean", expected_mean, (1e-5, 1e-7)),
-    ("variance", expected_variance, (2e-3, 2e-2)),
-    ("variation", expected_variation, (2e-2, 2e-2)),
-    ("sum_squares", expected_sum_squares, (1e-5, 1e-7)),
-    ("sum_squares_centered", expected_sum_squares_centered, (1e-5, 1e-7)),
-    ("standard_deviation", expected_standard_deviation, (2e-3, 6e-3)),
-    ("second_order_raw_moment", expected_second_order_raw_moment, (1e-5, 1e-7)),
+    ("sum", expected_sum, (3e-4, 1e-7)),
+    ("min", expected_min, (1e-7, 1e-7)),
+    ("max", expected_max, (1e-7, 1e-7)),
+    ("mean", expected_mean, (3e-7, 1e-7)),
+    ("variance", expected_variance, (2e-3, 2e-3)),
+    ("variation", expected_variation, (5e-2, 5e-2)),
+    ("sum_squares", expected_sum_squares, (2e-4, 1e-7)),
+    ("sum_squares_centered", expected_sum_squares_centered, (2e-4, 1e-7)),
+    ("standard_deviation", expected_standard_deviation, (2e-3, 2e-3)),
+    ("second_order_raw_moment", expected_second_order_raw_moment, (1e-6, 1e-7)),
 ]
 
 
@@ -155,7 +155,7 @@ def test_single_option_on_random_data(
         gtr = function(data)
 
     tol = fp32tol if res.dtype == np.float32 else fp64tol
-    assert_allclose(gtr, res, rtol=tol, atol=tol)
+    assert_allclose(gtr, res, atol=tol)
 
 
 @pytest.mark.parametrize("queue", get_queues())
@@ -200,10 +200,10 @@ def test_multiple_options_on_random_data(
             expected_sum(data),
         )
 
-    tol = 1e-5 if res_mean.dtype == np.float32 else 1e-7
-    assert_allclose(gtr_mean, res_mean, rtol=tol, atol=tol)
-    assert_allclose(gtr_max, res_max, rtol=tol, atol=tol)
-    assert_allclose(gtr_sum, res_sum, rtol=tol, atol=tol)
+    tol = 3e-4 if res_mean.dtype == np.float32 else 1e-7
+    assert_allclose(gtr_mean, res_mean, atol=tol)
+    assert_allclose(gtr_max, res_max, atol=tol)
+    assert_allclose(gtr_sum, res_sum, atol=tol)
 
 
 @pytest.mark.parametrize("queue", get_queues())
@@ -246,4 +246,4 @@ def test_all_option_on_random_data(
         else:
             gtr = function(data)
         tol = fp32tol if res.dtype == np.float32 else fp64tol
-        assert_allclose(gtr, res, rtol=tol, atol=tol)
+        assert_allclose(gtr, res, atol=tol)

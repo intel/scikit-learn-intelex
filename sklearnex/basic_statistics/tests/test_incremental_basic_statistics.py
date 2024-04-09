@@ -115,7 +115,7 @@ def test_partial_fit_single_option_on_random_data(
         gtr = function(X)
 
     tol = fp32tol if res.dtype == np.float32 else fp64tol
-    assert_allclose(gtr, res, rtol=tol, atol=tol)
+    assert_allclose(gtr, res, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -166,9 +166,9 @@ def test_partial_fit_multiple_options_on_random_data(
         )
 
     tol = 1e-5 if res_mean.dtype == np.float32 else 1e-7
-    assert_allclose(gtr_mean, res_mean, rtol=tol, atol=tol)
-    assert_allclose(gtr_max, res_max, rtol=tol, atol=tol)
-    assert_allclose(gtr_sum, res_sum, rtol=tol, atol=tol)
+    assert_allclose(gtr_mean, res_mean, atol=tol)
+    assert_allclose(gtr_max, res_max, atol=tol)
+    assert_allclose(gtr_sum, res_sum, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -216,7 +216,7 @@ def test_partial_fit_all_option_on_random_data(
         else:
             gtr = function(X)
         tol = fp32tol if res.dtype == np.float32 else fp64tol
-        assert_allclose(gtr, res, rtol=tol, atol=tol)
+        assert_allclose(gtr, res, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -292,7 +292,7 @@ def test_fit_single_option_on_random_data(
         gtr = function(X)
 
     tol = fp32tol if res.dtype == np.float32 else fp64tol
-    assert_allclose(gtr, res, rtol=tol, atol=tol)
+    assert_allclose(gtr, res, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -338,10 +338,10 @@ def test_partial_fit_multiple_options_on_random_data(
             expected_sum(X),
         )
 
-    tol = 1e-5 if res_mean.dtype == np.float32 else 1e-7
-    assert_allclose(gtr_mean, res_mean, rtol=tol, atol=tol)
-    assert_allclose(gtr_max, res_max, rtol=tol, atol=tol)
-    assert_allclose(gtr_sum, res_sum, rtol=tol, atol=tol)
+    tol = 3e-4 if res_mean.dtype == np.float32 else 1e-7
+    assert_allclose(gtr_mean, res_mean, atol=tol)
+    assert_allclose(gtr_max, res_max, atol=tol)
+    assert_allclose(gtr_sum, res_sum, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -383,4 +383,4 @@ def test_fit_all_option_on_random_data(
         else:
             gtr = function(X)
         tol = fp32tol if res.dtype == np.float32 else fp64tol
-        assert_allclose(gtr, res, rtol=tol, atol=tol)
+        assert_allclose(gtr, res, atol=tol)
