@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_dpt
+from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_tensor, generate_statistic_data
 
 
 @pytest.mark.skipif(
@@ -31,6 +31,7 @@ def test_easy():
     from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
     from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
 
+    # Create gold data and process into dpt
     data = np.array(
         [
             [0.0, 0.0, 0.0],
@@ -43,7 +44,32 @@ def test_easy():
         ]
     )
 
-    local_dpt_data = get_local_dpt(data)
+    local_dpt_data = get_local_tensor(data)
+
+    # ensure results of batch algo match spmd
+    spmd_result = EmpiricalCovariance_SPMD().fit(local_dpt_data)
+    batch_result = EmpiricalCovariance_Batch().fit(data)
+
+    assert_allclose(spmd_result.covariance_, batch_result.covariance_)
+    assert_allclose(spmd_result.location_, batch_result.location_)
+
+
+@pytest.mark.skipif(
+    not mpi_libs_and_gpu_available,
+    reason="GPU device and MPI libs required for test",
+)
+@pytest.mark.parametrize("n_samples", [100, 10000])
+@pytest.mark.parametrize("n_features", [10, 100])
+@pytest.mark.mpi
+def test_hard(n_samples, n_features):
+    # Import spmd and batch algo
+    from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
+    from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
+
+    # Generate data and process into dpt
+    data = generate_statistic_data(n_samples, n_features)
+
+    local_dpt_data = get_local_tensor(data)
 
     # ensure results of batch algo match spmd
     spmd_result = EmpiricalCovariance_SPMD().fit(local_dpt_data)
