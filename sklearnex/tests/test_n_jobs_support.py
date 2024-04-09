@@ -32,7 +32,7 @@ ESTIMATORS = set(
     )
 )
 
-X, y = make_classification(n_samples=40, n_features=4, random_state=42)
+X, Y = make_classification(n_samples=40, n_features=4, random_state=42)
 
 
 @pytest.mark.parametrize("estimator_class", ESTIMATORS)
@@ -80,7 +80,7 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     # check `n_jobs` log entry for supported methods
     # `fit` call is required before other methods
     if "y" in inspect.signature(estimator_instance.fit).parameters:
-        check_method(X, y, method=estimator_instance.fit, caplog=caplog)
+        check_method(X, Y, method=estimator_instance.fit, caplog=caplog)
     else:
         check_method(X, method=estimator_instance.fit, caplog=caplog)
 
