@@ -24,6 +24,7 @@ from ..utils import _check_X_y, _num_features
 from .linear_model import BaseLinearRegression
 
 
+# TODO: make arch. decision about Incremental APIs
 class IncrementalLinearRegression(BaseLinearRegression):
     """
     Incremental Linear Regression oneDAL implementation.
