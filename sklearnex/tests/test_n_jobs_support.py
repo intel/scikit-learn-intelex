@@ -79,14 +79,13 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     check_estimator_doc(estimator_instance)
     # check `n_jobs` log entry for supported methods
     # `fit` call is required before other methods
-    # `partial_fit` is checked last if necessary
     if "y" in inspect.signature(estimator_instance.fit).parameters:
         check_method(X, y, method=estimator_instance.fit, caplog=caplog)
     else:
         check_method(X, method=estimator_instance.fit, caplog=caplog)
 
     for method_name in estimator_instance._n_jobs_supported_onedal_methods:
-        if method_name in ("fit", "partial_fit"):
+        if method_name == "fit":
             continue
         method = getattr(estimator_instance, method_name)
         argdict = inspect.signature(method).parameters
