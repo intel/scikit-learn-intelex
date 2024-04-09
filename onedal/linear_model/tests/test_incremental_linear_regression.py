@@ -45,9 +45,25 @@ def test_diabetes(queue, dtype):
 
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.skip(reason="pickling not implemented for oneDAL entities")
 def test_pickle(queue, dtype):
     # TODO Implement pickling for oneDAL entities
-    pass
+    X, y = load_diabetes(return_X_y=True)
+    X, y = X.astype(dtype), y.astype(dtype)
+    model = IncrementalLinearRegression(fit_intercept=True)
+    model.partial_fit(X, y, queue=queue)
+    model.finalize_fit()
+    expected = model.predict(X, queue=queue)
+
+    import pickle
+
+    dump = pickle.dumps(model)
+    model2 = pickle.loads(dump)
+
+    assert isinstance(model2, model.__class__)
+    result = model2.predict(X, queue=queue)
+
+    assert_array_equal(expected, result)
 
 
 @pytest.mark.parametrize("queue", get_queues())
