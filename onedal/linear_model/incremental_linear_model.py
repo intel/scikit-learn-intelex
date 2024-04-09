@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
+
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
@@ -44,7 +46,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
     """
 
     def __init__(self, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
-        warn(
+        warnings.warn(
             "IncrementalLinearRegression is experimental and might be changed or removed in future."
         )
         module = self._get_backend("linear_model", "regression")
