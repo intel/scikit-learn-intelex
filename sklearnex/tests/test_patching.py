@@ -132,7 +132,8 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
                 "Ridge",
             ]:
                 pytest.skip(f"{estimator} does not support GPU queues")
-        elif estimator == "TSNE" and method == "fit_transform":
+
+        if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
         elif (
             estimator == "Ridge"
