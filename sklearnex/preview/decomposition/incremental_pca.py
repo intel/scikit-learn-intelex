@@ -220,7 +220,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         )
 
     @wrap_output_data
-    def fit_transform(self, X, y=None):
+    def fit_transform(self, X, y=None, **fit_params):
         return dispatch(
             self,
             "fit_transform",
