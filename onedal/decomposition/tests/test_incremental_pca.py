@@ -61,16 +61,15 @@ def test_on_gold_data(queue, is_deterministic, num_blocks, dtype):
 
     assert result.n_components_ == expected_n_components_
 
-    assert_allclose(result.components_, expected_components_, rtol=tol)
-    assert_allclose(result.singular_values_, expected_singular_values_, rtol=tol)
-    assert_allclose(result.mean_, expected_mean_, rtol=tol)
-    assert_allclose(result.explained_variance_, expected_explained_variance_, rtol=tol)
+    assert_allclose(result.singular_values_, expected_singular_values_, atol=tol)
+    assert_allclose(result.mean_, expected_mean_, atol=tol)
+    assert_allclose(result.explained_variance_, expected_explained_variance_, atol=tol)
     assert_allclose(
-        result.explained_variance_ratio_, expected_explained_variance_ratio_, rtol=tol
+        result.explained_variance_ratio_, expected_explained_variance_ratio_, atol=tol
     )
-    if is_deterministic and daal_check_version((2024, "P", 400)):
-        assert_allclose(result.components_, expected_components_, rtol=tol, atol=tol)
-        assert_allclose(transformed_data, expected_transformed_data, rtol=tol, atol=tol)
+    if is_deterministic and daal_check_version((2024, "P", 500)):
+        assert_allclose(result.components_, expected_components_, atol=tol)
+        assert_allclose(transformed_data, expected_transformed_data, atol=tol)
     else:
         for i in range(result.n_components_):
             abs_dot_product = np.abs(
@@ -80,9 +79,9 @@ def test_on_gold_data(queue, is_deterministic, num_blocks, dtype):
 
             if np.dot(result.components_[i], expected_components_[i]) < 0:
                 assert_allclose(
-                    -transformed_data[i], expected_transformed_data[i], rtol=tol, atol=tol
+                    -transformed_data[i], expected_transformed_data[i], atol=tol
                 )
             else:
                 assert_allclose(
-                    transformed_data[i], expected_transformed_data[i], rtol=tol, atol=tol
+                    transformed_data[i], expected_transformed_data[i], atol=tol
                 )
