@@ -122,8 +122,17 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
-        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
-            pytest.skip("Hardware does not support fp16 SYCL testing")
+        # Add skips for various issues in sklearnex, additions here require tickets.
+        if queue:
+            if dtype == np.float16 and not queue.sycl_device.has_aspect_fp16:
+                pytest.skip("Hardware does not support fp16 SYCL testing")
+            elif queue.sycl_device.is_gpu and estimator in [
+                "KMeans",
+                "ElasticNet",
+                "Lasso",
+                "Ridge",
+            ]:
+                pytest.skip(f"{estimator} does not support GPU queues")
         elif estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
         elif (
@@ -133,10 +142,9 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and dtype in [np.uint32, np.uint64]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
-        elif estimator == "KMeans" and queue and queue.sycl_device.is_gpu:
-            pytest.skip("KMeans does not support GPU queues")
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
@@ -162,6 +170,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
+        # Add skips for various issues in sklearnex, additions here require tickets.
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
 
