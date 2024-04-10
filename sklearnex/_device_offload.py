@@ -208,9 +208,9 @@ def _copy_to_usm(queue, array):
             mem.copy_from_host(array.tobytes())
             return usm_ndarray(array.shape, array.dtype, buffer=mem)
         except ValueError as e:
-            # ValueError will raise if device doesn't support the dtype
-            # Retry with float32 (needed for fp16 and fp64 support issues)
-            # If its a float32 error, just throw the exception
+            # ValueError will raise if device does not support the dtype
+            # retry with float32 (needed for fp16 and fp64 support issues)
+            # try again as float32, if it is a float32 just raise the error.
             if array.dtype == np.float32:
                 raise e
             return _copy_to_usm(queue, array.astype(np.float32))
