@@ -19,6 +19,7 @@ import numpy as np
 from daal4py.sklearn._utils import get_dtype
 
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils import _check_array
 from .pca import BasePCA
 
 
@@ -50,6 +51,8 @@ class IncrementalPCA(BasePCA):
             self.components_ = None
 
         n_samples, n_features = X.shape
+
+        X = _check_array(X)
 
         if self.n_components is None:
             if self.components_ is None:
