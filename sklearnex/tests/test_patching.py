@@ -62,6 +62,8 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
+        elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
+            pytest.skip("Hardware does not support fp64 SYCL testing")
         elif queue and queue.sycl_device.is_gpu:
             pytest.skip("pairwise_distances does not support GPU queues")
 
@@ -90,6 +92,9 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
 def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     if dtype in [np.uint32, np.uint64] and sys.platform == "win32":
         pytest.skip("Windows issue with unsigned ints")
+    elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
+        pytest.skip("Hardware does not support fp64 SYCL testing")
+
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
@@ -125,6 +130,8 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         if queue:
             if dtype == np.float16 and not queue.sycl_device.has_aspect_fp16:
                 pytest.skip("Hardware does not support fp16 SYCL testing")
+            elif dtype == np.float64 and not queue.sycl_device.has_aspect_fp64:
+                pytest.skip("Hardware does not support fp64 SYCL testing")
             elif queue.sycl_device.is_gpu and estimator in [
                 "KMeans",
                 "ElasticNet",
@@ -170,8 +177,11 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
+        # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
+        elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
+            pytest.skip("Hardware does not support fp64 SYCL testing")
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)

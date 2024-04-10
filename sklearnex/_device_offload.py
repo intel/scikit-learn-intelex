@@ -202,9 +202,18 @@ def _copy_to_usm(queue, array):
             "dpctl need to be installed to work " "with __sycl_usm_array_interface__"
         )
     if hasattr(array, "nbytes"):
-        mem = MemoryUSMDevice(array.nbytes, queue=queue)
-        mem.copy_from_host(array.tobytes())
-        return usm_ndarray(array.shape, array.dtype, buffer=mem)
+
+        try:
+            mem = MemoryUSMDevice(array.nbytes, queue=queue)
+            mem.copy_from_host(array.tobytes())
+            return usm_ndarray(array.shape, array.dtype, buffer=mem)
+        except ValueError as e:
+            # ValueError will raise if device doesn't support the dtype
+            # Retry with float32 (needed for fp16 and fp64 support issues)
+            # If its a float32 error, just throw the exception
+            if array.dtype == np.float32:
+                raise e
+            return _copy_to_usm(queue, array.astype(np.float32))
     else:
         if isinstance(array, Iterable):
             array = [_copy_to_usm(queue, i) for i in array]
