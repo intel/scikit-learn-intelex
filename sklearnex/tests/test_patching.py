@@ -122,7 +122,6 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
 
-        # Add skips for various issues in sklearnex, additions here require tickets.
         if queue:
             if dtype == np.float16 and not queue.sycl_device.has_aspect_fp16:
                 pytest.skip("Hardware does not support fp16 SYCL testing")
@@ -170,7 +169,6 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
-        # Add skips for various issues in sklearnex, additions here require tickets.
         if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
             pytest.skip("Hardware does not support fp16 SYCL testing")
 
