@@ -45,6 +45,7 @@ def get_patch_map_core(preview=False):
 
         if _is_new_patching_available():
             import sklearn.covariance as covariance_module
+            import sklearn.decomposition as decomposition_module
 
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
