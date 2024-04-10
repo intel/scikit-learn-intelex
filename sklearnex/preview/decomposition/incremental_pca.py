@@ -135,7 +135,8 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             "explained_variance_",
             "explained_variance_ratio_",
             "n_components_",
-            "components_" "noise_variance_",
+            "components_",
+            "noise_variance_",
         }
         if attr in need_to_finalize_attrs:
             if self._need_to_finalize:
