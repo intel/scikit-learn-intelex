@@ -51,6 +51,7 @@ def get_patch_map_core(preview=False):
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
+            from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
@@ -72,6 +73,18 @@ def get_patch_map_core(preview=False):
                         covariance_module,
                         "EmpiricalCovariance",
                         EmpiricalCovariance_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+
+            # IncrementalPCA
+            mapping["incrementalpca"] = [
+                [
+                    (
+                        decomposition_module,
+                        "IncrementalPCA",
+                        IncrementalPCA_sklearnex,
                     ),
                     None,
                 ]
@@ -133,7 +146,6 @@ def get_patch_map_core(preview=False):
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
         from .neighbors import NearestNeighbors as NearestNeighbors_sklearnex
-        from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
         from .svm import SVC as SVC_sklearnex
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
@@ -271,17 +283,6 @@ def get_patch_map_core(preview=False):
         ]
         mapping["randomforestclassifier"] = mapping["random_forest_classifier"]
         mapping["randomforestregressor"] = mapping["random_forest_regressor"]
-
-        mapping["incrementalpca"] = [
-            [
-                (
-                    decomposition_module,
-                    "IncrementalPCA",
-                    IncrementalPCA_sklearnex,
-                ),
-                None,
-            ]
-        ]
 
         # LocalOutlierFactor
         mapping["lof"] = [
