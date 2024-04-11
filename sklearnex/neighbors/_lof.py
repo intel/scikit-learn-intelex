@@ -155,30 +155,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         """
         return self.fit(X)._predict()
 
-    @available_if(sklearn_LocalOutlierFactor._check_novelty_predict)
-    @wrap_output_data
-    def predict(self, X=None):
-        """Predict the labels (1 inlier, -1 outlier) of X according to LOF.
-
-        **Only available for novelty detection (when novelty is set to True).**
-        This method allows to generalize prediction to *new observations* (not
-        in the training set). Note that the result of ``clf.fit(X)`` then
-        ``clf.predict(X)`` with ``novelty=True`` may differ from the result
-        obtained by ``clf.fit_predict(X)`` with ``novelty=False``.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The query sample or samples to compute the Local Outlier Factor
-            w.r.t. the training samples.
-
-        Returns
-        -------
-        is_inlier : ndarray of shape (n_samples,)
-            Returns -1 for anomalies/outliers and +1 for inliers.
-        """
-        return self._predict(X)
-
     def _kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
