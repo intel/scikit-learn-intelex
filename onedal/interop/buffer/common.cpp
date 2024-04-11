@@ -43,20 +43,4 @@ void check_buffer(const py::buffer_info& info, std::size_t ndim = 1ul) {
     }
 }
 
-template <typename Type, std::size_t dim = 1ul>
-class buf_deleter {
-public:
-    buf_deleter() = default;
-    buf_deleter(buf_deleter&&) = default;
-    buf_deleter(const buf_deleter&) = default;
-    buf_deleter(py::buffer_info info) : info_{ std::move(info) } {}
-
-    void operator()(Type* const ptr) const {
-        return check_buffer<Type>(info_, dim);
-    }
-
-private:
-    py::buffer_info info_;
-};
-
 } // namespace oneapi::dal::python::interop::buffer

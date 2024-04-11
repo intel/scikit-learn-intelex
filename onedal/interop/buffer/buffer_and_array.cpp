@@ -99,7 +99,7 @@ py::object wrap_to_array(py::buffer buf) {
 
 void instantiate_wrap_to_array(py::module& pm) {
     pm.def("wrap_to_array", [](py::buffer buf) {
-        return wrap_to_array(buf);
+        return wrap_to_array(std::move(buf));
     });
 }
 

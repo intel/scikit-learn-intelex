@@ -48,8 +48,10 @@ public:
     buf_deleter(const buf_deleter&) = default;
     buf_deleter(py::buffer_info info) : info_{ std::move(info) } {}
 
-    void operator() (Type* const ptr) const {
-        return check_buffer<Type>(info_, dim);
+    void operator() (Type* const ptr) {
+        check_buffer<Type>(info_, dim);
+        py::buffer_info empty_info_;
+        std::swap(info_, empty_info_);
     }
 
 private:

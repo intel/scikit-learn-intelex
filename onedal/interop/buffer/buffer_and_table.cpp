@@ -175,7 +175,7 @@ py::object wrap_to_homogen_table(py::buffer_info info) {
     auto wrap_buffer = [&](auto type_tag) -> py::object {
         using type_t = std::decay_t<decltype(type_tag)>;
         auto tab = wrap_to_homogen_table<type_t>(std::move(info));
-        return py::cast(new dal::homogen_table{ std::move(tab) });
+        return py::cast( std::move(tab) );
     };
 
     return dal::detail::dispatch_by_data_type(dt, wrap_buffer);
@@ -188,8 +188,8 @@ py::object wrap_to_homogen_table(py::buffer buf) {
 
 void instantiate_wrap_to_homogen_table(py::module& pm) {
     pm.def("wrap_to_homogen_table", [](py::buffer buf) {
-        return wrap_to_homogen_table(buf);
-    });
+        return wrap_to_homogen_table(std::move(buf));
+    }, py::return_value_policy::take_ownership);
 }
 
 py::object wrap_from_homogen_table(const dal::homogen_table& t) {
@@ -206,7 +206,7 @@ void instantiate_wrap_from_homogen_table(py::module& pm) {
     constexpr const char name[] = "wrap_from_homogen_table";
     pm.def(name, [](const dal::homogen_table& t) -> py::object {
         return wrap_from_homogen_table(t);
-    });
+    }, py::return_value_policy::take_ownership);
 }
 
 void instantiate_buffer_and_table(py::module& pm) {
