@@ -72,9 +72,9 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
 
         self.labels_ = from_table(result.responses).ravel()
         if result.core_observation_indices is not None:
-            self.core_sample_indices_ = from_table(
-                result.core_observation_indices
-            ).ravel()
+            self.core_sample_indices_ = (
+                from_table(result.core_observation_indices).ravel().astype(np.intc)
+            )
         else:
             self.core_sample_indices_ = np.array([], dtype=np.intc)
         self.components_ = np.take(X, self.core_sample_indices_, axis=0)
