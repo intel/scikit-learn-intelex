@@ -118,7 +118,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         if X is not None:
             xp, _ = get_namespace(X)
             output = self.decision_function(X) < 0
-            is_inlier = xp.ones_like(output[0], dtype=int)
+            is_inlier = xp.ones_like(output, dtype=int)
             is_inlier[output] = -1
         else:
             is_inlier = np.ones(self.n_samples_fit_, dtype=int)
