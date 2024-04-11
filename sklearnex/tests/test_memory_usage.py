@@ -235,7 +235,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     # Therefore, until this is implemented this test must be skipped for gpu
     # as it looks like a memory leak (at least there is no way to discern a
     # leak on the first run).
-    if queue and queue.sycl_device.is_cpu:
+    if not queue or queue.sycl_device.is_cpu:
         assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, message.format(
             "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
         )
