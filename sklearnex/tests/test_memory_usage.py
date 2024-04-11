@@ -229,10 +229,12 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     mem_diff = mem_after - mem_before
 
     # GPU offloading with SYCL contains a program/kernel cache which should
-    # be controllable via a class KernelPorgramCache in the SYCL context.
+    # be controllable via a KernelPorgramCache object in the SYCL context.
     # The programs and kernels are stored on the GPU, but cannot be cleared
     # as this class is not available for access in all oneDAL DPC++ runtimes.
-    # Therefore, until this is implemented, this test must be skipped for gpu.
+    # Therefore, until this is implemented this test must be skipped for gpu
+    # as it looks like a memory leak (at least there is no way to discern a 
+    # leak on the first run).
     if queue and queue.sycl_device.is_cpu:
         assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, message.format(
             "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
