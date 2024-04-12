@@ -24,6 +24,7 @@ from sklearn.datasets import make_classification
 
 from sklearnex.dispatcher import get_patch_map
 from sklearnex.svm import SVC, NuSVC
+from sklearnex.decomposition import PCA
 
 ESTIMATORS = set(
     filter(
@@ -73,6 +74,9 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     # by default, [Nu]SVC.predict_proba is restricted by @available_if decorator
     if estimator_class in [SVC, NuSVC]:
         estimator_kwargs["probability"] = True
+    # by default, sklearn 1.5 PCA selects non-patched method
+    if estimator_class == PCA:
+        estimator_kwargs["svd_solver"] = "full"
     estimator_instance = estimator_class(**estimator_kwargs)
     # check `n_jobs` parameter doc entry
     check_estimator_doc(estimator_class)
