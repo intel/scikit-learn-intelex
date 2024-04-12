@@ -24,7 +24,7 @@ from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovarianc
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal._device_offload import support_usm_ndarray
 from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
@@ -117,7 +117,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
-        if self.assume_centered:
+        if not daal_check_versions((2024, "P", 4)) and self.assume_centered:
             location = self._onedal_estimator.location_
             self._onedal_estimator.covariance_ += np.dot(location.T, location)
             self._onedal_estimator.location_ = np.zeros(
@@ -134,6 +134,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         onedal_params = {
             "method": "dense",
             "bias": True,
+            "assume_centered": self.assume_centered,
         }
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_covariance(**onedal_params)

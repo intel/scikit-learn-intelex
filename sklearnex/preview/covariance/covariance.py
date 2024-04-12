@@ -58,6 +58,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         onedal_params = {
             "method": "dense",
             "bias": True,
+            "assume_centered": self.assume_centered,
         }
 
         self._onedal_estimator = self._onedal_covariance(**onedal_params)
@@ -73,10 +74,6 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
             (X,) = data
             patching_status.and_conditions(
                 [
-                    (
-                        self.assume_centered == False,
-                        "assume_centered parameter is not supported on oneDAL side",
-                    ),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 ]
             )
