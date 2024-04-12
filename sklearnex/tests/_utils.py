@@ -119,6 +119,12 @@ def gen_models_info(algorithms):
                 methods |= candidates & set(method)
 
         output += [[i, j] for j in methods]
+
+    # In the case that no methods are available, set method to None.
+    # This will allow estimators without mixins to still test the fit
+    # method in various tests.
+    if not output:
+        output = [[i, None]]
     return output
 
 
