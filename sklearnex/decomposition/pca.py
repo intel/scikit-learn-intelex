@@ -180,10 +180,10 @@ if daal_check_version((2024, "P", 100)):
                 U, S, Vt, X, x_is_centered, xp = self._fit(X)
             else:
                 U, S, Vt = self._fit(X)
-            if U is None:
+            if hasattr(self, "_onedal_estimator"):
                 # oneDAL PCA was fit
                 return self.transform(X)
-            else:
+            elif U is not None:
                 # Scikit-learn PCA was fit
                 U = U[:, : self.n_components_]
 
@@ -193,6 +193,9 @@ if daal_check_version((2024, "P", 100)):
                     U *= S[: self.n_components_]
 
                 return U
+            else:
+                # Scikit-learn PCA["covariance_eigh"] was fit
+                return self._transform(X, xp, x_is_centered=x_is_centered)
 
         def _onedal_supported(self, method_name, X):
             class_name = self.__class__.__name__
@@ -265,7 +268,13 @@ if daal_check_version((2024, "P", 100)):
 
             if self._fit_svd_solver == "auto":
                 if sklearn_check_version("1.1"):
-                    if max(shape_tuple) <= 500 or n_components == "mle":
+                    if (
+                        sklearn_check_version("1.5")
+                        and shape_tuple[1] <= 1_000
+                        and shape_tuple[0] >= 10 * shape_tuple[1]
+                    ):
+                        self._fit_svd_solver = "covariance_eigh"
+                    elif max(shape_tuple) <= 500 or n_components == "mle":
                         self._fit_svd_solver = "full"
                     elif 1 <= n_components < 0.8 * n_sf_min:
                         self._fit_svd_solver = "randomized"
