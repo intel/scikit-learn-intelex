@@ -22,7 +22,7 @@ from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovarianc
 from sklearn.utils import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
 from sklearnex import config_context
@@ -44,7 +44,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
-        if not daal_check_versions((2024, "P", 400)) and self.assume_centered:
+        if not daal_check_version((2024, "P", 400)) and self.assume_centered:
             location = self._onedal_estimator.location_
             self._onedal_estimator.covariance_ += np.dot(location.T, location)
             self._onedal_estimator.location_ = np.zeros_like(location)
