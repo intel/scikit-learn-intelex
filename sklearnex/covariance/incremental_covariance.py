@@ -120,9 +120,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if not daal_check_versions((2024, "P", 400)) and self.assume_centered:
             location = self._onedal_estimator.location_
             self._onedal_estimator.covariance_ += np.dot(location.T, location)
-            self._onedal_estimator.location_ = np.zeros(
-                location.shape, dtype=location.dtype
-            )
+            self._onedal_estimator.location_ = np.zeros_like(location)
         if self.store_precision:
             self.precision_ = linalg.pinvh(
                 self._onedal_estimator.covariance_, check_finite=False
