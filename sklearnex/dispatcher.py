@@ -93,6 +93,7 @@ def get_patch_map_core(preview=False):
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.cluster as cluster_module
+        import sklearn.covariance as covariance_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
