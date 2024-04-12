@@ -44,6 +44,10 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
+        if not daal_check_versions((2024, "P", 400)) and self.assume_centered:
+            location = self._onedal_estimator.location_
+            self._onedal_estimator.covariance_ += np.dot(location.T, location)
+            self._onedal_estimator.location_ = np.zeros_like(location)
         self._set_covariance(self._onedal_estimator.covariance_)
         self.location_ = self._onedal_estimator.location_
 
@@ -58,6 +62,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         onedal_params = {
             "method": "dense",
             "bias": True,
+            "assume_centered": self.assume_centered,
         }
 
         self._onedal_estimator = self._onedal_covariance(**onedal_params)
