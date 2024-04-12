@@ -23,10 +23,10 @@ from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
-
-from .._device_offload import dispatch, wrap_output_data
-from .common import KNeighborsDispatchingBase
-from .knn_unsupervised import NearestNeighbors
+from sklearnex._device_offload import dispatch, wrap_output_data
+from sklearnex.neighbors.common import KNeighborsDispatchingBase
+from sklearnex.neighbors.knn_unsupervised import NearestNeighbors
+from sklearnex.utils import get_namespace
 
 
 @control_n_jobs(decorated_methods=["fit", "_kneighbors"])
@@ -112,16 +112,13 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         )
         return result
 
-    # Subtle order change to remove check_array and preserve dpnp and
-    # dpctl conformance. decision_function will return a dpnp or dpctl
-    # instance via kneighbors and an equivalent check_array exists in
-    # that call already in sklearn so no loss of functionality occurs
     def _predict(self, X=None):
         check_is_fitted(self)
 
         if X is not None:
+            xp, _ = get_namespace(X)
             output = self.decision_function(X) < 0
-            is_inlier = np.ones(output.shape[0], dtype=int)
+            is_inlier = xp.ones_like(output, dtype=int)
             is_inlier[output] = -1
         else:
             is_inlier = np.ones(self.n_samples_fit_, dtype=int)
@@ -157,30 +154,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             Returns -1 for anomalies/outliers and 1 for inliers.
         """
         return self.fit(X)._predict()
-
-    @available_if(sklearn_LocalOutlierFactor._check_novelty_predict)
-    @wrap_output_data
-    def predict(self, X=None):
-        """Predict the labels (1 inlier, -1 outlier) of X according to LOF.
-
-        **Only available for novelty detection (when novelty is set to True).**
-        This method allows to generalize prediction to *new observations* (not
-        in the training set). Note that the result of ``clf.fit(X)`` then
-        ``clf.predict(X)`` with ``novelty=True`` may differ from the result
-        obtained by ``clf.fit_predict(X)`` with ``novelty=False``.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            The query sample or samples to compute the Local Outlier Factor
-            w.r.t. the training samples.
-
-        Returns
-        -------
-        is_inlier : ndarray of shape (n_samples,)
-            Returns -1 for anomalies/outliers and +1 for inliers.
-        """
-        return self._predict(X)
 
     def _kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)

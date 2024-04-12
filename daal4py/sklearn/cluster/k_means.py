@@ -695,3 +695,5 @@ class KMeans(KMeans_original):
             Index of the cluster each sample belongs to.
         """
         return super().fit_predict(X, y, sample_weight)
+
+    score = support_usm_ndarray()(KMeans_original.score)

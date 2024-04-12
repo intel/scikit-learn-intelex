@@ -26,16 +26,6 @@ from inspect import signature
 import numpy as np
 import numpy.random as nprnd
 import pytest
-from _utils import (
-    DTYPES,
-    PATCHED_FUNCTIONS,
-    PATCHED_MODELS,
-    SPECIAL_INSTANCES,
-    UNPATCHED_FUNCTIONS,
-    UNPATCHED_MODELS,
-    gen_dataset,
-    gen_models_info,
-)
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -53,21 +43,39 @@ from onedal.tests.utils._dataframes_support import (
 from sklearnex import is_patched_instance
 from sklearnex.dispatcher import _is_preview_enabled
 from sklearnex.metrics import pairwise_distances, roc_auc_score
+from sklearnex.tests._utils import (
+    DTYPES,
+    PATCHED_FUNCTIONS,
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    UNPATCHED_FUNCTIONS,
+    UNPATCHED_MODELS,
+    gen_dataset,
+    gen_models_info,
+)
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
-@pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
-)
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("metric", ["cosine", "correlation"])
 def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
+        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
+            pytest.skip("Hardware does not support fp16 SYCL testing")
+        elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
+            pytest.skip("Hardware does not support fp64 SYCL testing")
+        elif queue and queue.sycl_device.is_gpu:
+            pytest.skip("pairwise_distances does not support GPU queues")
+
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
-            rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+            rng.random(size=1000).reshape(1, -1),
+            sycl_queue=queue,
+            target_df=dataframe,
+            dtype=dtype,
         )
 
-        _ = pairwise_distances(X.reshape(1, -1), metric=metric)
+        _ = pairwise_distances(X, metric=metric)
     assert all(
         [
             "running accelerated version" in i.message
@@ -80,12 +88,13 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
 @pytest.mark.parametrize(
     "dtype", [i for i in DTYPES if "32" in i.__name__ or "64" in i.__name__]
 )
-@pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
-)
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
     if dtype in [np.uint32, np.uint64] and sys.platform == "win32":
         pytest.skip("Windows issue with unsigned ints")
+    elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
+        pytest.skip("Hardware does not support fp64 SYCL testing")
+
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
         X = _convert_to_dataframe(
@@ -112,13 +121,24 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
-@pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
-)
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = PATCHED_MODELS[estimator]()
+
+        if queue:
+            if dtype == np.float16 and not queue.sycl_device.has_aspect_fp16:
+                pytest.skip("Hardware does not support fp16 SYCL testing")
+            elif dtype == np.float64 and not queue.sycl_device.has_aspect_fp64:
+                pytest.skip("Hardware does not support fp64 SYCL testing")
+            elif queue.sycl_device.is_gpu and estimator in [
+                "KMeans",
+                "ElasticNet",
+                "Lasso",
+                "Ridge",
+            ]:
+                pytest.skip(f"{estimator} does not support GPU queues")
 
         if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
@@ -131,6 +151,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
         elif not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
@@ -148,15 +169,19 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
 
 
 @pytest.mark.parametrize("dtype", DTYPES)
-@pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues(dataframe_filter_="numpy")
-)
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, method):
     # prepare logging
 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
+
+        # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
+        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
+            pytest.skip("Hardware does not support fp16 SYCL testing")
+        elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
+            pytest.skip("Hardware does not support fp64 SYCL testing")
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
