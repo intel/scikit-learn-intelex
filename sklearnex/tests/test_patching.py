@@ -181,7 +181,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
 
         if method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
-        
+
         if method:
             if method != "score":
                 getattr(est, method)(X)
