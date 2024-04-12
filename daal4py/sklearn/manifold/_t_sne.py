@@ -234,6 +234,10 @@ class TSNE(BaseTSNE):
                 )
             )
 
+        if not sklearn_check_version("1.2"):
+            if self.n_iter < 250:
+                raise ValueError("n_iter should be at least 250")
+
         n_samples = X.shape[0]
 
         neighbors_nn = None
