@@ -30,7 +30,8 @@ from onedal.tests.utils._dataframes_support import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
+@pytest.mark.parametrize("assume_centered", [True, False])
+def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype, assume_centered):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
@@ -45,7 +46,12 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
         result = inccov.partial_fit(X_split_df)
 
     expected_covariance = np.array([[0, 0], [0, 0]])
-    expected_means = np.array([0, 1])
+    expected_means = np.array([0, 0])
+
+    if assume_centered:
+        expected_covariance = np.array([[0, 0], [0, 1]])
+    else:
+        expected_means = np.array([0, 1])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
@@ -61,8 +67,11 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
         )
         result = inccov.partial_fit(X_split_df)
 
-    expected_covariance = np.array([[1, 2], [2, 4]])
-    expected_means = np.array([2, 4])
+    if assume_centered:
+        expected_covariance = np.array([[5, 10], [10, 20]])
+    else:
+        expected_covariance = np.array([[1, 2], [2, 4]])
+        expected_means = np.array([2, 4])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
