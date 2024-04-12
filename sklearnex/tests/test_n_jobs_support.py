@@ -22,9 +22,9 @@ import pytest
 from sklearn.base import BaseEstimator
 from sklearn.datasets import make_classification
 
+from sklearnex.decomposition import PCA
 from sklearnex.dispatcher import get_patch_map
 from sklearnex.svm import SVC, NuSVC
-from sklearnex.decomposition import PCA
 
 ESTIMATORS = set(
     filter(
