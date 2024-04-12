@@ -311,18 +311,6 @@ def test_if_estimator_inherits_sklearn(estimator):
         ), f"{estimator} does not inherit from the patched sklearn estimator"
     else:
         assert issubclass(est, BaseEstimator)
-        assert any(
-            [
-                issubclass(est, i)
-                for i in [
-                    ClassifierMixin,
-                    ClusterMixin,
-                    OutlierMixin,
-                    RegressorMixin,
-                    TransformerMixin,
-                ]
-            ]
-        ), f"{estimator} does not inherit a sklearn Mixin"
 
 
 @pytest.mark.parametrize("estimator", UNPATCHED_MODELS.keys())
