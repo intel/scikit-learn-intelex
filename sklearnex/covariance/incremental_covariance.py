@@ -165,21 +165,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
 
-    def partial_fit(self, X, y=None):
-        """
-        Incremental fit with X. All of X is processed as a single batch.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
-            `n_features` is the number of features.
-
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
+    def _partial_fit(self, X, queue=None):
 
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
@@ -206,17 +192,34 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         else:
             self.n_samples_seen_ += X.shape[0]
 
-        dispatch(
+        self._onedal_partial_fit(X, queue)
+        return self
+
+
+    def partial_fit(self, X, y=None):
+        """
+        Incremental fit with X. All of X is processed as a single batch.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
+        return dispatch(
             self,
             "partial_fit",
             {
-                "onedal": self.__class__._onedal_partial_fit,
+                "onedal": self.__class__._partial_fit,
                 "sklearn": None,
             },
             X,
         )
-
-        return self
 
     def fit(self, X, y=None):
         """
@@ -234,7 +237,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             Returns the instance itself.
         """
 
-        dispatch(
+        return dispatch(
             self,
             "fit",
             {
@@ -243,7 +246,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             },
             X,
         )
-        return self
 
     def _onedal_fit(self, X, queue=None):
         self.n_samples_seen_ = 0
