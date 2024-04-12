@@ -14,9 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 from sklearn.datasets import load_breast_cancer, load_iris
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split

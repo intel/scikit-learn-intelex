@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # ==============================================================================
 # Copyright 2014 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,9 +22,11 @@ import glob
 # System imports
 import os
 import pathlib
+import platform as plt
+import shutil
 import sys
 import time
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from distutils.sysconfig import get_config_vars
 from os.path import join as jp
 
@@ -49,18 +52,21 @@ IS_LIN = False
 dal_root = os.environ.get("DALROOT")
 n_threads = int(os.environ.get("NTHREADS", os.cpu_count() or 1))
 
+arch_dir = plt.machine()
+plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
 if "linux" in sys.platform:
     IS_LIN = True
-    lib_dir = jp(dal_root, "lib", "intel64")
+    lib_dir = jp(dal_root, "lib", arch_dir)
 elif sys.platform == "darwin":
     IS_MAC = True
     lib_dir = jp(dal_root, "lib")
 elif sys.platform in ["win32", "cygwin"]:
     IS_WIN = True
-    lib_dir = jp(dal_root, "lib", "intel64")
+    lib_dir = jp(dal_root, "lib", arch_dir)
 else:
     assert False, sys.platform + " not supported"
 
@@ -71,7 +77,7 @@ ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
 ONEDAL_2023_0_1 = 2023 * 10000 + 0 * 100 + 1
 is_onedal_iface = (
-    os.environ.get("OFF_ONEDAL_IFACE") is None and ONEDAL_VERSION >= ONEDAL_2021_3
+    os.environ.get("OFF_ONEDAL_IFACE", "0") == "0" and ONEDAL_VERSION >= ONEDAL_2021_3
 )
 
 d4p_version = (
@@ -83,29 +89,13 @@ d4p_version = (
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
+debug_build = os.getenv("DEBUG_BUILD") == "1"
 mpi_root = None if no_dist else os.environ["MPIROOT"]
-dpcpp = True if "DPCPPROOT" in os.environ else False
-dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
+dpcpp = shutil.which("icpx") is not None and not (IS_WIN and debug_build)
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
-try:
-    import dpctl
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    import importlib.util
-
-    try:
-        dpctl_include = os.path.join(
-            importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
-        )
-        dpctl_available = dpctl_include is not None
-    except AttributeError:
-        dpctl_available = False
-
-build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
-
+build_distribute = dpcpp and not no_dist and IS_LIN
 
 daal_lib_dir = lib_dir if (IS_MAC or os.path.isdir(lib_dir)) else os.path.dirname(lib_dir)
 ONEDAL_LIBDIRS = [daal_lib_dir]
@@ -444,9 +434,13 @@ def build_oneapi_backend():
 def get_onedal_py_libs():
     ext_suffix = get_config_vars("EXT_SUFFIX")[0]
     libs = [f"_onedal_py_host{ext_suffix}", f"_onedal_py_dpc{ext_suffix}"]
+    if build_distribute:
+        libs += [f"_onedal_py_spmd_dpc{ext_suffix}"]
     if IS_WIN:
         ext_suffix_lib = ext_suffix.replace(".dll", ".lib")
         libs += [f"_onedal_py_host{ext_suffix_lib}", f"_onedal_py_dpc{ext_suffix_lib}"]
+        if build_distribute:
+            libs += [f"_onedal_py_spmd_dpc{ext_suffix_lib}"]
     return libs
 
 
@@ -481,6 +475,13 @@ class custom_build:
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
                 )
+                if build_distribute:
+                    build_backend.custom_build_cmake_clib(
+                        iface="spmd_dpc",
+                        onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
+                        no_dist=no_dist,
+                        use_parameters_lib=use_parameters_lib,
+                    )
 
     def post_build(self):
         if IS_MAC:
@@ -565,6 +566,7 @@ if ONEDAL_VERSION >= 20230200:
 if build_distribute:
     packages_with_tests += [
         "onedal.spmd",
+        "onedal.spmd.covariance",
         "onedal.spmd.decomposition",
         "onedal.spmd.ensemble",
     ]

@@ -43,7 +43,7 @@ if daal_check_version((2024, "P", 1)):
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
-    from onedal.utils import _num_features, _num_samples
+    from onedal.utils import _num_samples
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
@@ -72,9 +72,9 @@ if daal_check_version((2024, "P", 1)):
             intercept_scaling=1,
             class_weight=None,
             random_state=None,
-            solver="lbfgs" if sklearn_check_version("0.22") else "liblinear",
+            solver="lbfgs",
             max_iter=100,
-            multi_class="auto" if sklearn_check_version("0.22") else "ovr",
+            multi_class="auto",
             verbose=0,
             warm_start=False,
             n_jobs=None,
@@ -185,7 +185,10 @@ if daal_check_version((2024, "P", 1)):
                 [
                     (self.penalty == "l2", "Only l2 penalty is supported."),
                     (self.dual == False, "dual=True is not supported."),
-                    (self.intercept_scaling == 1, "Intercept scaling is not supported."),
+                    (
+                        self.intercept_scaling == 1,
+                        "Intercept scaling is not supported.",
+                    ),
                     (self.class_weight is None, "Class weight is not supported"),
                     (self.solver == "newton-cg", "Only newton-cg solver is supported."),
                     (
@@ -230,7 +233,10 @@ if daal_check_version((2024, "P", 1)):
                     (n_samples > 0, "Number of samples is less than 1."),
                     (not issparse(*data), "Sparse input is not supported."),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
-                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."),
+                    (
+                        hasattr(self, "_onedal_estimator"),
+                        "oneDAL model was not trained.",
+                    ),
                 ]
             )
             if not dal_ready:
@@ -323,6 +329,11 @@ if daal_check_version((2024, "P", 1)):
             X = self._validate_data(X, accept_sparse=False, reset=False)
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
+
+        fit.__doc__ = sklearn_LogisticRegression.fit.__doc__
+        predict.__doc__ = sklearn_LogisticRegression.predict.__doc__
+        predict_proba.__doc__ = sklearn_LogisticRegression.predict_proba.__doc__
+        predict_log_proba.__doc__ = sklearn_LogisticRegression.predict_log_proba.__doc__
 
 else:
     LogisticRegression = LogisticRegression_daal4py

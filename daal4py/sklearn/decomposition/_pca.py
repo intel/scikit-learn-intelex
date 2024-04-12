@@ -38,17 +38,8 @@ if sklearn_check_version("1.3"):
 if sklearn_check_version("1.1"):
     from sklearn.utils import check_scalar
 
-if sklearn_check_version("0.22"):
-    from sklearn.decomposition._pca import PCA as PCA_original
-else:
-    from sklearn.decomposition.pca import PCA as PCA_original
-
-if sklearn_check_version("0.23"):
-    from sklearn.decomposition._pca import _infer_dimension
-elif sklearn_check_version("0.22"):
-    from sklearn.decomposition._pca import _infer_dimension_
-else:
-    from sklearn.decomposition.pca import _infer_dimension_
+from sklearn.decomposition._pca import PCA as PCA_original
+from sklearn.decomposition._pca import _infer_dimension
 
 
 @control_n_jobs(decorated_methods=["fit", "transform"])
@@ -58,27 +49,49 @@ class PCA(PCA_original):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**PCA_original._parameter_constraints}
 
-    def __init__(
-        self,
-        n_components=None,
-        copy=True,
-        whiten=False,
-        svd_solver="auto",
-        tol=0.0,
-        iterated_power="auto",
-        n_oversamples=10,
-        power_iteration_normalizer="auto",
-        random_state=None,
-    ):
-        self.n_components = n_components
-        self.copy = copy
-        self.whiten = whiten
-        self.svd_solver = svd_solver
-        self.tol = tol
-        self.iterated_power = iterated_power
-        self.n_oversamples = n_oversamples
-        self.power_iteration_normalizer = power_iteration_normalizer
-        self.random_state = random_state
+    if sklearn_check_version("1.1"):
+
+        def __init__(
+            self,
+            n_components=None,
+            copy=True,
+            whiten=False,
+            svd_solver="auto",
+            tol=0.0,
+            iterated_power="auto",
+            n_oversamples=10,
+            power_iteration_normalizer="auto",
+            random_state=None,
+        ):
+            self.n_components = n_components
+            self.copy = copy
+            self.whiten = whiten
+            self.svd_solver = svd_solver
+            self.tol = tol
+            self.iterated_power = iterated_power
+            self.n_oversamples = n_oversamples
+            self.power_iteration_normalizer = power_iteration_normalizer
+            self.random_state = random_state
+
+    else:
+
+        def __init__(
+            self,
+            n_components=None,
+            copy=True,
+            whiten=False,
+            svd_solver="auto",
+            tol=0.0,
+            iterated_power="auto",
+            random_state=None,
+        ):
+            self.n_components = n_components
+            self.copy = copy
+            self.whiten = whiten
+            self.svd_solver = svd_solver
+            self.tol = tol
+            self.iterated_power = iterated_power
+            self.random_state = random_state
 
     def _validate_n_components(self, n_components, n_samples, n_features):
         if n_components == "mle":
@@ -137,12 +150,7 @@ class PCA(PCA_original):
         explained_variance_ratio_ = explained_variance_ / tot_var
 
         if n_components == "mle":
-            if sklearn_check_version("0.23"):
-                n_components = _infer_dimension(explained_variance_, n_samples)
-            else:
-                n_components = _infer_dimension_(
-                    explained_variance_, n_samples, n_features
-                )
+            n_components = _infer_dimension(explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             ratio_cumsum = stable_cumsum(explained_variance_ratio_)
             n_components = np.searchsorted(ratio_cumsum, n_components, side="right") + 1
@@ -178,12 +186,7 @@ class PCA(PCA_original):
         S = self.singular_values_
 
         if n_components == "mle":
-            if sklearn_check_version("0.23"):
-                n_components = _infer_dimension(self.explained_variance_, n_samples)
-            else:
-                n_components = _infer_dimension_(
-                    self.explained_variance_, n_samples, n_features
-                )
+            n_components = _infer_dimension(self.explained_variance_, n_samples)
         elif 0 < n_components < 1.0:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
             n_components = np.searchsorted(ratio_cumsum, n_components, side="right") + 1
@@ -235,15 +238,9 @@ class PCA(PCA_original):
                     "PCA does not support sparse input. See "
                     "TruncatedSVD for a possible alternative."
                 )
-
-            if sklearn_check_version("0.23"):
-                X = self._validate_data(
-                    X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
-                )
-            else:
-                X = check_array(
-                    X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
-                )
+            X = self._validate_data(
+                X, dtype=[np.float64, np.float32], ensure_2d=True, copy=False
+            )
 
         if self.n_components is None:
             if self.svd_solver != "arpack":
@@ -296,10 +293,8 @@ class PCA(PCA_original):
         if not shape_good_for_daal or self._fit_svd_solver != "full":
             if sklearn_check_version("1.4"):
                 X = self._validate_data(X, copy=self.copy, accept_sparse=("csr", "csc"))
-            elif sklearn_check_version("0.23"):
-                X = self._validate_data(X, copy=self.copy)
             else:
-                X = check_array(X, copy=self.copy)
+                X = self._validate_data(X, copy=self.copy)
 
         _patching_status = PatchingConditionsChain("sklearn.decomposition.PCA.fit")
         _dal_ready = _patching_status.and_conditions(
@@ -337,10 +332,7 @@ class PCA(PCA_original):
         return result
 
     def _transform_daal4py(self, X, whiten=False, scale_eigenvalues=True, check_X=True):
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, ["mean_", "components_"], all_or_any=all)
+        check_is_fitted(self)
 
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)

@@ -19,13 +19,12 @@ from sklearn.base import ClusterMixin
 from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import get_dtype, make2d
-from onedal import _backend
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
-class BaseDBSCAN(ClusterMixin):
+class BaseDBSCAN(BaseEstimator, ClusterMixin):
     def __init__(
         self,
         eps=0.5,
@@ -46,9 +45,6 @@ class BaseDBSCAN(ClusterMixin):
         self.leaf_size = leaf_size
         self.p = p
         self.n_jobs = n_jobs
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _get_onedal_params(self, dtype=np.float32):
         return {
@@ -109,4 +105,6 @@ class DBSCAN(BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
-        return super()._fit(X, y, sample_weight, _backend.dbscan.clustering, queue)
+        return super()._fit(
+            X, y, sample_weight, self._get_backend("dbscan", "clustering", None), queue
+        )

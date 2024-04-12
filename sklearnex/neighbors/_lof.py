@@ -29,7 +29,7 @@ from .common import KNeighborsDispatchingBase
 from .knn_unsupervised import NearestNeighbors
 
 
-@control_n_jobs(decorated_methods=["fit", "kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "_kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     __doc__ = (
         sklearn_LocalOutlierFactor.__doc__
@@ -100,7 +100,6 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
         return self
 
     def fit(self, X, y=None):
-        self._fit_validation(X, y)
         result = dispatch(
             self,
             "fit",
@@ -137,15 +136,53 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     @available_if(sklearn_LocalOutlierFactor._check_novelty_fit_predict)
     @wrap_output_data
     def fit_predict(self, X, y=None):
+        """Fit the model to the training set X and return the labels.
+
+        **Not available for novelty detection (when novelty is set to True).**
+        Label is 1 for an inlier and -1 for an outlier according to the LOF
+        score and the contamination parameter.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features), default=None
+            The query sample or samples to compute the Local Outlier Factor
+            w.r.t. the training samples.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        Returns
+        -------
+        is_inlier : ndarray of shape (n_samples,)
+            Returns -1 for anomalies/outliers and 1 for inliers.
+        """
         return self.fit(X)._predict()
 
     @available_if(sklearn_LocalOutlierFactor._check_novelty_predict)
     @wrap_output_data
     def predict(self, X=None):
+        """Predict the labels (1 inlier, -1 outlier) of X according to LOF.
+
+        **Only available for novelty detection (when novelty is set to True).**
+        This method allows to generalize prediction to *new observations* (not
+        in the training set). Note that the result of ``clf.fit(X)`` then
+        ``clf.predict(X)`` with ``novelty=True`` may differ from the result
+        obtained by ``clf.fit_predict(X)`` with ``novelty=False``.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The query sample or samples to compute the Local Outlier Factor
+            w.r.t. the training samples.
+
+        Returns
+        -------
+        is_inlier : ndarray of shape (n_samples,)
+            Returns -1 for anomalies/outliers and +1 for inliers.
+        """
         return self._predict(X)
 
-    @wrap_output_data
-    def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
+    def _kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
             self._check_feature_names(X, reset=False)
@@ -161,7 +198,51 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             return_distance=return_distance,
         )
 
+    kneighbors = wrap_output_data(_kneighbors)
+
+    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
+    @wrap_output_data
+    def score_samples(self, X):
+        """Opposite of the Local Outlier Factor of X.
+
+        It is the opposite as bigger is better, i.e. large values correspond
+        to inliers.
+
+        **Only available for novelty detection (when novelty is set to True).**
+        The argument X is supposed to contain *new data*: if X contains a
+        point from training, it considers the later in its own neighborhood.
+        Also, the samples in X are not considered in the neighborhood of any
+        point. Because of this, the scores obtained via ``score_samples`` may
+        differ from the standard LOF scores.
+        The standard LOF scores for the training data is available via the
+        ``negative_outlier_factor_`` attribute.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            The query sample or samples to compute the Local Outlier Factor
+            w.r.t. the training samples.
+
+        Returns
+        -------
+        opposite_lof_scores : ndarray of shape (n_samples,)
+            The opposite of the Local Outlier Factor of each input samples.
+            The lower, the more abnormal.
+        """
+        check_is_fitted(self)
+
+        distances_X, neighbors_indices_X = self._kneighbors(
+            X, n_neighbors=self.n_neighbors_
+        )
+
+        X_lrd = self._local_reachability_density(
+            distances_X,
+            neighbors_indices_X,
+        )
+
+        lrd_ratios_array = self._lrd[neighbors_indices_X] / X_lrd[:, np.newaxis]
+
+        return -np.mean(lrd_ratios_array, axis=1)
+
     fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
-    fit_predict.__doc__ = sklearn_LocalOutlierFactor.fit_predict.__doc__
-    predict.__doc__ = sklearn_LocalOutlierFactor.predict.__doc__
     kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
