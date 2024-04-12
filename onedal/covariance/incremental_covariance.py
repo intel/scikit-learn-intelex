@@ -17,7 +17,7 @@ import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
-from onedal.covariance import BaseEmpiricalCovariance
+from onedal.covariance.covariance import BaseEmpiricalCovariance
 from onedal.datatypes import _convert_to_supported, from_table, to_table
 from onedal.utils import _check_array
 
