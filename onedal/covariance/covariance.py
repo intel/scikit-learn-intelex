@@ -38,7 +38,7 @@ class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
         }
         if daal_check_version((2024, "P", 1)):
             params["bias"] = self.bias
-        if daal_check_version((2024, "P", 4)):
+        if daal_check_version((2024, "P", 400)):
             params["assumeCentered"] = self.assume_centered
 
         return params

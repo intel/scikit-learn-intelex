@@ -117,7 +117,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
-        if not daal_check_versions((2024, "P", 4)) and self.assume_centered:
+        if not daal_check_versions((2024, "P", 400)) and self.assume_centered:
             location = self._onedal_estimator.location_
             self._onedal_estimator.covariance_ += np.dot(location.T, location)
             self._onedal_estimator.location_ = np.zeros(
