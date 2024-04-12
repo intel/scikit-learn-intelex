@@ -35,6 +35,9 @@ if daal_check_version((2024, "P", 100)):
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
 
+    if sklearn_check_version("1.4"):
+        from sklearn.utils._array_api import get_namespace
+
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
@@ -107,7 +110,7 @@ if daal_check_version((2024, "P", 100)):
                     target_type=numbers.Integral,
                 )
 
-            U, S, Vt = dispatch(
+            return dispatch(
                 self,
                 "fit",
                 {
@@ -116,7 +119,6 @@ if daal_check_version((2024, "P", 100)):
                 },
                 X,
             )
-            return U, S, Vt
 
         def _onedal_fit(self, X, queue=None):
             X = self._validate_data(
@@ -140,7 +142,13 @@ if daal_check_version((2024, "P", 100)):
             S = self.singular_values_
             Vt = self.components_
 
-            return U, S, Vt
+            if sklearn_check_version("1.5"):
+                xp, _ = get_namespace(X)
+                x_is_centered = not self.copy
+
+                return U, S, Vt, X, x_is_centered, xp
+            else:
+                return U, S, Vt
 
         @wrap_output_data
         def transform(self, X):
@@ -168,7 +176,10 @@ if daal_check_version((2024, "P", 100)):
             return self._onedal_estimator.predict(X, queue=queue)
 
         def fit_transform(self, X, y=None):
-            U, S, Vt = self._fit(X)
+            if sklearn_check_version("1.5"):
+                U, S, Vt, X, x_is_centered, xp = self._fit(X)
+            else:
+                U, S, Vt = self._fit(X)
             if U is None:
                 # oneDAL PCA was fit
                 return self.transform(X)
