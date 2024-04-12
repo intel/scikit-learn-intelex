@@ -129,15 +129,17 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and dtype in [np.uint32, np.uint64]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
-        elif not hasattr(est, method):
+        elif method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
-        if method != "score":
-            getattr(est, method)(X)
-        else:
-            est.score(X, y)
+        if method:
+            if method != "score":
+                getattr(est, method)(X)
+            else:
+                est.score(X, y)
     assert all(
         [
             "running accelerated version" in i.message
@@ -161,12 +163,15 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
         est.fit(X, y)
 
-        if not hasattr(est, method):
+        if method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
-        if method != "score":
-            getattr(est, method)(X)
-        else:
-            est.score(X, y)
+
+        if method:
+            if method != "score":
+                getattr(est, method)(X)
+            else:
+                est.score(X, y)
+
     assert all(
         [
             "running accelerated version" in i.message
