@@ -26,14 +26,6 @@ from inspect import signature
 import numpy as np
 import numpy.random as nprnd
 import pytest
-from sklearn.base import (
-    BaseEstimator,
-    ClassifierMixin,
-    ClusterMixin,
-    OutlierMixin,
-    RegressorMixin,
-    TransformerMixin,
-)
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.tests.utils._dataframes_support import (
