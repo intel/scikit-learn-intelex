@@ -54,7 +54,7 @@ struct params2desc {
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240004
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240004
         if (params.contains("assumeCentered")) {
-            desc.set_bias(params["assumeCentered"].cast<bool>());
+            desc.set_assumed_centered(params["assumeCentered"].cast<bool>());
         }
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240004
         return desc;
