@@ -193,7 +193,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         self._onedal_partial_fit(X, queue)
         return self
 
-
     def partial_fit(self, X, y=None):
         """
         Incremental fit with X. All of X is processed as a single batch.
