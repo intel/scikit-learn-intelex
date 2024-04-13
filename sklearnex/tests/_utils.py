@@ -30,6 +30,7 @@ from sklearn.neighbors._base import KNeighborsMixin
 
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex import get_patch_map, patch_sklearn, sklearn_is_patched, unpatch_sklearn
+from sklearnex.basic_statistics import IncrementalBasicStatistics
 from sklearnex.linear_model import LogisticRegression
 from sklearnex.neighbors import (
     KNeighborsClassifier,
@@ -97,6 +98,7 @@ SPECIAL_INSTANCES = {
         KNeighborsRegressor(algorithm="brute"),
         NearestNeighbors(algorithm="brute"),
         LogisticRegression(solver="newton-cg"),
+        IncrementalBasicStatistics(),
     ]
 }
 
@@ -104,10 +106,13 @@ SPECIAL_INSTANCES = {
 def gen_models_info(algorithms):
     output = []
     for i in algorithms:
-        # split handles SPECIAL_INSTANCES or custom inputs
-        # custom sklearn inputs must be a dict of estimators
-        # with keys set by the __str__ method
-        est = PATCHED_MODELS[i.split("(")[0]]
+
+        if i in PATCHED_MODELS:
+            est = PATCHED_MODELS[i]
+        elif i in SPECIAL_INSTANCES:
+            est = SPECIAL_INSTANCES[i].__class__
+        else:
+            raise KeyError(f"Unrecognized sklearnex estimator: {i}")
 
         methods = set()
         candidates = set(
@@ -118,13 +123,11 @@ def gen_models_info(algorithms):
             if issubclass(est, mixin):
                 methods |= candidates & set(method)
 
-        output += [[i, j] for j in methods]
+        output += [[i, j] for j in methods] if methods else [[i, None]]
 
     # In the case that no methods are available, set method to None.
     # This will allow estimators without mixins to still test the fit
     # method in various tests.
-    if not output:
-        output = [[i, None]]
     return output
 
 
