@@ -171,7 +171,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             self._onedal_estimator = self._onedal_incremental_basic_statistics(
                 **onedal_params
             )
-        self._onedal_estimator.partial_fit(X, weights, queue)
+        self._onedal_estimator.partial_fit(X, sample_weights, queue)
         self._need_to_finalize = True
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
@@ -195,7 +195,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
         for batch in gen_batches(X.shape[0], self.batch_size_):
             X_batch = X[batch]
-            weights_batch = weights[batch] if weights is not None else None
+            weights_batch = sample_weight[batch] if sample_weight is not None else None
             self._onedal_partial_fit(X_batch, weights_batch, queue=queue)
 
         if sklearn_check_version("1.2"):
@@ -232,7 +232,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             Data for compute, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        weights : array-like of shape (n_samples,)
+        sample_weight : array-like of shape (n_samples,)
             Weights for compute weighted statistics, where `n_samples` is the number of samples.
 
         Returns
@@ -261,7 +261,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             Data for compute, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        weights : array-like of shape (n_samples,)
+        sample_weight : array-like of shape (n_samples,)
             Weights for compute weighted statistics, where `n_samples` is the number of samples.
 
         Returns
