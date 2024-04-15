@@ -39,27 +39,28 @@ try:
     # array_api libraries when testing
     # GPU-no-copy.
     import array_api_strict
-    
+
     # Run check if "array_api_dispatch" is configurable
     array_api_enabled = lambda: get_config()["array_api_dispatch"]
     _ = array_api_enabled()
-    array_api_modules = {"array_api":array_api_strict}
+    array_api_modules = {"array_api": array_api_strict}
 
 
 except (ImportError, KeyError):
     array_api_enabled = lambda: False
     array_api_modules = {}
-    
+
 
 import numpy as np
 
 from onedal.tests.utils._device_selection import get_queues
 
+
 def get_dataframes_and_queues(
-    dataframe_filter = "numpy,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
     dataframes_and_queues = []
-    
+
     if "numpy" in dataframe_filter_:
         dataframes_and_queues.append(pytest.param("numpy", None, id="numpy"))
 
@@ -107,10 +108,14 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         # use dpctl to define gpu devices via queues and
         # move data to the device. This is necessary as
         # the standard for defining devices is
-        # purposefully not defined in the array_api 
+        # purposefully not defined in the array_api
         # standard, but maintaining data on a device
         # using the method `from_dlpack` is.
         xp = array_api_modules[target_df]
-        return xp.from_dlpack(_convert_to_dataframe(obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs))
-        
+        return xp.from_dlpack(
+            _convert_to_dataframe(
+                obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs
+            )
+        )
+
     raise RuntimeError("Unsupported dataframe conversion")
