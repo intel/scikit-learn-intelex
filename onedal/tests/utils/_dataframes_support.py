@@ -56,7 +56,7 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter_="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
     dataframes_and_queues = []
 
@@ -72,9 +72,9 @@ def get_dataframes_and_queues(
 
     if dpctl_available and "dpctl" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpctl"))
-    elif dpnp_available and "dpnp" in dataframe_filter_:
+    if dpnp_available and "dpnp" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpnp"))
-    elif "array_api" in dataframe_filter_ or array_api_enabled():
+    if "array_api" in dataframe_filter_ or array_api_enabled():
         dataframes_and_queues.append(pytest.param("array_api", None, id="array_api"))
 
     return dataframes_and_queues
