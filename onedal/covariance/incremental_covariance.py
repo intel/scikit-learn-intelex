@@ -37,6 +37,12 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         If True biased estimation of covariance is computed which equals to
         the unbiased one multiplied by (n_samples - 1) / n_samples.
 
+    assume_centered : bool, default=False
+        If True, data are not centered before computation.
+        Useful when working with data whose mean is almost, but not exactly
+        zero.
+        If False (default), data are centered before computation.
+
     Attributes
     ----------
     location_ : ndarray of shape (n_features,)
@@ -46,8 +52,8 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         Estimated covariance matrix
     """
 
-    def __init__(self, method="dense", bias=False):
-        super().__init__(method, bias)
+    def __init__(self, method="dense", bias=False, assume_centered=False):
+        super().__init__(method, bias, assume_centered)
         self._partial_result = self._get_backend(
             "covariance", None, "partial_compute_result"
         )
