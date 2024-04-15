@@ -16,6 +16,8 @@
 
 import pytest
 
+from sklearn import get_config
+
 try:
     import dpctl
     import dpctl.tensor as dpt
@@ -32,29 +34,32 @@ except ImportError:
     dpnp_available = False
 
 try:
-    import array_api_compat
-    from importlib.util import find_spec
-    # list all possible array_api packages
-    array_api_modules = []
-    for candidate in dir(array_api_compat):
-        # check for is_*_array methods
-        c = candidate.split('_')
-        if len(c) == 3 and c[0] == 'is' and c[1] != "numpy" and c[2] == "array":
-            if find_spec(c[1]) is not None:
-                array_api_modules += [c[1]]
-except ImportError:
+    # This should be lazy imported in the
+    # future along with other popular
+    # array_api libraries when testing
+    # GPU-no-copy.
+    import array_api_strict
     
-    array_api_modules = []
+    # Run check if "array_api_dispatch" is configurable
+    array_api_enabled = lambda: get_config()["array_api_dispatch"]
+    _ = array_api_enabled()
+    array_api_modules = {"array_api":array_api_strict}
+
+
+except (ImportError, KeyError):
+    array_api_enabled = lambda: False
+    array_api_modules = {}
+    
 
 import numpy as np
 
 from onedal.tests.utils._device_selection import get_queues
 
-
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter = "numpy,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
     dataframes_and_queues = []
+    
     if "numpy" in dataframe_filter_:
         dataframes_and_queues.append(pytest.param("numpy", None, id="numpy"))
 
@@ -67,8 +72,11 @@ def get_dataframes_and_queues(
 
     if dpctl_available and "dpctl" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpctl"))
-    if dpnp_available and "dpnp" in dataframe_filter_:
+    elif dpnp_available and "dpnp" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpnp"))
+    elif "array_api" in dataframe_filter_ or array_api_enabled():
+        dataframes_and_queues.append(pytest.param("array_api", None, id="array_api"))
+
     return dataframes_and_queues
 
 
@@ -83,16 +91,26 @@ def _as_numpy(obj, *args, **kwargs):
 def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs):
     if target_df is None:
         return obj
-    # Numpy ndarray.
-    # `sycl_queue` arg is ignored.
-    if target_df == "numpy":
+    elif target_df == "numpy":
+        # Numpy ndarray.
+        # `sycl_queue` arg is ignored.
         return np.asarray(obj, *args, **kwargs)
-    # DPNP ndarray.
-    if target_df == "dpnp":
+    elif target_df == "dpnp":
+        # DPNP ndarray.
         return dpnp.asarray(
             obj, usm_type="device", sycl_queue=sycl_queue, *args, **kwargs
         )
-    # DPCtl tensor.
-    if target_df == "dpctl":
+    elif target_df == "dpctl":
+        # DPCtl tensor.
         return dpt.asarray(obj, usm_type="device", sycl_queue=sycl_queue, *args, **kwargs)
+    elif target_df in array_api_modules:
+        # use dpctl to define gpu devices via queues and
+        # move data to the device. This is necessary as
+        # the standard for defining devices is
+        # purposefully not defined in the array_api 
+        # standard, but maintaining data on a device
+        # using the method `from_dlpack` is.
+        xp = array_api_modules[target_df]
+        return xp.from_dlpack(_convert_to_dataframe(obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs))
+        
     raise RuntimeError("Unsupported dataframe conversion")
