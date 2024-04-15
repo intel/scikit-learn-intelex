@@ -30,9 +30,10 @@ from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
 from sklearnex import config_context
-from sklearnex._device_offload import dispatch, wrap_output_data
-from sklearnex._utils import PatchingConditionsChain, register_hyperparameters
-from sklearnex.metrics import pairwise_distances
+
+from .._device_offload import dispatch, wrap_output_data
+from .._utils import PatchingConditionsChain, register_hyperparameters
+from ..metrics import pairwise_distances
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
