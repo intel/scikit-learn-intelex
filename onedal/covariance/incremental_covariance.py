@@ -20,6 +20,7 @@ from onedal import _backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from .covariance import BaseEmpiricalCovariance
+from ..utils import _check_array
 
 
 class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
