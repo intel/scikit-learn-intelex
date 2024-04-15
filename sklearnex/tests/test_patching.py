@@ -77,7 +77,7 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
         else:
             X = _convert_to_dataframe(
                 rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
-            ).reshape(1, -1)
+            )[None, :]
 
         _ = pairwise_distances(X, metric=metric)
     assert all(
