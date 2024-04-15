@@ -251,7 +251,7 @@ class IncrementalBasicStatistics(BaseEstimator):
                 "sklearn": None,
             },
             X,
-            sample_weights,
+            sample_weight,
         )
         return self
 
