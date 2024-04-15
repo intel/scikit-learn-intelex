@@ -19,8 +19,8 @@ from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal import _backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
-from .covariance import BaseEmpiricalCovariance
 from ..utils import _check_array
+from .covariance import BaseEmpiricalCovariance
 
 
 class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
