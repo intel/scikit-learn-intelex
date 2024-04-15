@@ -52,7 +52,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     assume_centered : bool, default=False
         If True, data are not centered before computation.
-        Its use is highly discouraged and will reduce performance.
+        Useful when working with data whose mean is almost, but not exactly
+        zero.
         If False (default), data are centered before computation.
 
     batch_size : int, default=None
