@@ -63,6 +63,7 @@ def with_sklearnex():
     yield
     unpatch_sklearn()
 
+
 @pytest.fixture
 def with_array_api():
     if sklearn_check_version("1.2"):
