@@ -17,6 +17,7 @@
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, gen_batches
+from sklearn.utils.validation import _check_sample_weights
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -139,7 +140,7 @@ class IncrementalBasicStatistics(BaseEstimator):
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
-    def _onedal_partial_fit(self, X, weights, queue):
+    def _onedal_partial_fit(self, X, sample_weight=None, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
         if sklearn_check_version("1.0"):
@@ -152,8 +153,10 @@ class IncrementalBasicStatistics(BaseEstimator):
             X = check_array(
                 X,
                 dtype=[np.float64, np.float32],
-                copy=self.copy_X,
             )
+
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
 
         if first_pass:
             self.n_samples_seen_ = X.shape[0]
@@ -171,12 +174,15 @@ class IncrementalBasicStatistics(BaseEstimator):
         self._onedal_estimator.partial_fit(X, weights, queue)
         self._need_to_finalize = True
 
-    def _onedal_fit(self, X, weights, queue=None):
+    def _onedal_fit(self, X, sample_weight=None, queue=None):
         if sklearn_check_version("1.0"):
             X = self._validate_data(X, dtype=[np.float64, np.float32])
         else:
             X = check_array(X, dtype=[np.float64, np.float32])
 
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
+        
         n_samples, n_features = X.shape
         if self.batch_size is None:
             self.batch_size_ = 5 * n_features
@@ -217,7 +223,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
 
-    def partial_fit(self, X, weights=None):
+    def partial_fit(self, X, sample_weight=None):
         """Incremental fit with X. All of X is processed as a single batch.
 
         Parameters
@@ -246,7 +252,7 @@ class IncrementalBasicStatistics(BaseEstimator):
         )
         return self
 
-    def fit(self, X, weights=None):
+    def fit(self, X, y=None, sample_weight=None):
         """Compute statistics with X, using minibatches of size batch_size.
 
         Parameters
@@ -271,6 +277,6 @@ class IncrementalBasicStatistics(BaseEstimator):
                 "sklearn": None,
             },
             X,
-            weights,
+            sample_weight,
         )
         return self
