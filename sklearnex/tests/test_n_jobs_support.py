@@ -80,7 +80,6 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     # check `n_jobs` log entry for supported methods
     # `fit` call is required before other methods
     check_method(X, Y, method=estimator_instance.fit, caplog=caplog)
-
     for method_name in estimator_instance._n_jobs_supported_onedal_methods:
         if method_name == "fit":
             continue
