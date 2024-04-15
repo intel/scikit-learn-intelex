@@ -35,12 +35,10 @@ if daal_check_version((2024, "P", 100)):
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
 
-    if sklearn_check_version("1.4"):
-        from sklearn.utils._array_api import get_namespace
-
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
+    from sklearnex.utils import get_namespace
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
