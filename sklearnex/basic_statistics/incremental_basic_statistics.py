@@ -171,7 +171,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             self._onedal_estimator = self._onedal_incremental_basic_statistics(
                 **onedal_params
             )
-        self._onedal_estimator.partial_fit(X, sample_weights, queue)
+        self._onedal_estimator.partial_fit(X, sample_weight, queue)
         self._need_to_finalize = True
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
