@@ -232,7 +232,10 @@ class IncrementalBasicStatistics(BaseEstimator):
             Data for compute, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        sample_weight : array-like of shape (n_samples,)
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        sample_weight : array-like of shape (n_samples,), default=None
             Weights for compute weighted statistics, where `n_samples` is the number of samples.
 
         Returns
@@ -261,7 +264,10 @@ class IncrementalBasicStatistics(BaseEstimator):
             Data for compute, where `n_samples` is the number of samples and
             `n_features` is the number of features.
 
-        sample_weight : array-like of shape (n_samples,)
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        sample_weight : array-like of shape (n_samples,), default=None
             Weights for compute weighted statistics, where `n_samples` is the number of samples.
 
         Returns
