@@ -58,6 +58,12 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         If True biased estimation of covariance is computed which equals to
         the unbiased one multiplied by (n_samples - 1) / n_samples.
 
+    assume_centered : bool, default=False
+        If True, data are not centered before computation.
+        Useful when working with data whose mean is almost, but not exactly
+        zero.
+        If False (default), data are centered before computation.
+
     Attributes
     ----------
     location_ : ndarray of shape (n_features,)
