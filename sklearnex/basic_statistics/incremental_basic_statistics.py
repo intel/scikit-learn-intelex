@@ -17,7 +17,7 @@
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, gen_batches
-from sklearn.utils.validation import _check_sample_weights
+from sklearn.utils.validation import _check_sample_weight
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
