@@ -44,7 +44,7 @@ try:
                 array_api_modules += [c[1]]
 
 except ImportError:
-    pass
+    array_api_modules = []
 
 import numpy as np
 
