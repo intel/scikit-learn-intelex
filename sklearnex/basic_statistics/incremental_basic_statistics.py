@@ -182,7 +182,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
-        
+
         n_samples, n_features = X.shape
         if self.batch_size is None:
             self.batch_size_ = 5 * n_features
