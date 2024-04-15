@@ -68,8 +68,6 @@ class IncrementalPCA(sklearn_IncrementalPCA):
 
         if not hasattr(self, "n_samples_seen_"):
             self.n_samples_seen_ = 0
-            self.mean_ = 0.0
-            self.var_ = 0.0
 
         onedal_params = {"n_components": self.n_components, "whiten": self.whiten}
 
