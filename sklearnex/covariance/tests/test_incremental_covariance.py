@@ -157,6 +157,7 @@ def test_sklearnex_fit_on_random_data(
 
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
+@pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize(
     "sklearn_test",
     [
