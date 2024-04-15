@@ -34,10 +34,10 @@ import json
 import os
 import sys
 
-with open("doc_version.json") as jsonFile:
-    doc_version = json.load(jsonFile)
-
 sys.path.insert(0, os.path.abspath("../"))
+
+with open("sources/doc_version.json") as jsonFile:
+    doc_version = json.load(jsonFile)
 
 
 # -- Project information -----------------------------------------------------
