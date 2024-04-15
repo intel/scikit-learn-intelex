@@ -33,17 +33,17 @@ except ImportError:
 
 try:
     import array_api_compat
-    import sys
+    from importlib.util import find_spec
     # list all possible array_api packages
     array_api_modules = []
     for candidate in dir(array_api_compat):
         # check for is_*_array methods
         c = candidate.split('_')
         if len(c) == 3 and c[0] == 'is' and c[1] != "numpy" and c[2] == "array":
-            if c[1] is in sys.modules:
+            if find_spec(c[1]) is not None:
                 array_api_modules += [c[1]]
-
 except ImportError:
+    
     array_api_modules = []
 
 import numpy as np
