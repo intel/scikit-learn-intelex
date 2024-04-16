@@ -14,8 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-import warnings
-
 import numpy as np
 from sklearn.decomposition import IncrementalPCA as sklearn_IncrementalPCA
 from sklearn.utils import check_array, gen_batches
@@ -38,6 +36,15 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             n_components=n_components, whiten=whiten, copy=copy, batch_size=batch_size
         )
         self._need_to_finalize = False
+        self._need_to_finalize_attrs = {
+            "mean_",
+            "explained_variance_",
+            "explained_variance_ratio_",
+            "n_components_",
+            "components_",
+            "noise_variance_",
+            "singular_values_",
+        }
 
     _onedal_incremental_pca = staticmethod(onedal_IncrementalPCA)
 
@@ -106,14 +113,9 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator._reset()
 
-        for batch in gen_batches(X.shape[0], self.batch_size_):
+        for batch in gen_batches(n_features, self.batch_size_):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
-
-        if X.shape[0] == 1:
-            warnings.warn(
-                "Only one sample available. You may want to reshape your data array"
-            )
 
         self._onedal_finalize_fit()
 
@@ -129,57 +131,21 @@ class IncrementalPCA(sklearn_IncrementalPCA):
     _onedal_gpu_supported = _onedal_supported
 
     def __getattr__(self, attr):
-        need_to_finalize_attrs = {
-            "mean_",
-            "explained_variance_",
-            "explained_variance_ratio_",
-            "n_components_",
-            "components_",
-            "noise_variance_",
-        }
-        if attr in need_to_finalize_attrs:
-            if self._need_to_finalize:
-                self._onedal_finalize_fit()
-            return getattr(self._onedal_estimator, attr)
+        if attr in self._need_to_finalize_attrs:
+            if hasattr(self, "_onedal_estimator"):
+                if self._need_to_finalize:
+                    self._onedal_finalize_fit()
+                return getattr(self._onedal_estimator, attr)
+            else:
+                raise AttributeError(
+                    f"'{self.__class__.__name__}' object has no attribute '{attr}'"
+                )
         if attr in self.__dict__:
             return self.__dict__[attr]
 
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
-
-    @property
-    def singular_values_(self):
-        if hasattr(self, "_onedal_estimator"):
-            if self._need_to_finalize:
-                self._onedal_finalize_fit()
-            return self._onedal_estimator.singular_values_
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute 'singular_values_'"
-            )
-
-    @property
-    def mean_(self):
-        if hasattr(self, "_onedal_estimator"):
-            if self._need_to_finalize:
-                self._onedal_finalize_fit()
-            return self._onedal_estimator.mean_
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute 'mean_'"
-            )
-
-    @property
-    def singular_values_(self):
-        if hasattr(self, "_onedal_estimator"):
-            if self._need_to_finalize:
-                self._onedal_finalize_fit()
-            return self._onedal_estimator.singular_values_
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute 'singular_values_'"
-            )
 
     def partial_fit(self, X, y=None, check_input=True):
         dispatch(
