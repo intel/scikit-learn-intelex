@@ -31,7 +31,7 @@ def test_on_gold_data(queue, is_deterministic, num_blocks, dtype):
     X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
     X = X.astype(dtype=dtype)
     X_split = np.array_split(X, num_blocks)
-    incpca = IncrementalPCA()
+    incpca = IncrementalPCA(is_deterministic=is_deterministic)
 
     for i in range(num_blocks):
         incpca.partial_fit(X_split[i], queue=queue)
