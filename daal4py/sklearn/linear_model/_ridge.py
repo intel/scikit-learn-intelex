@@ -102,23 +102,6 @@ def _daal4py_predict(self, X):
 
 
 def _fit_ridge(self, X, y, sample_weight=None):
-    """Fit Ridge regression model
-
-    Parameters
-    ----------
-    X : {array-like, sparse matrix}, shape = [n_samples, n_features]
-        Training data
-
-    y : array-like, shape = [n_samples] or [n_samples, n_targets]
-        Target values
-
-    sample_weight : float or numpy array of shape [n_samples]
-        Individual weights for each sample
-
-    Returns
-    -------
-    self : returns an instance of self.
-    """
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
         self._normalize = _deprecate_normalize(
             self.normalize, default=False, estimator_name=self.__class__.__name__
@@ -199,18 +182,6 @@ def _fit_ridge(self, X, y, sample_weight=None):
 
 
 def _predict_ridge(self, X):
-    """Predict using the linear model
-
-    Parameters
-    ----------
-    X : {array-like, sparse matrix}, shape = (n_samples, n_features)
-        Samples.
-
-    Returns
-    -------
-    C : array, shape = (n_samples,)
-        Returns predicted values.
-    """
     if sklearn_check_version("1.0"):
         self._check_feature_names(X, reset=False)
 
@@ -329,41 +300,11 @@ class Ridge(Ridge_original, _BaseRidge):
 
     @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit Ridge regression model.
-
-        Parameters
-        ----------
-        X : {ndarray, sparse matrix} of shape (n_samples, n_features)
-            Training data.
-
-        y : ndarray of shape (n_samples,) or (n_samples, n_targets)
-            Target values.
-
-        sample_weight : float or ndarray of shape (n_samples,), default=None
-            Individual weights for each sample. If given a float, every sample
-            will have the same weight.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-        """
         return _fit_ridge(self, X, y, sample_weight=sample_weight)
 
     @support_usm_ndarray()
     def predict(self, X):
-        """
-        Predict using the linear model.
-
-        Parameters
-        ----------
-        X : array-like or sparse matrix, shape (n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        C : array, shape (n_samples,)
-            Returns predicted values.
-        """
         return _predict_ridge(self, X)
+
+    fit.__doc__ = Ridge_original.fit.__doc__
+    predict.__doc__ = Ridge_original.predict.__doc__
