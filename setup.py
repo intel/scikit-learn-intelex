@@ -22,6 +22,7 @@ import glob
 # System imports
 import os
 import pathlib
+import platform as plt
 import shutil
 import sys
 import time
@@ -51,18 +52,21 @@ IS_LIN = False
 dal_root = os.environ.get("DALROOT")
 n_threads = int(os.environ.get("NTHREADS", os.cpu_count() or 1))
 
+arch_dir = plt.machine()
+plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
 if "linux" in sys.platform:
     IS_LIN = True
-    lib_dir = jp(dal_root, "lib", "intel64")
+    lib_dir = jp(dal_root, "lib", arch_dir)
 elif sys.platform == "darwin":
     IS_MAC = True
     lib_dir = jp(dal_root, "lib")
 elif sys.platform in ["win32", "cygwin"]:
     IS_WIN = True
-    lib_dir = jp(dal_root, "lib", "intel64")
+    lib_dir = jp(dal_root, "lib", arch_dir)
 else:
     assert False, sys.platform + " not supported"
 
@@ -85,8 +89,9 @@ d4p_version = (
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
+debug_build = os.getenv("DEBUG_BUILD") == "1"
 mpi_root = None if no_dist else os.environ["MPIROOT"]
-dpcpp = shutil.which("icpx") is not None
+dpcpp = shutil.which("icpx") is not None and not (IS_WIN and debug_build)
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 

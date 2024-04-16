@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2014 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,6 +17,7 @@
 
 import argparse
 import os
+import platform as plt
 import struct
 import subprocess
 import sys
@@ -57,12 +59,15 @@ elif sys.platform in ["win32", "cygwin"]:
 else:
     assert False, sys.platform + " not supported"
 
+arch_dir = plt.machine()
+plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 assert 8 * struct.calcsize("P") in [32, 64]
 
 if 8 * struct.calcsize("P") == 32:
     logdir = jp(runner_dir, "_results", "ia32")
 else:
-    logdir = jp(runner_dir, "_results", "intel64")
+    logdir = jp(runner_dir, "_results", arch_dir)
 
 ex_log_dirs = [
     (jp(examples_rootdir, "daal4py"), jp(logdir, "daal4py")),
@@ -149,6 +154,7 @@ req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
 req_device["covariance_spmd.py"] = ["gpu"]
 req_device["dbscan_spmd.py"] = ["gpu"]
+req_device["incremental_basic_statistics_dpctl.py"] = ["gpu"]
 req_device["kmeans_spmd.py"] = ["gpu"]
 req_device["knn_bf_classification_dpnp.py"] = ["gpu"]
 req_device["knn_bf_classification_spmd.py"] = ["gpu"]
@@ -167,6 +173,7 @@ req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["incremental_basic_statistics_dpctl.py"] = ["dpctl"]
 req_library["kmeans_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["knn_bf_classification_dpnp.py"] = ["dpctl", "dpnp"]
 req_library["knn_bf_classification_spmd.py"] = ["dpctl", "mpi4py"]

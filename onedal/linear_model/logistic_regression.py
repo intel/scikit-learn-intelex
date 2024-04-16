@@ -19,7 +19,7 @@ from numbers import Number
 
 import numpy as np
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
@@ -54,7 +54,11 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
             "max_iter": self.max_iter,
             "C": self.C,
             "optimizer": self.solver,
-            "result_option": (intercept + "coefficients|iterations_count"),
+            "result_option": (
+                intercept
+                + "coefficients|iterations_count"
+                + ("|inner_iterations_count" if self.solver == "newton-cg" else "")
+            ),
         }
 
     def _fit(self, X, y, module, queue):
@@ -84,6 +88,10 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
         self._onedal_model = result.model
         self.n_iter_ = np.array([result.iterations_count])
+
+        # _n_inner_iter is the total number of cg-solver iterations
+        if daal_check_version((2024, "P", 300)) and self.solver == "newton-cg":
+            self._n_inner_iter = result.inner_iterations_count
 
         coeff = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = coeff[:, 1:], coeff[:, 0]

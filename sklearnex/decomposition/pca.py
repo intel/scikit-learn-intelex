@@ -95,6 +95,7 @@ if daal_check_version((2024, "P", 100)):
             self._fit(X)
             return self
 
+        @wrap_output_data
         def _fit(self, X):
             if sklearn_check_version("1.2"):
                 self._validate_params()
@@ -166,13 +167,11 @@ if daal_check_version((2024, "P", 100)):
 
             return self._onedal_estimator.predict(X, queue=queue)
 
-        @wrap_output_data
         def fit_transform(self, X, y=None):
             U, S, Vt = self._fit(X)
             if U is None:
                 # oneDAL PCA was fit
-                X_transformed = self._onedal_transform(X)
-                return X_transformed
+                return self.transform(X)
             else:
                 # Scikit-learn PCA was fit
                 U = U[:, : self.n_components_]
@@ -298,11 +297,9 @@ if daal_check_version((2024, "P", 100)):
             self.n_samples_ = self._onedal_estimator.n_samples_
             if sklearn_check_version("1.2"):
                 self.n_features_in_ = self._onedal_estimator.n_features_
-            elif sklearn_check_version("0.24"):
-                self.n_features_ = self._onedal_estimator.n_features_
-                self.n_features_in_ = self._onedal_estimator.n_features_
             else:
                 self.n_features_ = self._onedal_estimator.n_features_
+                self.n_features_in_ = self._onedal_estimator.n_features_
             self.n_components_ = self._onedal_estimator.n_components_
             self.components_ = self._onedal_estimator.components_
             self.mean_ = self._onedal_estimator.mean_
