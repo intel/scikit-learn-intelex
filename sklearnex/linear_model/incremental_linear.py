@@ -37,6 +37,7 @@ from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, register_hyperparameters
 
 
+# TODO: make arch. decision about Incremental APIs
 @register_hyperparameters(
     {
         "fit": get_hyperparameters("linear_regression", "train"),
@@ -99,6 +100,10 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         Number of features seen during :term:`fit` `partial_fit`.
 
     """
+
+    warnings.warn(
+        "IncrementalLinearRegression is experimental and might be changed or removed in future."
+    )
 
     _onedal_incremental_linear = staticmethod(onedal_IncrementalLinearRegression)
 

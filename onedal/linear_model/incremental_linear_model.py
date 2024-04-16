@@ -14,8 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
-
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
@@ -26,7 +24,6 @@ from ..utils import _check_X_y, _num_features
 from .linear_model import BaseLinearRegression
 
 
-# TODO: make arch. decision about Incremental APIs
 class IncrementalLinearRegression(BaseLinearRegression):
     """
     Incremental Linear Regression oneDAL implementation.
@@ -46,9 +43,6 @@ class IncrementalLinearRegression(BaseLinearRegression):
     """
 
     def __init__(self, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
-        warnings.warn(
-            "IncrementalLinearRegression is experimental and might be changed or removed in future."
-        )
         module = self._get_backend("linear_model", "regression")
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
         self._partial_result = module.partial_train_result()
