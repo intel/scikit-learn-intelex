@@ -189,7 +189,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
                 "sklearn": sklearn_IncrementalPCA.partial_fit,
             },
             X,
-            check_input,
+            check_input=check_input,
         )
         return self
 

@@ -108,8 +108,8 @@ def _get_global_queue():
 
 def _transfer_to_host(queue, *data):
     host_data = []
+    has_usm_data, has_host_data = False, False
     for item in data:
-        has_usm_data, has_host_data = False, False
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
         if usm_iface is not None:
             if not dpctl_available:
