@@ -25,6 +25,7 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
+from sklearn import clone
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
 
@@ -90,7 +91,7 @@ mixin_map = [
 class sklearn_clone_dict(dict):
 
     def __getitem__(self, key):
-        return super().__getitem__(key).clone()
+        return clone(super().__getitem__(key))
 
 
 SPECIAL_INSTANCES = sklearn_clone_dict(
