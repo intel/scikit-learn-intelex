@@ -52,6 +52,11 @@ struct params2desc {
             desc.set_bias(params["bias"].cast<bool>());
         }
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240001
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240400
+        if (params.contains("assumeCentered")) {
+            desc.set_assume_centered(params["assumeCentered"].cast<bool>());
+        }
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240400
         return desc;
     }
 };
