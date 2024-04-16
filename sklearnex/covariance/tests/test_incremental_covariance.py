@@ -37,7 +37,7 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype, assume_cent
     X = np.array([[0, 1], [0, 1]])
     X = X.astype(dtype)
     X_split = np.array_split(X, 2)
-    inccov = IncrementalEmpiricalCovariance()
+    inccov = IncrementalEmpiricalCovariance(assume_centered=assume_centered)
 
     for i in range(2):
         X_split_df = _convert_to_dataframe(
