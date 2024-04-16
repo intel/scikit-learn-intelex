@@ -26,7 +26,7 @@ from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_loc
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_easy():
+def test_basic_stats_spmd_manual():
     # Import spmd and batch algo
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
@@ -61,7 +61,7 @@ def test_easy():
 @pytest.mark.parametrize("n_samples", [100, 10000])
 @pytest.mark.parametrize("n_features", [10, 100])
 @pytest.mark.mpi
-def test_hard(n_samples, n_features):
+def test_basic_stats_spmd_synthetic(n_samples, n_features):
     # Import spmd and batch algo
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
@@ -77,4 +77,3 @@ def test_hard(n_samples, n_features):
 
     for option in batch_result.keys():
         assert_allclose(spmd_result[option], batch_result[option])
-

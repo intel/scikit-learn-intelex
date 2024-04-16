@@ -26,10 +26,10 @@ from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_loc
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_covariance_spmd_manual():
+def test_pca_spmd_manual():
     # Import spmd and batch algo
-    from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
-    from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
+    from sklearnex.decomposition import PCA as PCA_Batch
+    from sklearnex.spmd.decomposition import PCA as PCA_SPMD
 
     # Create gold data and process into dpt
     data = np.array(
@@ -41,17 +41,20 @@ def test_covariance_spmd_manual():
             [0.0, 4.0, 16.0],
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
+            [0.0, 7.0, 128.0],
         ]
     )
 
     local_dpt_data = get_local_tensor(data)
 
     # ensure results of batch algo match spmd
-    spmd_result = EmpiricalCovariance_SPMD().fit(local_dpt_data)
-    batch_result = EmpiricalCovariance_Batch().fit(data)
+    spmd_result = PCA_SPMD(n_components=2).fit(local_dpt_data)
+    batch_result = PCA_Batch(n_components=2).fit(data)
 
-    assert_allclose(spmd_result.covariance_, batch_result.covariance_)
-    assert_allclose(spmd_result.location_, batch_result.location_)
+    assert_allclose(spmd_result.mean_, batch_result.mean_)
+    assert_allclose(spmd_result.components_, batch_result.components_)
+    assert_allclose(spmd_result.singular_values_, batch_result.singular_values_)
+    assert_allclose(spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_)
 
 
 @pytest.mark.skipif(
@@ -60,11 +63,12 @@ def test_covariance_spmd_manual():
 )
 @pytest.mark.parametrize("n_samples", [100, 10000])
 @pytest.mark.parametrize("n_features", [10, 100])
+@pytest.mark.parametrize("n_components", [0.5, 3, "mle", None])
 @pytest.mark.mpi
-def test_covariance_spmd_synthetic(n_samples, n_features):
+def test_pca_spmd_synthetic(n_samples, n_features, n_components):
     # Import spmd and batch algo
-    from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
-    from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
+    from sklearnex.decomposition import PCA as PCA_Batch
+    from sklearnex.spmd.decomposition import PCA as PCA_SPMD
 
     # Generate data and process into dpt
     data = generate_statistic_data(n_samples, n_features)
@@ -72,8 +76,10 @@ def test_covariance_spmd_synthetic(n_samples, n_features):
     local_dpt_data = get_local_tensor(data)
 
     # ensure results of batch algo match spmd
-    spmd_result = EmpiricalCovariance_SPMD().fit(local_dpt_data)
-    batch_result = EmpiricalCovariance_Batch().fit(data)
+    spmd_result = PCA_SPMD(n_components=n_components).fit(local_dpt_data)
+    batch_result = PCA_Batch(n_components=n_components).fit(data)
 
-    assert_allclose(spmd_result.covariance_, batch_result.covariance_)
-    assert_allclose(spmd_result.location_, batch_result.location_)
+    assert_allclose(spmd_result.mean_, batch_result.mean_)
+    assert_allclose(spmd_result.components_, batch_result.components_)
+    assert_allclose(spmd_result.singular_values_, batch_result.singular_values_)
+    assert_allclose(spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_)
