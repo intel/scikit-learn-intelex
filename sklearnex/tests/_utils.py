@@ -17,6 +17,7 @@
 from inspect import isclass
 
 import numpy as np
+from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -25,7 +26,6 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
-from sklearn import clone
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
 
