@@ -123,7 +123,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
-            f"sklearn.covariance.{self.__class__.__name__}.{method_name}"
+            f"sklearn.linear_model.{self.__class__.__name__}.{method_name}"
         )
         return patching_status
 
@@ -193,10 +193,10 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
     def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
-        is_good_for_onedal = self.n_samples_seen_ >= self.n_features_in_ + int(
+        is_underdetermined = self.n_samples_seen_ < self.n_features_in_ + int(
             self.fit_intercept
         )
-        if not is_good_for_onedal:
+        if is_underdetermined:
             raise ValueError("Not enough samples to finalize")
         self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
@@ -224,8 +224,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         n_samples, n_features = X.shape
 
-        is_good_for_onedal = n_samples >= n_features + int(self.fit_intercept)
-        if not is_good_for_onedal:
+        is_underdetermined = n_samples < n_features + int(self.fit_intercept)
+        if is_underdetermined:
             raise ValueError("Not enough samples to run oneDAL backend")
 
         if self.batch_size is None:
