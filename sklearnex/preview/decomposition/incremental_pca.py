@@ -113,7 +113,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator._reset()
 
-        for batch in gen_batches(n_features, self.batch_size_):
+        for batch in gen_batches(n_samples, self.batch_size_):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
 
