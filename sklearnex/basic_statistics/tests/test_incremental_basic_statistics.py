@@ -272,7 +272,7 @@ def test_fit_single_option_on_random_data(
     X = X.astype(dtype=dtype)
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     if weighted:
-        weights = gen.uniform(low=0.0, high=1.0, size=row_count)
+        weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
         weights_df = _convert_to_dataframe(weights, sycl_queue=queue, target_df=dataframe)
     incbs = IncrementalBasicStatistics(
@@ -311,7 +311,7 @@ def test_partial_fit_multiple_options_on_random_data(
     X = X.astype(dtype=dtype)
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     if weighted:
-        weights = gen.uniform(low=0.0, high=1.0, size=row_count)
+        weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
         weights_df = _convert_to_dataframe(weights, sycl_queue=queue, target_df=dataframe)
     incbs = IncrementalBasicStatistics(
