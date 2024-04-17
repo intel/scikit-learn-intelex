@@ -353,6 +353,9 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_matrix] >=1.4
   - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_array] >=1.4
 
+  # Incremental algorithms currently do not support pickling
+  - tests/test_common.py::test_estimators[IncrementalEmpiricalCovariance()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[IncrementalEmpiricalCovariance()-check_estimators_pickle(readonly_memmap=True)]
 
   # --------------------------------------------------------
   # No need to test daal4py patching
