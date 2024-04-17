@@ -162,20 +162,20 @@ if daal_check_version((2024, "P", 100)):
 
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=False)
             X = self._validate_data(
                 X,
                 dtype=[np.float64, np.float32],
                 reset=False,
             )
             self._validate_n_features_in_after_fitting(X)
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
 
             return self._onedal_estimator.predict(X, queue=queue)
 
         def fit_transform(self, X, y=None):
             if sklearn_check_version("1.5"):
-                U, S, Vt, X, x_is_centered, xp = self._fit(X)
+                U, S, Vt, X_fit, x_is_centered, xp = self._fit(X)
             else:
                 U, S, Vt = self._fit(X)
             if hasattr(self, "_onedal_estimator"):
@@ -186,14 +186,14 @@ if daal_check_version((2024, "P", 100)):
                 U = U[:, : self.n_components_]
 
                 if self.whiten:
-                    U *= sqrt(X.shape[0] - 1)
+                    U *= sqrt(X_fit.shape[0] - 1)
                 else:
                     U *= S[: self.n_components_]
 
                 return U
             else:
                 # Scikit-learn PCA["covariance_eigh"] was fit
-                return self._transform(X, xp, x_is_centered=x_is_centered)
+                return self._transform(X_fit, xp, x_is_centered=x_is_centered)
 
         def _onedal_supported(self, method_name, X):
             class_name = self.__class__.__name__
