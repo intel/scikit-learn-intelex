@@ -69,9 +69,6 @@ class IncrementalPCA(BasePCA):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(X)
 
-        if self.components_ is None:
-            self.n_components_ = min(n_samples, n_features)
-
         X = _convert_to_supported(self._policy, X)
         X_table = to_table(X)
         self._partial_result = module.partial_train(
