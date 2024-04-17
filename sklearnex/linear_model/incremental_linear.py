@@ -101,10 +101,6 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
     """
 
-    warnings.warn(
-        "IncrementalLinearRegression is experimental and might be changed or removed in future."
-    )
-
     _onedal_incremental_linear = staticmethod(onedal_IncrementalLinearRegression)
 
     if sklearn_check_version("1.2"):
@@ -116,6 +112,9 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         }
 
     def __init__(self, *, fit_intercept=True, copy_X=True, n_jobs=None, batch_size=None):
+        warnings.warn(
+            "IncrementalLinearRegression is experimental and might be changed or removed in future."
+        )
         self.fit_intercept = fit_intercept
         self.copy_X = copy_X
         self.n_jobs = n_jobs
