@@ -224,7 +224,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         n_samples, n_features = X.shape
 
-        is_good_for_onedal = X.shape[0] >= X.shape[1] + int(self.fit_intercept)
+        is_good_for_onedal = n_samples >= n_features + int(self.fit_intercept)
         if not is_good_for_onedal:
             raise ValueError("Not enough samples to run oneDAL backend")
 
@@ -237,7 +237,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator._reset()
 
-        for batch in gen_batches(X.shape[0], self.batch_size_):
+        for batch in gen_batches(n_samples, self.batch_size_):
             X_batch, y_batch = X[batch], y[batch]
             self._onedal_partial_fit(X_batch, y_batch, queue=queue)
 
@@ -245,9 +245,9 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._validate_params()
 
         # finite check occurs on onedal side
-        self.n_features_in_ = X.shape[1]
+        self.n_features_in_ = n_features
 
-        if X.shape[0] == 1:
+        if n_samples == 1:
             warnings.warn(
                 "Only one sample available. You may want to reshape your data array"
             )
