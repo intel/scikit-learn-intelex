@@ -74,10 +74,32 @@ class IncrementalPCA(sklearn_IncrementalPCA):
                     copy=self.copy,
                 )
 
+        n_samples, n_features = X.shape
+
+        if self.n_components is None:
+            if not hasattr(self, "components_"):
+                self.n_components_ = min(n_samples, n_features)
+            else:
+                self.n_components_ = self.components_.shape[0]
+        elif not self.n_components <= n_features:
+            raise ValueError(
+                "n_components=%r invalid for n_features=%d, need "
+                "more rows than columns for IncrementalPCA "
+                "processing" % (self.n_components, n_features)
+            )
+        elif not self.n_components <= n_samples:
+            raise ValueError(
+                "n_components=%r must be less or equal to "
+                "the batch number of samples "
+                "%d." % (self.n_components, n_samples)
+            )
+        else:
+            self.n_components_ = self.n_components
+
         if not hasattr(self, "n_samples_seen_"):
             self.n_samples_seen_ = 0
 
-        onedal_params = {"n_components": self.n_components, "whiten": self.whiten}
+        onedal_params = {"n_components": self.n_components_, "whiten": self.whiten}
 
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_pca(**onedal_params)
