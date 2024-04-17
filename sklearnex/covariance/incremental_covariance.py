@@ -130,19 +130,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         else:
             self.precision_ = None
 
-    def _onedal_partial_fit(self, X, queue):
-        onedal_params = {
-            "method": "dense",
-            "bias": True,
-            "assume_centered": self.assume_centered,
-        }
-        if not hasattr(self, "_onedal_estimator"):
-            self._onedal_estimator = self._onedal_incremental_covariance(**onedal_params)
-        try:
-            self._onedal_estimator.partial_fit(X, queue)
-        finally:
-            self._need_to_finalize = True
-
     @property
     def covariance_(self):
         if hasattr(self, "_onedal_estimator"):
@@ -165,37 +152,49 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 f"'{self.__class__.__name__}' object has no attribute 'location_'"
             )
 
-    def _partial_fit(self, X, queue=None):
+    def _onedal_partial_fit(self, X, queue=None, check_input=True):
 
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
-        if sklearn_check_version("1.2"):
-            self._validate_params()
-
         # finite check occurs on onedal side
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-                copy=self.copy,
-                force_all_finite=False,
-            )
-        else:
-            X = check_array(
-                X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
-            )
+        if check_input:
+            if sklearn_check_version("1.2"):
+                self._validate_params()
 
-        if first_pass:
-            self.n_samples_seen_ = 0
-            self.n_features_in_ = X.shape[1]
-        else:
-            self.n_samples_seen_ += X.shape[0]
+            if sklearn_check_version("1.0"):
+                X = self._validate_data(
+                    X,
+                    dtype=[np.float64, np.float32],
+                    reset=first_pass,
+                    copy=self.copy,
+                    force_all_finite=False,
+                )
+            else:
+                X = check_array(
+                    X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
+                )
 
-        self._onedal_partial_fit(X, queue)
+        onedal_params = {
+            "method": "dense",
+            "bias": True,
+            "assume_centered": self.assume_centered,
+        }
+        if not hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator = self._onedal_incremental_covariance(**onedal_params)
+        try:
+            if first_pass:
+                self.n_samples_seen_ = 0
+                self.n_features_in_ = X.shape[1]
+            else:
+                self.n_samples_seen_ += X.shape[0]
+
+            self._onedal_estimator.partial_fit(X, queue)
+        finally:
+            self._need_to_finalize = True
+            
         return self
 
-    def partial_fit(self, X, y=None):
+    def partial_fit(self, X, y=None, check_input=True):
         """
         Incremental fit with X. All of X is processed as a single batch.
 
@@ -204,6 +203,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples and
             `n_features` is the number of features.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        check_input : bool, default=True
+            Run check_array on X.
 
         Returns
         -------
@@ -214,10 +219,11 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             self,
             "partial_fit",
             {
-                "onedal": self.__class__._partial_fit,
+                "onedal": self.__class__._onedal_partial_fit,
                 "sklearn": None,
             },
             X,
+            check_input=check_input,
         )
 
     def fit(self, X, y=None):
@@ -229,6 +235,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples and
             `n_features` is the number of features.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
 
         Returns
         -------
@@ -272,8 +281,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         for batch in gen_batches(X.shape[0], self.batch_size_):
             X_batch = X[batch]
-            self._onedal_partial_fit(X_batch, queue=queue)
-            self.n_samples_seen_ += X.shape[0]
+            self._onedal_partial_fit(X_batch, queue=queue, check_input=False)
 
         self._onedal_finalize_fit()
 
