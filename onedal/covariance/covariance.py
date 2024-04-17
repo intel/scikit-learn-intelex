@@ -26,9 +26,10 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 
 
 class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
-    def __init__(self, method="dense", bias=False):
+    def __init__(self, method="dense", bias=False, assume_centered=False):
         self.method = method
         self.bias = bias
+        self.assume_centered = assume_centered
 
     def _get_onedal_params(self, dtype=np.float32):
         params = {
@@ -37,6 +38,8 @@ class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
         }
         if daal_check_version((2024, "P", 1)):
             params["bias"] = self.bias
+        if daal_check_version((2024, "P", 400)):
+            params["assumeCentered"] = self.assume_centered
 
         return params
 
@@ -54,6 +57,12 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
     bias: bool, default=False
         If True biased estimation of covariance is computed which equals to
         the unbiased one multiplied by (n_samples - 1) / n_samples.
+
+    assume_centered : bool, default=False
+        If True, data are not centered before computation.
+        Useful when working with data whose mean is almost, but not exactly
+        zero.
+        If False (default), data are centered before computation.
 
     Attributes
     ----------
