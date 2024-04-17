@@ -129,7 +129,7 @@ if daal_check_version((2024, "P", 100)):
             onedal_params = {
                 "n_components": self.n_components,
                 "is_deterministic": True,
-                "method": "cov",
+                "method": "cov" if self._fit_svd_solver == "covariance_eigh" else "svd",
                 "whiten": self.whiten,
             }
             self._onedal_estimator = onedal_PCA(**onedal_params)
@@ -211,7 +211,7 @@ if daal_check_version((2024, "P", 100)):
                         ),
                         (
                             self._is_solver_compatible_with_onedal(shape_tuple),
-                            f"Only 'full' svd solver is supported.",
+                            "Only 'full' and 'covariance_eigh' solvers are supported.",
                         ),
                         (not issparse(X), "oneDAL PCA does not support sparse data"),
                     ]
@@ -306,7 +306,7 @@ if daal_check_version((2024, "P", 100)):
                         else:
                             self._fit_svd_solver = "full"
 
-            if self._fit_svd_solver == "full":
+            if self._fit_svd_solver in ["full", "covariance_eigh"]:
                 return True
             else:
                 return False
