@@ -23,7 +23,6 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex._device_offload import _transfer_to_host
 from sklearnex.linear_model import IncrementalLinearRegression
 
 
