@@ -131,7 +131,7 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_pred = inclin.predict(X_df)
 
-    assert_allclose(_as_numpy(y_pred), y, rtol=1e-6, atol=1e-6)
+    assert_allclose(_as_numpy(y_pred), y, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
