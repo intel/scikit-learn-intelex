@@ -88,13 +88,13 @@ mixin_map = [
 ]
 
 
-class sklearn_clone_dict(dict):
+class _sklearn_clone_dict(dict):
 
     def __getitem__(self, key):
         return clone(super().__getitem__(key))
 
 
-SPECIAL_INSTANCES = sklearn_clone_dict(
+SPECIAL_INSTANCES = _sklearn_clone_dict(
     {
         str(i): i
         for i in [
