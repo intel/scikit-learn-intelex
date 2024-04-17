@@ -21,10 +21,10 @@ from .logistic_regression import LogisticRegression
 from .ridge import Ridge
 
 __all__ = [
-    "Ridge",
-    "LinearRegression",
-    "IncrementalLinearRegression",
-    "LogisticRegression",
     "ElasticNet",
+    "IncrementalLinearRegression",
     "Lasso",
+    "LinearRegression",
+    "LogisticRegression",
+    "Ridge",
 ]

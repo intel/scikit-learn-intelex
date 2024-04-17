@@ -18,4 +18,4 @@ from .incremental_linear_model import IncrementalLinearRegression
 from .linear_model import LinearRegression
 from .logistic_regression import LogisticRegression
 
-__all__ = ["LinearRegression", "LogisticRegression", "IncrementalLinearRegression"]
+__all__ = ["IncrementalLinearRegression", "LinearRegression", "LogisticRegression"]
