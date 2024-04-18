@@ -17,7 +17,6 @@
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
-from onedal import _backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from .basic_statistics import BaseBasicStatistics
@@ -67,11 +66,11 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
     def __init__(self, result_options="all"):
         super().__init__(result_options, algorithm="by_default")
-        module = _backend.basic_statistics.compute
+        module = self._get_backend("basic_statistics")
         self._partial_result = module.partial_compute_result()
 
     def _reset(self):
-        module = _backend.basic_statistics.compute
+        module = self._get_backend("basic_statistics")
         self._partial_result = module.partial_train_result()
 
     def partial_fit(self, X, weights=None, queue=None):
@@ -103,7 +102,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             self._onedal_params = self._get_onedal_params(dtype)
 
         X_table, weights_table = to_table(X, weights)
-        self._partial_result = _backend.basic_statistics.compute.partial_compute(
+        module = self._get_backend("basic_statistics")
+        self._partial_result = module.partial_compute(
             self._policy,
             self._onedal_params,
             self._partial_result,
@@ -126,7 +126,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
-        result = _backend.basic_statistics.compute.finalize_compute(
+        module = self._get_backend("basic_statistics")
+        result = module.finalize_compute(
             self._policy, self._onedal_params, self._partial_result
         )
         options = self._get_result_options(self.options).split("|")
