@@ -27,27 +27,40 @@ from onedal.tests.utils._dataframes_support import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("macro_block", [None, 1024])
-def test_sklearnex_import_covariance(dataframe, queue, macro_block):
+@pytest.mark.parametrize("assume_centered", [True, False])
+def test_sklearnex_import_covariance(dataframe, queue, macro_block, assume_centered):
     from sklearnex.preview.covariance import EmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
+
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    empcov = EmpiricalCovariance()
+    empcov = EmpiricalCovariance(assume_centered=assume_centered)
     if daal_check_version((2024, "P", 0)) and macro_block is not None:
         hparams = empcov.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
     result = empcov.fit(X)
+
     expected_covariance = np.array([[0, 0], [0, 0]])
-    expected_means = np.array([0, 1])
+    expected_means = np.array([0, 0])
+
+    if assume_centered:
+        expected_covariance = np.array([[0, 0], [0, 1]])
+    else:
+        expected_means = np.array([0, 1])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
 
     X = np.array([[1, 2], [3, 6]])
+
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     result = empcov.fit(X)
-    expected_covariance = np.array([[1, 2], [2, 4]])
-    expected_means = np.array([2, 4])
+
+    if assume_centered:
+        expected_covariance = np.array([[5, 10], [10, 20]])
+    else:
+        expected_covariance = np.array([[1, 2], [2, 4]])
+        expected_means = np.array([2, 4])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)

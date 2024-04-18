@@ -12,7 +12,7 @@ decorator==5.1.1
 defusedxml==0.7.1
 docutils~=0.18.1
 entrypoints==0.4
-idna==3.6
+idna==3.7
 imagesize==1.4.1
 importlib-metadata==7.0.1
 importlib-resources==6.1.1
@@ -46,7 +46,7 @@ pyrsistent==0.20.0
 python-dateutil==2.8.2
 pytz==2024.1
 PyYAML==6.0.1
-pyzmq==25.1.2
+pyzmq==26.0.0
 requests==2.31.0
 six==1.16.0
 snowballstemmer==2.2.0

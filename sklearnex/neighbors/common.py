@@ -252,7 +252,7 @@ class KNeighborsDispatchingBase:
                     class_count >= 2, "One-class case is not supported."
                 )
             return patching_status
-        if method_name in ["predict", "predict_proba", "kneighbors"]:
+        if method_name in ["predict", "predict_proba", "kneighbors", "score"]:
             patching_status.and_condition(
                 hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."
             )

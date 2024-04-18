@@ -157,7 +157,7 @@ class LinearRegression(sklearn_LinearRegression):
         n_features = _num_features(X, fallback_1d=True)
 
         # Check if equations are well defined
-        is_good_for_onedal = n_samples >= (n_features + int(self.fit_intercept))
+        is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
 
         dal_ready = patching_status.and_conditions(
             [
@@ -172,7 +172,7 @@ class LinearRegression(sklearn_LinearRegression):
                     "Forced positive coefficients are not supported.",
                 ),
                 (
-                    is_good_for_onedal,
+                    not is_underdetermined,
                     "The shape of X (fitting) does not satisfy oneDAL requirements:"
                     "Number of features + 1 >= number of samples.",
                 ),
