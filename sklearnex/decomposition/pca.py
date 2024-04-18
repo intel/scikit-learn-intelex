@@ -178,6 +178,7 @@ if daal_check_version((2024, "P", 100)):
                 U, S, Vt, X_fit, x_is_centered, xp = self._fit(X)
             else:
                 U, S, Vt = self._fit(X)
+                X_fit = X
             if hasattr(self, "_onedal_estimator"):
                 # oneDAL PCA was fit
                 return self.transform(X)
@@ -266,11 +267,7 @@ if daal_check_version((2024, "P", 100)):
 
             if self._fit_svd_solver == "auto":
                 if sklearn_check_version("1.1"):
-                    if (
-                        sklearn_check_version("1.5")
-                        and shape_tuple[1] <= 1_000
-                        and shape_tuple[0] >= 10 * shape_tuple[1]
-                    ):
+                    if shape_tuple[1] <= 1_000 and shape_tuple[0] >= 10 * shape_tuple[1]:
                         self._fit_svd_solver = "covariance_eigh"
                     elif max(shape_tuple) <= 500 or n_components == "mle":
                         self._fit_svd_solver = "full"
