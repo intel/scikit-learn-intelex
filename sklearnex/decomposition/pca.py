@@ -35,6 +35,9 @@ if daal_check_version((2024, "P", 100)):
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
 
+    if sklearn_check_version("1.2"):
+        from sklearn.utils._param_validation import StrOptions
+
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
@@ -46,6 +49,10 @@ if daal_check_version((2024, "P", 100)):
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
+            if not sklearn_check_version("1.5"):
+                _parameter_constraints["svd_solver"] = StrOptions(
+                    {"auto", "full", "covariance_eigh", "arpack", "randomized"}
+                )
 
         if sklearn_check_version("1.1"):
 
