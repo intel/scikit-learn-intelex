@@ -172,11 +172,6 @@ void init_finalize_compute_ops(pybind11::module_& m) {
     });
 }
 
-template <typename Policy, typename Task>
-void init_compute_ops(py::module& m) {
-    init_compute_ops_dispatcher<Policy, Task>{}(m);
-}
-
 template <typename Task>
 void init_compute_result(py::module_& m) {
     using namespace dal::basic_statistics;
@@ -227,13 +222,13 @@ ONEDAL_PY_INIT_MODULE(basic_statistics) {
     auto sub = m.def_submodule("basic_statistics");
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task::compute);
 #else // ONEDAL_DATA_PARALLEL_SPMD
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
-    ONEDAL_PY_INSTANTIATE(init_partial_compute_ops, sub, policy_list, task_list);
-    ONEDAL_PY_INSTANTIATE(init_finalize_compute_ops, sub, policy_list, task_list);
-    ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
-    ONEDAL_PY_INSTANTIATE(init_partial_compute_result, sub, task_list);
+    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task::compute);
+    ONEDAL_PY_INSTANTIATE(init_partial_compute_ops, sub, policy_list, task::compute);
+    ONEDAL_PY_INSTANTIATE(init_finalize_compute_ops, sub, policy_list, task::compute);
+    ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task::compute);
+    ONEDAL_PY_INSTANTIATE(init_partial_compute_result, sub, task::compute);
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 }
 
