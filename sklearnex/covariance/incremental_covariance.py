@@ -171,7 +171,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 )
             else:
                 X = check_array(
-                    X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
+                    X,
+                    dtype=[np.float64, np.float32],
+                    copy=self.copy,
+                    force_all_finite=False,
                 )
 
         onedal_params = {
@@ -191,7 +194,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             self._onedal_estimator.partial_fit(X, queue)
         finally:
             self._need_to_finalize = True
-            
+
         return self
 
     def partial_fit(self, X, y=None, check_input=True):
