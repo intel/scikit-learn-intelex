@@ -14,12 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-from daal4py.sklearn._utils import control_n_jobs, run_with_n_jobs
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from onedal._device_offload import support_usm_ndarray
 from onedal.basic_statistics import BasicStatistics as onedal_BasicStatistics
 
 
-@control_n_jobs
+@control_n_jobs(decorated_methods=["fit"])
 class BasicStatistics:
     """
     Estimator for basic statistics.
@@ -69,7 +69,6 @@ class BasicStatistics:
         for option in result_options:
             setattr(self, option, getattr(self._onedal_estimator, option))
 
-    @run_with_n_jobs
     def _onedal_fit(self, X, weights=None, queue=None):
         onedal_params = {
             "algorithm": "by_default",

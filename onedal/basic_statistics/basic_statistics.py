@@ -25,7 +25,7 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
 
 
-class BaseBasicStatistics(metaclass=ABCMeta):
+class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, result_options, algorithm):
         self.options = result_options
