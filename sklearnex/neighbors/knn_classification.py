@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+from sklearn.metrics import accuracy_score
 from sklearn.neighbors._classification import (
     KNeighborsClassifier as sklearn_KNeighborsClassifier,
 )
@@ -28,7 +29,9 @@ from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
 
 
-@control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "kneighbors"])
+@control_n_jobs(
+    decorated_methods=["fit", "predict", "predict_proba", "kneighbors", "score"]
+)
 class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBase):
     __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
@@ -133,6 +136,23 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
         )
 
     @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_KNeighborsClassifier.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
+        )
+
+    @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
         if sklearn_check_version("1.0") and X is not None:
@@ -202,6 +222,11 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
             X, n_neighbors, return_distance, queue=queue
         )
 
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return accuracy_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
+
     def _save_attributes(self):
         self.classes_ = self._onedal_estimator.classes_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
@@ -215,5 +240,6 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
     fit.__doc__ = sklearn_KNeighborsClassifier.fit.__doc__
     predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
     predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
+    score.__doc__ = sklearn_KNeighborsClassifier.score.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__

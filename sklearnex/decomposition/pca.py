@@ -95,6 +95,7 @@ if daal_check_version((2024, "P", 100)):
             self._fit(X)
             return self
 
+        @wrap_output_data
         def _fit(self, X):
             if sklearn_check_version("1.2"):
                 self._validate_params()
@@ -166,13 +167,11 @@ if daal_check_version((2024, "P", 100)):
 
             return self._onedal_estimator.predict(X, queue=queue)
 
-        @wrap_output_data
         def fit_transform(self, X, y=None):
             U, S, Vt = self._fit(X)
             if U is None:
                 # oneDAL PCA was fit
-                X_transformed = self._onedal_transform(X)
-                return X_transformed
+                return self.transform(X)
             else:
                 # Scikit-learn PCA was fit
                 U = U[:, : self.n_components_]

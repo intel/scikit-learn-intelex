@@ -76,7 +76,7 @@ class BaseSVM(ABC):
         inference_methods = (
             ["predict"]
             if class_name.endswith("R")
-            else ["predict", "predict_proba", "decision_function"]
+            else ["predict", "predict_proba", "decision_function", "score"]
         )
         if method_name in inference_methods:
             patching_status.and_conditions(
