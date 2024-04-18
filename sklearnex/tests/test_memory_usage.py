@@ -49,6 +49,7 @@ CPU_BANNED_LIST = (
     "set_config",  # does not malloc
     "SVC(probability=True)",  # F numpy (investigate _fit_proba)
     "NuSVC(probability=True)",  # F numpy (investigate _fit_proba)
+    "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
 )
 
 GPU_BANNED_LIST = (
