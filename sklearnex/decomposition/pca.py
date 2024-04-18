@@ -50,9 +50,11 @@ if daal_check_version((2024, "P", 100)):
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
             if not sklearn_check_version("1.5"):
-                _parameter_constraints["svd_solver"] = StrOptions(
-                    {"auto", "full", "covariance_eigh", "arpack", "randomized"}
-                )
+                _parameter_constraints["svd_solver"] = [
+                    StrOptions(
+                        {"auto", "full", "covariance_eigh", "arpack", "randomized"}
+                    )
+                ]
 
         if sklearn_check_version("1.1"):
 
