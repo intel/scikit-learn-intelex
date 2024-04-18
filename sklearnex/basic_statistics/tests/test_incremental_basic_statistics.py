@@ -208,7 +208,6 @@ def test_partial_fit_all_option_on_random_data(
 
     for option in options_and_tests:
         result_option, function, tols = option
-        print(result_option)
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
@@ -375,7 +374,6 @@ def test_fit_all_option_on_random_data(
 
     for option in options_and_tests:
         result_option, function, tols = option
-        print(result_option)
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
