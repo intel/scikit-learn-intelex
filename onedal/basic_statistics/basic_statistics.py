@@ -18,8 +18,6 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from onedal import _backend
-
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
@@ -30,7 +28,6 @@ class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
     def __init__(self, result_options, algorithm):
         self.options = result_options
         self.algorithm = algorithm
-        self._module = _backend.basic_statistics
 
     @staticmethod
     def get_all_result_options():
@@ -94,8 +91,9 @@ class BasicStatistics(BaseBasicStatistics):
         return self
 
     def _compute_raw(self, data_table, weights_table, policy, dtype=np.float32, is_csr=False):
+        module = self._get_backend("basic_statistics")
         params = self._get_onedal_params(is_csr, dtype)
-        result = self._module.compute(policy, params, data_table, weights_table)
+        result = module.compute(policy, params, data_table, weights_table)
         options = self._get_result_options(self.options).split("|")
 
         return {opt: getattr(result, opt) for opt in options}
