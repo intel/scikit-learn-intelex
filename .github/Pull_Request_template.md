@@ -19,7 +19,7 @@ _Add a respective label(s) to PR if you have permissions_
 
 - [ ] bug fix - _change that fixes an issue_
 - [ ] new feature - _change that adds functionality_
-- [ ] extension - _change that extent functionality_
+- [ ] extension - _change that extends functionality_
 - [ ] tests - _change in tests_
 - [ ] infrastructure - _change in infrastructure and CI_
 - [ ] documentation - _documentation update_
