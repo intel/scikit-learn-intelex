@@ -287,6 +287,9 @@ def get_patch_map_core(preview=False):
                     covariance_module,
                     "IncrementalEmpiricalCovariance",
                     IncrementalEmpiricalCovariance_sklearnex,
+                )
+            ]
+        ]
 
         # IncrementalLinearRegression
         mapping["incrementallinearregression"] = [
