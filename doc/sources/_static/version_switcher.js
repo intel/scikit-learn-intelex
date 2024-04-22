@@ -24,7 +24,7 @@ function load_versions(json){
         o.innerHTML = optionText;
         s.append(o);
     }
-    s.addEventListener("change", (event)=> {
+    s.addEventListener("change", ()=> {
         var current_url = new URL(window.location.href);
         var path = current_url.pathname;
         //strip version from path
