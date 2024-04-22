@@ -288,6 +288,7 @@ def get_patch_map_core(preview=False):
                     "IncrementalEmpiricalCovariance",
                     IncrementalEmpiricalCovariance_sklearnex,
                 )
+                None,
             ]
         ]
 

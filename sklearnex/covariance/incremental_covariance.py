@@ -186,7 +186,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             self._onedal_estimator = self._onedal_incremental_covariance(**onedal_params)
         try:
             if first_pass:
-                self.n_samples_seen_ = 0
+                self.n_samples_seen_ = X.shape[0]
                 self.n_features_in_ = X.shape[1]
             else:
                 self.n_samples_seen_ += X.shape[0]
