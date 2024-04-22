@@ -300,7 +300,7 @@ def test_fit_single_option_on_random_data(
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_partial_fit_multiple_options_on_random_data(
+def test_fit_multiple_options_on_random_data(
     dataframe, queue, num_batches, row_count, column_count, weighted, dtype
 ):
     seed = 77
