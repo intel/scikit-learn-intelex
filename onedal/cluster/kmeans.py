@@ -18,8 +18,11 @@ import warnings
 from abc import ABC
 
 import numpy as np
+from scipy import sparse as sp
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype
+from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
+from daal4py import engines_mt19937
+from daal4py import kmeans_init as daal4py_kmeans_init
 from onedal import _backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -155,7 +158,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         }
 
     def _get_params_and_input(self, X, policy):
-        X_loc = _check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
+        X_loc = _check_array(X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False)
 
         X_loc = _convert_to_supported(policy, X_loc)
 
@@ -193,6 +196,44 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             raise TypeError("Unsupported type of the `init` value")
 
         return centers_table
+
+    #TODO: remove when oneDAL KMeansInit has sparsity support
+    def _init_centroids_sparse(
+            self, X, init, random_seed, policy, dtype=np.float32, n_centroids=None
+        ):
+            n_clusters = self.n_clusters if n_centroids is None else n_centroids
+            X_fptype = parse_dtype(dtype)
+            daal_engine = engines_mt19937(
+                fptype=X_fptype, method="defaultDense", seed=random_seed
+            )
+            if isinstance(init, str) and init == "k-means++":
+                _n_local_trials = 2 + int(np.log(nClusters))
+                kmeans_init_res = daal4py_kmeans_init(
+                    n_clusters,
+                    fptype=X_fptype,
+                    nTrials=_n_local_trials,
+                    method="plusPlusCSR",
+                    engine=daal_engine,
+                ).compute(X)
+                centers_table = to_table(kmeans_init_res.centroids)
+            elif isinstance(init, str) and init == "random":
+                kmeans_init_res = daal4py_kmeans_init(
+                    n_clusters,
+                    fptype=X_fptype,
+                    method="randomCSR",
+                    engine=daal_engine,
+                ).compute(X)
+                centers_table = to_table(kmeans_init_res.centroids)
+            elif _is_arraylike_not_scalar(init):
+                centers = np.asarray(init)
+                # assert centers.shape[0] == n_clusters
+                # assert centers.shape[1] == X.column_count
+                centers = _convert_to_supported(policy, init)
+                centers_table = to_table(centers)
+            else:
+                raise TypeError("Unsupported type of the `init` value")
+
+            return centers_table
 
     def _init_centroids_generic(self, X, init, random_state, policy, dtype=np.float32):
         n_samples = X.shape[0]
@@ -266,7 +307,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             init = check_array(init, dtype=dtype, copy=True, order="C")
             self._validate_center_shape(X, init)
 
-        use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
+        is_sparse = sp.issparse(X)
+        use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init) and not is_sparse
+        use_sparse_init = is_sparse
 
         for _ in range(self._n_init):
             if use_custom_init:
@@ -274,6 +317,11 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 random_seed = random_state.randint(np.iinfo("i").max)
                 centroids_table = self._init_centroids_custom(
                     X_table, init, random_seed, policy, dtype=dtype
+                )
+            elif use_sparse_init:
+                random_seed = random_state.randint(np.iinfo("i").max)
+                centroids_table = self._init_centroids_sparse(
+                    X, init, random_seed, policy, dtype=dtype
                 )
             else:
                 centroids_table = self._init_centroids_generic(
