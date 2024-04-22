@@ -20,7 +20,6 @@ function load_versions(json){
         o.value = entry.url;
         if (current_version == entry.version){
             o.selected = true;
-            optionText = optionText;
         }
         o.innerHTML = optionText;
         s.append(o);
