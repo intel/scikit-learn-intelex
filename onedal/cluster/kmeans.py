@@ -209,7 +209,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             fptype=X_fptype, method="defaultDense", seed=random_seed
         )
         if isinstance(init, str) and init == "k-means++":
-            _n_local_trials = 2 + int(np.log(nClusters))
+            _n_local_trials = 2 + int(np.log(n_clusters))
             kmeans_init_res = daal4py_kmeans_init(
                 n_clusters,
                 fptype=X_fptype,
