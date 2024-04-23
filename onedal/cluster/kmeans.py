@@ -158,12 +158,13 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         }
 
     def _get_params_and_input(self, X, policy):
+        print("is sparse X:", sp.issparse(X))
         X_loc = _check_array(
             X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
         )
-
+        print("is sparse X_loc:", sp.issparse(X_loc))
         X_loc = _convert_to_supported(policy, X_loc)
-
+        print("is sparse X_loc 2:", sp.issparse(X_loc))
         dtype = get_dtype(X_loc)
         X_table = to_table(X_loc)
 
