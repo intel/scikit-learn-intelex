@@ -316,9 +316,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             and not is_sparse
         )
         use_custom_sparse_init = (
-            daal_check_version((2023, "P", 200))
-            and not callable(self.init)
-            and is_sparse
+            daal_check_version((2023, "P", 200)) and not callable(self.init) and is_sparse
         )
 
         for _ in range(self._n_init):
