@@ -17,6 +17,7 @@
 from inspect import isclass
 
 import numpy as np
+from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -87,18 +88,26 @@ mixin_map = [
 ]
 
 
-SPECIAL_INSTANCES = {
-    str(i): i
-    for i in [
-        LocalOutlierFactor(novelty=True),
-        SVC(probability=True),
-        NuSVC(probability=True),
-        KNeighborsClassifier(algorithm="brute"),
-        KNeighborsRegressor(algorithm="brute"),
-        NearestNeighbors(algorithm="brute"),
-        LogisticRegression(solver="newton-cg"),
-    ]
-}
+class _sklearn_clone_dict(dict):
+
+    def __getitem__(self, key):
+        return clone(super().__getitem__(key))
+
+
+SPECIAL_INSTANCES = _sklearn_clone_dict(
+    {
+        str(i): i
+        for i in [
+            LocalOutlierFactor(novelty=True),
+            SVC(probability=True),
+            NuSVC(probability=True),
+            KNeighborsClassifier(algorithm="brute"),
+            KNeighborsRegressor(algorithm="brute"),
+            NearestNeighbors(algorithm="brute"),
+            LogisticRegression(solver="newton-cg"),
+        ]
+    }
+)
 
 
 def gen_models_info(algorithms):
