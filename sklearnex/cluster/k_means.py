@@ -284,7 +284,11 @@ if daal_check_version((2023, "P", 200)):
                 [
                     (
                         self.algorithm in supported_algs,
-                        "Only lloyd algorithm is supported, elkan is computed using lloyd",
+                        "Only lloyd algorithm is supported, elkan is computed using lloyd.",
+                    ),
+                    (
+                        hasattr(self, "_onedal_estimator"),
+                        "oneDAL model was not fit.",
                     ),
                 ]
             )
