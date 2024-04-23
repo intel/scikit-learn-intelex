@@ -173,7 +173,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         return (params, X_table, dtype)
 
-    def _init_centroids_custom(
+    def _init_centroids_custom_dense(
         self, X_table, init, random_seed, policy, dtype=np.float32, n_centroids=None
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
@@ -200,7 +200,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         return centers_table
 
     # TODO: remove when oneDAL KMeansInit has sparsity support
-    def _init_centroids_sparse(
+    def _init_centroids_custom_sparse(
         self, X, init, random_seed, policy, dtype=np.float32, n_centroids=None
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
@@ -310,23 +310,27 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             self._validate_center_shape(X, init)
 
         is_sparse = sp.issparse(X)
-        use_custom_init = (
+        use_custom_dense_init = (
             daal_check_version((2023, "P", 200))
             and not callable(self.init)
             and not is_sparse
         )
-        use_sparse_init = is_sparse
+        use_custom_sparse_init = (
+            daal_check_version((2023, "P", 200))
+            and not callable(self.init)
+            and is_sparse
+        )
 
         for _ in range(self._n_init):
-            if use_custom_init:
+            if use_custom_dense_init:
                 # random_seed = random_state.tomaxint()
                 random_seed = random_state.randint(np.iinfo("i").max)
-                centroids_table = self._init_centroids_custom(
+                centroids_table = self._init_centroids_custom_dense(
                     X_table, init, random_seed, policy, dtype=dtype
                 )
-            elif use_sparse_init:
+            elif use_custom_sparse_init:
                 random_seed = random_state.randint(np.iinfo("i").max)
-                centroids_table = self._init_centroids_sparse(
+                centroids_table = self._init_centroids_custom_sparse(
                     X, init, random_seed, policy, dtype=dtype
                 )
             else:
