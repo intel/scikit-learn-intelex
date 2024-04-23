@@ -217,7 +217,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 method="plusPlusCSR",
                 engine=daal_engine,
             ).compute(X)
-            centers_table = to_table(kmeans_init_res.centroids)
+            centers = _convert_to_supported(policy, kmeans_init_res.centroids)
+            centers_table = to_table(centers)
         elif isinstance(init, str) and init == "random":
             kmeans_init_res = daal4py_kmeans_init(
                 n_clusters,
@@ -225,11 +226,12 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 method="randomCSR",
                 engine=daal_engine,
             ).compute(X)
-            centers_table = to_table(kmeans_init_res.centroids)
+            centers = _convert_to_supported(policy, kmeans_init_res.centroids)
+            centers_table = to_table(centers)
         elif _is_arraylike_not_scalar(init):
             centers = np.asarray(init)
-            # assert centers.shape[0] == n_clusters
-            # assert centers.shape[1] == X.column_count
+            assert centers.shape[0] == n_clusters
+            assert centers.shape[1] == X.column_count
             centers = _convert_to_supported(policy, init)
             centers_table = to_table(centers)
         else:
