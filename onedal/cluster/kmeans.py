@@ -90,9 +90,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         if rtol == 0.0:
             return rtol
         # TODO: Support CSR in Basic Statistics
-        dummy = to_table(None)
+        dummy_weights_table = to_table(None)
         bs = self._get_basic_statistics_backend("variance")
-        res = bs.compute_raw(X_table, dummy, policy, dtype)
+        res = bs.compute_raw(X_table, dummy_weights_table, policy, dtype)
         mean_var = from_table(res["variance"]).mean()
         return mean_var * rtol
 
