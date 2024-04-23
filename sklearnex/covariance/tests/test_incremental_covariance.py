@@ -45,12 +45,11 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype, assume_cent
         )
         result = inccov.partial_fit(X_split_df)
 
-    expected_covariance = np.array([[0, 0], [0, 0]])
-    expected_means = np.array([0, 0])
-
     if assume_centered:
         expected_covariance = np.array([[0, 0], [0, 1]])
+        expected_means = np.array([0, 0])
     else:
+        expected_covariance = np.array([[0, 0], [0, 0]])
         expected_means = np.array([0, 1])
 
     assert_allclose(expected_covariance, result.covariance_)
@@ -69,6 +68,7 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype, assume_cent
 
     if assume_centered:
         expected_covariance = np.array([[5, 10], [10, 20]])
+        expected_means = np.array([0, 0])
     else:
         expected_covariance = np.array([[1, 2], [2, 4]])
         expected_means = np.array([2, 4])
