@@ -37,6 +37,7 @@ from onedal.tests.utils._dataframes_support import (
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
 from sklearnex import config_context
 from sklearnex.tests._utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
+from sklearnex.utils import get_namespace
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -136,8 +137,8 @@ def get_traced_memory(queue=None):
 
 
 def take(x, index, axis=0, queue=None):
-    if hasattr(x, "__array_namespace__"):
-        xp = x.__array_namespace__()
+    xp, array_api = get_namespace(x)
+    if array_api:
         return xp.take(x, xp.asarray(index, device=queue), axis=axis)
     else:
         return x.take(index, axis=axis)
