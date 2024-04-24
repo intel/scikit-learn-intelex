@@ -59,6 +59,11 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             "covariance", None, "partial_compute_result"
         )
 
+    def _reset(self):
+        self._partial_result = self._get_backend(
+            "covariance", None, "partial_compute_result"
+        )
+
     def partial_fit(self, X, y=None, queue=None):
         """
         Computes partial data for the covariance matrix
