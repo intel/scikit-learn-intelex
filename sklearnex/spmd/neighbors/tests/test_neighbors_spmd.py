@@ -47,17 +47,18 @@ def test_knncls_spmd_manual():
             [1.0, 0.0],
             [0.0, 2.0],
             [2.0, 0.0],
-            [1.0, 1.0],
+            [0.9, 1.0],
             [0.0, -1.0],
             [-1.0, 0.0],
             [-1.0, -1.0],
         ]
     )
-    y_train = np.array([0, 2, 1, 2, 1, 0, 1, 2, 0])
+    # TODO: handle situations where not all classes are present on all ranks?
+    y_train = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0])
     X_test = np.array(
         [
-            [1.0, -1.0],
-            [-1.0, 1.0],
+            [1.0, -0.5],
+            [-5.0, 1.0],
             [0.0, 1.0],
             [10.0, -10.0],
         ]
@@ -84,7 +85,6 @@ def test_knncls_spmd_manual():
     spmd_assert_all_close(spmd_result, batch_result)
 
 
-# compare kneighbors (indices and distances), output
 @pytest.mark.skipif(
     not mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
@@ -155,8 +155,8 @@ def test_knnreg_spmd_manual():
     y_train = np.array([3.0, 5.0, 4.0, 7.0, 5.0, 6.0, 1.0, 2.0, 0.0])
     X_test = np.array(
         [
-            [1.0, -1.0],
-            [-1.0, 1.0],
+            [1.0, -0.5],
+            [-5.0, 1.0],
             [0.0, 1.0],
             [10.0, -10.0],
         ]
