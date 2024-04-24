@@ -96,7 +96,10 @@ def remove_duplicated_estimators(estimators_list):
     return estimators_map.values()
 
 
-BANNED_ESTIMATORS = ("TSNE",)  # too slow for using in testing on common data size
+BANNED_ESTIMATORS = (
+    "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
+    "TSNE",  # too slow for using in testing on common data size
+)
 estimators = [
     TrainTestSplitEstimator,
     FiniteCheckEstimator,

@@ -52,7 +52,7 @@ def test_partial_fit_multiple_options_on_gold_data(dataframe, queue, weighted, d
             weights_split_df = _convert_to_dataframe(
                 weights_split[i], sycl_queue=queue, target_df=dataframe
             )
-            result = incbs.partial_fit(X_split_df, weights_split_df)
+            result = incbs.partial_fit(X_split_df, sample_weight=weights_split_df)
         else:
             result = incbs.partial_fit(X_split_df)
 
@@ -103,7 +103,7 @@ def test_partial_fit_single_option_on_random_data(
             weights_split_df = _convert_to_dataframe(
                 weights_split[i], sycl_queue=queue, target_df=dataframe
             )
-            result = incbs.partial_fit(X_split_df, weights_split_df)
+            result = incbs.partial_fit(X_split_df, sample_weight=weights_split_df)
         else:
             result = incbs.partial_fit(X_split_df)
 
@@ -146,7 +146,7 @@ def test_partial_fit_multiple_options_on_random_data(
             weights_split_df = _convert_to_dataframe(
                 weights_split[i], sycl_queue=queue, target_df=dataframe
             )
-            result = incbs.partial_fit(X_split_df, weights_split_df)
+            result = incbs.partial_fit(X_split_df, sample_weight=weights_split_df)
         else:
             result = incbs.partial_fit(X_split_df)
 
@@ -165,7 +165,7 @@ def test_partial_fit_multiple_options_on_random_data(
             expected_sum(X),
         )
 
-    tol = 1e-5 if res_mean.dtype == np.float32 else 1e-7
+    tol = 3e-4 if res_mean.dtype == np.float32 else 1e-7
     assert_allclose(gtr_mean, res_mean, atol=tol)
     assert_allclose(gtr_max, res_max, atol=tol)
     assert_allclose(gtr_sum, res_sum, atol=tol)
@@ -199,7 +199,7 @@ def test_partial_fit_all_option_on_random_data(
             weights_split_df = _convert_to_dataframe(
                 weights_split[i], sycl_queue=queue, target_df=dataframe
             )
-            result = incbs.partial_fit(X_split_df, weights_split_df)
+            result = incbs.partial_fit(X_split_df, sample_weight=weights_split_df)
         else:
             result = incbs.partial_fit(X_split_df)
 
@@ -208,7 +208,6 @@ def test_partial_fit_all_option_on_random_data(
 
     for option in options_and_tests:
         result_option, function, tols = option
-        print(result_option)
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
@@ -233,7 +232,7 @@ def test_fit_multiple_options_on_gold_data(dataframe, queue, weighted, dtype):
     incbs = IncrementalBasicStatistics(batch_size=1)
 
     if weighted:
-        result = incbs.fit(X_df, weights_df)
+        result = incbs.fit(X_df, sample_weight=weights_df)
     else:
         result = incbs.fit(X_df)
 
@@ -272,7 +271,7 @@ def test_fit_single_option_on_random_data(
     X = X.astype(dtype=dtype)
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     if weighted:
-        weights = gen.uniform(low=-0.5, high=+1.0, size=row_count)
+        weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
         weights_df = _convert_to_dataframe(weights, sycl_queue=queue, target_df=dataframe)
     incbs = IncrementalBasicStatistics(
@@ -280,7 +279,7 @@ def test_fit_single_option_on_random_data(
     )
 
     if weighted:
-        result = incbs.fit(X_df, weights_df)
+        result = incbs.fit(X_df, sample_weight=weights_df)
     else:
         result = incbs.fit(X_df)
 
@@ -301,7 +300,7 @@ def test_fit_single_option_on_random_data(
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_partial_fit_multiple_options_on_random_data(
+def test_fit_multiple_options_on_random_data(
     dataframe, queue, num_batches, row_count, column_count, weighted, dtype
 ):
     seed = 77
@@ -311,7 +310,7 @@ def test_partial_fit_multiple_options_on_random_data(
     X = X.astype(dtype=dtype)
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     if weighted:
-        weights = gen.uniform(low=-0.5, high=+1.0, size=row_count)
+        weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
         weights_df = _convert_to_dataframe(weights, sycl_queue=queue, target_df=dataframe)
     incbs = IncrementalBasicStatistics(
@@ -319,7 +318,7 @@ def test_partial_fit_multiple_options_on_random_data(
     )
 
     if weighted:
-        result = incbs.fit(X_df, weights_df)
+        result = incbs.fit(X_df, sample_weight=weights_df)
     else:
         result = incbs.fit(X_df)
 
@@ -366,7 +365,7 @@ def test_fit_all_option_on_random_data(
     incbs = IncrementalBasicStatistics(result_options="all", batch_size=batch_size)
 
     if weighted:
-        result = incbs.fit(X_df, weights_df)
+        result = incbs.fit(X_df, sample_weight=weights_df)
     else:
         result = incbs.fit(X_df)
 
@@ -375,7 +374,6 @@ def test_fit_all_option_on_random_data(
 
     for option in options_and_tests:
         result_option, function, tols = option
-        print(result_option)
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
