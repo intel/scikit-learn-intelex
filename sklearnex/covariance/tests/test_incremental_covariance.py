@@ -104,7 +104,6 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, batch_size, dtype):
 @pytest.mark.parametrize("row_count", [10, 100])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-@pytest.mark.parametrize("assume_centered", [True, False])
 def test_sklearnex_partial_fit_on_random_data(
     dataframe, queue, num_batches, row_count, column_count, dtype
 ):
@@ -115,7 +114,7 @@ def test_sklearnex_partial_fit_on_random_data(
     X = gen.uniform(low=-0.3, high=+0.7, size=(row_count, column_count))
     X = X.astype(dtype)
     X_split = np.array_split(X, num_batches)
-    inccov = IncrementalEmpiricalCovariance(assume_centered=assume_centered)
+    inccov = IncrementalEmpiricalCovariance()
 
     for i in range(num_batches):
         X_split_df = _convert_to_dataframe(
@@ -123,12 +122,8 @@ def test_sklearnex_partial_fit_on_random_data(
         )
         result = inccov.partial_fit(X_split_df)
 
-    if assume_centered:
-        expected_covariance = np.dot(X.T, X) / X.shape[0]
-        expected_means = np.zeros_like(X[:,0])
-    else:
-        expected_covariance = np.cov(X.T, bias=1)
-        expected_means = np.mean(X, axis=0)
+    expected_covariance = np.cov(X.T, bias=1)
+    expected_means = np.mean(X, axis=0)
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
@@ -139,8 +134,9 @@ def test_sklearnex_partial_fit_on_random_data(
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("assume_centered", [True, False])
 def test_sklearnex_fit_on_random_data(
-    dataframe, queue, num_batches, row_count, column_count, dtype
+    dataframe, queue, num_batches, row_count, column_count, dtype, assume_centered
 ):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
@@ -150,12 +146,18 @@ def test_sklearnex_fit_on_random_data(
     X = X.astype(dtype)
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     batch_size = row_count // num_batches
-    inccov = IncrementalEmpiricalCovariance(batch_size=batch_size)
+    inccov = IncrementalEmpiricalCovariance(
+        batch_size=batch_size, assume_centered=assume_centered
+    )
 
     result = inccov.fit(X_df)
 
-    expected_covariance = np.cov(X.T, bias=1)
-    expected_means = np.mean(X, axis=0)
+    if assume_centered:
+        expected_covariance = np.dot(X.T, X) / X.shape[0]
+        expected_means = np.zeros_like(X[:,0])
+    else:
+        expected_covariance = np.cov(X.T, bias=1)
+        expected_means = np.mean(X, axis=0)
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
