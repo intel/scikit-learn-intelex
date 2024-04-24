@@ -121,6 +121,12 @@ class NeighborsCommonBase(BaseEstimator, metaclass=ABCMeta):
     def _get_onedal_params(self, X, y=None, n_neighbors=None):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, "weights", "uniform")
+        if self.effective_metric_ == "manhattan":
+            p = 1.0
+        elif self.effective_metric_ == "euclidean":
+            p = 2.0
+        else:
+            p = self.p
         return {
             "fptype": "float" if X.dtype == np.float32 else "double",
             "vote_weights": "uniform" if weights == "uniform" else "distance",
@@ -129,7 +135,7 @@ class NeighborsCommonBase(BaseEstimator, metaclass=ABCMeta):
             "class_count": class_count,
             "neighbor_count": self.n_neighbors if n_neighbors is None else n_neighbors,
             "metric": self.effective_metric_,
-            "p": self.p,
+            "p": p,
             "metric_params": self.effective_metric_params_,
             "result_option": "indices|distances" if y is None else "responses",
         }
