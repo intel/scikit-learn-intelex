@@ -55,9 +55,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
 
     def __init__(self, method="dense", bias=False, assume_centered=False):
         super().__init__(method, bias, assume_centered)
-        self._partial_result = self._get_backend(
-            "covariance", None, "partial_compute_result"
-        )
+        self._reset()
 
     def _reset(self):
         self._partial_result = self._get_backend(
