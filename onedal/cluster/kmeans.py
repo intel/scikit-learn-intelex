@@ -145,11 +145,11 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             self._n_init = 1
         assert self.algorithm == "lloyd"
 
-    def _get_onedal_params(self, dtype=np.float32, result_options=None):
+    def _get_onedal_params(self, X_table, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": "by_default",
+            "method": "lloyd_csr" if sp.issparse(X_table) else "by_default",
             "seed": -1,
             "max_iteration_count": self.max_iter,
             "cluster_count": self.n_clusters,
@@ -167,7 +167,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         self._check_params_vs_input(X_table, policy, dtype=dtype)
 
-        params = self._get_onedal_params(dtype)
+        params = self._get_onedal_params(X_table, dtype)
 
         return (params, X_table, dtype)
 

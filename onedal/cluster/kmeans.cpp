@@ -38,6 +38,7 @@ struct method2t {
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "lloyd_dense", ops, Float, method::lloyd_dense);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "lloyd_csr", ops, Float, method::lloyd_csr);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
@@ -47,13 +48,13 @@ struct method2t {
 template <typename Float, typename Method, typename Task>
 struct descriptor_creator {};
 
-template <typename Float>
+template <typename Float, typename Method>
 struct descriptor_creator<Float,
-                          dal::kmeans::method::by_default,
+                          Method,
                           dal::kmeans::task::clustering > {
     static auto get() {
         return dal::kmeans::descriptor<Float,
-                                  dal::kmeans::method::by_default,
+                                  Method,
                                   dal::kmeans::task::clustering>{};
     }
 };
