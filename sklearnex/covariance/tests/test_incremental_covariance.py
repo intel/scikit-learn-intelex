@@ -131,7 +131,7 @@ def test_sklearnex_partial_fit_on_random_data(
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
-@pytest.mark.parametrize("row_count", [10, 100])
+@pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_fit_on_random_data(
