@@ -154,7 +154,7 @@ def test_sklearnex_fit_on_random_data(
 
     if assume_centered:
         expected_covariance = np.dot(X.T, X) / X.shape[0]
-        expected_means = np.zeros_like(X[:,0])
+        expected_means = np.zeros_like(X[:, 0])
     else:
         expected_covariance = np.cov(X.T, bias=1)
         expected_means = np.mean(X, axis=0)
