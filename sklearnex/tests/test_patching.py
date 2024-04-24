@@ -64,7 +64,6 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
         if dataframe == "pandas":
             X = _convert_to_dataframe(
                 rng.random(size=1000).astype(dtype).reshape(1, -1),
-                sycl_queue=queue,
                 target_df=dataframe,
             )
         else:
