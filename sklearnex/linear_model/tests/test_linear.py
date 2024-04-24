@@ -54,7 +54,7 @@ def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
 
     tol = 1e-5 if dtype == np.float32 else 1e-7
     assert_allclose(_as_numpy(linreg.intercept_), 3.0, rtol=tol)
-    assert_allclose(_as_numpy(linreg.coef_).squeeze(), [1.0, 2.0], rtol=tol)
+    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
 
 
 def test_sklearnex_import_ridge():
