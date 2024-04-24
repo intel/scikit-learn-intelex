@@ -77,7 +77,12 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
-        data_loc = _check_array(data, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False)
+        data_loc = _check_array(
+            data,
+            dtype=[np.float64, np.float32],
+            accept_sparse="csr",
+            force_all_finite=False,
+        )
 
         if not (weights is None):
             weights = np.asarray(weights)
