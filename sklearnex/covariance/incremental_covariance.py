@@ -260,6 +260,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     def _onedal_fit(self, X, queue=None):
         self.n_samples_seen_ = 0
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator._reset()
 
         if sklearn_check_version("1.2"):
             self._validate_params()
