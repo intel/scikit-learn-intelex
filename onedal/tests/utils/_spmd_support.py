@@ -16,7 +16,7 @@
 
 import numpy as np
 from numpy.testing import assert_allclose
-from sklearn.datasets import make_regression, make_classification, make_blobs
+from sklearn.datasets import make_blobs, make_classification, make_regression
 from sklearn.model_selection import train_test_split
 
 try:
@@ -61,20 +61,32 @@ def generate_regression_data(n_samples, n_features):
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     return X_train, X_test, y_train, y_test
 
+
 def generate_classification_data(n_samples, n_features, n_classes=2):
-    X, y = make_classification(n_samples=n_samples, n_features=n_features, n_classes=n_classes, n_informative=int(0.5*n_classes + 1), random_state=0)
+    X, y = make_classification(
+        n_samples=n_samples,
+        n_features=n_features,
+        n_classes=n_classes,
+        n_informative=int(0.5 * n_classes + 1),
+        random_state=0,
+    )
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     return X_train, X_test, y_train, y_test
+
 
 def generate_statistic_data(n_samples, n_features):
     gen = np.random.default_rng(42)
     data = gen.uniform(low=-0.3, high=+0.7, size=(n_samples, n_features))
     return data
 
+
 def generate_clustering_data(n_samples, n_features, centers=None):
-    X, y = make_blobs(n_samples=n_samples, centers=centers, n_features=n_features, random_state=0)
+    X, y = make_blobs(
+        n_samples=n_samples, centers=centers, n_features=n_features, random_state=0
+    )
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     return X_train, X_test, y_train, y_test
+
 
 def spmd_assert_all_close(spmd_result, batch_result, **kwargs):
     # extract chunk from batch result to match with local spmd result
@@ -87,20 +99,31 @@ def spmd_assert_all_close(spmd_result, batch_result, **kwargs):
 
     assert_allclose(numpy_spmd_result, local_batch_result, **kwargs)
 
+
 def assert_centers_all_close(spmd_centers, batch_centers):
     sorted_spmd_centers = spmd_centers[np.argsort(np.linalg.norm(spmd_centers, axis=1))]
-    sorted_batch_centers = batch_centers[np.argsort(np.linalg.norm(batch_centers, axis=1))]
-    
+    sorted_batch_centers = batch_centers[
+        np.argsort(np.linalg.norm(batch_centers, axis=1))
+    ]
+
     assert_allclose(sorted_spmd_centers, sorted_batch_centers)
+
 
 def assert_neighbors_all_close(spmd_centers, batch_centers):
     local_batch_centers = get_local_tensor(batch_centers, data_parallel=False)
     sorted_spmd_centers = spmd_centers[np.argsort(np.linalg.norm(spmd_centers, axis=1))]
-    sorted_batch_centers = local_batch_centers[np.argsort(np.linalg.norm(local_batch_centers, axis=1))]
-    
+    sorted_batch_centers = local_batch_centers[
+        np.argsort(np.linalg.norm(local_batch_centers, axis=1))
+    ]
+
     assert_allclose(sorted_spmd_centers, sorted_batch_centers)
 
-def assert_kmeans_labels_all_close(spmd_labels, batch_labels, spmd_centers, batch_centers):
+
+def assert_kmeans_labels_all_close(
+    spmd_labels, batch_labels, spmd_centers, batch_centers
+):
+    if isinstance(spmd_labels, dpt.usm_ndarray):
+        spmd_labels = dpt.to_numpy(spmd_labels)
     # extract chunk from batch result to match with local spmd result
     local_batch_result = get_local_tensor(batch_labels, data_parallel=False)
     assert_allclose(spmd_centers[spmd_labels], batch_centers[local_batch_result])

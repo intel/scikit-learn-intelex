@@ -19,7 +19,14 @@ import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
-from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_tensor, generate_regression_data, generate_classification_data, spmd_assert_all_close, assert_neighbors_all_close
+from onedal.tests.utils._spmd_support import (
+    assert_neighbors_all_close,
+    generate_classification_data,
+    generate_regression_data,
+    get_local_tensor,
+    mpi_libs_and_gpu_available,
+    spmd_assert_all_close,
+)
 
 
 @pytest.mark.skipif(
@@ -47,15 +54,26 @@ def test_knncls_spmd_manual():
         ]
     )
     y_train = np.array([0, 2, 1, 2, 1, 0, 1, 2, 0])
-    X_test = np.array([[1.0, -1.0], [-1.0, 1.0], [0.0, 1.0], [10.0, -10.0],])
+    X_test = np.array(
+        [
+            [1.0, -1.0],
+            [-1.0, 1.0],
+            [0.0, 1.0],
+            [10.0, -10.0],
+        ]
+    )
 
     local_dpt_X_train = get_local_tensor(X_train)
     local_dpt_y_train = get_local_tensor(y_train)
     local_dpt_X_test = get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
-    spmd_model = KNeighborsClassifier_SPMD(n_neighbors=1, algorithm="brute").fit(local_dpt_X_train, local_dpt_y_train)
-    batch_model = KNeighborsClassifier_Batch(n_neighbors=1, algorithm="brute").fit(X_train, y_train)
+    spmd_model = KNeighborsClassifier_SPMD(n_neighbors=1, algorithm="brute").fit(
+        local_dpt_X_train, local_dpt_y_train
+    )
+    batch_model = KNeighborsClassifier_Batch(n_neighbors=1, algorithm="brute").fit(
+        X_train, y_train
+    )
     spmd_dists, spmd_indcs = spmd_model.kneighbors(local_dpt_X_test)
     batch_dists, batch_indcs = batch_model.kneighbors(X_test)
     spmd_result = spmd_model.predict(local_dpt_X_test)
@@ -66,7 +84,7 @@ def test_knncls_spmd_manual():
     spmd_assert_all_close(spmd_result, batch_result)
 
 
-#compare kneighbors (indices and distances), output
+# compare kneighbors (indices and distances), output
 @pytest.mark.skipif(
     not mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
@@ -76,22 +94,30 @@ def test_knncls_spmd_manual():
 @pytest.mark.parametrize("n_neighbors", [1, 5, 20])
 @pytest.mark.parametrize("weights", ["uniform", "distance"])
 @pytest.mark.mpi
-def test_knncls_spmd_synthetic(n_samples, n_features_and_classes, n_neighbors, weights, metric="euclidean"):
+def test_knncls_spmd_synthetic(
+    n_samples, n_features_and_classes, n_neighbors, weights, metric="euclidean"
+):
     n_features, n_classes = n_features_and_classes
     # Import spmd and batch algo
     from sklearnex.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
     from sklearnex.spmd.neighbors import KNeighborsClassifier as KNeighborsClassifier_SPMD
 
     # Generate data and process into dpt
-    X_train, X_test, y_train, _ = generate_classification_data(n_samples, n_features, n_classes)
+    X_train, X_test, y_train, _ = generate_classification_data(
+        n_samples, n_features, n_classes
+    )
 
     local_dpt_X_train = get_local_tensor(X_train)
     local_dpt_y_train = get_local_tensor(y_train)
     local_dpt_X_test = get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
-    spmd_model = KNeighborsClassifier_SPMD(n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute").fit(local_dpt_X_train, local_dpt_y_train)
-    batch_model = KNeighborsClassifier_Batch(n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute").fit(X_train, y_train)
+    spmd_model = KNeighborsClassifier_SPMD(
+        n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute"
+    ).fit(local_dpt_X_train, local_dpt_y_train)
+    batch_model = KNeighborsClassifier_Batch(
+        n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute"
+    ).fit(X_train, y_train)
     spmd_dists, spmd_indcs = spmd_model.kneighbors(local_dpt_X_test)
     batch_dists, batch_indcs = batch_model.kneighbors(X_test)
     spmd_result = spmd_model.predict(local_dpt_X_test)
@@ -127,15 +153,26 @@ def test_knnreg_spmd_manual():
         ]
     )
     y_train = np.array([3.0, 5.0, 4.0, 7.0, 5.0, 6.0, 1.0, 2.0, 0.0])
-    X_test = np.array([[1.0, -1.0], [-1.0, 1.0], [0.0, 1.0], [10.0, -10.0],])
+    X_test = np.array(
+        [
+            [1.0, -1.0],
+            [-1.0, 1.0],
+            [0.0, 1.0],
+            [10.0, -10.0],
+        ]
+    )
 
     local_dpt_X_train = get_local_tensor(X_train)
     local_dpt_y_train = get_local_tensor(y_train)
     local_dpt_X_test = get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
-    spmd_model = KNeighborsRegressor_SPMD(n_neighbors=1, algorithm="brute").fit(local_dpt_X_train, local_dpt_y_train)
-    batch_model = KNeighborsRegressor_Batch(n_neighbors=1, algorithm="brute").fit(X_train, y_train)
+    spmd_model = KNeighborsRegressor_SPMD(n_neighbors=1, algorithm="brute").fit(
+        local_dpt_X_train, local_dpt_y_train
+    )
+    batch_model = KNeighborsRegressor_Batch(n_neighbors=1, algorithm="brute").fit(
+        X_train, y_train
+    )
     spmd_dists, spmd_indcs = spmd_model.kneighbors(local_dpt_X_test)
     batch_dists, batch_indcs = batch_model.kneighbors(X_test)
     spmd_result = spmd_model.predict(local_dpt_X_test)
@@ -154,7 +191,9 @@ def test_knnreg_spmd_manual():
 @pytest.mark.parametrize("n_features", [5, 25])
 @pytest.mark.parametrize("n_neighbors", [1, 5, 20])
 @pytest.mark.parametrize("weights", ["uniform", "distance"])
-@pytest.mark.parametrize("metric", ["euclidean", "manhattan", "minkowski", "chebyshev", "cosine"])
+@pytest.mark.parametrize(
+    "metric", ["euclidean", "manhattan", "minkowski", "chebyshev", "cosine"]
+)
 @pytest.mark.mpi
 def test_knnreg_spmd_synthetic(n_samples, n_features, n_neighbors, weights, metric):
     # Import spmd and batch algo
@@ -169,8 +208,12 @@ def test_knnreg_spmd_synthetic(n_samples, n_features, n_neighbors, weights, metr
     local_dpt_X_test = get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
-    spmd_model = KNeighborsRegressor_SPMD(n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute").fit(local_dpt_X_train, local_dpt_y_train)
-    batch_model = KNeighborsRegressor_Batch(n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute").fit(X_train, y_train)
+    spmd_model = KNeighborsRegressor_SPMD(
+        n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute"
+    ).fit(local_dpt_X_train, local_dpt_y_train)
+    batch_model = KNeighborsRegressor_Batch(
+        n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute"
+    ).fit(X_train, y_train)
     spmd_dists, spmd_indcs = spmd_model.kneighbors(local_dpt_X_test)
     batch_dists, batch_indcs = batch_model.kneighbors(X_test)
     spmd_result = spmd_model.predict(local_dpt_X_test)

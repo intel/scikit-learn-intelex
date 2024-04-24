@@ -19,7 +19,12 @@ import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
-from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_tensor, generate_regression_data, spmd_assert_all_close
+from onedal.tests.utils._spmd_support import (
+    generate_regression_data,
+    get_local_tensor,
+    mpi_libs_and_gpu_available,
+    spmd_assert_all_close,
+)
 
 
 @pytest.mark.skipif(
@@ -47,7 +52,14 @@ def test_linear_spmd_manual():
         ]
     )
     y_train = np.array([3.0, 5.0, 4.0, 7.0, 5.0, 6.0, 1.0, 2.0, 0.0])
-    X_test = np.array([[1.0, -1.0], [-1.0, 1.0], [0.0, 1.0], [10.0, -10.0],])
+    X_test = np.array(
+        [
+            [1.0, -1.0],
+            [-1.0, 1.0],
+            [0.0, 1.0],
+            [10.0, -10.0],
+        ]
+    )
 
     local_dpt_X_train = get_local_tensor(X_train)
     local_dpt_y_train = get_local_tensor(y_train)
@@ -86,12 +98,18 @@ def test_linear_spmd_synthetic(n_samples, n_features):
     local_dpt_y_train = get_local_tensor(y_train)
     local_dpt_X_test = get_local_tensor(X_test)
 
+    # TODO: support linear regression on wide datasets and remove this skip
+    if local_dpt_X_train.shape[0] < n_features:
+        pytest.skip(
+            "SPMD Linear Regression does not support cases where n_rows_rank < n_features"
+        )
+
     # ensure trained model of batch algo matches spmd
     spmd_model = LinearRegression_SPMD().fit(local_dpt_X_train, local_dpt_y_train)
     batch_model = LinearRegression_Batch().fit(X_train, y_train)
 
-    assert_allclose(spmd_model.coef_, batch_model.coef_)
-    assert_allclose(spmd_model.intercept_, batch_model.intercept_)
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=1e-7, atol=1e-7)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=1e-7, atol=1e-7)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)

@@ -18,7 +18,11 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_tensor, generate_statistic_data
+from onedal.tests.utils._spmd_support import (
+    generate_statistic_data,
+    get_local_tensor,
+    mpi_libs_and_gpu_available,
+)
 
 
 @pytest.mark.skipif(
@@ -54,7 +58,10 @@ def test_pca_spmd_manual():
     assert_allclose(spmd_result.mean_, batch_result.mean_)
     assert_allclose(spmd_result.components_, batch_result.components_)
     assert_allclose(spmd_result.singular_values_, batch_result.singular_values_)
-    assert_allclose(spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_)
+    assert_allclose(spmd_result.noise_variance_, batch_result.noise_variance_)
+    assert_allclose(
+        spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_
+    )
 
 
 @pytest.mark.skipif(
@@ -64,8 +71,9 @@ def test_pca_spmd_manual():
 @pytest.mark.parametrize("n_samples", [100, 10000])
 @pytest.mark.parametrize("n_features", [10, 100])
 @pytest.mark.parametrize("n_components", [0.5, 3, "mle", None])
+@pytest.mark.parametrize("whiten", [True, False])
 @pytest.mark.mpi
-def test_pca_spmd_synthetic(n_samples, n_features, n_components):
+def test_pca_spmd_synthetic(n_samples, n_features, n_components, whiten):
     # Import spmd and batch algo
     from sklearnex.decomposition import PCA as PCA_Batch
     from sklearnex.spmd.decomposition import PCA as PCA_SPMD
@@ -76,10 +84,13 @@ def test_pca_spmd_synthetic(n_samples, n_features, n_components):
     local_dpt_data = get_local_tensor(data)
 
     # ensure results of batch algo match spmd
-    spmd_result = PCA_SPMD(n_components=n_components).fit(local_dpt_data)
-    batch_result = PCA_Batch(n_components=n_components).fit(data)
+    spmd_result = PCA_SPMD(n_components=n_components, whiten=whiten).fit(local_dpt_data)
+    batch_result = PCA_Batch(n_components=n_components, whiten=whiten).fit(data)
 
     assert_allclose(spmd_result.mean_, batch_result.mean_)
     assert_allclose(spmd_result.components_, batch_result.components_)
     assert_allclose(spmd_result.singular_values_, batch_result.singular_values_)
-    assert_allclose(spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_)
+    assert_allclose(spmd_result.noise_variance_, batch_result.noise_variance_)
+    assert_allclose(
+        spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_
+    )

@@ -18,7 +18,11 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_tensor, generate_statistic_data
+from onedal.tests.utils._spmd_support import (
+    generate_statistic_data,
+    get_local_tensor,
+    mpi_libs_and_gpu_available,
+)
 
 
 @pytest.mark.skipif(
@@ -60,8 +64,9 @@ def test_covariance_spmd_manual():
 )
 @pytest.mark.parametrize("n_samples", [100, 10000])
 @pytest.mark.parametrize("n_features", [10, 100])
+@pytest.mark.parametrize("assume_centered", [True, False])
 @pytest.mark.mpi
-def test_covariance_spmd_synthetic(n_samples, n_features):
+def test_covariance_spmd_synthetic(n_samples, n_features, assume_centered):
     # Import spmd and batch algo
     from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
     from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
@@ -72,8 +77,10 @@ def test_covariance_spmd_synthetic(n_samples, n_features):
     local_dpt_data = get_local_tensor(data)
 
     # ensure results of batch algo match spmd
-    spmd_result = EmpiricalCovariance_SPMD().fit(local_dpt_data)
-    batch_result = EmpiricalCovariance_Batch().fit(data)
+    spmd_result = EmpiricalCovariance_SPMD(assume_centered=assume_centered).fit(
+        local_dpt_data
+    )
+    batch_result = EmpiricalCovariance_Batch(assume_centered=assume_centered).fit(data)
 
     assert_allclose(spmd_result.covariance_, batch_result.covariance_)
     assert_allclose(spmd_result.location_, batch_result.location_)

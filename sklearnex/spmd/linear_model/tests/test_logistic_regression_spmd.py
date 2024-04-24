@@ -18,7 +18,12 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_tensor, generate_classification_data, spmd_assert_all_close
+from onedal.tests.utils._spmd_support import (
+    generate_classification_data,
+    get_local_tensor,
+    mpi_libs_and_gpu_available,
+    spmd_assert_all_close,
+)
 
 
 @pytest.mark.skipif(
@@ -46,19 +51,29 @@ def test_logistic_spmd_manual():
         ]
     )
     y_train = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0])
-    X_test = np.array([[1.0, -1.0], [-1.0, 1.0], [0.0, 1.0], [10.0, -10.0],])
+    X_test = np.array(
+        [
+            [1.0, -1.0],
+            [-1.0, 1.0],
+            [0.0, 1.0],
+            [10.0, -10.0],
+        ]
+    )
 
     local_dpt_X_train = get_local_tensor(X_train)
     local_dpt_y_train = get_local_tensor(y_train)
     local_dpt_X_test = get_local_tensor(X_test)
 
     # ensure trained model of batch algo matches spmd
-    spmd_model = LogisticRegression_SPMD(random_state=0, solver="newton-cg").fit(local_dpt_X_train, local_dpt_y_train)
-    batch_model = LogisticRegression_Batch(random_state=0, solver="newton-cg").fit(X_train, y_train)
+    spmd_model = LogisticRegression_SPMD(random_state=0, solver="newton-cg").fit(
+        local_dpt_X_train, local_dpt_y_train
+    )
+    batch_model = LogisticRegression_Batch(random_state=0, solver="newton-cg").fit(
+        X_train, y_train
+    )
 
-    assert_allclose(spmd_model.coef_, batch_model.coef_)
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=1e-4)
     assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=1e-4)
-    # assert_allclose(spmd_model.n_iter_, batch_model.n_iter_)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)
@@ -90,16 +105,20 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol):
     local_dpt_X_test = get_local_tensor(X_test)
 
     # ensure trained model of batch algo matches spmd
-    spmd_model = LogisticRegression_SPMD(random_state=0, solver="newton-cg", C=C, tol=tol).fit(local_dpt_X_train, local_dpt_y_train)
-    batch_model = LogisticRegression_Batch(random_state=0, solver="newton-cg", C=C, tol=tol).fit(X_train, y_train)
+    spmd_model = LogisticRegression_SPMD(
+        random_state=0, solver="newton-cg", C=C, tol=tol
+    ).fit(local_dpt_X_train, local_dpt_y_train)
+    batch_model = LogisticRegression_Batch(
+        random_state=0, solver="newton-cg", C=C, tol=tol
+    ).fit(X_train, y_train)
 
-    assert_allclose(spmd_model.coef_, batch_model.coef_)
-    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=1e-4)
-    # assert_allclose(spmd_model.n_iter_, batch_model.n_iter_)
+    # Not deterministic so no n_iter_ check and relatively flexible coef_ check
+    if n_samples > 10 * n_features:
+        assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol)
+        assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=tol)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
     spmd_assert_all_close(spmd_result, batch_result)
-

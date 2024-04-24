@@ -18,7 +18,12 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.tests.utils._spmd_support import mpi_libs_and_gpu_available, get_local_tensor, generate_clustering_data, spmd_assert_all_close
+from onedal.tests.utils._spmd_support import (
+    generate_clustering_data,
+    get_local_tensor,
+    mpi_libs_and_gpu_available,
+    spmd_assert_all_close,
+)
 
 
 @pytest.mark.skipif(
