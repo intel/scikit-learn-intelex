@@ -294,6 +294,10 @@ deselected_tests:
   # The results are also not stable.
   - decomposition/tests/test_incremental_pca.py::test_whitening
 
+  # The test fails because of changing of 'auto' strategy in PCA to improve performance.
+  # 'randomized' PCA expected, but 'full' is given.
+  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[data3-10-randomized]
+
   # Scikit-learn logistic regression predict depends from decision_function while d4p is not.
   # Assertion error in check_estimator (PoorScoreLogisticRegression())
   - utils/tests/test_estimator_checks.py::test_check_estimator >=0.24
