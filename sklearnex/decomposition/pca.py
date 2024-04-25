@@ -226,7 +226,13 @@ if daal_check_version((2024, "P", 100)):
                         ),
                         (
                             self._is_solver_compatible_with_onedal(shape_tuple),
-                            "Only 'full' and 'covariance_eigh' solvers are supported.",
+                            (
+                                "Only 'covariance_eigh' and 'onedal_svd' "
+                                "solvers are supported."
+                                if sklearn_check_version("1.5")
+                                else "Only 'full', 'covariance_eigh' and 'onedal_svd' "
+                                "solvers are supported."
+                            ),
                         ),
                         (not issparse(X), "oneDAL PCA does not support sparse data"),
                     ]
@@ -324,8 +330,12 @@ if daal_check_version((2024, "P", 100)):
             # Use oneDAL in next cases:
             # 1. oneDAL SVD solver is explicitly set
             # 2. solver is set or dispatched to "covariance_eigh"
-            # 3. solver is set to "auto" and dipatched to "full"
+            # 3. solver is set or dispatched to "full" and sklearn version < 1.5
+            # 4. solver is set to "auto" and dispatched to "full"
             if self._fit_svd_solver in ["onedal_svd", "covariance_eigh"]:
+                return True
+            elif not sklearn_check_version("1.5") and self._fit_svd_solver == "full":
+                self._fit_svd_solver = "covariance_eigh"
                 return True
             elif self.svd_solver == "auto" and self._fit_svd_solver == "full":
                 warn(
