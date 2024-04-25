@@ -150,7 +150,7 @@ req_version["knn_bf_regression_spmd.py"] = (2023, "P", 100)
 req_version["linear_regression_spmd.py"] = (2023, "P", 100)
 req_version["logistic_regression_spmd.py"] = (2024, "P", 400)
 # Timeout on PVC, bumped the req version to deselect
-req_version["gradient_boosted_regression.py"] = (2024, "P", 500)
+req_version["sycl/gradient_boosted_regression.py"] = (2024, "P", 500)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
