@@ -96,10 +96,6 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
         X = rng.integers(2, size=1000)
         y = rng.integers(2, size=1000)
 
-        if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
-            X = X.astype(dtype)
-            y = y.astype(dtype)
-
         X = _convert_to_dataframe(
             X,
             sycl_queue=queue,
