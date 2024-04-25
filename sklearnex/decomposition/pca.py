@@ -21,6 +21,7 @@ from daal4py.sklearn._utils import daal_check_version
 if daal_check_version((2024, "P", 100)):
     import numbers
     from math import sqrt
+    from warnings import warn
 
     import numpy as np
     from scipy.sparse import issparse
@@ -49,12 +50,16 @@ if daal_check_version((2024, "P", 100)):
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
-            if not sklearn_check_version("1.5"):
-                _parameter_constraints["svd_solver"] = [
-                    StrOptions(
-                        {"auto", "full", "covariance_eigh", "arpack", "randomized"}
-                    )
-                ]
+            # "onedal_svd" solver uses oneDAL's PCA-SVD algorithm
+            # and required for testing purposes to fully enable it in future.
+            # "covariance_eigh" solver is added for ability to explicitly request
+            # oneDAL's PCA-Covariance algorithm using any sklearn version < 1.5.
+            _parameter_constraints["svd_solver"] = [
+                StrOptions(
+                    _parameter_constraints["svd_solver"][0].options
+                    | {"onedal_svd", "covariance_eigh"}
+                )
+            ]
 
         if sklearn_check_version("1.1"):
 
@@ -138,7 +143,7 @@ if daal_check_version((2024, "P", 100)):
             onedal_params = {
                 "n_components": self.n_components,
                 "is_deterministic": True,
-                "method": "cov" if self._fit_svd_solver == "covariance_eigh" else "svd",
+                "method": "svd" if self._fit_svd_solver == "onedal_svd" else "cov",
                 "whiten": self.whiten,
             }
             self._onedal_estimator = onedal_PCA(**onedal_params)
@@ -276,7 +281,11 @@ if daal_check_version((2024, "P", 100)):
 
             if self._fit_svd_solver == "auto":
                 if sklearn_check_version("1.1"):
-                    if shape_tuple[1] <= 1_000 and shape_tuple[0] >= 10 * shape_tuple[1]:
+                    if (
+                        sklearn_check_version("1.5")
+                        and shape_tuple[1] <= 1_000
+                        and shape_tuple[0] >= 10 * shape_tuple[1]
+                    ):
                         self._fit_svd_solver = "covariance_eigh"
                     elif max(shape_tuple) <= 500 or n_components == "mle":
                         self._fit_svd_solver = "full"
@@ -312,7 +321,19 @@ if daal_check_version((2024, "P", 100)):
                         else:
                             self._fit_svd_solver = "full"
 
-            if self._fit_svd_solver in ["full", "covariance_eigh"]:
+            # Use oneDAL in next cases:
+            # 1. oneDAL SVD solver is explicitly set
+            # 2. solver is set or dispatched to "covariance_eigh"
+            # 3. solver is set to "auto" and dipatched to "full"
+            if self._fit_svd_solver in ["onedal_svd", "covariance_eigh"]:
+                return True
+            elif self.svd_solver == "auto" and self._fit_svd_solver == "full":
+                warn(
+                    "Sklearnex always uses `covariance_eigh` solver instead of `full` "
+                    "when `svd_solver` parameter is set to `auto` "
+                    "for performance purposes."
+                )
+                self._fit_svd_solver = "covariance_eigh"
                 return True
             else:
                 return False

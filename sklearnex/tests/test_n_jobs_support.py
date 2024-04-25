@@ -74,9 +74,9 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     # by default, [Nu]SVC.predict_proba is restricted by @available_if decorator
     if estimator_class in [SVC, NuSVC]:
         estimator_kwargs["probability"] = True
-    # by default, sklearn 1.5 PCA selects non-patched method
+    # explicitly request oneDAL's PCA-Covariance algorithm
     if estimator_class == PCA:
-        estimator_kwargs["svd_solver"] = "full"
+        estimator_kwargs["svd_solver"] = "covariance_eigh"
     estimator_instance = estimator_class(**estimator_kwargs)
     # check `n_jobs` parameter doc entry
     check_estimator_doc(estimator_class)
