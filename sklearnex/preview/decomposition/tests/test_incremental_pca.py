@@ -111,7 +111,6 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
     tol = 3e-3 if dtype == np.float32 else 2e-6
 
     n_components = incpca.n_components_
-    print("n_components = ", n_components)
 
     expected_n_samples_seen = data.shape[0]
     expected_n_features_in = data.shape[1]
@@ -125,7 +124,6 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
     centered_data = data - np.mean(data, axis=0)
     cov_eig_result = np.linalg.eig(centered_data.T @ centered_data / (n_samples_seen - 1))
     cov_eigenvalues = np.nan_to_num(cov_eig_result.eigenvalues)
-    print("cov_eigenvalues:\n", cov_eigenvalues)
     cov_eigenvalues[cov_eigenvalues < 0] = 0
     cov_eigenvectors = cov_eig_result.eigenvectors
     eigenvalues_order = np.argsort(cov_eigenvalues)[::-1]
@@ -143,7 +141,6 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
         assert np.abs(abs_dot_product - 1.0) < tol
 
     expected_explained_variance = sorted_eigenvalues[:n_components]
-    expected_explained_variance[-1] = incpca.explained_variance_[-1]
     assert_allclose(incpca.explained_variance_, expected_explained_variance, atol=tol)
 
     expected_explained_variance_ratio = expected_explained_variance / np.sum(
@@ -163,7 +160,7 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
 
     expected_transformed_data = centered_data @ components.T
     if whiten:
-        scale = np.sqrt(expected_explained_variance)
+        scale = np.sqrt(incpca.explained_variance_)
         min_scale = np.finfo(scale.dtype).eps
         scale[scale < min_scale] = min_scale
         expected_transformed_data /= scale

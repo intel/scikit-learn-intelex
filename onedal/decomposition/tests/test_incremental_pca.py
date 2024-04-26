@@ -156,7 +156,6 @@ def test_on_random_data(
         assert np.abs(abs_dot_product - 1.0) < tol
 
     expected_explained_variance = sorted_eigenvalues[:n_components]
-    expected_explained_variance[-1] = incpca.explained_variance_[-1]
     assert_allclose(incpca.explained_variance_, expected_explained_variance, atol=tol)
 
     expected_explained_variance_ratio = expected_explained_variance / np.sum(
@@ -176,7 +175,7 @@ def test_on_random_data(
 
     expected_transformed_data = centered_data @ components.T
     if whiten:
-        scale = np.sqrt(expected_explained_variance)
+        scale = np.sqrt(incpca.explained_variance_)
         min_scale = np.finfo(scale.dtype).eps
         scale[scale < min_scale] = np.infty
         expected_transformed_data /= scale
