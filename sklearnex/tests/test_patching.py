@@ -126,7 +126,6 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             elif dtype == np.float64 and not queue.sycl_device.has_aspect_fp64:
                 pytest.skip("Hardware does not support fp64 SYCL testing")
             elif queue.sycl_device.is_gpu and estimator in [
-                "KMeans",
                 "ElasticNet",
                 "Lasso",
                 "Ridge",
