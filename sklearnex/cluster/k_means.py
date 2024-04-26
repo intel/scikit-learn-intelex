@@ -26,6 +26,7 @@ if daal_check_version((2023, "P", 200)):
     from sklearn.cluster import KMeans as sklearn_KMeans
     from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
     from sklearn.utils.validation import (
+        _check_sample_weight,
         _deprecate_positional_args,
         _num_samples,
         check_is_fitted,
@@ -215,15 +216,7 @@ if daal_check_version((2023, "P", 200)):
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd", "elkan"]
             correct_count = self.n_clusters < sample_count
-            if sample_weight is not None:
-                if len(sample_weight) == (X.shape[0],) and (
-                    np.allclose(np.asarray(sample_weight), np.ones_like(sample_weight))
-                ):
-                    is_sample_weight_valid = True
-                else:
-                    is_sample_weight_valid = False
-            else:
-                is_sample_weight_valid = True
+            sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
 
             patching_status.and_conditions(
                 [
@@ -233,8 +226,8 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
-                        is_sample_weight_valid,
-                        "Sample weight must be None or array of ones of length n_samples.",
+                        np.allclose(sample_weight, np.ones_like(sample_weight)),
+                        "Sample weights are not ones.",
                     ),
                 ]
             )
