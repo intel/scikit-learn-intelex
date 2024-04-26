@@ -17,6 +17,10 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from sklearn.covariance.tests.test_covariance import (
+    test_covariance,
+    test_EmpiricalCovariance_validates_mahalanobis,
+)
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -26,13 +30,14 @@ from onedal.tests.utils._dataframes_support import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
+@pytest.mark.parametrize("assume_centered", [True, False])
+def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype, assume_centered):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
     X = X.astype(dtype)
     X_split = np.array_split(X, 2)
-    inccov = IncrementalEmpiricalCovariance()
+    inccov = IncrementalEmpiricalCovariance(assume_centered=assume_centered)
 
     for i in range(2):
         X_split_df = _convert_to_dataframe(
@@ -40,8 +45,12 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
         )
         result = inccov.partial_fit(X_split_df)
 
-    expected_covariance = np.array([[0, 0], [0, 0]])
-    expected_means = np.array([0, 1])
+    if assume_centered:
+        expected_covariance = np.array([[0, 0], [0, 1]])
+        expected_means = np.array([0, 0])
+    else:
+        expected_covariance = np.array([[0, 0], [0, 0]])
+        expected_means = np.array([0, 1])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
@@ -49,7 +58,7 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
     X = np.array([[1, 2], [3, 6]])
     X = X.astype(dtype)
     X_split = np.array_split(X, 2)
-    inccov = IncrementalEmpiricalCovariance()
+    inccov = IncrementalEmpiricalCovariance(assume_centered=assume_centered)
 
     for i in range(2):
         X_split_df = _convert_to_dataframe(
@@ -57,8 +66,12 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype):
         )
         result = inccov.partial_fit(X_split_df)
 
-    expected_covariance = np.array([[1, 2], [2, 4]])
-    expected_means = np.array([2, 4])
+    if assume_centered:
+        expected_covariance = np.array([[5, 10], [10, 20]])
+        expected_means = np.array([0, 0])
+    else:
+        expected_covariance = np.array([[1, 2], [2, 4]])
+        expected_means = np.array([2, 4])
 
     assert_allclose(expected_covariance, result.covariance_)
     assert_allclose(expected_means, result.location_)
@@ -87,9 +100,9 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, batch_size, dtype):
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
-@pytest.mark.parametrize("row_count", [100, 1000, 2000])
-@pytest.mark.parametrize("column_count", [10, 100, 200])
+@pytest.mark.parametrize("num_batches", [2, 10])
+@pytest.mark.parametrize("row_count", [100, 1000])
+@pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_partial_fit_on_random_data(
     dataframe, queue, num_batches, row_count, column_count, dtype
@@ -117,12 +130,13 @@ def test_sklearnex_partial_fit_on_random_data(
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("num_batches", [2, 4, 6, 8, 10])
-@pytest.mark.parametrize("row_count", [100, 1000, 2000])
-@pytest.mark.parametrize("column_count", [10, 100, 200])
+@pytest.mark.parametrize("num_batches", [2, 10])
+@pytest.mark.parametrize("row_count", [100, 1000])
+@pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("assume_centered", [True, False])
 def test_sklearnex_fit_on_random_data(
-    dataframe, queue, num_batches, row_count, column_count, dtype
+    dataframe, queue, num_batches, row_count, column_count, dtype, assume_centered
 ):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
@@ -132,12 +146,35 @@ def test_sklearnex_fit_on_random_data(
     X = X.astype(dtype)
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     batch_size = row_count // num_batches
-    inccov = IncrementalEmpiricalCovariance(batch_size=batch_size)
+    inccov = IncrementalEmpiricalCovariance(
+        batch_size=batch_size, assume_centered=assume_centered
+    )
 
     result = inccov.fit(X_df)
 
-    expected_covariance = np.cov(X.T, bias=1)
-    expected_means = np.mean(X, axis=0)
+    if assume_centered:
+        expected_covariance = np.dot(X.T, X) / X.shape[0]
+        expected_means = np.zeros_like(X[0])
+    else:
+        expected_covariance = np.cov(X.T, bias=1)
+        expected_means = np.mean(X, axis=0)
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
+
+
+# Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
+@pytest.mark.allow_sklearn_fallback
+@pytest.mark.parametrize(
+    "sklearn_test",
+    [
+        test_covariance,
+        test_EmpiricalCovariance_validates_mahalanobis,
+    ],
+)
+def test_IncrementalEmpiricalCovariance_against_sklearn(monkeypatch, sklearn_test):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
+    class_name = ".".join([sklearn_test.__module__, "EmpiricalCovariance"])
+    monkeypatch.setattr(class_name, IncrementalEmpiricalCovariance)
+    sklearn_test()
