@@ -226,9 +226,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             centers = _convert_to_supported(policy, kmeans_init_res.centroids)
             centers_table = to_table(centers)
         elif _is_arraylike_not_scalar(init):
-            centers = np.asarray(init, dtype=dtype)
-            assert centers.shape[0] == n_clusters
-            assert centers.shape[1] == X.shape[1]
+            assert init.shape[0] == n_clusters
+            assert init.shape[1] == X.shape[1]
             centers = _convert_to_supported(policy, init)
             centers_table = to_table(centers)
         else:
@@ -305,7 +304,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         init = self.init
         init_is_array_like = _is_arraylike_not_scalar(init)
         if init_is_array_like:
-            init = check_array(init, dtype=dtype, copy=True, order="C")
+            init = check_array(
+                init, dtype=dtype, accept_sparse="csr", copy=True, order="C"
+            )
             self._validate_center_shape(X, init)
 
         is_sparse = sp.issparse(X)
