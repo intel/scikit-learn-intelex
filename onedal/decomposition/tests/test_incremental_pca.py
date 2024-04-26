@@ -137,10 +137,11 @@ def test_on_random_data(
     components = incpca.components_
     singular_values = incpca.singular_values_
     centered_data = X - np.mean(X, axis=0)
-    cov_eig_result = np.linalg.eig(centered_data.T @ centered_data / (n_samples_seen - 1))
-    cov_eigenvalues = np.nan_to_num(cov_eig_result.eigenvalues)
+    cov_eigenvalues, cov_eigenvectors = np.linalg.eig(
+        centered_data.T @ centered_data / (n_samples_seen - 1)
+    )
+    cov_eigenvalues = np.nan_to_num(cov_eigenvalues)
     cov_eigenvalues[cov_eigenvalues < 0] = 0
-    cov_eigenvectors = cov_eig_result.eigenvectors
     eigenvalues_order = np.argsort(cov_eigenvalues)[::-1]
     sorted_eigenvalues = cov_eigenvalues[eigenvalues_order]
     sorted_eigenvectors = cov_eigenvectors[:, eigenvalues_order]
