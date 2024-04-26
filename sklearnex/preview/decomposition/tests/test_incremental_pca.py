@@ -162,7 +162,7 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
     if whiten:
         scale = np.sqrt(incpca.explained_variance_)
         min_scale = np.finfo(scale.dtype).eps
-        scale[scale < min_scale] = min_scale
+        scale[scale < min_scale] = np.infty
         expected_transformed_data /= scale
 
     if not (whiten and n_components == n_samples_seen):
