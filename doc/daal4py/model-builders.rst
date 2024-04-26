@@ -58,6 +58,10 @@ CatBoost::
 
 .. note:: Convert model only once and then use it for the inference.
 
+   Also note that experimental support for XGBoost* categorical data is not supported at this time.
+   In order for the model conversion to work with daal4py, non-numeric data should be converted to numeric data 
+   before training and converting the model.
+
 Classification and Regression Inference
 ----------------------------------------
 
@@ -133,3 +137,4 @@ Articles and Blog Posts
 ---------------------------------
 
 -  `Improving the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_
+
