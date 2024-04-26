@@ -27,8 +27,6 @@ from .._device_offload import dpctl_available, dpnp_available
 # from functools import wraps
 
 
-
-
 if sklearn_check_version("1.2"):
     from sklearn.utils._array_api import _convert_to_numpy as _sklearn_convert_to_numpy
     from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
