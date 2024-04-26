@@ -123,6 +123,7 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
     singular_values = incpca.singular_values_
     centered_data = data - np.mean(data, axis=0)
     cov_eig_result = np.linalg.eig(centered_data.T @ centered_data / (n_samples_seen - 1))
+    print(cov_eig_result)
     cov_eigenvalues = np.nan_to_num(cov_eig_result.eigenvalues)
     cov_eigenvalues[cov_eigenvalues < 0] = 0
     cov_eigenvectors = cov_eig_result.eigenvectors
