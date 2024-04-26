@@ -216,8 +216,8 @@ if daal_check_version((2023, "P", 200)):
             supported_algs = ["auto", "full", "lloyd", "elkan"]
             correct_count = self.n_clusters < sample_count
             if sample_weight is not None:
-                if sample_weight.shape == (X.shape[0],) and (
-                    np.allclose(sample_weight, np.ones_like(sample_weight))
+                if len(sample_weight) == (X.shape[0],) and (
+                    np.allclose(np.asarray(sample_weight), np.ones_like(sample_weight))
                 ):
                     is_sample_weight_valid = True
                 else:
