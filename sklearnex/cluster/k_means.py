@@ -31,6 +31,7 @@ if daal_check_version((2023, "P", 200)):
         check_is_fitted,
     )
 
+    from daal4py.sklearn._device_offload import support_usm_ndarray
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
     from onedal.cluster import KMeans as onedal_KMeans
@@ -366,6 +367,8 @@ if daal_check_version((2023, "P", 200)):
 
             X = self._check_test_data(X)
             return self._transform(X)
+
+        score = support_usm_ndarray()(sklearn_KMeans.score)
 
         fit.__doc__ = sklearn_KMeans.fit.__doc__
         predict.__doc__ = sklearn_KMeans.predict.__doc__

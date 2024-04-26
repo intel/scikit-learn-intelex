@@ -89,8 +89,7 @@ class BaseBasicStatistics(metaclass=ABCMeta):
 
         data_loc, weights = _convert_to_supported(policy, data_loc, weights)
 
-        data_table = to_table(data_loc)
-        weights_table = to_table(weights)
+        data_table, weights_table = to_table(data_loc, weights)
 
         dtype = data.dtype
         res = self._compute_raw(data_table, weights_table, module, policy, dtype)

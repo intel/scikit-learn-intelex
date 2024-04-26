@@ -36,13 +36,12 @@ from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_array, check_random_state
-from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import check_is_fitted
+
+from onedal.basic_statistics import BasicStatistics
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..utils import _check_array, _is_arraylike_not_scalar
-
-# from onedal.basic_statistics import BasicStatistics
 
 
 class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
@@ -83,40 +82,30 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
-    # def _get_basic_statistics_backend(self, result_options):
-    #     return BasicStatistics(result_options)
+    def _get_basic_statistics_backend(self, result_options):
+        return BasicStatistics(result_options)
 
-    # def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
-    #     """Compute absolute tolerance from the relative tolerance"""
-    #     if rtol == 0.0:
-    #         return rtol
-    #     # TODO: Support CSR in Basic Statistics
-    #     dummy_weights_table = to_table(None)
-    #     bs = self._get_basic_statistics_backend("variance")
-    #     res = bs.compute_raw(X_table, dummy_weights_table, policy, dtype)
-    #     mean_var = from_table(res["variance"]).mean()
-    #     return mean_var * rtol
-
-    def _tolerance(self, X, rtol):
+    def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
-        if sp.issparse(X):
-            variances = mean_variance_axis(X, axis=0)[1]
-            mean_var = np.mean(variances)
-        else:
-            mean_var = np.var(X, axis=0).mean()
+        dummy_weights_table = to_table(None)
+        bs = self._get_basic_statistics_backend("variance")
+        res = bs.compute_raw(X_table, dummy_weights_table, policy, dtype)
+        mean_var = from_table(res["variance"]).mean()
         return mean_var * rtol
 
-    def _check_params_vs_input(self, X_loc, policy, default_n_init=10, dtype=np.float32):
+    def _check_params_vs_input(
+        self, X_table, policy, default_n_init=10, dtype=np.float32
+    ):
         # n_clusters
-        if X_loc.shape[0] < self.n_clusters:
+        if X_table.shape[0] < self.n_clusters:
             raise ValueError(
-                f"n_samples={X_loc.shape[0]} should be >= n_clusters={self.n_clusters}."
+                f"n_samples={X_table.shape[0]} should be >= n_clusters={self.n_clusters}."
             )
 
         # tol
-        self._tol = self._tolerance(X_loc, self.tol)
+        self._tol = self._tolerance(self.tol, X_table, policy, dtype)
 
         # n-init
         # TODO(1.4): Remove
@@ -175,7 +164,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         dtype = get_dtype(X_loc)
         X_table = to_table(X_loc)
 
-        self._check_params_vs_input(X_loc, policy, dtype=dtype)
+        self._check_params_vs_input(X_table, policy, dtype=dtype)
 
         params = self._get_onedal_params(X_table, dtype)
 
@@ -276,7 +265,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         return to_table(centers)
 
     def _fit_backend(self, X_table, centroids_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(dtype)
+        params = self._get_onedal_params(X_table, dtype)
 
         # TODO: check all features for having correct type
         meta = _backend.get_table_metadata(X_table)
@@ -407,7 +396,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
     def _predict_raw(self, X_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(dtype, result_options="compute_assignments")
+        params = self._get_onedal_params(
+            X_table, dtype, result_options="compute_assignments"
+        )
 
         result = module.infer(policy, params, self.model_, X_table)
 
