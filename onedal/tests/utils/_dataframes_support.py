@@ -32,16 +32,19 @@ except ImportError:
     dpnp_available = False
 
 import numpy as np
+import pandas as pd
 
 from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter_="numpy,pandas,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
     dataframes_and_queues = []
     if "numpy" in dataframe_filter_:
         dataframes_and_queues.append(pytest.param("numpy", None, id="numpy"))
+    if "pandas" in dataframe_filter_:
+        dataframes_and_queues.append(pytest.param("pandas", None, id="pandas"))
 
     def get_df_and_q(dataframe: str):
         df_and_q = []
@@ -62,6 +65,8 @@ def _as_numpy(obj, *args, **kwargs):
         return obj.asnumpy(*args, **kwargs)
     if dpctl_available and isinstance(obj, dpt.usm_ndarray):
         return dpt.to_numpy(obj, *args, **kwargs)
+    if isinstance(obj, pd.DataFrame) or isinstance(obj, pd.Series):
+        return obj.to_array(*args, **kwargs)
     return np.asarray(obj, *args, **kwargs)
 
 
@@ -72,6 +77,19 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
     # `sycl_queue` arg is ignored.
     if target_df == "numpy":
         return np.asarray(obj, *args, **kwargs)
+    # Pandas Dataframe
+    if target_df == "pandas":
+        if (
+            "dtype" in kwargs
+            and hasattr(obj, "astype")
+            and np.issubdtype(kwargs["dtype"], np.integer)
+        ):
+            # Pandas float to int not allowed
+            obj = obj.astype(kwargs["dtype"])
+        if hasattr(obj, "ndim") and obj.ndim == 1:
+            return pd.Series(obj, *args, **kwargs)
+        else:
+            return pd.DataFrame(obj, *args, **kwargs)
     # DPNP ndarray.
     if target_df == "dpnp":
         return dpnp.asarray(
