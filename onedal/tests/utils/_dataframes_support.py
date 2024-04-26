@@ -79,6 +79,13 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         return np.asarray(obj, *args, **kwargs)
     # Pandas Dataframe
     if target_df == "pandas":
+        if (
+            "dtype" in kwargs
+            and hasattr(obj, "astype")
+            and np.issubdtype(kwargs["dtype"], np.integer)
+        ):
+            # Pandas float to int not allowed
+            obj = obj.astype(kwargs["dtype"])
         if hasattr(obj, "ndim") and obj.ndim == 1:
             return pd.Series(obj, *args, **kwargs)
         else:

@@ -64,7 +64,6 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
         if dataframe == "pandas":
             X = _convert_to_dataframe(
                 rng.random(size=1000).astype(dtype).reshape(1, -1),
-                sycl_queue=queue,
                 target_df=dataframe,
             )
         else:
@@ -96,10 +95,6 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
         rng = nprnd.default_rng()
         X = rng.integers(2, size=1000)
         y = rng.integers(2, size=1000)
-
-        if dataframe == "pandas" and np.issubdtype(dtype, np.integer):
-            X = X.astype(dtype)
-            y = y.astype(dtype)
 
         X = _convert_to_dataframe(
             X,
