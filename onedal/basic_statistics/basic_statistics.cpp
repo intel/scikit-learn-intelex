@@ -118,7 +118,7 @@ struct params2desc {
     }
 };
 
-struct params2desc_partial {
+struct params2desc_incremental {
     template <typename Float, typename Method, typename Task>
     auto operator()(const py::dict& params) {
         auto desc = dal::basic_statistics::descriptor<Float,
@@ -161,7 +161,7 @@ void init_partial_compute_ops(py::module& m) {
         const table& weights) {
             using namespace dal::basic_statistics;
             using input_t = partial_compute_input<Task>;
-            partial_compute_ops ops(policy, input_t{ prev, data, weights }, params2desc_partial{});
+            partial_compute_ops ops(policy, input_t{ prev, data, weights }, params2desc_incremental{});
             return fptype2t{ method2t{ Task{}, ops } }(params);
         }
     );
@@ -172,7 +172,7 @@ void init_finalize_compute_ops(pybind11::module_& m) {
     using namespace dal::basic_statistics;
     using input_t = partial_compute_result<Task>;
     m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
-        finalize_compute_ops ops(policy, data, params2desc_partial{});
+        finalize_compute_ops ops(policy, data, params2desc_incremental{});
         return fptype2t{ method2t{ Task{}, ops } }(params);
     });
 }
