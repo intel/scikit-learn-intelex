@@ -216,7 +216,8 @@ if daal_check_version((2023, "P", 200)):
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd", "elkan"]
             correct_count = self.n_clusters < sample_count
-            sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype)
+
+            sample_weight = _check_sample_weight(sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None)
 
             patching_status.and_conditions(
                 [
