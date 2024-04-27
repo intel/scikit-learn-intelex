@@ -178,10 +178,10 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
   - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
 
-  # Sparse Support required
-  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
+  # # Sparse Support required
+  # - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
+  # - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
+  # - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
 
   # The Newton-CG solver solution computed in float32 disagrees with that of float64 by a small
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645
@@ -243,9 +243,6 @@ deselected_tests:
 
   # Different results scikit-learn-intelex and scikit-learn linear regression with weights. Need to investigate.
   - inspection/tests/test_permutation_importance.py::test_permutation_importance_sample_weight >=0.24
-
-  # Patched and unpatched kmeans set same values to different clusters. Need to investigate.
-  # - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]  
@@ -350,14 +347,6 @@ deselected_tests:
   - tests/test_common.py::test_estimators[LogisticRegression()-check_sample_weights_invariance(kind=zeros)] >=1.4
   - tests/test_multioutput.py::test_classifier_chain_fit_and_predict_with_sparse_data >=1.4
 
-  # New failing sklearn1.4.1 tests for kmeans associated with incorrect n_iter_ values in daal4py
-  # - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-dense] >=1.4
-  # - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-sparse_matrix] >=1.4
-  # - cluster/tests/test_k_means.py::test_relocating_with_duplicates[lloyd-sparse_array] >=1.4
-  # - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-dense] >=1.4
-  # - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_matrix] >=1.4
-  # - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_array] >=1.4
-
   # Deselected tests for incremental algorithms
   # Need to rework getting policy to correctly obtain it for method without data (finalize_fit)
   # and avoid keeping it in class attribute, also need to investigate how to implement
@@ -449,8 +438,6 @@ gpu:
 
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
-  # - cluster/tests/test_k_means.py::test_k_means_fit_predict
-  # - cluster/tests/test_k_means.py::test_predict
 
   - ensemble/tests/test_bagging.py::test_gridsearch
   - ensemble/tests/test_bagging.py::test_estimators_samples
@@ -628,16 +615,6 @@ gpu:
   - tests/test_common.py::test_search_cv
   - manifold/tests/test_t_sne.py::test_n_iter_without_progress
 
-  # KMeans based (unsupported for GPU)
-  # - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_check_is_fitted]
-  # - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_check_is_fitted]
-  # - tests/test_common.py::test_check_n_features_in_after_fitting[BayesianGaussianMixture()]
-  # - tests/test_common.py::test_check_n_features_in_after_fitting[GaussianMixture()]
-  # - mixture/tests/test_gaussian_mixture.py
-  # - model_selection/tests/test_validation.py::test_cross_val_predict
-  # - metrics/tests/test_score_objects.py::test_supervised_cluster_scorers
-  # - tests/test_pipeline.py::test_fit_predict_on_pipeline
-  # - tests/test_discriminant_analysis.py::test_lda_predict
   # Other device issues
   - tests/test_metaestimators.py::test_meta_estimators_delegate_data_validation[StackingClassifier]
   - tests/test_multiclass.py::test_ovr_always_present

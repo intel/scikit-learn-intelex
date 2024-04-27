@@ -258,8 +258,6 @@ if daal_check_version((2023, "P", 200)):
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
-            assert sample_weight is None
-
             X = self._validate_data(
                 X,
                 accept_sparse="csr",
