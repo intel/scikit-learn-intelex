@@ -315,17 +315,18 @@ def get_patch_map_core(preview=False):
         mapping["_funcwrapper"] = [
             [(parallel_module, "_FuncWrapper", _FuncWrapper_sklearnex), None]
         ]
-        # Necessary for array_api support
-        mapping["yield_namespace_device_dtype_combinations"] = [
-            [
-                (
-                    _array_api_module,
-                    "yield_namespace_device_dtype_combinations",
-                    yield_namespace_device_dtype_combinations_sklearnex,
-                ),
-                None,
+        if sklearn_check_version("1.4"):
+            # Necessary for array_api support
+            mapping["yield_namespace_device_dtype_combinations"] = [
+                [
+                    (
+                        _array_api_module,
+                        "yield_namespace_device_dtype_combinations",
+                        yield_namespace_device_dtype_combinations_sklearnex,
+                    ),
+                    None,
+                ]
             ]
-        ]
         mapping["_convert_to_numpy"] = [
             [(_array_api_module, "_convert_to_numpy", _convert_to_numpy_sklearnex), None]
         ]
