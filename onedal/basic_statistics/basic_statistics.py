@@ -69,18 +69,17 @@ class BasicStatistics(BaseBasicStatistics):
     def __init__(self, result_options="all", algorithm="by_default"):
         super().__init__(result_options, algorithm)
 
-    def fit(self, data, weights=None, queue=None):
-        policy = self._get_policy(queue, data, weights)
+    def fit(self, data, sample_weight=None, queue=None):
+        policy = self._get_policy(queue, data, sample_weight)
 
         is_csr = _is_csr(data)
         if not (data is None) and not is_csr:
             data = np.asarray(data)
+        if not (sample_weight is None):
+            sample_weight = np.asarray(sample_weight)
 
-        if not (weights is None):
-            weights = np.asarray(weights)
-
-        data, weights = _convert_to_supported(policy, data, weights)
-        data_table, weights_table = to_table(data, weights)
+        data, sample_weight = _convert_to_supported(policy, data, sample_weight)
+        data_table, weights_table = to_table(data, sample_weight)
 
         dtype = data.dtype
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
