@@ -60,6 +60,14 @@ deselected_tests:
   - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est2] >=0.23 darwin
   - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est3] >=0.23 darwin
 
+  # Sklearnex RandomForestClassifier RNG is different from scikit-learn and daal4py
+  # resulting in different feature importances for small number of trees (10).
+  # Issue dissappears with bigger number of trees (>=20)
+  - inspection/tests/test_permutation_importance.py::test_permutation_importance_correlated_feature_regression_pandas[0.5-1]
+  - inspection/tests/test_permutation_importance.py::test_permutation_importance_correlated_feature_regression_pandas[0.5-2]
+  - inspection/tests/test_permutation_importance.py::test_permutation_importance_correlated_feature_regression_pandas[1.0-1]
+  - inspection/tests/test_permutation_importance.py::test_permutation_importance_correlated_feature_regression_pandas[1.0-2]
+
   # Random forest classifier selects a different most-important feature
   # Feature importances:
   # scikit-learn-intelex  [0.             0.00553064     0.71323666     0.2812327 ]
@@ -353,6 +361,16 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_matrix] >=1.4
   - cluster/tests/test_k_means.py::test_relocating_with_duplicates[elkan-sparse_array] >=1.4
 
+  # Deselected tests for incremental algorithms
+  # Need to rework getting policy to correctly obtain it for method without data (finalize_fit)
+  # and avoid keeping it in class attribute, also need to investigate how to implement
+  # partial result serialization
+  - tests/test_common.py::test_estimators[IncrementalEmpiricalCovariance()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[IncrementalEmpiricalCovariance()-check_estimators_pickle(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle(readonly_memmap=True)]
+  # There are not enough data to run onedal backend
+  - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
 
   # --------------------------------------------------------
   # No need to test daal4py patching

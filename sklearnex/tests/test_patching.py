@@ -61,12 +61,15 @@ def test_pairwise_distances_patching(caplog, dataframe, queue, dtype, metric):
             pytest.skip("pairwise_distances does not support GPU queues")
 
         rng = nprnd.default_rng()
-        X = _convert_to_dataframe(
-            rng.random(size=1000).reshape(1, -1),
-            sycl_queue=queue,
-            target_df=dataframe,
-            dtype=dtype,
-        )
+        if dataframe == "pandas":
+            X = _convert_to_dataframe(
+                rng.random(size=1000).astype(dtype).reshape(1, -1),
+                target_df=dataframe,
+            )
+        else:
+            X = _convert_to_dataframe(
+                rng.random(size=1000), sycl_queue=queue, target_df=dataframe, dtype=dtype
+            )[None, :]
 
         _ = pairwise_distances(X, metric=metric)
     assert all(
@@ -90,14 +93,17 @@ def test_roc_auc_score_patching(caplog, dataframe, queue, dtype):
 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         rng = nprnd.default_rng()
+        X = rng.integers(2, size=1000)
+        y = rng.integers(2, size=1000)
+
         X = _convert_to_dataframe(
-            rng.integers(2, size=1000),
+            X,
             sycl_queue=queue,
             target_df=dataframe,
             dtype=dtype,
         )
         y = _convert_to_dataframe(
-            rng.integers(2, size=1000),
+            y,
             sycl_queue=queue,
             target_df=dataframe,
             dtype=dtype,
@@ -142,6 +148,19 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and dtype in [np.uint32, np.uint64]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
+        elif estimator == "IncrementalLinearRegression" and dtype in [
+            np.int8,
+            np.int16,
+            np.int32,
+            np.int64,
+            np.uint8,
+            np.uint16,
+            np.uint32,
+            np.uint64,
+        ]:
+            pytest.skip(
+                "IncrementalLinearRegression fails on oneDAL side with int types because dataset is filled by zeroes"
+            )
         elif method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
