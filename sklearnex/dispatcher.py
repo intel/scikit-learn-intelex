@@ -93,6 +93,7 @@ def get_patch_map_core(preview=False):
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.cluster as cluster_module
+        import sklearn.covariance as covariance_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
@@ -118,6 +119,9 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .covariance import (
+            IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
+        )
         from .decomposition import PCA as PCA_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
@@ -284,6 +288,18 @@ def get_patch_map_core(preview=False):
             ]
         ]
         mapping["localoutlierfactor"] = mapping["lof"]
+
+        # IncrementalEmpiricalCovariance
+        mapping["incrementalempiricalcovariance"] = [
+            [
+                (
+                    covariance_module,
+                    "IncrementalEmpiricalCovariance",
+                    IncrementalEmpiricalCovariance_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # IncrementalLinearRegression
         mapping["incrementallinearregression"] = [
