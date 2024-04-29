@@ -14,13 +14,21 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
+from sklearn.base import BaseEstimator
+from sklearn.utils import check_array
+from sklearn.utils.validation import _check_sample_weight
+
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from onedal._device_offload import support_usm_ndarray
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.basic_statistics import BasicStatistics as onedal_BasicStatistics
+
+from .._device_offload import dispatch
+from .._utils import PatchingConditionsChain
 
 
 @control_n_jobs(decorated_methods=["fit"])
-class BasicStatistics:
+class BasicStatistics(BaseEstimator):
     """
     Estimator for basic statistics.
     Allows to compute basic statistics for provided data.
@@ -66,33 +74,70 @@ class BasicStatistics:
         else:
             result_options = self.options
 
-        for option in result_options:
-            setattr(self, option, getattr(self._onedal_estimator, option))
+        if isinstance(result_options, str):
+            setattr(self, result_options, getattr(self._onedal_estimator, result_options))
+        elif isinstance(result_options, list):
+            for option in result_options:
+                setattr(self, option, getattr(self._onedal_estimator, option))
 
-    def _onedal_fit(self, X, weights=None, queue=None):
+    def _onedal_supported(self, method_name, *data):
+        patching_status = PatchingConditionsChain(
+            f"sklearnex.basic_statistics.{self.__class__.__name__}.{method_name}"
+        )
+        return patching_status
+
+    _onedal_cpu_supported = _onedal_supported
+    _onedal_gpu_supported = _onedal_supported
+
+    def _onedal_fit(self, X, sample_weight=None, queue=None):
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(X, dtype=[np.float64, np.float32])
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+            )
+
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
+
         onedal_params = {
-            "algorithm": "by_default",
             "result_options": self.options,
         }
+
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_basic_statistics(**onedal_params)
-        self._onedal_estimator.fit(X, weights, queue)
+        self._onedal_estimator.fit(X, sample_weight, queue)
         self._save_attributes()
 
-    @support_usm_ndarray()
-    def fit(self, X, weights=None, queue=None):
-        """Fit with X.
+    def fit(self, X, y=None, *, sample_weight=None):
+        """Compute statistics with X, using minibatches of size batch_size.
+
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             Data for compute, where `n_samples` is the number of samples and
             `n_features` is the number of features.
-        weights : array-like of shape (n_samples,)
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        sample_weight : array-like of shape (n_samples,), default=None
             Weights for compute weighted statistics, where `n_samples` is the number of samples.
+
         Returns
         -------
         self : object
             Returns the instance itself.
         """
-        self._onedal_fit(X, weights, queue)
+        dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": None,
+            },
+            X,
+            sample_weight,
+        )
         return self
