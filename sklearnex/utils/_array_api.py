@@ -35,7 +35,7 @@ if sklearn_check_version("1.2"):
     )
 
 if dpctl_available:
-    import dpctl.tensot as dpt
+    import dpctl.tensor as dpt
 
 if dpnp_available:
     import dpnp
