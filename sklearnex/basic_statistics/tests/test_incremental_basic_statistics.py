@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.basic_statistics.tests.test_incremental_basic_statistics import (
+from onedal.basic_statistics.tests.test_basic_statistics import (
     expected_max,
     expected_mean,
     expected_sum,
