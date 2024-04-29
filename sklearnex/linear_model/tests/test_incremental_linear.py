@@ -47,7 +47,7 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, fit_intercept, macro_block
 
     y_pred = inclin.predict(X_df)
 
-    tol = 2e-6 if dtype == np.float32 else 1e-7
+    tol = 2e-6 if y_pred.dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [1], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, [0], atol=tol)
@@ -82,14 +82,14 @@ def test_sklearnex_partial_fit_on_gold_data(
         )
         inclin.partial_fit(X_split_df, y_split_df)
 
+    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_pred = inclin.predict(X_df)
+
     assert inclin.n_features_in_ == 1
-    tol = 2e-6 if dtype == np.float32 else 1e-7
+    tol = 2e-6 if y_pred.dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [[1]], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, 3, atol=tol)
-
-    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y_pred = inclin.predict(X_df)
 
     assert_allclose(_as_numpy(y_pred), y, atol=tol)
 
@@ -122,14 +122,14 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
         )
         inclin.partial_fit(X_split_df, y_split_df)
 
+    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_pred = inclin.predict(X_df)
+
     assert inclin.n_features_in_ == 2
-    tol = 7e-6 if dtype == np.float32 else 1e-7
+    tol = 7e-6 if y_pred.dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [1.0, 2.0], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, 3.0, atol=tol)
-
-    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y_pred = inclin.predict(X_df)
 
     assert_allclose(_as_numpy(y_pred), y, atol=tol)
 
@@ -181,7 +181,7 @@ def test_sklearnex_partial_fit_on_random_data(
         )
         inclin.partial_fit(X_split_df, y_split_df)
 
-    tol = 1e-4 if dtype == np.float32 else 1e-7
+    tol = 1e-4 if coef.dtype == np.float32 else 1e-7
     assert_allclose(coef, inclin.coef_.T, atol=tol)
 
     if fit_intercept:
