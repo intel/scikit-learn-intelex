@@ -76,7 +76,7 @@ class BaseSVM(ABC):
         inference_methods = (
             ["predict"]
             if class_name.endswith("R")
-            else ["predict", "predict_proba", "decision_function"]
+            else ["predict", "predict_proba", "decision_function", "score"]
         )
         if method_name in inference_methods:
             patching_status.and_conditions(
@@ -111,12 +111,9 @@ class BaseSVC(BaseSVM):
             cv = StratifiedKFold(
                 n_splits=n_splits, shuffle=True, random_state=self.random_state
             )
-            if sklearn_check_version("0.24"):
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_jobs
-                )
-            else:
-                self.clf_prob = CalibratedClassifierCV(clf_base, cv=cv, method="sigmoid")
+            self.clf_prob = CalibratedClassifierCV(
+                clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_jobs
+            )
             self.clf_prob.fit(X, y, sample_weight)
         except ValueError:
             clf_base = clf_base.fit(X, y, sample_weight)

@@ -63,39 +63,6 @@ class SVR(sklearn_SVR, BaseSVR):
         )
 
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit the SVM model according to the given training data.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features) \
-                or (n_samples, n_samples)
-            Training vectors, where `n_samples` is the number of samples
-            and `n_features` is the number of features.
-            For kernel="precomputed", the expected shape of X is
-            (n_samples, n_samples).
-
-        y : array-like of shape (n_samples,)
-            Target values (class labels in classification, real numbers in
-            regression).
-
-        sample_weight : array-like of shape (n_samples,), default=None
-            Per-sample weights. Rescale C per sample. Higher weights
-            force the classifier to put more emphasis on these points.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-
-        Notes
-        -----
-        If X and y are not C-ordered and contiguous arrays of np.float64 and
-        X is not a scipy.sparse.csr_matrix, X and/or y may be copied.
-
-        If X is a dense array, then the other methods will not support sparse
-        matrices as input.
-        """
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("1.0"):
@@ -116,22 +83,6 @@ class SVR(sklearn_SVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
-        """
-        Perform regression on samples in X.
-
-        For an one-class model, +1 (inlier) or -1 (outlier) is returned.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            For kernel="precomputed", the expected shape of X is
-            (n_samples_test, n_samples_train).
-
-        Returns
-        -------
-        y_pred : ndarray of shape (n_samples,)
-            The predicted values.
-        """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(
@@ -164,3 +115,6 @@ class SVR(sklearn_SVR, BaseSVR):
 
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
+
+    fit.__doc__ = sklearn_SVR.fit.__doc__
+    predict.__doc__ = sklearn_SVR.predict.__doc__

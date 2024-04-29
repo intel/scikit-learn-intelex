@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +18,7 @@
 
 import multiprocessing
 import os
+import platform as plt
 import subprocess
 import sys
 from distutils import log
@@ -167,6 +169,9 @@ def custom_build_cmake_clib(
         else:
             MPI_LIBS = "mpi"
 
+    arch_dir = plt.machine()
+    plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+    arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
     use_parameters_arg = "yes" if use_parameters_lib else "no"
     log.info(f"Build using parameters library: {use_parameters_arg}")
 
@@ -184,7 +189,7 @@ def custom_build_cmake_clib(
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ["DALROOT"], "include"),
-        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", "intel64"),
+        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", arch_dir),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
         "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_arg,
     ]

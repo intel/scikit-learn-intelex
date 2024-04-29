@@ -17,6 +17,7 @@
 from inspect import isclass
 
 import numpy as np
+from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -30,6 +31,7 @@ from sklearn.neighbors._base import KNeighborsMixin
 
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex import get_patch_map, patch_sklearn, sklearn_is_patched, unpatch_sklearn
+from sklearnex.linear_model import LogisticRegression
 from sklearnex.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
@@ -86,26 +88,38 @@ mixin_map = [
 ]
 
 
-SPECIAL_INSTANCES = {
-    str(i): i
-    for i in [
-        LocalOutlierFactor(novelty=True),
-        SVC(probability=True),
-        NuSVC(probability=True),
-        KNeighborsClassifier(algorithm="brute"),
-        KNeighborsRegressor(algorithm="brute"),
-        NearestNeighbors(algorithm="brute"),
-    ]
-}
+class _sklearn_clone_dict(dict):
+
+    def __getitem__(self, key):
+        return clone(super().__getitem__(key))
+
+
+SPECIAL_INSTANCES = _sklearn_clone_dict(
+    {
+        str(i): i
+        for i in [
+            LocalOutlierFactor(novelty=True),
+            SVC(probability=True),
+            NuSVC(probability=True),
+            KNeighborsClassifier(algorithm="brute"),
+            KNeighborsRegressor(algorithm="brute"),
+            NearestNeighbors(algorithm="brute"),
+            LogisticRegression(solver="newton-cg"),
+        ]
+    }
+)
 
 
 def gen_models_info(algorithms):
     output = []
     for i in algorithms:
-        # split handles SPECIAL_INSTANCES or custom inputs
-        # custom sklearn inputs must be a dict of estimators
-        # with keys set by the __str__ method
-        est = PATCHED_MODELS[i.split("(")[0]]
+
+        if i in PATCHED_MODELS:
+            est = PATCHED_MODELS[i]
+        elif i in SPECIAL_INSTANCES:
+            est = SPECIAL_INSTANCES[i].__class__
+        else:
+            raise KeyError(f"Unrecognized sklearnex estimator: {i}")
 
         methods = set()
         candidates = set(
@@ -116,7 +130,11 @@ def gen_models_info(algorithms):
             if issubclass(est, mixin):
                 methods |= candidates & set(method)
 
-        output += [[i, j] for j in methods]
+        output += [[i, j] for j in methods] if methods else [[i, None]]
+
+    # In the case that no methods are available, set method to None.
+    # This will allow estimators without mixins to still test the fit
+    # method in various tests.
     return output
 
 

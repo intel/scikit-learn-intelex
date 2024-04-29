@@ -48,17 +48,6 @@ struct method2t {
     Ops ops;
 };
 
-#define RESULT_OPTION(option) { #option, dal::basic_statistics::result_options::option }
-
-const std::map<std::string, dal::basic_statistics::result_option_id> result_option_registry {
-    RESULT_OPTION(min), RESULT_OPTION(max), RESULT_OPTION(sum), RESULT_OPTION(mean),
-    RESULT_OPTION(variance), RESULT_OPTION(variation), RESULT_OPTION(sum_squares),
-    RESULT_OPTION(standard_deviation), RESULT_OPTION(sum_squares_centered),
-    RESULT_OPTION(second_order_raw_moment)     
-};
-
-#undef RESULT_OPTION
-
 auto get_onedal_result_options(const py::dict& params) {
     using namespace dal::basic_statistics;
 
@@ -75,11 +64,11 @@ auto get_onedal_result_options(const py::dict& params) {
 
         for (std::sregex_iterator it = first; it != last; ++it) {
             std::smatch match = *it;
-            if (match.str() == "min") {
-                onedal_options = onedal_options | result_options::min;
-            }
-            else if (match.str() == "max") {
+            if (match.str() == "max") {
                 onedal_options = onedal_options | result_options::max;
+            }
+            else if (match.str() == "min") {
+                onedal_options = onedal_options | result_options::min;
             }
             else if (match.str() == "sum") {
                 onedal_options = onedal_options | result_options::sum;
@@ -149,6 +138,33 @@ struct init_compute_ops_dispatcher<Policy, dal::basic_statistics::task::compute>
 };
 
 template <typename Policy, typename Task>
+void init_partial_compute_ops(py::module& m) {
+    using prev_result_t = dal::basic_statistics::partial_compute_result<Task>;
+    m.def("partial_compute", [](
+        const Policy& policy,
+        const py::dict& params,
+        const prev_result_t& prev,
+        const table& data,
+        const table& weights) {
+            using namespace dal::basic_statistics;
+            using input_t = partial_compute_input<Task>;
+            partial_compute_ops ops(policy, input_t{ prev, data, weights }, params2desc{});
+            return fptype2t{ method2t{ Task{}, ops } }(params);
+        }
+    );
+}
+
+template <typename Policy, typename Task>
+void init_finalize_compute_ops(pybind11::module_& m) {
+    using namespace dal::basic_statistics;
+    using input_t = partial_compute_result<Task>;
+    m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
+        finalize_compute_ops ops(policy, data, params2desc{});
+        return fptype2t{ method2t{ Task{}, ops } }(params);
+    });
+}
+
+template <typename Policy, typename Task>
 void init_compute_ops(py::module& m) {
     init_compute_ops_dispatcher<Policy, Task>{}(m);
 }
@@ -172,8 +188,26 @@ void init_compute_result(py::module_& m) {
                    .DEF_ONEDAL_PY_PROPERTY(second_order_raw_moment, result_t);
 }
 
+template <typename Task>
+void init_partial_compute_result(py::module_& m) {
+    using namespace dal::basic_statistics;
+    using result_t = partial_compute_result<Task>;
+
+    py::class_<result_t>(m, "partial_compute_result")
+        .def(py::init())
+        .DEF_ONEDAL_PY_PROPERTY(partial_n_rows, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(partial_min, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(partial_max, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(partial_sum, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(partial_sum_squares, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(partial_sum_squares_centered, result_t);
+}
+
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_finalize_compute_ops);
 
 } // namespace basic_statistics
 
@@ -189,7 +223,10 @@ ONEDAL_PY_INIT_MODULE(basic_statistics) {
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task_list);
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
+    ONEDAL_PY_INSTANTIATE(init_partial_compute_ops, sub, policy_list, task_list);
+    ONEDAL_PY_INSTANTIATE(init_finalize_compute_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
+    ONEDAL_PY_INSTANTIATE(init_partial_compute_result, sub, task_list);
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 }
 

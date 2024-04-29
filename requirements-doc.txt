@@ -12,7 +12,7 @@ decorator==5.1.1
 defusedxml==0.7.1
 docutils~=0.18.1
 entrypoints==0.4
-idna==3.6
+idna==3.7
 imagesize==1.4.1
 importlib-metadata==7.0.1
 importlib-resources==6.1.1
@@ -32,6 +32,7 @@ nbformat==5.9.2
 nbsphinx==0.9.3
 nest-asyncio==1.6.0
 packaging==24.0
+pandoc==2.3
 pandocfilters==1.5.1
 parso==0.8.3
 pexpect==4.9.0
@@ -45,13 +46,15 @@ pyrsistent==0.20.0
 python-dateutil==2.8.2
 pytz==2024.1
 PyYAML==6.0.1
-pyzmq==25.1.2
+pyzmq==26.0.0
 requests==2.31.0
 six==1.16.0
 snowballstemmer==2.2.0
 soupsieve==2.5
 Sphinx==6.2.1
 sphinx-book-theme==1.0.1
+sphinx-design==0.5.0
+sphinx_copybutton==0.5.2
 sphinx-notfound-page==1.0.0
 sphinx-tabs==3.4.5
 sphinx_rtd_theme==2.0.0

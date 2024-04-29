@@ -27,11 +27,11 @@ Use |intelex| in verbose mode to find out which implementation of the algorithm 
 
 To enable verbose mode, set the ``SKLEARNEX_VERBOSE`` environment variable as shown below:
 
-- On Linux and MacOS::
+- On Linux* OS ::
 
      export SKLEARNEX_VERBOSE=INFO
 
-- On Windows::
+- On Windows* OS ::
 
      set SKLEARNEX_VERBOSE=INFO
 
