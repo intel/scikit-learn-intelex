@@ -36,9 +36,11 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../"))
 
-with open("sources/doc_version.json") as jsonFile:
-    doc_version = json.load(jsonFile)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+doc_version_path = os.path.join(script_dir, "doc_version.json")
 
+with open(doc_version_path) as jsonFile:
+    doc_version = json.load(jsonFile)
 
 # -- Project information -----------------------------------------------------
 
