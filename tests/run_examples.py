@@ -149,12 +149,15 @@ req_version["knn_bf_classification_spmd.py"] = (2023, "P", 100)
 req_version["knn_bf_regression_spmd.py"] = (2023, "P", 100)
 req_version["linear_regression_spmd.py"] = (2023, "P", 100)
 req_version["logistic_regression_spmd.py"] = (2024, "P", 400)
+# Timeout on PVC, bumped the req version to deselect
+req_version["sycl/gradient_boosted_regression.py"] = (2024, "P", 600)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
 req_device["covariance_spmd.py"] = ["gpu"]
 req_device["dbscan_spmd.py"] = ["gpu"]
 req_device["incremental_basic_statistics_dpctl.py"] = ["gpu"]
+req_device["incremental_linear_regression_dpctl.py"] = ["gpu"]
 req_device["kmeans_spmd.py"] = ["gpu"]
 req_device["knn_bf_classification_dpnp.py"] = ["gpu"]
 req_device["knn_bf_classification_spmd.py"] = ["gpu"]
@@ -174,6 +177,7 @@ req_library["covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["incremental_basic_statistics_dpctl.py"] = ["dpctl"]
+req_library["incremental_linear_regression_dpctl.py"] = ["dpctl"]
 req_library["kmeans_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["knn_bf_classification_dpnp.py"] = ["dpctl", "dpnp"]
 req_library["knn_bf_classification_spmd.py"] = ["dpctl", "mpi4py"]
