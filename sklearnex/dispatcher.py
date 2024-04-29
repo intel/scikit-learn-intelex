@@ -327,9 +327,12 @@ def get_patch_map_core(preview=False):
                     None,
                 ]
             ]
-        mapping["_convert_to_numpy"] = [
-            [(_array_api_module, "_convert_to_numpy", _convert_to_numpy_sklearnex), None]
-        ]
+            mapping["_convert_to_numpy"] = [
+                [
+                    (_array_api_module, "_convert_to_numpy", _convert_to_numpy_sklearnex),
+                    None,
+                ]
+            ]
     return mapping
 
 
