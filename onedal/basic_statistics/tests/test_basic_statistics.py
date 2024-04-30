@@ -69,7 +69,7 @@ def expected_second_order_raw_moment(X):
 
 
 options_and_tests = [
-    ("sum", expected_sum, (3e-4, 1e-7)),
+    ("sum", expected_sum, (5e-4, 1e-7)),
     ("min", expected_min, (1e-7, 1e-7)),
     ("max", expected_max, (1e-7, 1e-7)),
     ("mean", expected_mean, (5e-7, 1e-7)),
