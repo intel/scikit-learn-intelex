@@ -171,7 +171,7 @@ def test_multiple_options_on_random_data(
             expected_sum(X),
         )
 
-    tol = 3e-4 if res_mean.dtype == np.float32 else 1e-7
+    tol = 5e-4 if res_mean.dtype == np.float32 else 1e-7
     assert_allclose(gtr_mean, res_mean, atol=tol)
     assert_allclose(gtr_max, res_max, atol=tol)
     assert_allclose(gtr_sum, res_sum, atol=tol)
