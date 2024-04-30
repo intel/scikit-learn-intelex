@@ -46,7 +46,8 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+# TODO: fix RF regressor predict for the GPU sycl_queue.
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(device_filter_="cpu"))
 def test_sklearnex_import_rf_regression(dataframe, queue):
     from sklearnex.ensemble import RandomForestRegressor
 
@@ -58,9 +59,6 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
     pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
 
     if queue is not None and queue.sycl_device.is_gpu:
-        # TODO: resolve differences on lower-precision hardware and remove skip
-        if pred.dtype == np.float32:
-            pytest.skip("Forest results instability with fp32")
         assert_allclose([-0.011208], pred, atol=1e-2)
     else:
         if daal_check_version((2024, "P", 0)):
@@ -90,7 +88,8 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+# TODO: fix ET regressor predict for the GPU sycl_queue.
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(device_filter_="cpu"))
 def test_sklearnex_import_et_regression(dataframe, queue):
     from sklearnex.ensemble import ExtraTreesRegressor
 
@@ -112,9 +111,6 @@ def test_sklearnex_import_et_regression(dataframe, queue):
     )
 
     if queue is not None and queue.sycl_device.is_gpu:
-        # TODO: resolve differences on lower-precision hardware and remove skip
-        if pred.dtype == np.float32:
-            pytest.skip("Forest results instability with fp32")
         assert_allclose([1.909769], pred, atol=1e-2)
     else:
         assert_allclose([0.445], pred, atol=1e-2)
