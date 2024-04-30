@@ -39,7 +39,7 @@ for the best performance on the Intel(R) Architecture.
 .. note::
 
    Experimental support for XGBoost* and LightGBM* categorical data is not supported at this time.
-   In order for the model conversion to work with daal4py, non-numeric data should be converted to numeric data 
+   For the model conversion to work with daal4py, convert non-numeric data to numeric data 
    before training and converting the model.
 
 Conversion
