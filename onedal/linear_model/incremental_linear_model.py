@@ -20,7 +20,7 @@ from daal4py.sklearn._utils import get_dtype
 
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_X_y, _num_features
+from ..utils import _check_array, _check_X_y, _num_features
 from .linear_model import BaseLinearRegression
 
 
@@ -83,6 +83,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
+        y = np.asarray(y).astype(dtype=self._dtype)
         self._y_ndim_1 = y.ndim == 1
 
         X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
