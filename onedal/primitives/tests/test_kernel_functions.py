@@ -66,7 +66,7 @@ def test_dense_self_rbf_kernel(queue):
     result = rbf_kernel(X, queue=queue)
     expected = sklearn_rbf_kernel(X)
 
-    tol = 1e-14 if result.dtype == np.float64 else 1e-5
+    tol = 1e-5 if result.dtype == np.float32 else 1e-14
     assert_allclose(result, expected, rtol=tol)
 
 

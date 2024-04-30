@@ -20,7 +20,7 @@ from daal4py.sklearn._utils import get_dtype
 
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_array, _check_X_y, _num_features
+from ..utils import _check_X_y, _num_features
 from .linear_model import BaseLinearRegression
 
 
