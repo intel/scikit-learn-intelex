@@ -85,7 +85,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
 
         self._y_ndim_1 = y.ndim == 1
 
-        X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
+        X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)

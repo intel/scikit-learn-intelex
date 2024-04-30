@@ -181,7 +181,7 @@ def test_sklearnex_partial_fit_on_random_data(
         )
         inclin.partial_fit(X_split_df, y_split_df)
 
-    tol = 1e-4 if coef.dtype == np.float32 else 1e-7
+    tol = 1e-4 if inclin.coef_.dtype == np.float32 else 1e-7
     assert_allclose(coef, inclin.coef_.T, atol=tol)
 
     if fit_intercept:
