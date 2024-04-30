@@ -22,6 +22,7 @@ import pytest
 from sklearn.base import BaseEstimator
 from sklearn.datasets import make_classification
 
+from sklearnex.decomposition import PCA
 from sklearnex.dispatcher import get_patch_map
 from sklearnex.svm import SVC, NuSVC
 
@@ -73,6 +74,9 @@ def test_n_jobs_support(caplog, estimator_class, n_jobs):
     # by default, [Nu]SVC.predict_proba is restricted by @available_if decorator
     if estimator_class in [SVC, NuSVC]:
         estimator_kwargs["probability"] = True
+    # explicitly request oneDAL's PCA-Covariance algorithm
+    if estimator_class == PCA:
+        estimator_kwargs["svd_solver"] = "covariance_eigh"
     estimator_instance = estimator_class(**estimator_kwargs)
     # check `n_jobs` parameter doc entry
     check_estimator_doc(estimator_class)

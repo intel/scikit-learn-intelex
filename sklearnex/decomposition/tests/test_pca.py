@@ -41,10 +41,10 @@ def test_sklearnex_import(dataframe, queue):
         [3.6053038, 0.04224385],
     ]
 
-    pca = PCA(n_components=2, svd_solver="full")
+    pca = PCA(n_components=2, svd_solver="covariance_eigh")
     pca.fit(X)
     X_transformed = pca.transform(X)
-    X_fit_transformed = PCA(n_components=2, svd_solver="full").fit_transform(X)
+    X_fit_transformed = PCA(n_components=2, svd_solver="covariance_eigh").fit_transform(X)
 
     if daal_check_version((2024, "P", 100)):
         assert "sklearnex" in pca.__module__
