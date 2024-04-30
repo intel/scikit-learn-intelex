@@ -10,5 +10,5 @@ Fixes # - _issue number(s) if exists_
 - [ ] I have run it locally and tested the changes extensively.
 - [ ] I have resolved any merge conflicts that might occur with the base branch.
 - [ ] Git commit message contains an appropriate signed-off-by string _(see [CONTRIBUTING.md](https://github.com/intel/scikit-learn-intelex/blob/main/CONTRIBUTING.md#pull-requests) for details)_
-- [ ] I added a respective label(s) to PR in case I have permissions for that
+- [ ] I have added a respective label(s) to PR if I have a permission for that.  
 
