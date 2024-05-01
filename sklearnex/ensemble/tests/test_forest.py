@@ -47,7 +47,9 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
 
 
 # TODO: fix RF regressor predict for the GPU sycl_queue.
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(device_filter_="cpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
+)
 def test_sklearnex_import_rf_regression(dataframe, queue):
     from sklearnex.ensemble import RandomForestRegressor
 
@@ -68,7 +70,9 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
 
 
 # TODO: fix ET classifier predict for the GPU sycl_queue.
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(device_filter_="cpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
+)
 def test_sklearnex_import_et_classifier(dataframe, queue):
     from sklearnex.ensemble import ExtraTreesClassifier
 
@@ -90,7 +94,9 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
 
 
 # TODO: fix ET regressor predict for the GPU sycl_queue.
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(device_filter_="cpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
+)
 def test_sklearnex_import_et_regression(dataframe, queue):
     from sklearnex.ensemble import ExtraTreesRegressor
 

@@ -42,6 +42,7 @@ if daal_check_version((2024, "P", 1)):
         # TODO: check why predictions all the same on windows GPU
         if queue.sycl_device.is_gpu:
             import sys
+
             if sys.platform in ["win32", "cygwin"]:
                 pytest.skip("LogReg GPU results instability on windows")
         assert accuracy_score(y_test, y_pred) > 0.95
