@@ -15,13 +15,11 @@
 # ==============================================================================
 
 import numbers
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 
 import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
 from sklearn.utils.extmath import stable_cumsum
-
-from daal4py.sklearn._utils import sklearn_check_version
 
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
