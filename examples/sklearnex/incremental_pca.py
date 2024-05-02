@@ -33,10 +33,7 @@ result = incpca.partial_fit(X_3)
 X = np.concatenate((X_1, X_2, X_3))
 transformed_X = incpca.transform(X)
 
-print(f"Number of components:\n{result.n_components_}")
-print(f"Singular values:\n{result.singular_values_}")
-print(f"Means:\n{result.mean_}")
-print(f"Explained variance:\n{result.explained_variance_}")
+print(f"Principal components:\n{result.components_}")
 print(f"Explained variance ratio:\n{result.explained_variance_ratio_}")
 print(f"Transformed data:\n{transformed_X}")
 
@@ -47,20 +44,6 @@ X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
 result = incpca.fit(X)
 transformed_X = incpca.transform(X)
 
-print(f"Number of components:\n{result.n_components_}")
-print(f"Singular values:\n{result.singular_values_}")
-print(f"Means:\n{result.mean_}")
-print(f"Explained variance:\n{result.explained_variance_}")
+print(f"Principal components:\n{result.components_}")
 print(f"Explained variance ratio:\n{result.explained_variance_ratio_}")
-print(f"Transformed data:\n{transformed_X}")
-
-# We call fit_transform method to get transformed data in single call.
-incpca = IncrementalPCA(batch_size=3)
-transformed_X = incpca.fit_transform(X)
-
-print(f"Number of components:\n{incpca.n_components_}")
-print(f"Singular values:\n{incpca.singular_values_}")
-print(f"Means:\n{incpca.mean_}")
-print(f"Explained variance:\n{incpca.explained_variance_}")
-print(f"Explained variance ratio:\n{incpca.explained_variance_ratio_}")
 print(f"Transformed data:\n{transformed_X}")
