@@ -16,23 +16,20 @@
 from abc import ABCMeta
 
 import numpy as np
-from sklearn.utils import check_array
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
-from onedal import _backend
+from daal4py.sklearn._utils import daal_check_version, get_dtype
+from onedal.utils import _check_array
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
-class BaseEmpiricalCovariance(metaclass=ABCMeta):
-    def __init__(self, method="dense", bias=False):
+class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
+    def __init__(self, method="dense", bias=False, assume_centered=False):
         self.method = method
         self.bias = bias
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
+        self.assume_centered = assume_centered
 
     def _get_onedal_params(self, dtype=np.float32):
         params = {
@@ -41,6 +38,8 @@ class BaseEmpiricalCovariance(metaclass=ABCMeta):
         }
         if daal_check_version((2024, "P", 1)):
             params["bias"] = self.bias
+        if daal_check_version((2024, "P", 400)):
+            params["assumeCentered"] = self.assume_centered
 
         return params
 
@@ -59,6 +58,12 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         If True biased estimation of covariance is computed which equals to
         the unbiased one multiplied by (n_samples - 1) / n_samples.
 
+    assume_centered : bool, default=False
+        If True, data are not centered before computation.
+        Useful when working with data whose mean is almost, but not exactly
+        zero.
+        If False (default), data are centered before computation.
+
     Attributes
     ----------
     location_ : ndarray of shape (n_features,)
@@ -68,7 +73,7 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         Estimated covariance matrix
     """
 
-    def fit(self, X, queue=None):
+    def fit(self, X, y=None, queue=None):
         """Fit the sample covariance matrix of X.
 
         Parameters
@@ -76,6 +81,9 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         X : array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples, and
             `n_features` is the number of features.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
 
         queue : dpctl.SyclQueue
             If not None, use this queue for computations.
@@ -86,21 +94,25 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
             Returns the instance itself.
         """
         policy = self._get_policy(queue, X)
-        X = check_array(X, dtype=[np.float64, np.float32])
-        X = make2d(X)
-        types = [np.float32, np.float64]
-        if get_dtype(X) not in types:
-            X = X.astype(np.float64)
+        X = _check_array(X, dtype=[np.float64, np.float32])
         X = _convert_to_supported(policy, X)
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = _backend.covariance.compute(
-                policy, params, hparams.backend, to_table(X)
+            result = self._get_backend(
+                "covariance",
+                None,
+                "compute",
+                policy,
+                params,
+                hparams.backend,
+                to_table(X),
             )
         else:
-            result = _backend.covariance.compute(policy, params, to_table(X))
+            result = self._get_backend(
+                "covariance", None, "compute", policy, params, to_table(X)
+            )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

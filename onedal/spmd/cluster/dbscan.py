@@ -16,7 +16,7 @@
 
 from onedal.cluster import DBSCAN as DBSCAN_Batch
 
-from .._common import BaseEstimatorSPMD
+from .._base import BaseEstimatorSPMD
 
 
 class DBSCAN(BaseEstimatorSPMD, DBSCAN_Batch):

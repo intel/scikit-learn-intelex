@@ -1,12 +1,14 @@
-pytest==7.4.4
+pytest==7.4.4 ; python_version == '3.8'
+pytest==8.2.0 ; python_version >= '3.9'
 numpy>=1.19.5 ; python_version <= '3.9'
 numpy>=1.21.6 ; python_version == '3.10'
 numpy>=1.23.5 ; python_version >= '3.11'
 scikit-learn==1.2.2 ; python_version == '3.8'
-scikit-learn==1.4.0 ; python_version >= '3.9'
+scikit-learn==1.4.2 ; python_version >= '3.9'
 pandas==2.0.3 ; python_version == '3.8'
 pandas==2.2.0 ; python_version >= '3.9'
 xgboost==2.0.3
 lightgbm==4.3.0
-catboost==1.2.2; python_version <= '3.11' # FIXME: Add as soon as 3.12 is supported
-shap==0.44.1; python_version <= '3.11' # FIXME: Add as soon as 3.12 is supported
+catboost==1.2.5
+shap==0.44.1 ; python_version == '3.8'
+shap==0.45.0 ; python_version >= '3.9'

@@ -38,19 +38,27 @@ if daal_check_version((2024, "P", 1)):
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
+    from sklearn.metrics import accuracy_score
+    from sklearn.utils.multiclass import type_of_target
     from sklearn.utils.validation import check_X_y
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
-    from onedal.utils import _num_features, _num_samples
+    from onedal.utils import _num_samples
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
     from ..utils.validation import _assert_all_finite
 
     @control_n_jobs(
-        decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]
+        decorated_methods=[
+            "fit",
+            "predict",
+            "predict_proba",
+            "predict_log_proba",
+            "score",
+        ]
     )
     class LogisticRegression(sklearn_LogisticRegression, BaseLogisticRegression):
         __doc__ = sklearn_LogisticRegression.__doc__
@@ -72,9 +80,9 @@ if daal_check_version((2024, "P", 1)):
             intercept_scaling=1,
             class_weight=None,
             random_state=None,
-            solver="lbfgs" if sklearn_check_version("0.22") else "liblinear",
+            solver="lbfgs",
             max_iter=100,
-            multi_class="auto" if sklearn_check_version("0.22") else "ovr",
+            multi_class="auto",
             verbose=0,
             warm_start=False,
             n_jobs=None,
@@ -160,6 +168,27 @@ if daal_check_version((2024, "P", 1)):
                 X,
             )
 
+        @wrap_output_data
+        def score(self, X, y, sample_weight=None):
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=False)
+            return dispatch(
+                self,
+                "score",
+                {
+                    "onedal": self.__class__._onedal_score,
+                    "sklearn": sklearn_LogisticRegression.score,
+                },
+                X,
+                y,
+                sample_weight=sample_weight,
+            )
+
+        def _onedal_score(self, X, y, sample_weight=None, queue=None):
+            return accuracy_score(
+                y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+            )
+
         def _test_type_and_finiteness(self, X_in):
             X = np.asarray(X_in)
 
@@ -185,7 +214,10 @@ if daal_check_version((2024, "P", 1)):
                 [
                     (self.penalty == "l2", "Only l2 penalty is supported."),
                     (self.dual == False, "dual=True is not supported."),
-                    (self.intercept_scaling == 1, "Intercept scaling is not supported."),
+                    (
+                        self.intercept_scaling == 1,
+                        "Intercept scaling is not supported.",
+                    ),
                     (self.class_weight is None, "Class weight is not supported"),
                     (self.solver == "newton-cg", "Only newton-cg solver is supported."),
                     (
@@ -195,6 +227,10 @@ if daal_check_version((2024, "P", 1)):
                     (self.warm_start == False, "Warm start is not supported."),
                     (self.l1_ratio is None, "l1 ratio is not supported."),
                     (sample_weight is None, "Sample weight is not supported."),
+                    (
+                        type_of_target(y) == "binary",
+                        "Only binary classification is supported",
+                    ),
                 ]
             )
 
@@ -213,24 +249,34 @@ if daal_check_version((2024, "P", 1)):
             return patching_status
 
         def _onedal_gpu_predict_supported(self, method_name, *data):
-            assert method_name in ["predict", "predict_proba", "predict_log_proba"]
-            assert len(data) == 1
+            assert method_name in [
+                "predict",
+                "predict_proba",
+                "predict_log_proba",
+                "score",
+            ]
 
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f"sklearn.linear_model.{class_name}.{method_name}"
             )
 
-            n_samples = _num_samples(*data)
+            n_samples = _num_samples(data[0])
             model_is_sparse = issparse(self.coef_) or (
                 self.fit_intercept and issparse(self.intercept_)
             )
             dal_ready = patching_status.and_conditions(
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
-                    (not issparse(*data), "Sparse input is not supported."),
+                    (
+                        not any([issparse(i) for i in data]),
+                        "Sparse input is not supported.",
+                    ),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
-                    (hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."),
+                    (
+                        hasattr(self, "_onedal_estimator"),
+                        "oneDAL model was not trained.",
+                    ),
                 ]
             )
             if not dal_ready:
@@ -245,7 +291,7 @@ if daal_check_version((2024, "P", 1)):
         def _onedal_gpu_supported(self, method_name, *data):
             if method_name == "fit":
                 return self._onedal_gpu_fit_supported(method_name, *data)
-            if method_name in ["predict", "predict_proba", "predict_log_proba"]:
+            if method_name in ["predict", "predict_proba", "predict_log_proba", "score"]:
                 return self._onedal_gpu_predict_supported(method_name, *data)
             raise RuntimeError(
                 f"Unknown method {method_name} in {self.__class__.__name__}"
@@ -323,6 +369,12 @@ if daal_check_version((2024, "P", 1)):
             X = self._validate_data(X, accept_sparse=False, reset=False)
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
+
+        fit.__doc__ = sklearn_LogisticRegression.fit.__doc__
+        predict.__doc__ = sklearn_LogisticRegression.predict.__doc__
+        predict_proba.__doc__ = sklearn_LogisticRegression.predict_proba.__doc__
+        predict_log_proba.__doc__ = sklearn_LogisticRegression.predict_log_proba.__doc__
+        score.__doc__ = sklearn_LogisticRegression.score.__doc__
 
 else:
     LogisticRegression = LogisticRegression_daal4py

@@ -294,7 +294,7 @@ MODELS_INFO = [
         "dataset": "regression",
     },
     {
-        "model": PCA(n_components=0.5, svd_solver="full", random_state=0),
+        "model": PCA(n_components=0.5, svd_solver="covariance_eigh", random_state=0),
         "methods": ["transform", "get_covariance", "get_precision", "score_samples"],
         "dataset": "classifier",
     },

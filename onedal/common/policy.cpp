@@ -15,38 +15,63 @@
 *******************************************************************************/
 
 #include "oneapi/dal/detail/policy.hpp"
+#include "onedal/common/policy_common.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-ONEDAL_PY_INIT_MODULE(policy) {
-    py::class_<detail::host_policy>(m, "host_policy")
-        .def(py::init())
-        .def("get_device_name", [](const detail::host_policy& self) {
-            return "cpu";
-        });
+using host_policy_t = dal::detail::host_policy;
+using default_host_policy_t = dal::detail::default_host_policy;
+
+void instantiate_host_policy(py::module& m) {
+    constexpr const char name[] = "host_policy";
+    py::class_<host_policy_t> policy(m, name);
+    policy.def(py::init<host_policy_t>());
+    instantiate_host_policy(policy);
+}
+
+void instantiate_default_host_policy(py::module& m) {
+    constexpr const char name[] = "default_host_policy";
+    py::class_<default_host_policy_t> policy(m, name);
+    policy.def(py::init<default_host_policy_t>());
+    instantiate_host_policy(policy);
+}
 
 #ifdef ONEDAL_DATA_PARALLEL
-    py::class_<detail::data_parallel_policy>(m, "data_parallel_policy")
-        .def(py::init([](std::size_t address_of_queue) {
-            auto* queue = reinterpret_cast<sycl::queue*>(address_of_queue);
-            return detail::data_parallel_policy(*queue);
-        }))
-        .def(py::init([](const std::string& filter_string) {
-            sycl::queue q { sycl::ext::oneapi::filter_selector(filter_string) };
-            return detail::data_parallel_policy(q);
-        }))
-        .def("get_device_name", [](const detail::data_parallel_policy& self) {
-            if (self.get_queue().get_device().is_gpu()) {
-                return "gpu";
-            } else if (self.get_queue().get_device().is_cpu()) {
-                return "cpu";
-            }
-            return "unknown";
-        });
-#endif
+
+using data_parallel_policy_t = dal::detail::data_parallel_policy;
+
+void instantiate_data_parallel_policy(py::module& m) {
+    constexpr const char name[] = "data_parallel_policy";
+    py::class_<data_parallel_policy_t> policy(m, name);
+    policy.def(py::init<data_parallel_policy_t>());
+    policy.def(py::init([](std::uint32_t id) {
+        return make_dp_policy(id);
+    }));
+    policy.def(py::init([](const std::string& filter) {
+        return make_dp_policy(filter);
+    }));
+    policy.def(py::init([](const py::object& syclobj) {
+        return make_dp_policy(syclobj);
+    }));
+    policy.def("get_device_id", [](const data_parallel_policy_t& policy) {
+        return get_device_id(policy);
+    });
+    policy.def("get_device_name", [](const data_parallel_policy_t& policy) {
+        return get_device_name(policy);
+    });
+}
+
+#endif // ONEDAL_DATA_PARALLEL
+
+ONEDAL_PY_INIT_MODULE(policy) {
+    instantiate_host_policy(m);
+    instantiate_default_host_policy(m);
+#ifdef ONEDAL_DATA_PARALLEL
+    instantiate_data_parallel_policy(m);
+#endif // ONEDAL_DATA_PARALLEL
 }
 
 } // namespace oneapi::dal::python

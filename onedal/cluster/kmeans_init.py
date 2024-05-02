@@ -18,14 +18,13 @@ import numpy as np
 from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal import _backend
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 if daal_check_version((2023, "P", 200)):
 
-    class KMeansInit:
+    class KMeansInit(onedal_BaseEstimator):
         """
         KMeansInit oneDAL implementation.
         """
@@ -46,9 +45,6 @@ if daal_check_version((2023, "P", 200)):
                 self.local_trials_count = 2 + int(np.log(cluster_count))
             else:
                 self.local_trials_count = local_trials_count
-
-        def _get_policy(self, queue, *data):
-            return _get_policy(queue, *data)
 
         def _get_onedal_params(self, dtype=np.float32):
             return {
@@ -87,10 +83,12 @@ if daal_check_version((2023, "P", 200)):
             return from_table(centroids)
 
         def compute_raw(self, X_table, policy, dtype=np.float32):
-            return self._compute_raw(X_table, _backend.kmeans_init.init, policy, dtype)
+            return self._compute_raw(
+                X_table, self._get_backend("kmeans_init", "init", None), policy, dtype
+            )
 
         def compute(self, X, queue=None):
-            return self._compute(X, _backend.kmeans_init.init, queue)
+            return self._compute(X, self._get_backend("kmeans_init", "init", None), queue)
 
     def kmeans_plusplus(
         X,

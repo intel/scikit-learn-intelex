@@ -157,7 +157,7 @@ Dimensionality reduction
    * - `PCA`
      - All parameters are supported except:
 
-       - ``svd_solver`` != `'full'`
+       - ``svd_solver`` not in [`'full'`, `'covariance_eigh'`]
      - Sparse data is not supported
    * - `TSNE`
      - All parameters are supported except:
@@ -340,7 +340,7 @@ Dimensionality reduction
    * - `PCA`
      - All parameters are supported except:
      
-       - ``svd_solver`` != `'full'`
+       - ``svd_solver`` not in [`'full'`, `'covariance_eigh'`]
      - Sparse data is not supported
 
 Nearest Neighbors

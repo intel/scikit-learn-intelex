@@ -17,6 +17,7 @@
 
 # System imports
 import os
+import shutil
 import sys
 import time
 
@@ -51,25 +52,9 @@ if dal_root is None:
 
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
-dpcpp = True if "DPCPPROOT" in os.environ else False
-dpcpp_root = None if not dpcpp else os.environ["DPCPPROOT"]
+dpcpp = shutil.which("icpx") is not None
 
-try:
-    import dpctl
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    import importlib.util
-
-    try:
-        dpctl_include = os.path.join(
-            importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
-        )
-        dpctl_available = dpctl_include is not None
-    except AttributeError:
-        dpctl_available = False
-
-build_distribute = dpcpp and dpctl_available and not no_dist and IS_LIN
+build_distribute = dpcpp and not no_dist and IS_LIN
 
 ONEDAL_VERSION = get_onedal_version(dal_root)
 
@@ -84,6 +69,7 @@ with open("README.md", "r", encoding="utf8") as f:
 
 packages_with_tests = [
     "sklearnex",
+    "sklearnex.basic_statistics",
     "sklearnex.cluster",
     "sklearnex.covariance",
     "sklearnex.decomposition",
@@ -97,7 +83,6 @@ packages_with_tests = [
     "sklearnex.preview",
     "sklearnex.preview.covariance",
     "sklearnex.preview.cluster",
-    "sklearnex.preview.decomposition",
     "sklearnex.svm",
     "sklearnex.utils",
 ]
@@ -105,6 +90,7 @@ packages_with_tests = [
 if build_distribute:
     packages_with_tests += [
         "sklearnex.spmd",
+        "sklearnex.spmd.covariance",
         "sklearnex.spmd.decomposition",
         "sklearnex.spmd.ensemble",
     ]
@@ -150,7 +136,7 @@ setup(
         "Topic :: Software Development",
     ],
     python_requires=">=3.8",
-    install_requires=["daal4py>=2024.0", "scikit-learn>=1.0"],
+    install_requires=["daal4py>=2024.3", "scikit-learn>=1.0"],
     keywords=[
         "machine learning",
         "scikit-learn",

@@ -52,7 +52,7 @@ size = comm.Get_size()
 
 if size < 2:
     warn(
-        "This example was intentionally " "designed to run in distributed mode only",
+        "This example was intentionally designed to run in distributed mode only",
         RuntimeWarning,
     )
 

@@ -25,6 +25,8 @@
 #include "oneapi/dal/compute.hpp"
 #include "oneapi/dal/partial_compute.hpp"
 #include "oneapi/dal/finalize_compute.hpp"
+#include "oneapi/dal/partial_train.hpp"
+#include "oneapi/dal/finalize_train.hpp"
 
 #define ONEDAL_PARAM_DISPATCH_VALUE(value, value_case, ops, ...) \
     if (value == value_case) {                                   \
@@ -34,7 +36,6 @@
 
 #define ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(name) \
     { throw std::runtime_error("Invalid value for parameter <" #name ">"); }
-
 
 namespace oneapi::dal::python {
 
@@ -204,6 +205,90 @@ struct finalize_compute_ops {
     Policy policy;
     Input input;
     Ops ops;
+};
+
+template <typename Policy, typename Input, typename Ops>
+struct partial_train_ops {
+    using Task = typename Input::task_t;
+    partial_train_ops(const Policy& policy, const Input& input, const Ops& ops)
+        : policy(policy),
+          input(input),
+          ops(ops) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::partial_train(policy, desc, input);
+    }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+};
+
+template <typename Policy, typename Input, typename Ops, typename Hyperparams>
+struct partial_train_ops_with_hyperparams {
+    using Task = typename Input::task_t;
+    partial_train_ops_with_hyperparams(
+        const Policy& policy, const Input& input,
+        const Ops& ops, const Hyperparams& hyperparams)
+        : policy(policy),
+          input(input),
+          ops(ops),
+          hyperparams(hyperparams) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::partial_train(policy, desc, hyperparams, input);
+    }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+    Hyperparams hyperparams;
+};
+
+template <typename Policy, typename Input, typename Ops>
+struct finalize_train_ops {
+    using Task = typename Input::task_t;
+    finalize_train_ops(const Policy& policy, const Input& input, const Ops& ops)
+        : policy(policy),
+          input(input),
+          ops(ops) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::finalize_train(policy, desc, input);
+        }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+};
+
+template <typename Policy, typename Input, typename Ops, typename Hyperparams>
+struct finalize_train_ops_with_hyperparams {
+    using Task = typename Input::task_t;
+    finalize_train_ops_with_hyperparams(
+        const Policy& policy, const Input& input,
+        const Ops& ops, const Hyperparams& hyperparams)
+        : policy(policy),
+          input(input),
+          ops(ops),
+          hyperparams(hyperparams) {}
+
+    template <typename Float, typename Method, typename... Args>
+    auto operator()(const pybind11::dict& params) {
+        auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        return dal::finalize_train(policy, desc, hyperparams, input);
+        }
+
+    Policy policy;
+    Input input;
+    Ops ops;
+    Hyperparams hyperparams;
 };
 
 } // namespace oneapi::dal::python

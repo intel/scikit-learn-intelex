@@ -28,26 +28,33 @@ from onedal.tests.utils._dataframes_support import (
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("macro_block", [None, 1024])
-def test_sklearnex_import_linear(dataframe, queue, macro_block):
+def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
     from sklearnex.linear_model import LinearRegression
 
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
     y = np.dot(X, np.array([1, 2])) + 3
+    X = X.astype(dtype=dtype)
+    y = y.astype(dtype=dtype)
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+
     linreg = LinearRegression()
     if daal_check_version((2024, "P", 0)) and macro_block is not None:
         hparams = linreg.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
+
     linreg.fit(X, y)
-    if daal_check_version((2023, "P", 100)):
-        assert hasattr(linreg, "_onedal_estimator")
+
+    assert hasattr(linreg, "_onedal_estimator")
     assert "sklearnex" in linreg.__module__
     assert linreg.n_features_in_ == 2
-    assert_allclose(_as_numpy(linreg.intercept_), 3.0)
-    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0])
+
+    tol = 1e-5 if dtype == np.float32 else 1e-7
+    assert_allclose(_as_numpy(linreg.intercept_), 3.0, rtol=tol)
+    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
 
 
 def test_sklearnex_import_ridge():
@@ -80,3 +87,31 @@ def test_sklearnex_import_elastic():
     assert "daal4py" in elasticnet.__module__
     assert_allclose(elasticnet.intercept_, 1.451, atol=1e-3)
     assert_allclose(elasticnet.coef_, [18.838, 64.559], atol=1e-3)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
+    from sklearnex.linear_model import LinearRegression
+
+    seed = 42
+    num_samples = 3500
+    num_features, num_targets = 14, 9
+
+    gen = np.random.default_rng(seed)
+    intercept = gen.random(size=num_targets, dtype=dtype)
+    coef = gen.random(size=(num_targets, num_features), dtype=dtype).T
+
+    X = gen.random(size=(num_samples, num_features), dtype=dtype)
+    gtr = X @ coef + intercept[np.newaxis, :]
+
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+
+    linreg = LinearRegression(fit_intercept=True)
+    linreg.coef_ = coef.T
+    linreg.intercept_ = intercept
+
+    y_pred = linreg.predict(X)
+
+    tol = 1e-5 if dtype == np.float32 else 1e-7
+    assert_allclose(gtr, _as_numpy(y_pred), rtol=tol)

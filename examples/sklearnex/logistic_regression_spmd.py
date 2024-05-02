@@ -50,7 +50,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-if dpctl.has_gpu_devices:
+if dpctl.has_gpu_devices():
     q = dpctl.SyclQueue("gpu")
 else:
     raise RuntimeError(
