@@ -178,7 +178,7 @@ def test_on_random_data(
     if whiten:
         scale = np.sqrt(incpca.explained_variance_)
         min_scale = np.finfo(scale.dtype).eps
-        scale[scale < min_scale] = np.infty
+        scale[scale < min_scale] = np.inf
         expected_transformed_data /= scale
 
     if daal_check_version((2024, "P", 500)) or not (
