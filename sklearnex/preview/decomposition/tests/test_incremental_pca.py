@@ -134,7 +134,6 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
         :n_components
     ]
     expected_components = sorted_eigenvectors.T[:n_components]
-    assert_allclose(singular_values[:-1], expected_singular_values[:-1], atol=tol)
 
     assert_allclose(singular_values, expected_singular_values, atol=tol)
     for i in range(n_components):
