@@ -216,7 +216,6 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
         ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
         ONEDAL_PY_INSTANTIATE(init_partial_train_ops, sub, policy_list, task_list);
         ONEDAL_PY_INSTANTIATE(init_finalize_train_ops, sub, policy_list, task_list);
-        ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
     #endif
 }
 
