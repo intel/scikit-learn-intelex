@@ -67,6 +67,9 @@ class IncrementalPCA(BasePCA):
             self.n_components_ = self.n_components
 
         module = self._get_backend("decomposition", "dim_reduction")
+
+        X = _convert_to_supported(self._policy, X)
+        
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
 
@@ -74,7 +77,6 @@ class IncrementalPCA(BasePCA):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(X)
 
-        X = _convert_to_supported(self._policy, X)
         X_table = to_table(X)
         self._partial_result = module.partial_train(
             self._policy, self._params, self._partial_result, X_table
