@@ -154,6 +154,8 @@ def test_on_random_data(
 
     assert_allclose(singular_values, expected_singular_values, atol=tol)
     for i in range(n_components):
+        component_length = np.dot(components[i], components[i])
+        assert np.abs(component_length - 1.0) < tol
         abs_dot_product = np.abs(np.dot(components[i], expected_components[i]))
         assert np.abs(abs_dot_product - 1.0) < tol
 
