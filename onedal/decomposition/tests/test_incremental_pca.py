@@ -45,6 +45,7 @@ def test_on_gold_data(queue, is_deterministic, whiten, num_blocks, dtype):
     expected_components_ = np.array([[0.83849224, 0.54491354], [-0.54491354, 0.83849224]])
     expected_singular_values_ = np.array([6.30061232, 0.54980396])
     expected_mean_ = np.array([0, 0])
+    expected_var_ = np.array([5.6, 2.4])
     expected_explained_variance_ = np.array([7.93954312, 0.06045688])
     expected_explained_variance_ratio_ = np.array([0.99244289, 0.00755711])
     expected_transformed_data = (
@@ -77,6 +78,7 @@ def test_on_gold_data(queue, is_deterministic, whiten, num_blocks, dtype):
 
     assert_allclose(result.singular_values_, expected_singular_values_, atol=tol)
     assert_allclose(result.mean_, expected_mean_, atol=tol)
+    assert_allclose(result.var_, expected_var_, atol=tol)
     assert_allclose(result.explained_variance_, expected_explained_variance_, atol=tol)
     assert_allclose(
         result.explained_variance_ratio_, expected_explained_variance_ratio_, atol=tol
@@ -154,6 +156,12 @@ def test_on_random_data(
     for i in range(n_components):
         abs_dot_product = np.abs(np.dot(components[i], expected_components[i]))
         assert np.abs(abs_dot_product - 1.0) < tol
+
+    expected_mean = np.mean(X, axis=0)
+    assert_allclose(incpca.mean_, expected_mean, atol=tol)
+
+    expected_var_ = np.var(X, ddof=1, axis=0)
+    assert_allclose(incpca.var_, expected_var_, atol=tol)
 
     expected_explained_variance = sorted_eigenvalues[:n_components]
     assert_allclose(incpca.explained_variance_, expected_explained_variance, atol=tol)

@@ -45,6 +45,7 @@ def check_pca_on_gold_data(incpca, dtype, whiten, transformed_data):
     expected_components_ = np.array([[0.83849224, 0.54491354], [-0.54491354, 0.83849224]])
     expected_singular_values_ = np.array([6.30061232, 0.54980396])
     expected_mean_ = np.array([0, 0])
+    expected_var_ = np.array([5.6, 2.4])
     expected_explained_variance_ = np.array([7.93954312, 0.06045688])
     expected_explained_variance_ratio_ = np.array([0.99244289, 0.00755711])
     expected_noise_variance_ = 0.0
@@ -80,6 +81,7 @@ def check_pca_on_gold_data(incpca, dtype, whiten, transformed_data):
 
     assert_allclose(incpca.singular_values_, expected_singular_values_, atol=tol)
     assert_allclose(incpca.mean_, expected_mean_, atol=tol)
+    assert_allclose(incpca.var_, expected_var_, atol=tol)
     assert_allclose(incpca.explained_variance_, expected_explained_variance_, atol=tol)
     assert_allclose(
         incpca.explained_variance_ratio_, expected_explained_variance_ratio_, atol=tol
@@ -139,6 +141,12 @@ def check_pca(incpca, dtype, whiten, data, transformed_data):
     for i in range(n_components):
         abs_dot_product = np.abs(np.dot(components[i], expected_components[i]))
         assert np.abs(abs_dot_product - 1.0) < tol
+
+    expected_mean = np.mean(data, axis=0)
+    assert_allclose(incpca.mean_, expected_mean, atol=tol)
+
+    expected_var = np.var(_as_numpy(data), ddof=1, axis=0)
+    assert_allclose(incpca.var_, expected_var, atol=tol)
 
     expected_explained_variance = sorted_eigenvalues[:n_components]
     assert_allclose(incpca.explained_variance_, expected_explained_variance, atol=tol)

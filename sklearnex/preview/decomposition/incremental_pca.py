@@ -44,6 +44,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             "components_",
             "noise_variance_",
             "singular_values_",
+            "var_",
         }
 
     _onedal_incremental_pca = staticmethod(onedal_IncrementalPCA)

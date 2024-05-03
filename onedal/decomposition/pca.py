@@ -107,7 +107,12 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
             if len(self.explained_variance_) == n_sf_min:
                 return self.explained_variance_[n_components:].mean()
             elif len(self.explained_variance_) < n_sf_min:
-                resid_var = self.variances_.sum()
+                # TODO Rename variances_ to var_ to align with sklearn/sklearnex IncrementalPCA
+                if hasattr(self, "variances_"):
+                    resid_var = self.variances_.sum()
+                elif hasattr(self, "var_"):
+                    resid_var = self.var_.sum()
+
                 resid_var -= self.explained_variance_.sum()
                 return resid_var / (n_sf_min - n_components)
         else:

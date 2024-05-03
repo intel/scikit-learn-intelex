@@ -24,19 +24,77 @@ from .pca import BasePCA
 
 
 class IncrementalPCA(BasePCA):
+    """
+    Incremental estimator for PCA based on oneDAL implementation.
+    Allows to compute PCA if data are splitted into batches.
+
+    Parameters
+    ----------
+    n_components : int, default=None
+        Number of components to keep. If ``n_components`` is ``None``,
+        then ``n_components`` is set to ``min(n_samples, n_features)``.
+
+    is_deterministic : bool, default=True
+        When True the ``components_`` vectors are chosen in deterministic
+        way, otherwise some of them can be oppositely directed.
+
+    method : string, default='cov'
+        Method used on oneDAL side to compute result.
+
+    whiten : bool, default=False
+        When True the ``components_`` vectors are divided
+        by ``n_samples`` times ``components_`` to ensure uncorrelated outputs
+        with unit component-wise variances.
+
+        Whitening will remove some information from the transformed signal
+        (the relative variance scales of the components) but can sometimes
+        improve the predictive accuracy of the downstream estimators by
+        making data respect some hard-wired assumptions.
+
+    Attributes
+    ----------
+        components_ : ndarray of shape (n_components, n_features)
+        Principal axes in feature space, representing the directions of
+        maximum variance in the data. Equivalently, the right singular
+        vectors of the centered input data, parallel to its eigenvectors.
+        The components are sorted by decreasing ``explained_variance_``.
+
+        explained_variance_ : ndarray of shape (n_components,)
+            Variance explained by each of the selected components.
+
+        explained_variance_ratio_ : ndarray of shape (n_components,)
+            Percentage of variance explained by each of the selected components.
+            If all components are stored, the sum of explained variances is equal
+            to 1.0.
+
+        singular_values_ : ndarray of shape (n_components,)
+            The singular values corresponding to each of the selected components.
+            The singular values are equal to the 2-norms of the ``n_components``
+            variables in the lower-dimensional space.
+
+        mean_ : ndarray of shape (n_features,)
+            Per-feature empirical mean, aggregate over calls to ``partial_fit``.
+
+        var_ : ndarray of shape (n_features,)
+            Per-feature empirical variance, aggregate over calls to
+            ``partial_fit``.
+
+        noise_variance_ : float
+            Equal to the average of (min(n_features, n_samples) - n_components)
+            smallest eigenvalues of the covariance matrix of X.
+
+    """
 
     def __init__(
         self,
         n_components=None,
         is_deterministic=True,
         method="cov",
-        batch_size=None,
         whiten=False,
     ):
         self.n_components = n_components
         self.method = method
         self.is_deterministic = is_deterministic
-        self.batch_size = batch_size
         self.whiten = whiten
         module = self._get_backend("decomposition", "dim_reduction")
         self._partial_result = module.partial_train_result()
@@ -47,6 +105,25 @@ class IncrementalPCA(BasePCA):
         self._partial_result = module.partial_train_result()
 
     def partial_fit(self, X, queue):
+        """Incremental fit with X. All of X is processed as a single batch.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data, where `n_samples` is the number of samples and
+            `n_features` is the number of features.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        check_input : bool, default=True
+            Run check_array on X.
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         X = _check_array(X)
         n_samples, n_features = X.shape
 
@@ -68,10 +145,10 @@ class IncrementalPCA(BasePCA):
 
         module = self._get_backend("decomposition", "dim_reduction")
 
-        X = _convert_to_supported(self._policy, X)
-        
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
+
+        X = _convert_to_supported(self._policy, X)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
@@ -83,11 +160,25 @@ class IncrementalPCA(BasePCA):
         )
         return self
 
-    def finalize_fit(self):
+    def finalize_fit(self, queue=None):
+        """
+        Finalizes principal components computation and obtains resulting
+        attributes from the current `_partial_result`.
+
+        Parameters
+        ----------
+        queue : dpctl.SyclQueue
+            Not used here, added for API conformance
+
+        Returns
+        -------
+        self : object
+            Returns the instance itself.
+        """
         module = self._get_backend("decomposition", "dim_reduction")
         result = module.finalize_train(self._policy, self._params, self._partial_result)
         self.mean_ = from_table(result.means).ravel()
-        self.variances_ = from_table(result.variances)
+        self.var_ = from_table(result.variances).ravel()
         self.components_ = from_table(result.eigenvectors)
         self.singular_values_ = np.nan_to_num(from_table(result.singular_values).ravel())
         self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
