@@ -36,12 +36,13 @@ from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_array, check_random_state
+from sklearn.utils.sparsefuncs import mean_variance_axis
 from sklearn.utils.validation import check_is_fitted
-
-from onedal.basic_statistics import BasicStatistics
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..utils import _check_array, _is_arraylike_not_scalar
+
+# from onedal.basic_statistics import BasicStatistics
 
 
 class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
@@ -82,17 +83,28 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
-    def _get_basic_statistics_backend(self, result_options):
-        return BasicStatistics(result_options)
+    # def _get_basic_statistics_backend(self, result_options):
+    #     return BasicStatistics(result_options)
 
-    def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
+    # def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
+    #     """Compute absolute tolerance from the relative tolerance"""
+    #     if rtol == 0.0:
+    #         return rtol
+    #     dummy_weights_table = to_table(None)
+    #     bs = self._get_basic_statistics_backend("variance")
+    #     res = bs.compute_raw(X_table, dummy_weights_table, policy, dtype)
+    #     mean_var = from_table(res["variance"]).mean()
+    #     return mean_var * rtol
+
+    def _tolerance(self, X, rtol):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
-        dummy_weights_table = to_table(None)
-        bs = self._get_basic_statistics_backend("variance")
-        res = bs.compute_raw(X_table, dummy_weights_table, policy, dtype)
-        mean_var = from_table(res["variance"]).mean()
+        if sp.issparse(X):
+            variances = mean_variance_axis(X, axis=0)[1]
+            mean_var = np.mean(variances)
+        else:
+            mean_var = np.var(X, axis=0).mean()
         return mean_var * rtol
 
     def _check_params_vs_input(
@@ -105,7 +117,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             )
 
         # tol
-        self._tol = self._tolerance(self.tol, X_table, policy, dtype)
+        self._tol = self._tolerance(X_table, self.tol)
 
         # n-init
         # TODO(1.4): Remove
@@ -164,7 +176,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         dtype = get_dtype(X_loc)
         X_table = to_table(X_loc)
 
-        self._check_params_vs_input(X_table, policy, dtype=dtype)
+        self._check_params_vs_input(X_loc, policy, dtype=dtype)
 
         params = self._get_onedal_params(X_table, dtype)
 
@@ -337,14 +349,14 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 )
 
             if self.verbose:
-                print("Initialization complete")
+                print("Initialization complete.")
 
             labels, inertia, model, n_iter = self._fit_backend(
                 X_table, centroids_table, module, policy, dtype
             )
 
             if self.verbose:
-                print("KMeans iteration completed with " "inertia {}.".format(inertia))
+                print("KMeans iteration completed with inertia {}.".format(inertia))
 
             if is_better_iteration(inertia, labels):
                 best_model, best_n_iter = model, n_iter

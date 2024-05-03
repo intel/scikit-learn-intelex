@@ -167,7 +167,6 @@ deselected_tests:
 
   # test_non_uniform_strategies fails due to differences in handling of vacuous clusters after update
   # See https://github.com/IntelPython/daal4py/issues/69
-  # - cluster/tests/test_k_means.py::test_relocated_clusters >=0.23,<0.24
   - cluster/tests/test_k_means.py::test_kmeans_relocated_clusters >=0.24
 
   # In scikit-learn, these algorithms are not included in this test. However, scikit-learn-intelex
@@ -177,11 +176,6 @@ deselected_tests:
   # oneAPI Data Analytics Library (oneDAL) does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
   - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
-
-  # # Sparse Support required
-  # - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
-  # - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
-  # - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
 
   # The Newton-CG solver solution computed in float32 disagrees with that of float64 by a small
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645

@@ -357,9 +357,6 @@ TO_SKIP = [
     "LogisticRegressionCV",  # Absolute diff is 1e-10, will be fixed for next release
     "RandomForestRegressor",  # Absolute diff is 1e-14 in OOB score,
     # will be fixed for next release
-    "KMeans",  # sparsity support required,
-    # '_tol' attribute shows numerical instability (diff is 1e-14) coming from basic_statistics
-    # variance calculation.
 ]
 
 
