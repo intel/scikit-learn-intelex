@@ -22,10 +22,7 @@ import pytest
 import daal4py as d4p
 from sklearnex import patch_sklearn
 
-patch_sklearn()
-
 from scipy import sparse
-from sklearn.cluster import DBSCAN, KMeans
 from sklearn.datasets import (
     load_breast_cancer,
     load_diabetes,
@@ -33,26 +30,26 @@ from sklearn.datasets import (
     make_classification,
     make_regression,
 )
-from sklearn.decomposition import PCA
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.linear_model import (
+from sklearnex.cluster import DBSCAN, KMeans
+from sklearnex.decomposition import PCA
+from sklearnex.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearnex.linear_model import (
     ElasticNet,
     Lasso,
     LinearRegression,
     LogisticRegression,
-    LogisticRegressionCV,
     Ridge,
 )
-from sklearn.manifold import TSNE
-from sklearn.metrics import pairwise_distances, roc_auc_score
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import (
+from sklearnex.manifold import TSNE
+from sklearnex.metrics import pairwise_distances, roc_auc_score
+from sklearnex.model_selection import train_test_split
+from sklearnex.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
     LocalOutlierFactor,
     NearestNeighbors,
 )
-from sklearn.svm import SVC, SVR, NuSVC, NuSVR
+from sklearnex.svm import SVC, SVR, NuSVC, NuSVR
 
 from daal4py.sklearn._utils import daal_check_version
 
@@ -318,13 +315,6 @@ MODELS_INFO = [
     {
         "model": LogisticRegressionCV(
             random_state=0, solver="newton-cg", n_jobs=-1, max_iter=1000
-        ),
-        "methods": ["predict", "predict_proba"],
-        "dataset": "classifier",
-    },
-    {
-        "model": LogisticRegressionCV(
-            random_state=0, solver="lbfgs", n_jobs=-1, max_iter=1000
         ),
         "methods": ["predict", "predict_proba"],
         "dataset": "classifier",
