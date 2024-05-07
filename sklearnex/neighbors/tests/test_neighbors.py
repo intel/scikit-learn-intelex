@@ -47,9 +47,9 @@ def test_sklearnex_import_knn_regression(dataframe, queue):
     y = _convert_to_dataframe([0, 0, 1, 1], sycl_queue=queue, target_df=dataframe)
     neigh = KNeighborsRegressor(n_neighbors=2).fit(X, y)
     y_test = _convert_to_dataframe([[1.5]], sycl_queue=queue, target_df=dataframe)
-    pred = _as_numpy(neigh.predict(y_test))
+    pred = _as_numpy(neigh.predict(y_test)).squeeze()
     assert "sklearnex" in neigh.__module__
-    assert_allclose(pred, [0.5])
+    assert_allclose(pred, 0.5)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())

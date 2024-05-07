@@ -44,52 +44,15 @@ from ..neighbors import NearestNeighbors
 class TSNE(BaseTSNE):
     __doc__ = BaseTSNE.__doc__
 
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {**BaseTSNE._parameter_constraints}
+
     @support_usm_ndarray()
     def fit_transform(self, X, y=None):
-        """
-        Fit X into an embedded space and return that transformed output.
-
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features) or (n_samples, n_samples)
-            If the metric is 'precomputed' X must be a square distance
-            matrix. Otherwise it contains a sample per row. If the method
-            is 'exact', X may be a sparse matrix of type 'csr', 'csc'
-            or 'coo'. If the method is 'barnes_hut' and the metric is
-            'precomputed', X may be a precomputed sparse graph.
-
-        y : None
-            Ignored.
-
-        Returns
-        -------
-        X_new : ndarray of shape (n_samples, n_components)
-            Embedding of the training data in low-dimensional space.
-        """
         return super().fit_transform(X, y)
 
     @support_usm_ndarray()
     def fit(self, X, y=None):
-        """
-        Fit X into an embedded space.
-
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features) or (n_samples, n_samples)
-            If the metric is 'precomputed' X must be a square distance
-            matrix. Otherwise it contains a sample per row. If the method
-            is 'exact', X may be a sparse matrix of type 'csr', 'csc'
-            or 'coo'. If the method is 'barnes_hut' and the metric is
-            'precomputed', X may be a precomputed sparse graph.
-
-        y : None
-            Ignored.
-
-        Returns
-        -------
-        X_new : array of shape (n_samples, n_components)
-            Embedding of the training data in low-dimensional space.
-        """
         return super().fit(X, y)
 
     def _daal_tsne(self, P, n_samples, X_embedded):
@@ -101,11 +64,27 @@ class TSNE(BaseTSNE):
         # * final optimization with momentum at 0.8
 
         # N, nnz, n_iter_without_progress, n_iter
-        size_iter = [[n_samples], [P.nnz], [self.n_iter_without_progress], [self.n_iter]]
+        size_iter = [
+            [n_samples],
+            [P.nnz],
+            [self.n_iter_without_progress],
+            [self._max_iter if sklearn_check_version("1.5") else self.n_iter],
+        ]
 
         # Pass params to daal4py backend
         if daal_check_version((2023, "P", 1)):
-            size_iter.extend([[self._EXPLORATION_N_ITER], [self._N_ITER_CHECK]])
+            size_iter.extend(
+                [
+                    [
+                        (
+                            self._EXPLORATION_MAX_ITER
+                            if sklearn_check_version("1.5")
+                            else self._EXPLORATION_N_ITER
+                        )
+                    ],
+                    [self._N_ITER_CHECK],
+                ]
+            )
 
         size_iter = np.array(size_iter, dtype=P.dtype)
 
@@ -255,8 +234,9 @@ class TSNE(BaseTSNE):
                 )
             )
 
-        if self.n_iter < 250:
-            raise ValueError("n_iter should be at least 250")
+        if not sklearn_check_version("1.2"):
+            if self.n_iter < 250:
+                raise ValueError("n_iter should be at least 250")
 
         n_samples = X.shape[0]
 
@@ -423,3 +403,6 @@ class TSNE(BaseTSNE):
             neighbors=neighbors_nn,
             skip_num_points=skip_num_points,
         )
+
+    fit.__doc__ = BaseTSNE.fit.__doc__
+    fit_transform.__doc__ = BaseTSNE.fit_transform.__doc__
