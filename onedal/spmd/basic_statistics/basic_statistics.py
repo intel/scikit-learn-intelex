@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
+
 from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
 from ..._device_offload import support_usm_ndarray
@@ -23,4 +25,13 @@ from .._base import BaseEstimatorSPMD
 class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
     @support_usm_ndarray()
     def compute(self, data, weights=None, queue=None):
+        warnings.warn(
+            "Method `compute` was deprecated in version 2024.3 and will be "
+            "removed in 2024.5. Use `fit` instead."
+        )
         return super().compute(data, weights=weights, queue=queue)
+
+    @support_usm_ndarray()
+    def fit(self, data, sample_weight=None, queue=None):
+        super().fit(data, sample_weight=sample_weight, queue=queue)
+        return self
