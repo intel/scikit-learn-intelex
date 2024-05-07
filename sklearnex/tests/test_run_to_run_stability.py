@@ -82,7 +82,7 @@ def eval_method(X, y, est, method):
 
         # if estimator follows sklearn design rules, then set attributes should have a
         # trailing underscore
-        attributes = [i for i in dir(est) if not i.startswith("_") and i.endswith("_")]
+        attributes = [i for i in dir(est) if hasattr(est, i) and not i.startswith("_") and i.endswith("_")]
         results = [getattr(est, i) for i in attributes] + [_as_numpy(i) for i in res]
         attributes += [method for i in res]
     return results, attributes
