@@ -15,10 +15,16 @@
 # ===============================================================================
 
 import random
-from functools import partial
 
 import numpy as np
 import pytest
+
+from numbers import Number
+
+import daal4py as d4p
+from functools import partial
+from sklearnex import patch_sklearn
+
 from scipy import sparse
 from sklearn.datasets import (
     load_breast_cancer,
@@ -27,10 +33,6 @@ from sklearn.datasets import (
     make_classification,
     make_regression,
 )
-
-import daal4py as d4p
-from daal4py.sklearn._utils import daal_check_version
-from sklearnex import patch_sklearn
 from sklearnex.cluster import DBSCAN, KMeans
 from sklearnex.decomposition import PCA
 from sklearnex.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -51,6 +53,8 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC, SVR, NuSVC, NuSVR
+
+from daal4py.sklearn._utils import daal_check_version
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
@@ -114,47 +118,40 @@ def func(X, Y, clf, methods):
             name.append(get_class_name(clf) + "." + i)
     return res, name
 
-
-_dataset_dict = {
-    "classification": [
-        partial(load_iris, return_X_y=True),
-        partial(load_breast_cancer, return_X_y=True),
-    ],
-    "regression": [
-        partial(load_diabetes, return_X_y=True),
-        partial(
-            make_regression, n_samples=500, n_features=10, noise=64.0, random_state=42
-        ),
-    ],
-}
+_dataset_dict = {"classification":[partial(load_iris, return_X_y=True),
+                                   partial(load_breast_cancer, return_X_y=True)],
+                 "regression":[partial(load_diabetes, return_X_y=True),
+                 partial(make_regression,n_samples=500, n_features=10, noise=64.0, random_state=42)]}
 
 
-def gen_stability_dataset(
-    estimator, sparse=False, queue=None, target_df=None, dtype=np.float64
-):
-    datasets = _dataset_dict[gen_dataset_type(estimator)]
-    output = []
+def eval_method(X, y, estimator, method):
+    estimator.fit(X, y)
 
-    for dataset in datasets:
-        X, y = dataset()
-        if sparse:
-            X = sparse.csr_matrix(X)
-        X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
-        y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
-        output += [[X, y]]
-    return output
+    if method:
+        if method != "score":
+            res = getattr(est, method)(X)
+        else:
+            res = est.score(X, y)
 
+        # if estimator follows sklearn design rules, then set attributes should have a
+        # trailing underscore
+        attributes = [i for i in dir(est) if not i.startswith("_") and i.endswith("_")]
+        results = [getattr(est, i) for i in attributes] + [i for i in res]
+        attributes += [method for i in res]
+    return results, attributes
 
-def _run_test(model, methods, dataset):
+def _run_test(estimator, method, datasets):
 
     for X, y in datasets:
-        baseline, name = func(X, y, model, methods)
-        for i in range(10):
-            res, _ = func(X, y, model, methods)
+        baseline, attributes = eval_method(X, y, estimator, method)
 
-            for a, b, n in zip(res, baseline, name):
-                np.testing.assert_allclose(
-                    a, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect")
+        for i in range(10):
+            res, _ = eval_method(X, y, estimator, methods)
+
+            for r, b, n in zip(res, baseline, attributes):
+                if isinstance(b, Number) or isinstance()
+                assert_allclose(
+                    r, b, rtol=0.0, atol=0.0, err_msg=str(n + " is incorrect")
                 )
 
 
@@ -360,13 +357,20 @@ TO_SKIP = [
 ]
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in TO_SKIP:
         pytest.skip(f"stability not guaranteed for {estimator}")
-    _run_test(model_head["model"], model_head["methods"], model_head["dataset"])
 
+    est = PATCHED_MODELS[estimator]()
+    params = est.get_params().copy()
+    if "random_state" in params:
+        params["random_state"] = 0
+        est.set_params(params)
+
+    datasets = gen_dataset(est, datasets=_dataset_dict, queue=queue, target_df=dataframe, dtype=dtype)
+    _run_test(est, method, datasets)
 
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
@@ -375,14 +379,12 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
     _run_test(model_head["model"], model_head["methods"], model_head["dataset"])
 
-
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_special_estimator_stability(estimator, method, dataframe, queue):
     if estimator in TO_SKIP:
         pytest.skip(f"stability not guaranteed for {estimator}")
-    _run_test(model_head["model"], model_head["methods"], model_head["dataset"])
-
+    _run_test(model_head["model"], model_head["methods"], model_head["dataset"])    
 
 @pytest.mark.parametrize("features", range(5, 10))
 def test_train_test_split(features):
