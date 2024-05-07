@@ -127,8 +127,15 @@ def _transfer_to_host(queue, *data):
                 queue = usm_iface["syclobj"]
 
             buffer = as_usm_memory(item).copy_to_host()
+            order = "C"
+            if usm_iface["strides"] is not None:
+                if usm_iface["strides"][0] < usm_iface["strides"][1]:
+                    order = "F"
             item = np.ndarray(
-                shape=usm_iface["shape"], dtype=usm_iface["typestr"], buffer=buffer
+                shape=usm_iface["shape"],
+                dtype=usm_iface["typestr"],
+                buffer=buffer,
+                order=order,
             )
             has_usm_data = True
         else:
