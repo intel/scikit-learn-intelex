@@ -16,7 +16,7 @@
 
 import numpy as np
 from sklearn.base import BaseEstimator
-from sklearn.utils import check_array
+from sklearn.utils import check_array, deprecated
 from sklearn.utils.validation import _check_sample_weight
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -91,12 +91,9 @@ class BasicStatistics(BaseEstimator):
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32])
+            X = self._validate_data(X, dtype=[np.float64, np.float32], ensure_2d=False)
         else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-            )
+            X = check_array(X, dtype=[np.float64, np.float32], ensure_2d=False)
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
@@ -109,6 +106,9 @@ class BasicStatistics(BaseEstimator):
             self._onedal_estimator = self._onedal_basic_statistics(**onedal_params)
         self._onedal_estimator.fit(X, sample_weight, queue)
         self._save_attributes()
+
+    def compute(self, data, weights=None, queue=None):
+        return self._onedal_estimator.compute(data, weights, queue)
 
     def fit(self, X, y=None, *, sample_weight=None):
         """Compute statistics with X, using minibatches of size batch_size.
