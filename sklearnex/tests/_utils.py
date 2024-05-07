@@ -18,7 +18,7 @@ from functools import partial
 from inspect import isclass
 
 import numpy as np
-from scipy import sparse
+from scipy import sparse as sp
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
@@ -118,8 +118,8 @@ def gen_models_info(algorithms):
 
         if i in PATCHED_MODELS:
             est = PATCHED_MODELS[i]
-        elif i in SPECIAL_INSTANCES:
-            est = SPECIAL_INSTANCES[i].__class__
+        elif isinstance(algorithms[i], BaseEstimator):
+            est = algorithms[i].__class__
         else:
             raise KeyError(f"Unrecognized sklearnex estimator: {i}")
 
@@ -173,9 +173,10 @@ def gen_dataset(
     for func in datasets[dataset_type]:
         X, y = func()
         if sparse:
-            X = sparse.csr_matrix(X)
-        X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
-        y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
+            X = sp.csr_matrix(X)
+        else:
+            X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
+            y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
         output += [[X, y]]
     return output
 

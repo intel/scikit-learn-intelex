@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import random
+from collections.abc import Iterable
 from functools import partial
 from numbers import Number
 
@@ -31,29 +32,19 @@ from sklearn.datasets import (
 )
 
 import daal4py as d4p
-from onedal.tests.utils._dataframes_support import _as_numpy
+from onedal.tests.utils._dataframes_support import _as_numpy, get_dataframes_and_queues
 from sklearnex.cluster import DBSCAN, KMeans
 from sklearnex.decomposition import PCA
-from sklearnex.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearnex.linear_model import (
-    ElasticNet,
-    Lasso,
-    LinearRegression,
-    LogisticRegression,
-    Ridge,
-)
-from sklearnex.manifold import TSNE
 from sklearnex.metrics import pairwise_distances, roc_auc_score
 from sklearnex.model_selection import train_test_split
 from sklearnex.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
-    LocalOutlierFactor,
     NearestNeighbors,
 )
-from sklearnex.svm import SVC, SVR, NuSVC, NuSVR
+from sklearnex.svm import SVC
 
-from ._utils import (
+from _utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     _sklearn_clone_dict,
@@ -63,66 +54,6 @@ from ._utils import (
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
-
-
-def get_class_name(x):
-    return x.__class__.__name__
-
-
-def method_processing(X, clf, methods):
-    res = []
-    name = []
-    for i in methods:
-        if i == "predict":
-            res.append(clf.predict(X))
-            name.append(get_class_name(clf) + ".predict(X)")
-        elif i == "predict_proba":
-            res.append(clf.predict_proba(X))
-            name.append(get_class_name(clf) + ".predict_proba(X)")
-        elif i == "decision_function":
-            res.append(clf.decision_function(X))
-            name.append(get_class_name(clf) + ".decision_function(X)")
-        elif i == "kneighbors":
-            dist, idx = clf.kneighbors(X)
-            res.append(dist)
-            name.append("dist")
-            res.append(idx)
-            name.append("idx")
-        elif i == "fit_predict":
-            predict = clf.fit_predict(X)
-            res.append(predict)
-            name.append(get_class_name(clf) + ".fit_predict")
-        elif i == "fit_transform":
-            res.append(clf.fit_transform(X))
-            name.append(get_class_name(clf) + ".fit_transform")
-        elif i == "transform":
-            res.append(clf.transform(X))
-            name.append(get_class_name(clf) + ".transform(X)")
-        elif i == "get_covariance":
-            res.append(clf.get_covariance())
-            name.append(get_class_name(clf) + ".get_covariance()")
-        elif i == "get_precision":
-            res.append(clf.get_precision())
-            name.append(get_class_name(clf) + ".get_precision()")
-        elif i == "score_samples":
-            res.append(clf.score_samples(X))
-            name.append(get_class_name(clf) + ".score_samples(X)")
-    return res, name
-
-
-def func(X, Y, clf, methods):
-    clf.fit(X, Y)
-    res, name = method_processing(X, clf, methods)
-
-    for i in clf.__dict__.keys():
-        ans = getattr(clf, i)
-        if isinstance(ans, (bool, float, int, np.ndarray, np.float64)):
-            if isinstance(ans, np.ndarray) and None in ans:
-                continue
-            res.append(ans)
-            name.append(get_class_name(clf) + "." + i)
-    return res, name
-
 
 _dataset_dict = {
     "classification": [
@@ -138,14 +69,17 @@ _dataset_dict = {
 }
 
 
-def eval_method(X, y, estimator, method):
-    estimator.fit(X, y)
+def eval_method(X, y, est, method):
+    est.fit(X, y)
 
     if method:
         if method != "score":
             res = getattr(est, method)(X)
         else:
             res = est.score(X, y)
+
+        if not isinstance(res, Iterable):
+            res = [res]
 
         # if estimator follows sklearn design rules, then set attributes should have a
         # trailing underscore
@@ -161,7 +95,7 @@ def _run_test(estimator, method, datasets):
         baseline, attributes = eval_method(X, y, estimator, method)
 
         for i in range(10):
-            res, _ = eval_method(X, y, estimator, methods)
+            res, _ = eval_method(X, y, estimator, method)
 
             for r, b, n in zip(res, baseline, attributes):
                 if (
@@ -186,195 +120,23 @@ SPARSE_INSTANCES = _sklearn_clone_dict(
     }
 )
 
-MODELS_INFO = [
+STABILITY_INSTANCES = _sklearn_clone_dict(
     {
-        "model": KNeighborsClassifier(
-            n_neighbors=10, algorithm="brute", weights="uniform"
-        ),
-        "methods": ["predict", "predict_proba", "kneighbors"],
-        "dataset": "classifier",
-    },
-    {
-        "model": KNeighborsClassifier(
-            n_neighbors=10, algorithm="brute", weights="distance"
-        ),
-        "methods": ["predict", "predict_proba", "kneighbors"],
-        "dataset": "classifier",
-    },
-    {
-        "model": KNeighborsClassifier(
-            n_neighbors=10, algorithm="kd_tree", weights="uniform"
-        ),
-        "methods": ["predict", "predict_proba", "kneighbors"],
-        "dataset": "classifier",
-    },
-    {
-        "model": KNeighborsClassifier(
-            n_neighbors=10, algorithm="kd_tree", weights="distance"
-        ),
-        "methods": ["predict", "predict_proba", "kneighbors"],
-        "dataset": "classifier",
-    },
-    {
-        "model": KNeighborsRegressor(
-            n_neighbors=10, algorithm="kd_tree", weights="distance"
-        ),
-        "methods": ["predict", "kneighbors"],
-        "dataset": "regression",
-    },
-    {
-        "model": KNeighborsRegressor(
-            n_neighbors=10, algorithm="kd_tree", weights="uniform"
-        ),
-        "methods": ["predict", "kneighbors"],
-        "dataset": "regression",
-    },
-    {
-        "model": KNeighborsRegressor(
-            n_neighbors=10, algorithm="brute", weights="distance"
-        ),
-        "methods": ["predict", "kneighbors"],
-        "dataset": "regression",
-    },
-    {
-        "model": KNeighborsRegressor(
-            n_neighbors=10, algorithm="brute", weights="uniform"
-        ),
-        "methods": ["predict", "kneighbors"],
-        "dataset": "regression",
-    },
-    {
-        "model": NearestNeighbors(n_neighbors=10, algorithm="brute"),
-        "methods": ["kneighbors"],
-        "dataset": "blobs",
-    },
-    {
-        "model": NearestNeighbors(n_neighbors=10, algorithm="kd_tree"),
-        "methods": ["kneighbors"],
-        "dataset": "blobs",
-    },
-    {
-        "model": LocalOutlierFactor(n_neighbors=10, novelty=False),
-        "methods": ["fit_predict"],
-        "dataset": "blobs",
-    },
-    {
-        "model": LocalOutlierFactor(n_neighbors=10, novelty=True),
-        "methods": ["predict"],
-        "dataset": "blobs",
-    },
-    {
-        "model": DBSCAN(algorithm="brute", n_jobs=-1),
-        "methods": [],
-        "dataset": "blobs",
-    },
-    {
-        "model": SVC(kernel="rbf"),
-        "methods": ["predict", "decision_function"],
-        "dataset": "classifier",
-    },
-    {
-        "model": SVC(kernel="rbf"),
-        "methods": ["predict", "decision_function"],
-        "dataset": "sparse",
-    },
-    {
-        "model": NuSVC(kernel="rbf"),
-        "methods": ["predict", "decision_function"],
-        "dataset": "classifier",
-    },
-    {
-        "model": SVR(kernel="rbf"),
-        "methods": ["predict"],
-        "dataset": "regression",
-    },
-    {
-        "model": NuSVR(kernel="rbf"),
-        "methods": ["predict"],
-        "dataset": "regression",
-    },
-    {
-        "model": TSNE(random_state=0),
-        "methods": ["fit_transform"],
-        "dataset": "classifier",
-    },
-    {
-        "model": KMeans(random_state=0, init="k-means++"),
-        "methods": ["predict"],
-        "dataset": "blobs",
-    },
-    {
-        "model": KMeans(random_state=0, init="random"),
-        "methods": ["predict"],
-        "dataset": "blobs",
-    },
-    {
-        "model": KMeans(random_state=0, init="k-means++"),
-        "methods": ["predict"],
-        "dataset": "sparse",
-    },
-    {
-        "model": KMeans(random_state=0, init="random"),
-        "methods": ["predict"],
-        "dataset": "sparse",
-    },
-    {
-        "model": ElasticNet(random_state=0),
-        "methods": ["predict"],
-        "dataset": "regression",
-    },
-    {
-        "model": Lasso(random_state=0),
-        "methods": ["predict"],
-        "dataset": "regression",
-    },
-    {
-        "model": PCA(n_components=0.5, svd_solver="covariance_eigh", random_state=0),
-        "methods": ["transform", "get_covariance", "get_precision", "score_samples"],
-        "dataset": "classifier",
-    },
-    {
-        "model": RandomForestClassifier(
-            random_state=0, oob_score=True, max_samples=0.5, max_features="sqrt"
-        ),
-        "methods": ["predict", "predict_proba"],
-        "dataset": "classifier",
-    },
-    {
-        "model": LogisticRegression(random_state=0, solver="newton-cg", max_iter=1000),
-        "methods": ["predict", "predict_proba"],
-        "dataset": "classifier",
-    },
-    {
-        "model": LogisticRegression(random_state=0, solver="lbfgs", max_iter=1000),
-        "methods": ["predict", "predict_proba"],
-        "dataset": "classifier",
-    },
-    {
-        "model": LogisticRegressionCV(
-            random_state=0, solver="newton-cg", n_jobs=-1, max_iter=1000
-        ),
-        "methods": ["predict", "predict_proba"],
-        "dataset": "classifier",
-    },
-    {
-        "model": RandomForestRegressor(
-            random_state=0, oob_score=True, max_samples=0.5, max_features="sqrt"
-        ),
-        "methods": ["predict"],
-        "dataset": "regression",
-    },
-    {
-        "model": LinearRegression(),
-        "methods": ["predict"],
-        "dataset": "regression",
-    },
-    {
-        "model": Ridge(random_state=0),
-        "methods": ["predict"],
-        "dataset": "regression",
-    },
-]
+        str(i): i
+        for i in [
+            KNeighborsClassifier(algorithm="brute", weights="distance"),
+            KNeighborsClassifier(algorithm="kd_tree"),
+            KNeighborsClassifier(algorithm="kd_tree", weights="distance"),
+            KNeighborsRegressor(algorithm="kd_tree", weights="distance"),
+            KNeighborsRegressor(algorithm="kd_tree"),
+            KNeighborsRegressor(algorithm="brute", weights="distance"),
+            NearestNeighbors(algorithm="kd_tree"),
+            DBSCAN(algorithm="brute"),
+            PCA(n_components=0.5, svd_solver="covariance_eigh"),
+            KMeans(init="random"),
+        ]
+    }
+)
 
 TO_SKIP = [
     "TSNE",  # Absolute diff is 1e-10, potential problem in KNN,
@@ -395,13 +157,17 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = PATCHED_MODELS[estimator]()
+    
+    if method and not hasattr(est, method):
+        pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
     params = est.get_params().copy()
     if "random_state" in params:
         params["random_state"] = 0
-        est.set_params(params)
+        est.set_params(**params)
 
     datasets = gen_dataset(
-        est, datasets=_dataset_dict, queue=queue, target_df=dataframe, dtype=dtype
+        est, datasets=_dataset_dict, queue=queue, target_df=dataframe
     )
     _run_test(est, method, datasets)
 
@@ -413,13 +179,17 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = SPECIAL_INSTANCES[estimator]
+
+    if method and not hasattr(est, method):
+        pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
     params = est.get_params().copy()
     if "random_state" in params:
         params["random_state"] = 0
-        est.set_params(params)
+        est.set_params(**params)
 
     datasets = gen_dataset(
-        est, datasets=_dataset_dict, queue=queue, target_df=dataframe, dtype=dtype
+        est, datasets=_dataset_dict, queue=queue, target_df=dataframe
     )
     _run_test(est, method, datasets)
 
@@ -431,13 +201,38 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = SPARSE_INSTANCES[estimator]
+
+    if method and not hasattr(est, method):
+        pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
     params = est.get_params().copy()
     if "random_state" in params:
         params["random_state"] = 0
-        est.set_params(params)
+        est.set_params(**params)
 
     datasets = gen_dataset(
-        est, sparse=True, datasets=_dataset_dict, queue=queue, target_df=dataframe, dtype=dtype
+        est, sparse=True, datasets=_dataset_dict, queue=queue, target_df=dataframe
+    )
+    _run_test(est, method, datasets)
+
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
+def test_other_estimator_stability(estimator, method, dataframe, queue):
+    if estimator in TO_SKIP:
+        pytest.skip(f"stability not guaranteed for {estimator}")
+        
+    est = STABILITY_INSTANCES[estimator]
+
+    if method and not hasattr(est, method):
+        pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
+
+    params = est.get_params().copy()
+    if "random_state" in params:
+        params["random_state"] = 0
+        est.set_params(**params)
+
+    datasets = gen_dataset(
+        est, sparse=True, datasets=_dataset_dict, queue=queue, target_df=dataframe
     )
     _run_test(est, method, datasets)
 
