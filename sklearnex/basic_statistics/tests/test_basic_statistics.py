@@ -214,3 +214,38 @@ def test_all_option_on_random_data(
             gtr = function(X)
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, atol=tol)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("data_size", [100, 1000])
+@pytest.mark.parametrize("weighted", [True, False])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_1d_input_on_random_data(dataframe, queue, option, data_size, weighted, dtype):
+    result_option, function, tols = option
+    fp32tol, fp64tol = tols
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=data_size)
+    X = X.astype(dtype=dtype)
+    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    if weighted:
+        weights = gen.uniform(low=-0.5, high=1.0, size=data_size)
+        weights = weights.astype(dtype=dtype)
+        weights_df = _convert_to_dataframe(weights, sycl_queue=queue, target_df=dataframe)
+    basicstat = BasicStatistics(result_options=result_option)
+
+    if weighted:
+        result = basicstat.fit(X_df, sample_weight=weights_df)
+    else:
+        result = basicstat.fit(X_df)
+
+    res = getattr(result, result_option)
+    if weighted:
+        weighted_data = weights * X
+        gtr = function(weighted_data)
+    else:
+        gtr = function(X)
+
+    tol = fp32tol if res.dtype == np.float32 else fp64tol
+    assert_allclose(gtr, res, atol=tol)

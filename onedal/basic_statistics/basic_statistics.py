@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -21,6 +22,7 @@ import numpy as np
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
+from ..utils.validation import _check_array
 
 
 class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
@@ -73,21 +75,47 @@ class BasicStatistics(BaseBasicStatistics):
         policy = self._get_policy(queue, data, sample_weight)
 
         is_csr = _is_csr(data)
+
         if not (data is None) and not is_csr:
-            data = np.asarray(data)
+            data = _check_array(data, ensure_2d=False)
         if not (sample_weight is None):
-            sample_weight = np.asarray(sample_weight)
+            sample_weight = _check_array(sample_weight, ensure_2d=False)
 
         data, sample_weight = _convert_to_supported(policy, data, sample_weight)
+        is_single_dim = data.ndim == 1
         data_table, weights_table = to_table(data, sample_weight)
 
         dtype = data.dtype
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
         for opt, raw_value in raw_result.items():
             value = from_table(raw_value).ravel()
-            setattr(self, opt, value)
+            if is_single_dim:
+                setattr(self, opt, value[0])
+            else:
+                setattr(self, opt, value)
 
         return self
+
+    def compute(self, data, weights=None, queue=None):
+        warnings.warn(
+            "Method `compute` was deprecated in version 2024.3 and will be "
+            "removed in 2024.5. Use `fit` instead."
+        )
+
+        is_csr = _is_csr(data)
+
+        if not (data is None):
+            data = _check_array(data, ensure_2d=False)
+        if not (weights is None):
+            weights = _check_array(weights, ensure_2d=False)
+
+        policy = self._get_policy(queue, data, weights)
+        data, weights = _convert_to_supported(policy, data, weights)
+        data_table, weights_table = to_table(data, weights)
+        dtype = data.dtype
+        res = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
+
+        return {k: from_table(v).ravel() for k, v in res.items()}
 
     def _compute_raw(self, data_table, weights_table, policy, dtype=np.float32, is_csr=False):
         module = self._get_backend("basic_statistics")
