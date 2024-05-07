@@ -22,9 +22,19 @@ from daal4py.sklearn._utils import daal_check_version
 from onedal.ensemble import RandomForestClassifier, RandomForestRegressor
 from onedal.tests.utils._device_selection import get_queues
 
+hparams = [
+    (None, None, None, None, None),
+    (1, 22, 100, 32, 0.3),
+    (8, 16, 100, 32, 0.3),
+    (8, 32, 100, 32, 0.3),
+    (1, 22, 10, 32, 0.1),
+    (1, 22, 100, 1000, 1.0),
+]
+
 
 @pytest.mark.parametrize("queue", get_queues())
-def test_rf_classifier(queue):
+@pytest.mark.parametrize("multiplier, block, trees, rows, scale", hparams)
+def test_rf_classifier(queue, multiplier, block, trees, rows, scale):
     X, y = make_classification(
         n_samples=100,
         n_features=4,
@@ -34,6 +44,13 @@ def test_rf_classifier(queue):
         shuffle=False,
     )
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y, queue=queue)
+    if daal_check_version((2024, "P", 300)) and multiplier is not None:
+        hparams = rf.get_hyperparameters("predict")
+        hparams.block_size_multiplier = multiplier
+        hparams.block_size = block
+        hparams.min_trees_for_threading = trees
+        hparams.min_number_of_rows_for_vect_seq_compute = rows
+        hparams.scale_factor_for_vect_parallel_compute = scale
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
