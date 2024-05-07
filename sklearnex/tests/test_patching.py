@@ -148,16 +148,9 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and dtype in [np.uint32, np.uint64]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
-        elif estimator == "IncrementalLinearRegression" and dtype in [
-            np.int8,
-            np.int16,
-            np.int32,
-            np.int64,
-            np.uint8,
-            np.uint16,
-            np.uint32,
-            np.uint64,
-        ]:
+        elif estimator == "IncrementalLinearRegression" and np.issubdtype(
+            dtype, np.integer
+        ):
             pytest.skip(
                 "IncrementalLinearRegression fails on oneDAL side with int types because dataset is filled by zeroes"
             )
