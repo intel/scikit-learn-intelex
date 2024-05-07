@@ -18,6 +18,7 @@ from functools import partial
 from inspect import isclass
 
 import numpy as np
+from scipy import sparse
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
@@ -159,14 +160,14 @@ _dataset_dict = {
 
 
 def gen_dataset(
-    estimator,
+    est,
     datasets=_dataset_dict,
     sparse=False,
     queue=None,
     target_df=None,
     dtype=np.float64,
 ):
-    dataset_type = gen_dataset_type(estimator)
+    dataset_type = gen_dataset_type(est)
     output = []
     # load data
     for func in datasets[dataset_type]:
