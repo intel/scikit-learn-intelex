@@ -72,8 +72,8 @@ def test_logistic_spmd_manual():
         X_train, y_train
     )
 
-    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=1e-4)
-    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=1e-4)
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=5e-4)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=5e-4)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)

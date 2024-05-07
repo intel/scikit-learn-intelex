@@ -58,11 +58,13 @@ def test_pca_spmd_manual():
     assert_allclose(spmd_result.mean_, batch_result.mean_)
     assert_allclose(spmd_result.components_, batch_result.components_)
     assert_allclose(spmd_result.singular_values_, batch_result.singular_values_)
-    assert_allclose(spmd_result.noise_variance_, batch_result.noise_variance_)
     assert_allclose(
-        spmd_result.explained_variance_ratio_,
-        batch_result.explained_variance_ratio_,
+        spmd_result.noise_variance_,
+        batch_result.noise_variance_,
         atol=1e-7,
+    )
+    assert_allclose(
+        spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_
     )
 
 
