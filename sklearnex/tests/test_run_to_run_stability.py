@@ -437,7 +437,7 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
         est.set_params(params)
 
     datasets = gen_dataset(
-        est, datasets=_dataset_dict, queue=queue, target_df=dataframe, dtype=dtype
+        est, sparse=True, datasets=_dataset_dict, queue=queue, target_df=dataframe, dtype=dtype
     )
     _run_test(est, method, datasets)
 
