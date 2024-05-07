@@ -164,7 +164,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         elif method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
-        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
 
         if method:
@@ -196,7 +196,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
         elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
             pytest.skip("Hardware does not support fp64 SYCL testing")
 
-        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
 
         if method and not hasattr(est, method):
