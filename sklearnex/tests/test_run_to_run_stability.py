@@ -15,14 +15,10 @@
 # ===============================================================================
 
 import random
+from functools import partial
 
 import numpy as np
 import pytest
-
-import daal4py as d4p
-from functools import partial
-from sklearnex import patch_sklearn
-
 from scipy import sparse
 from sklearn.datasets import (
     load_breast_cancer,
@@ -31,6 +27,10 @@ from sklearn.datasets import (
     make_classification,
     make_regression,
 )
+
+import daal4py as d4p
+from daal4py.sklearn._utils import daal_check_version
+from sklearnex import patch_sklearn
 from sklearnex.cluster import DBSCAN, KMeans
 from sklearnex.decomposition import PCA
 from sklearnex.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -51,8 +51,6 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC, SVR, NuSVC, NuSVR
-
-from daal4py.sklearn._utils import daal_check_version
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)

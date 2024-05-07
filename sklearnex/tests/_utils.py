@@ -14,10 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+from functools import partial
 from inspect import isclass
 
 import numpy as np
-from functools import partial
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
@@ -151,11 +151,21 @@ def gen_dataset_type(est):
             dataset = data
     return dataset
 
-_dataset_dict = {"classification":[partial(load_iris, return_X_y=True)],
-                 "regression":[partial(load_diabetes, return_X_y=True)]}
+
+_dataset_dict = {
+    "classification": [partial(load_iris, return_X_y=True)],
+    "regression": [partial(load_diabetes, return_X_y=True)],
+}
 
 
-def gen_dataset(estimator, datasets=_dataset_dict, sparse=False, queue=None, target_df=None, dtype=np.float64):
+def gen_dataset(
+    estimator,
+    datasets=_dataset_dict,
+    sparse=False,
+    queue=None,
+    target_df=None,
+    dtype=np.float64,
+):
     dataset_type = gen_dataset_type(estimator)
     output = []
     # load data
