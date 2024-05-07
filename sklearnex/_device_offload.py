@@ -135,7 +135,7 @@ def _transfer_to_host(queue, *data):
                 shape=usm_iface["shape"],
                 dtype=usm_iface["typestr"],
                 buffer=buffer,
-                order=order
+                order=order,
             )
             has_usm_data = True
         else:
