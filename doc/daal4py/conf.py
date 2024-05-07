@@ -78,7 +78,7 @@ master_doc = "contents"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store","note.rst"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "note.rst"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -112,7 +112,6 @@ html_css_files = ["style.css"]
 # 'searchbox.html']``.
 #
 # html_sidebars = {}
-
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -177,5 +176,3 @@ texinfo_documents = [
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
-
-
