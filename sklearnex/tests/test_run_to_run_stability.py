@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 
 import daal4py as d4p
+from functools import partial
 from sklearnex import patch_sklearn
 
 from scipy import sparse
@@ -116,26 +117,37 @@ def func(X, Y, clf, methods):
     return res, name
 
 
+_dataset_dict = {
+    "classification": [
+        partial(load_iris, return_X_y=True),
+        partial(load_breast_cancer, return_X_y=True),
+    ],
+    "regression": [
+        partial(load_diabetes, return_X_y=True),
+        partial(
+            make_regression, n_samples=500, n_features=10, noise=64.0, random_state=42
+        ),
+    ],
+}
+
+
+def gen_stability_dataset(
+    estimator, sparse=False, queue=None, target_df=None, dtype=np.float64
+):
+    datasets = _dataset_dict[gen_dataset_type(estimator)]
+    output = []
+
+    for dataset in datasets:
+        X, y = dataset()
+        if sparse:
+            X = sparse.csr_matrix(X)
+        X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
+        y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
+        output += [[X, y]]
+    return output
+
+
 def _run_test(model, methods, dataset):
-    datasets = []
-    if dataset in ["blobs", "classifier", "sparse"]:
-        X1, y1 = load_iris(return_X_y=True)
-        if dataset == "sparse":
-            X1 = sparse.csr_matrix(X1)
-        datasets.append((X1, y1))
-        X2, y2 = load_breast_cancer(return_X_y=True)
-        if dataset == "sparse":
-            X2 = sparse.csr_matrix(X2)
-        datasets.append((X2, y2))
-    elif dataset == "regression":
-        X1, y1 = make_regression(
-            n_samples=500, n_features=10, noise=64.0, random_state=42
-        )
-        datasets.append((X1, y1))
-        X2, y2 = load_diabetes(return_X_y=True)
-        datasets.append((X2, y2))
-    else:
-        raise ValueError("Unknown dataset type")
 
     for X, y in datasets:
         baseline, name = func(X, y, model, methods)
@@ -350,18 +362,27 @@ TO_SKIP = [
 ]
 
 
-@pytest.mark.parametrize("model_head", MODELS_INFO)
-def test_models(model_head):
-    stable_algos = []
-    if get_class_name(model_head["model"]) in stable_algos and daal_check_version(
-        (2021, "P", 300)
-    ):
-        try:
-            TO_SKIP.remove(get_class_name(model_head["model"]))
-        except ValueError:
-            pass
-    if get_class_name(model_head["model"]) in TO_SKIP:
-        pytest.skip("Unstable", allow_module_level=False)
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
+def test_standard_estimator_stability(estimator, method, dataframe, queue):
+    if estimator in TO_SKIP:
+        pytest.skip(f"stability not guaranteed for {estimator}")
+    _run_test(model_head["model"], model_head["methods"], model_head["dataset"])
+
+
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
+def test_sparse_estimator_stability(estimator, method, dataframe, queue):
+    if estimator in TO_SKIP:
+        pytest.skip(f"stability not guaranteed for {estimator}")
+    _run_test(model_head["model"], model_head["methods"], model_head["dataset"])
+
+
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
+def test_special_estimator_stability(estimator, method, dataframe, queue):
+    if estimator in TO_SKIP:
+        pytest.skip(f"stability not guaranteed for {estimator}")
     _run_test(model_head["model"], model_head["methods"], model_head["dataset"])
 
 

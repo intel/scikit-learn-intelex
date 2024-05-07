@@ -17,6 +17,7 @@
 from inspect import isclass
 
 import numpy as np
+from functools import partial
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
@@ -138,24 +139,34 @@ def gen_models_info(algorithms):
     return output
 
 
-def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
-    dataset = None
-    name = estimator.__class__.__name__
-    est = PATCHED_MODELS[name]
-    for mixin, _, data in mixin_map:
-        if issubclass(est, mixin) and data is not None:
-            dataset = data
-    # load data
-    if dataset == "classification" or dataset is None:
-        X, y = load_iris(return_X_y=True)
-    elif dataset == "regression":
-        X, y = load_diabetes(return_X_y=True)
-    else:
-        raise ValueError("Unknown dataset type")
+def gen_dataset_type(est):
+    # est should be an estimator or estimator class
+    # dataset initialized to classification, but will be swapped
+    # for other types as necessary
+    dataset = "classification"
+    estimator = est.__class__ if isinstance(est, BaseEstimator) else est
 
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
-    return X, y
+    for mixin, _, data in mixin_map:
+        if issubclass(estimator, mixin) and data is not None:
+            dataset = data
+    return dataset
+
+_dataset_dict = {"classification":[partial(load_iris, return_X_y=True)],
+                 "regression":[partial(load_diabetes, return_X_y=True)]}
+
+
+def gen_dataset(estimator, datasets=_dataset_dict, sparse=False, queue=None, target_df=None, dtype=np.float64):
+    dataset_type = gen_dataset_type(estimator)
+    output = []
+    # load data
+    for func in datasets[dataset_type]:
+        X, y = func()
+        if sparse:
+            X = sparse.csr_matrix(X)
+        X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
+        y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
+        output += [[X, y]]
+    return output
 
 
 DTYPES = [
