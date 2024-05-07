@@ -175,8 +175,12 @@ def gen_dataset(
         if sparse:
             X = sp.csr_matrix(X)
         else:
-            X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
-            y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
+            X = _convert_to_dataframe(
+                X, sycl_queue=queue, target_df=target_df, dtype=dtype
+            )
+            y = _convert_to_dataframe(
+                y, sycl_queue=queue, target_df=target_df, dtype=dtype
+            )
         output += [[X, y]]
     return output
 

@@ -21,6 +21,13 @@ from numbers import Number
 
 import numpy as np
 import pytest
+from _utils import (
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    _sklearn_clone_dict,
+    gen_dataset,
+    gen_models_info,
+)
 from numpy.testing import assert_allclose
 from scipy import sparse
 from sklearn.datasets import (
@@ -43,14 +50,6 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC
-
-from _utils import (
-    PATCHED_MODELS,
-    SPECIAL_INSTANCES,
-    _sklearn_clone_dict,
-    gen_dataset,
-    gen_models_info,
-)
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
@@ -157,7 +156,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = PATCHED_MODELS[estimator]()
-    
+
     if method and not hasattr(est, method):
         pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
@@ -166,9 +165,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         params["random_state"] = 0
         est.set_params(**params)
 
-    datasets = gen_dataset(
-        est, datasets=_dataset_dict, queue=queue, target_df=dataframe
-    )
+    datasets = gen_dataset(est, datasets=_dataset_dict, queue=queue, target_df=dataframe)
     _run_test(est, method, datasets)
 
 
@@ -188,9 +185,7 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         params["random_state"] = 0
         est.set_params(**params)
 
-    datasets = gen_dataset(
-        est, datasets=_dataset_dict, queue=queue, target_df=dataframe
-    )
+    datasets = gen_dataset(est, datasets=_dataset_dict, queue=queue, target_df=dataframe)
     _run_test(est, method, datasets)
 
 
@@ -215,12 +210,13 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
     )
     _run_test(est, method, datasets)
 
+
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
 def test_other_estimator_stability(estimator, method, dataframe, queue):
     if estimator in TO_SKIP:
         pytest.skip(f"stability not guaranteed for {estimator}")
-        
+
     est = STABILITY_INSTANCES[estimator]
 
     if method and not hasattr(est, method):
