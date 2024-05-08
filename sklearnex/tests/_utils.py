@@ -170,8 +170,7 @@ def gen_dataset(
     dataset_type = gen_dataset_type(est)
     output = []
     # load data
-    if dtype is None:
-        flag = True
+    flag = dtype is None
 
     for func in datasets[dataset_type]:
         X, y = func()
