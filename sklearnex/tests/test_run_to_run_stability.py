@@ -231,9 +231,7 @@ def test_other_estimator_stability(estimator, method, dataframe, queue):
         params["random_state"] = 0
         est.set_params(**params)
 
-    datasets = gen_dataset(
-        est, datasets=_dataset_dict, queue=queue, target_df=dataframe
-    )
+    datasets = gen_dataset(est, datasets=_dataset_dict, queue=queue, target_df=dataframe)
     _run_test(est, method, datasets)
 
 
