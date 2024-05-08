@@ -165,13 +165,19 @@ def gen_dataset(
     sparse=False,
     queue=None,
     target_df=None,
-    dtype=np.float64,
+    dtype=None,
 ):
     dataset_type = gen_dataset_type(est)
     output = []
     # load data
+    if dtype is None:
+        flag = True
+
     for func in datasets[dataset_type]:
         X, y = func()
+        if flag:
+            dtype = X.dtype if hasattr(X, "dtype") else np.float64
+
         if sparse:
             X = sp.csr_matrix(X)
         else:
