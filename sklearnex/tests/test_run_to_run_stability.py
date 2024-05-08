@@ -69,6 +69,7 @@ _dataset_dict = {
 
 
 def eval_method(X, y, est, method):
+    res = []
     est.fit(X, y)
 
     if method:
@@ -77,18 +78,18 @@ def eval_method(X, y, est, method):
         else:
             res = est.score(X, y)
 
-        if not isinstance(res, Iterable):
-            res = [res]
+    if not isinstance(res, Iterable):
+        res = [res]
 
-        # if estimator follows sklearn design rules, then set attributes should have a
-        # trailing underscore
-        attributes = [
-            i
-            for i in dir(est)
-            if hasattr(est, i) and not i.startswith("_") and i.endswith("_")
-        ]
-        results = [getattr(est, i) for i in attributes] + [_as_numpy(i) for i in res]
-        attributes += [method for i in res]
+    # if estimator follows sklearn design rules, then set attributes should have a
+    # trailing underscore
+    attributes = [
+        i
+        for i in dir(est)
+        if hasattr(est, i) and not i.startswith("_") and i.endswith("_")
+    ]
+    results = [getattr(est, i) for i in attributes] + [_as_numpy(i) for i in res]
+    attributes += [method for i in res]
     return results, attributes
 
 
