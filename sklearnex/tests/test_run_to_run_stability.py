@@ -129,11 +129,11 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
         str(i): i
         for i in [
             KNeighborsClassifier(algorithm="brute", weights="distance"),
-            KNeighborsClassifier(algorithm="kd_tree"),
             KNeighborsClassifier(algorithm="kd_tree", weights="distance"),
+            KNeighborsClassifier(algorithm="kd_tree"),
+            KNeighborsRegressor(algorithm="brute", weights="distance"),
             KNeighborsRegressor(algorithm="kd_tree", weights="distance"),
             KNeighborsRegressor(algorithm="kd_tree"),
-            KNeighborsRegressor(algorithm="brute", weights="distance"),
             NearestNeighbors(algorithm="kd_tree"),
             DBSCAN(algorithm="brute"),
             PCA(n_components=0.5, svd_solver="covariance_eigh"),
@@ -147,10 +147,6 @@ TO_SKIP = [
     # will be fixed for next release. (UPD. KNN is fixed but there is a problem
     # with stability of stock sklearn. It is already stable in master, so, we
     # need to wait for the next sklearn release)
-    "LogisticRegression",  # Absolute diff is 1e-8, will be fixed for next release
-    "LogisticRegressionCV",  # Absolute diff is 1e-10, will be fixed for next release
-    "RandomForestRegressor",  # Absolute diff is 1e-14 in OOB score,
-    # will be fixed for next release
 ]
 
 
@@ -174,6 +170,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
     _run_test(est, method, datasets)
 
 
+@pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_stability(estimator, method, dataframe, queue):
