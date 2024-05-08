@@ -45,12 +45,14 @@ def get_patch_map_core(preview=False):
 
         if _is_new_patching_available():
             import sklearn.covariance as covariance_module
+            import sklearn.decomposition as decomposition_module
 
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
+            from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
@@ -76,6 +78,18 @@ def get_patch_map_core(preview=False):
                     None,
                 ]
             ]
+
+            # IncrementalPCA
+            mapping["incrementalpca"] = [
+                [
+                    (
+                        decomposition_module,
+                        "IncrementalPCA",
+                        IncrementalPCA_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
         return mapping
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
@@ -93,6 +107,7 @@ def get_patch_map_core(preview=False):
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.cluster as cluster_module
+        import sklearn.covariance as covariance_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
@@ -115,6 +130,9 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .covariance import (
+            IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
+        )
         from .decomposition import PCA as PCA_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
@@ -275,6 +293,18 @@ def get_patch_map_core(preview=False):
             ]
         ]
         mapping["localoutlierfactor"] = mapping["lof"]
+
+        # IncrementalEmpiricalCovariance
+        mapping["incrementalempiricalcovariance"] = [
+            [
+                (
+                    covariance_module,
+                    "IncrementalEmpiricalCovariance",
+                    IncrementalEmpiricalCovariance_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # IncrementalLinearRegression
         mapping["incrementallinearregression"] = [
