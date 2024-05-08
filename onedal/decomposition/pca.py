@@ -15,18 +15,21 @@
 # ==============================================================================
 
 import numbers
+from abc import ABCMeta
 
 import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
 from sklearn.utils.extmath import stable_cumsum
 
-from daal4py.sklearn._utils import sklearn_check_version
-
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 
-class PCA(BaseEstimator):
+class BasePCA(BaseEstimator, metaclass=ABCMeta):
+    """
+    Base class for PCA oneDAL implementation.
+    """
+
     def __init__(
         self,
         n_components=None,
@@ -39,7 +42,7 @@ class PCA(BaseEstimator):
         self.is_deterministic = is_deterministic
         self.whiten = whiten
 
-    def get_onedal_params(self, data, stage=None):
+    def _get_onedal_params(self, data, stage=None):
         if stage is None:
             n_components = self._resolve_n_components_for_training(data.shape)
         elif stage == "predict":
@@ -104,11 +107,39 @@ class PCA(BaseEstimator):
             if len(self.explained_variance_) == n_sf_min:
                 return self.explained_variance_[n_components:].mean()
             elif len(self.explained_variance_) < n_sf_min:
-                resid_var = self.variances_.sum()
+                # TODO Rename variances_ to var_ to align with sklearn/sklearnex IncrementalPCA
+                if hasattr(self, "variances_"):
+                    resid_var = self.variances_.sum()
+                elif hasattr(self, "var_"):
+                    resid_var = self.var_.sum()
+
                 resid_var -= self.explained_variance_.sum()
                 return resid_var / (n_sf_min - n_components)
         else:
             return 0.0
+
+    def _create_model(self):
+        m = self._get_backend("decomposition", "dim_reduction", "model")
+        m.eigenvectors = to_table(self.components_)
+        m.means = to_table(self.mean_)
+        if self.whiten:
+            m.eigenvalues = to_table(self.explained_variance_)
+        self._onedal_model = m
+        return m
+
+    def predict(self, X, queue=None):
+        policy = self._get_policy(queue, X)
+        model = self._create_model()
+        X = _convert_to_supported(policy, X)
+        params = self._get_onedal_params(X, stage="predict")
+
+        result = self._get_backend(
+            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
+        )
+        return from_table(result.transformed_data)
+
+
+class PCA(BasePCA):
 
     def fit(self, X, y=None, queue=None):
         n_samples, n_features = X.shape
@@ -122,7 +153,7 @@ class PCA(BaseEstimator):
             X = X.copy()
         X = _convert_to_supported(policy, X)
 
-        params = self.get_onedal_params(X)
+        params = self._get_onedal_params(X)
         result = self._get_backend(
             "decomposition", "dim_reduction", "train", policy, params, to_table(X)
         )
@@ -153,23 +184,3 @@ class PCA(BaseEstimator):
             self.explained_variance_ratio_ = self.explained_variance_ratio_[:n_components]
 
         return self
-
-    def _create_model(self):
-        m = self._get_backend("decomposition", "dim_reduction", "model")
-        m.eigenvectors = to_table(self.components_)
-        m.means = to_table(self.mean_)
-        if self.whiten:
-            m.eigenvalues = to_table(self.explained_variance_)
-        self._onedal_model = m
-        return m
-
-    def predict(self, X, queue=None):
-        policy = self._get_policy(queue, X)
-        model = self._create_model()
-        X = _convert_to_supported(policy, X)
-        params = self.get_onedal_params(X, stage="predict")
-
-        result = self._get_backend(
-            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
-        )
-        return from_table(result.transformed_data)

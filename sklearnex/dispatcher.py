@@ -45,12 +45,14 @@ def get_patch_map_core(preview=False):
 
         if _is_new_patching_available():
             import sklearn.covariance as covariance_module
+            import sklearn.decomposition as decomposition_module
 
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
+            from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
@@ -72,6 +74,18 @@ def get_patch_map_core(preview=False):
                         covariance_module,
                         "EmpiricalCovariance",
                         EmpiricalCovariance_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+
+            # IncrementalPCA
+            mapping["incrementalpca"] = [
+                [
+                    (
+                        decomposition_module,
+                        "IncrementalPCA",
+                        IncrementalPCA_sklearnex,
                     ),
                     None,
                 ]
