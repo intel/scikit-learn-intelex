@@ -142,18 +142,11 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
     }
 )
 
-TO_SKIP = [
-    "TSNE",  # Absolute diff is 1e-10, potential problem in KNN,
-    # will be fixed for next release. (UPD. KNN is fixed but there is a problem
-    # with stability of stock sklearn. It is already stable in master, so, we
-    # need to wait for the next sklearn release)
-]
-
 
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
-    if estimator in TO_SKIP:
+    if estimator in ["LogisticRegression"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = PATCHED_MODELS[estimator]()
@@ -174,7 +167,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_stability(estimator, method, dataframe, queue):
-    if estimator in TO_SKIP:
+    if queue is None and estimator in ["LogisticRegression(solver='newton-cg')"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = SPECIAL_INSTANCES[estimator]
@@ -194,8 +187,6 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
-    if estimator in TO_SKIP:
-        pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = SPARSE_INSTANCES[estimator]
 
@@ -216,8 +207,6 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
 def test_other_estimator_stability(estimator, method, dataframe, queue):
-    if estimator in TO_SKIP:
-        pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = STABILITY_INSTANCES[estimator]
 
