@@ -97,47 +97,6 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         self.variable_importance_mode = variable_importance_mode
         self.algorithm = algorithm
 
-    def _to_absolute_max_features(
-        self, max_features, n_features, is_classification=False
-    ):
-        if max_features is None:
-            return n_features
-        if isinstance(max_features, str):
-            if max_features == "auto":
-                if not sklearn_check_version("1.3"):
-                    if sklearn_check_version("1.1"):
-                        warnings.warn(
-                            "`max_features='auto'` has been deprecated in 1.1 "
-                            "and will be removed in 1.3. To keep the past behaviour, "
-                            "explicitly set `max_features=1.0` or remove this "
-                            "parameter as it is also the default value for "
-                            "RandomForestRegressors and ExtraTreesRegressors.",
-                            FutureWarning,
-                        )
-                    return (
-                        max(1, int(np.sqrt(n_features)))
-                        if is_classification
-                        else n_features
-                    )
-            if max_features == "sqrt":
-                return max(1, int(np.sqrt(n_features)))
-            if max_features == "log2":
-                return max(1, int(np.log2(n_features)))
-            allowed_string_values = (
-                '"sqrt" or "log2"'
-                if sklearn_check_version("1.3")
-                else '"auto", "sqrt" or "log2"'
-            )
-            raise ValueError(
-                "Invalid value for max_features. Allowed string "
-                f"values are {allowed_string_values}."
-            )
-        if isinstance(max_features, (numbers.Integral, np.integer)):
-            return max_features
-        if max_features > 0.0:
-            return max(1, int(max_features * n_features))
-        return 0
-
     def _get_observations_per_tree_fraction(self, n_samples, max_samples):
         if max_samples is None:
             return 1.0
@@ -156,9 +115,6 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
 
     def _get_onedal_params(self, data):
         n_samples, n_features = data.shape
-        features_per_node = self._to_absolute_max_features(
-            self.max_features, n_features, self.is_classification
-        )
 
         self.observations_per_tree_fraction = self._get_observations_per_tree_fraction(
             n_samples=n_samples, max_samples=self.max_samples
