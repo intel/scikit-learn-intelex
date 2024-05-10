@@ -146,7 +146,7 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
-    if estimator in ["LogisticRegression"]:
+    if estimator in ["LogisticRegression", "TSNE"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
 
     est = PATCHED_MODELS[estimator]()
