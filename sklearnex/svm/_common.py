@@ -23,7 +23,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal.utils import _column_or_1d
+from onedal.utils import _check_array, _check_X_y, _column_or_1d
 
 from .._utils import PatchingConditionsChain
 
