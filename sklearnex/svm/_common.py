@@ -17,6 +17,7 @@
 from abc import ABC
 
 import numpy as np
+from scipy import sparse as sp
 from sklearn.base import BaseEstimator
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedKFold
