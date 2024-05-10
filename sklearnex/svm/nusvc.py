@@ -287,9 +287,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             self._fit_proba(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
-    def _onedal_fit_checks(self, X, y, sample_weight=None):
-        X, y, sample_weight = super()._onedal_fit_checks(X, y, sample_weight)
-
     def _onedal_predict(self, X, queue=None):
         return self._onedal_estimator.predict(X, queue=queue)
 
