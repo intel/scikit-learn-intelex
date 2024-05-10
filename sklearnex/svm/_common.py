@@ -207,7 +207,7 @@ class BaseSVM(BaseEstimator, ABC):
                 )
 
         if np.all(sample_weight <= 0):
-            raise ValueError(_err_msg)
+            raise ValueError(self._err_msg)
 
         return sample_weight
 
