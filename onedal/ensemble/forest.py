@@ -159,7 +159,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             "min_weight_fraction_in_leaf_node": self.min_weight_fraction_leaf,
             "min_impurity_decrease_in_split_node": self.min_impurity_decrease,
             "tree_count": int(self.n_estimators),
-            "features_per_node": features_per_node,
+            "features_per_node": self.max_features,
             "max_tree_depth": int(0 if self.max_depth is None else self.max_depth),
             "min_observations_in_leaf_node": min_observations_in_leaf_node,
             "min_observations_in_split_node": min_observations_in_split_node,
