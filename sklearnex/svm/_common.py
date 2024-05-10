@@ -15,6 +15,7 @@
 # ==============================================================================
 
 from abc import ABC
+from numbers import Number, Real
 
 import numpy as np
 from scipy import sparse as sp
