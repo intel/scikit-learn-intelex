@@ -21,7 +21,6 @@ from numbers import Number, Real
 import numpy as np
 from scipy import sparse as sp
 
-from daal4py.sklearn._utils import sklearn_check_version
 from onedal import _backend
 
 from ..common._estimator_checks import _check_is_fitted
