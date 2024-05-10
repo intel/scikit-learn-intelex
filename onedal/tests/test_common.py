@@ -34,7 +34,7 @@ def test_sklearn_check_version_ban():
 
     for f in files:
         if open(f, "r").read().find("sklearn_check_version") != -1:
-            output += [f.replace(path, "onedal"+os.sep)]
+            output += [f.replace(path, "onedal" + os.sep)]
 
     # remove this file from the list
     output = "\n".join([i for i in output if "test_common.py" not in i])
