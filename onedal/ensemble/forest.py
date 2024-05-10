@@ -159,7 +159,11 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             "min_weight_fraction_in_leaf_node": self.min_weight_fraction_leaf,
             "min_impurity_decrease_in_split_node": self.min_impurity_decrease,
             "tree_count": int(self.n_estimators),
-            "features_per_node": self.max_features,
+            "features_per_node": (
+                self.max_features
+                if self.max_features != "sqrt"
+                else max(1, int(np.sqrt(data[0].shape[1])))
+            ),
             "max_tree_depth": int(0 if self.max_depth is None else self.max_depth),
             "min_observations_in_leaf_node": min_observations_in_leaf_node,
             "min_observations_in_split_node": min_observations_in_split_node,
@@ -378,7 +382,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features="sqrt" if sklearn_check_version("1.1") else "auto",
+        max_features="sqrt",
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,
@@ -470,7 +474,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features=1.0 if sklearn_check_version("1.1") else "auto",
+        max_features=1.0,
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,
@@ -549,7 +553,7 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features="auto",
+        max_features="sqrt",
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,
@@ -641,7 +645,7 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features="auto",
+        max_features=1.0,
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,

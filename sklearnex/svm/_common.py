@@ -17,6 +17,7 @@
 from abc import ABC
 
 import numpy as np
+from sklearn.base import BaseEstimator
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
@@ -51,7 +52,9 @@ def set_intercept(self, value):
             del self._onedal_estimator._onedal_model
 
 
-class BaseSVM(ABC):
+class BaseSVM(BaseEstimator, ABC):
+    _err_msg = "Invalid input - all samples have zero or negative weights."
+
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
         patching_status.and_conditions([(False, "GPU offloading is not supported.")])
@@ -84,6 +87,127 @@ class BaseSVM(ABC):
             )
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
+
+    def _compute_gamma_sigma(self, gamma, X):
+        # only run extended conversion if kernel is not linear
+        # set to a value = 1.0, so gamma will always be passed to
+        # the onedal estimator as a float type
+        if self.kernel == "linear":
+            return 1.0
+
+        if isinstance(gamma, str):
+            if gamma == "scale":
+                if sp.issparse(X):
+                    # var = E[X^2] - E[X]^2
+                    X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
+                else:
+                    X_sc = X.var()
+                _gamma = 1.0 / (X.shape[1] * X_sc) if X_sc != 0 else 1.0
+            elif gamma == "auto":
+                _gamma = 1.0 / X.shape[1]
+            else:
+                raise ValueError(
+                    "When 'gamma' is a string, it should be either 'scale' or "
+                    "'auto'. Got '{}' instead.".format(gamma)
+                )
+        else:
+            if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
+                if isinstance(gamma, Real):
+                    if gamma <= 0:
+                        msg = (
+                            f"gamma value must be > 0; {gamma!r} is invalid. Use"
+                            " a positive number or use 'auto' to set gamma to a"
+                            " value of 1 / n_features."
+                        )
+                        raise ValueError(msg)
+                    _gamma = gamma
+                else:
+                    msg = (
+                        "The gamma value should be set to 'scale', 'auto' or a"
+                        f" positive float value. {gamma!r} is not a valid option"
+                    )
+                    raise ValueError(msg)
+            else:
+                _gamma = gamma
+        return _gamma
+
+    def _onedal_fit_checks(self, X, y, sample_weight=None):
+        if hasattr(self, "decision_function_shape"):
+            if self.decision_function_shape not in ("ovr", "ovo", None):
+                raise ValueError(
+                    f"decision_function_shape must be either 'ovr' or 'ovo', "
+                    f"got {self.decision_function_shape}."
+                )
+
+        if y is None:
+            if self._get_tags()["requires_y"]:
+                raise ValueError(
+                    f"This {self.__class__.__name__} estimator "
+                    f"requires y to be passed, but the target y is None."
+                )
+        # using onedal _check_X_y to insure X and y are contiguous
+        # finite check occurs in onedal estimator
+        X, y = _check_X_y(
+            X,
+            y,
+            dtype=[np.float64, np.float32],
+            force_all_finite=False,
+            accept_sparse="csr",
+        )
+        y = self._validate_targets(y, X.dtype)
+        sample_weight = self._get_sample_weight(X, y, sample_weight)
+        return X, y, sample_weight
+
+    def _get_sample_weight(self, X, y, sample_weight):
+        n_samples = X.shape[0]
+        dtype = X.dtype
+        if n_samples == 1:
+            raise ValueError("n_samples=1")
+
+        sample_weight = np.ascontiguousarray(
+            [] if sample_weight is None else sample_weight, dtype=np.float64
+        )
+
+        sample_weight_count = sample_weight.shape[0]
+        if sample_weight_count != 0 and sample_weight_count != n_samples:
+            raise ValueError(
+                "sample_weight and X have incompatible shapes: "
+                "%r vs %r\n"
+                "Note: Sparse matrices cannot be indexed w/"
+                "boolean masks (use `indices=True` in CV)."
+                % (len(sample_weight), X.shape)
+            )
+
+        ww = None
+        if sample_weight_count == 0 and self.class_weight_ is None:
+            return ww
+
+        if sample_weight_count == 0:
+            sample_weight = np.ones(n_samples, dtype=dtype)
+        elif isinstance(sample_weight, Number):
+            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
+        else:
+            sample_weight = _check_array(
+                sample_weight,
+                accept_sparse=False,
+                ensure_2d=False,
+                dtype=dtype,
+                order="C",
+            )
+            if sample_weight.ndim != 1:
+                raise ValueError("Sample weights must be 1D array or scalar")
+
+            if sample_weight.shape != (n_samples,):
+                raise ValueError(
+                    "sample_weight.shape == {}, expected {}!".format(
+                        sample_weight.shape, (n_samples,)
+                    )
+                )
+
+        if np.all(sample_weight <= 0):
+            raise ValueError(_err_msg)
+
+        return sample_weight
 
 
 class BaseSVC(BaseSVM):
