@@ -114,7 +114,9 @@ class BaseForest(ABC):
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
             "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
-            "max_features": self._to_absolute_max_features(self.max_features, self.n_features_in_)
+            "max_features": self._to_absolute_max_features(
+                self.max_features, self.n_features_in_
+            ),
             "max_leaf_nodes": self.max_leaf_nodes,
             "min_impurity_decrease": self.min_impurity_decrease,
             "bootstrap": self.bootstrap,
@@ -174,9 +176,7 @@ class BaseForest(ABC):
         self._validate_estimator()
         return self
 
-    def _to_absolute_max_features(
-        self, max_features, n_features
-    ):
+    def _to_absolute_max_features(self, max_features, n_features):
         if max_features is None:
             return n_features
         if isinstance(max_features, str):

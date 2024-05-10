@@ -172,7 +172,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             "error_metric_mode": self.error_metric_mode,
             "variable_importance_mode": self.variable_importance_mode,
         }
-        if self.is_classification:
+        if isinstance(self, ClassifierMixin):
             onedal_params["class_count"] = (
                 0 if self.classes_ is None else len(self.classes_)
             )
@@ -305,7 +305,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         self._onedal_model = train_result.model
 
         if self.oob_score:
-            if self.is_classification:
+            if isinstance(self, ClassifierMixin):
                 self.oob_score_ = from_table(train_result.oob_err_accuracy)[0, 0]
                 self.oob_decision_function_ = from_table(
                     train_result.oob_err_decision_function
@@ -426,7 +426,6 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = True
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -519,7 +518,6 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = False
 
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
@@ -599,7 +597,6 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = True
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -692,7 +689,6 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = False
 
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
