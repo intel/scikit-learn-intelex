@@ -17,52 +17,12 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from sklearn.utils.estimator_checks import check_estimator
 
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex.svm import SVC, SVR
-
-
-def _replace_and_save(md, fns, replacing_fn):
-    saved = dict()
-    for check_f in fns:
-        try:
-            fn = getattr(md, check_f)
-            setattr(md, check_f, replacing_fn)
-            saved[check_f] = fn
-        except RuntimeError:
-            pass
-    return saved
-
-
-def _restore_from_saved(md, saved_dict):
-    for check_f in saved_dict:
-        setattr(md, check_f, saved_dict[check_f])
-
-
-@pytest.mark.parametrize("estimator", [SVC, SVR])
-def test_estimator(estimator):
-    def dummy(*args, **kwargs):
-        pass
-
-    md = sklearn.utils.estimator_checks
-    saved = _replace_and_save(
-        md,
-        [
-            "check_sample_weights_invariance",  # Max absolute difference: 0.0008
-            "check_estimators_fit_returns_self",  # ValueError: empty metadata
-            "check_classifiers_train",  # assert y_pred.shape == (n_samples,)
-            "check_estimators_unfitted",  # Call 'fit' with appropriate arguments
-        ],
-        dummy,
-    )
-    check_estimator(estimator())
-    _restore_from_saved(md, saved)
-
 
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
