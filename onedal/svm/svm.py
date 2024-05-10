@@ -20,7 +20,6 @@ from numbers import Number, Real
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.base import BaseEstimator
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal import _backend
@@ -45,7 +44,7 @@ class SVMtype(Enum):
     nu_svr = 3
 
 
-class BaseSVM(BaseEstimator, metaclass=ABCMeta):
+class BaseSVM(metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
@@ -92,7 +91,6 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
-
     def _get_onedal_params(self, data):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
         # TODO: remove this workaround
@@ -125,7 +123,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     f"decision_function_shape must be either 'ovr' or 'ovo', "
                     f"got {self.decision_function_shape}."
                 )
-    
+
         X, y = _check_X_y(
             X,
             y,
