@@ -53,7 +53,6 @@ CPU_BANNED_LIST = (
     "IncrementalEmpiricalCovariance",  # dataframe_f issues
     "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "IncrementalPCA",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
-    "TSNE",  # too slow for using in testing on common data size
 )
 
 GPU_BANNED_LIST = (
