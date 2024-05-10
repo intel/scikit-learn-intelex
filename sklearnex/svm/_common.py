@@ -154,7 +154,7 @@ class BaseSVM(BaseEstimator, ABC):
             force_all_finite=False,
             accept_sparse="csr",
         )
-        y = self._validate_targets(y, X.dtype)
+        y = self._validate_targets(y)
         sample_weight = self._get_sample_weight(X, y, sample_weight)
         return X, y, sample_weight
 

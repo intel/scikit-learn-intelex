@@ -293,8 +293,6 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         y = self._validate_targets(y, X.dtype)
 
         self.n_features_in_ = X.shape[1]
-        if not sklearn_check_version("1.0"):
-            self.n_features_ = self.n_features_in_
 
         if sample_weight is not None and len(sample_weight) > 0:
             sample_weight = self._get_sample_weight(sample_weight, X)
