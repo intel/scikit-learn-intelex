@@ -24,6 +24,7 @@ from onedal.tests.utils._dataframes_support import (
     get_dataframes_and_queues,
 )
 
+
 # TODO:
 # investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
 @pytest.mark.parametrize(
