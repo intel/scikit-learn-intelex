@@ -136,7 +136,24 @@ class BaseSVM(metaclass=ABCMeta):
             self._scale_, self._sigma_ = 1.0, 1.0
             self.coef0 = 0.0
         else:
-            self._scale_, self._sigma_ = self.gamma, np.sqrt(0.5 / self.gamma)
+            if isinstance(gamma, str):
+                if gamma == "scale":
+                    if sp.issparse(X):
+                        # var = E[X^2] - E[X]^2
+                        X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
+                    else:
+                        X_sc = X.var()
+                    _gamma = 1.0 / (X.shape[1] * X_sc) if X_sc != 0 else 1.0
+                elif gamma == "auto":
+                    _gamma = 1.0 / X.shape[1]
+                else:
+                    raise ValueError(
+                        "When 'gamma' is a string, it should be either 'scale' or "
+                        "'auto'. Got '{}' instead.".format(gamma)
+                    )
+            else:
+                _gamma = self.gamma
+            self._scale_, self._sigma_ = _gamma, np.sqrt(0.5 / _gamma)
 
         policy = _get_policy(queue, X, y, sample_weight)
         params = self._get_onedal_params(X)
