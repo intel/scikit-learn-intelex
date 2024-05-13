@@ -302,7 +302,7 @@ class SVC(sklearn_SVC, BaseSVC):
             "C": self.C,
             "kernel": self.kernel,
             "degree": self.degree,
-            "gamma": self._compute_gamma_sigma(self.gamma, X),
+            "gamma": self._compute_gamma_sigma(X),
             "coef0": self.coef0,
             "tol": self.tol,
             "shrinking": self.shrinking,

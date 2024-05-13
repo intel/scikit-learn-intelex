@@ -90,22 +90,22 @@ class BaseSVM(BaseEstimator, ABC):
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
-    def _compute_gamma_sigma(self, gamma, X):
+    def _compute_gamma_sigma(self, X):
         # only run extended conversion if kernel is not linear
         # set to a value = 1.0, so gamma will always be passed to
         # the onedal estimator as a float type
         if self.kernel == "linear":
             return 1.0
 
-        if isinstance(gamma, str):
-            if gamma == "scale":
+        if isinstance(self.gamma, str):
+            if self.gamma == "scale":
                 if sp.issparse(X):
                     # var = E[X^2] - E[X]^2
                     X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
                 else:
                     X_sc = X.var()
                 _gamma = 1.0 / (X.shape[1] * X_sc) if X_sc != 0 else 1.0
-            elif gamma == "auto":
+            elif self.gamma == "auto":
                 _gamma = 1.0 / X.shape[1]
             else:
                 raise ValueError(
@@ -114,23 +114,23 @@ class BaseSVM(BaseEstimator, ABC):
                 )
         else:
             if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
-                if isinstance(gamma, Real):
-                    if gamma <= 0:
+                if isinstance(self.gamma, Real):
+                    if self.gamma <= 0:
                         msg = (
-                            f"gamma value must be > 0; {gamma!r} is invalid. Use"
+                            f"gamma value must be > 0; {self.gamma!r} is invalid. Use"
                             " a positive number or use 'auto' to set gamma to a"
                             " value of 1 / n_features."
                         )
                         raise ValueError(msg)
-                    _gamma = gamma
+                    _gamma = self.gamma
                 else:
                     msg = (
                         "The gamma value should be set to 'scale', 'auto' or a"
-                        f" positive float value. {gamma!r} is not a valid option"
+                        f" positive float value. {self.gamma!r} is not a valid option"
                     )
                     raise ValueError(msg)
             else:
-                _gamma = gamma
+                _gamma = self.gamma
         return _gamma
 
     def _onedal_fit_checks(self, X, y, sample_weight=None):
@@ -181,7 +181,9 @@ class BaseSVM(BaseEstimator, ABC):
             )
 
         ww = None
-        if sample_weight_count == 0 and self.class_weight_ is None:
+        if sample_weight_count == 0 and (
+            not hasattr(self, "class_weight_") or self.class_weight_ is None
+        ):
             return ww
 
         if sample_weight_count == 0:

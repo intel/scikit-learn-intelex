@@ -102,7 +102,7 @@ class SVR(sklearn_SVR, BaseSVR):
             "epsilon": self.epsilon,
             "kernel": self.kernel,
             "degree": self.degree,
-            "gamma": self._compute_gamma_sigma(self.gamma, X),
+            "gamma": self._compute_gamma_sigma(X),
             "coef0": self.coef0,
             "tol": self.tol,
             "shrinking": self.shrinking,
