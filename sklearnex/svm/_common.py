@@ -239,7 +239,10 @@ class BaseSVC(BaseSVM):
                 n_splits=n_splits, shuffle=True, random_state=self.random_state
             )
             self.clf_prob = CalibratedClassifierCV(
-                clf_base, ensemble=False, cv=cv, method="sigmoid",
+                clf_base,
+                ensemble=False,
+                cv=cv,
+                method="sigmoid",
             )
             self.clf_prob.fit(X, y, sample_weight)
 
