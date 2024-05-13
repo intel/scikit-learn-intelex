@@ -136,20 +136,20 @@ class BaseSVM(metaclass=ABCMeta):
             self._scale_, self._sigma_ = 1.0, 1.0
             self.coef0 = 0.0
         else:
-            if isinstance(gamma, str):
-                if gamma == "scale":
+            if isinstance(self.gamma, str):
+                if self.gamma == "scale":
                     if sp.issparse(X):
                         # var = E[X^2] - E[X]^2
                         X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
                     else:
                         X_sc = X.var()
                     _gamma = 1.0 / (X.shape[1] * X_sc) if X_sc != 0 else 1.0
-                elif gamma == "auto":
+                elif self.gamma == "auto":
                     _gamma = 1.0 / X.shape[1]
                 else:
                     raise ValueError(
                         "When 'gamma' is a string, it should be either 'scale' or "
-                        "'auto'. Got '{}' instead.".format(gamma)
+                        "'auto'. Got '{}' instead.".format(self.gamma)
                     )
             else:
                 _gamma = self.gamma
