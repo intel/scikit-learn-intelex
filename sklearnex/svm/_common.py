@@ -227,7 +227,7 @@ class BaseSVC(BaseSVM):
         recip_freq = len(y_) / (len(le.classes_) * np.bincount(y_ind).astype(np.float64))
         return recip_freq[le.transform(classes)]
 
-    def _fit_proba(self, X, y, sample_weight=None, queue=None):
+    def _fit_proba(self, X, y, sample_weight=None):
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
@@ -242,7 +242,7 @@ class BaseSVC(BaseSVM):
             self.clf_prob = CalibratedClassifierCV(
                 clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_jobs
             )
-            self.clf_prob.fit(X, y, sample_weight=sample_weight, queue=queue)
+            self.clf_prob.fit(X, y, sample_weight=sample_weight)
 
         except ValueError:
             clf_base = clf_base.fit(X, y, sample_weight)
