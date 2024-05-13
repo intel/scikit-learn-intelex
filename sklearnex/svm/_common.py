@@ -110,7 +110,7 @@ class BaseSVM(BaseEstimator, ABC):
             else:
                 raise ValueError(
                     "When 'gamma' is a string, it should be either 'scale' or "
-                    "'auto'. Got '{}' instead.".format(gamma)
+                    "'auto'. Got '{}' instead.".format(self.gamma)
                 )
         else:
             if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
@@ -242,7 +242,8 @@ class BaseSVC(BaseSVM):
             self.clf_prob = CalibratedClassifierCV(
                 clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_jobs
             )
-            self.clf_prob.fit(X, y, sample_weight)
+            self.clf_prob.fit(X, y, sample_weight=sample_weight, queue=queue)
+
         except ValueError:
             clf_base = clf_base.fit(X, y, sample_weight)
             self.clf_prob = CalibratedClassifierCV(
