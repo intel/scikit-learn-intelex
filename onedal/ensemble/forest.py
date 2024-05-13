@@ -162,7 +162,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             "features_per_node": (
                 self.max_features
                 if self.max_features != "sqrt"
-                else max(1, int(np.sqrt(data[0].shape[1])))
+                else max(1, int(np.sqrt(n_features)))
             ),
             "max_tree_depth": int(0 if self.max_depth is None else self.max_depth),
             "min_observations_in_leaf_node": min_observations_in_leaf_node,

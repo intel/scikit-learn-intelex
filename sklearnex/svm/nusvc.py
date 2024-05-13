@@ -96,7 +96,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
 
         return self
@@ -246,6 +246,9 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     def _get_sample_weight(self, X, y, sample_weight=None):
         sample_weight = super()._get_sample_weight(X, y, sample_weight)
+        if sample_weight is None:
+            return sample_weight
+
         weight_per_class = [
             np.sum(sample_weight[y == class_label]) for class_label in np.unique(y)
         ]
