@@ -97,6 +97,17 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         self.variable_importance_mode = variable_importance_mode
         self.algorithm = algorithm
 
+    def _to_absolute_max_features(self, max_features, n_features):
+        if max_features is None:
+            return n_features
+        elif isinstance(self.max_features, str):
+            return max(1, int(getattr(np, self.max_features)(n_features)))
+        elif isinstance(max_features, (numbers.Integral, np.integer)):
+            return max_features
+        elif max_features > 0.0:
+            return max(1, int(max_features * n_features))
+        return 0
+
     def _get_observations_per_tree_fraction(self, n_samples, max_samples):
         if max_samples is None:
             return 1.0
@@ -159,10 +170,8 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             "min_weight_fraction_in_leaf_node": self.min_weight_fraction_leaf,
             "min_impurity_decrease_in_split_node": self.min_impurity_decrease,
             "tree_count": int(self.n_estimators),
-            "features_per_node": (
-                self.max_features
-                if not isinstance(self.max_features, str)
-                else max(1, int(getattr(np, self.max_features)(n_features)))
+            "features_per_node": self._to_absolute_max_features(
+                self.max_features, n_features
             ),
             "max_tree_depth": int(0 if self.max_depth is None else self.max_depth),
             "min_observations_in_leaf_node": min_observations_in_leaf_node,
