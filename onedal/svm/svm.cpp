@@ -143,7 +143,7 @@ void init_train_ops(py::module_& m) {
               using namespace dal::svm;
               using input_t = train_input<Task>;
 
-              train_ops ops(policy, input_t{ data, responses, weights }, params2desc{});
+              train_ops ops(policy, input_t{ data, responses}, params2desc{});
               return fptype2t{ method2t{ Task{}, kernel2t{ ops } } }(params);
           });
 }
