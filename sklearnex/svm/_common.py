@@ -225,31 +225,39 @@ class BaseSVC(BaseSVM):
         recip_freq = len(y_) / (len(le.classes_) * np.bincount(y_ind).astype(np.float64))
         return recip_freq[le.transform(classes)]
 
-    def _fit_proba(self, X, y, sample_weight=None):
+    def _fit_proba(self, X, y, sample_weight=None, queue=None):
+        from .._config import config_context, get_config
+
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
         clf_base = self.__class__(**params)
 
-        try:
-            n_splits = 5
-            cv = StratifiedKFold(
-                n_splits=n_splits, shuffle=True, random_state=self.random_state
-            )
-            self.clf_prob = CalibratedClassifierCV(
-                clf_base,
-                ensemble=False,
-                cv=cv,
-                method="sigmoid",
-            )
-            self.clf_prob.fit(X, y, sample_weight)
+        # We use stock metaestimators below, so the only way
+        # to pass a queue is using config_context.
+        cfg = get_config()
+        cfg["target_offload"] = queue
+        with config_context(**cfg):
+            try:
+                n_splits = 5
+                n_jobs = n_splits if queue is None or queue.sycl_device.is_cpu else 1
+                cv = StratifiedKFold(
+                    n_splits=n_splits, shuffle=True, random_state=self.random_state
+                )
+                self.clf_prob = CalibratedClassifierCV(
+                    clf_base,
+                    ensemble=False,
+                    cv=cv,
+                    method="sigmoid",
+                )
+                self.clf_prob.fit(X, y, sample_weight)
 
-        except ValueError:
-            clf_base = clf_base.fit(X, y, sample_weight)
-            self.clf_prob = CalibratedClassifierCV(
-                clf_base, cv="prefit", method="sigmoid"
-            )
-            self.clf_prob.fit(X, y, sample_weight)
+            except ValueError:
+                clf_base = clf_base.fit(X, y, sample_weight)
+                self.clf_prob = CalibratedClassifierCV(
+                    clf_base, cv="prefit", method="sigmoid"
+                )
+                self.clf_prob.fit(X, y, sample_weight)
 
     def _save_attributes(self):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
