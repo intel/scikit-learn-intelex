@@ -76,7 +76,7 @@ class SVR(sklearn_SVR, BaseSVR):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
 
         return self
@@ -96,7 +96,7 @@ class SVR(sklearn_SVR, BaseSVR):
         )
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        _, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
+        X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "C": self.C,
             "epsilon": self.epsilon,

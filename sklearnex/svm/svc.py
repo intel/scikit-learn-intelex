@@ -96,7 +96,7 @@ class SVC(sklearn_SVC, BaseSVC):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
 
         if self.probability and hasattr(self, "_onedal_estimator"):
@@ -301,7 +301,7 @@ class SVC(sklearn_SVC, BaseSVC):
         return ww
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        _, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
+        X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "C": self.C,
             "kernel": self.kernel,
