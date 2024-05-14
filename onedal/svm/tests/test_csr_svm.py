@@ -21,7 +21,7 @@ from scipy import sparse as sp
 from sklearn import datasets
 from sklearn.datasets import make_classification
 
-from onedal.common.mixin import ClassifierMixin
+from onedal.common._mixin import ClassifierMixin
 from onedal.svm import SVC, SVR
 from onedal.tests.utils._device_selection import (
     get_queues,
@@ -52,7 +52,7 @@ def check_svm_model_equal(
         sparse_svm.predict(X_test, queue=queue),
     )
 
-    if isinstance(dense_svm, ClassifierMixin):
+    if isinstance(dense_svm, ClassifierMixin) and isinstance(sparse_svm, ClassifierMixin):
         assert_array_almost_equal(
             dense_svm.decision_function(X_test_dense, queue=queue),
             sparse_svm.decision_function(X_test, queue=queue),

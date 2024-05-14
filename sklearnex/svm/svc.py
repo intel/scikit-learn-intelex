@@ -321,7 +321,7 @@ class SVC(sklearn_SVC, BaseSVC):
             self._fit_proba(
                 X,
                 y,
-                sample_weight=sample_weights,
+                sample_weight=sample_weight,
                 queue=queue,
             )
 
