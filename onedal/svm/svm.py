@@ -130,13 +130,17 @@ class BaseSVM(metaclass=ABCMeta):
             accept_sparse="csr",
         )
         y = self._validate_targets(y, X.dtype)
-        sample_weight = _check_array(
-            sample_weight,
-            accept_sparse=False,
-            ensure_2d=False,
-            dtype=X.dtype,
-            order="C",
-        )
+        if sample_weight is not None and len(sample_weight) > 0:
+            sample_weight = _check_array(
+                sample_weight,
+                accept_sparse=False,
+                ensure_2d=False,
+                dtype=X.dtype,
+                order="C",
+            )
+            data = (X, y, sample_weight)
+        else:
+            data = (X, y)
         self._sparse = sp.issparse(X)
 
         if self.kernel == "linear":
@@ -162,9 +166,9 @@ class BaseSVM(metaclass=ABCMeta):
                 _gamma = self.gamma
             self._scale_, self._sigma_ = _gamma, np.sqrt(0.5 / _gamma)
 
-        policy = _get_policy(queue, X, y, sample_weight)
+        policy = _get_policy(queue, *data)
         params = self._get_onedal_params(X)
-        result = module.train(policy, params, *to_table(X, y, sample_weight))
+        result = module.train(policy, params, *to_table(*data))
 
         if self._sparse:
             self.dual_coef_ = sp.csr_matrix(from_table(result.coeffs).T)
