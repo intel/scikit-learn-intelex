@@ -21,15 +21,12 @@ from scipy import sparse as sp
 from sklearn import datasets
 from sklearn.datasets import make_classification
 
+from onedal.common._mixin import ClassifierMixin
 from onedal.svm import SVC, SVR
 from onedal.tests.utils._device_selection import (
     get_queues,
     pass_if_not_implemented_for_gpu,
 )
-
-
-def is_classifier(estimator):
-    return getattr(estimator, "_estimator_type", None) == "classifier"
 
 
 def check_svm_model_equal(
@@ -55,7 +52,7 @@ def check_svm_model_equal(
         sparse_svm.predict(X_test, queue=queue),
     )
 
-    if is_classifier(svm):
+    if isinstance(dense_svm, ClassifierMixin) and isinstance(sparse_svm, ClassifierMixin):
         assert_array_almost_equal(
             dense_svm.decision_function(X_test_dense, queue=queue),
             sparse_svm.decision_function(X_test, queue=queue),
