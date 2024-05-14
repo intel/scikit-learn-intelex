@@ -141,7 +141,7 @@ class BaseSVM(metaclass=ABCMeta):
         elif self.class_weight is not None:
             sample_weight = np.ones(X.shape[0], dtype=dtype)
 
-        if sample_weight:
+        if sample_weight is not None:
             if self.class_weight_ is not None:
                 for i, v in enumerate(self.class_weight_):
                     sample_weight[y == i] *= v
