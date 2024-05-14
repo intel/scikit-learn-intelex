@@ -95,7 +95,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
         )
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X, y, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
+        _, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "C": self.C,
             "nu": self.nu,
