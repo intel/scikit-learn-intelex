@@ -19,7 +19,7 @@ from numbers import Number, Real
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
@@ -181,9 +181,7 @@ class BaseSVM(BaseEstimator, ABC):
             )
 
         ww = None
-        if sample_weight_count == 0 and (
-            not hasattr(self, "class_weight_") or self.class_weight_ is None
-        ):
+        if sample_weight_count == 0 and not isinstance(self, ClassifierMixin):
             return ww
 
         if sample_weight_count == 0:
@@ -260,7 +258,8 @@ class BaseSVC(BaseSVM):
         self.dual_coef_ = self._onedal_estimator.dual_coef_
         self.shape_fit_ = self._onedal_estimator.class_weight_
         self.classes_ = self._onedal_estimator.classes_
-        self.class_weight_ = self._onedal_estimator.class_weight_
+        if isinstance(self, ClassifierMixin) or not sklearn_check_version("1.2"):
+            self.class_weight_ = self._onedal_estimator.class_weight_
         self.support_ = self._onedal_estimator.support_
 
         self._intercept_ = self._onedal_estimator.intercept_
