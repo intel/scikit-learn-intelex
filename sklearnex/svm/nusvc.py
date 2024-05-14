@@ -260,14 +260,10 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
                 ):
                     raise ValueError("specified nu is infeasible")
 
-        ww = sample_weight
-        if self.class_weight_ is not None:
-            for i, v in enumerate(self.class_weight_):
-                ww[y == i] *= v
-        return ww
+        return sample_weight
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
+        X, _, weights = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "nu": self.nu,
             "kernel": self.kernel,
@@ -284,10 +280,15 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         }
 
         self._onedal_estimator = onedal_NuSVC(**onedal_params)
-        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
+        self._onedal_estimator.fit(X, y, weights, queue=queue)
 
         if self.probability:
-            self._fit_proba(X, y, sample_weight=sample_weight, queue=queue)
+            self._fit_proba(
+                X,
+                y,
+                sample_weight=sample_weight,
+                queue=queue,
+            )
 
         self._save_attributes()
 
