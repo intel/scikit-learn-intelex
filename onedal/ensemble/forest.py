@@ -103,7 +103,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         elif isinstance(self.max_features, str):
             return max(1, int(getattr(np, self.max_features)(n_features)))
         elif isinstance(self.max_features, (numbers.Integral, np.integer)):
-            return max_features
+            return self.max_features
         elif max_features > 0.0:
             return max(1, int(self.max_features * n_features))
         return 0

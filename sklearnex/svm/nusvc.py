@@ -267,7 +267,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         return ww
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
+        X, _, weights = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "nu": self.nu,
             "kernel": self.kernel,
@@ -284,13 +284,13 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         }
 
         self._onedal_estimator = onedal_NuSVC(**onedal_params)
-        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
+        self._onedal_estimator.fit(X, y, weights, queue=queue)
 
         if self.probability:
             self._fit_proba(
                 X,
                 y,
-                sample_weight=sample_weight.astype(float) if sample_weight else None,
+                sample_weight=sample_weight,
                 queue=queue,
             )
 
