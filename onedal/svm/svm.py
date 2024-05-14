@@ -138,6 +138,9 @@ class BaseSVM(metaclass=ABCMeta):
                 dtype=X.dtype,
                 order="C",
             )
+            if self.class_weight_ is not None:
+                for i, v in enumerate(self.class_weight_):
+                    sample_weight[y == i] *= v
             data = (X, y, sample_weight)
         else:
             data = (X, y)
