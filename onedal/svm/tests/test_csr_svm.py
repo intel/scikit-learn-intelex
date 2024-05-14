@@ -52,7 +52,7 @@ def check_svm_model_equal(
         sparse_svm.predict(X_test, queue=queue),
     )
 
-    if isinstance(dense_svm, ClassifierMixin) and isinstance(sparse_svm, ClassifierMixin):
+    if isinstance(dense_svm, ClassifierMixin):
         assert_array_almost_equal(
             dense_svm.decision_function(X_test_dense, queue=queue),
             sparse_svm.decision_function(X_test, queue=queue),
