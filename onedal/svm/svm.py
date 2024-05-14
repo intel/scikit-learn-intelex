@@ -138,12 +138,13 @@ class BaseSVM(metaclass=ABCMeta):
                 dtype=X.dtype,
                 order="C",
             )
+        elif self.class_weight is not None:
+            sample_weight = np.ones(X.shape[0], dtype=dtype)
 
-        if self.class_weight_ is not None:
-            if sample_weight is None:
-                sample_weight = np.ones(X.shape[0], dtype=dtype)
-            for i, v in enumerate(self.class_weight_):
-                sample_weight[y == i] *= v
+        if sample_weight:
+            if self.class_weight_ is not None:
+                for i, v in enumerate(self.class_weight_):
+                    sample_weight[y == i] *= v
             data = (X, y, sample_weight)
         else:
             data = (X, y)
