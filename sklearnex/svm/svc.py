@@ -96,8 +96,9 @@ class SVC(sklearn_SVC, BaseSVC):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
+
         return self
 
     @wrap_output_data
@@ -270,12 +271,39 @@ class SVC(sklearn_SVC, BaseSVC):
             return patching_status
         raise RuntimeError(f"Unknown method {method_name} in {class_name}")
 
+    def _get_sample_weight(self, X, y, sample_weight=None):
+        sample_weight = super()._get_sample_weight(X, y, sample_weight)
+        if sample_weight is None:
+            return sample_weight
+
+        weight_per_class = [
+            np.sum(sample_weight[y == class_label]) for class_label in np.unique(y)
+        ]
+
+        if np.any(sample_weight <= 0) and len(np.unique(y[sample_weight > 0])) != len(
+            self.classes_
+        ):
+            raise ValueError(
+                "Invalid input - all samples with positive weights "
+                "belong to the same class"
+                if sklearn_check_version("1.2")
+                else "Invalid input - all samples with positive weights "
+                "have the same label."
+            )
+        ww = sample_weight
+        if self.class_weight_ is not None:
+            for i, v in enumerate(self.class_weight_):
+                ww[y == i] *= v
+
+        return ww
+
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "C": self.C,
             "kernel": self.kernel,
             "degree": self.degree,
-            "gamma": self.gamma,
+            "gamma": self._compute_gamma_sigma(X),
             "coef0": self.coef0,
             "tol": self.tol,
             "shrinking": self.shrinking,
@@ -290,7 +318,8 @@ class SVC(sklearn_SVC, BaseSVC):
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
 
         if self.probability:
-            self._fit_proba(X, y, sample_weight, queue=queue)
+            self._fit_proba(X, y, sample_weight=sample_weight, queue=queue)
+
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
