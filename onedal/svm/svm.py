@@ -130,8 +130,12 @@ class BaseSVM(metaclass=ABCMeta):
             accept_sparse="csr",
         )
         y = self._validate_targets(y, X.dtype)
-        sample_weights = _check_array(
-            sample_weights, dtype=[np.float64, np.float32], accept_sparse="csr"
+        sample_weight = _check_array(
+            sample_weight,
+            accept_sparse=False,
+            ensure_2d=False,
+            dtype=X.dtype,
+            order="C",
         )
         self._sparse = sp.issparse(X)
 
