@@ -21,8 +21,8 @@ from scipy import sparse as sp
 from sklearn import datasets
 from sklearn.datasets import make_classification
 
-from onedal.svm import SVC, SVR
 from onedal.common.mixin import ClassifierMixin
+from onedal.svm import SVC, SVR
 from onedal.tests.utils._device_selection import (
     get_queues,
     pass_if_not_implemented_for_gpu,
