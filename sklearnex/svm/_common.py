@@ -180,11 +180,9 @@ class BaseSVM(BaseEstimator, ABC):
                 % (len(sample_weight), X.shape)
             )
 
-        ww = None
-        if sample_weight_count == 0 and not isinstance(self, ClassifierMixin):
-            return ww
-
         if sample_weight_count == 0:
+            if not isinstance(self, ClassifierMixin) or self.class_weight_ is None:
+                return None
             sample_weight = np.ones(n_samples, dtype=dtype)
         elif isinstance(sample_weight, Number):
             sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
