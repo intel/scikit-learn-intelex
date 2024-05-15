@@ -23,19 +23,11 @@ try:
 except ImportError:
     dpnp_available = False
 
-try:
-    from sklearnex._device_offload import (
-        _copy_to_usm,
-        _get_global_queue,
-        _transfer_to_host,
-    )
-
-    _sklearnex_available = True
-except ImportError:
-    import logging
-
-    logging.warning("Device support requires " "Intel(R) Extension for Scikit-learn*.")
-    _sklearnex_available = False
+from daal4py.sklearn._device_offload import (
+    _copy_to_usm,
+    _get_global_queue,
+    _transfer_to_host,
+)
 
 
 def _get_host_inputs(*args, **kwargs):
@@ -62,21 +54,15 @@ def _run_on_device(func, obj=None, *args, **kwargs):
 def support_usm_ndarray(freefunc=False):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            if _sklearnex_available:
-                usm_iface = _extract_usm_iface(*args, **kwargs)
-                data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-                hostkwargs["queue"] = data_queue
-                result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-                if usm_iface is not None and hasattr(result, "__array_interface__"):
-                    result = _copy_to_usm(data_queue, result)
-                    if (
-                        dpnp_available
-                        and len(args) > 0
-                        and isinstance(args[0], dpnp.ndarray)
-                    ):
-                        result = dpnp.array(result, copy=False)
-                return result
-            return _run_on_device(func, obj, *args, **kwargs)
+            usm_iface = _extract_usm_iface(*args, **kwargs)
+            data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
+            hostkwargs["queue"] = data_queue
+            result = _run_on_device(func, obj, *hostargs, **hostkwargs)
+            if usm_iface is not None and hasattr(result, "__array_interface__"):
+                result = _copy_to_usm(data_queue, result)
+                if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
+                    result = dpnp.array(result, copy=False)
+            return result
 
         if freefunc:
 
