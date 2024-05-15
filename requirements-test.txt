@@ -11,5 +11,5 @@ xgboost==2.0.3
 lightgbm==4.3.0
 catboost==1.2.5
 shap==0.44.1 ; python_version == '3.8'
-shap==0.45.0 ; python_version >= '3.9'
+shap==0.45.1 ; python_version >= '3.9'
 array-api-strict ; python_version >= '3.9'
