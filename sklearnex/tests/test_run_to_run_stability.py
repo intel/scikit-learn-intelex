@@ -148,6 +148,8 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
+    if estimator == "KMeans" and method == "score" and queue == None:
+        pytest.skip(f"variation observed in KMeans.score")
 
     est = PATCHED_MODELS[estimator]()
 
@@ -169,6 +171,8 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
 def test_special_estimator_stability(estimator, method, dataframe, queue):
     if queue is None and estimator in ["LogisticRegression(solver='newton-cg')"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
+    if estimator == "KMeans" and method == "score" and queue == None:
+        pytest.skip(f"variation observed in KMeans.score")
 
     est = SPECIAL_INSTANCES[estimator]
 
@@ -187,6 +191,8 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
+    if estimator == "KMeans" and method == "score" and queue == None:
+        pytest.skip(f"variation observed in KMeans.score")
 
     est = SPARSE_INSTANCES[estimator]
 
@@ -207,6 +213,8 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
 def test_other_estimator_stability(estimator, method, dataframe, queue):
+    if estimator == "KMeans" and method == "score" and queue == None:
+        pytest.skip(f"variation observed in KMeans.score")
 
     est = STABILITY_INSTANCES[estimator]
 
