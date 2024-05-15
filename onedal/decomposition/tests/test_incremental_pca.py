@@ -72,7 +72,9 @@ def test_on_gold_data(queue, is_deterministic, whiten, num_blocks, dtype):
         )
     )
 
-    tol = 1e-5 if dtype == np.float32 else 1e-7
+    tol = 1e-7
+    if dtype == np.float32:
+        tol = 7e-6 if whiten else 1e-6
 
     assert result.n_components_ == expected_n_components_
 
