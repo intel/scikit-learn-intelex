@@ -31,7 +31,7 @@ else:
 
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
-from sklearn.utils import check_array, check_random_state
+from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_is_fitted
 
 from onedal.basic_statistics import BasicStatistics
@@ -262,7 +262,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         init = self.init
         init_is_array_like = _is_arraylike_not_scalar(init)
         if init_is_array_like:
-            init = check_array(init, dtype=dtype, copy=True, order="C")
+            init = _check_array(init, dtype=dtype, copy=True, order="C")
             self._validate_center_shape(X, init)
 
         use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
