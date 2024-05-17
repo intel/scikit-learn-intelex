@@ -27,6 +27,7 @@ from sklearn.preprocessing import LabelEncoder
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _check_X_y, _column_or_1d
 
+from .._config import config_context, get_config
 from .._utils import PatchingConditionsChain
 
 
@@ -224,8 +225,6 @@ class BaseSVC(BaseSVM):
         return recip_freq[le.transform(classes)]
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
-        from .._config import config_context, get_config
-
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
