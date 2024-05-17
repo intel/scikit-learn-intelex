@@ -20,6 +20,7 @@ from daal4py.sklearn._utils import get_dtype
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
+from ..utils._array_api import get_namespace
 from .pca import BasePCA
 
 
@@ -124,6 +125,7 @@ class IncrementalPCA(BasePCA):
         self : object
             Returns the instance itself.
         """
+        xp, is_array_api_compliant = get_namespace(X)
         X = _check_array(X)
         n_samples, n_features = X.shape
 
@@ -152,7 +154,7 @@ class IncrementalPCA(BasePCA):
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
-            self._params = self._get_onedal_params(X)
+            self._params = self._get_onedal_params(X, xp, is_array_api_compliant)
 
         X_table = to_table(X)
         self._partial_result = module.partial_train(

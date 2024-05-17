@@ -24,13 +24,13 @@ from onedal.decomposition import IncrementalPCA as onedal_IncrementalPCA
 
 from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain
+from ...utils._array_api import get_namespace
 
 
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "transform", "_onedal_finalize_fit"]
 )
 class IncrementalPCA(sklearn_IncrementalPCA):
-
     def __init__(self, n_components=None, *, whiten=False, copy=True, batch_size=None):
         super().__init__(
             n_components=n_components, whiten=whiten, copy=copy, batch_size=batch_size
@@ -61,6 +61,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         return self._onedal_transform(X, queue)
 
     def _onedal_partial_fit(self, X, check_input=True, queue=None):
+        xp, is_array_api_compliant = get_namespace(X)
         first_pass = not hasattr(self, "components_")
 
         if check_input:
