@@ -29,7 +29,6 @@ if daal_check_version((2023, "P", 200)):
 else:
     from sklearn.cluster import _kmeans_plusplus
 
-from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_array, check_random_state
@@ -38,6 +37,7 @@ from sklearn.utils.validation import check_is_fitted
 from onedal.basic_statistics import BasicStatistics
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
+from ..common._mixin import ClusterMixin, TransformerMixin
 from ..utils import _check_array, _is_arraylike_not_scalar
 
 
