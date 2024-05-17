@@ -135,9 +135,11 @@ def _daal4py_fit_enet(self, X, y_, check_input):
     if (
         isinstance(self.precompute, np.ndarray)
         and self.fit_intercept
-        and not np.allclose(X_offset, np.zeros(X.shape[1]))
-        or _normalize
-        and not np.allclose(X_scale, np.ones(X.shape[1]))
+        and (
+            not np.allclose(X_offset, np.zeros(X.shape[1]))
+            or _normalize
+            and not np.allclose(X_scale, np.ones(X.shape[1]))
+        )
     ):
         if sklearn_check_version("1.4"):
             warnings.warn(
@@ -307,9 +309,11 @@ def _daal4py_fit_lasso(self, X, y_, check_input):
     if (
         isinstance(self.precompute, np.ndarray)
         and self.fit_intercept
-        and not np.allclose(X_offset, np.zeros(X.shape[1]))
-        or _normalize
-        and not np.allclose(X_scale, np.ones(X.shape[1]))
+        and (
+            not np.allclose(X_offset, np.zeros(X.shape[1]))
+            or _normalize
+            and not np.allclose(X_scale, np.ones(X.shape[1]))
+        )
     ):
         warnings.warn(
             "Gram matrix was provided but X was centered"

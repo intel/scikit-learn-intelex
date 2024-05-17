@@ -114,7 +114,9 @@ class BaseForest(ABC):
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
             "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
-            "max_features": self.max_features,
+            "max_features": self._to_absolute_max_features(
+                self.max_features, self.n_features_in_
+            ),
             "max_leaf_nodes": self.max_leaf_nodes,
             "min_impurity_decrease": self.min_impurity_decrease,
             "bootstrap": self.bootstrap,
@@ -173,6 +175,45 @@ class BaseForest(ABC):
             self._n_samples_bootstrap = None
         self._validate_estimator()
         return self
+
+    def _to_absolute_max_features(self, max_features, n_features):
+        if max_features is None:
+            return n_features
+        if isinstance(max_features, str):
+            if max_features == "auto":
+                if not sklearn_check_version("1.3"):
+                    if sklearn_check_version("1.1"):
+                        warnings.warn(
+                            "`max_features='auto'` has been deprecated in 1.1 "
+                            "and will be removed in 1.3. To keep the past behaviour, "
+                            "explicitly set `max_features=1.0` or remove this "
+                            "parameter as it is also the default value for "
+                            "RandomForestRegressors and ExtraTreesRegressors.",
+                            FutureWarning,
+                        )
+                    return (
+                        max(1, int(np.sqrt(n_features)))
+                        if isinstance(self, ForestClassifier)
+                        else n_features
+                    )
+            if max_features == "sqrt":
+                return max(1, int(np.sqrt(n_features)))
+            if max_features == "log2":
+                return max(1, int(np.log2(n_features)))
+            allowed_string_values = (
+                '"sqrt" or "log2"'
+                if sklearn_check_version("1.3")
+                else '"auto", "sqrt" or "log2"'
+            )
+            raise ValueError(
+                "Invalid value for max_features. Allowed string "
+                f"values are {allowed_string_values}."
+            )
+        if isinstance(max_features, (numbers.Integral, np.integer)):
+            return max_features
+        if max_features > 0.0:
+            return max(1, int(max_features * n_features))
+        return 0
 
     def _check_parameters(self):
         if isinstance(self.min_samples_leaf, numbers.Integral):
@@ -777,15 +818,16 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
+        check_is_fitted(self, "_onedal_estimator")
+
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+
         X = check_array(
             X,
             dtype=[np.float64, np.float32],
             force_all_finite=False,
         )  # Warning, order of dtype matters
-        check_is_fitted(self, "_onedal_estimator")
-
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
 
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))

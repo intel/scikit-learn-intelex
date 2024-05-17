@@ -82,6 +82,7 @@ packages_with_tests = [
     "sklearnex.neighbors",
     "sklearnex.preview",
     "sklearnex.preview.covariance",
+    "sklearnex.preview.decomposition",
     "sklearnex.svm",
     "sklearnex.utils",
 ]
