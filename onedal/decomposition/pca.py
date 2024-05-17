@@ -137,7 +137,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
     def _predict(self, X, xp, is_array_api_compliant, queue=None):
         policy = self._get_policy(queue, X)
         model = self._create_model()
-        X = _convert_to_supported(policy, X, xp)
+        X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X, xp, is_array_api_compliant, stage="predict")
 
         result = self._get_backend(
@@ -165,7 +165,7 @@ class PCA(BasePCA):
         else:
             if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
                 X = X.copy()
-        X = _convert_to_supported(policy, X, xp)
+        X = _convert_to_supported(policy, X)
 
         params = self._get_onedal_params(X, xp, is_array_api_compliant)
         result = self._get_backend(

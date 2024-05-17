@@ -157,9 +157,7 @@ def get_patch_map_core(preview=False):
 
         if sklearn_check_version("1.4"):
             from .utils._array_api import _convert_to_numpy as _convert_to_numpy_sklearnex
-            from .utils._array_api import (
-                yield_namespace_device_dtype_combinations as yield_namespace_device_dtype_combinations_sklearnex,
-            )
+            from .utils._array_api import get_namespace as get_namespace_sklearnex
 
         # DBSCAN
         mapping.pop("dbscan")
@@ -347,12 +345,12 @@ def get_patch_map_core(preview=False):
         ]
         if sklearn_check_version("1.4"):
             # Necessary for array_api support
-            mapping["yield_namespace_device_dtype_combinations"] = [
+            mapping["get_namespace"] = [
                 [
                     (
                         _array_api_module,
-                        "yield_namespace_device_dtype_combinations",
-                        yield_namespace_device_dtype_combinations_sklearnex,
+                        "get_namespace",
+                        get_namespace_sklearnex,
                     ),
                     None,
                 ]
