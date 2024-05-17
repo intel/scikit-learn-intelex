@@ -563,6 +563,16 @@ if ONEDAL_VERSION >= 20230100:
 if ONEDAL_VERSION >= 20230200:
     packages_with_tests += ["onedal.cluster"]
 
+if ONEDAL_VERSION >= 20240001:
+    packages_with_tests += [
+        "onedal.data_management",
+        "onedal.interop",
+        "onedal.interop.buffer",
+        "onedal.interop.dlpack",
+        "onedal.interop.sua",
+        "onedal.interop.utils",
+    ]
+
 if build_distribute:
     packages_with_tests += [
         "onedal.spmd",

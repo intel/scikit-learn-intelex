@@ -97,9 +97,10 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         self, X_table, policy, default_n_init=10, dtype=np.float32
     ):
         # n_clusters
-        if X_table.shape[0] < self.n_clusters:
+        X_row_count = X_table.get_row_count()
+        if X_row_count < self.n_clusters:
             raise ValueError(
-                f"n_samples={X_table.shape[0]} should be >= n_clusters={self.n_clusters}."
+                f"n_samples={X_row_count} should be >= n_clusters={self.n_clusters}."
             )
 
         # tol
@@ -185,7 +186,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         elif _is_arraylike_not_scalar(init):
             centers = np.asarray(init)
             assert centers.shape[0] == n_clusters
-            assert centers.shape[1] == X_table.column_count
+            assert centers.shape[1] == X_table.get_column_count()
             centers = _convert_to_supported(policy, init)
             centers_table = to_table(centers)
         else:
@@ -224,10 +225,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _fit_backend(self, X_table, centroids_table, module, policy, dtype=np.float32):
         params = self._get_onedal_params(dtype)
 
-        # TODO: check all features for having correct type
-        meta = _backend.get_table_metadata(X_table)
-        assert meta.get_npy_dtype(0) == dtype
-
         result = module.train(policy, params, X_table, centroids_table)
 
         return (
@@ -241,7 +238,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         policy = self._get_policy(queue, X)
         _, X_table, dtype = self._get_params_and_input(X, policy)
 
-        self.n_features_in_ = X_table.column_count
+        self.n_features_in_ = X_table.get_column_count()
 
         best_model, best_n_iter = None, None
         best_inertia, best_labels = None, None

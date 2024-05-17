@@ -24,6 +24,7 @@ from sklearn.base import BaseEstimator
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal import _backend
+from onedal.interop.utils import is_cpu_policy
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
@@ -253,6 +254,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     f"This {self.__class__.__name__} estimator "
                     f"requires y to be passed, but the target y is None."
                 )
+
         X, y = _check_X_y(
             X,
             y,
@@ -260,6 +262,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             force_all_finite=True,
             accept_sparse="csr",
         )
+
         y = self._validate_targets(y, X.dtype)
         sample_weight = self._get_sample_weight(X, y, sample_weight)
 
@@ -272,8 +275,12 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
 
         policy = _get_policy(queue, X, y, sample_weight)
+        if self._sparse and not is_cpu_policy(policy):
+            raise ValueError("Sparse input is not supported on GPU")
+
         params = self._get_onedal_params(X)
-        result = module.train(policy, params, *to_table(X, y, sample_weight))
+        X_table, y_table, w_table = to_table(X, y, sample_weight)
+        result = module.train(policy, params, X_table, y_table, w_table)
 
         if self._sparse:
             self.dual_coef_ = sp.csr_matrix(from_table(result.coeffs).T)
