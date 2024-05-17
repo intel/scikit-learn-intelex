@@ -113,6 +113,16 @@ inline csr_table_t convert_to_csr_impl(PyObject* py_data,
     for (std::int64_t i = 0; i < row_indices_count; ++i)
         row_indices_one_based_data[i] = row_indices_zero_based[i] + 1;
 
+    auto row_indices_one_based_offset = dal::array<std::int64_t>::empty(row_count + 1);
+    auto row_indices_one_based_offset_data = row_indices_one_based_offset.get_mutable_data();
+    row_indices_one_based_offset_data[0] = 1;
+    std::int64_t running_elem_count = 0;
+    for (std::int64_t i = 1; i < row_count + 1; ++i){
+        for (std::int64_t j = running_elem_count; row_indices_one_based_data[j] == i; ++j)
+            running_elem_count++;
+        row_indices_one_based_offset_data[i] = running_elem_count + 1;
+    }
+
     const std::int64_t *column_indices_zero_based =
         static_cast<std::int64_t *>(array_data(np_column_indices));
     const std::int64_t column_indices_count =
@@ -133,7 +143,7 @@ inline csr_table_t convert_to_csr_impl(PyObject* py_data,
                                                    Py_DECREF(np_data);
                                                }),
                                  column_indices_one_based,
-                                 row_indices_one_based,
+                                 row_indices_one_based_offset,
 #if ONEDAL_VERSION <= 20230100
 // row_count parameter is present in csr_table's constructor only in older versions of oneDAL
                                  row_count,
