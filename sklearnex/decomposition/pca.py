@@ -133,9 +133,10 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_fit(self, X, queue=None):
+            xp, is_array_api_compliant = get_namespace(X)
             X = self._validate_data(
                 X,
-                dtype=[np.float64, np.float32],
+                dtype=[xp.float64, xp.float32],
                 ensure_2d=True,
                 copy=self.copy,
             )
@@ -147,7 +148,7 @@ if daal_check_version((2024, "P", 100)):
                 "whiten": self.whiten,
             }
             self._onedal_estimator = onedal_PCA(**onedal_params)
-            self._onedal_estimator.fit(X, queue=queue)
+            self._onedal_estimator._fit(X, xp, is_array_api_compliant, queue=queue)
             self._save_attributes()
 
             U = None
@@ -155,7 +156,6 @@ if daal_check_version((2024, "P", 100)):
             Vt = self.components_
 
             if sklearn_check_version("1.5"):
-                xp, _ = get_namespace(X)
                 x_is_centered = not self.copy
 
                 return U, S, Vt, X, x_is_centered, xp
@@ -175,17 +175,20 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_transform(self, X, queue=None):
+            xp, is_array_api_compliant = get_namespace(X)
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
             X = self._validate_data(
                 X,
-                dtype=[np.float64, np.float32],
+                dtype=[xp.float64, xp.float32],
                 reset=False,
             )
             self._validate_n_features_in_after_fitting(X)
 
-            return self._onedal_estimator.predict(X, queue=queue)
+            return self._onedal_estimator._predict(
+                X, xp, is_array_api_compliant, queue=queue
+            )
 
         def fit_transform(self, X, y=None):
             if sklearn_check_version("1.5"):
@@ -211,6 +214,7 @@ if daal_check_version((2024, "P", 100)):
                 return self._transform(X_fit, xp, x_is_centered=x_is_centered)
 
         def _onedal_supported(self, method_name, X):
+            xp, is_array_api_compliant = get_namespace(X)
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f"sklearn.decomposition.{class_name}.{method_name}"
@@ -218,6 +222,11 @@ if daal_check_version((2024, "P", 100)):
 
             if method_name == "fit":
                 shape_tuple, _is_shape_compatible = self._get_shape_compatibility(X)
+                is_sparse_X = False
+                if not is_array_api_compliant:
+                    # TODO:
+                    # check it
+                    is_sparse_X = issparse(X)
                 patching_status.and_conditions(
                     [
                         (
@@ -234,7 +243,7 @@ if daal_check_version((2024, "P", 100)):
                                 "solvers are supported."
                             ),
                         ),
-                        (not issparse(X), "oneDAL PCA does not support sparse data"),
+                        (not is_sparse_X, "oneDAL PCA does not support sparse data"),
                     ]
                 )
                 return patching_status

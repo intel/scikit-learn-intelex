@@ -16,20 +16,21 @@
 
 import warnings
 
-import numpy as np
-
-from daal4py.sklearn._utils import make2d
+from daal4py.sklearn._utils import make2d as d4p_make2d
 from onedal import _backend, _is_dpc_backend
 
-try:
-    import dpctl
-    import dpctl.tensor as dpt
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
+from ..utils._array_api import get_namespace
 
 
+def make2d(arg):
+    # TODO:
+    # reimplement via Array API
+    xp, is_array_api_compliant = get_namespace(arg)
+    return d4p_make2d(arg)
+
+
+# TODO:
+# remove such kind of func calls
 def _apply_and_pass(func, *args):
     if len(args) == 1:
         return func(args[0])
@@ -41,9 +42,6 @@ def from_table(*args):
 
 
 def convert_one_to_table(arg):
-    if dpctl_available:
-        if isinstance(arg, dpt.usm_ndarray):
-            return _backend.dpctl_to_table(arg)
     arg = make2d(arg)
     return _backend.to_table(arg)
 
@@ -67,13 +65,14 @@ if _is_dpc_backend:
         device = policy._queue.sycl_device
 
         def convert_or_pass(x):
-            if (x is not None) and (x.dtype == np.float64):
+            xp, _ = get_namespace(x)
+            if (x is not None) and (x.dtype == xp.float64):
                 warnings.warn(
                     "Data will be converted into float32 from "
                     "float64 because device does not support it",
                     RuntimeWarning,
                 )
-                return x.astype(np.float32)
+                return x.astype(xp.float32)
             else:
                 return x
 

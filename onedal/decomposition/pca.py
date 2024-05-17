@@ -23,6 +23,7 @@ from sklearn.utils.extmath import stable_cumsum
 
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils._array_api import get_namespace
 
 
 class BasePCA(BaseEstimator, metaclass=ABCMeta):
@@ -42,13 +43,13 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         self.is_deterministic = is_deterministic
         self.whiten = whiten
 
-    def _get_onedal_params(self, data, stage=None):
+    def _get_onedal_params(self, X, xp, is_array_api_compliant, stage=None):
         if stage is None:
-            n_components = self._resolve_n_components_for_training(data.shape)
+            n_components = self._resolve_n_components_for_training(X.shape)
         elif stage == "predict":
             n_components = self.n_components_
         return {
-            "fptype": "float" if data.dtype == np.float32 else "double",
+            "fptype": "float" if X.dtype == xp.float32 else "double",
             "method": self.method,
             "n_components": n_components,
             "is_deterministic": self.is_deterministic,
@@ -96,6 +97,8 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
             return _infer_dimension(self.explained_variance_, shape_tuple[0])
         elif 0.0 < self.n_components < 1.0:
             ratio_cumsum = stable_cumsum(self.explained_variance_ratio_)
+            # TODO:
+            # np.searchsorted
             return np.searchsorted(ratio_cumsum, self.n_components, side="right") + 1
         elif isinstance(self.n_components, float) and self.n_components == 1.0:
             return min(shape_tuple)
@@ -128,10 +131,14 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         return m
 
     def predict(self, X, queue=None):
+        xp, is_array_api_compliant = get_namespace(X)
+        return self._predict(X, xp, is_array_api_compliant, queue=None)
+
+    def _predict(self, X, xp, is_array_api_compliant, queue=None):
         policy = self._get_policy(queue, X)
         model = self._create_model()
-        X = _convert_to_supported(policy, X)
-        params = self._get_onedal_params(X, stage="predict")
+        X = _convert_to_supported(policy, X, xp)
+        params = self._get_onedal_params(X, xp, is_array_api_compliant, stage="predict")
 
         result = self._get_backend(
             "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
@@ -140,8 +147,11 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
 
 
 class PCA(BasePCA):
-
     def fit(self, X, y=None, queue=None):
+        xp, is_array_api_compliant = get_namespace(X)
+        return self._fit(X, xp, is_array_api_compliant, y=None, queue=None)
+
+    def _fit(self, X, xp, is_array_api_compliant, y=None, queue=None):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
         self._validate_n_components(self.n_components, n_samples, n_features)
@@ -149,23 +159,29 @@ class PCA(BasePCA):
         policy = self._get_policy(queue, X)
         # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
         # fails to be converted to oneDAL table
-        if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
-            X = X.copy()
-        X = _convert_to_supported(policy, X)
+        if not is_array_api_compliant:
+            # X = X.copy()
+            pass
+        else:
+            if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
+                X = X.copy()
+        X = _convert_to_supported(policy, X, xp)
 
-        params = self._get_onedal_params(X)
+        params = self._get_onedal_params(X, xp, is_array_api_compliant)
         result = self._get_backend(
             "decomposition", "dim_reduction", "train", policy, params, to_table(X)
         )
 
-        self.mean_ = from_table(result.means).ravel()
+        self.mean_ = from_table(result.means).reshape(-1)
         self.variances_ = from_table(result.variances)
         self.components_ = from_table(result.eigenvectors)
-        self.singular_values_ = from_table(result.singular_values).ravel()
-        self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
+        self.singular_values_ = from_table(result.singular_values).reshape(-1)
+        self.explained_variance_ = xp.maximum(
+            from_table(result.eigenvalues).reshape(-1), 0
+        )
         self.explained_variance_ratio_ = from_table(
             result.explained_variances_ratio
-        ).ravel()
+        ).reshape(-1)
         self.n_samples_ = n_samples
         self.n_features_ = n_features
 
