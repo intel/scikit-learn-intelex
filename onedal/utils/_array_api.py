@@ -14,12 +14,37 @@
 # limitations under the License.
 # ==============================================================================
 
+"""Tools to support array_api."""
+
 import numpy as np
 
 from .._device_offload import dpnp_available
 
 if dpnp_available:
     import dpnp
+
+
+def _get_sycl_namespace(*arrays):
+    """Get namespace of sycl arrays."""
+
+    # sycl support designed to work regardless of array_api_dispatch sklearn global value
+    sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
+
+    if len(sycl_type) > 1:
+        raise ValueError(f"Multiple SYCL types for array inputs: {sycl_type}")
+
+    if sycl_type:
+        (X,) = sycl_type.values()
+
+        if hasattr(X, "__array_namespace__"):
+            return sycl_type, X.__array_namespace__(), True
+        elif dpnp_available and isinstance(X, dpnp.ndarray):
+            # convert it to dpctl.tensor with namespace.
+            return sycl_type, dpnp, False
+        else:
+            raise ValueError(f"SYCL type not recognized: {sycl_type}")
+
+    return sycl_type, None, False
 
 
 # TODO:
@@ -42,22 +67,9 @@ def get_namespace(*arrays):
     is_array_api : bool
         True of the arrays are containers that implement the Array API spec.
     """
-
-    # sycl support designed to work regardless of array_api_dispatch sklearn global value
-    sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
-
-    if len(sycl_type) > 1:
-        raise ValueError(f"Multiple SYCL types for array inputs: {sycl_type}")
+    sycl_type, xp, is_array_api_compliant = _get_sycl_namespace(*arrays)
 
     if sycl_type:
-        (X,) = sycl_type.values()
-
-        if hasattr(X, "__array_namespace__"):
-            return X.__array_namespace__(), True
-        elif dpnp_available and isinstance(X, dpnp.ndarray):
-            # convert it to dpctl.tensor with namespace.
-            return dpnp, False
-        else:
-            raise ValueError(f"SYCL type not recognized: {sycl_type}")
+        return xp, is_array_api_compliant
     else:
         return np, True
