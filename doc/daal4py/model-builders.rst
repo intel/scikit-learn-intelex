@@ -36,8 +36,14 @@ daal4py Model Builders deliver the accelerated
 models inference of those frameworks. The inference is performed by the oneDAL GBT implementation tuned
 for the best performance on the Intel(R) Architecture.
 
+.. note::
+
+   Currently, experimental support for XGBoost* and LightGBM* categorical data is not supported.
+   For the model conversion to work with daal4py, convert non-numeric data to numeric data 
+   before training and converting the model.
+
 Conversion
----------
+----------
 The first step is to convert already trained model. The
 API usage for different frameworks is the same:
 
@@ -133,3 +139,4 @@ Articles and Blog Posts
 ---------------------------------
 
 -  `Improving the Performance of XGBoost and LightGBM Inference <https://medium.com/intel-analytics-software/improving-the-performance-of-xgboost-and-lightgbm-inference-3b542c03447e>`_
+
