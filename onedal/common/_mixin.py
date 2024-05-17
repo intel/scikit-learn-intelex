@@ -21,7 +21,7 @@ class ClusterMixin:
     def fit_predict(self, X, y=None, queue=None, **kwargs):
         self.fit(X, queue=queue, **kwargs)
         return self.labels_
-    
+
     def _more_tags(self):
         return {"preserves_dtype": []}
 
