@@ -23,16 +23,10 @@ from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dpctl_available, dpnp_available
 
-# import math
-# from functools import wraps
-
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._array_api import _convert_to_numpy as _sklearn_convert_to_numpy
     from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
-    from sklearn.utils._array_api import (
-        yield_namespace_device_dtype_combinations as sklearn_yield_namespace_device_dtype_combinations,
-    )
 
 if dpctl_available:
     import dpctl.tensor as dpt
@@ -53,42 +47,70 @@ def _convert_to_numpy(array, xp):
         return _sklearn_convert_to_numpy(array, xp)
 
 
-def yield_namespace_device_dtype_combinations():
-    """Yield supported namespace, device, dtype tuples for testing.
+def get_namespace(*arrays):
+    """Get namespace of arrays.
 
-    Use this to test that an estimator works with all combinations.
+    Introspect `arrays` arguments and return their common Array API
+    compatible namespace object, if any. NumPy 1.22 and later can
+    construct such containers using the `numpy.array_api` namespace
+    for instance.
+
+    This function will return the namespace of SYCL-related arrays
+    which define the __sycl_usm_array_interface__ attribute
+    regardless of array_api support, the configuration of
+    array_api_dispatch, or scikit-learn version.
+
+    See: https://numpy.org/neps/nep-0047-array-api-standard.html
+
+    If `arrays` are regular numpy arrays, an instance of the
+    `_NumPyApiWrapper` compatibility wrapper is returned instead.
+
+    Namespace support is not enabled by default. To enabled it
+    call:
+
+      sklearn.set_config(array_api_dispatch=True)
+
+    or:
+
+      with sklearn.config_context(array_api_dispatch=True):
+          # your code here
+
+    Otherwise an instance of the `_NumPyApiWrapper`
+    compatibility wrapper is always returned irrespective of
+    the fact that arrays implement the `__array_namespace__`
+    protocol or not.
+
+    Parameters
+    ----------
+    *arrays : array objects
+        Array objects.
 
     Returns
     -------
-    array_namespace : str
-        The name of the Array API namespace.
+    namespace : module
+        Namespace shared by array objects.
 
-    device : str
-        The name of the device on which to allocate the arrays. Can be None to
-        indicate that the default value should be used.
-
-    dtype_name : str
-        The name of the data type to use for arrays. Can be None to indicate
-        that the default value should be used.
+    is_array_api : bool
+        True of the arrays are containers that implement the Array API spec.
     """
-    for array_namespace in [
-        # The following is used to test the array_api_compat wrapper when
-        # array_api_dispatch is enabled: in particular, the arrays used in the
-        # tests are regular numpy arrays without any "device" attribute.
-        "numpy",
-        # Stricter NumPy-based Array API implementation. The
-        # numpy.array_api.Array instances always a dummy "device" attribute.
-        "numpy.array_api",
-        "cupy",
-        "cupy.array_api",
-        "torch",
-        "dpctl.tensor",
-    ]:
-        if array_namespace == "torch":
-            for device, dtype in itertools.product(
-                ("cpu", "cuda"), ("float64", "float32")
-            ):
-                yield array_namespace, device, dtype
-            yield array_namespace, "mps", "float32"
+
+    # sycl support designed to work regardless of array_api_dispatch sklearn global value
+    sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
+
+    if len(sycl_type) > 1:
+        raise ValueError(f"Multiple SYCL types for array inputs: {sycl_type}")
+
+    if sycl_type:
+        (X,) = sycl_type.values()
+
+        if hasattr(X, "__array_namespace__"):
+            return X.__array_namespace__(), True
+        elif dpnp_available and isinstance(X, dpnp.ndarray):
+            return dpnp, False
         else:
-            yield array_namespace, None, None
+            raise ValueError(f"SYCL type not recognized: {sycl_type}")
+
+    elif sklearn_check_version("1.2"):
+        return sklearn_get_namespace(*arrays)
+    else:
+        return np, True
