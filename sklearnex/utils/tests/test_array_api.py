@@ -16,10 +16,9 @@
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -45,6 +44,10 @@ def test_get_namespace_with_config_context(dataframe, queue):
         # assert xp_out is array_api_compat.numpy
 
 
+@pytest.mark.skipif(
+    not sklearn_check_version("1.4"),
+    reason="array api dispatch requires sklearn 1.4 version",
+)
 @pytest.mark.parametrize(
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="numpy,dpctl", device_filter_="cpu,gpu"),
