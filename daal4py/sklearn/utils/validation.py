@@ -19,7 +19,7 @@ from contextlib import suppress
 
 import numpy as np
 import scipy.sparse as sp
-from numpy.core.numeric import ComplexWarning
+from numpy.exceptions import ComplexWarning
 from sklearn import get_config as _get_config
 from sklearn.utils.extmath import _safe_accumulator_op
 from sklearn.utils.fixes import _object_dtype_isnan
