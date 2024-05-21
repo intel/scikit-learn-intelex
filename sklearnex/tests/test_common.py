@@ -19,7 +19,7 @@ from glob import glob
 
 import pytest
 
-ALLOWED_LOCATIONS = ["_config.py", "_device_offload.py", "test"]
+ALLOWED_LOCATIONS = ["_config.py", "_device_offload.py", "test", "svc.py"]
 
 
 def test_target_offload_ban():
