@@ -161,18 +161,21 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 reset=first_pass,
                 copy=self.copy_X,
                 multi_output=True,
+                force_all_finite=False,
             )
         else:
             X = check_array(
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
+                force_all_finite=False,
             )
             y = check_array(
                 y,
                 dtype=[np.float64, np.float32],
                 copy=False,
                 ensure_2d=False,
+                force_all_finite=False,
             )
 
         if first_pass:
