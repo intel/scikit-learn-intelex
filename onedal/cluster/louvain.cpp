@@ -14,7 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "oneapi/dal/algo/dbscan.hpp"
+#include "oneapi/dal/algo/louvain.hpp"
+#include "oneapi/dal/graph/undirected_adjacency_vector_graph.hpp"
 
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
@@ -35,7 +36,7 @@ struct method2t {
 
         const auto method = params["method"].cast<std::string>();
 
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "brute_force", ops, Float, method::brute_force);
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "fast", ops, Float, method::fast);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
@@ -43,54 +44,16 @@ struct method2t {
     Ops ops;
 };
 
-auto get_onedal_result_options(const py::dict& params) {
-    using namespace dal::dbscan;
-
-    auto result_options = params["result_options"].cast<std::string>();
-    result_option_id onedal_options;
-
-    try {
-        std::regex re("\\w+");
-        const std::sregex_iterator last{};
-        const std::sregex_iterator first( //
-            result_options.begin(),
-            result_options.end(),
-            re);
-
-        for (std::sregex_iterator it = first; it != last; ++it) {
-            std::smatch match = *it;
-            if (match.str() == "responses") {
-                onedal_options = onedal_options | result_options::responses;
-            }
-            else if (match.str() == "core_observation_indices") {
-                onedal_options = onedal_options | result_options::core_observation_indices;
-            }
-            else if (match.str() == "core_observations") {
-                onedal_options = onedal_options | result_options::core_observations;
-            }
-            else if (match.str() == "core_flags") {
-                onedal_options = onedal_options | result_options::core_flags;
-            }
-            else
-                ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_options);
-        }
-    }
-    catch (std::regex_error& e) {
-        ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_options);
-    }
-
-    return onedal_options;
-}
-
 struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const pybind11::dict& params) {
         using namespace dal::dbscan;
 
-        const auto min_observations = params["min_observations"].cast<std::int64_t>();
-        const auto epsilon = params["epsilon"].cast<double>();
+        const auto min_observations = params["accuracy_threshold"].cast<std::double>();
+        const auto resolution = params["resolution"].cast<double>();
+        const auto observation_count = params["observation_count"].cast<std::int64_t>();
         auto desc = descriptor<Float, Method, Task>(epsilon, min_observations);
-        desc.set_mem_save_mode(params["mem_save_mode"].cast<bool>());
+        desc.set_mem_save_mode(params["mem_save_mode"].cast<std::int64_t>());
         desc.set_result_options(get_onedal_result_options(params));
 
         return desc;
