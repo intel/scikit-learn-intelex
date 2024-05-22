@@ -19,8 +19,8 @@ from collections.abc import Sequence
 from numbers import Integral
 
 import numpy as np
-from scipy import sparse as sp
 from numpy.exceptions import VisibleDeprecationWarning
+from scipy import sparse as sp
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
