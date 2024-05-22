@@ -62,7 +62,7 @@ struct params2desc {
 
 template <typename Policy, typename Task>
 void init_compute_ops(py::module_& m) {
-    m.def("compute",
+    m.def("vertex_partioning",
           [](const Policy& policy,
              const py::dict& params,
              const table& data,
