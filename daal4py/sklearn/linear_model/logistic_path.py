@@ -951,9 +951,7 @@ def logistic_regression_path(
     )
 
 
-@control_n_jobs(
-    decorated_methods=["fit", "predict", "predict_proba", "predict_log_proba"]
-)
+@control_n_jobs(decorated_methods=["fit", "predict"])
 class LogisticRegression(LogisticRegression_original):
     __doc__ = LogisticRegression_original.__doc__
 
