@@ -56,7 +56,6 @@ def set_intercept(self, value):
 
 
 class BaseSVM(BaseEstimator, ABC):
-    _err_msg = "Invalid input - all samples have zero or negative weights."
 
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
@@ -206,7 +205,12 @@ class BaseSVM(BaseEstimator, ABC):
                 )
 
         if np.all(sample_weight <= 0):
-            raise ValueError(self._err_msg)
+            if "nusvc" in self.__module__:
+                raise ValueError("negative dimensions are not allowed")
+            else:
+                raise ValueError(
+                    "Invalid input - all samples have zero or negative weights."
+                )
 
         return sample_weight
 
