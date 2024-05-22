@@ -19,8 +19,15 @@ from collections.abc import Sequence
 from numbers import Integral
 
 import numpy as np
-from numpy.exceptions import VisibleDeprecationWarning
 from scipy import sparse as sp
+
+try:
+    # numpy_version >= 2.0
+    from numpy.exceptions import VisibleDeprecationWarning
+except ModuleNotFoundError:
+    # numpy_version < 2.0
+    from numpy import VisibleDeprecationWarning
+
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
