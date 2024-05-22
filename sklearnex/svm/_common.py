@@ -56,7 +56,6 @@ def set_intercept(self, value):
 
 
 class BaseSVM(BaseEstimator, ABC):
-    _err_msg = "Invalid input - all samples have zero or negative weights."
 
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
