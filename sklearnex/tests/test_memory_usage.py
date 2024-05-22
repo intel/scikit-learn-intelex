@@ -53,7 +53,7 @@ CPU_BANNED_LIST = (
     "IncrementalEmpiricalCovariance",  # dataframe_f issues
     "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "IncrementalPCA",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
-    "LogisticRegression(solver='newtown-cg')",  # memory leak fortran (1000, 100)
+    "LogisticRegression(solver='newton-cg')",  # memory leak fortran (1000, 100)
 )
 
 GPU_BANNED_LIST = (
