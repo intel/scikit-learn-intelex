@@ -303,8 +303,8 @@ if daal_check_version((2024, "P", 1)):
             patching_status.and_conditions(
                 [
                     (
-                        method_name == "fit" or method_name == "predict",
-                        "only fit and predict are supported by oneDAL on cpu",
+                        method_name in ["fit", "predict", "score"]:
+                        "only fit, predict, and score are supported by oneDAL on cpu",
                     )
                 ]
             )
