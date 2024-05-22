@@ -42,8 +42,6 @@ from sklearn.utils.validation import check_is_fitted
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..utils import _check_array, _is_arraylike_not_scalar
 
-# from onedal.basic_statistics import BasicStatistics
-
 
 class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def __init__(
@@ -82,19 +80,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
-
-    # def _get_basic_statistics_backend(self, result_options):
-    #     return BasicStatistics(result_options)
-
-    # def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
-    #     """Compute absolute tolerance from the relative tolerance"""
-    #     if rtol == 0.0:
-    #         return rtol
-    #     dummy_weights_table = to_table(None)
-    #     bs = self._get_basic_statistics_backend("variance")
-    #     res = bs.compute_raw(X_table, dummy_weights_table, policy, dtype)
-    #     mean_var = from_table(res["variance"]).mean()
-    #     return mean_var * rtol
 
     def _tolerance(self, X, rtol):
         """Compute absolute tolerance from the relative tolerance"""
