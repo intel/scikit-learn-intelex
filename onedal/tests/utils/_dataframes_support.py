@@ -41,7 +41,7 @@ try:
 
     # Run check if "array_api_dispatch" is configurable
     array_api_enabled = lambda: get_config()["array_api_dispatch"]
-    _ = array_api_enabled()
+    array_api_enabled()
     array_api_modules = {"array_api": array_api_strict}
 
 
