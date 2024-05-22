@@ -36,7 +36,6 @@ ESTIMATORS = set(
 X, Y = make_classification(n_samples=40, n_features=4, random_state=42)
 
 
-@pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("estimator_class", ESTIMATORS)
 @pytest.mark.parametrize("n_jobs", [None, -1, 1, 2])
 def test_n_jobs_support(caplog, estimator_class, n_jobs):
