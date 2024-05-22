@@ -38,8 +38,6 @@ from onedal.svm import NuSVC as onedal_NuSVC
 )
 class NuSVC(sklearn_NuSVC, BaseSVC):
     __doc__ = sklearn_NuSVC.__doc__
-    # needed to match sklearn sample weight peculiarities
-    _err_msg = "negative dimensions are not allowed"
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_NuSVC._parameter_constraints}
