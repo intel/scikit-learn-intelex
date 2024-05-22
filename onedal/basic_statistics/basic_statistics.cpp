@@ -41,7 +41,6 @@ struct method2t {
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "dense", ops, Float, method::dense);
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "sparse", ops, Float, method::sparse);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
@@ -111,20 +110,8 @@ struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const py::dict& params) {
         auto desc = dal::basic_statistics::descriptor<Float,
-                                                      Method,
-                                                      dal::basic_statistics::task::compute>()
-                        .set_result_options(get_onedal_result_options(params));
-        return desc;
-    }
-};
-
-struct params2desc_incremental {
-    template <typename Float, typename Method, typename Task>
-    auto operator()(const py::dict& params) {
-        auto desc = dal::basic_statistics::descriptor<Float,
-                                                      dal::basic_statistics::method::dense,
-                                                      dal::basic_statistics::task::compute>()
-                        .set_result_options(get_onedal_result_options(params));
+            dal::basic_statistics::method::dense, dal::basic_statistics::task::compute>()
+            .set_result_options(get_onedal_result_options(params));
         return desc;
     }
 };
@@ -161,7 +148,7 @@ void init_partial_compute_ops(py::module& m) {
         const table& weights) {
             using namespace dal::basic_statistics;
             using input_t = partial_compute_input<Task>;
-            partial_compute_ops ops(policy, input_t{ prev, data, weights }, params2desc_incremental{});
+            partial_compute_ops ops(policy, input_t{ prev, data, weights }, params2desc{});
             return fptype2t{ method2t{ Task{}, ops } }(params);
         }
     );
@@ -172,7 +159,7 @@ void init_finalize_compute_ops(pybind11::module_& m) {
     using namespace dal::basic_statistics;
     using input_t = partial_compute_result<Task>;
     m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
-        finalize_compute_ops ops(policy, data, params2desc_incremental{});
+        finalize_compute_ops ops(policy, data, params2desc{});
         return fptype2t{ method2t{ Task{}, ops } }(params);
     });
 }

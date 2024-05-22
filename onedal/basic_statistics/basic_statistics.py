@@ -18,13 +18,11 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from scipy import sparse as sp
 
 from onedal import _backend
 
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_array
 
 
 class BaseBasicStatistics(metaclass=ABCMeta):
@@ -56,16 +54,16 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         assert isinstance(options, str)
         return options
 
-    def _get_onedal_params(self, data_table, dtype=np.float32):
+    def _get_onedal_params(self, dtype=np.float32):
         options = self._get_result_options(self.options)
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": "sparse" if sp.issparse(data_table) else self.algorithm,
+            "method": self.algorithm,
             "result_option": options,
         }
 
     def _compute_raw(self, data_table, weights_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(data_table, dtype)
+        params = self._get_onedal_params(dtype)
 
         result = module.train(policy, params, data_table, weights_table)
 
@@ -77,19 +75,14 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
-        data_loc = _check_array(
-            data,
-            dtype=[np.float64, np.float32],
-            accept_sparse="csr",
-            force_all_finite=False,
-        )
-
+        if not (data is None):
+            data = np.asarray(data)
         if not (weights is None):
             weights = np.asarray(weights)
 
-        data_loc, weights = _convert_to_supported(policy, data_loc, weights)
+        data, weights = _convert_to_supported(policy, data, weights)
 
-        data_table, weights_table = to_table(data_loc, weights)
+        data_table, weights_table = to_table(data, weights)
 
         dtype = data.dtype
         res = self._compute_raw(data_table, weights_table, module, policy, dtype)
