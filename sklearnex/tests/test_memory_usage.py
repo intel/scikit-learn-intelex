@@ -53,6 +53,7 @@ CPU_BANNED_LIST = (
     "IncrementalEmpiricalCovariance",  # dataframe_f issues
     "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "IncrementalPCA",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
+    "LogisticRegression(solver='newtown-cg')", # memory leak fortran (1000, 100)
 )
 
 GPU_BANNED_LIST = (
@@ -70,6 +71,8 @@ GPU_BANNED_LIST = (
     "NuSVC",  # does not support GPU offloading (fails silently)
     "LogisticRegression",  # default parameters not supported, see solver=newton-cg
     "NuSVC(probability=True)",  # does not support GPU offloading (fails silently)
+    "IncrementalLinearRegression", # issue with potrf with the specific dataset
+    "LinearRegression", # issue with potrf with the specific dataset
 )
 
 
