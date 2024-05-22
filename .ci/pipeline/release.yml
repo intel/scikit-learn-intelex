@@ -45,7 +45,7 @@ jobs:
     displayName: 'Sklearn testing'
 - job: GeneratorConda
   steps:
-  - bash: python .ci/scripts/gen_release_jobs.py --channels main intel conda-forge
+  - bash: python .ci/scripts/gen_release_jobs.py --channels intel conda-forge
     name: MatrixGen
 - job: ReleaseConda
   dependsOn: GeneratorConda
@@ -68,7 +68,7 @@ jobs:
     condition: eq( variables['Agent.OS'], 'Darwin')
     displayName: Add sudo access
   - script: |
-      conda update -y -q -c defaults conda
+      conda update -y -q -c conda-forge conda
       conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest pyyaml
     displayName: 'Install scikit-learn-intelex'
   - script: |
