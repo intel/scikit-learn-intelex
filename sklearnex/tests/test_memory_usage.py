@@ -244,10 +244,6 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
         )
 
 
-# disable fallback check as logging impacts memory use
-
-
-@pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl", "cpu")
