@@ -208,7 +208,9 @@ class BaseSVM(BaseEstimator, ABC):
             if "nusvc" in self.__module__:
                 raise ValueError("negative dimensions are not allowed")
             else:
-                raise ValueError("Invalid input - all samples have zero or negative weights.")
+                raise ValueError(
+                    "Invalid input - all samples have zero or negative weights."
+                )
 
         return sample_weight
 
