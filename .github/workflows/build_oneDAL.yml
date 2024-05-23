@@ -23,4 +23,8 @@ jobs:
       id-token: write
 
   steps:
-    name: temp
+    name: Checkout oneDAL
+    uses: actions/checkout@v4
+    with:
+      repository: 'oneapi-src/oneDAL'
+    
