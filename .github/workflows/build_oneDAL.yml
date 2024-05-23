@@ -25,5 +25,3 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: 'oneapi-src/oneDAL'
-    - name: build step1
-        run: .
