@@ -1,0 +1,26 @@
+name: oneDAL nightly build
+
+on:
+  schedule:
+    - cron: '0 21 * * *'
+    branches:
+      - master
+  pull:
+    branches: [ "master" ]
+
+permissions:
+  contents: read-only
+
+jobs:
+  build:
+    name: build oneDAL
+    if: github.repository == 'icfaust/scikit-learn-intelex'
+    runs-on: ubuntu-latest
+    permissions:
+      # Needed to upload the results to code-scanning dashboard.
+      security-events: write
+      # Needed to publish results and get a badge (see publish_results below).
+      id-token: write
+
+  steps:
+    name: temp
