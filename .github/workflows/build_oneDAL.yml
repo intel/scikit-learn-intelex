@@ -23,8 +23,9 @@ jobs:
       id-token: write
 
   steps:
-    name: Checkout oneDAL
-    uses: actions/checkout@v4
-    with:
-      repository: 'oneapi-src/oneDAL'
-    
+    - name: Checkout oneDAL
+      uses: actions/checkout@v4
+      with:
+        repository: 'oneapi-src/oneDAL'
+    - name: build step1
+        run: .
