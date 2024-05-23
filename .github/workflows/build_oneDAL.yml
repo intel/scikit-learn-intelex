@@ -3,7 +3,7 @@ name: oneDAL nightly build
 on:
   schedule:
     - cron: '0 21 * * *'
-  pull:
+  pull_request:
     branches: [ "master" ]
 
 permissions:
