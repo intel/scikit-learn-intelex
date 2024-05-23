@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read-only
+  contents: read-all
 
 jobs:
   build:
