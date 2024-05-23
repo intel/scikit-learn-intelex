@@ -19,7 +19,7 @@ from numbers import Number
 
 import numpy as np
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
@@ -34,19 +34,24 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def __init__(self, fit_intercept, copy_X, algorithm):
+    def __init__(self, fit_intercept, alpha, copy_X, algorithm):
         self.fit_intercept = fit_intercept
-        self.algorithm = algorithm
+        self.alpha = alpha
         self.copy_X = copy_X
+        self.algorithm = algorithm
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
-        return {
+        params = {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": self.algorithm,
             "intercept": self.fit_intercept,
             "result_option": (intercept + "coefficients"),
         }
+        if daal_check_version((2024, "P", 4)):  # TODO: adjust for the future release
+            params["alpha"] = self.alpha
+
+        return params
 
     def _create_model(self, policy):
         module = self._get_backend("linear_model", "regression")
@@ -159,9 +164,17 @@ class LinearRegression(BaseLinearRegression):
     """
 
     def __init__(
-        self, fit_intercept=True, copy_X=False, *, algorithm="norm_eq", **kwargs
+        self,
+        fit_intercept=True,
+        alpha=0.0,
+        copy_X=False,
+        *,
+        algorithm="norm_eq",
+        **kwargs,
     ):
-        super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
+        super().__init__(
+            fit_intercept=fit_intercept, alpha=alpha, copy_X=copy_X, algorithm=algorithm
+        )
 
     def fit(self, X, y, queue=None):
         """
