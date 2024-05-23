@@ -25,6 +25,7 @@ cd $ci_dir
 # ('all' - special value to run all tests)
 export SELECTED_TESTS=${SELECTED_TESTS:-$(python scripts/select_sklearn_tests.py)}
 
+export DESELECT_FLAGS="--publlic ${DESELECT_FLAGS}"
 if [ -n "${SKLEARNEX_PREVIEW}" ]; then
     export DESELECT_FLAGS="--preview ${DESELECT_FLAGS}"
 fi
