@@ -14,7 +14,7 @@ jobs:
   build:
     name: build oneDAL
     if: github.repository == 'icfaust/scikit-learn-intelex'
-    runs-on: ubuntu-latest
+    runs-on: intel-ubuntu-latest
     permissions:
       # Needed to upload the results to code-scanning dashboard.
       security-events: write
@@ -33,3 +33,15 @@ jobs:
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
           ./oneDAL/.ci/scripts/describe_system.sh
+      - name: Make daal
+        run: |
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target daal
+      - name: Make onedal_c
+        run: |
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_c 
+      - name: Make onedal_dpc
+        run: |
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_dpc
