@@ -36,12 +36,12 @@ jobs:
       - name: Make daal
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
-          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target daal
+          ./oneDAL/.ci/scripts/build.sh --compiler icx  --optimizations avx2 --target daal
       - name: Make onedal_c
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
-          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_c 
+          ./oneDAL/.ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_c 
       - name: Make onedal_dpc
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
-          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_dpc
+          ./oneDAL/.ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_dpc
