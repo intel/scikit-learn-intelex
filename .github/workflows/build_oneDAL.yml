@@ -20,9 +20,9 @@ jobs:
       # Needed to publish results and get a badge (see publish_results below).
       id-token: write
 
-  steps:
-    - name: Checkout oneDAL
-      uses: actions/checkout@v4
-      with:
-        repository: 'oneapi-src/oneDAL'
-        path: './oneDAL'
+    steps:
+      - name: Checkout oneDAL
+        uses: actions/checkout@v4
+        with:
+          repository: oneapi-src/oneDAL
+          path: ./oneDAL
