@@ -28,20 +28,25 @@ jobs:
           repository: oneapi-src/oneDAL
           path: ./oneDAL
       - name: Install DPCPP
-        run: ./oneDAL/.ci/env/apt.sh dpcpp
+        working-directory: ./oneDAL
+        run: .ci/env/apt.sh dpcpp
       - name: System Info
+        working-directory: ./oneDAL
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
-          ./oneDAL/.ci/scripts/describe_system.sh
+          .ci/scripts/describe_system.sh
       - name: Make daal
+        working-directory: ./oneDAL
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
-          ./oneDAL/.ci/scripts/build.sh --compiler icx  --optimizations avx2 --target daal
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target daal
       - name: Make onedal_c
+        working-directory: ./oneDAL
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
-          ./oneDAL/.ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_c 
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_c 
       - name: Make onedal_dpc
+        working-directory: ./oneDAL
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
-          ./oneDAL/.ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_dpc
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal_dpc
