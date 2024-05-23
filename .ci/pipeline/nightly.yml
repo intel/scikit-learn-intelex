@@ -61,7 +61,9 @@ jobs:
     vmImage: 'ubuntu-latest'
   steps:
   - script: |
-      conda update -y -q -c conda-forge conda
+      conda config --append channels conda-forge
+      conda config --remove channels defaults
+      conda update -y -q conda
       conda create -y -q -n CB -c intel -c conda-forge python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
