@@ -3,8 +3,6 @@ name: oneDAL nightly build
 on:
   schedule:
     - cron: '0 21 * * *'
-    branches:
-      - master
   pull:
     branches: [ "master" ]
 
