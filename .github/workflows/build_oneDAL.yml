@@ -5,6 +5,7 @@ on:
     - cron: '0 21 * * *'
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 permissions:
   contents: read-only
