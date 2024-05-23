@@ -27,3 +27,9 @@ jobs:
         with:
           repository: oneapi-src/oneDAL
           path: ./oneDAL
+      - name: Install DPCPP
+        run: ./oneDAL/.ci/env/apt.sh dpcpp
+      - name: System Info
+        run: |
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh
+          ./oneDAL/.ci/scripts/describe_system.sh
