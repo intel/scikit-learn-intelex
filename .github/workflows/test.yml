@@ -8,6 +8,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'          
       - name: Get run ID of "build_oneDAL" workflow
         id: get-run-id
         run: |
@@ -29,14 +33,14 @@ jobs:
       - name: Show downloaded files
         run: ls -la
       - name: apt-get
-        run: sudo apt-get update && sudo apt-get install -y clang-format python3.9
+        run: sudo apt-get update && sudo apt-get install -y clang-format
       - name: dpcpp installation
         run: bash .ci/scripts/install_dpcpp.sh
       - name: describe system
         run: bash .ci/scripts/describe_system.sh
       - name: Install develop requirements
         run: |
-          /usr/bin/python3.9 -m venv env2
+          python -m venv env2
           source ./env2/bin/activate
           pip install -r dependencies-dev
           pip list
