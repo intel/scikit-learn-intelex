@@ -2,7 +2,7 @@ name: sklearn1.0
 on:
   workflow_dispatch:
 jobs:
-  scikit-learn-1.0:
+  sklearn:
     name: Download
     runs-on: ubuntu-latest
     steps:
