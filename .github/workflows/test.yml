@@ -1,4 +1,4 @@
-name: sklearn1.0
+name: oneDAL DPCPP nightly sklearnex
 on:
   workflow_dispatch:
 
@@ -8,7 +8,7 @@ env:
 
 jobs:
   sklearn:
-    name: Python3.9_Sklearn1.1_DPCPP_nightly
+    name: Python3.9_Sklearn1.1
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
