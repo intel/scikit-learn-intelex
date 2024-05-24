@@ -25,6 +25,7 @@ jobs:
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: ./__release_lnx
       - name: Show downloaded files
         run: ls -la
       - name: apt-get
