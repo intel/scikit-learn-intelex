@@ -80,7 +80,9 @@ jobs:
           source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
           source ../__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
           ../conda-recipe/run_test.sh
+        id: sklearnex
       - name: Sklearn testing
+        if: success() || steps.sklearnex.conclusion == 'failure'
         working-directory: ./.ci
         run: |
           source ../env2/bin/activate
@@ -88,7 +90,9 @@ jobs:
           source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
           source ../__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
           bash ./scripts/run_sklearn_tests.sh cpu
+        id: sklearn
       - name: Sklearn testing [preview]
+        if: success() || steps.sklearnex.conclusion == 'failure' || steps.sklearn.conclusion == 'failure'
         working-directory: ./.ci
         run: |
           source ../env2/bin/activate
