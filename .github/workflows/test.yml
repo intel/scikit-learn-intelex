@@ -1,0 +1,99 @@
+name: oneDAL DPCPP nightly sklearnex
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: 3.9
+  SKLEARN_VERSION: 1.1
+
+jobs:
+  sklearn:
+    name: Python3.9_Sklearn1.1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}          
+      - name: Get run ID of "build_oneDAL" workflow
+        id: get-run-id
+        run: |
+          OTHER_REPO="${{ github.repository }}"
+          WF_NAME="oneDAL nightly build"
+          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --jq .[0].databaseId`
+          echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
+          echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Download artifact from "build_oneDAL" workflow
+        uses: actions/download-artifact@v4
+        with:
+          name: __release_lnx
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: ./__release_lnx
+      - name: Show downloaded files
+        run: ls -la
+      - name: apt-get
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+      - name: dpcpp installation
+        run: bash .ci/scripts/install_dpcpp.sh
+      - name: describe system
+        run: bash .ci/scripts/describe_system.sh
+      - name: Install develop requirements
+        run: |
+          python -m venv env2
+          source ./env2/bin/activate
+          pip install -r dependencies-dev
+          pip list
+      - name: Build daal4py/sklearnex
+        run: |
+          source ./env2/bin/activate
+          export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+          export NO_DIST=1
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh # prepare icpx
+          source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+          source ./__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
+          python setup.py install --single-version-externally-managed --record=record.txt
+          python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
+      - name: Install testing requirements
+        run: |
+          source ./env2/bin/activate
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh # prepare icpx
+          source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+          source ./__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
+          bash .ci/scripts/setup_sklearn.sh ${{ env.SKLEARN_VERSION }}
+          pip install --upgrade -r requirements-test.txt
+          pip install $(python .ci/scripts/get_compatible_scipy_version.py)
+          # if [ $(echo ${{ env.PYTHON_VERSION }} | grep '3.9\|3.10') ]; then pip install dpctl==0.16.0 dpnp==0.14.0; fi
+          pip list
+      - name: Sklearnex testing
+        working-directory: ./.ci
+        run: |
+          source ../env2/bin/activate
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh # prepare icpx
+          source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+          source ../__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
+          ../conda-recipe/run_test.sh
+      - name: Sklearn testing
+        working-directory: ./.ci
+        run: |
+          source ../env2/bin/activate
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh # prepare icpx
+          source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+          source ../__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
+          bash ./scripts/run_sklearn_tests.sh cpu
+      - name: Sklearn testing [preview]
+        working-directory: ./.ci
+        run: |
+          source ../env2/bin/activate
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh # prepare icpx
+          source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+          source ../__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
+          export SKLEARNEX_PREVIEW='1'
+          bash ./scripts/run_sklearn_tests.sh cpu
