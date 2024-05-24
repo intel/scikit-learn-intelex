@@ -19,7 +19,7 @@ jobs:
       - name: Download artifact from "Test" workflow
         uses: actions/download-artifact@v4
         with:
-          name: build-output # Match name used in test.yml upload artifact step
+          name: __release_lnx # Match name used in test.yml upload artifact step
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
