@@ -15,33 +15,23 @@ jobs:
     name: build oneDAL
     if: github.repository == 'icfaust/scikit-learn-intelex'
     runs-on: ubuntu-latest
-    permissions:
-      # Needed to upload the results to code-scanning dashboard.
-      security-events: write
-      # Needed to publish results and get a badge (see publish_results below).
-      id-token: write
 
     steps:
       - name: Checkout oneDAL
         uses: actions/checkout@v4
         with:
           repository: oneapi-src/oneDAL
-          path: ./oneDAL
-      - name: Install DPCPP
-        working-directory: ./oneDAL
+       - name: Install DPCPP
         run: .ci/env/apt.sh dpcpp
       - name: System Info
-        working-directory: ./oneDAL
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
           .ci/scripts/describe_system.sh
       - name: Make daal
-        working-directory: ./oneDAL
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
           .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target daal
       - name: Make onedal
-        working-directory: ./oneDAL
         run: |
           source /opt/intel/oneapi/compiler/latest/env/vars.sh
           .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal
@@ -49,4 +39,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: __release_lnx
-          path: ./oneDAL/__release_lnx_icx
+          path: ./__release_lnx_icx
