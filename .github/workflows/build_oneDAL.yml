@@ -12,7 +12,7 @@ jobs:
   build:
     name: build oneDAL
     if: github.repository == 'intel/scikit-learn-intelex'
-    runs-on: ubuntu-latest
+    runs-on: intel-ubuntu-latest
 
     steps:
       - name: Checkout oneDAL
