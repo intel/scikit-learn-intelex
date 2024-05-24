@@ -29,14 +29,14 @@ jobs:
       - name: Show downloaded files
         run: ls -la
       - name: apt-get
-        run: sudo apt-get update && sudo apt-get install -y clang-format python3.9-dev
+        run: sudo apt-get update && sudo apt-get install -y clang-format python3.9-venv
       - name: dpcpp installation
         run: bash .ci/scripts/install_dpcpp.sh
       - name: describe system
         run: bash .ci/scripts/describe_system.sh
       - name: Install develop requirements
         run: |
-          python3.9 -venv env2
+          python3.9 -m venv env2
           source ./env2/bin/activate
           pip install -r dependencies-dev
           pip list
