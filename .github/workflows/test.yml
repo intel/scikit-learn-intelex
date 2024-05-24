@@ -19,11 +19,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}          
-      - name: Get run ID of "build_oneDAL" workflow
+      - name: Get run ID of "oneDAL-nightly" workflow
         id: get-run-id
         run: |
           OTHER_REPO="${{ github.repository }}"
-          WF_NAME="oneDAL nightly build"
+          WF_NAME="oneDAL-nightly"
           RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --jq .[0].databaseId`
           echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
           echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
