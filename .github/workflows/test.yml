@@ -62,6 +62,8 @@ jobs:
       - name: Install testing requirements
         run: |
           source ./env2/bin/activate
+          source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+          source ./__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
           bash .ci/scripts/setup_sklearn.sh ${{ env.SKLEARN_VERSION }}
           pip install --upgrade -r requirements-test.txt
           pip install $(python .ci/scripts/get_compatible_scipy_version.py)
@@ -71,4 +73,7 @@ jobs:
         working-directory: ./.ci
         run: |
           source ../env2/bin/activate
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh # prepare icpx
+          source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+          source ../__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
           ../conda-recipe/run_test.sh
