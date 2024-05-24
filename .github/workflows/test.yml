@@ -1,6 +1,11 @@
 name: sklearn1.0
 on:
   workflow_dispatch:
+
+env:
+  PYTHON_VERSION: 3.9
+  SKLEARN_VERSION: 1.1
+
 jobs:
   sklearn:
     name: Download
@@ -11,7 +16,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'          
+          python-version: $PYTHON_VERSION          
       - name: Get run ID of "build_oneDAL" workflow
         id: get-run-id
         run: |
@@ -54,3 +59,16 @@ jobs:
           source ./__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
           python setup.py install --single-version-externally-managed --record=record.txt
           python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
+      - name: Install testing requirements
+        run: |
+          source ./env2/bin/activate
+          bash .ci/scripts/setup_sklearn.sh $SKLEARN_VERSION
+          pip install --upgrade -r requirements-test.txt
+          pip install $(python .ci/scripts/get_compatible_scipy_version.py)
+          if [ $(echo $PYTHON_VERSION | grep '3.9\|3.10') ]; then pip install dpctl==0.16.0 dpnp==0.14.0; fi
+          pip list
+      - name: Sklearnex testing
+        working-directory: ./.ci
+        run: |
+          source ../env2/bin/activate
+          ../conda-recipe/run_test.sh
