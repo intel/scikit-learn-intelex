@@ -29,7 +29,7 @@ jobs:
       - name: Show downloaded files
         run: ls -la
       - name: apt-get
-        run: sudo apt-get update && sudo apt-get install -y clang-format python3.9-venv
+        run: sudo apt-get update && sudo apt-get install -y clang-format python3.9
       - name: dpcpp installation
         run: bash .ci/scripts/install_dpcpp.sh
       - name: describe system
