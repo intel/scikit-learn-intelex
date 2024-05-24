@@ -36,7 +36,7 @@ jobs:
         run: bash .ci/scripts/describe_system.sh
       - name: Install develop requirements
         run: |
-          python3.9 -m venv env2
+          /usr/bin/python3.9 -m venv env2
           source ./env2/bin/activate
           pip install -r dependencies-dev
           pip list
