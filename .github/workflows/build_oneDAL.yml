@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: oneapi-src/oneDAL
-       - name: Install DPCPP
+      - name: Install DPCPP
         run: .ci/env/apt.sh dpcpp
       - name: System Info
         run: |
