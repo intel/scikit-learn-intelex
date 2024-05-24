@@ -1,4 +1,4 @@
-name: oneDAL DPCPP nightly sklearnex
+name: pip oneDAL/main
 on:
   pull_request:
     branches: [ "main" ]
