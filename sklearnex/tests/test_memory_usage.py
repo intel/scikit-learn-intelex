@@ -48,8 +48,8 @@ CPU_BANNED_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    "SVC(probability=True)",  # F numpy (investigate _fit_proba)
-    "NuSVC(probability=True)",  # F numpy (investigate _fit_proba)
+    "SVC(probability=True)",  # memory leak fortran numpy (investigate _fit_proba)
+    "NuSVC(probability=True)",  # memory leak fortran numpy (investigate _fit_proba)
     "IncrementalEmpiricalCovariance",  # dataframe_f issues
     "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "IncrementalPCA",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
