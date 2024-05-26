@@ -54,7 +54,7 @@ jobs:
       - name: Build daal4py/sklearnex
         run: |
           source ./env2/bin/activate
-          export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+          #export DPCPPROOT=/opt/intel/oneapi/compiler/latest
           export NO_DIST=1
           source /opt/intel/oneapi/compiler/latest/env/vars.sh # prepare icpx
           source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
