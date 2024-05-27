@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: oneapi-src/oneDAL
-      - name: Install DPCPP
+      - name: Install DPC++
         run: .ci/env/apt.sh dpcpp
       - name: System Info
         run: |
@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: oneapi-src/oneDAL
-      - name: Install DPCPP
+      - name: Install DPC++
         run: |
           $env:PATH="C:\msys64\usr\bin;$env:PATH"
           echo $env:PATH=C:\msys64\usr\bin;$env:PATH >> $env.GITHUB_ENV
@@ -62,10 +62,9 @@ jobs:
           echo "unpacking installer"
           Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept --install-dir=dpcpp" -Wait
           # This can take 20 minutes...
-          echo "install complete"
+          echo "DPC++ install complete"
       - name: System Info
         run: |
-          dir
           & '.\dpcpp\compiler\latest\env\vars.bat'
           sycl-ls
           bash .ci/scripts/describe_system.sh
@@ -81,9 +80,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dpcpp
-          path: ./dpcpp
+          path: .\dpcpp
       - name: Archive build
         uses: actions/upload-artifact@v4
         with:
           name: __release_win
-          path: ./__release_win_icx
+          path: .\__release_win_icx
