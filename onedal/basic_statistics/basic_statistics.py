@@ -76,8 +76,7 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         policy = self._get_policy(queue, data, weights)
 
         type_name = type(data).__name__
-        if (not (data is None) and
-            type_name != "csr_matrix" and type_name != "csr_array"):
+        if not (data is None) and type_name != "csr_matrix" and type_name != "csr_array":
             data = np.asarray(data)
         if not (weights is None):
             weights = np.asarray(weights)
