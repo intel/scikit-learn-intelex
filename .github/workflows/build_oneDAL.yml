@@ -60,7 +60,7 @@ jobs:
           pip install cpufeature
           pacman -S -y --noconfirm zip dos2unix tree wget
           wget -q https://registrationcenter-download.intel.com/akdlm/IRC_NAS/3165d8c7-088f-410f-9723-6d8ee88d9e5b/w_dpcpp-cpp-compiler_p_2024.1.2.505_offline.exe
-          .\w_dpcpp-cpp-compiler_p_2024.1.2.505_offline.exe --x --f oneAPI
+          Start-Process ".\w_dpcpp-cpp-compiler_p_2024.1.2.505_offline.exe" -ArgumentList "--s --x --f oneAPI" -NoNewWindow -Wait
           dir
           dir oneAPI
       - name: System Info
