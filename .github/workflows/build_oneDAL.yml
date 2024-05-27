@@ -63,8 +63,9 @@ jobs:
           & .\dpcpp_installer.exe -a -s --eula=accept --install-dir=.\dpcpp
       - name: System Info
         run: |
-          dir 'C:\Program Files (x86)\'
-          & 'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\env\vars.bat'
+          dir
+          dir dpcpp
+          & '.\dpcpp\compiler\latest\env\vars.bat'
           bash .ci/scripts/describe_system.sh
       - name: Make daal
         run: |
