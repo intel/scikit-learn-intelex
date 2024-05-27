@@ -44,7 +44,9 @@ def convert_one_to_table(arg):
     if dpctl_available:
         if isinstance(arg, dpt.usm_ndarray):
             return _backend.dpctl_to_table(arg)
-    arg = make2d(arg)
+    type_name = type(arg).__name__
+    if type_name != "csr_matrix" and type_name != "csr_array":
+        arg = make2d(arg)
     return _backend.to_table(arg)
 
 
