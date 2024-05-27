@@ -58,7 +58,7 @@ jobs:
           echo $env:PATH=C:\msys64\usr\bin;$env:PATH >> $env.GITHUB_ENV
           pip install cpufeature
           pacman -S -y --noconfirm zip dos2unix tree wget
-          wget -r https://registrationcenter-download.intel.com/akdlm/IRC_NAS/3165d8c7-088f-410f-9723-6d8ee88d9e5b/w_dpcpp-cpp-compiler_p_2024.1.2.505_offline.exe
+          wget -q -r https://registrationcenter-download.intel.com/akdlm/IRC_NAS/3165d8c7-088f-410f-9723-6d8ee88d9e5b/w_dpcpp-cpp-compiler_p_2024.1.2.505_offline.exe >NUL
       - name: System Info
         run: |
           bash .ci/scripts/describe_system.sh
