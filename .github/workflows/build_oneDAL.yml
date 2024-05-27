@@ -54,7 +54,7 @@ jobs:
       - name: Install DPCPP
         run: |
           echo %PATH%
-          $env:PATH=C:\msys64\usr\bin;$env:PATH
+          $env:PATH="C:\msys64\usr\bin;$env:PATH"
           echo $env:PATH=C:\msys64\usr\bin;$env:PATH >> $env.GITHUB_ENV
           pip install cpufeature
           pacman -S -y --noconfirm zip dos2unix tree wget
