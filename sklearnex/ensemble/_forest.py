@@ -821,13 +821,18 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-
-        X = check_array(
-            X,
-            dtype=[np.float64, np.float32],
-            force_all_finite=False,
-        )  # Warning, order of dtype matters
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                reset=False
+            )        
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+            )  # Warning, order of dtype matters
 
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
@@ -1124,13 +1129,16 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
-        X = check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=False
-        )  # Warning, order of dtype matters
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+            X = self._validate_data(
+                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False
+            )  # Warning, order of dtype matters
+        else:
+            X = check_array(
+                X, dtype=[np.float64, np.float32], force_all_finite=False
+            )  # Warning, order of dtype matters
 
         return self._onedal_estimator.predict(X, queue=queue)
 
