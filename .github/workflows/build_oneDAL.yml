@@ -76,7 +76,7 @@ jobs:
       - name: Make onedal
         run: |
           & '.\dpcpp\compiler\latest\env\vars.bat'
-          .\.ci\scripts\build.bat onedal vc avx2
+          .\.ci\scripts\build.bat onedal_c vc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
         with:
