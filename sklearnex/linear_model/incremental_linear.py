@@ -134,6 +134,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
+                reset=False,
             )
         else:
             X = check_array(
@@ -153,21 +154,23 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
-                X,
-                y,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-                copy=self.copy_X,
-                multi_output=True,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-            )
+        # Input check data if called via partial_fit
+        if not hasattr(self, "batch_size_"):
+            if sklearn_check_version("1.0"):
+                X, y = self._validate_data(
+                    X,
+                    y,
+                    dtype=[np.float64, np.float32],
+                    reset=first_pass,
+                    copy=self.copy_X,
+                    multi_output=True,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                    copy=self.copy_X,
+                )
             y = check_array(
                 y,
                 dtype=[np.float64, np.float32],
