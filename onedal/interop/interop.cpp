@@ -14,22 +14,16 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
+#include "onedal/common.hpp"
 
-#define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
-
-#include <pybind11/pybind11.h>
-#include <numpy/arrayobject.h>
-
-#include "oneapi/dal/table/common.hpp"
+#include "onedal/interop/interop.hpp"
 
 namespace oneapi::dal::python {
 
-namespace py = pybind11;
-
-dal::table convert_from_dptensor(py::object obj);
-py::dict construct_sua_iface(const dal::table& input);
-
-void define_sycl_usm_array_property(py::class_<dal::table>& t);
+ONEDAL_PY_INIT_MODULE(interop) {
+    using namespace interop;
+    auto sub_module = m.def_submodule("interop");
+    instantiate_buffer_interop(sub_module);
+}
 
 } // namespace oneapi::dal::python
