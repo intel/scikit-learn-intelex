@@ -320,9 +320,6 @@ deselected_tests:
   # test checks only the exact number of options that are used
   - tests/test_config.py::test_config_context
 
-  # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
-  - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
-
   # Some scikit-learn-intelex docstrings differ from scikit-learn.
   - tests/test_docstrings.py >=1.0.2
 
