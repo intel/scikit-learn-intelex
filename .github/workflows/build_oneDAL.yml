@@ -60,22 +60,22 @@ jobs:
           echo "Download intel DPC++ compiler"
           wget -q -O dpcpp_installer.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/3165d8c7-088f-410f-9723-6d8ee88d9e5b/w_dpcpp-cpp-compiler_p_2024.1.2.505_offline.exe
           echo "Unpacking DPC++ installer"
-          Start-Process ".\dpcpp_installer.exe" -ArgumentList "--s --x --f oneAPI" -Wait
+          # Start-Process ".\dpcpp_installer.exe" -ArgumentList "--s --x --f oneAPI" -Wait
           echo "Installing DPC++ compiler"
-          Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept --install-dir=dpcpp" -Wait
+          # Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept --install-dir=dpcpp" -Wait
           # This can take 20 minutes...
           echo "DPC++ install complete"
       - name: System Info
         run: |
-          & '.\dpcpp\compiler\latest\env\vars.bat'
+          # & '.\dpcpp\compiler\latest\env\vars.bat'
           bash .ci/scripts/describe_system.sh
       - name: Make daal
         run: |
-          & '.\dpcpp\compiler\latest\env\vars.bat'
+          # & '.\dpcpp\compiler\latest\env\vars.bat'
           .\.ci\scripts\build.bat daal vc avx2
       - name: Make onedal
         run: |
-          & '.\dpcpp\compiler\latest\env\vars.bat'
+          # & '.\dpcpp\compiler\latest\env\vars.bat'
           .\.ci\scripts\build.bat onedal_c vc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
