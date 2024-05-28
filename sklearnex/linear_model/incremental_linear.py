@@ -205,7 +205,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         if sklearn_check_version("1.0"):
             X, y = self._validate_data(
-                X, y, dtype=[np.float64, np.float32], copy=self.copy_X, multi_output=True
+                X, y, dtype=[np.float64, np.float32], copy=self.copy_X, multi_output=True, ensure_2d=True,
             )
         else:
             X = check_array(
