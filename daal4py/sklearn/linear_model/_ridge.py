@@ -191,7 +191,12 @@ def _fit_ridge(self, X, y, sample_weight=None):
 
 def _predict_ridge(self, X):
     if sklearn_check_version("1.0"):
-        self._validate_data(X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32], reset=False)
+        self._validate_data(
+            X,
+            accept_sparse=["csr", "csc", "coo"],
+            dtype=[np.float64, np.float32],
+            reset=False,
+        )
     else:
         X = check_array(
             X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
