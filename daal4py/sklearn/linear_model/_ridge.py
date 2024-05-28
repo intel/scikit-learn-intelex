@@ -106,8 +106,6 @@ def _fit_ridge(self, X, y, sample_weight=None):
         self._normalize = _deprecate_normalize(
             self.normalize, default=False, estimator_name=self.__class__.__name__
         )
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=True)
     if sklearn_check_version("1.2"):
         self._validate_params()
     elif sklearn_check_version("1.1"):
@@ -193,11 +191,11 @@ def _fit_ridge(self, X, y, sample_weight=None):
 
 def _predict_ridge(self, X):
     if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=False)
-
-    X = check_array(
-        X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
-    )
+        self._validate_data(X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32], reset=False)
+    else:
+        X = check_array(
+            X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
+        )
     good_shape_for_daal = (
         True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
     )
