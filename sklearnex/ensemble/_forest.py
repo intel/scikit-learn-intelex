@@ -74,6 +74,7 @@ class BaseForest(ABC):
             accept_sparse=False,
             dtype=[np.float64, np.float32],
             force_all_finite=False,
+            ensure_2d=True,
         )
 
         if sample_weight is not None:
@@ -96,8 +97,6 @@ class BaseForest(ABC):
         self._n_samples, self.n_outputs_ = y.shape
 
         y, expanded_class_weight = self._validate_y_class_weight(y)
-
-        self.n_features_in_ = X.shape[1]
 
         if expanded_class_weight is not None:
             if sample_weight is not None:
@@ -822,7 +821,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False
+                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False, ensure_2d=True,
             )
         else:
             X = check_array(
@@ -830,17 +829,26 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
             )  # Warning, order of dtype matters
+            self._check_n_features(X, reset=False)
 
         res = self._onedal_estimator.predict(X, queue=queue)
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
-        X = check_array(X, dtype=[np.float64, np.float32], force_all_finite=False)
         check_is_fitted(self, "_onedal_estimator")
 
-        self._check_n_features(X, reset=False)
         if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+            X = self._validate_data(
+                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False, ensure_2d=True,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+            )  # Warning, order of dtype matters
+            self._check_n_features(X, reset=False)
+
         return self._onedal_estimator.predict_proba(X, queue=queue)
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
