@@ -565,6 +565,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 accept_sparse=True,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
+                reset=False,
             )
 
             if y.ndim == 2 and y.shape[1] == 1:
@@ -980,6 +981,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 accept_sparse=True,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
+                reset=False,
             )
 
             if y.ndim == 2 and y.shape[1] == 1:
