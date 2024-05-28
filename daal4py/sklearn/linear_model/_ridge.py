@@ -125,10 +125,20 @@ def _fit_ridge(self, X, y, sample_weight=None):
                 include_boundaries="left",
             )
 
-    X, y = check_X_y(
+    if sklearn_check_version("1.0"):
+        X, y = self.validate_data(
         X,
         y,
-        ["csr", "csc", "coo"],
+        accept_sparse=["csr", "csc", "coo"],
+        dtype=[np.float64, np.float32],
+        multi_output=True,
+        y_numeric=True,
+    )
+    else:
+        X, y = check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
         dtype=[np.float64, np.float32],
         multi_output=True,
         y_numeric=True,
