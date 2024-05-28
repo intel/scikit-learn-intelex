@@ -127,22 +127,22 @@ def _fit_ridge(self, X, y, sample_weight=None):
 
     if sklearn_check_version("1.0"):
         X, y = self.validate_data(
-        X,
-        y,
-        accept_sparse=["csr", "csc", "coo"],
-        dtype=[np.float64, np.float32],
-        multi_output=True,
-        y_numeric=True,
-    )
+            X,
+            y,
+            accept_sparse=["csr", "csc", "coo"],
+            dtype=[np.float64, np.float32],
+            multi_output=True,
+            y_numeric=True,
+        )
     else:
         X, y = check_X_y(
             X,
             y,
             ["csr", "csc", "coo"],
-        dtype=[np.float64, np.float32],
-        multi_output=True,
-        y_numeric=True,
-    )
+            dtype=[np.float64, np.float32],
+            multi_output=True,
+            y_numeric=True,
+        )
     self.n_features_in_ = X.shape[1]
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
