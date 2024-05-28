@@ -151,30 +151,32 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     def _onedal_partial_fit(self, X, y, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
-        if sklearn_check_version("1.2"):
-            self._validate_params()
+        if not hasattr(self, "batch_size_"):
+            if sklearn_check_version("1.2"):
+                self._validate_params()
 
-        if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
-                X,
-                y,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-                copy=self.copy_X,
-                multi_output=True,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-            )
-            y = check_array(
-                y,
-                dtype=[np.float64, np.float32],
-                copy=False,
-                ensure_2d=False,
-            )
+            if sklearn_check_version("1.0"):
+                X, y = self._validate_data(
+                    X,
+                    y,
+                    dtype=[np.float64, np.float32],
+                    reset=first_pass,
+                    copy=self.copy_X,
+                    multi_output=True,
+                    ensure_2d=True,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                    copy=self.copy_X,
+                )
+                y = check_array(
+                    y,
+                    dtype=[np.float64, np.float32],
+                    copy=False,
+                    ensure_2d=False,
+                )
 
         if first_pass:
             self.n_samples_seen_ = X.shape[0]
