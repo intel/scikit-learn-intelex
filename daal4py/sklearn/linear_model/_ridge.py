@@ -124,7 +124,7 @@ def _fit_ridge(self, X, y, sample_weight=None):
             )
 
     if sklearn_check_version("1.0"):
-        X, y = self.validate_data(
+        X, y = self._validate_data(
             X,
             y,
             accept_sparse=["csr", "csc", "coo"],
