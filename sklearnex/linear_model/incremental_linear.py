@@ -134,6 +134,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
+                reset=False,
             )
         else:
             X = check_array(
