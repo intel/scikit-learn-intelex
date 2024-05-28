@@ -821,7 +821,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False, ensure_2d=True,
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                reset=False,
+                ensure_2d=True,
             )
         else:
             X = check_array(
@@ -839,7 +843,11 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False, ensure_2d=True,
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                reset=False,
+                ensure_2d=True,
             )
         else:
             X = check_array(
@@ -1138,7 +1146,11 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False, ensure_2d=True,
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                reset=False,
+                ensure_2d=True,
             )  # Warning, order of dtype matters
         else:
             X = check_array(
