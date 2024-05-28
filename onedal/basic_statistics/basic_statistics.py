@@ -54,16 +54,18 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         assert isinstance(options, str)
         return options
 
-    def _get_onedal_params(self, dtype=np.float32):
+    def _get_onedal_params(self, is_sparse, dtype=np.float32):
         options = self._get_result_options(self.options)
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.algorithm,
+            "method": "sparse" if is_sparse else self.algorithm,
             "result_option": options,
         }
 
-    def _compute_raw(self, data_table, weights_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(dtype)
+    def _compute_raw(
+        self, data_table, weights_table, module, policy, dtype=np.float32, is_sparse=False
+    ):
+        params = self._get_onedal_params(is_sparse, dtype)
 
         result = module.train(policy, params, data_table, weights_table)
 
@@ -76,8 +78,11 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         policy = self._get_policy(queue, data, weights)
 
         type_name = type(data).__name__
+        is_sparse = False
         if not (data is None) and type_name != "csr_matrix" and type_name != "csr_array":
             data = np.asarray(data)
+        else:
+            is_sparse = True
         if not (weights is None):
             weights = np.asarray(weights)
 
@@ -86,7 +91,9 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         data_table, weights_table = to_table(data, weights)
 
         dtype = data.dtype
-        res = self._compute_raw(data_table, weights_table, module, policy, dtype)
+        res = self._compute_raw(
+            data_table, weights_table, module, policy, dtype, is_sparse
+        )
 
         return {k: from_table(v).ravel() for k, v in res.items()}
 
@@ -104,11 +111,14 @@ class BasicStatistics(BaseEstimator, BaseBasicStatistics):
             data, weights, self._get_backend("basic_statistics", "compute", None), queue
         )
 
-    def compute_raw(self, data_table, weights_table, policy, dtype=np.float32):
+    def compute_raw(
+        self, data_table, weights_table, policy, dtype=np.float32, is_sparse=False
+    ):
         return super()._compute_raw(
             data_table,
             weights_table,
             self._get_backend("basic_statistics", "compute", None),
             policy,
             dtype,
+            is_sparse,
         )
