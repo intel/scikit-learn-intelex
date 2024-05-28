@@ -131,6 +131,7 @@ def _fit_ridge(self, X, y, sample_weight=None):
             dtype=[np.float64, np.float32],
             multi_output=True,
             y_numeric=True,
+            ensure_2d=True,
         )
     else:
         X, y = check_X_y(
@@ -196,6 +197,7 @@ def _predict_ridge(self, X):
             accept_sparse=["csr", "csc", "coo"],
             dtype=[np.float64, np.float32],
             reset=False,
+            ensure_2d=True,
         )
     else:
         X = check_array(
