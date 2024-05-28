@@ -822,11 +822,8 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
 
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                reset=False
-            )        
+                X, dtype=[np.float64, np.float32], force_all_finite=False, reset=False
+            )
         else:
             X = check_array(
                 X,
