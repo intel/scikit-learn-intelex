@@ -21,10 +21,10 @@ from numbers import Integral
 import numpy as np
 from scipy import sparse as sp
 
-try:
+if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
     # numpy_version >= 2.0
     from numpy.exceptions import VisibleDeprecationWarning
-except ModuleNotFoundError:
+else:
     # numpy_version < 2.0
     from numpy import VisibleDeprecationWarning
 

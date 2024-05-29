@@ -20,10 +20,10 @@ from contextlib import suppress
 import numpy as np
 import scipy.sparse as sp
 
-try:
+if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
     # numpy_version >= 2.0
     from numpy.exceptions import ComplexWarning
-except ModuleNotFoundError:
+else:
     # numpy_version < 2.0
     from numpy.core.numeric import ComplexWarning
 
