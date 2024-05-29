@@ -67,7 +67,7 @@ jobs:
           echo "DPC++ install complete"
       - name: System Info
         run: |
-          Start-Process ".\dpcpp\compiler\latest\env\vars.bat" -Wait
+          cmd.exe "/K" '".\dpcpp\compiler\latest\env\vars.bat" && powershell'
           bash .ci/scripts/describe_system.sh
       - name: Make daal
         run: |
@@ -75,7 +75,7 @@ jobs:
           .\.ci\scripts\build.bat daal vc avx2
       - name: Make onedal
         run: |
-          Start-Process ".\dpcpp\compiler\latest\env\vars.bat" -Wait
+          cmd.exe "/K" '".\dpcpp\compiler\latest\env\vars.bat" && powershell'
           .\.ci\scripts\build.bat onedal_dpc vc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
