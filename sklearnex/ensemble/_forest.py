@@ -778,6 +778,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                         or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
+                    (not self.oob_score, "oob_score value is not sklearn conformant."),
                     (sample_weight is None, "sample_weight is not supported."),
                 ]
             )
@@ -1105,6 +1106,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                         or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
+                    (not self.oob_score, "oob_score value is not sklearn conformant."),
                     (sample_weight is None, "sample_weight is not supported."),
                 ]
             )
