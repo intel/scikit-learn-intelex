@@ -67,7 +67,10 @@ jobs:
           echo "DPC++ install complete"
       - name: System Info
         run: |
+          gci env:
+          echo "source dpcpp"
           cmd.exe "/K" '".\dpcpp\compiler\latest\env\vars.bat" && powershell'
+          gci env:
           bash .ci/scripts/describe_system.sh
       - name: Make daal
         run: |
