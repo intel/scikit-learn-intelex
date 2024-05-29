@@ -24,7 +24,7 @@ ALLOWED_LOCATIONS = [
     "_device_offload.py",
     "test",
     "svc.py",
-    "svm/_common.py",
+    "svm" + os.sep + "_common.py",
 ]
 
 
