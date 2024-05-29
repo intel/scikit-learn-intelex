@@ -108,6 +108,7 @@ dal::table convert_from_dptensor(py::object obj) {
     auto tensor = pybind11::cast<dpctl::tensor::usm_ndarray>(obj);
 
     const auto type = tensor.get_typenum();
+    const auto elsize = tensor.get_elemsize();
 
     dal::table res{};
 
@@ -115,6 +116,7 @@ dal::table convert_from_dptensor(py::object obj) {
     res = convert_to_homogen_impl<CType>(obj, tensor);
 
     SET_NPY_FEATURE(type,
+                    elsize,
                     MAKE_HOMOGEN_TABLE, //
                     report_problem_from_dptensor(": unknown data type"));
 

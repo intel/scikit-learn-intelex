@@ -18,6 +18,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <iostream>
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
@@ -153,8 +154,10 @@ dal::table convert_to_table(PyObject *obj) {
     if (is_array(obj)) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
         if (array_is_behaved(ary) || array_is_behaved_F(ary)) {
+        std::cout << "Type: " << PyArray_DESCR(ary)->type << " Elsize: " << PyArray_DESCR(ary)->elsize << std::endl;
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ary);
             SET_NPY_FEATURE(PyArray_DESCR(ary)->type,
+                            PyArray_DESCR(ary)->elsize,
                             MAKE_HOMOGEN_TABLE,
                             throw std::invalid_argument("Found unsupported array type"));
 #undef MAKE_HOMOGEN_TABLE
@@ -206,7 +209,9 @@ dal::table convert_to_table(PyObject *obj) {
                                      np_row_indices,    \
                                      row_count,         \
                                      column_count);
+        std::cout << "Type: " << array_type(np_data) << " Elsize: " << array_type_sizeof(np_data) << std::endl;
         SET_NPY_FEATURE(array_type(np_data),
+                        array_type_sizeof(np_data),
                         MAKE_CSR_TABLE,
                         throw std::invalid_argument("Found unsupported data type in csr_matrix"));
 #undef MAKE_CSR_TABLE
