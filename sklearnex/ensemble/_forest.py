@@ -38,7 +38,7 @@ from sklearn.tree import (
 )
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
-from sklearn.utils.validation import check_array, check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import (
@@ -558,14 +558,13 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
             )
 
         if patching_status.get_status():
-            X, y = self._validate_data(
+            X, y = check_X_y(
                 X,
                 y,
                 multi_output=True,
                 accept_sparse=True,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
-                reset=False,
             )
 
             if y.ndim == 2 and y.shape[1] == 1:
@@ -974,14 +973,13 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             )
 
         if patching_status.get_status():
-            X, y = self._validate_data(
+            X, y = check_X_y(
                 X,
                 y,
                 multi_output=True,
                 accept_sparse=True,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
-                reset=False,
             )
 
             if y.ndim == 2 and y.shape[1] == 1:
