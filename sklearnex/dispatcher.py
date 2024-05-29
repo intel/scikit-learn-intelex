@@ -53,6 +53,7 @@ def get_patch_map_core(preview=False):
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
             from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
+            from .preview.linear_model import Ridge as Ridge_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
@@ -90,6 +91,13 @@ def get_patch_map_core(preview=False):
                     None,
                 ]
             ]
+
+            # Ridge
+            cluster_module, _, _ = mapping["ridge"][0][0]
+            sklearn_obj = mapping["ridge"][0][1]
+            mapping.pop("ridge")
+            mapping["ridge"] = [[(cluster_module, "ridge", Ridge_sklearnex), sklearn_obj]]
+
         return mapping
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms

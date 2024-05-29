@@ -1,0 +1,329 @@
+# ===============================================================================
+# Copyright 2024 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ===============================================================================
+
+import logging
+from abc import ABC
+
+import numpy as np
+from sklearn.exceptions import NotFittedError
+from sklearn.linear_model import Ridge as sklearn_RidgeRegression
+
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
+
+from ..._device_offload import dispatch, wrap_output_data
+from ..._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
+from ...utils.validation import _assert_all_finite
+
+if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+    from sklearn.linear_model._base import _deprecate_normalize
+
+from scipy.sparse import issparse
+from sklearn.utils.validation import check_X_y
+
+from onedal.common.hyperparameters import get_hyperparameters
+from onedal.linear_model import LinearRegression as onedal_RidgeRegression
+from onedal.utils import _num_features, _num_samples
+
+
+class Ridge(sklearn_RidgeRegression):
+    __doc__ = sklearn_RidgeRegression.__doc__
+
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {**sklearn_RidgeRegression._parameter_constraints}
+
+        def __init__(
+            self,
+            fit_intercept=True,
+            alpha=1.0,
+            copy_X=True,
+            positive=False,
+        ):
+            super().__init__(
+                fit_intercept=fit_intercept,
+                alpha=alpha,
+                copy_X=copy_X,
+                positive=positive,
+            )
+
+    else:
+
+        def __init__(
+            self,
+            fit_intercept=True,
+            alpha=1.0,
+            normalize="deprecated" if sklearn_check_version("1.0") else False,
+            copy_X=True,
+            positive=False,
+        ):
+            super().__init__(
+                fit_intercept=fit_intercept,
+                alpha=alpha,
+                normalize=normalize,
+                copy_X=copy_X,
+                positive=positive,
+            )
+
+    def fit(self, X, y, sample_weight=None):
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=True)
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+
+        # It is necessary to properly update coefs for predict if we
+        # fallback to sklearn in dispatch
+        if hasattr(self, "_onedal_estimator"):
+            del self._onedal_estimator
+
+        dispatch(
+            self,
+            "fit",
+            {
+                "onedal": self.__class__._onedal_fit,
+                "sklearn": sklearn_RidgeRegression.fit,
+            },
+            X,
+            y,
+            sample_weight,
+        )
+        return self
+
+    @wrap_output_data
+    def predict(self, X):
+        if not hasattr(self, "coef_"):
+            msg = (
+                "This %(name)s instance is not fitted yet. Call 'fit' with "
+                "appropriate arguments before using this estimator."
+            )
+            raise NotFittedError(msg % {"name": self.__class__.__name__})
+
+        return dispatch(
+            self,
+            "predict",
+            {
+                "onedal": self.__class__._onedal_predict,
+                "sklearn": sklearn_RidgeRegression.predict,
+            },
+            X,
+        )
+
+    def _test_type_and_finiteness(self, X_in):
+        X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
+
+        dtype = X.dtype
+        if "complex" in str(type(dtype)):
+            return False
+
+        try:
+            _assert_all_finite(X)
+        except BaseException:
+            return False
+        return True
+
+    def _onedal_fit_supported(self, device, method_name, *data):
+        assert method_name == "fit"
+        assert len(data) == 3
+        X, y, sample_weight = data
+
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f"sklearn.linear_model.{class_name}.fit"
+        )
+
+        normalize_is_set = (
+            hasattr(self, "normalize")
+            and self.normalize
+            and self.normalize != "deprecated"
+        )
+        positive_is_set = hasattr(self, "positive") and self.positive
+
+        n_samples = _num_samples(X)
+        n_features = _num_features(X, fallback_1d=True)
+
+        # Check if equations are well defined
+        is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+
+        dal_ready = patching_status.and_conditions(
+            [
+                (sample_weight is None, "Sample weight is not supported."),
+                (
+                    not issparse(X) and not issparse(y),
+                    "Sparse input is not supported.",
+                ),
+                (not normalize_is_set, "Normalization is not supported."),
+                (
+                    not positive_is_set,
+                    "Forced positive coefficients are not supported.",
+                ),
+                (
+                    not is_underdetermined,
+                    "The shape of X (fitting) does not satisfy oneDAL requirements:"
+                    "Number of features + 1 >= number of samples.",
+                ),
+            ]
+        )
+
+        if device == "gpu":
+            alpha_is_scalar = isinstance(self.alpha, (int, float))
+            dal_ready = patching_status.and_condition(
+                alpha_is_scalar,
+                "Non-scalar alpha is not supported for GPU.",
+            )
+
+        if not dal_ready:
+            return patching_status
+
+        if not patching_status.and_condition(
+            self._test_type_and_finiteness(X), "Input X is not supported."
+        ):
+            return patching_status
+
+        patching_status.and_condition(
+            self._test_type_and_finiteness(y), "Input y is not supported."
+        )
+
+        return patching_status
+
+    def _onedal_predict_supported(self, method_name, *data):
+        assert method_name == "predict"
+        assert len(data) == 1
+
+        class_name = self.__class__.__name__
+        patching_status = PatchingConditionsChain(
+            f"sklearn.linear_model.{class_name}.predict"
+        )
+
+        n_samples = _num_samples(*data)
+        model_is_sparse = issparse(self.coef_) or (
+            self.fit_intercept and issparse(self.intercept_)
+        )
+        dal_ready = patching_status.and_conditions(
+            [
+                (n_samples > 0, "Number of samples is less than 1."),
+                (not issparse(*data), "Sparse input is not supported."),
+                (not model_is_sparse, "Sparse coefficients are not supported."),
+            ]
+        )
+        if not dal_ready:
+            return patching_status
+
+        patching_status.and_condition(
+            self._test_type_and_finiteness(*data), "Input X is not supported."
+        )
+
+        return patching_status
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        if method_name == "fit":
+            return self._onedal_fit_supported("gpu", method_name, *data)
+        if method_name == "predict":
+            return self._onedal_predict_supported(method_name, *data)
+        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+
+    def _onedal_cpu_supported(self, method_name, *data):
+        if method_name == "fit":
+            return self._onedal_fit_supported("cpu", method_name, *data)
+        if method_name == "predict":
+            return self._onedal_predict_supported(method_name, *data)
+        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+
+    def _initialize_onedal_estimator(self):
+        onedal_params = {
+            "fit_intercept": self.fit_intercept,
+            "alpha": self.alpha,
+            "copy_X": self.copy_X,
+        }
+        self._onedal_estimator = onedal_RidgeRegression(**onedal_params)
+
+    def _onedal_fit(self, X, y, sample_weight, queue=None):
+        assert sample_weight is None
+
+        check_params = {
+            "X": X,
+            "y": y,
+            "dtype": [np.float64, np.float32],
+            "accept_sparse": ["csr", "csc", "coo"],
+            "y_numeric": True,
+            "multi_output": True,
+            "force_all_finite": False,
+        }
+        if sklearn_check_version("1.2"):
+            X, y = self._validate_data(**check_params)
+        else:
+            X, y = check_X_y(**check_params)
+
+        if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+            self._normalize = _deprecate_normalize(
+                self.normalize,
+                default=False,
+                estimator_name=self.__class__.__name__,
+            )
+
+        self._initialize_onedal_estimator()
+        try:
+            self._onedal_estimator.fit(X, y, queue=queue)
+            self._save_attributes()
+
+        except RuntimeError:
+            logging.getLogger("sklearnex").info(
+                f"{self.__class__.__name__}.fit "
+                + get_patch_message("sklearn_after_onedal")
+            )
+
+            del self._onedal_estimator
+            super().fit(X, y)
+
+    def _onedal_predict(self, X, queue=None):
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+
+        X = self._validate_data(X, accept_sparse=False, reset=False)
+        if not hasattr(self, "_onedal_estimator"):
+            self._initialize_onedal_estimator()
+            self._onedal_estimator.coef_ = self.coef_
+            self._onedal_estimator.intercept_ = self.intercept_
+
+        res = self._onedal_estimator.predict(X, queue=queue)
+        return res
+
+    def get_coef_(self):
+        return self.coef_
+
+    def set_coef_(self, value):
+        self.__dict__["coef_"] = value
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator.coef_ = value
+            del self._onedal_estimator._onedal_model
+
+    def get_intercept_(self):
+        return self.intercept_
+
+    def set_intercept_(self, value):
+        self.__dict__["intercept_"] = value
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator.intercept_ = value
+            del self._onedal_estimator._onedal_model
+
+    def _save_attributes(self):
+        self.coef_ = property(self.get_coef_, self.set_coef_)
+        self.intercept_ = property(self.get_intercept_, self.set_intercept_)
+        self.n_features_in_ = self._onedal_estimator.n_features_in_
+        self._sparse = False
+        self.__dict__["coef_"] = self._onedal_estimator.coef_
+        self.__dict__["intercept_"] = self._onedal_estimator.intercept_
+
+    fit.__doc__ = sklearn_RidgeRegression.fit.__doc__
+    predict.__doc__ = sklearn_RidgeRegression.predict.__doc__
