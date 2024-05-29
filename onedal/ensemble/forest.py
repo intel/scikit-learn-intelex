@@ -315,7 +315,9 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
 
         if self.oob_score:
             if isinstance(self, ClassifierMixin):
-                self.oob_score_ = from_table(train_result.oob_err_accuracy).reshape((-1))[0]
+                self.oob_score_ = from_table(train_result.oob_err_accuracy).reshape((-1))[
+                    0
+                ]
                 self.oob_decision_function_ = from_table(
                     train_result.oob_err_decision_function
                 )
