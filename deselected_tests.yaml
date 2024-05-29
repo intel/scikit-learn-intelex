@@ -643,6 +643,7 @@ gpu:
 
   # KMeans based (unsupported for GPU)
   - cluster/tests/test_k_means.py
+  - tests/test_common.py::test_pandas_column_name_consistency[KMeans()]
   - tests/test_common.py::test_estimators[KMeans()
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_check_is_fitted]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_check_is_fitted]
