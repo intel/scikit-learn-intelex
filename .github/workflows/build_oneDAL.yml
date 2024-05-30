@@ -81,12 +81,13 @@ jobs:
           call .\dpcpp\compiler\latest\env\vars.bat
           SET
           call .\.ci\scripts\build.bat daal vc avx2
-      - name: Make onedal_c
+      - name: Make onedal
         shell: cmd
         run: |
           call .\dpcpp\compiler\latest\env\vars.bat
-          call .\.ci\scripts\build.bat onedal_c vc avx2
-      - name: Make onedal_dpc
+          doskey icpx=echo $*
+          call .\.ci\scripts\build.bat onedal vc avx2
+      - name: Make oneapi_dpc
         shell: cmd
         run: |
           call .\dpcpp\compiler\latest\env\vars.bat
