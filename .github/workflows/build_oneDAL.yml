@@ -62,7 +62,7 @@ jobs:
           echo "Unpacking DPC++ installer"
           Start-Process ".\dpcpp_installer.exe" -ArgumentList "--s --x --f oneAPI" -Wait
           echo "Installing DPC++ compiler"
-          Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept" -Wait
+          Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept --install-dir=dpcpp" -Wait
           # This can take 20 minutes...
           echo "DPC++ install complete"
       - name: System Info
