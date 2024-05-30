@@ -55,7 +55,7 @@ jobs:
         shell: cmd
         run: |
           where echo
-          echo $ (echo #include <iostream> && int main(int argc, char** argv) {} > icl.c
+          echo $ (echo #include <iostream^> && int main(int argc, char** argv) {} > icl.c
           more icl.txt
           echo hello
           cl icl.c
