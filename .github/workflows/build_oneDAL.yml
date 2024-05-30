@@ -62,11 +62,12 @@ jobs:
           echo "Unpacking DPC++ installer"
           Start-Process ".\dpcpp_installer.exe" -ArgumentList "--s --x --f oneAPI" -Wait
           echo "Installing DPC++ compiler"
-          Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept --install-dir=dpcpp" -Wait
+          Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept" -Wait
           # This can take 20 minutes...
           echo "DPC++ install complete"
       - name: System Info
         run: |
+          dir 'C:\Program Files (x86)\Intel\oneAPI\'
           gci env:
           echo "source dpcpp"
           cmd.exe "/K" '".\dpcpp\compiler\latest\env\vars.bat" && powershell'
