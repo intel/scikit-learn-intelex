@@ -55,7 +55,7 @@ jobs:
         shell: cmd
         run: |
           where echo
-          echo "@START echo """$*"""" > icl.txt
+          echo "@START """C:\Program Files\Git\usr\bin\echo.exe""" """$*"""" > icl.txt
           ren icl.txt icl.bat
           icl -fsycl
           icl "it works"
