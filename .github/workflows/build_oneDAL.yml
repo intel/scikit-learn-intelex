@@ -54,7 +54,8 @@ jobs:
       - name: test
         shell: cmd
         run: |
-          echo "@START echo """$*"""" > icl.bat
+          echo "@START echo """$*"""" > icl.txt
+          ren icl.txt icl.bat
           icl -fsycl
           icl "it works"
       - name: Install DPC++
