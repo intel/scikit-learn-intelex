@@ -70,7 +70,9 @@ jobs:
           dir 'C:\Program Files (x86)\Intel\oneAPI\'
           gci env:
           echo "source dpcpp"
+          Get-Variable -Scope 0
           cmd.exe "/K" '".\dpcpp\compiler\latest\env\vars.bat" && powershell'
+          Get-Variable -Scope 0
           gci env:
           bash .ci/scripts/describe_system.sh
       - name: Make daal
