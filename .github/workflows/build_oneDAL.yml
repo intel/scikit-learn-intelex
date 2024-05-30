@@ -80,8 +80,9 @@ jobs:
           # & '.\dpcpp\compiler\latest\env\vars.bat'
           .\.ci\scripts\build.bat daal vc avx2
       - name: Make onedal
+        shell: cmd
         run: |
-          cmd.exe "/K" '".\dpcpp\compiler\latest\env\vars.bat" && powershell'
+          .\dpcpp\compiler\latest\env\vars.bat
           .\.ci\scripts\build.bat onedal_dpc vc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
