@@ -55,7 +55,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-          echo $ (echo #include <iostream^> && int main(int argc, char** argv) {} > icl.c
+          echo $ (echo #include ^^^<iostream^^^> && int main(int argc, char** argv) {} > icl.c
           more icl.c
           echo hello
           cl icl.c
