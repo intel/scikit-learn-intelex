@@ -55,12 +55,12 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-          echo $ (echo #include ^<iostream^> && echo int main(int argc, char** argv) {} > icl.c
-          more icl.c
+          echo $ (echo #include ^<iostream^> && echo int main(int argc, char** argv) {} > icpx.c
+          more icpx.c
           echo hello
-          cl icl.c
-          icl -fsycl
-          icl "it works"
+          cl icpx.c
+          icpx -fsycl
+          icpx "it works"
           echo success
       - name: Install DPC++
         run: |
@@ -96,7 +96,6 @@ jobs:
         shell: cmd
         run: |
           call .\dpcpp\compiler\latest\env\vars.bat
-          doskey icpx=echo $*
           call .\.ci\scripts\build.bat onedal vc avx2
       - name: Make oneapi_dpc
         shell: cmd
@@ -105,7 +104,7 @@ jobs:
           REN .\__release_win_vc .\__release_win
           REN .\__work_vc .\__work
           DIR
-          doskey icl=echo $*
+          REN icpx.exe icl.exe
           call .\.ci\scripts\build.bat oneapi_dpc icc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
