@@ -54,6 +54,7 @@ jobs:
       - name: test
         shell: cmd
         run: |
+          where echo
           echo "@START echo """$*"""" > icl.txt
           ren icl.txt icl.bat
           icl -fsycl
