@@ -54,9 +54,9 @@ jobs:
       - name: test
         shell: cmd
         run: |
-          where echo
+          set PATH=C:\msys64\usr\bin;%PATH%
           echo $ (echo #include <iostream^> && int main(int argc, char** argv) {} > icl.c
-          more icl.txt
+          more icl.c
           echo hello
           cl icl.c
           icl -fsycl
