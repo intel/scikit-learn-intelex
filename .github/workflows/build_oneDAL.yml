@@ -94,6 +94,7 @@ jobs:
           REN .\__release_win_vc .\__release_win
           REN .\__work_vc .\__work
           DIR
+          doskey icl=echo $*
           call .\.ci\scripts\build.bat oneapi_dpc icc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
