@@ -54,7 +54,7 @@ jobs:
       - name: test
         shell: cmd
         run: |
-          set PATH=C:\msys64\usr\bin;%PATH%
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
           echo $ (echo #include <iostream^> && int main(int argc, char** argv) {} > icl.c
           more icl.c
           echo hello
