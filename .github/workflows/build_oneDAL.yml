@@ -86,7 +86,11 @@ jobs:
         run: |
           call .\dpcpp\compiler\latest\env\vars.bat
           SET
-          call .\.ci\scripts\build.bat onedal_dpc vc avx2
+          call .\.ci\scripts\build.bat onedal_c vc avx2
+          REN .\__release_win_vc .\__release_win
+          REN .\__work_vc .\__work
+          DIR
+          call .\.ci\scripts\build.bat oneapi_dpc icc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
         with:
@@ -96,4 +100,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: __release_win
-          path: .\__release_win_vc
+          path: .\__release_win
