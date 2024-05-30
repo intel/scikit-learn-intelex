@@ -55,7 +55,7 @@ jobs:
         shell: cmd
         run: |
           where echo
-          echo @START "C:\Program Files\Git\usr\bin\echo.exe" "$*" > icl.txt
+          echo $ (echo a && echo ret && echo && echo rcx) > icl.txt
           more icl.txt
           echo hello
           ren icl.txt icl.bat
