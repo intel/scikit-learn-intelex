@@ -55,12 +55,13 @@ jobs:
         shell: cmd
         run: |
           where echo
-          echo $ (echo a && echo ret && echo && echo rcx) > icl.txt
+          echo $ (echo #include <iostream> && int main(int argc, char** argv) {} > icl.c
           more icl.txt
           echo hello
-          ren icl.txt icl.bat
+          cl icl.c
           icl -fsycl
           icl "it works"
+          echo success
       - name: Install DPC++
         run: |
           $env:PATH="C:\msys64\usr\bin;$env:PATH"
