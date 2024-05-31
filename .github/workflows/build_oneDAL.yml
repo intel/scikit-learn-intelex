@@ -95,7 +95,7 @@ jobs:
       - name: Make onedal
         shell: cmd
         run: |
-          call .\dpcpp\compiler\latest\env\vars.bat
+          # call .\dpcpp\compiler\latest\env\vars.bat
           call .\.ci\scripts\build.bat onedal vc avx2
       - name: Make oneapi_dpc
         shell: cmd
@@ -104,7 +104,7 @@ jobs:
           REN .\__release_win_vc .\__release_win
           REN .\__work_vc .\__work
           DIR
-          REN icpx.exe icl.exe
+          REN icx.exe icl.exe
           call .\.ci\scripts\build.bat oneapi_dpc icc avx2
       - name: Archive compiler
         uses: actions/upload-artifact@v4
