@@ -110,6 +110,14 @@ if daal_check_version((2023, "P", 100)):
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     def test_basic_csr(queue, dtype):
+        from packaging.version import Version
+        from scipy import __version__
+
+        # Support of scipy.sparse.random_array was added in scipy 1.12.0
+        # Deselecting the test for earlier versions
+        if Version(__version__) < Version("1.12.0"):
+            pytest.skip("skipping BasicStatistics CSR test for SciPy < 1.12.0")
+
         seed = 42
         s_count, f_count = 5000, 3008
 
@@ -137,6 +145,14 @@ if daal_check_version((2023, "P", 100)):
     @pytest.mark.parametrize("option", options_and_tests_csr)
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     def test_options_csr(queue, option, dtype):
+        from packaging.version import Version
+        from scipy import __version__
+
+        # Support of scipy.sparse.random_array was added in scipy 1.12.0
+        # Deselecting the test for earlier versions
+        if Version(__version__) < Version("1.12.0"):
+            pytest.skip("skipping BasicStatistics CSR test for SciPy < 1.12.0")
+
         seed = 42
         s_count, f_count = 20046, 4007
 
