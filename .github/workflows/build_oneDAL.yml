@@ -55,12 +55,12 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-          echo $ (echo #include ^<iostream^> && echo int main(int argc, char** argv) {} > icpx.c
-          more icpx.c
+          echo $ (echo #include ^<iostream^> && echo int main(int argc, char** argv) {} > icx.c
+          more icx.c
           echo hello
-          cl icpx.c
-          icpx -fsycl
-          icpx "it works"
+          cl icx.c
+          icx -fsycl
+          icx "it works"
           echo success
       - name: Install DPC++
         run: |
