@@ -23,9 +23,9 @@ from ..utils._array_api import get_namespace
 
 
 def make2d(arg):
-    # TODO:
-    # reimplement via Array API
     xp, is_array_api_compliant = get_namespace(arg)
+    if is_array_api_compliant:
+        return xp.reshape(arg, (arg.size, 1))
     return d4p_make2d(arg)
 
 
