@@ -76,7 +76,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
         return self
 
@@ -95,12 +95,13 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
         )
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "C": self.C,
             "nu": self.nu,
             "kernel": self.kernel,
             "degree": self.degree,
-            "gamma": self.gamma,
+            "gamma": self._compute_gamma_sigma(X),
             "coef0": self.coef0,
             "tol": self.tol,
             "shrinking": self.shrinking,
