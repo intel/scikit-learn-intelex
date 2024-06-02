@@ -20,6 +20,7 @@ import os
 import tracemalloc
 import types
 from inspect import isclass
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -199,7 +200,13 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     mem_iter_diffs = np.array(mem_tracks[1:]) - np.array(mem_tracks[:-1])
     mem_incr_mean, mem_incr_std = mem_iter_diffs.mean(), mem_iter_diffs.std()
     mem_incr_mean, mem_incr_std = round(mem_incr_mean), round(mem_incr_std)
-    mem_iter_corr, _ = pearsonr(mem_tracks, list(range(len(mem_tracks))))
+    with warnings.catch_warnings():
+        # In the case that the memory usage is constant, this will raise
+        # a ConstantInputWarning error in pearsonr from scipy, this can
+        # be ignored.
+        warnings.filterwarnings("ignore", message="An input array is constant; the correlation coefficient is not defined")
+        mem_iter_corr, _ = pearsonr(mem_tracks, list(range(len(mem_tracks))))
+
     if mem_iter_corr > 0.95:
         logging.warning(
             "Memory usage is steadily increasing with iterations "
