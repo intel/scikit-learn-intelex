@@ -204,7 +204,10 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
         # In the case that the memory usage is constant, this will raise
         # a ConstantInputWarning error in pearsonr from scipy, this can
         # be ignored.
-        warnings.filterwarnings("ignore", message="An input array is constant; the correlation coefficient is not defined")
+        warnings.filterwarnings(
+            "ignore",
+            message="An input array is constant; the correlation coefficient is not defined",
+        )
         mem_iter_corr, _ = pearsonr(mem_tracks, list(range(len(mem_tracks))))
 
     if mem_iter_corr > 0.95:
