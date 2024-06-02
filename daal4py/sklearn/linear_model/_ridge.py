@@ -101,7 +101,7 @@ def _daal4py_predict(self, X):
     return res
 
 
-def _fit_ridge(self, X, y, sample_weight=None):
+def _fit_ridge(self, _X, _y, sample_weight=None):
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
         self._normalize = _deprecate_normalize(
             self.normalize, default=False, estimator_name=self.__class__.__name__
@@ -124,9 +124,9 @@ def _fit_ridge(self, X, y, sample_weight=None):
             )
 
     if sklearn_check_version("1.0"):
-        _X, _y = self._validate_data(
-            X,
-            y,
+        X, y = self._validate_data(
+            _X,
+            _y,
             accept_sparse=["csr", "csc", "coo"],
             dtype=[np.float64, np.float32],
             multi_output=True,
@@ -134,18 +134,18 @@ def _fit_ridge(self, X, y, sample_weight=None):
             ensure_2d=True,
         )
     else:
-        _X, _y = check_X_y(
-            X,
-            y,
+        X, y = check_X_y(
+            _X,
+            _y,
             ["csr", "csc", "coo"],
             dtype=[np.float64, np.float32],
             multi_output=True,
             y_numeric=True,
         )
-        self.n_features_in_ = _X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
     self.sample_weight_ = sample_weight
-    self.fit_shape_good_for_daal_ = True if _X.shape[0] >= _X.shape[1] else False
+    self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
 
     _patching_status = PatchingConditionsChain("sklearn.linear_model.Ridge.fit")
     _dal_ready = _patching_status.and_conditions(
@@ -155,15 +155,15 @@ def _fit_ridge(self, X, y, sample_weight=None):
                 f"'{self.solver}' solver is not supported. "
                 "Only 'auto' solver is supported.",
             ),
-            (not sp.issparse(_X), "X is sparse. Sparse input is not supported."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             (
                 self.fit_shape_good_for_daal_,
                 "The shape of X does not satisfy oneDAL requirements: "
                 "number of features > number of samples.",
             ),
             (
-                _X.dtype == np.float64 or _X.dtype == np.float32,
-                f"'{_X.dtype}' X data type is not supported. "
+                X.dtype == np.float64 or X.dtype == np.float32,
+                f"'{X.dtype}' X data type is not supported. "
                 "Only np.float32 and np.float64 are supported.",
             ),
             (sample_weight is None, "Sample weights are not supported."),
@@ -178,34 +178,34 @@ def _fit_ridge(self, X, y, sample_weight=None):
     if not _dal_ready:
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
+        return super(Ridge, self).fit(_X, _y, sample_weight=sample_weight)
     self.n_iter_ = None
-    res = _daal4py_fit(self, _X, _y)
+    res = _daal4py_fit(self, X, y)
     if res is None:
         logging.info(
             "sklearn.linear_model.Ridge.fit: " + get_patch_message("sklearn_after_daal")
         )
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
+        return super(Ridge, self).fit(_X, _y, sample_weight=sample_weight)
     return res
 
 
-def _predict_ridge(self, X):
+def _predict_ridge(self, _X):
     if sklearn_check_version("1.0"):
-        _X = self._validate_data(
-            X,
+        X = self._validate_data(
+            _X,
             accept_sparse=["csr", "csc", "coo"],
             dtype=[np.float64, np.float32],
             reset=False,
             ensure_2d=True,
         )
     else:
-        _X = check_array(
-            X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
+        X = check_array(
+            _X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
         )
     good_shape_for_daal = (
-        True if _X.ndim <= 1 else True if _X.shape[0] >= _X.shape[1] else False
+        True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
     )
 
     _patching_status = PatchingConditionsChain("sklearn.linear_model.Ridge.predict")
@@ -217,15 +217,15 @@ def _predict_ridge(self, X):
                 "Only 'auto' solver is supported.",
             ),
             (hasattr(self, "daal_model_"), "oneDAL model was not trained."),
-            (not sp.issparse(_X), "X is sparse. Sparse input is not supported."),
+            (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
             (
                 good_shape_for_daal,
                 "The shape of X does not satisfy oneDAL requirements: "
                 "number of features > number of samples.",
             ),
             (
-                _X.dtype == np.float64 or _X.dtype == np.float32,
-                f"'{_X.dtype}' X data type is not supported. "
+                X.dtype == np.float64 or X.dtype == np.float32,
+                f"'{X.dtype}' X data type is not supported. "
                 "Only np.float32 and np.float64 are supported.",
             ),
             (
@@ -237,8 +237,8 @@ def _predict_ridge(self, X):
     _patching_status.write_log()
 
     if not _dal_ready:
-        return self._decision_function(X)
-    return _daal4py_predict(self, _X)
+        return self._decision_function(_X)
+    return _daal4py_predict(self, X)
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
