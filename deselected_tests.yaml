@@ -99,8 +99,8 @@ deselected_tests:
 
   # Extra warning from scikit-learn-intelex fails scikit-learn warning check
   # TODO: investigate - is this warning expected?
-  - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-ElasticNet] >=1.1,<1.2
-  - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-Lasso] >=1.1,<1.2
+  #- linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-ElasticNet] >=1.1,<1.2
+  #- linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-Lasso] >=1.1,<1.2
 
   # TODO: investigate copy failure of read-only buffer
   - linear_model/tests/test_coordinate_descent.py::test_read_only_buffer
