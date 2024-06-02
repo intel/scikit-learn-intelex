@@ -19,8 +19,8 @@ import logging
 import os
 import tracemalloc
 import types
-from inspect import isclass
 import warnings
+from inspect import isclass
 
 import numpy as np
 import pandas as pd
