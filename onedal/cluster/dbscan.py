@@ -14,14 +14,14 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 from sklearn.base import ClusterMixin
 from sklearn.utils import check_array
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from onedal.datatypes._data_conversion import get_dtype, make2d
 
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils._array_api import get_namespace
 
 
 class BaseDBSCAN(BaseEstimator, ClusterMixin):
@@ -46,9 +46,9 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         self.p = p
         self.n_jobs = n_jobs
 
-    def _get_onedal_params(self, dtype=np.float32):
+    def _get_onedal_params(self, xp, dtype):
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": "float" if dtype == xp.float32 else "double",
             "method": "by_default",
             "min_observations": int(self.min_samples),
             "epsilon": float(self.eps),
@@ -56,28 +56,30 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
             "result_options": "core_observation_indices|responses",
         }
 
-    def _fit(self, X, y, sample_weight, module, queue):
+    def _fit(self, X, xp, is_array_api_compliant, y, sample_weight, queue):
         policy = self._get_policy(queue, X)
-        X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+        X = check_array(X, accept_sparse="csr", dtype=[xp.float64, xp.float32])
         sample_weight = make2d(sample_weight) if sample_weight is not None else None
         X = make2d(X)
 
-        types = [np.float32, np.float64]
+        types = [xp.float32, xp.float64]
         if get_dtype(X) not in types:
-            X = X.astype(np.float64)
+            X = X.astype(xp.float64)
         X = _convert_to_supported(policy, X)
         dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
-        result = module.compute(policy, params, to_table(X), to_table(sample_weight))
+        params = self._get_onedal_params(xp, dtype)
+        result = self._get_backend("dbscan", "clustering", None).compute(
+            policy, params, to_table(X), to_table(sample_weight)
+        )
 
-        self.labels_ = from_table(result.responses).ravel()
+        self.labels_ = from_table(result.responses).reshape(-1)
         if result.core_observation_indices is not None:
             self.core_sample_indices_ = from_table(
                 result.core_observation_indices
-            ).ravel()
+            ).reshape(-1)
         else:
-            self.core_sample_indices_ = np.array([], dtype=np.intc)
-        self.components_ = np.take(X, self.core_sample_indices_, axis=0)
+            self.core_sample_indices_ = xp.array([], dtype=xp.int32)
+        self.components_ = xp.take(X, self.core_sample_indices_, axis=0)
         self.n_features_in_ = X.shape[1]
         return self
 
@@ -105,6 +107,5 @@ class DBSCAN(BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
-        return super()._fit(
-            X, y, sample_weight, self._get_backend("dbscan", "clustering", None), queue
-        )
+        xp, is_array_api_compliant = get_namespace(X)
+        return super()._fit(X, xp, is_array_api_compliant, y, sample_weight, queue)

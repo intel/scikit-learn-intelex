@@ -42,7 +42,8 @@ if daal_check_version((2024, "P", 100)):
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
-    from sklearnex.utils import get_namespace
+
+    from ..utils import get_namespace
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
@@ -221,7 +222,9 @@ if daal_check_version((2024, "P", 100)):
             )
 
             if method_name == "fit":
-                shape_tuple, _is_shape_compatible = self._get_shape_compatibility(X)
+                shape_tuple, _is_shape_compatible = self._get_shape_compatibility(
+                    X, xp, is_array_api_compliant
+                )
                 is_sparse_X = False
                 if not is_array_api_compliant:
                     # TODO:
@@ -269,7 +272,7 @@ if daal_check_version((2024, "P", 100)):
         def _onedal_gpu_supported(self, method_name, *data):
             return self._onedal_supported(method_name, *data)
 
-        def _get_shape_compatibility(self, X):
+        def _get_shape_compatibility(self, X, xp, is_array_api_compliant):
             _is_shape_compatible = False
             _empty_shape = (0, 0)
             if hasattr(X, "shape"):
@@ -277,9 +280,9 @@ if daal_check_version((2024, "P", 100)):
                 if len(shape_tuple) == 1:
                     shape_tuple = (1, shape_tuple[0])
             elif isinstance(X, list):
-                if np.ndim(X) == 1:
+                if xp.ndim(X) == 1:
                     shape_tuple = (1, len(X))
-                elif np.ndim(X) == 2:
+                elif xp.ndim(X) == 2:
                     shape_tuple = (len(X), len(X[0]))
             else:
                 return _empty_shape, _is_shape_compatible

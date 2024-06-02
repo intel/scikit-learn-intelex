@@ -28,6 +28,7 @@ from onedal.cluster import DBSCAN as onedal_DBSCAN
 
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
+from ..utils import get_namespace
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -85,6 +86,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        xp, is_array_api_compliant = get_namespace(X)
         onedal_params = {
             "eps": self.eps,
             "min_samples": self.min_samples,
@@ -97,7 +99,9 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         }
         self._onedal_estimator = self._onedal_dbscan(**onedal_params)
 
-        self._onedal_estimator.fit(X, y=y, sample_weight=sample_weight, queue=queue)
+        self._onedal_estimator._fit(
+            X, xp, is_array_api_compliant, y, sample_weight, queue=queue
+        )
         self._save_attributes()
 
     def _onedal_supported(self, method_name, *data):
@@ -107,6 +111,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         )
         if method_name == "fit":
             X, y, sample_weight = data
+            xp, is_array_api_compliant = get_namespace(X)
             patching_status.and_conditions(
                 [
                     (

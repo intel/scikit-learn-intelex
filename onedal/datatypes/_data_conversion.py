@@ -16,16 +16,21 @@
 
 import warnings
 
+from daal4py.sklearn._utils import get_dtype
 from daal4py.sklearn._utils import make2d as d4p_make2d
 from onedal import _backend, _is_dpc_backend
 
 from ..utils._array_api import get_namespace
 
 
+# TODO:
+# move to proper module.
+# TODO
+# def make2d(arg, xp=None, is_array_api_compliant=None):
 def make2d(arg):
-    xp, is_array_api_compliant = get_namespace(arg)
-    if is_array_api_compliant:
-        return xp.reshape(arg, (arg.size, 1))
+    # xp, is_array_api_compliant = get_namespace(arg)
+    # if is_array_api_compliant:
+    #     return xp.reshape(arg, (arg.size, 1)) if arg.ndim == 1 else arg
     return d4p_make2d(arg)
 
 
