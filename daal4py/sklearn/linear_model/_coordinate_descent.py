@@ -437,7 +437,7 @@ def _daal4py_predict_lasso(self, X):
 
 def _fit(self, _X, _y, sample_weight=None, check_input=True):
     if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=True)
+        self._check_feature_names(_X, reset=True)
     if sklearn_check_version("1.2"):
         self._validate_params()
     elif sklearn_check_version("1.1"):
