@@ -411,3 +411,14 @@ def _num_samples(x):
         return len(x)
     except TypeError as type_error:
         raise TypeError(message) from type_error
+
+
+def _is_csr(x):
+    """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
+    if x is None:
+        return False
+    is_csr = False
+    type_name = type(x).__name__
+    if type_name == "csr_matrix" or type_name == "csr_array":
+        is_csr = True
+    return is_csr
