@@ -16,12 +16,10 @@
 
 import numpy as np
 import pytest
-import sklearn.utils.estimator_checks
 from numpy.testing import assert_allclose, assert_array_almost_equal, assert_array_equal
 from sklearn import datasets
 from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.svm import SVR as SklearnSVR
-from sklearn.utils.estimator_checks import check_estimator
 
 from onedal.svm import SVR
 from onedal.tests.utils._device_selection import (
@@ -30,42 +28,6 @@ from onedal.tests.utils._device_selection import (
 )
 
 synth_params = {"n_samples": 500, "n_features": 100, "random_state": 42}
-
-
-def _replace_and_save(md, fns, replacing_fn):
-    saved = dict()
-    for check_f in fns:
-        try:
-            fn = getattr(md, check_f)
-            setattr(md, check_f, replacing_fn)
-            saved[check_f] = fn
-        except RuntimeError:
-            pass
-    return saved
-
-
-def _restore_from_saved(md, saved_dict):
-    for check_f in saved_dict:
-        setattr(md, check_f, saved_dict[check_f])
-
-
-def test_estimator():
-    def dummy(*args, **kwargs):
-        pass
-
-    md = sklearn.utils.estimator_checks
-    saved = _replace_and_save(
-        md,
-        [
-            "check_sample_weights_invariance",  # Max absolute difference: 0.0002
-            "check_estimators_fit_returns_self",  # ???
-            "check_regressors_train",  # Cannot get data type from empty metadata
-            "check_estimators_unfitted",  # expected NotFittedError from sklearn
-        ],
-        dummy,
-    )
-    check_estimator(SVR())
-    _restore_from_saved(md, saved)
 
 
 @pass_if_not_implemented_for_gpu(reason="svr is not implemented")

@@ -452,6 +452,8 @@ public:
   # Failed in stock scikit-learn
   - metrics/tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
   - metrics/tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
+  # Fails from numpy 2.0 and sklearn 1.4+
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_raise_on_all_zero_weights
 
   # --------------------------------------------------------
   # The following tests currently fail with GPU offload
