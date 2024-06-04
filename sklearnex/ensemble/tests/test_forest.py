@@ -85,6 +85,7 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
     assert "sklearnex" in rf.__module__
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
+
 # TODO: fix ET regressor predict for the GPU sycl_queue.
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
