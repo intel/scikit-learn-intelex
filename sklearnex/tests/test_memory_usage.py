@@ -44,7 +44,7 @@ if _is_dpc_backend:
     from onedal import _backend
 
 
-CPU_BANNED_LIST = (
+CPU_SKIP_LIST = (
     "TSNE",  # too slow for using in testing on common data size
     "config_context",  # does not malloc
     "get_config",  # does not malloc
@@ -57,7 +57,7 @@ CPU_BANNED_LIST = (
     "LogisticRegression(solver='newton-cg')",  # memory leak fortran (1000, 100)
 )
 
-GPU_BANNED_LIST = (
+GPU_SKIP_LIST = (
     "TSNE",  # too slow for using in testing on common data size
     "RandomForestRegressor",  # too slow for using in testing on common data size
     "KMeans",  # does not support GPU offloading
@@ -104,13 +104,13 @@ FUNCTIONS = gen_functions(PATCHED_FUNCTIONS)
 CPU_ESTIMATORS = {
     k: v
     for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES, **FUNCTIONS}.items()
-    if not k in CPU_BANNED_LIST
+    if not k in CPU_SKIP_LIST
 }
 
 GPU_ESTIMATORS = {
     k: v
     for k, v in {**PATCHED_MODELS, **SPECIAL_INSTANCES}.items()
-    if not k in GPU_BANNED_LIST
+    if not k in GPU_SKIP_LIST
 }
 
 data_shapes = [
@@ -245,7 +245,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     mem_diff = mem_after - mem_before
 
     # GPU offloading with SYCL contains a program/kernel cache which should
-    # be controllable via a KernelPorgramCache object in the SYCL context.
+    # be controllable via a KernelProgramCache object in the SYCL context.
     # The programs and kernels are stored on the GPU, but cannot be cleared
     # as this class is not available for access in all oneDAL DPC++ runtimes.
     # Therefore, until this is implemented this test must be skipped for gpu
