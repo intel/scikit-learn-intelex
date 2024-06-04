@@ -146,14 +146,18 @@ def test_input_format_f_contiguous_pandas(queue, dtype):
 
 
 def _test_conversion_to_table(dtype):
-    x = np.random.randint(0, 10, (15, 3), dtype=dtype)
+    np.random.seed()
+    if dtype in [np.int32, np.int64]:
+        x = np.random.randint(0, 10, (15, 3), dtype=dtype)
+    else:
+        x = np.random.uniform(-2, 2, (18, 6)).astype(dtype)
     x_table = to_table(x)
     x2 = from_table(x_table)
     assert x.dtype == x2.dtype
     assert np.array_equal(x, x2)
 
 
-@pytest.mark.parametrize("dtype", [np.int32, np.int64])
+@pytest.mark.parametrize("dtype", [np.int32, np.int64, np.float32, np.float64])
 def test_conversion_to_table(dtype):
     _test_conversion_to_table(dtype)
 
