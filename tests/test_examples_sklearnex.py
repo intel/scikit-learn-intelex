@@ -46,7 +46,6 @@ def test_generator(file):
             ["python", os.path.join(examples_path, file)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            check=True,
         )  # nosec
         exit_code = process.returncode
 
