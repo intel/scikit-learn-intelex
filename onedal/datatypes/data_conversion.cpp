@@ -154,8 +154,8 @@ dal::table convert_to_table(PyObject *obj) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
         if (array_is_behaved(ary) || array_is_behaved_F(ary)) {
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ary);
-            SET_NPY_FEATURE(PyArray_DESCR(ary)->type,
-                            PyArray_DESCR(ary)->elsize,
+            SET_NPY_FEATURE(array_type(ary),
+                            array_type_sizeof(ary),
                             MAKE_HOMOGEN_TABLE,
                             throw std::invalid_argument("Found unsupported array type"));
 #undef MAKE_HOMOGEN_TABLE
