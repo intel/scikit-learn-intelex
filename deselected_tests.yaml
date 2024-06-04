@@ -728,6 +728,7 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_regressor_data_not_an_array]
   - ensemble/tests/test_forest.py::test_max_samples_boundary_classifiers[ExtraTreesClassifier]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifier_data_not_an_array]
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train]
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_fit_idempotent]
