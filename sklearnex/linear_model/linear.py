@@ -208,7 +208,6 @@ class LinearRegression(sklearn_LinearRegression):
         return patching_status
 
     def _onedal_predict_supported(self, method_name, *data):
-        assert method_name == "predict"
         assert len(data) == 1
 
         class_name = self.__class__.__name__
