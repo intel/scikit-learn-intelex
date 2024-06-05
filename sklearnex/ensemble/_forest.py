@@ -1037,7 +1037,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-        elif method_name == "predict":
+        elif method_name in ["predict", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
@@ -1091,7 +1091,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-        elif method_name == "predict":
+        elif method_name in ["predict", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
