@@ -82,7 +82,7 @@ if daal_check_version((2024, "P", 1)):
             random_state=None,
             solver="lbfgs",
             max_iter=100,
-            multi_class="auto",
+            multi_class="deprecated" if sklearn_check_version("1.5") else "auto",
             verbose=0,
             warm_start=False,
             n_jobs=None,
