@@ -32,7 +32,7 @@ struct method2t {
 
     template <typename Float>
     auto operator()(const py::dict& params) {
-        using namespace dbscan;
+        using namespace louvain;
 
         const auto method = params["method"].cast<std::string>();
 
@@ -47,7 +47,7 @@ struct method2t {
 struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const pybind11::dict& params) {
-        using namespace dal::dbscan;
+        using namespace dal::preview::louvain;
 
         const auto min_observations = params["accuracy_threshold"].cast<std::double>();
         const auto resolution = params["resolution"].cast<double>();
@@ -60,27 +60,26 @@ struct params2desc {
     }
 };
 
-template <typename Policy, typename Task>
-void init_compute_ops(py::module_& m) {
-    m.def("vertex_partioning",
-          [](const Policy& policy,
-             const py::dict& params,
+template <typename Task>
+void init_vertex_partitioning_ops(py::module_& m) {
+    m.def("vertex_partitioning",
+          [](const py::dict& params,
              const table& data,
              const table& weights) {
-              using namespace dbscan;
-              using input_t = compute_input<Task>;
+              using namespace louvain;
+              using input_t = vertex_paritioning_input<Task>;
 
-              compute_ops ops(policy, input_t{ data, weights }, params2desc{});
+              vertex_paritioning_ops ops(input_t{ data, weights }, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }
 
 template <typename Task>
-void init_compute_result(py::module_& m) {
-    using namespace dbscan;
-    using result_t = compute_result<Task>;
+void init_vertex_partitioning_result(py::module_& m) {
+    using namespace louvain;
+    using result_t = vertex_partitioning_result<Task>;
 
-    py::class_<result_t>(m, "compute_result")
+    py::class_<result_t>(m, "vertex_paritioning_result")
         .def(py::init())
         .DEF_ONEDAL_PY_PROPERTY(core_observations, result_t)
         .DEF_ONEDAL_PY_PROPERTY(responses, result_t)
@@ -90,27 +89,23 @@ void init_compute_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(cluster_count, result_t);
 }
 
-ONEDAL_PY_TYPE2STR(dbscan::task::clustering, "clustering");
+ONEDAL_PY_TYPE2STR(preview::louvain::task::clustering, "clustering");
 
-ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_ops);
-ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_vertex_partitioning_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_vertex_partitioning_result);
 
 // TODO:
 // change the name of modue for all algos -> cluster.
-ONEDAL_PY_INIT_MODULE(dbscan) {
+ONEDAL_PY_INIT_MODULE(louvain) {
     using namespace dal::detail;
-    using namespace dbscan;
-    using namespace dal::dbscan;
+    using namespace louvain;
+    using namespace dal::preview::louvain;
 
     using task_list = types<task::clustering>;
-    auto sub = m.def_submodule("dbscan");
+    auto sub = m.def_submodule("louvain");
 
-#ifdef ONEDAL_DATA_PARALLEL_SPMD
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task_list);
-#else // ONEDAL_DATA_PARALLEL_SPMD
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
-    ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
-#endif // ONEDAL_DATA_PARALLEL_SPMD
+    ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_ops, sub, task_list);
+    ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_result, sub, task_list);
 
 }
 
