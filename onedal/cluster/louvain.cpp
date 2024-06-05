@@ -49,27 +49,34 @@ struct params2desc {
     auto operator()(const pybind11::dict& params) {
         using namespace dal::preview::louvain;
 
-        const auto min_observations = params["accuracy_threshold"].cast<std::double>();
-        const auto resolution = params["resolution"].cast<double>();
-        const auto observation_count = params["observation_count"].cast<std::int64_t>();
-        auto desc = descriptor<Float, Method, Task>(epsilon, min_observations);
-        desc.set_mem_save_mode(params["mem_save_mode"].cast<std::int64_t>());
-        desc.set_result_options(get_onedal_result_options(params));
+        auto desc = descriptor<Float, Method, Task>();
+        desc.set_accuracy_threshold(params["accuracy_threshold"].cast<std::double>());
+        desc.set_resolution(params["resolution"].cast<std::double>());
+        desc.set_max_iteration_count(params["max_iteration_count"].cast<std::int64_t>());
 
         return desc;
     }
 };
 
-template <typename Task>
+template <typename Graph, typename Task>
 void init_vertex_partitioning_ops(py::module_& m) {
     m.def("vertex_partitioning",
           [](const py::dict& params,
-             const table& data,
-             const table& weights) {
+             const Graph& data,
+             const table& initial_partition) {
               using namespace louvain;
-              using input_t = vertex_paritioning_input<Task>;
+              using input_t = vertex_paritioning_input<Graph, Task>;
 
-              vertex_paritioning_ops ops(input_t{ data, weights }, params2desc{});
+              vertex_paritioning_ops ops(input_t{ data, initial_partition}, params2desc{});
+              return fptype2t{ method2t{ Task{}, ops } }(params);
+          });
+    m.def("vertex_partitioning",
+          [](const py::dict& params,
+             const Graph& data) {
+              using namespace louvain;
+              using input_t = vertex_paritioning_input<Graph, Task>;
+
+              vertex_paritioning_ops ops(input_t{ data}, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }
@@ -81,27 +88,22 @@ void init_vertex_partitioning_result(py::module_& m) {
 
     py::class_<result_t>(m, "vertex_paritioning_result")
         .def(py::init())
-        .DEF_ONEDAL_PY_PROPERTY(core_observations, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(responses, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(core_flags, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(core_observation_indices, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(result_options, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(cluster_count, result_t);
+        .DEF_ONEDAL_PY_PROPERTY(labels, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(modularity, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(community_count, result_t);
 }
 
-ONEDAL_PY_TYPE2STR(preview::louvain::task::clustering, "clustering");
+ONEDAL_PY_TYPE2STR(preview::louvain::task::vertex_partitioning, "vertex_partitioning");
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_vertex_partitioning_ops);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_vertex_partitioning_result);
 
-// TODO:
-// change the name of modue for all algos -> cluster.
 ONEDAL_PY_INIT_MODULE(louvain) {
     using namespace dal::detail;
     using namespace louvain;
     using namespace dal::preview::louvain;
 
-    using task_list = types<task::clustering>;
+    using task_list = types<task::vertex_partitioning>;
     auto sub = m.def_submodule("louvain");
 
     ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_ops, sub, task_list);
