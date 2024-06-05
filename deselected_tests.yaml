@@ -29,11 +29,6 @@ deselected_tests:
   - neighbors/tests/test_neighbors.py::test_kneighbors_brute_backend[float64-kulsinski] <1.3
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend[kulsinski] <1.3
 
-  # sklearnex PCA always chooses "covariance_eigh" solver instead of "full" when solver="auto"
-  # resulting in solver assignment check failure for sklearn version >= 1.5
-  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[1000-500-400-full] >=1.5
-  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[1000-500-0.5-full] >=1.5
-
   # test for KMeans FutureWarning is not removed from sklearn tests suit yet
   - cluster/tests/test_k_means.py::test_change_n_init_future_warning[KMeans-10] ==1.4.dev0
 
