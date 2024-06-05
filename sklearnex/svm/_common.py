@@ -79,7 +79,7 @@ class BaseSVM(BaseEstimator, ABC):
             )
             return patching_status
         inference_methods = (
-            ["predict"]
+            ["predict", "score"]
             if class_name.endswith("R")
             else ["predict", "predict_proba", "decision_function", "score"]
         )
