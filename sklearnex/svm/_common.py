@@ -328,4 +328,3 @@ class BaseSVR(BaseSVM):
         return r2_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
-

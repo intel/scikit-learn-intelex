@@ -136,7 +136,7 @@ class LinearRegression(sklearn_LinearRegression):
             X,
             y,
             sample_weight=sample_weight,
-        )    
+        )
 
     def _test_type_and_finiteness(self, X_in):
         X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)

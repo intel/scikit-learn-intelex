@@ -117,7 +117,7 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
             },
             X,
         )
-            
+
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
         check_is_fitted(self)
@@ -206,7 +206,7 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
         return r2_score(
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
-    
+
     def _save_attributes(self):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_

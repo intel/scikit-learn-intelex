@@ -449,7 +449,5 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             },
             X,
             y,
-            sample_weight=sample_weight
+            sample_weight=sample_weight,
         )
-
-
