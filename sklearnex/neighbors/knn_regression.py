@@ -18,6 +18,7 @@ from sklearn.neighbors._regression import (
     KNeighborsRegressor as sklearn_KNeighborsRegressor,
 )
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
+from sklearn.metrics import r2_score
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -116,6 +117,23 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
             },
             X,
         )
+            
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_KNeighborsRegressor.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
+        )
 
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
@@ -184,6 +202,11 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
             X, n_neighbors, return_distance, queue=queue
         )
 
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
+    
     def _save_attributes(self):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.n_samples_fit_ = self._onedal_estimator.n_samples_fit_
@@ -196,3 +219,4 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
     predict.__doc__ = sklearn_KNeighborsRegressor.predict.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsRegressor.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
+    score.__doc__ = sklearn_NearestNeighbors.score.__doc__
