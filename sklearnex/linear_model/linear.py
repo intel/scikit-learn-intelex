@@ -19,6 +19,7 @@ from abc import ABC
 
 import numpy as np
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics import r2_score
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -123,6 +124,20 @@ class LinearRegression(sklearn_LinearRegression):
             X,
         )
 
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_LinearRegression.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
+        )    
+
     def _test_type_and_finiteness(self, X_in):
         X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
 
@@ -224,7 +239,7 @@ class LinearRegression(sklearn_LinearRegression):
     def _onedal_supported(self, method_name, *data):
         if method_name == "fit":
             return self._onedal_fit_supported(method_name, *data)
-        if method_name == "predict":
+        if method_name in ["predict", "score"]:
             return self._onedal_predict_supported(method_name, *data)
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
@@ -286,6 +301,11 @@ class LinearRegression(sklearn_LinearRegression):
         res = self._onedal_estimator.predict(X, queue=queue)
         return res
 
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
+
     def get_coef_(self):
         return self.coef_
 
@@ -314,3 +334,4 @@ class LinearRegression(sklearn_LinearRegression):
 
     fit.__doc__ = sklearn_LinearRegression.fit.__doc__
     predict.__doc__ = sklearn_LinearRegression.predict.__doc__
+    score.__doc__ = sklearn_LinearRegression.score.__doc__
