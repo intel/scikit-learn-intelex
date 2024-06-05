@@ -291,22 +291,19 @@ struct finalize_train_ops_with_hyperparams {
     Hyperparams hyperparams;
 };
 
-template <typename Descriptor, typename Graph, typename Tag>
-struct vertex_partioning_ops {
+template <typename Input, typename Ops>
+struct vertex_partitioning_ops {
     using Task = typename Input::task_t;
-    using graph_t = dal::preview::undirected_adjacency_vector_graph<vertex_type, weight_type>;
-    vertex_partioning_ops(const Policy& policy, const Input& input, const Ops& ops)
-        : policy(policy),
-          input(input),
+    vertex_partioning_ops(const Input& input, const Ops& ops)
+        : input(input),
           ops(ops) {}
 
     template <typename Float, typename Method, typename... Args>
     auto operator()(const pybind11::dict& params) {
         auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
-        return dal::preview::vertex_partitioning(policy, desc, input);
+        return dal::preview::vertex_partitioning(desc, input);
         }
 
-    Policy policy;
     Input input;
     Ops ops;
 };
