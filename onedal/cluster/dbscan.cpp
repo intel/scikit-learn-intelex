@@ -119,9 +119,12 @@ void init_compute_result(py::module_& m) {
 
     py::class_<result_t>(m, "compute_result")
         .def(py::init())
-        .DEF_ONEDAL_PY_PROPERTY(labels, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(modularity, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(community_count, result_t);
+        .DEF_ONEDAL_PY_PROPERTY(core_observations, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(responses, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(core_flags, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(core_observation_indices, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(result_options, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(cluster_count, result_t);
 }
 
 ONEDAL_PY_TYPE2STR(dbscan::task::clustering, "clustering");

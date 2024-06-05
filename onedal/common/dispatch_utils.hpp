@@ -27,6 +27,7 @@
 #include "oneapi/dal/finalize_compute.hpp"
 #include "oneapi/dal/partial_train.hpp"
 #include "oneapi/dal/finalize_train.hpp"
+#include "oneapi/dal/vertex_partitioning.hpp"
 
 #define ONEDAL_PARAM_DISPATCH_VALUE(value, value_case, ops, ...) \
     if (value == value_case) {                                   \
@@ -294,7 +295,7 @@ struct finalize_train_ops_with_hyperparams {
 template <typename Input, typename Ops>
 struct vertex_partitioning_ops {
     using Task = typename Input::task_t;
-    vertex_partioning_ops(const Input& input, const Ops& ops)
+    vertex_partitioning_ops(const Input& input, const Ops& ops)
         : input(input),
           ops(ops) {}
 
