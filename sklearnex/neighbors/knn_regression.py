@@ -219,4 +219,4 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
     predict.__doc__ = sklearn_KNeighborsRegressor.predict.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsRegressor.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
-    score.__doc__ = sklearn_NearestNeighbors.score.__doc__
+    score.__doc__ = sklearn_KNeighborsRegressor.score.__doc__
