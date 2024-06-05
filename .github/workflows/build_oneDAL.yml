@@ -50,7 +50,7 @@ jobs:
       - name: Checkout oneDAL
         uses: actions/checkout@v4
         with:
-          repository: icfaust/oneDAL
+          repository: oneapi-src/oneDAL
       - name: Install DPC++
         run: |
           $env:PATH="C:\msys64\usr\bin;$env:PATH"
@@ -87,11 +87,6 @@ jobs:
           call .\dpcpp\compiler\latest\env\vars.bat
           REN .\__release_win_vc .\__release_win_vc
           call .\.ci\scripts\build.bat onedal_dpc vc avx2
-      - name: Archive compiler
-        uses: actions/upload-artifact@v4
-        with:
-          name: dpcpp
-          path: .\dpcpp
       - name: Archive build
         uses: actions/upload-artifact@v4
         with:
