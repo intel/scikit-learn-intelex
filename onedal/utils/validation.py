@@ -20,6 +20,14 @@ from numbers import Integral
 
 import numpy as np
 from scipy import sparse as sp
+
+if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
+    # numpy_version >= 2.0
+    from numpy.exceptions import VisibleDeprecationWarning
+else:
+    # numpy_version < 2.0
+    from numpy import VisibleDeprecationWarning
+
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
@@ -233,10 +241,10 @@ def _type_of_target(y):
     # DeprecationWarning will be replaced by ValueError, see NEP 34
     # https://numpy.org/neps/nep-0034-infer-dtype-is-object.html
     with warnings.catch_warnings():
-        warnings.simplefilter("error", np.VisibleDeprecationWarning)
+        warnings.simplefilter("error", VisibleDeprecationWarning)
         try:
             y = np.asarray(y)
-        except np.VisibleDeprecationWarning:
+        except VisibleDeprecationWarning:
             # dtype=object should be provided explicitly for ragged arrays,
             # see NEP 34
             y = np.asarray(y, dtype=object)
@@ -290,10 +298,10 @@ def _is_multilabel(y):
         # DeprecationWarning will be replaced by ValueError, see NEP 34
         # https://numpy.org/neps/nep-0034-infer-dtype-is-object.html
         with warnings.catch_warnings():
-            warnings.simplefilter("error", np.VisibleDeprecationWarning)
+            warnings.simplefilter("error", VisibleDeprecationWarning)
             try:
                 y = np.asarray(y)
-            except np.VisibleDeprecationWarning:
+            except VisibleDeprecationWarning:
                 # dtype=object should be provided explicitly for ragged arrays,
                 # see NEP 34
                 y = np.array(y, dtype=object)
