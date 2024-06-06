@@ -20,7 +20,7 @@ import pytest
 
 
 def get_queues(filter_="cpu,gpu"):
-    queues = []
+    queues = [None]
 
     try:
         import dpctl
