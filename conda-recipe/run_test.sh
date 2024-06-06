@@ -58,7 +58,7 @@ pytest --verbose --pyargs sklearnex
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs ${daal4py_dir}/onedal
+pytest -rs --verbose --pyargs ${daal4py_dir}/onedal
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
