@@ -17,32 +17,18 @@
 
 def get_patch_str(name=None, verbose=True):
     return f"""try:
-    # TEMP. FIX: sklearnex.patch_sklearn imports sklearn beforehand
-    # when it didn't initialized _threadpool_controller required for
-    # pairwise distances dispatching during imports.
-    # Manually setting and deleting _threadpool_controller during patch fixes it.
-    import sklearn
-    from threadpoolctl import ThreadpoolController
-    sklearn._threadpool_controller = ThreadpoolController()
     from sklearnex import patch_sklearn
     patch_sklearn(name={str(name)}, verbose={str(verbose)})
-    del patch_sklearn, sklearn._threadpool_controller
+    del patch_sklearn
 except ImportError:
     pass"""
 
 
 def get_patch_str_re():
     return r"""\ntry:
-    \# TEMP. FIX: sklearnex.patch_sklearn imports sklearn beforehand
-    \# when it didn't initialized _threadpool_controller required for
-    \# pairwise distances dispatching during imports.
-    \# Manually setting and deleting _threadpool_controller during patch fixes it.
-    import sklearn
-    from threadpoolctl import ThreadpoolController
-    sklearn._threadpool_controller = ThreadpoolController\(\)
     from sklearnex import patch_sklearn
     patch_sklearn\(name=.*, verbose=.*\)
-    del patch_sklearn, sklearn._threadpool_controller
+    del patch_sklearn
 except ImportError:
     pass\n"""
 
