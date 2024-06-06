@@ -88,11 +88,4 @@ def test_sklearnex_binary_classification(dataframe, queue):
         assert hasattr(logreg, "_onedal_estimator")
 
     y_pred = _as_numpy(logreg.predict(X_test))
-
-    # TODO: check why predictions all the same on windows GPU
-    if queue and queue.sycl_device.is_gpu:
-        import sys
-
-        if sys.platform in ["win32", "cygwin"]:
-            pytest.skip("LogReg GPU results instability on windows")
     assert accuracy_score(y_test, y_pred) > 0.95
