@@ -48,7 +48,7 @@ def test_with_numpy_data(queue):
 @pytest.mark.parametrize("memtype", get_memory_usm())
 def test_with_usm_ndarray_data(queue, memtype):
     if queue is None:
-        pytest.skip("queue=None not supported for usm_ndarray")
+        pytest.skip("dpctl Memory object with queue=None uses cached default (gpu if available)")
 
     from dpctl.tensor import usm_ndarray
 
