@@ -49,7 +49,7 @@ def test_with_numpy_data(queue):
 def test_with_usm_ndarray_data(queue, memtype):
     if queue is None:
         pytest.skip("queue=None not supported for usm_ndarray")
-    
+
     from dpctl.tensor import usm_ndarray
 
     device_name = device_type_to_str(queue)
