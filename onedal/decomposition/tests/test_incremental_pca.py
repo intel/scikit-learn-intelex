@@ -127,7 +127,7 @@ def test_on_random_data(
 
     incpca.finalize_fit()
 
-    transformed_data = incpca.predict(X)
+    transformed_data = incpca.predict(X, queue=queue)
     tol = 3e-3 if transformed_data.dtype == np.float32 else 2e-6
 
     n_components = incpca.n_components_
