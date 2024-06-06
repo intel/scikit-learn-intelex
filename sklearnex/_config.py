@@ -50,6 +50,8 @@ def get_config():
     return {**sklearn, **sklearnex}
 
 
+# TODO:
+# add case when sklearn version doesn't support `array_api_dispatch`.
 def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_configs):
     """Set global configuration
     Parameters
