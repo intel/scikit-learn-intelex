@@ -74,7 +74,7 @@ jobs:
       - name: Make daal
         shell: cmd
         run: |
-          call .\dpcpp\compiler\latest\env\vars.bat
+          # call .\dpcpp\compiler\latest\env\vars.bat
           call .\.ci\scripts\build.bat daal vc avx2
       - name: Make onedal
         shell: cmd
@@ -85,7 +85,6 @@ jobs:
         shell: cmd
         run: |
           call .\dpcpp\compiler\latest\env\vars.bat
-          REN .\__release_win_vc .\__release_win_vc
           call .\.ci\scripts\build.bat onedal_dpc vc avx2
       - name: Archive build
         uses: actions/upload-artifact@v4
