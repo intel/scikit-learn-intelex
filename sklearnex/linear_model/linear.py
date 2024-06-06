@@ -213,14 +213,14 @@ class LinearRegression(sklearn_LinearRegression):
             f"sklearn.linear_model.{class_name}.predict"
         )
 
-        n_samples = _num_samples(*data)
+        n_samples = _num_samples(data[0])
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
         )
         dal_ready = patching_status.and_conditions(
             [
                 (n_samples > 0, "Number of samples is less than 1."),
-                (not issparse(*data), "Sparse input is not supported."),
+                (not issparse(data[0]), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
             ]
         )
@@ -228,7 +228,7 @@ class LinearRegression(sklearn_LinearRegression):
             return patching_status
 
         patching_status.and_condition(
-            self._test_type_and_finiteness(*data), "Input X is not supported."
+            self._test_type_and_finiteness(data[0]), "Input X is not supported."
         )
 
         return patching_status
