@@ -150,7 +150,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
     def _onedal_partial_fit(self, X, y, check_input=True, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
-        
+
         if check_input:
             if sklearn_check_version("1.2"):
                 self._validate_params()
@@ -326,7 +326,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             },
             X,
             y,
-            check_input=check_input
+            check_input=check_input,
         )
         return self
 
