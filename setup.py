@@ -143,7 +143,6 @@ def get_sdl_cflags():
             "-Wformat-security",
             "-fno-strict-overflow",
             "-fno-delete-null-pointer-checks",
-	    "-ftemplate-backtrace-limit=0",
         ]
     if IS_WIN:
         return DIST_CFLAGS + ["-GS"]
