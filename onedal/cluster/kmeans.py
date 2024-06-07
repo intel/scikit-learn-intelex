@@ -139,11 +139,11 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             self._n_init = 1
         assert self.algorithm == "lloyd"
 
-    def _get_onedal_params(self, X_table, dtype=np.float32, result_options=None):
+    def _get_onedal_params(self, X_loc, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": "lloyd_csr" if sp.issparse(X_table) else "by_default",
+            "method": "lloyd_csr" if sp.issparse(X_loc) else "by_default",
             "seed": -1,
             "max_iteration_count": self.max_iter,
             "cluster_count": self.n_clusters,
@@ -166,14 +166,23 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         return (params, X_table, dtype)
 
     def _init_centroids_custom(
-        self, X_table, init, random_seed, policy, is_sparse, dtype=np.float32, n_centroids = None
+        self,
+        X_table,
+        init,
+        random_seed,
+        policy,
+        is_sparse,
+        dtype=np.float32,
+        n_centroids=None,
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
 
         if isinstance(init, str) and init == "k-means++":
             if not is_sparse:
                 alg = self._get_kmeans_init(
-                    cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_dense"
+                    cluster_count=n_clusters,
+                    seed=random_seed,
+                    algorithm="plus_plus_dense",
                 )
             else:
                 alg = self._get_kmeans_init(
@@ -191,7 +200,10 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 )
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif _is_arraylike_not_scalar(init):
-            centers = np.asarray(init)
+            if sp.issparse(init):
+                centers = init.toarray()
+            else:
+                centers = np.asarray(init)
             assert centers.shape[0] == n_clusters
             assert centers.shape[1] == X_table.column_count
             centers = _convert_to_supported(policy, init)
@@ -200,7 +212,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             raise TypeError("Unsupported type of the `init` value")
 
         return centers_table
-
 
     def _init_centroids_generic(self, X, init, random_state, policy, dtype=np.float32):
         n_samples = X.shape[0]
@@ -276,12 +287,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             )
             self._validate_center_shape(X, init)
 
-        is_sparse = sp.issparse(X)
-        use_custom_init = (
-            daal_check_version((2023, "P", 200))
-            and not callable(self.init)
-        )
+        use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
 
+        is_sparse = sp.issparse(X)
         for _ in range(self._n_init):
             if use_custom_init:
                 # random_seed = random_state.tomaxint()

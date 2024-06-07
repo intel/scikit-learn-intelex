@@ -49,13 +49,9 @@ template <typename Float, typename Method, typename Task>
 struct descriptor_creator {};
 
 template <typename Float, typename Method>
-struct descriptor_creator<Float,
-                          Method,
-                          dal::kmeans::task::clustering > {
+struct descriptor_creator<Float, Method, dal::kmeans::task::clustering> {
     static auto get() {
-        return dal::kmeans::descriptor<Float,
-                                  Method,
-                                  dal::kmeans::task::clustering>{};
+        return dal::kmeans::descriptor<Float, Method, dal::kmeans::task::clustering>{};
     }
 };
 
@@ -66,12 +62,12 @@ struct params2desc {
 
         auto desc = descriptor_creator<Float, Method, Task>::get();
 
-        desc.set_cluster_count( params["cluster_count"].cast<std::int64_t>() );
-        desc.set_accuracy_threshold( params["accuracy_threshold"].cast<Float>() );
-        desc.set_max_iteration_count( params["max_iteration_count"].cast<std::int64_t>() );
+        desc.set_cluster_count(params["cluster_count"].cast<std::int64_t>());
+        desc.set_accuracy_threshold(params["accuracy_threshold"].cast<Float>());
+        desc.set_max_iteration_count(params["max_iteration_count"].cast<std::int64_t>());
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240200
         auto result_options = params["result_options"].cast<std::string>();
-        if (result_options == "compute_assignments"){
+        if (result_options == "compute_assignments") {
             desc.set_result_options(result_options::compute_assignments);
         }
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240200
@@ -179,10 +175,10 @@ ONEDAL_PY_INIT_MODULE(kmeans) {
     auto sub = m.def_submodule("kmeans");
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-        ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
-        ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
-    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
