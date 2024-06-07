@@ -818,9 +818,9 @@ def daal4py_predict(self, X, resultsToEvaluate):
                         self.solver,
                         self.classes_.size,
                     )
-                    != "ovr"
+                    != "ovr",
                     f"selected multiclass option is not supported for n_classes > 2.",
-                )
+                ),
             ],
         )
 
