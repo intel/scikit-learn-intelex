@@ -20,8 +20,6 @@ from abc import ABC
 import numpy as np
 from scipy import sparse as sp
 
-from daal4py import engines_mt19937
-from daal4py import kmeans_init as daal4py_kmeans_init
 from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
 from onedal import _backend
 
@@ -167,20 +165,30 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         return (params, X_table, dtype)
 
-    def _init_centroids_custom_dense(
-        self, X_table, init, random_seed, policy, dtype=np.float32, n_centroids=None
+    def _init_centroids_custom(
+        self, X_table, init, random_seed, policy, is_sparse, dtype=np.float32, n_centroids = None
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
 
         if isinstance(init, str) and init == "k-means++":
-            alg = self._get_kmeans_init(
-                cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_dense"
-            )
+            if not is_sparse:
+                alg = self._get_kmeans_init(
+                    cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_dense"
+                )
+            else:
+                alg = self._get_kmeans_init(
+                    cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_csr"
+                )
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif isinstance(init, str) and init == "random":
-            alg = self._get_kmeans_init(
-                cluster_count=n_clusters, seed=random_seed, algorithm="random_dense"
-            )
+            if not is_sparse:
+                alg = self._get_kmeans_init(
+                    cluster_count=n_clusters, seed=random_seed, algorithm="random_dense"
+                )
+            else:
+                alg = self._get_kmeans_init(
+                    cluster_count=n_clusters, seed=random_seed, algorithm="random_csr"
+                )
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif _is_arraylike_not_scalar(init):
             centers = np.asarray(init)
@@ -193,44 +201,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         return centers_table
 
-    # TODO: remove when oneDAL KMeansInit has sparsity support
-    def _init_centroids_custom_sparse(
-        self, X, init, random_seed, policy, dtype=np.float32, n_centroids=None
-    ):
-        n_clusters = self.n_clusters if n_centroids is None else n_centroids
-        X_fptype = parse_dtype(dtype)
-        daal_engine = engines_mt19937(
-            fptype=X_fptype, method="defaultDense", seed=random_seed
-        )
-        if isinstance(init, str) and init == "k-means++":
-            _n_local_trials = 2 + int(np.log(n_clusters))
-            kmeans_init_res = daal4py_kmeans_init(
-                n_clusters,
-                fptype=X_fptype,
-                nTrials=_n_local_trials,
-                method="plusPlusCSR",
-                engine=daal_engine,
-            ).compute(X)
-            centers = _convert_to_supported(policy, kmeans_init_res.centroids)
-            centers_table = to_table(centers)
-        elif isinstance(init, str) and init == "random":
-            kmeans_init_res = daal4py_kmeans_init(
-                n_clusters,
-                fptype=X_fptype,
-                method="randomCSR",
-                engine=daal_engine,
-            ).compute(X)
-            centers = _convert_to_supported(policy, kmeans_init_res.centroids)
-            centers_table = to_table(centers)
-        elif _is_arraylike_not_scalar(init):
-            assert init.shape[0] == n_clusters
-            assert init.shape[1] == X.shape[1]
-            centers = _convert_to_supported(policy, init)
-            centers_table = to_table(centers)
-        else:
-            raise TypeError("Unsupported type of the `init` value")
-
-        return centers_table
 
     def _init_centroids_generic(self, X, init, random_state, policy, dtype=np.float32):
         n_samples = X.shape[0]
@@ -307,26 +277,17 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             self._validate_center_shape(X, init)
 
         is_sparse = sp.issparse(X)
-        use_custom_dense_init = (
+        use_custom_init = (
             daal_check_version((2023, "P", 200))
             and not callable(self.init)
-            and not is_sparse
-        )
-        use_custom_sparse_init = (
-            daal_check_version((2023, "P", 200)) and not callable(self.init) and is_sparse
         )
 
         for _ in range(self._n_init):
-            if use_custom_dense_init:
+            if use_custom_init:
                 # random_seed = random_state.tomaxint()
                 random_seed = random_state.randint(np.iinfo("i").max)
-                centroids_table = self._init_centroids_custom_dense(
-                    X_table, init, random_seed, policy, dtype=dtype
-                )
-            elif use_custom_sparse_init:
-                random_seed = random_state.randint(np.iinfo("i").max)
-                centroids_table = self._init_centroids_custom_sparse(
-                    X, init, random_seed, policy, dtype=dtype
+                centroids_table = self._init_centroids_custom(
+                    X_table, init, random_seed, policy, is_sparse, dtype=dtype
                 )
             else:
                 centroids_table = self._init_centroids_generic(
