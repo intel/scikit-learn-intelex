@@ -75,7 +75,7 @@ def build_cpp(
             f"/OUT:{targetprefix}{targetname}{targetsuffix}",
         ]
     else:
-        eca += ["-fPIC"]
+        eca += ["-fPIC","-ftemplate-backtrace-limit=0"]
         ela += ["-shared"]
         lib_prefix = "-l"
         lib_suffix = ""

@@ -20,8 +20,6 @@
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
 
-#include <regex>
-
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
@@ -58,27 +56,23 @@ struct params2desc {
     }
 };
 
-template <typename Float>
-using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
 
-
-template <typename Task>
+template <typename Task, typename Graph>
 void init_vertex_partitioning_ops(py::module_& m) {
     m.def("vertex_partitioning",
           [](const py::dict& params,
-             const graph_t<float>& data,
+             const Graph& data,
              const table& initial_partition) {
               using namespace preview::louvain;
-              using input_t = vertex_partitioning_input<graph_t<float>, Task>;
-
+              using input_t = vertex_partitioning_input<Graph, Task>;
               vertex_partitioning_ops ops(input_t{ data, initial_partition}, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
     m.def("vertex_partitioning",
           [](const py::dict& params,
-             const graph_t<float>& data) {
+             const Graph& data) {
               using namespace preview::louvain;
-              using input_t = vertex_partitioning_input<graph_t<float>, Task>;
+              using input_t = vertex_partitioning_input<Graph, Task>;
 
               vertex_partitioning_ops ops(input_t{ data}, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
@@ -97,6 +91,12 @@ void init_vertex_partitioning_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(community_count, result_t);
 }
 
+template <typename Float>
+using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
+
+
+ONEDAL_PY_TYPE2STR(graph_t<float>, "");
+ONEDAL_PY_TYPE2STR(graph_t<double>, "");
 ONEDAL_PY_TYPE2STR(preview::louvain::task::vertex_partitioning, "vertex_partitioning");
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_vertex_partitioning_ops);
@@ -107,10 +107,10 @@ ONEDAL_PY_INIT_MODULE(louvain) {
     using namespace dal::preview::louvain;
 
     using task_list = types<task::vertex_partitioning>;
-    using graph_list = types<dal::preview::undirected_adjacency_vector_graph<>>;
+    using graph_list = types<graph_t<float>, graph_t<double>>;
     auto sub = m.def_submodule("louvain");
 
-    ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_ops, sub, task_list);
+    ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_ops, sub, task_list, graph_list);
     ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_result, sub, task_list);
 
 }
