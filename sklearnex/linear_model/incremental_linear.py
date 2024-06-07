@@ -148,10 +148,10 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._onedal_finalize_fit()
         return self._onedal_estimator.predict(X, queue)
 
-    def _onedal_partial_fit(self, X, y, queue=None):
+    def _onedal_partial_fit(self, X, y, check_input=True, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
-
-        if not hasattr(self, "batch_size_"):
+        
+        if check_input:
             if sklearn_check_version("1.2"):
                 self._validate_params()
 
@@ -242,7 +242,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         for batch in gen_batches(n_samples, self.batch_size_):
             X_batch, y_batch = X[batch], y[batch]
-            self._onedal_partial_fit(X_batch, y_batch, queue=queue)
+            self._onedal_partial_fit(X_batch, y_batch, check_input=False, queue=queue)
 
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -296,7 +296,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     coef_ = property(get_coef_, set_coef_)
     intercept_ = property(get_intercept_, set_intercept_)
 
-    def partial_fit(self, X, y):
+    def partial_fit(self, X, y, check_input=True):
         """
         Incremental fit linear model with X and y. All of X and y is
         processed as a single batch.
@@ -326,6 +326,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             },
             X,
             y,
+            check_input=check_input
         )
         return self
 
