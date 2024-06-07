@@ -440,6 +440,8 @@ public:
   # Failed in stock scikit-learn
   - metrics/tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
   - metrics/tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
+  # Fails from numpy 2.0 and sklearn 1.4+
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_raise_on_all_zero_weights
 
   # --------------------------------------------------------
   # The following tests currently fail with GPU offload
@@ -692,6 +694,12 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_class_weight_classifiers]
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_regressor_data_not_an_array]
+  - ensemble/tests/test_forest.py::test_max_samples_boundary_classifiers[ExtraTreesClassifier]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifier_data_not_an_array]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_fit_idempotent]
 
   # GPU implementation of Extra Trees doesn't support sample_weights
   # comparisons to GPU with sample weights will use different algorithms

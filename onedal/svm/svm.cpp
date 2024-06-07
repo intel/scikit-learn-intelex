@@ -135,6 +135,17 @@ void init_train_ops(py::module_& m) {
               train_ops ops(policy, input_t{ data, responses, weights }, params2desc{});
               return fptype2t{ method2t{ Task{}, kernel2t{ ops } } }(params);
           });
+    m.def("train",
+          [](const Policy& policy,
+             const py::dict& params,
+             const table& data,
+             const table& responses) {
+              using namespace dal::svm;
+              using input_t = train_input<Task>;
+
+              train_ops ops(policy, input_t{ data, responses}, params2desc{});
+              return fptype2t{ method2t{ Task{}, kernel2t{ ops } } }(params);
+          });
 }
 
 template <typename Policy, typename Task>
