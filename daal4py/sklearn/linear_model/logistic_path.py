@@ -814,7 +814,7 @@ def daal4py_predict(self, X, resultsToEvaluate):
                 (
                     self.classes_.size == 2
                     or logistic_module._check_multi_class(
-                        self.multi_class, self.solver, self.classes_.size
+                        self.multi_class if self.multi_class != "deprecated" else "auto", self.solver, self.classes_.size
                     )
                     != "ovr"
                     f"selected multiclass option is not supported for n_classes > 2.",
