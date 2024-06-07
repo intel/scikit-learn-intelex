@@ -119,6 +119,7 @@ namespace oneapi::dal::python {
         init_dbscan(m);
         init_decomposition(m);
         init_ensemble(m);
+        init_louvain(m);
     #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
         init_basic_statistics(m);
         init_linear_model(m);

@@ -21,90 +21,44 @@ from sklearn.utils import check_array
 from daal4py.sklearn._utils import get_dtype, make2d
 
 from ..common._base import BaseEstimator
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_graph
 
 
-class BaseDBSCAN(BaseEstimator, ClusterMixin):
+class Louvain(BaseEstimator, ClusterMixin):
     def __init__(
         self,
-        eps=0.5,
+        resolution=1.0,
         *,
-        min_samples=5,
-        metric="euclidean",
-        metric_params=None,
-        algorithm="auto",
-        leaf_size=30,
-        p=None,
-        n_jobs=None,
+        accuracy_threshold=.0001,
+        max_iteration_count=10
     ):
-        self.eps = eps
-        self.min_samples = min_samples
-        self.metric = metric
-        self.metric_params = metric_params
-        self.algorithm = algorithm
-        self.leaf_size = leaf_size
-        self.p = p
-        self.n_jobs = n_jobs
+        self.resolution = resolution
+        self.accuracy_threshold = accuracy_threshold
+        self.max_iteration_count = max_iteration_count
 
     def _get_onedal_params(self, dtype=np.float32):
         return {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": "by_default",
-            "min_observations": int(self.min_samples),
-            "epsilon": float(self.eps),
-            "mem_save_mode": False,
-            "result_options": "core_observation_indices|responses",
+            "accuracy_threshold": float(self.accuracy_threshold),
+            "resolution": float(self.resolution),
+            "max_iteration_count": int(self.max_iteration_count),
         }
 
-    def _fit(self, X, y, sample_weight, module, queue):
-        policy = self._get_policy(queue, X)
+    def _fit(self, X, module, queue):
+        assert(queue==None)
         X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
-        sample_weight = make2d(sample_weight) if sample_weight is not None else None
         X = make2d(X)
 
         types = [np.float32, np.float64]
         if get_dtype(X) not in types:
             X = X.astype(np.float64)
-        X = _convert_to_supported(policy, X)
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
-        result = module.compute(policy, params, to_table(X), to_table(sample_weight))
+        result = module.vertex_partioning(params, to_graph(X), to_table(sample_weight))
 
-        self.labels_ = from_table(result.responses).ravel()
-        if result.core_observation_indices is not None:
-            self.core_sample_indices_ = from_table(
-                result.core_observation_indices
-            ).ravel()
-        else:
-            self.core_sample_indices_ = np.array([], dtype=np.intc)
-        self.components_ = np.take(X, self.core_sample_indices_, axis=0)
+        self.labels_ = from_table(result.labels).ravel()
+        self.modularity_ = float(result.modularity)
+        self.community_count = int(result.community_count)
         self.n_features_in_ = X.shape[1]
         return self
-
-
-class DBSCAN(BaseDBSCAN):
-    def __init__(
-        self,
-        eps=0.5,
-        *,
-        min_samples=5,
-        metric="euclidean",
-        metric_params=None,
-        algorithm="auto",
-        leaf_size=30,
-        p=None,
-        n_jobs=None,
-    ):
-        self.eps = eps
-        self.min_samples = min_samples
-        self.metric = metric
-        self.metric_params = metric_params
-        self.algorithm = algorithm
-        self.leaf_size = leaf_size
-        self.p = p
-        self.n_jobs = n_jobs
-
-    def fit(self, X, y=None, sample_weight=None, queue=None):
-        return super()._fit(
-            X, y, sample_weight, self._get_backend("dbscan", "clustering", None), queue
-        )
