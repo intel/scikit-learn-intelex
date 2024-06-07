@@ -302,6 +302,7 @@ struct vertex_partitioning_ops {
     template <typename Float, typename Method, typename... Args>
     auto operator()(const pybind11::dict& params) {
         auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
+        // temporary fix for bug in dal/detail/vertex_paritioning_ops.hpp (cannot take an input struct)
         return dal::preview::vertex_partitioning(desc, input.get_graph(), input.get_initial_partition());
         }
 
