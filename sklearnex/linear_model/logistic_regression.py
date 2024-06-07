@@ -55,6 +55,8 @@ if daal_check_version((2024, "P", 1)):
         decorated_methods=[
             "fit",
             "predict",
+            "predict_proba",
+            "predict_log_proba",
             "score",
         ]
     )
