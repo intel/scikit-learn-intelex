@@ -812,9 +812,9 @@ def daal4py_predict(self, X, resultsToEvaluate):
         _patching_status.and_conditions(
             [
                 (
-                    self.n_classes_ == 2
+                    self.classes_.size == 2
                     or logistic_module._check_multi_class(
-                        self.multi_class, self.solver, self.n_classes_
+                        self.multi_class, self.solver, self.classes_.size
                     )
                     != "ovr"
                     f"selected multiclass option is not supported for n_classes > 2.",
