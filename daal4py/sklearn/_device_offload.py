@@ -20,9 +20,7 @@ from functools import wraps
 
 import numpy as np
 
-oneapi_is_available = "daal4py.oneapi" in sys.modules
-if oneapi_is_available:
-    from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
 
 try:
     from dpctl import SyclQueue
