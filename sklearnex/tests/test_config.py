@@ -16,6 +16,7 @@
 
 import sklearn
 
+import daal4py
 import sklearnex
 
 
@@ -33,7 +34,10 @@ def test_set_config_works():
     )
 
     config = sklearnex.get_config()
+    config_d4p = daal4py.sklearn._get_config()
     assert config["target_offload"] == "cpu:0"
     assert config["allow_fallback_to_host"]
     assert config["assume_finite"]
+    assert config_d4p["target_offload"] == "cpu:0"
+    assert config_d4p["allow_fallback_to_host"]
     sklearnex.set_config(**default_config)

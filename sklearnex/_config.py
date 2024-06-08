@@ -20,10 +20,8 @@ from contextlib import contextmanager
 from sklearn import get_config as skl_get_config
 from sklearn import set_config as skl_set_config
 
-_default_global_config = {
-    "target_offload": "auto",
-    "allow_fallback_to_host": False,
-}
+from daal4py.sklearn import _set_config as _d4py_set_config
+from daal4py.sklearn._config import _default_global_config
 
 _threadlocal = threading.local()
 
@@ -69,6 +67,9 @@ def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_confi
     get_config : Retrieve current values of the global configuration.
     """
     skl_set_config(**sklearn_configs)
+    _d4py_set_config(
+        target_offload=target_offload, allow_fallback_to_host=allow_fallback_to_host
+    )
 
     local_config = _get_sklearnex_threadlocal_config()
 

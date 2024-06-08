@@ -16,18 +16,18 @@
 
 from functools import wraps
 
+from daal4py.sklearn._device_offload import (
+    _copy_to_usm,
+    _get_global_queue,
+    _transfer_to_host,
+)
+
 try:
     import dpnp
 
     dpnp_available = True
 except ImportError:
     dpnp_available = False
-
-from daal4py.sklearn._device_offload import (
-    _copy_to_usm,
-    _get_global_queue,
-    _transfer_to_host,
-)
 
 
 def _get_host_inputs(*args, **kwargs):

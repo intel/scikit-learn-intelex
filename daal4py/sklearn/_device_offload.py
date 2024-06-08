@@ -14,13 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
+import logging
 import sys
 from collections.abc import Iterable
 from functools import wraps
 
 import numpy as np
 
-from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
+from ._config import _get_config
 
 try:
     from dpctl import SyclQueue
@@ -31,34 +32,42 @@ try:
 except ImportError:
     dpctl_available = False
 
-try:
-    import dpnp
 
-    dpnp_available = True
-except ImportError:
-    dpnp_available = False
+oneapi_is_available = "daal4py.oneapi" in sys.modules
+if oneapi_is_available:
+    from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
 
 
-# TODO:
-# remove or update
-try:
-    # from sklearnex._config import get_config
-    # from sklearnex._device_offload import (
-    #     #_copy_to_usm,
-    #     # _get_global_queue,
-    #     # _transfer_to_host,
-    # )
+def _get_device_info():
+    if oneapi_is_available:
+        return _get_device_name_sycl_ctxt(), _get_sycl_ctxt_params()
+    return None, dict()
 
-    _sklearnex_available = True
-except ImportError:
-    import logging
 
-    logging.warning(
-        "Device support is limited in daal4py patching. "
-        "Use Intel(R) Extension for Scikit-learn* "
-        "for full experience."
-    )
-    _sklearnex_available = False
+class DummySyclQueue:
+    """This class is designed to act like dpctl.SyclQueue
+    to allow device dispatching in scenarios when dpctl is not available"""
+
+    class DummySyclDevice:
+        def __init__(self, filter_string):
+            self._filter_string = filter_string
+            self.is_cpu = "cpu" in filter_string
+            self.is_gpu = "gpu" in filter_string
+            # TODO: check for possibility of fp64 support
+            # on other devices in this dummy class
+            self.has_aspect_fp64 = self.is_cpu
+
+            if not (self.is_cpu):
+                logging.warning(
+                    "Device support is limited. "
+                    "Please install dpctl for full experience"
+                )
+
+        def get_filter_string(self):
+            return self._filter_string
+
+    def __init__(self, filter_string):
+        self.sycl_device = self.DummySyclDevice(filter_string)
 
 
 def _copy_to_usm(queue, array):
@@ -68,6 +77,7 @@ def _copy_to_usm(queue, array):
         )
 
     if hasattr(array, "__array__"):
+
         try:
             mem = MemoryUSMDevice(array.nbytes, queue=queue)
             mem.copy_from_host(array.tobytes())
@@ -130,43 +140,18 @@ def _transfer_to_host(queue, *data):
     return queue, host_data
 
 
-class DummySyclQueue:
-    """This class is designed to act like dpctl.SyclQueue
-    to allow device dispatching in scenarios when dpctl is not available"""
-
-    class DummySyclDevice:
-        def __init__(self, filter_string):
-            self._filter_string = filter_string
-            self.is_cpu = "cpu" in filter_string
-            self.is_gpu = "gpu" in filter_string
-            # TODO: check for possibility of fp64 support
-            # on other devices in this dummy class
-            self.has_aspect_fp64 = self.is_cpu
-
-            if not (self.is_cpu):
-                logging.warning(
-                    "Device support is limited. "
-                    "Please install dpctl for full experience"
-                )
-
-        def get_filter_string(self):
-            return self._filter_string
-
-    def __init__(self, filter_string):
-        self.sycl_device = self.DummySyclDevice(filter_string)
-
-
-def _get_global_queue(target_offload=None):
-    d4p_target, _ = _get_device_name_sycl_ctxt(), _get_sycl_ctxt_params()
+def _get_global_queue():
+    target = _get_config()["target_offload"]
+    d4p_target, _ = _get_device_info()
     if d4p_target == "host":
         d4p_target = "cpu"
 
     QueueClass = DummySyclQueue if not dpctl_available else SyclQueue
 
-    if target_offload and target_offload != "auto":
-        if d4p_target is not None and d4p_target != target_offload:
-            if not isinstance(target_offload, str):
-                if d4p_target not in target_offload.sycl_device.get_filter_string():
+    if target != "auto":
+        if d4p_target is not None and d4p_target != target:
+            if not isinstance(target, str):
+                if d4p_target not in target.sycl_device.get_filter_string():
                     raise RuntimeError(
                         "Cannot use target offload option "
                         "inside daal4py.oneapi.sycl_context"
@@ -176,9 +161,9 @@ def _get_global_queue(target_offload=None):
                     "Cannot use target offload option "
                     "inside daal4py.oneapi.sycl_context"
                 )
-        if isinstance(target_offload, QueueClass):
-            return target_offload
-        return QueueClass(target_offload)
+        if isinstance(target, QueueClass):
+            return target
+        return QueueClass(target)
     if d4p_target is not None:
         return QueueClass(d4p_target)
     return None
@@ -199,18 +184,17 @@ def _extract_usm_iface(*args, **kwargs):
     return getattr(allargs[0], "__sycl_usm_array_interface__", None)
 
 
-def _run_on_device(func, queue, obj=None, host_offload=False, *args, **kwargs):
+def _run_on_device(func, queue, obj=None, *args, **kwargs):
     def dispatch_by_obj(obj, func, *args, **kwargs):
         if obj is not None:
             return func(obj, *args, **kwargs)
         return func(*args, **kwargs)
 
-    if queue is not None:
+    if queue is not None and oneapi_is_available:
         from daal4py.oneapi import _get_in_sycl_ctxt, sycl_context
 
         if _get_in_sycl_ctxt() is False:
-            # TODO:
-            # host_offload = get_config()["allow_fallback_to_host"]
+            host_offload = _get_config()["allow_fallback_to_host"]
 
             with sycl_context(
                 "gpu" if queue.sycl_device.is_gpu else "cpu",
@@ -220,21 +204,15 @@ def _run_on_device(func, queue, obj=None, host_offload=False, *args, **kwargs):
     return dispatch_by_obj(obj, func, *args, **kwargs)
 
 
-# TODO:
-# add daal4py.sklearn.get_config
-def support_usm_ndarray(freefunc=False, host_offload=False):
+def support_usm_ndarray(freefunc=False):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            if _sklearnex_available:
-                usm_iface = _extract_usm_iface(*args, **kwargs)
-                q, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-                result = _run_on_device(
-                    func, q, obj, host_offload, *hostargs, **hostkwargs
-                )
-                if usm_iface is not None and hasattr(result, "__array_interface__"):
-                    return _copy_to_usm(q, result)
-                return result
-            return _run_on_device(func, None, obj, host_offload, *args, **kwargs)
+            usm_iface = _extract_usm_iface(*args, **kwargs)
+            q, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
+            result = _run_on_device(func, q, obj, *hostargs, **hostkwargs)
+            if usm_iface is not None and hasattr(result, "__array_interface__"):
+                return _copy_to_usm(q, result)
+            return result
 
         if freefunc:
 

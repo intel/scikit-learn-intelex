@@ -14,15 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
 from collections.abc import Iterable
 from functools import wraps
 
+from daal4py.sklearn._device_offload import _copy_to_usm
 from daal4py.sklearn._device_offload import (
-    _copy_to_usm,
-    _get_global_queue,
-    _transfer_to_host,
+    _get_device_info as _get_device_info_from_daal4py,
 )
+from daal4py.sklearn._device_offload import _get_global_queue, _transfer_to_host
 
 try:
     from dpctl.tensor import usm_ndarray
@@ -39,16 +38,6 @@ except ImportError:
     dpnp_available = False
 
 from ._config import get_config
-
-oneapi_is_available = "daal4py.oneapi" in sys.modules
-if oneapi_is_available:
-    from daal4py.oneapi import _get_device_name_sycl_ctxt, _get_sycl_ctxt_params
-
-
-def _get_device_info_from_daal4py():
-    if oneapi_is_available:
-        return _get_device_name_sycl_ctxt(), _get_sycl_ctxt_params()
-    return None, dict()
 
 
 def _get_backend(obj, queue, method_name, *data):
@@ -85,7 +74,7 @@ def _get_backend(obj, queue, method_name, *data):
 
 
 def dispatch(obj, method_name, branches, *args, **kwargs):
-    q = _get_global_queue(get_config()["target_offload"])
+    q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)
     q, hostvalues = _transfer_to_host(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
