@@ -808,21 +808,22 @@ def daal4py_predict(self, X, resultsToEvaluate):
     _patching_status = PatchingConditionsChain(
         f"sklearn.linear_model.LogisticRegression.{_function_name}"
     )
-    _patching_status.and_conditions(
-        [
-            (
-                self.multi_class in ["multinomial", "warn"],
-                f"{self.multi_class} multiclass option is not supported. "
-                "Only 'multinomial' or 'warn' options are supported.",
-            ),
-            (self.classes_.size == 2, "Number of classes != 2."),
-            (
-                resultsToEvaluate == "computeClassLabels",
-                "resultsToEvaluate != 'computeClassLabels'.",
-            ),
-        ],
-        conditions_merging=any,
-    )
+    if _function_name != "predict":
+        _patching_status.and_conditions(
+            [
+                (
+                    self.classes_.size == 2
+                    or logistic_module._check_multi_class(
+                        self.multi_class if self.multi_class != "deprecated" else "auto",
+                        self.solver,
+                        self.classes_.size,
+                    )
+                    != "ovr",
+                    f"selected multiclass option is not supported for n_classes > 2.",
+                ),
+            ],
+        )
+
     _dal_ready = _patching_status.and_conditions(
         [
             (not sparse.issparse(X), "X is sparse. Sparse input is not supported."),
