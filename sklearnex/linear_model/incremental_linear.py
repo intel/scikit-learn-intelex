@@ -20,6 +20,7 @@ import warnings
 import numpy as np
 from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics import r2_score
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -146,6 +147,11 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         if self._need_to_finalize:
             self._onedal_finalize_fit()
         return self._onedal_estimator.predict(X, queue)
+
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
 
     def _onedal_partial_fit(self, X, y, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
@@ -384,4 +390,64 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 "sklearn": None,
             },
             X,
+        )
+
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        """Return the coefficient of determination of the prediction.
+
+        The coefficient of determination :math:`R^2` is defined as
+        :math:`(1 - \\frac{u}{v})`, where :math:`u` is the residual
+        sum of squares ``((y_true - y_pred)** 2).sum()`` and :math:`v`
+        is the total sum of squares ``((y_true - y_true.mean()) ** 2).sum()``.
+        The best possible score is 1.0 and it can be negative (because the
+        model can be arbitrarily worse). A constant model that always predicts
+        the expected value of `y`, disregarding the input features, would get
+        a :math:`R^2` score of 0.0.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Test samples. For some estimators this may be a precomputed
+            kernel matrix or a list of generic objects instead with shape
+            ``(n_samples, n_samples_fitted)``, where ``n_samples_fitted``
+            is the number of samples used in the fitting for the estimator.
+
+        y : array-like of shape (n_samples,) or (n_samples, n_outputs)
+            True values for `X`.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+
+        Returns
+        -------
+        score : float
+            :math:`R^2` of ``self.predict(X)`` w.r.t. `y`.
+
+        Notes
+        -----
+        The :math:`R^2` score used when calling ``score`` on a regressor uses
+        ``multioutput='uniform_average'`` from version 0.23 to keep consistent
+        with default value of :func:`~sklearn.metrics.r2_score`.
+        This influences the ``score`` method of all the multioutput
+        regressors (except for
+        :class:`~sklearn.multioutput.MultiOutputRegressor`).
+        """
+        if not hasattr(self, "coef_"):
+            msg = (
+                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
+                "with appropriate arguments before using this estimator."
+            )
+            raise NotFittedError(msg % {"name": self.__class__.__name__})
+
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": None,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
         )

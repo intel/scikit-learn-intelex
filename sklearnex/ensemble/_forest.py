@@ -29,7 +29,7 @@ from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifie
 from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
 from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, r2_score
 from sklearn.tree import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,
@@ -1037,7 +1037,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-        elif method_name == "predict":
+        elif method_name in ["predict", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
@@ -1091,7 +1091,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-        elif method_name == "predict":
+        elif method_name in ["predict", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
@@ -1134,6 +1134,11 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         return self._onedal_estimator.predict(X, queue=queue)
 
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
+
     def fit(self, X, y, sample_weight=None):
         dispatch(
             self,
@@ -1160,8 +1165,23 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             X,
         )
 
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_ForestRegressor.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
+        )
+
     fit.__doc__ = sklearn_ForestRegressor.fit.__doc__
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
+    score.__doc__ = sklearn_ForestRegressor.score.__doc__
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "score"])

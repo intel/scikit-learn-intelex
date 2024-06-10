@@ -21,6 +21,7 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.metrics import r2_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 
@@ -79,7 +80,7 @@ class BaseSVM(BaseEstimator, ABC):
             )
             return patching_status
         inference_methods = (
-            ["predict"]
+            ["predict", "score"]
             if class_name.endswith("R")
             else ["predict", "predict_proba", "decision_function", "score"]
         )
@@ -322,3 +323,8 @@ class BaseSVR(BaseSVM):
 
         if sklearn_check_version("1.1"):
             self.n_iter_ = self._onedal_estimator.n_iter_
+
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )

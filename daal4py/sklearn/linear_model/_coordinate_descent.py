@@ -734,8 +734,11 @@ class ElasticNet(ElasticNet_original):
     def dual_gap_(self):
         self._gap = None
 
+    score = support_usm_ndarray()(ElasticNet_original.score)
+
     fit.__doc__ = ElasticNet_original.fit.__doc__
     predict.__doc__ = ElasticNet_original.predict.__doc__
+    score.__doc__ = ElasticNet_original.score.__doc__
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
@@ -848,5 +851,8 @@ class Lasso(Lasso_original):
     def dual_gap_(self):
         self._gap = None
 
+    score = support_usm_ndarray()(Lasso_original.score)
+
     fit.__doc__ = Lasso_original.fit.__doc__
     predict.__doc__ = Lasso_original.predict.__doc__
+    score.__doc__ = Lasso_original.score.__doc__
