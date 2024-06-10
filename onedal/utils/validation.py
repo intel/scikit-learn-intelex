@@ -423,10 +423,6 @@ def _num_samples(x):
 
 def _is_csr(x):
     """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
-    if x is None:
-        return False
-    is_csr = False
-    type_name = type(x).__name__
-    if type_name == "csr_matrix" or type_name == "csr_array":
-        is_csr = True
-    return is_csr
+    return isinstance(x, sp.csr_matrix) or (
+        hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
+    )

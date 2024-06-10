@@ -14,8 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+from scipy import sparse as sp
+
 from daal4py.sklearn._utils import daal_check_version
-from onedal.tests.utils._sparsity_support import is_random_array_supported
 
 if daal_check_version((2023, "P", 100)):
     import numpy as np
@@ -34,11 +35,11 @@ if daal_check_version((2023, "P", 100)):
     ]
 
     options_and_tests_csr = [
-        ("sum", "sum", (1e-5, 1e-7)),
-        ("min", "min", (1e-5, 1e-7)),
+        ("sum", "sum", (5e-6, 1e-9)),
+        ("min", "min", (0, 0)),
         # There is a bug in oneDAL's max computations on GPU
-        #         ("max", "max", (1e-5, 1e-7)),
-        ("mean", "mean", (1e-5, 1e-7)),
+        #         ("max", "max", (0, 0)),
+        ("mean", "mean", (5e-6, 1e-9)),
     ]
 
     @pytest.mark.parametrize("queue", get_queues())
@@ -108,7 +109,7 @@ if daal_check_version((2023, "P", 100)):
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, rtol=tol)
 
-    @pytest.mark.skipif(not is_random_array_supported(), reason="requires scipy>=1.12.0")
+    @pytest.mark.skipif(not hasattr(sp, "random_array"), reason="requires scipy>=1.12.0")
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     def test_basic_csr(queue, dtype):
@@ -117,9 +118,7 @@ if daal_check_version((2023, "P", 100)):
 
         gen = np.random.default_rng(seed)
 
-        from scipy.sparse import random_array
-
-        data = random_array(
+        data = sp.random_array(
             shape=(s_count, f_count),
             density=0.01,
             format="csr",
@@ -132,10 +131,10 @@ if daal_check_version((2023, "P", 100)):
 
         res_mean = res["mean"]
         gtr_mean = data.mean(axis=0)
-        tol = 2e-5 if res_mean.dtype == np.float32 else 1e-7
+        tol = 5e-6 if res_mean.dtype == np.float32 else 1e-9
         assert_allclose(gtr_mean, res_mean, rtol=tol)
 
-    @pytest.mark.skipif(not is_random_array_supported(), reason="requires scipy>=1.12.0")
+    @pytest.mark.skipif(not hasattr(sp, "random_array"), reason="requires scipy>=1.12.0")
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("option", options_and_tests_csr)
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -145,9 +144,7 @@ if daal_check_version((2023, "P", 100)):
 
         gen = np.random.default_rng(seed)
 
-        from scipy.sparse import random_array
-
-        data = random_array(
+        data = sp.random_array(
             shape=(s_count, f_count),
             density=0.002,
             format="csr",
