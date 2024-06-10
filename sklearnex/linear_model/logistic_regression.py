@@ -146,7 +146,7 @@ if daal_check_version((2024, "P", 1)):
                 self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
-                "predict",
+                "predict_proba",
                 {
                     "onedal": self.__class__._onedal_predict_proba,
                     "sklearn": sklearn_LogisticRegression.predict_proba,
@@ -160,7 +160,7 @@ if daal_check_version((2024, "P", 1)):
                 self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
-                "predict",
+                "predict_log_proba",
                 {
                     "onedal": self.__class__._onedal_predict_log_proba,
                     "sklearn": sklearn_LogisticRegression.predict_log_proba,
