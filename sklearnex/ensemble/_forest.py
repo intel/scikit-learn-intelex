@@ -778,7 +778,10 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                         or self.estimator.__class__ == DecisionTreeClassifier,
                         "ExtraTrees only supported starting from oneDAL version 2023.1",
                     ),
-                    (not self.oob_score, "oob_scores using r2 or accuracy not implemented."),
+                    (
+                        not self.oob_score,
+                        "oob_scores using r2 or accuracy not implemented.",
+                    ),
                     (sample_weight is None, "sample_weight is not supported."),
                 ]
             )
