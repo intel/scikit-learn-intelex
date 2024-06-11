@@ -14,22 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import threading
 from contextlib import contextmanager
 
 from sklearn import get_config as skl_get_config
 from sklearn import set_config as skl_set_config
 
-from daal4py.sklearn import _set_config as _d4py_set_config
-from daal4py.sklearn._config import _default_global_config
-
-_threadlocal = threading.local()
-
-
-def _get_sklearnex_threadlocal_config():
-    if not hasattr(_threadlocal, "global_config"):
-        _threadlocal.global_config = _default_global_config.copy()
-    return _threadlocal.global_config
+from onedal._config import _get_onedal_threadlocal_config
 
 
 def get_config():
@@ -44,7 +34,7 @@ def get_config():
     set_config : Set global configuration.
     """
     sklearn = skl_get_config()
-    sklearnex = _get_sklearnex_threadlocal_config().copy()
+    sklearnex = _get_onedal_threadlocal_config().copy()
     return {**sklearn, **sklearnex}
 
 
@@ -67,11 +57,8 @@ def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_confi
     get_config : Retrieve current values of the global configuration.
     """
     skl_set_config(**sklearn_configs)
-    _d4py_set_config(
-        target_offload=target_offload, allow_fallback_to_host=allow_fallback_to_host
-    )
 
-    local_config = _get_sklearnex_threadlocal_config()
+    local_config = _get_onedal_threadlocal_config()
 
     if target_offload is not None:
         local_config["target_offload"] = target_offload

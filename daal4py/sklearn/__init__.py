@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from ._config import _get_config, _set_config
 from .monkeypatch.dispatcher import _get_map_of_algorithms as sklearn_patch_map
 from .monkeypatch.dispatcher import _patch_names as sklearn_patch_names
 from .monkeypatch.dispatcher import disable as unpatch_sklearn
@@ -22,8 +21,6 @@ from .monkeypatch.dispatcher import enable as patch_sklearn
 from .monkeypatch.dispatcher import patch_is_enabled as sklearn_is_patched
 
 __all__ = [
-    "_get_config",
-    "_set_config",
     "cluster",
     "decomposition",
     "ensemble",

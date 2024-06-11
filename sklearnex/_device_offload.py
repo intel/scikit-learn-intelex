@@ -17,11 +17,12 @@
 from collections.abc import Iterable
 from functools import wraps
 
-from daal4py.sklearn._device_offload import _copy_to_usm
-from daal4py.sklearn._device_offload import (
-    _get_device_info as _get_device_info_from_daal4py,
+from onedal._device_offload import (
+    _convert_to_dpnp,
+    _copy_to_usm,
+    _get_global_queue,
+    _transfer_to_host,
 )
-from daal4py.sklearn._device_offload import _get_global_queue, _transfer_to_host
 
 try:
     from dpctl.tensor import usm_ndarray
@@ -51,10 +52,7 @@ def _get_backend(obj, queue, method_name, *data):
         else:
             return "sklearn", None, patching_status
 
-    _, d4p_options = _get_device_info_from_daal4py()
-    allow_fallback_to_host = get_config()["allow_fallback_to_host"] or d4p_options.get(
-        "host_offload_on_fail", False
-    )
+    allow_fallback_to_host = get_config()["allow_fallback_to_host"]
 
     if gpu_device:
         patching_status = obj._onedal_gpu_supported(method_name, *data)
@@ -90,17 +88,6 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     raise RuntimeError(
         f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
     )
-
-
-if dpnp_available:
-
-    def _convert_to_dpnp(array):
-        if isinstance(array, usm_ndarray):
-            return dpnp.array(array, copy=False)
-        elif isinstance(array, Iterable):
-            for i in range(len(array)):
-                array[i] = _convert_to_dpnp(array[i])
-        return array
 
 
 def wrap_output_data(func):
