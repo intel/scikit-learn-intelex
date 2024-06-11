@@ -843,6 +843,8 @@ class Lasso(Lasso_original):
     def dual_gap_(self):
         self._gap = None
 
+    score = Lasso_original.score
+
     fit.__doc__ = Lasso_original.fit.__doc__
     predict.__doc__ = Lasso_original.predict.__doc__
     score.__doc__ = Lasso_original.score.__doc__

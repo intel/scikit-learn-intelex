@@ -592,6 +592,8 @@ class KMeans(KMeans_original):
     def fit_predict(self, X, y=None, sample_weight=None):
         return super().fit_predict(X, y, sample_weight)
 
+    score = KMeans_original.score
+
     fit.__doc__ = KMeans_original.fit.__doc__
     predict.__doc__ = KMeans_original.predict.__doc__
     fit_predict.__doc__ = KMeans_original.fit_predict.__doc__
