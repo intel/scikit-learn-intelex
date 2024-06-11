@@ -58,7 +58,10 @@ if daal_check_version((2023, "P", 200)):
 
         def _get_params_and_input(self, X, policy):
             X = _check_array(
-                X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
+                X,
+                dtype=[np.float64, np.float32],
+                accept_sparse="csr",
+                force_all_finite=False,
             )
 
             X = _convert_to_supported(policy, X)
