@@ -265,7 +265,6 @@ class LinearRegression(LinearRegression_original):
             return super(LinearRegression, self).fit(X, y=y, sample_weight=sample_weight)
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return _predict_linear(self, X)
 
