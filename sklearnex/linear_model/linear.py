@@ -20,6 +20,7 @@ from abc import ABC
 import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+from sklearn.metrics import r2_score
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -123,6 +124,20 @@ class LinearRegression(sklearn_LinearRegression):
             X,
         )
 
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_LinearRegression.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
+        )
+
     def _test_type_and_finiteness(self, X_in):
         X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
 
@@ -193,22 +208,19 @@ class LinearRegression(sklearn_LinearRegression):
         return patching_status
 
     def _onedal_predict_supported(self, method_name, *data):
-        assert method_name == "predict"
-        assert len(data) == 1
-
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.linear_model.{class_name}.predict"
         )
 
-        n_samples = _num_samples(*data)
+        n_samples = _num_samples(data[0])
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
         )
         dal_ready = patching_status.and_conditions(
             [
                 (n_samples > 0, "Number of samples is less than 1."),
-                (not issparse(*data), "Sparse input is not supported."),
+                (not issparse(data[0]), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
             ]
         )
@@ -216,7 +228,7 @@ class LinearRegression(sklearn_LinearRegression):
             return patching_status
 
         patching_status.and_condition(
-            self._test_type_and_finiteness(*data), "Input X is not supported."
+            self._test_type_and_finiteness(data[0]), "Input X is not supported."
         )
 
         return patching_status
@@ -224,7 +236,7 @@ class LinearRegression(sklearn_LinearRegression):
     def _onedal_supported(self, method_name, *data):
         if method_name == "fit":
             return self._onedal_fit_supported(method_name, *data)
-        if method_name == "predict":
+        if method_name in ["predict", "score"]:
             return self._onedal_predict_supported(method_name, *data)
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
@@ -286,6 +298,11 @@ class LinearRegression(sklearn_LinearRegression):
         res = self._onedal_estimator.predict(X, queue=queue)
         return res
 
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
+
     def get_coef_(self):
         return self.coef_
 
@@ -314,3 +331,4 @@ class LinearRegression(sklearn_LinearRegression):
 
     fit.__doc__ = sklearn_LinearRegression.fit.__doc__
     predict.__doc__ = sklearn_LinearRegression.predict.__doc__
+    score.__doc__ = sklearn_LinearRegression.score.__doc__

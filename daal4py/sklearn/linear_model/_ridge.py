@@ -322,5 +322,8 @@ class Ridge(Ridge_original, _BaseRidge):
     def predict(self, X):
         return _predict_ridge(self, X)
 
+    score = support_usm_ndarray()(Ridge_original.score)
+
     fit.__doc__ = Ridge_original.fit.__doc__
     predict.__doc__ = Ridge_original.predict.__doc__
+    score.__doc__ = Ridge_original.score.__doc__
