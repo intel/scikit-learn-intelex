@@ -43,8 +43,10 @@ struct method2t {
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "random_dense", ops, Float, method::random_dense);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_dense", ops, Float, method::plus_plus_dense);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240500
         ONEDAL_PARAM_DISPATCH_VALUE(method, "random_csr", ops, Float, method::random_csr);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_csr", ops, Float, method::plus_plus_csr);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240500
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
@@ -75,22 +77,23 @@ struct descriptor_creator<Float,
 
 template <typename Float>
 struct descriptor_creator<Float,
-                          dal::kmeans_init::method::random_csr,
-                          dal::kmeans_init::task::init> {
-    static auto get() {
-        return dal::kmeans_init::
-            descriptor<Float, dal::kmeans_init::method::random_csr, dal::kmeans_init::task::init>{};
-    }
-};
-
-template <typename Float>
-struct descriptor_creator<Float,
                           dal::kmeans_init::method::plus_plus_dense,
                           dal::kmeans_init::task::init> {
     static auto get() {
         return dal::kmeans_init::descriptor<Float,
                                             dal::kmeans_init::method::plus_plus_dense,
                                             dal::kmeans_init::task::init>{};
+    }
+};
+
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240500
+template <typename Float>
+struct descriptor_creator<Float,
+                          dal::kmeans_init::method::random_csr,
+                          dal::kmeans_init::task::init> {
+    static auto get() {
+        return dal::kmeans_init::
+            descriptor<Float, dal::kmeans_init::method::random_csr, dal::kmeans_init::task::init>{};
     }
 };
 
@@ -104,6 +107,7 @@ struct descriptor_creator<Float,
                                             dal::kmeans_init::task::init>{};
     }
 };
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240500
 
 struct params2desc {
     template <typename Float, typename Method, typename Task>
@@ -120,12 +124,16 @@ struct params2desc {
             desc.set_seed(seed);
         }
 
-        if constexpr ((std::is_same_v<Method, dal::kmeans_init::method::plus_plus_dense> ||
-                      std::is_same_v<Method, dal::kmeans_init::method::plus_plus_csr>)) {
+        if constexpr (std::is_same_v<Method, dal::kmeans_init::method::plus_plus_dense>) {
             const auto local_trials_count = params["local_trials_count"].cast<std::int64_t>();
             desc.set_local_trials_count(local_trials_count);
         }
-
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240500
+        if constexpr (std::is_same_v<Method, dal::kmeans_init::method::plus_plus_csr>) {
+            const auto local_trials_count = params["local_trials_count"].cast<std::int64_t>();
+            desc.set_local_trials_count(local_trials_count);
+        }
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240500
         return desc;
     }
 };
