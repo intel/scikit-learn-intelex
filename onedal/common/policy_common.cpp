@@ -121,6 +121,13 @@ std::uint32_t get_device_id(const sycl::queue& queue) {
     }
 }
 
+std::size_t get_used_memory(const py::object& syclobj){
+    const auto& device =  get_queue_from_python(syclobj).get_device();
+    std::size_t total_memory = device.get_info<sycl::info::device::global_mem_size>();
+    std::size_t free_memory = device.get_info<sycl::ext::intel::info::device::free_memory>();
+    return total_memory - free_memory;
+}
+
 dp_policy_t make_dp_policy(std::uint32_t id) {
     sycl::queue queue = get_queue_by_device_id(id);
     return dp_policy_t{ std::move(queue) };

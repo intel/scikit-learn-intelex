@@ -94,4 +94,4 @@ def get_namespace(*arrays):
     elif sklearn_check_version("1.2"):
         return sklearn_get_namespace(*arrays)
     else:
-        return np, True
+        return np, False
