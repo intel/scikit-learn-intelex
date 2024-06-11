@@ -94,6 +94,22 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             X,
         )
 
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_NuSVR.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
+        )
+
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
@@ -118,3 +134,4 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     fit.__doc__ = sklearn_NuSVR.fit.__doc__
     predict.__doc__ = sklearn_NuSVR.predict.__doc__
+    score.__doc__ = sklearn_NuSVR.score.__doc__
