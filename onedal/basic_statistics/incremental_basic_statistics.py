@@ -138,11 +138,13 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         """
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
+
+        X, weights = _convert_to_supported(self._policy, X, weights)
+
         if not hasattr(self, "_onedal_params"):
             dtype = get_dtype(X)
             self._onedal_params = self._get_onedal_params(dtype)
 
-        X, weights = _convert_to_supported(self._policy, X, weights)
         X_table, weights_table = to_table(X, weights)
         self._partial_result = _backend.basic_statistics.compute.partial_compute(
             self._policy,

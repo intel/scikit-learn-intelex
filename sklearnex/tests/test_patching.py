@@ -147,23 +147,16 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and dtype in [np.uint32, np.uint64]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
-        elif estimator == "IncrementalLinearRegression" and dtype in [
-            np.int8,
-            np.int16,
-            np.int32,
-            np.int64,
-            np.uint8,
-            np.uint16,
-            np.uint32,
-            np.uint64,
-        ]:
+        elif estimator == "IncrementalLinearRegression" and np.issubdtype(
+            dtype, np.integer
+        ):
             pytest.skip(
                 "IncrementalLinearRegression fails on oneDAL side with int types because dataset is filled by zeroes"
             )
         elif method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
-        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
 
         if method:
@@ -195,7 +188,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
         elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
             pytest.skip("Hardware does not support fp64 SYCL testing")
 
-        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
 
         if method and not hasattr(est, method):
