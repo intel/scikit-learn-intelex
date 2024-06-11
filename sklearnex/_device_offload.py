@@ -18,11 +18,14 @@ from collections.abc import Iterable
 from functools import wraps
 
 from onedal._device_offload import (
-    _convert_to_dpnp,
     _copy_to_usm,
     _get_global_queue,
     _transfer_to_host,
+    dpnp_available,
 )
+
+if dpnp_available:
+    from onedal._device_offload import _convert_to_dpnp
 
 try:
     from dpctl.tensor import usm_ndarray
