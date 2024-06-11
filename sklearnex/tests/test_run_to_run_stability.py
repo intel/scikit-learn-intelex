@@ -151,7 +151,6 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
         pytest.skip(f"variation observed in {estimator}.score")
 
-
     est = PATCHED_MODELS[estimator]()
 
     if method and not hasattr(est, method):
