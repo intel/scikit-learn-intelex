@@ -28,5 +28,12 @@ namespace oneapi::dal::python {
 PyObject *convert_to_pyobject(const dal::table &input);
 dal::table convert_to_table(PyObject *obj);
 
+
+template <typename Float>
+using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
+
+template <typename Float>
+graph_t<Float> convert_to_undirected_graph(PyObject *obj);
+
 } // namespace oneapi::dal::python
 
