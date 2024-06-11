@@ -17,7 +17,6 @@
 import numbers
 from abc import ABC
 
-import numpy as np
 from scipy import sparse as sp
 from sklearn.cluster import DBSCAN as sklearn_DBSCAN
 from sklearn.utils.validation import _check_sample_weight

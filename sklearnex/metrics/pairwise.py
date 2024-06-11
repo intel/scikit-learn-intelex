@@ -15,3 +15,6 @@
 # ===============================================================================
 
 from daal4py.sklearn.metrics import pairwise_distances
+from onedal._device_offload import support_usm_ndarray
+
+pairwise_distances = support_usm_ndarray(freefunc=True)(pairwise_distances)

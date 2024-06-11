@@ -15,3 +15,12 @@
 # ===============================================================================
 
 from daal4py.sklearn.linear_model import ElasticNet, Lasso
+from onedal._device_offload import support_usm_ndarray
+
+ElasticNet.fit = support_usm_ndarray()(ElasticNet.fit)
+ElasticNet.predict = support_usm_ndarray()(ElasticNet.predict)
+ElasticNet.score = support_usm_ndarray()(ElasticNet.score)
+
+Lasso.fit = support_usm_ndarray()(Lasso.fit)
+Lasso.predict = support_usm_ndarray()(Lasso.predict)
+Lasso.score = support_usm_ndarray()(Lasso.score)

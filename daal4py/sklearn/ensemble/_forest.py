@@ -43,7 +43,6 @@ from daal4py.sklearn._utils import (
     sklearn_check_version,
 )
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from ..utils.validation import _daal_num_features
 
@@ -400,7 +399,6 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             self.minBinSize = minBinSize
             self.binningStrategy = binningStrategy
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -530,7 +528,6 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             return self
         return super().fit(X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         """
         Predict class for X.
@@ -582,7 +579,6 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         )
         return self._daal_predict_classifier(X)
 
-    @support_usm_ndarray()
     def predict_proba(self, X):
         """
         Predict class probabilities for X.
@@ -1037,7 +1033,6 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             self.minBinSize = minBinSize
             self.binningStrategy = binningStrategy
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
@@ -1172,7 +1167,6 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
             return self
         return super().fit(X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         """
         Predict class for X.

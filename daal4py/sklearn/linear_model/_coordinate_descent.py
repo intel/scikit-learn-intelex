@@ -46,8 +46,6 @@ import warnings
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.preprocessing import normalize
 
-from .._device_offload import support_usm_ndarray
-
 
 def _daal4py_check(self, X, y, check_input):
     _fptype = getFPType(X)
@@ -686,11 +684,9 @@ class ElasticNet(ElasticNet_original):
                 selection=selection,
             )
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None, check_input=True):
         return _fit(self, X, y, sample_weight=sample_weight, check_input=check_input)
 
-    @support_usm_ndarray()
     def predict(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
@@ -733,8 +729,6 @@ class ElasticNet(ElasticNet_original):
     @dual_gap_.deleter
     def dual_gap_(self):
         self._gap = None
-
-    score = support_usm_ndarray()(ElasticNet_original.score)
 
     fit.__doc__ = ElasticNet_original.fit.__doc__
     predict.__doc__ = ElasticNet_original.predict.__doc__
@@ -806,11 +800,9 @@ class Lasso(Lasso_original):
                 selection=selection,
             )
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None, check_input=True):
         return _fit(self, X, y, sample_weight, check_input)
 
-    @support_usm_ndarray()
     def predict(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
@@ -850,8 +842,6 @@ class Lasso(Lasso_original):
     @dual_gap_.deleter
     def dual_gap_(self):
         self._gap = None
-
-    score = support_usm_ndarray()(Lasso_original.score)
 
     fit.__doc__ = Lasso_original.fit.__doc__
     predict.__doc__ = Lasso_original.predict.__doc__
