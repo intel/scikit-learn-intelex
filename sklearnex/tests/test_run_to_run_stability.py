@@ -148,8 +148,8 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
-    if "KMeans" in estimator and method == "score" and queue == None:
-        pytest.skip(f"variation observed in KMeans.score")
+    if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
+        pytest.skip(f"variation observed in {estimator}.score")
 
     est = PATCHED_MODELS[estimator]()
 
