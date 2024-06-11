@@ -152,14 +152,14 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         }
 
     def _get_params_and_input(self, X, policy):
-        X_loc = _check_array(
+        X = _check_array(
             X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
         )
-        X_loc = _convert_to_supported(policy, X_loc)
-        dtype = get_dtype(X_loc)
-        X_table = to_table(X_loc)
+        X = _convert_to_supported(policy, X)
+        dtype = get_dtype(X)
+        X_table = to_table(X)
 
-        self._check_params_vs_input(X_loc, policy, dtype=dtype)
+        self._check_params_vs_input(X, policy, dtype=dtype)
 
         params = self._get_onedal_params(X_table, dtype)
 
