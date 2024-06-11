@@ -28,8 +28,8 @@ _threadlocal = threading.local()
 
 def _get_onedal_threadlocal_config():
     if not hasattr(_threadlocal, "global_config"):
-        _threadlocal.d4p_global_config = _default_global_config.copy()
-    return _threadlocal.d4p_global_config
+        _threadlocal.global_config = _default_global_config.copy()
+    return _threadlocal.global_config
 
 
 # TODO:
