@@ -154,36 +154,37 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
-    def _onedal_partial_fit(self, X, y, queue=None):
+    def _onedal_partial_fit(self, X, y, check_input=True, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
-                X,
-                y,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-                copy=self.copy_X,
-                multi_output=True,
-                force_all_finite=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-                force_all_finite=False,
-            )
-            y = check_array(
-                y,
-                dtype=[np.float64, np.float32],
-                copy=False,
-                ensure_2d=False,
-                force_all_finite=False,
-            )
+        if check_input:
+            if sklearn_check_version("1.0"):
+                X, y = self._validate_data(
+                    X,
+                    y,
+                    dtype=[np.float64, np.float32],
+                    reset=first_pass,
+                    copy=self.copy_X,
+                    multi_output=True,
+                    force_all_finite=False,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                    copy=self.copy_X,
+                    force_all_finite=False,
+                )
+                y = check_array(
+                    y,
+                    dtype=[np.float64, np.float32],
+                    copy=False,
+                    ensure_2d=False,
+                    force_all_finite=False,
+                )
 
         if first_pass:
             self.n_samples_seen_ = X.shape[0]
