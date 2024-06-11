@@ -107,91 +107,34 @@ if daal_check_version((2023, "P", 200)):
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**sklearn_KMeans._parameter_constraints}
 
-            @_deprecate_positional_args
-            def __init__(
-                self,
-                n_clusters=8,
-                *,
-                init="k-means++",
-                n_init="auto" if sklearn_check_version("1.4") else "warn",
-                max_iter=300,
-                tol=1e-4,
-                verbose=0,
-                random_state=None,
-                copy_x=True,
-                algorithm="lloyd",
-            ):
-                super().__init__(
-                    n_clusters=n_clusters,
-                    init=init,
-                    max_iter=max_iter,
-                    tol=tol,
-                    n_init=n_init,
-                    verbose=verbose,
-                    random_state=random_state,
-                    copy_x=copy_x,
-                    algorithm=algorithm,
-                )
-
-        elif sklearn_check_version("1.0"):
-
-            @_deprecate_positional_args
-            def __init__(
-                self,
-                n_clusters=8,
-                *,
-                init="k-means++",
-                n_init=10,
-                max_iter=300,
-                tol=1e-4,
-                verbose=0,
-                random_state=None,
-                copy_x=True,
-                algorithm="lloyd" if sklearn_check_version("1.1") else "auto",
-            ):
-                super().__init__(
-                    n_clusters=n_clusters,
-                    init=init,
-                    max_iter=max_iter,
-                    tol=tol,
-                    n_init=n_init,
-                    verbose=verbose,
-                    random_state=random_state,
-                    copy_x=copy_x,
-                    algorithm=algorithm,
-                )
-
-        else:
-
-            @_deprecate_positional_args
-            def __init__(
-                self,
-                n_clusters=8,
-                *,
-                init="k-means++",
-                n_init=10,
-                max_iter=300,
-                tol=1e-4,
-                precompute_distances="deprecated",
-                verbose=0,
-                random_state=None,
-                copy_x=True,
-                n_jobs="deprecated",
-                algorithm="auto",
-            ):
-                super().__init__(
-                    n_clusters=n_clusters,
-                    init=init,
-                    max_iter=max_iter,
-                    tol=tol,
-                    precompute_distances=precompute_distances,
-                    n_init=n_init,
-                    verbose=verbose,
-                    random_state=random_state,
-                    copy_x=copy_x,
-                    n_jobs=n_jobs,
-                    algorithm=algorithm,
-                )
+        def __init__(
+            self,
+            n_clusters=8,
+            *,
+            init="k-means++",
+            n_init=(
+                "auto"
+                if sklearn_check_version("1.4")
+                else "warn" if sklearn_check_version("1.2") else 10
+            ),
+            max_iter=300,
+            tol=1e-4,
+            verbose=0,
+            random_state=None,
+            copy_x=True,
+            algorithm="lloyd" if sklearn_check_version("1.1") else "auto",
+        ):
+            super().__init__(
+                n_clusters=n_clusters,
+                init=init,
+                max_iter=max_iter,
+                tol=tol,
+                n_init=n_init,
+                verbose=verbose,
+                random_state=random_state,
+                copy_x=copy_x,
+                algorithm=algorithm,
+            )
 
         def _initialize_onedal_estimator(self):
             onedal_params = {
@@ -302,24 +245,44 @@ if daal_check_version((2023, "P", 200)):
 
             return patching_status
 
-        @wrap_output_data
-        def predict(
-            self, X, sample_weight="deprecated" if sklearn_check_version("1.3") else None
-        ):
-            if sklearn_check_version("1.0"):
+        if sklearn_check_version("1.5"):
+
+            @wrap_output_data
+            def predict(self, X):
                 self._check_feature_names(X, reset=True)
-            if sklearn_check_version("1.2"):
                 self._validate_params()
-            return dispatch(
+                return dispatch(
+                    self,
+                    "predict",
+                    {
+                        "onedal": self.__class__._onedal_predict,
+                        "sklearn": sklearn_KMeans.predict,
+                    },
+                    X,
+                )
+
+        else:
+
+            @wrap_output_data
+            def predict(
                 self,
-                "predict",
-                {
-                    "onedal": self.__class__._onedal_predict,
-                    "sklearn": sklearn_KMeans.predict,
-                },
                 X,
-                sample_weight,
-            )
+                sample_weight="deprecated" if sklearn_check_version("1.3") else None,
+            ):
+                if sklearn_check_version("1.0"):
+                    self._check_feature_names(X, reset=True)
+                if sklearn_check_version("1.2"):
+                    self._validate_params()
+                return dispatch(
+                    self,
+                    "predict",
+                    {
+                        "onedal": self.__class__._onedal_predict,
+                        "sklearn": sklearn_KMeans.predict,
+                    },
+                    X,
+                    sample_weight,
+                )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             X = self._validate_data(
@@ -385,5 +348,5 @@ else:
     from daal4py.sklearn.cluster import KMeans
 
     logging.warning(
-        "Sklearnex KMeans requires oneDAL version >= 2023.2 " "but it was not found"
+        "Sklearnex KMeans requires oneDAL version >= 2023.2, falling back to daal4py."
     )

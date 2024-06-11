@@ -120,8 +120,8 @@ struct params2desc {
             desc.set_seed(seed);
         }
 
-        if constexpr (std::is_same_v<Method, dal::kmeans_init::method::plus_plus_dense> ||
-                      std::is_same_v<Method, dal::kmeans_init::method::plus_plus_csr>) {
+        if constexpr ((std::is_same_v<Method, dal::kmeans_init::method::plus_plus_dense> ||
+                      std::is_same_v<Method, dal::kmeans_init::method::plus_plus_csr>)) {
             const auto local_trials_count = params["local_trials_count"].cast<std::int64_t>();
             desc.set_local_trials_count(local_trials_count);
         }
