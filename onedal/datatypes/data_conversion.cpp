@@ -222,6 +222,54 @@ dal::table convert_to_table(PyObject *obj) {
     return res;
 }
 
+
+template <typename Float>
+graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
+    graph_t<Float> res;
+
+    PyObject *py_data = PyObject_GetAttrString(obj, "data");
+    PyObject *py_column_indices = PyObject_GetAttrString(obj, "indices");
+    PyObject *py_row_indices = PyObject_GetAttrString(obj, "indptr");
+
+    PyObject *py_shape = PyObject_GetAttrString(obj, "shape");
+    if (!(is_array(py_data) && is_array(py_column_indices) && is_array(py_row_indices) &&
+            array_numdims(py_data) == 1 && array_numdims(py_column_indices) == 1 &&
+            array_numdims(py_row_indices) == 1)) {
+        throw std::invalid_argument("[convert_to_undirected_graph] Got invalid csr_matrix object.");
+    }
+    PyObject *np_data = PyArray_FROMANY(py_data, dtype, 0, 0, NPY_ARRAY_CARRAY);
+    PyObject *np_column_indices =
+        PyArray_FROMANY(py_column_indices,
+                        NPY_INT32,
+                        0,
+                        0,
+                        NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
+    PyObject *np_row_indices =
+        PyArray_FROMANY(py_row_indices,
+                        NPY_INT32,
+                        0,
+                        0,
+                        NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
+
+    PyObject *np_row_count = PyTuple_GetItem(py_shape, 0);
+    PyObject *np_column_count = PyTuple_GetItem(py_shape, 1);
+    if (!(np_data && np_column_indices && np_row_indices && np_row_count && np_column_count)) {
+        throw std::invalid_argument(
+            "[convert_to_undirected_graph] Failed accessing csr data when converting csr_matrix.\n");
+    }
+
+    const std::int64_t row_count = static_cast<std::int64_t>(PyLong_AsSsize_t(np_row_count));
+    const std::int64_t column_count =
+        static_cast<std::int64_t>(PyLong_AsSsize_t(np_column_count));
+
+    // construct graph here
+
+    Py_DECREF(np_column_indices);
+    Py_DECREF(np_row_indices);
+
+    return res;
+}
+
 static void free_capsule(PyObject *cap) {
     // TODO: check safe cast
     dal::base *stored_array = static_cast<dal::base *>(PyCapsule_GetPointer(cap, NULL));

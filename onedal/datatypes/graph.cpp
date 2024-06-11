@@ -14,9 +14,8 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "oneapi/dal/graph/common.hpp"
-#include "oneapi/dal/graph/undirected_adjacency_vector_graph.hpp"
-
+#include <string>
+#include <variant>
 
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/datatypes/numpy_helpers.hpp"
@@ -37,8 +36,7 @@ ONEDAL_PY_INIT_MODULE(graph) {
 
     template<typename Float>
     void graph_constructor(py::module &m, const char* typestr) {
-        using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
-        py::class_<graph_t> graph_obj(m, typestr)
+        py::class_<graph_t<Float>> graph_obj(m, typestr)
             .def(py::init());
     }
 
@@ -46,9 +44,19 @@ ONEDAL_PY_INIT_MODULE(graph) {
     graph_constructor<float>(m, "graph_double")
 
 
-    m.def("to_graph", [](py::object obj) {
+    m.def("to_graph", [](py::object obj) -> std::variant<graph_t<float>, graph_t<double>> {
         auto* obj_ptr = obj.ptr();
-        return convert_to_undirected_graph(obj_ptr);
+        if (strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0 || strcmp(Py_TYPE(obj)->tp_name, "csr_array") == 0){
+            PyObject *py_data = PyObject_GetAttrString(obj, "data");
+            if (array_type(py_data) == NPY_CDOUBLELTR){
+                return convert_to_undirected_graph<double>(obj_ptr);
+            }
+            else if (array_type(py_data) == NPY_CFLOATLTR){
+                return convert_to_undirected_graph<float>(obj_ptr);
+            }
+        }
+        throw std::invalid_argument(
+            "[convert_to_undirected_graph] Not available input format for convert Python object to onedal graph.");  
     });
 }
 
