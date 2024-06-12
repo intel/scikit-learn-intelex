@@ -96,6 +96,7 @@ def _transfer_to_host(queue, *data):
     host_data = []
     for item in data:
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
+        array_api = getattr(item, "__array_namespace__", None)
         if usm_iface is not None:
             if not dpctl_available:
                 raise RuntimeError(
@@ -122,6 +123,11 @@ def _transfer_to_host(queue, *data):
                 order=order,
             )
             has_usm_data = True
+        elif array_api is not None:
+            # TODO:
+            # get info about the device, for backward conversions.
+            item = np.from_dlpack(item).copy()
+            has_host_data = True
         else:
             has_host_data = True
 
@@ -155,11 +161,14 @@ def _get_host_inputs(*args, **kwargs):
     return q, hostargs, hostkwargs
 
 
-def _extract_usm_iface(*args, **kwargs):
+def _extract_array_attr(*args, **kwargs):
     allargs = (*args, *kwargs.values())
     if len(allargs) == 0:
-        return None
-    return getattr(allargs[0], "__sycl_usm_array_interface__", None)
+        return None, None, None
+    usm_iface = getattr(allargs[0], "__sycl_usm_array_interface__", None)
+    array_api = getattr(allargs[0], "__array_namespace__", None)
+    dlpack_device = getattr(allargs[0], "__dlpack_device__", None)
+    return usm_iface, array_api, dlpack_device
 
 
 def _run_on_device(func, obj=None, *args, **kwargs):
@@ -180,10 +189,12 @@ if dpnp_available:
         return array
 
 
-def support_usm_ndarray(freefunc=False):
+# TODO:
+# rename support_array_api
+def support_array_api(freefunc=False):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            usm_iface = _extract_usm_iface(*args, **kwargs)
+            usm_iface, array_api, dlpack_device = _extract_array_attr(*args, **kwargs)
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if "queue" in hostkwargs:
                 hostkwargs["queue"] = data_queue
@@ -192,6 +203,10 @@ def support_usm_ndarray(freefunc=False):
                 result = _copy_to_usm(data_queue, result)
                 if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
+            elif array_api:
+                # TODO:
+                # avoid for numpy
+                result = array_api.from_dlpack(result, copy=True, device=dlpack_device)
             return result
 
         if freefunc:

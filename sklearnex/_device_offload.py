@@ -19,6 +19,7 @@ from functools import wraps
 
 from onedal._device_offload import (
     _copy_to_usm,
+    _extract_array_attr,
     _get_global_queue,
     _transfer_to_host,
     dpnp_available,
@@ -97,15 +98,16 @@ def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())
-        if len(data) == 0:
-            usm_iface = None
-        else:
-            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+        usm_iface, array_api, dlpack_device = _extract_array_attr(*args, **kwargs)
         result = func(self, *args, **kwargs)
         if usm_iface is not None:
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
                 result = _convert_to_dpnp(result)
+        elif array_api:
+            # TODO:
+            # avoid for numpy
+            result = array_api.from_dlpack(result, copy=True, device=dlpack_device)
         return result
 
     return wrapper
