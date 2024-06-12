@@ -16,7 +16,7 @@
 
 #include <string>
 #include <variant>
-
+#define NO_IMPORT_ARRAY // import_array called in table.cpp
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/datatypes/numpy_helpers.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
@@ -26,28 +26,24 @@ namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-static void* init_numpy() {
-    import_array();
-    return nullptr;
+template<typename Float>
+void graph_constructor(py::module &m, const char* typestr) {
+    py::class_<graph_t<Float>> graph_obj(m, typestr);
+        graph_obj.def(py::init());
 }
 
 ONEDAL_PY_INIT_MODULE(graph) {
-    init_numpy();
+    //init_numpy();
+    // init in table.cpp
 
-    template<typename Float>
-    void graph_constructor(py::module &m, const char* typestr) {
-        py::class_<graph_t<Float>> graph_obj(m, typestr)
-            .def(py::init());
-    }
-
-    graph_constructor<float>(m, "graph_float")
-    graph_constructor<float>(m, "graph_double")
+    graph_constructor<float>(m, "graph_float");
+    graph_constructor<float>(m, "graph_double");
 
 
     m.def("to_graph", [](py::object obj) -> std::variant<graph_t<float>, graph_t<double>> {
         auto* obj_ptr = obj.ptr();
-        if (strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0 || strcmp(Py_TYPE(obj)->tp_name, "csr_array") == 0){
-            PyObject *py_data = PyObject_GetAttrString(obj, "data");
+        if (strcmp(Py_TYPE(obj_ptr)->tp_name, "csr_matrix") == 0 || strcmp(Py_TYPE(obj_ptr)->tp_name, "csr_array") == 0){
+            PyObject *py_data = PyObject_GetAttrString(obj_ptr, "data");
             if (array_type(py_data) == NPY_CDOUBLELTR){
                 return convert_to_undirected_graph<double>(obj_ptr);
             }

@@ -47,6 +47,8 @@ namespace oneapi::dal::python {
     ONEDAL_PY_INIT_MODULE(policy);
     /* datatypes*/
     ONEDAL_PY_INIT_MODULE(table);
+    ONEDAL_PY_INIT_MODULE(graph);
+
     ONEDAL_PY_INIT_MODULE(table_metadata);
 
     /* primitives */
@@ -61,6 +63,8 @@ namespace oneapi::dal::python {
     ONEDAL_PY_INIT_MODULE(dbscan);
     ONEDAL_PY_INIT_MODULE(ensemble);
     ONEDAL_PY_INIT_MODULE(decomposition);
+    ONEDAL_PY_INIT_MODULE(louvain);
+
     #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230100
     ONEDAL_PY_INIT_MODULE(basic_statistics);
     ONEDAL_PY_INIT_MODULE(linear_model);
@@ -108,7 +112,8 @@ namespace oneapi::dal::python {
         init_policy(m);
         init_table(m);
         init_table_metadata(m);
-    
+        init_graph(m);
+
         init_linear_kernel(m);
         init_rbf_kernel(m);
         init_polynomial_kernel(m);
