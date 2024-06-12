@@ -35,7 +35,7 @@ template <typename Float>
 using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
 
 template <typename Float>
-graph_t<Float> convert_to_undirected_graph(PyObject *obj);
+graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype);
 
 } // namespace oneapi::dal::python
 
