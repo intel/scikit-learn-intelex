@@ -22,6 +22,8 @@
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
+#include "oneapi/dal/detail/memory.hpp"
+
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/datatypes/numpy_helpers.hpp"
 #include "onedal/version.hpp"
@@ -264,8 +266,34 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
 
     // construct graph here
 
-    Py_DECREF(np_column_indices);
-    Py_DECREF(np_row_indices);
+    // access raw col, row and edge data
+    PyArrayObject *edge_data = reinterpret_cast<PyArrayObject *>(np_data);
+    PyArrayObject *col_indices = reinterpret_cast<PyArrayObject *>(np_column_indices);
+    PyArrayObject *row_indices = reinterpret_cast<PyArrayObject *>(np_row_indices);
+
+    const Float *edge_pointer = static_cast<Float *>(array_data(edge_data));
+    const std::int64_t edge_count = static_cast<std::int64_t>(array_size(edge_data, 0));
+    const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0));
+    const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices))
+    const std::int32_t *rows = static_cast<std::int32_t *>(array_data(row_indices))
+
+    auto& graph_impl = oneapi::dal::detail::get_impl(res);
+    using vertex_set_t = typename graph_traits<graph_t<Float>>::vertex_set;
+
+    rebinded_allocator ra(graph_impl._vertex_allocator);
+    auto [degrees_array, degrees] = ra.template allocate_array<vertex_set_t>(vertex_count);
+
+    for (std::int64_t u = 0; u < vertex_count; u++) {
+        degrees[u] = rows[u + 1] - rows[u];
+    }
+
+    graph_impl.set_topology(vertex_count, edge_count, rows, cols, edge_count, degrees);
+    graph_impl.get_topology()._degrees = degrees_array;
+    graph_impl.set_edge_values(edge_pointer, edge_count);
+
+    Py_INCREF(edge_data);
+    //Py_DECREF(np_column_indices);
+    //Py_DECREF(np_row_indices);
 
     return res;
 }
