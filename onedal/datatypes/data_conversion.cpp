@@ -264,7 +264,7 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     const std::int64_t column_count =
         static_cast<std::int64_t>(PyLong_AsSsize_t(np_column_count));
 
-    // construct graph here
+    // construct graph here, adapted from directed_adjacency_vector_graph_impl.hpp
 
     // access raw col, row and edge data
     PyArrayObject *edge_data = reinterpret_cast<PyArrayObject *>(np_data);
@@ -274,13 +274,13 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     const Float *edge_pointer = static_cast<Float *>(array_data(edge_data));
     const std::int64_t edge_count = static_cast<std::int64_t>(array_size(edge_data, 0));
     const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0));
-    const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices))
-    const std::int32_t *rows = static_cast<std::int32_t *>(array_data(row_indices))
+    const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices));
+    const std::int32_t *rows = static_cast<std::int32_t *>(array_data(row_indices));
 
-    auto& graph_impl = oneapi::dal::detail::get_impl(res);
-    using vertex_set_t = typename graph_traits<graph_t<Float>>::vertex_set;
+    auto& graph_impl = dal::detail::get_impl(res);
+    using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
 
-    rebinded_allocator ra(graph_impl._vertex_allocator);
+    dal::preview::detail::rebinded_allocator ra(graph_impl._vertex_allocator);
     auto [degrees_array, degrees] = ra.template allocate_array<vertex_set_t>(vertex_count);
 
     for (std::int64_t u = 0; u < vertex_count; u++) {
