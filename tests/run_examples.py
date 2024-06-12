@@ -158,6 +158,7 @@ req_device["covariance_spmd.py"] = ["gpu"]
 req_device["dbscan_spmd.py"] = ["gpu"]
 req_device["incremental_basic_statistics_dpctl.py"] = ["gpu"]
 req_device["incremental_linear_regression_dpctl.py"] = ["gpu"]
+req_device["incremental_pca_dpctl.py"] = ["gpu"]
 req_device["kmeans_spmd.py"] = ["gpu"]
 req_device["knn_bf_classification_dpnp.py"] = ["gpu"]
 req_device["knn_bf_classification_spmd.py"] = ["gpu"]
@@ -175,9 +176,9 @@ req_library = defaultdict(lambda: [])
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
-req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["incremental_basic_statistics_dpctl.py"] = ["dpctl"]
 req_library["incremental_linear_regression_dpctl.py"] = ["dpctl"]
+req_library["incremental_pca_dpctl.py"] = ["dpctl"]
 req_library["kmeans_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["knn_bf_classification_dpnp.py"] = ["dpctl", "dpnp"]
 req_library["knn_bf_classification_spmd.py"] = ["dpctl", "mpi4py"]
@@ -191,6 +192,20 @@ req_library["random_forest_regressor_dpnp.py"] = ["dpnp"]
 req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
+req_os["basic_statistics_spmd.py"] = ["lnx"]
+req_os["covariance_spmd.py"] = ["lnx"]
+req_os["dbscan_spmd.py"] = ["lnx"]
+req_os["kmeans_spmd.py"] = ["lnx"]
+req_os["knn_bf_classification_dpnp.py"] = ["lnx"]
+req_os["knn_bf_classification_spmd.py"] = ["lnx"]
+req_os["knn_bf_regression_spmd.py"] = ["lnx"]
+req_os["linear_regression_spmd.py"] = ["lnx"]
+req_os["logistic_regression_spmd.py"] = ["lnx"]
+req_os["pca_spmd.py"] = ["lnx"]
+req_os["random_forest_classifier_dpctl.py"] = ["lnx"]
+req_os["random_forest_classifier_spmd.py"] = ["lnx"]
+req_os["random_forest_regressor_dpnp.py"] = ["lnx"]
+req_os["random_forest_regressor_spmd.py"] = ["lnx"]
 
 skiped_files = []
 
@@ -226,6 +241,8 @@ def get_exe_cmd(ex, args):
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
+            return None
+        if not check_os(req_os[os.path.basename(ex)], system_os):
             return None
     if not args.nodist and ex.endswith("spmd.py"):
         if IS_WIN:

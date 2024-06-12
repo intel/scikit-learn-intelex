@@ -29,7 +29,7 @@ from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifie
 from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
 from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, r2_score
 from sklearn.tree import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,
@@ -114,7 +114,9 @@ class BaseForest(ABC):
             "min_samples_split": self.min_samples_split,
             "min_samples_leaf": self.min_samples_leaf,
             "min_weight_fraction_leaf": self.min_weight_fraction_leaf,
-            "max_features": self.max_features,
+            "max_features": self._to_absolute_max_features(
+                self.max_features, self.n_features_in_
+            ),
             "max_leaf_nodes": self.max_leaf_nodes,
             "min_impurity_decrease": self.min_impurity_decrease,
             "bootstrap": self.bootstrap,
@@ -173,6 +175,45 @@ class BaseForest(ABC):
             self._n_samples_bootstrap = None
         self._validate_estimator()
         return self
+
+    def _to_absolute_max_features(self, max_features, n_features):
+        if max_features is None:
+            return n_features
+        if isinstance(max_features, str):
+            if max_features == "auto":
+                if not sklearn_check_version("1.3"):
+                    if sklearn_check_version("1.1"):
+                        warnings.warn(
+                            "`max_features='auto'` has been deprecated in 1.1 "
+                            "and will be removed in 1.3. To keep the past behaviour, "
+                            "explicitly set `max_features=1.0` or remove this "
+                            "parameter as it is also the default value for "
+                            "RandomForestRegressors and ExtraTreesRegressors.",
+                            FutureWarning,
+                        )
+                    return (
+                        max(1, int(np.sqrt(n_features)))
+                        if isinstance(self, ForestClassifier)
+                        else n_features
+                    )
+            if max_features == "sqrt":
+                return max(1, int(np.sqrt(n_features)))
+            if max_features == "log2":
+                return max(1, int(np.log2(n_features)))
+            allowed_string_values = (
+                '"sqrt" or "log2"'
+                if sklearn_check_version("1.3")
+                else '"auto", "sqrt" or "log2"'
+            )
+            raise ValueError(
+                "Invalid value for max_features. Allowed string "
+                f"values are {allowed_string_values}."
+            )
+        if isinstance(max_features, (numbers.Integral, np.integer)):
+            return max_features
+        if max_features > 0.0:
+            return max(1, int(max_features * n_features))
+        return 0
 
     def _check_parameters(self):
         if isinstance(self.min_samples_leaf, numbers.Integral):
@@ -996,7 +1037,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-        elif method_name == "predict":
+        elif method_name in ["predict", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
@@ -1050,7 +1091,7 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
                 ]
             )
 
-        elif method_name == "predict":
+        elif method_name in ["predict", "score"]:
             X = data[0]
 
             patching_status.and_conditions(
@@ -1093,6 +1134,11 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
 
         return self._onedal_estimator.predict(X, queue=queue)
 
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
+
     def fit(self, X, y, sample_weight=None):
         dispatch(
             self,
@@ -1119,8 +1165,23 @@ class ForestRegressor(sklearn_ForestRegressor, BaseForest):
             X,
         )
 
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_ForestRegressor.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
+        )
+
     fit.__doc__ = sklearn_ForestRegressor.fit.__doc__
     predict.__doc__ = sklearn_ForestRegressor.predict.__doc__
+    score.__doc__ = sklearn_ForestRegressor.score.__doc__
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "score"])
