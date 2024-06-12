@@ -25,19 +25,6 @@
     #define _ONEAPI_BACKEND_EXPORT
 #endif
 
-class _ONEAPI_BACKEND_EXPORT PySyclExecutionContext
-{
-public:
-    // Construct from given device provided as string
-    PySyclExecutionContext(const std::string & dev, const bool from_python);
-    ~PySyclExecutionContext();
-
-    void apply();
-
-private:
-    daal::services::internal::ExecutionContext * m_ctxt;
-};
-
 template <typename T>
 _ONEAPI_BACKEND_EXPORT void * to_device(T * ptr, int * shape);
 

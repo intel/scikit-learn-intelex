@@ -23,37 +23,6 @@ static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 
 #include "oneapi_backend.h"
 
-    PySyclExecutionContext::PySyclExecutionContext(const std::string & dev, const bool from_python)
-    : m_ctxt(NULL)
-{
-    if (dev == "gpu")
-#if INTEL_DAAL_VERSION >= 20240000
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()), from_python);
-#else // INTEL_DAAL_VERSION >= 20240000
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
-#endif // INTEL_DAAL_VERSION >= 20240000
-    else if (dev == "cpu")
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
-    else if (dev == "host")
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));
-    else
-    {
-        throw std::runtime_error(std::string("Device is not supported: ") + dev);
-    }
-}
-
-PySyclExecutionContext::~PySyclExecutionContext()
-{
-    daal::services::Environment::getInstance()->setDefaultExecutionContext(daal::services::CpuExecutionContext());
-    delete m_ctxt;
-    m_ctxt = NULL;
-}
-
-void PySyclExecutionContext::apply()
-{
-    daal::services::Environment::getInstance()->setDefaultExecutionContext(*m_ctxt);
-}
-
 #if INTEL_DAAL_VERSION >= 20210200
 inline const sycl::queue & get_current_queue()
 {

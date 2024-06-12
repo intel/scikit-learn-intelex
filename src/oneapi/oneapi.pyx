@@ -22,39 +22,6 @@ from libcpp cimport bool
 from libcpp.string cimport string as std_string
 
 
-cdef extern from "oneapi/oneapi.h":
-    cdef cppclass PySyclExecutionContext:
-        PySyclExecutionContext(const std_string & dev, const bool from_python) except +
-        void apply() except +
-    void * to_device(void *, int, int*)
-    void * to_daal_sycl_nt(void*, int, int*)
-    void * to_daal_host_nt(void*, int, int*)
-    void delete_device_data(void *, int)
-
-    std_string to_std_string(PyObject * o) except +
-
-    void * c_make_py_from_sycltable(void * ptr, int typ) except +
-
-
-
-cdef class sycl_execution_context:
-    cdef PySyclExecutionContext * c_ptr
-    cdef object dev
-
-    def __cinit__(self, dev, from_python=True):
-        self.dev = dev
-        self.c_ptr = new PySyclExecutionContext(to_std_string(<PyObject *>dev), from_python)
-
-    def __dealloc__(self):
-        del self.c_ptr
-
-    def apply(self):
-        self.c_ptr.apply()
-
-    def get_device_name(self):
-        return self.dev
-
-
 # thread-local storage
 
 from threading import local as threading_local
