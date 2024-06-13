@@ -15,7 +15,7 @@
 # ==============================================================================
 
 from functools import partial
-from inspect import getattr_static, isclass
+from inspect import getattr_static, isclass, signature
 
 import numpy as np
 from scipy import sparse as sp
@@ -112,7 +112,7 @@ SPECIAL_INSTANCES = _sklearn_clone_dict(
 )
 
 
-def gen_models_info(algorithms):
+def gen_models_info(algorithms, required_inputs=["X", "y"]):
     output = []
     for i in algorithms:
 
@@ -123,13 +123,27 @@ def gen_models_info(algorithms):
         else:
             raise KeyError(f"Unrecognized sklearnex estimator: {i}")
 
-        methods = set(dir(est)) - set(dir(BaseEstimator))
-        methods = set(
-            [i for i in methods if not i.startswith("_") and not i.endswith("_")]
+        # remove BaseEstimator methods (get_params, set_params)
+        candidates = set(dir(est)) - set(dir(BaseEstimator))
+        # remove private methods
+        candidates = set(
+            [i for i in candidates if not i.startswith("_")]
         )
-        methods = set([i for i in methods if callable(getattr_static(est, i))])
-        methods = methods - {"fit"}
+        # required to enable other methods
+        candidates = candidates - {"fit"}
 
+        # allow only callable methods with any of the required inputs
+        if required_inputs:
+            methods = []
+            for i in candidates:
+                attr = getattr_static(est, i)
+                if callable(attr):
+                    params = signature(attr).parameters
+                    if any([j in params for j in required]):
+                        methods += [i]
+        else:
+            methods = candidates
+    
         output += [[i, j] for j in methods] if methods else [[i, None]]
 
     # In the case that no methods are available, set method to None.
