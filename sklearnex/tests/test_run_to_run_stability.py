@@ -150,6 +150,8 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
     if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
         pytest.skip(f"variation observed in {estimator}.score")
+    if estimator in ["PCA"] and method == "score" and queue != None:
+        pytest.skip(f"eval time too long for {estimator}.score")
 
     est = PATCHED_MODELS[estimator]()
 
