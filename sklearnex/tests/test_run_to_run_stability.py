@@ -151,7 +151,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
         pytest.skip(f"variation observed in {estimator}.score")
     if estimator in ["PCA"] and method == "score" and queue != None:
-        pytest.skip(f"eval time too long for {estimator}.score")
+        pytest.skip(f"evaluation time too long for {estimator}.score")
 
     est = PATCHED_MODELS[estimator]()
 
@@ -216,7 +216,9 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
 def test_other_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
-        pytest.skip(f"variation observed in KMeans.score")
+        pytest.skip(f"variation observed in {estimator}.score")
+    if "PCA" in estimator and method == "score" and queue != None:
+        pytest.skip(f"evaluation time too long for {estimator}.score")
 
     est = STABILITY_INSTANCES[estimator]
 
