@@ -51,6 +51,8 @@ def test_sklearnex_import(dataframe, queue):
         assert hasattr(pca, "_onedal_estimator")
     else:
         assert "daal4py" in pca.__module__
+
+    tol = 1e-5 if _as_numpy(X_transformed).dtype == np.float32 else 1e-7
     assert_allclose([6.30061232, 0.54980396], _as_numpy(pca.singular_values_))
-    assert_allclose(X_transformed_expected, _as_numpy(X_transformed))
-    assert_allclose(X_transformed_expected, _as_numpy(X_fit_transformed))
+    assert_allclose(X_transformed_expected, _as_numpy(X_transformed), rtol=tol)
+    assert_allclose(X_transformed_expected, _as_numpy(X_fit_transformed), rtol=tol)

@@ -79,22 +79,18 @@ class IncrementalLinearRegression(BaseLinearRegression):
         if not hasattr(self, "_policy"):
             self._policy = self._get_policy(queue, X)
 
+        X, y = _convert_to_supported(self._policy, X, y)
+
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        if self._dtype not in [np.float32, np.float64]:
-            self._dtype = np.float64
-
-        X = X.astype(self._dtype, copy=self.copy_X)
-        y = y.astype(dtype=self._dtype)
+        y = np.asarray(y).astype(dtype=self._dtype)
         self._y_ndim_1 = y.ndim == 1
 
-        X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
+        X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
-
-        X, y = _convert_to_supported(self._policy, X, y)
         X_table, y_table = to_table(X, y)
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:

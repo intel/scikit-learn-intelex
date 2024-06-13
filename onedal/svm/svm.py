@@ -16,19 +16,16 @@
 
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from numbers import Number, Real
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.base import BaseEstimator
 
-from daal4py.sklearn._utils import sklearn_check_version
 from onedal import _backend
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
-from ..datatypes import from_table, to_table
+from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import (
     _check_array,
     _check_n_features,
@@ -45,7 +42,7 @@ class SVMtype(Enum):
     nu_svr = 3
 
 
-class BaseSVM(BaseEstimator, metaclass=ABCMeta):
+class BaseSVM(metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
@@ -87,132 +84,10 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.algorithm = algorithm
         self.svm_type = svm_type
 
-    def _compute_gamma_sigma(self, gamma, X):
-        if isinstance(gamma, str):
-            if gamma == "scale":
-                if sp.issparse(X):
-                    # var = E[X^2] - E[X]^2
-                    X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
-                else:
-                    X_sc = X.var()
-                _gamma = 1.0 / (X.shape[1] * X_sc) if X_sc != 0 else 1.0
-            elif gamma == "auto":
-                _gamma = 1.0 / X.shape[1]
-            else:
-                raise ValueError(
-                    "When 'gamma' is a string, it should be either 'scale' or "
-                    "'auto'. Got '{}' instead.".format(gamma)
-                )
-        else:
-            if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
-                if isinstance(gamma, Real):
-                    if gamma <= 0:
-                        msg = (
-                            f"gamma value must be > 0; {gamma!r} is invalid. Use"
-                            " a positive number or use 'auto' to set gamma to a"
-                            " value of 1 / n_features."
-                        )
-                        raise ValueError(msg)
-                    _gamma = gamma
-                else:
-                    msg = (
-                        "The gamma value should be set to 'scale', 'auto' or a"
-                        f" positive float value. {gamma!r} is not a valid option"
-                    )
-                    raise ValueError(msg)
-            else:
-                _gamma = gamma
-        return _gamma, np.sqrt(0.5 / _gamma)
-
     def _validate_targets(self, y, dtype):
         self.class_weight_ = None
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
-
-    def _get_sample_weight(self, X, y, sample_weight):
-        n_samples = X.shape[0]
-        dtype = X.dtype
-        if n_samples == 1:
-            raise ValueError("n_samples=1")
-
-        sample_weight = np.asarray(
-            [] if sample_weight is None else sample_weight, dtype=np.float64
-        )
-
-        sample_weight_count = sample_weight.shape[0]
-        if sample_weight_count != 0 and sample_weight_count != n_samples:
-            raise ValueError(
-                "sample_weight and X have incompatible shapes: "
-                "%r vs %r\n"
-                "Note: Sparse matrices cannot be indexed w/"
-                "boolean masks (use `indices=True` in CV)."
-                % (len(sample_weight), X.shape)
-            )
-
-        ww = None
-        if sample_weight_count == 0 and self.class_weight_ is None:
-            return ww
-
-        if sample_weight_count == 0:
-            sample_weight = np.ones(n_samples, dtype=dtype)
-        elif isinstance(sample_weight, Number):
-            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
-        else:
-            sample_weight = _check_array(
-                sample_weight,
-                accept_sparse=False,
-                ensure_2d=False,
-                dtype=dtype,
-                order="C",
-            )
-            if sample_weight.ndim != 1:
-                raise ValueError("Sample weights must be 1D array or scalar")
-
-            if sample_weight.shape != (n_samples,):
-                raise ValueError(
-                    "sample_weight.shape == {}, expected {}!".format(
-                        sample_weight.shape, (n_samples,)
-                    )
-                )
-
-        if self.svm_type == SVMtype.nu_svc:
-            weight_per_class = [
-                np.sum(sample_weight[y == class_label]) for class_label in np.unique(y)
-            ]
-
-            for i in range(len(weight_per_class)):
-                for j in range(i + 1, len(weight_per_class)):
-                    if self.nu * (weight_per_class[i] + weight_per_class[j]) / 2 > min(
-                        weight_per_class[i], weight_per_class[j]
-                    ):
-                        raise ValueError("specified nu is infeasible")
-
-        if np.all(sample_weight <= 0):
-            if self.svm_type == SVMtype.nu_svc:
-                err_msg = "negative dimensions are not allowed"
-            else:
-                err_msg = "Invalid input - all samples have zero or negative weights."
-            raise ValueError(err_msg)
-        if np.any(sample_weight <= 0):
-            if self.svm_type == SVMtype.c_svc and len(
-                np.unique(y[sample_weight > 0])
-            ) != len(self.classes_):
-                raise ValueError(
-                    "Invalid input - all samples with positive weights "
-                    "belong to the same class"
-                    if sklearn_check_version("1.2")
-                    else "Invalid input - all samples with positive weights "
-                    "have the same label."
-                )
-        ww = sample_weight
-        if self.class_weight_ is not None:
-            for i, v in enumerate(self.class_weight_):
-                ww[y == i] *= v
-
-        if not ww.flags.c_contiguous and not ww.flags.f_contiguous:
-            ww = np.ascontiguousarray(ww, dtype)
-
-        return ww
 
     def _get_onedal_params(self, data):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
@@ -247,12 +122,6 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                     f"got {self.decision_function_shape}."
                 )
 
-        if y is None:
-            if self._get_tags()["requires_y"]:
-                raise ValueError(
-                    f"This {self.__class__.__name__} estimator "
-                    f"requires y to be passed, but the target y is None."
-                )
         X, y = _check_X_y(
             X,
             y,
@@ -261,19 +130,53 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             accept_sparse="csr",
         )
         y = self._validate_targets(y, X.dtype)
-        sample_weight = self._get_sample_weight(X, y, sample_weight)
+        if sample_weight is not None and len(sample_weight) > 0:
+            sample_weight = _check_array(
+                sample_weight,
+                accept_sparse=False,
+                ensure_2d=False,
+                dtype=X.dtype,
+                order="C",
+            )
+        elif self.class_weight is not None:
+            sample_weight = np.ones(X.shape[0], dtype=X.dtype)
 
+        if sample_weight is not None:
+            if self.class_weight_ is not None:
+                for i, v in enumerate(self.class_weight_):
+                    sample_weight[y == i] *= v
+            data = (X, y, sample_weight)
+        else:
+            data = (X, y)
         self._sparse = sp.issparse(X)
 
         if self.kernel == "linear":
             self._scale_, self._sigma_ = 1.0, 1.0
             self.coef0 = 0.0
         else:
-            self._scale_, self._sigma_ = self._compute_gamma_sigma(self.gamma, X)
+            if isinstance(self.gamma, str):
+                if self.gamma == "scale":
+                    if sp.issparse(X):
+                        # var = E[X^2] - E[X]^2
+                        X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
+                    else:
+                        X_sc = X.var()
+                    _gamma = 1.0 / (X.shape[1] * X_sc) if X_sc != 0 else 1.0
+                elif self.gamma == "auto":
+                    _gamma = 1.0 / X.shape[1]
+                else:
+                    raise ValueError(
+                        "When 'gamma' is a string, it should be either 'scale' or "
+                        "'auto'. Got '{}' instead.".format(self.gamma)
+                    )
+            else:
+                _gamma = self.gamma
+            self._scale_, self._sigma_ = _gamma, np.sqrt(0.5 / _gamma)
 
-        policy = _get_policy(queue, X, y, sample_weight)
+        policy = _get_policy(queue, *data)
+        X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        result = module.train(policy, params, *to_table(X, y, sample_weight))
+        result = module.train(policy, params, *to_table(*data))
 
         if self._sparse:
             self.dual_coef_ = sp.csr_matrix(from_table(result.coeffs).T)
@@ -350,6 +253,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 )
 
             policy = _get_policy(queue, X)
+            X = _convert_to_supported(policy, X)
             params = self._get_onedal_params(X)
 
             if hasattr(self, "_onedal_model"):
@@ -406,6 +310,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 )
 
         policy = _get_policy(queue, X)
+        X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
 
         if hasattr(self, "_onedal_model"):
