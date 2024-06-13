@@ -126,9 +126,7 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
         # remove BaseEstimator methods (get_params, set_params)
         candidates = set(dir(est)) - set(dir(BaseEstimator))
         # remove private methods
-        candidates = set(
-            [i for i in candidates if not i.startswith("_")]
-        )
+        candidates = set([i for i in candidates if not i.startswith("_")])
         # required to enable other methods
         candidates = candidates - {"fit"}
 
@@ -143,7 +141,7 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
                         methods += [i]
         else:
             methods = candidates
-    
+
         output += [[i, j] for j in methods] if methods else [[i, None]]
 
     # In the case that no methods are available, set method to None.
