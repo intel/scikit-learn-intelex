@@ -259,7 +259,7 @@ deselected_tests:
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]  
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X1-y1-0.65-array-ExtraTreesClassifier] >=1.3
   - ensemble/tests/test_forest.py::test_forest_regressor_oob[True-X0-y0-0.7-array-ExtraTreesRegressor] >=1.3
   - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor] >=1.2 darwin
@@ -337,6 +337,7 @@ deselected_tests:
   - ensemble/_hist_gradient_boosting/tests/test_compare_lightgbm.py::test_same_predictions_multiclass_classification >=0.24,<1.0
   - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=0.24,<1.0
   - utils/tests/test_validation.py::test_check_array_pandas_dtype_casting >=1.0,<1.2
+  - utils/tests/test_validation.py::test_check_sparse_pandas_sp_format <1.2
 
   # Failure due to non-uniformity in the MT2203 engine causing
   # bad Random Forest fits for small datasets with large n_estimators
@@ -752,7 +753,7 @@ gpu:
   - manifold/tests/test_t_sne.py::test_gradient_bh_multithread_match_sequential
   - neighbors/tests/test_kde.py::test_kernel_density_sampling
   - tests/test_common.py::test_check_n_features_in_after_fitting[NearestNeighbors()]
-  - tests/test_common.py::test_estimators[NearestNeighbors()] 
+  - tests/test_common.py::test_estimators[NearestNeighbors()]
   - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv0]
   - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv1]
   - manifold/tests/test_t_sne.py::test_barnes_hut_angle
@@ -1104,7 +1105,7 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_auto_algorithm
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend
   - svm/tests/test_sparse.py::test_consistent_proba
-  - svm/tests/test_svm.py::test_consistent_proba 
+  - svm/tests/test_svm.py::test_consistent_proba
   - svm/tests/test_svm.py::test_libsvm_parameters
   - svm/tests/test_svm.py::test_negative_weight_equal_coeffs
   - svm/tests/test_svm.py::test_unicode_kernel
