@@ -15,7 +15,7 @@
 # ==============================================================================
 
 from functools import partial
-from inspect import isclass
+from inspect import getattr_static, isclass
 
 import numpy as np
 from scipy import sparse as sp
@@ -123,14 +123,13 @@ def gen_models_info(algorithms):
         else:
             raise KeyError(f"Unrecognized sklearnex estimator: {i}")
 
-        methods = set()
-        candidates = set(
-            [i for i in dir(est) if not i.startswith("_") and not i.endswith("_")]
+        methods = set(dir(est)) - set(dir(BaseEstimator))
+        methods = set(
+            [i for i in methods if not i.startswith("_") and not i.endswith("_")]
         )
-
-        for mixin, method, _ in mixin_map:
-            if issubclass(est, mixin):
-                methods |= candidates & set(method)
+        methods = set(
+            [i for i in methods if callable(getattr_static(est, i))]
+        )
 
         output += [[i, j] for j in methods] if methods else [[i, None]]
 
