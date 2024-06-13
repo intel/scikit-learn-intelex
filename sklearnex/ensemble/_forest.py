@@ -78,7 +78,7 @@ class BaseForest(ABC):
         )
 
         if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
+            sample_weight = self._check_sample_weight(sample_weight, X)
 
         if y.ndim == 2 and y.shape[1] == 1:
             warnings.warn(
@@ -289,7 +289,7 @@ class BaseForest(ABC):
                 "min_bin_size must be integral number but was " "%r" % self.min_bin_size
             )
 
-    def check_sample_weight(self, sample_weight, X, dtype=None):
+    def _check_sample_weight(self, sample_weight, X, dtype=None):
         n_samples = _num_samples(X)
 
         if dtype is not None and dtype not in [np.float32, np.float64]:
