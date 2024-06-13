@@ -133,12 +133,12 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
         # allow only callable methods with any of the required inputs
         if required_inputs:
             methods = []
-            for i in candidates:
-                attr = getattr_static(est, i)
+            for j in candidates:
+                attr = getattr_static(est, j)
                 if callable(attr):
                     params = signature(attr).parameters
-                    if any([j in params for j in required_inputs]):
-                        methods += [i]
+                    if any([k in params for k in required_inputs]):
+                        methods += [j]
         else:
             methods = candidates
 
