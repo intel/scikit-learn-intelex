@@ -137,7 +137,7 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
                 attr = getattr_static(est, i)
                 if callable(attr):
                     params = signature(attr).parameters
-                    if any([j in params for j in required]):
+                    if any([j in params for j in required_inputs]):
                         methods += [i]
         else:
             methods = candidates
