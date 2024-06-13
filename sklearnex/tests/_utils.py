@@ -130,6 +130,7 @@ def gen_models_info(algorithms):
         methods = set(
             [i for i in methods if callable(getattr_static(est, i))]
         )
+        methods = methods - {"fit"}
 
         output += [[i, j] for j in methods] if methods else [[i, None]]
 
