@@ -219,13 +219,14 @@ def get_patch_map_core(preview=False):
 
         # metrics
         mapping.pop("distances")
+        mapping.pop("roc_auc_score")
         mapping["distances"] = [
             [
                 (metrics_module, "pairwise_distances", pairwise_distances_sklearnex),
                 None,
             ]
         ]
-        mapping.pop("roc_auc_score")
+        mapping["pairwise_distances"] = mapping["distances"]
         mapping["roc_auc_score"] = [
             [
                 (metrics_module, "roc_auc_score", roc_auc_score_sklearnex),
