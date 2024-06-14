@@ -224,4 +224,3 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
     predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
     score.__doc__ = sklearn_KNeighborsClassifier.score.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
-    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
