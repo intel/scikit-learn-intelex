@@ -86,6 +86,11 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         xp, is_array_api_compliant = get_namespace(X)
+        # TODO:
+        # enable via Array API
+        # if sklearn_check_version("1.0"):
+        #     X = self._validate_data(X, force_all_finite=False)
+
         onedal_params = {
             "eps": self.eps,
             "min_samples": self.min_samples,

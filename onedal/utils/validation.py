@@ -419,3 +419,10 @@ def _num_samples(x):
         return len(x)
     except TypeError as type_error:
         raise TypeError(message) from type_error
+
+
+def _is_csr(x):
+    """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
+    return isinstance(x, sp.csr_matrix) or (
+        hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
+    )

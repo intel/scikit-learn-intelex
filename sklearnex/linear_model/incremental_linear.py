@@ -135,6 +135,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
+                reset=False,
             )
         else:
             X = check_array(
@@ -153,36 +154,37 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
-    def _onedal_partial_fit(self, X, y, queue=None):
+    def _onedal_partial_fit(self, X, y, check_input=True, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
-                X,
-                y,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-                copy=self.copy_X,
-                multi_output=True,
-                force_all_finite=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-                force_all_finite=False,
-            )
-            y = check_array(
-                y,
-                dtype=[np.float64, np.float32],
-                copy=False,
-                ensure_2d=False,
-                force_all_finite=False,
-            )
+        if check_input:
+            if sklearn_check_version("1.0"):
+                X, y = self._validate_data(
+                    X,
+                    y,
+                    dtype=[np.float64, np.float32],
+                    reset=first_pass,
+                    copy=self.copy_X,
+                    multi_output=True,
+                    force_all_finite=False,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                    copy=self.copy_X,
+                    force_all_finite=False,
+                )
+                y = check_array(
+                    y,
+                    dtype=[np.float64, np.float32],
+                    copy=False,
+                    ensure_2d=False,
+                    force_all_finite=False,
+                )
 
         if first_pass:
             self.n_samples_seen_ = X.shape[0]
@@ -211,7 +213,12 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         if sklearn_check_version("1.0"):
             X, y = self._validate_data(
-                X, y, dtype=[np.float64, np.float32], copy=self.copy_X, multi_output=True
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                copy=self.copy_X,
+                multi_output=True,
+                ensure_2d=True,
             )
         else:
             X = check_array(
@@ -243,7 +250,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         for batch in gen_batches(n_samples, self.batch_size_):
             X_batch, y_batch = X[batch], y[batch]
-            self._onedal_partial_fit(X_batch, y_batch, queue=queue)
+            self._onedal_partial_fit(X_batch, y_batch, check_input=False, queue=queue)
 
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -297,7 +304,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     coef_ = property(get_coef_, set_coef_)
     intercept_ = property(get_intercept_, set_intercept_)
 
-    def partial_fit(self, X, y):
+    def partial_fit(self, X, y, check_input=True):
         """
         Incremental fit linear model with X and y. All of X and y is
         processed as a single batch.
@@ -327,6 +334,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             },
             X,
             y,
+            check_input=check_input,
         )
         return self
 
