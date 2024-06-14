@@ -15,6 +15,6 @@
 # ===============================================================================
 
 from daal4py.sklearn.model_selection import train_test_split
-from onedal._device_offload import support_usm_ndarray
+from onedal._device_offload import support_array_api
 
-train_test_split = support_usm_ndarray(freefunc=True, queue_param=False)(train_test_split)
+train_test_split = support_array_api(freefunc=True, queue_param=False)(train_test_split)

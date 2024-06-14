@@ -15,9 +15,9 @@
 # ===============================================================================
 
 from daal4py.sklearn.cluster import KMeans
-from onedal._device_offload import support_usm_ndarray
+from onedal._device_offload import support_array_api
 
-KMeans.fit = support_usm_ndarray(queue_param=False)(KMeans.fit)
-KMeans.fit_predict = support_usm_ndarray(queue_param=False)(KMeans.fit_predict)
-KMeans.predict = support_usm_ndarray(queue_param=False)(KMeans.predict)
-KMeans.score = support_usm_ndarray(queue_param=False)(KMeans.score)
+KMeans.fit = support_array_api(queue_param=False)(KMeans.fit)
+KMeans.fit_predict = support_array_api(queue_param=False)(KMeans.fit_predict)
+KMeans.predict = support_array_api(queue_param=False)(KMeans.predict)
+KMeans.score = support_array_api(queue_param=False)(KMeans.score)
