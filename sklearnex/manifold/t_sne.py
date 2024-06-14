@@ -17,5 +17,5 @@
 from daal4py.sklearn.manifold import TSNE
 from onedal._device_offload import support_usm_ndarray
 
-TSNE.fit = support_usm_ndarray()(TSNE.fit)
-TSNE.fit_transform = support_usm_ndarray()(TSNE.fit_transform)
+TSNE.fit = support_usm_ndarray(queue_param=False)(TSNE.fit)
+TSNE.fit_transform = support_usm_ndarray(queue_param=False)(TSNE.fit_transform)

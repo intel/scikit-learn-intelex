@@ -180,12 +180,12 @@ if dpnp_available:
         return array
 
 
-def support_usm_ndarray(freefunc=False):
+def support_usm_ndarray(freefunc=False, queue_param=True):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
             usm_iface = _extract_usm_iface(*args, **kwargs)
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-            if "queue" in hostkwargs:
+            if queue_param:
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
             if usm_iface is not None and hasattr(result, "__array_interface__"):

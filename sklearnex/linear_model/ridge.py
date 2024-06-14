@@ -19,6 +19,6 @@ from onedal._device_offload import support_usm_ndarray
 
 # TODO:
 # implement GPU offloading via onedal4py backend.
-Ridge.fit = support_usm_ndarray()(Ridge.fit)
-Ridge.predict = support_usm_ndarray()(Ridge.predict)
-Ridge.score = support_usm_ndarray()(Ridge.score)
+Ridge.fit = support_usm_ndarray(queue_param=False)(Ridge.fit)
+Ridge.predict = support_usm_ndarray(queue_param=False)(Ridge.predict)
+Ridge.score = support_usm_ndarray(queue_param=False)(Ridge.score)
