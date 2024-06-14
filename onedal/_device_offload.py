@@ -191,12 +191,12 @@ if dpnp_available:
 
 # TODO:
 # rename support_array_api
-def support_array_api(freefunc=False):
+def support_array_api(freefunc=False, queue_param=True):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
             usm_iface, array_api, dlpack_device = _extract_array_attr(*args, **kwargs)
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-            if "queue" in hostkwargs:
+            if queue_param:
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
             if usm_iface is not None and hasattr(result, "__array_interface__"):
