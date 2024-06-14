@@ -79,24 +79,3 @@ def test_sklearn_check_version_ban():
     # remove this file from the list
     output = "\n".join([i for i in output if "test_common.py" not in i])
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
-
-
-def test_sklearn_check_version_ban_1():
-    """This test blocks the use of sklearn_check_version
-    in onedal files. The versioning should occur in the
-    sklearnex package for clarity and maintainability.
-    """
-    from onedal import __file__ as loc
-
-    path = loc.replace("__init__.py", "")
-    files = [y for x in os.walk(path) for y in glob(os.path.join(x[0], "*.py"))]
-
-    output = []
-
-    for f in files:
-        if open(f, "r").read().find("sklearn_check_version") != -1:
-            output += [f.replace(path, "onedal" + os.sep)]
-
-    # remove this file from the list
-    output = "\n".join([i for i in output if "test_common.py" not in i])
-    assert output == "", f"sklearn versioning is occuring in: \n{output}"
