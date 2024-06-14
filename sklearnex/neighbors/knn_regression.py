@@ -152,24 +152,6 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
             return_distance=return_distance,
         )
 
-    @wrap_output_data
-    def radius_neighbors(
-        self, X=None, radius=None, return_distance=True, sort_results=False
-    ):
-        _onedal_estimator = getattr(self, "_onedal_estimator", None)
-
-        if (
-            _onedal_estimator is not None
-            or getattr(self, "_tree", 0) is None
-            and self._fit_method == "kd_tree"
-        ):
-            sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
-        result = sklearn_NearestNeighbors.radius_neighbors(
-            self, X, radius, return_distance, sort_results
-        )
-
-        return result
-
     def _onedal_fit(self, X, y, queue=None):
         onedal_params = {
             "n_neighbors": self.n_neighbors,
