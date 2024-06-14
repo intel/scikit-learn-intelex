@@ -14,9 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
+from functools import partial
 from inspect import isclass
 
 import numpy as np
+from scipy import sparse as sp
+from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
     ClassifierMixin,
@@ -30,6 +33,7 @@ from sklearn.neighbors._base import KNeighborsMixin
 
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex import get_patch_map, patch_sklearn, sklearn_is_patched, unpatch_sklearn
+from sklearnex.linear_model import LogisticRegression
 from sklearnex.neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
@@ -86,26 +90,38 @@ mixin_map = [
 ]
 
 
-SPECIAL_INSTANCES = {
-    str(i): i
-    for i in [
-        LocalOutlierFactor(novelty=True),
-        SVC(probability=True),
-        NuSVC(probability=True),
-        KNeighborsClassifier(algorithm="brute"),
-        KNeighborsRegressor(algorithm="brute"),
-        NearestNeighbors(algorithm="brute"),
-    ]
-}
+class _sklearn_clone_dict(dict):
+
+    def __getitem__(self, key):
+        return clone(super().__getitem__(key))
+
+
+SPECIAL_INSTANCES = _sklearn_clone_dict(
+    {
+        str(i): i
+        for i in [
+            LocalOutlierFactor(novelty=True),
+            SVC(probability=True),
+            NuSVC(probability=True),
+            KNeighborsClassifier(algorithm="brute"),
+            KNeighborsRegressor(algorithm="brute"),
+            NearestNeighbors(algorithm="brute"),
+            LogisticRegression(solver="newton-cg"),
+        ]
+    }
+)
 
 
 def gen_models_info(algorithms):
     output = []
     for i in algorithms:
-        # split handles SPECIAL_INSTANCES or custom inputs
-        # custom sklearn inputs must be a dict of estimators
-        # with keys set by the __str__ method
-        est = PATCHED_MODELS[i.split("(")[0]]
+
+        if i in PATCHED_MODELS:
+            est = PATCHED_MODELS[i]
+        elif isinstance(algorithms[i], BaseEstimator):
+            est = algorithms[i].__class__
+        else:
+            raise KeyError(f"Unrecognized sklearnex estimator: {i}")
 
         methods = set()
         candidates = set(
@@ -116,28 +132,62 @@ def gen_models_info(algorithms):
             if issubclass(est, mixin):
                 methods |= candidates & set(method)
 
-        output += [[i, j] for j in methods]
+        output += [[i, j] for j in methods] if methods else [[i, None]]
+
+    # In the case that no methods are available, set method to None.
+    # This will allow estimators without mixins to still test the fit
+    # method in various tests.
     return output
 
 
-def gen_dataset(estimator, queue=None, target_df=None, dtype=np.float64):
-    dataset = None
-    name = estimator.__class__.__name__
-    est = PATCHED_MODELS[name]
-    for mixin, _, data in mixin_map:
-        if issubclass(est, mixin) and data is not None:
-            dataset = data
-    # load data
-    if dataset == "classification" or dataset is None:
-        X, y = load_iris(return_X_y=True)
-    elif dataset == "regression":
-        X, y = load_diabetes(return_X_y=True)
-    else:
-        raise ValueError("Unknown dataset type")
+def gen_dataset_type(est):
+    # est should be an estimator or estimator class
+    # dataset initialized to classification, but will be swapped
+    # for other types as necessary
+    dataset = "classification"
+    estimator = est.__class__ if isinstance(est, BaseEstimator) else est
 
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=target_df, dtype=dtype)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=target_df, dtype=dtype)
-    return X, y
+    for mixin, _, data in mixin_map:
+        if issubclass(estimator, mixin) and data is not None:
+            dataset = data
+    return dataset
+
+
+_dataset_dict = {
+    "classification": [partial(load_iris, return_X_y=True)],
+    "regression": [partial(load_diabetes, return_X_y=True)],
+}
+
+
+def gen_dataset(
+    est,
+    datasets=_dataset_dict,
+    sparse=False,
+    queue=None,
+    target_df=None,
+    dtype=None,
+):
+    dataset_type = gen_dataset_type(est)
+    output = []
+    # load data
+    flag = dtype is None
+
+    for func in datasets[dataset_type]:
+        X, y = func()
+        if flag:
+            dtype = X.dtype if hasattr(X, "dtype") else np.float64
+
+        if sparse:
+            X = sp.csr_matrix(X)
+        else:
+            X = _convert_to_dataframe(
+                X, sycl_queue=queue, target_df=target_df, dtype=dtype
+            )
+            y = _convert_to_dataframe(
+                y, sycl_queue=queue, target_df=target_df, dtype=dtype
+            )
+        output += [[X, y]]
+    return output
 
 
 DTYPES = [

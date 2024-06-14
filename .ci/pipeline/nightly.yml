@@ -14,6 +14,14 @@
 # limitations under the License.
 #===============================================================================
 
+schedules:
+- cron: '0 6 * * *'
+  displayName: Nightly
+  branches:
+    include:
+    - main
+  always: true
+
 variables:
   COVERITY_TOOL_HOME: $(Agent.BuildDirectory)/cov-analysis
   DESCRIPTION: Nightly
@@ -53,8 +61,10 @@ jobs:
     vmImage: 'ubuntu-latest'
   steps:
   - script: |
+      conda config --append channels conda-forge
+      conda config --remove channels defaults
       conda update -y -q conda
-      conda create -y -q -n CB -c intel python=$(python.version) dal-devel impi-devel
+      conda create -y -q -n CB -c intel -c conda-forge python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
       bash .ci/scripts/describe_system.sh

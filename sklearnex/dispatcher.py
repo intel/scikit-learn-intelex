@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +23,7 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 
 def _is_new_patching_available():
-    return os.environ.get("OFF_ONEDAL_IFACE") is None and daal_check_version(
+    return os.environ.get("OFF_ONEDAL_IFACE", "0") == "0" and daal_check_version(
         (2021, "P", 300)
     )
 
@@ -44,12 +45,14 @@ def get_patch_map_core(preview=False):
 
         if _is_new_patching_available():
             import sklearn.covariance as covariance_module
+            import sklearn.decomposition as decomposition_module
 
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
+            from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
@@ -75,6 +78,18 @@ def get_patch_map_core(preview=False):
                     None,
                 ]
             ]
+
+            # IncrementalPCA
+            mapping["incrementalpca"] = [
+                [
+                    (
+                        decomposition_module,
+                        "IncrementalPCA",
+                        IncrementalPCA_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
         return mapping
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
@@ -92,6 +107,7 @@ def get_patch_map_core(preview=False):
         # Scikit-learn* modules
         import sklearn as base_module
         import sklearn.cluster as cluster_module
+        import sklearn.covariance as covariance_module
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
@@ -114,11 +130,17 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .covariance import (
+            IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
+        )
         from .decomposition import PCA as PCA_sklearnex
         from .ensemble import ExtraTreesClassifier as ExtraTreesClassifier_sklearnex
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import (
+            IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
+        )
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
@@ -272,6 +294,30 @@ def get_patch_map_core(preview=False):
         ]
         mapping["localoutlierfactor"] = mapping["lof"]
 
+        # IncrementalEmpiricalCovariance
+        mapping["incrementalempiricalcovariance"] = [
+            [
+                (
+                    covariance_module,
+                    "IncrementalEmpiricalCovariance",
+                    IncrementalEmpiricalCovariance_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # IncrementalLinearRegression
+        mapping["incrementallinearregression"] = [
+            [
+                (
+                    linear_model_module,
+                    "IncrementalLinearRegression",
+                    IncrementalLinearRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
         # Configs
         mapping["set_config"] = [
             [(base_module, "set_config", set_config_sklearnex), None]
@@ -313,10 +359,10 @@ def get_patch_names():
 def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
     if preview:
         os.environ["SKLEARNEX_PREVIEW"] = "enabled_via_patch_sklearn"
-    if not sklearn_check_version("0.22"):
+    if not sklearn_check_version("0.24"):
         raise NotImplementedError(
             "Intel(R) Extension for Scikit-learn* patches apply "
-            "for scikit-learn >= 0.22 only ..."
+            "for scikit-learn >= 0.24 only ..."
         )
 
     if global_patch:

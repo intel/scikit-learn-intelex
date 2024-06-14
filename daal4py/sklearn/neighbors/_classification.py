@@ -19,28 +19,19 @@
 import numpy as np
 from scipy import sparse as sp
 from sklearn.base import ClassifierMixin as BaseClassifierMixin
+from sklearn.neighbors._classification import (
+    KNeighborsClassifier as BaseKNeighborsClassifier,
+)
 from sklearn.utils.validation import check_array
 
 from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 from ._base import KNeighborsMixin, NeighborsBase, parse_auto_method, prediction_algorithm
 
-if sklearn_check_version("0.22"):
-    from sklearn.neighbors._classification import (
-        KNeighborsClassifier as BaseKNeighborsClassifier,
-    )
+if not sklearn_check_version("1.2"):
+    from sklearn.neighbors._base import _check_weights
 
-    if not sklearn_check_version("1.2"):
-        from sklearn.neighbors._base import _check_weights
-    from sklearn.utils.validation import _deprecate_positional_args
-else:
-    from sklearn.neighbors.base import _check_weights
-    from sklearn.neighbors.classification import (
-        KNeighborsClassifier as BaseKNeighborsClassifier,
-    )
-
-    def _deprecate_positional_args(f):
-        return f
+from sklearn.utils.validation import _deprecate_positional_args
 
 
 def daal4py_classifier_predict(estimator, X, base_predict):
@@ -102,107 +93,7 @@ def daal4py_classifier_predict(estimator, X, base_predict):
     return result
 
 
-if sklearn_check_version("0.24"):
-
-    class KNeighborsClassifier_(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-            self.weights = (
-                weights if sklearn_check_version("1.0") else _check_weights(weights)
-            )
-
-elif sklearn_check_version("0.22"):
-    from sklearn.neighbors._base import (
-        SupervisedIntegerMixin as BaseSupervisedIntegerMixin,
-    )
-
-    class KNeighborsClassifier_(
-        NeighborsBase, KNeighborsMixin, BaseSupervisedIntegerMixin, BaseClassifierMixin
-    ):
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-            self.weights = _check_weights(weights)
-
-else:
-    from sklearn.neighbors.base import (
-        SupervisedIntegerMixin as BaseSupervisedIntegerMixin,
-    )
-
-    class KNeighborsClassifier_(
-        NeighborsBase, KNeighborsMixin, BaseSupervisedIntegerMixin, BaseClassifierMixin
-    ):
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
-            self.weights = _check_weights(weights)
-
-
-class KNeighborsClassifier(KNeighborsClassifier_):
+class KNeighborsClassifier(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
     __doc__ = BaseKNeighborsClassifier.__doc__
 
     @_deprecate_positional_args
@@ -221,7 +112,6 @@ class KNeighborsClassifier(KNeighborsClassifier_):
     ):
         super().__init__(
             n_neighbors=n_neighbors,
-            weights=weights,
             algorithm=algorithm,
             leaf_size=leaf_size,
             metric=metric,
@@ -230,64 +120,24 @@ class KNeighborsClassifier(KNeighborsClassifier_):
             n_jobs=n_jobs,
             **kwargs,
         )
+        self.weights = (
+            weights if sklearn_check_version("1.0") else _check_weights(weights)
+        )
 
     @support_usm_ndarray()
     def fit(self, X, y):
-        """
-        Fit the k-nearest neighbors classifier from the training dataset.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
-                (n_samples, n_samples) if metric='precomputed'
-            Training data.
-        y : {array-like, sparse matrix} of shape (n_samples,) or \
-                (n_samples, n_outputs)
-            Target values.
-
-        Returns
-        -------
-        self : KNeighborsClassifier
-            The fitted k-nearest neighbors classifier.
-        """
         return NeighborsBase._fit(self, X, y)
 
     @support_usm_ndarray()
     def predict(self, X):
-        """
-        Predict the class labels for the provided data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_queries, n_features), \
-                or (n_queries, n_indexed) if metric == 'precomputed'
-            Test samples.
-
-        Returns
-        -------
-        y : ndarray of shape (n_queries,) or (n_queries, n_outputs)
-            Class labels for each data sample.
-        """
         return daal4py_classifier_predict(self, X, BaseKNeighborsClassifier.predict)
 
     @support_usm_ndarray()
     def predict_proba(self, X):
-        """
-        Return probability estimates for the test data X.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_queries, n_features), \
-                or (n_queries, n_indexed) if metric == 'precomputed'
-            Test samples.
-
-        Returns
-        -------
-        p : ndarray of shape (n_queries, n_classes), or a list of n_outputs \
-                of such arrays if n_outputs > 1.
-            The class probabilities of the input samples. Classes are ordered
-            by lexicographic order.
-        """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return BaseKNeighborsClassifier.predict_proba(self, X)
+
+    fit.__doc__ = BaseKNeighborsClassifier.fit.__doc__
+    predict.__doc__ = BaseKNeighborsClassifier.predict.__doc__
+    predict_proba.__doc__ = BaseKNeighborsClassifier.predict_proba.__doc__

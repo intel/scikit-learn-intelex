@@ -21,6 +21,7 @@ from daal4py.sklearn._utils import daal_check_version
 if daal_check_version((2024, "P", 100)):
     import numbers
     from math import sqrt
+    from warnings import warn
 
     import numpy as np
     from scipy.sparse import issparse
@@ -35,9 +36,13 @@ if daal_check_version((2024, "P", 100)):
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
 
+    if sklearn_check_version("1.2"):
+        from sklearn.utils._param_validation import StrOptions
+
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
+    from sklearnex.utils import get_namespace
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
@@ -45,6 +50,16 @@ if daal_check_version((2024, "P", 100)):
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
+            # "onedal_svd" solver uses oneDAL's PCA-SVD algorithm
+            # and required for testing purposes to fully enable it in future.
+            # "covariance_eigh" solver is added for ability to explicitly request
+            # oneDAL's PCA-Covariance algorithm using any sklearn version < 1.5.
+            _parameter_constraints["svd_solver"] = [
+                StrOptions(
+                    _parameter_constraints["svd_solver"][0].options
+                    | {"onedal_svd", "covariance_eigh"}
+                )
+            ]
 
         if sklearn_check_version("1.1"):
 
@@ -95,6 +110,7 @@ if daal_check_version((2024, "P", 100)):
             self._fit(X)
             return self
 
+        @wrap_output_data
         def _fit(self, X):
             if sklearn_check_version("1.2"):
                 self._validate_params()
@@ -106,7 +122,7 @@ if daal_check_version((2024, "P", 100)):
                     target_type=numbers.Integral,
                 )
 
-            U, S, Vt = dispatch(
+            return dispatch(
                 self,
                 "fit",
                 {
@@ -115,7 +131,6 @@ if daal_check_version((2024, "P", 100)):
                 },
                 X,
             )
-            return U, S, Vt
 
         def _onedal_fit(self, X, queue=None):
             X = self._validate_data(
@@ -128,7 +143,7 @@ if daal_check_version((2024, "P", 100)):
             onedal_params = {
                 "n_components": self.n_components,
                 "is_deterministic": True,
-                "method": "cov",
+                "method": "svd" if self._fit_svd_solver == "onedal_svd" else "cov",
                 "whiten": self.whiten,
             }
             self._onedal_estimator = onedal_PCA(**onedal_params)
@@ -139,7 +154,13 @@ if daal_check_version((2024, "P", 100)):
             S = self.singular_values_
             Vt = self.components_
 
-            return U, S, Vt
+            if sklearn_check_version("1.5"):
+                xp, _ = get_namespace(X)
+                x_is_centered = not self.copy
+
+                return U, S, Vt, X, x_is_centered, xp
+            else:
+                return U, S, Vt
 
         @wrap_output_data
         def transform(self, X):
@@ -155,34 +176,39 @@ if daal_check_version((2024, "P", 100)):
 
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                self._check_feature_names(X, reset=False)
             X = self._validate_data(
                 X,
                 dtype=[np.float64, np.float32],
                 reset=False,
             )
             self._validate_n_features_in_after_fitting(X)
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
 
             return self._onedal_estimator.predict(X, queue=queue)
 
-        @wrap_output_data
         def fit_transform(self, X, y=None):
-            U, S, Vt = self._fit(X)
-            if U is None:
-                # oneDAL PCA was fit
-                X_transformed = self._onedal_transform(X)
-                return X_transformed
+            if sklearn_check_version("1.5"):
+                U, S, Vt, X_fit, x_is_centered, xp = self._fit(X)
             else:
+                U, S, Vt = self._fit(X)
+                X_fit = X
+            if hasattr(self, "_onedal_estimator"):
+                # oneDAL PCA was fit
+                return self.transform(X)
+            elif U is not None:
                 # Scikit-learn PCA was fit
                 U = U[:, : self.n_components_]
 
                 if self.whiten:
-                    U *= sqrt(X.shape[0] - 1)
+                    U *= sqrt(X_fit.shape[0] - 1)
                 else:
                     U *= S[: self.n_components_]
 
                 return U
+            else:
+                # Scikit-learn PCA["covariance_eigh"] was fit
+                return self._transform(X_fit, xp, x_is_centered=x_is_centered)
 
         def _onedal_supported(self, method_name, X):
             class_name = self.__class__.__name__
@@ -200,7 +226,13 @@ if daal_check_version((2024, "P", 100)):
                         ),
                         (
                             self._is_solver_compatible_with_onedal(shape_tuple),
-                            f"Only 'full' svd solver is supported.",
+                            (
+                                "Only 'covariance_eigh' and 'onedal_svd' "
+                                "solvers are supported."
+                                if sklearn_check_version("1.5")
+                                else "Only 'full', 'covariance_eigh' and 'onedal_svd' "
+                                "solvers are supported."
+                            ),
                         ),
                         (not issparse(X), "oneDAL PCA does not support sparse data"),
                     ]
@@ -255,7 +287,13 @@ if daal_check_version((2024, "P", 100)):
 
             if self._fit_svd_solver == "auto":
                 if sklearn_check_version("1.1"):
-                    if max(shape_tuple) <= 500 or n_components == "mle":
+                    if (
+                        sklearn_check_version("1.5")
+                        and shape_tuple[1] <= 1_000
+                        and shape_tuple[0] >= 10 * shape_tuple[1]
+                    ):
+                        self._fit_svd_solver = "covariance_eigh"
+                    elif max(shape_tuple) <= 500 or n_components == "mle":
                         self._fit_svd_solver = "full"
                     elif 1 <= n_components < 0.8 * n_sf_min:
                         self._fit_svd_solver = "randomized"
@@ -289,7 +327,23 @@ if daal_check_version((2024, "P", 100)):
                         else:
                             self._fit_svd_solver = "full"
 
-            if self._fit_svd_solver == "full":
+            # Use oneDAL in next cases:
+            # 1. oneDAL SVD solver is explicitly set
+            # 2. solver is set or dispatched to "covariance_eigh"
+            # 3. solver is set or dispatched to "full" and sklearn version < 1.5
+            # 4. solver is set to "auto" and dispatched to "full"
+            if self._fit_svd_solver in ["onedal_svd", "covariance_eigh"]:
+                return True
+            elif not sklearn_check_version("1.5") and self._fit_svd_solver == "full":
+                self._fit_svd_solver = "covariance_eigh"
+                return True
+            elif self.svd_solver == "auto" and self._fit_svd_solver == "full":
+                warn(
+                    "Sklearnex always uses `covariance_eigh` solver instead of `full` "
+                    "when `svd_solver` parameter is set to `auto` "
+                    "for performance purposes."
+                )
+                self._fit_svd_solver = "covariance_eigh"
                 return True
             else:
                 return False
@@ -298,11 +352,9 @@ if daal_check_version((2024, "P", 100)):
             self.n_samples_ = self._onedal_estimator.n_samples_
             if sklearn_check_version("1.2"):
                 self.n_features_in_ = self._onedal_estimator.n_features_
-            elif sklearn_check_version("0.24"):
-                self.n_features_ = self._onedal_estimator.n_features_
-                self.n_features_in_ = self._onedal_estimator.n_features_
             else:
                 self.n_features_ = self._onedal_estimator.n_features_
+                self.n_features_in_ = self._onedal_estimator.n_features_
             self.n_components_ = self._onedal_estimator.n_components_
             self.components_ = self._onedal_estimator.components_
             self.mean_ = self._onedal_estimator.mean_

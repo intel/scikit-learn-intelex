@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal import _backend
+from onedal.datatypes import from_table, to_table
 from onedal.primitives import linear_kernel
 from onedal.tests.utils._device_selection import get_queues
 
@@ -144,6 +145,30 @@ def test_input_format_f_contiguous_pandas(queue, dtype):
     _test_input_format_f_contiguous_pandas(queue, dtype)
 
 
+def _test_conversion_to_table(dtype):
+    np.random.seed()
+    if dtype in [np.int32, np.int64]:
+        x = np.random.randint(0, 10, (15, 3), dtype=dtype)
+    else:
+        x = np.random.uniform(-2, 2, (18, 6)).astype(dtype)
+    x_table = to_table(x)
+    x2 = from_table(x_table)
+    assert x.dtype == x2.dtype
+    assert np.array_equal(x, x2)
+
+
+@pytest.mark.parametrize("dtype", [np.int32, np.int64, np.float32, np.float64])
+def test_conversion_to_table(dtype):
+    _test_conversion_to_table(dtype)
+
+
+# TODO:
+# Currently `dpctl_to_table` is not used in onedal estimators.
+# The test will be enabled after future data management update, that brings
+# re-impl of conversions between onedal tables and usm ndarrays.
+@pytest.mark.skip(
+    reason="Currently removed. Will be enabled after data management update"
+)
 @pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
@@ -171,6 +196,13 @@ def test_input_format_c_contiguous_dpctl(queue, dtype):
     assert x_dpt_from_table.flags.c_contiguous
 
 
+# TODO:
+# Currently `dpctl_to_table` is not used in onedal estimators.
+# The test will be enabled after future data management update, that brings
+# re-impl of conversions between onedal tables and usm ndarrays.
+@pytest.mark.skip(
+    reason="Currently removed. Will be enabled after data management update"
+)
 @pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])

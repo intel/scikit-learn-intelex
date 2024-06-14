@@ -29,6 +29,12 @@
 #define PyInt_AsSsize_t PyLong_AsSsize_t
 #endif
 
+#if NPY_ABI_VERSION < 0x02000000
+  #define PyDataType_ELSIZE(descr) ((descr)->elsize)
+  #define PyDataType_NAMES(descr) ((descr)->names)
+  #define PyDataType_FIELDS(descr) ((descr)->fields)
+#endif
+
 
 #define SET_NPY_FEATURE( _T, _M, _E )              \
     switch(_T) { \
@@ -200,7 +206,7 @@ public:
         // The location of the inner loop size which the iterator may update
         npy_intp * innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
 
-        if(NpyIter_GetDescrArray(iter)[0]->elsize != sizeof(T)) {
+        if(PyDataType_ELSIZE(NpyIter_GetDescrArray(iter)[0]) != sizeof(T)) {
             NpyIter_Deallocate(iter);
             PyGILState_Release(__state);
             throw std::invalid_argument("Encountered unexpected element size or type when copying block.");
@@ -254,7 +260,7 @@ public:
         // e.g. each element is a tuple.
         PyArray_Descr * descr = PyArray_DESCR(ary);              // type descriptor
 
-        if(!descr->names) {
+        if(!PyDataType_NAMES(descr)) {
             throw std::invalid_argument("No dtype argument provided. Unable to create AOSNumericTable.");
         }
         if(PyArray_NDIM(ary) != 1) {
@@ -263,7 +269,7 @@ public:
                                         + std::string(" dimensions, extected 1 for a strctured array. Don't know how to create NumericTable."));
         }
 
-        PyObject * fnames = PySequence_Fast(descr->names, NULL); // list of names of tuple-elements
+        PyObject * fnames = PySequence_Fast(PyDataType_NAMES(descr), NULL); // list of names of tuple-elements
         Py_ssize_t N = PySequence_Fast_GET_SIZE(fnames);         // number of elements in tuple
 
         auto _ddict = daal::data_management::NumericTableDictionaryPtr(new daal::data_management::NumericTableDictionary(N));
@@ -272,7 +278,7 @@ public:
         // get their type and init ddict feature accordingly
         for (Py_ssize_t i=0; i<N; ++i) {
             PyObject * name = PySequence_Fast_GET_ITEM(fnames, i);  // tuple elements are identified by name
-            PyObject * ftr = PyObject_GetItem(descr->fields, name); // desr->fields is a dict
+            PyObject * ftr = PyObject_GetItem(PyDataType_FIELDS(descr), name); // PyDataType_FIELDS(descr) is a dict
             if(!PyTuple_Check(ftr)) {
                 throw std::invalid_argument(std::string("Found invalid dtype in structured numpy array, expected tuple, got ")
                                             + std::string(PyString_AsString(PyObject_Str(PyObject_Type(ftr)))));
@@ -298,7 +304,7 @@ public:
     {
         auto __state = PyGILState_Ensure();
         // tuple elements are identified by name, need the list of names
-        PyObject * fnames = PySequence_Fast(PyArray_DESCR(ary)->names, NULL);
+        PyObject * fnames = PySequence_Fast(PyDataType_NAMES(PyArray_DESCR(ary)), NULL);
         for( size_t j = 0; j < ncols ; ++j ) {
             PyObject * name = PySequence_Fast_GET_ITEM(fnames, j);
             // get column by name

@@ -19,7 +19,6 @@
 import numbers
 
 import numpy as np
-from sklearn import __version__ as sklearn_version
 from sklearn import preprocessing
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.multiclass import check_classification_targets
@@ -29,11 +28,6 @@ import daal4py as d4p
 
 from .._n_jobs_support import control_n_jobs
 from .._utils import getFPType
-
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
@@ -154,11 +148,7 @@ class AdaBoostClassifier(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        # Check is fit had been called
-        if Version(sklearn_version) >= Version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, ["n_features_in_", "n_classes_"])
+        check_is_fitted(self)
 
         # Input validation
         X = check_array(X, dtype=[np.single, np.double])

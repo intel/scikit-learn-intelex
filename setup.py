@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # ==============================================================================
 # Copyright 2014 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +22,7 @@ import glob
 # System imports
 import os
 import pathlib
+import platform as plt
 import shutil
 import sys
 import time
@@ -50,18 +52,21 @@ IS_LIN = False
 dal_root = os.environ.get("DALROOT")
 n_threads = int(os.environ.get("NTHREADS", os.cpu_count() or 1))
 
+arch_dir = plt.machine()
+plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 if dal_root is None:
     raise RuntimeError("Not set DALROOT variable")
 
 if "linux" in sys.platform:
     IS_LIN = True
-    lib_dir = jp(dal_root, "lib", "intel64")
+    lib_dir = jp(dal_root, "lib", arch_dir)
 elif sys.platform == "darwin":
     IS_MAC = True
     lib_dir = jp(dal_root, "lib")
 elif sys.platform in ["win32", "cygwin"]:
     IS_WIN = True
-    lib_dir = jp(dal_root, "lib", "intel64")
+    lib_dir = jp(dal_root, "lib", arch_dir)
 else:
     assert False, sys.platform + " not supported"
 
@@ -72,7 +77,7 @@ ONEDAL_VERSION = get_onedal_version(dal_root)
 ONEDAL_2021_3 = 2021 * 10000 + 3 * 100
 ONEDAL_2023_0_1 = 2023 * 10000 + 0 * 100 + 1
 is_onedal_iface = (
-    os.environ.get("OFF_ONEDAL_IFACE") is None and ONEDAL_VERSION >= ONEDAL_2021_3
+    os.environ.get("OFF_ONEDAL_IFACE", "0") == "0" and ONEDAL_VERSION >= ONEDAL_2021_3
 )
 
 d4p_version = (
@@ -84,8 +89,9 @@ d4p_version = (
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
+debug_build = os.getenv("DEBUG_BUILD") == "1"
 mpi_root = None if no_dist else os.environ["MPIROOT"]
-dpcpp = shutil.which("icpx") is not None
+dpcpp = shutil.which("icpx") is not None and not (IS_WIN and debug_build)
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 

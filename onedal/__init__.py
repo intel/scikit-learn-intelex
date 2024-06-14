@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,11 +24,14 @@ if "Windows" in platform.system():
     import site
     import sys
 
+    arch_dir = platform.machine()
+    plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+    arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
     if sys.version_info.minor >= 8:
         if "DALROOT" in os.environ:
-            dal_root_redist = os.path.join(os.environ["DALROOT"], "redist", "intel64")
+            dal_root_redist = os.path.join(os.environ["DALROOT"], "redist", arch_dir)
             if os.path.exists(dal_root_redist):
                 os.add_dll_directory(dal_root_redist)
         os.add_dll_directory(path_to_libs)

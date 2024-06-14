@@ -16,6 +16,7 @@
 
 import logging
 import sys
+from collections.abc import Iterable
 from functools import wraps
 
 import numpy as np
@@ -126,8 +127,15 @@ def _transfer_to_host(queue, *data):
                 queue = usm_iface["syclobj"]
 
             buffer = as_usm_memory(item).copy_to_host()
+            order = "C"
+            if usm_iface["strides"] is not None:
+                if usm_iface["strides"][0] < usm_iface["strides"][1]:
+                    order = "F"
             item = np.ndarray(
-                shape=usm_iface["shape"], dtype=usm_iface["typestr"], buffer=buffer
+                shape=usm_iface["shape"],
+                dtype=usm_iface["typestr"],
+                buffer=buffer,
+                order=order,
             )
             has_usm_data = True
         else:
@@ -200,9 +208,35 @@ def _copy_to_usm(queue, array):
         raise RuntimeError(
             "dpctl need to be installed to work " "with __sycl_usm_array_interface__"
         )
-    mem = MemoryUSMDevice(array.nbytes, queue=queue)
-    mem.copy_from_host(array.tobytes())
-    return usm_ndarray(array.shape, array.dtype, buffer=mem)
+
+    if hasattr(array, "__array__"):
+
+        try:
+            mem = MemoryUSMDevice(array.nbytes, queue=queue)
+            mem.copy_from_host(array.tobytes())
+            return usm_ndarray(array.shape, array.dtype, buffer=mem)
+        except ValueError as e:
+            # ValueError will raise if device does not support the dtype
+            # retry with float32 (needed for fp16 and fp64 support issues)
+            # try again as float32, if it is a float32 just raise the error.
+            if array.dtype == np.float32:
+                raise e
+            return _copy_to_usm(queue, array.astype(np.float32))
+    else:
+        if isinstance(array, Iterable):
+            array = [_copy_to_usm(queue, i) for i in array]
+        return array
+
+
+if dpnp_available:
+
+    def _convert_to_dpnp(array):
+        if isinstance(array, usm_ndarray):
+            return dpnp.array(array, copy=False)
+        elif isinstance(array, Iterable):
+            for i in range(len(array)):
+                array[i] = _convert_to_dpnp(array[i])
+        return array
 
 
 def wrap_output_data(func):
@@ -217,7 +251,7 @@ def wrap_output_data(func):
         if usm_iface is not None:
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
-                result = dpnp.array(result, copy=False)
+                result = _convert_to_dpnp(result)
         return result
 
     return wrapper

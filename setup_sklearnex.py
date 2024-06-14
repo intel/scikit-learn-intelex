@@ -69,6 +69,7 @@ with open("README.md", "r", encoding="utf8") as f:
 
 packages_with_tests = [
     "sklearnex",
+    "sklearnex.basic_statistics",
     "sklearnex.cluster",
     "sklearnex.covariance",
     "sklearnex.decomposition",
@@ -82,6 +83,7 @@ packages_with_tests = [
     "sklearnex.preview",
     "sklearnex.preview.covariance",
     "sklearnex.preview.cluster",
+    "sklearnex.preview.decomposition",
     "sklearnex.svm",
     "sklearnex.utils",
 ]
@@ -135,7 +137,7 @@ setup(
         "Topic :: Software Development",
     ],
     python_requires=">=3.8",
-    install_requires=["daal4py>=2024.0", "scikit-learn>=1.0"],
+    install_requires=["daal4py>=2024.3", "scikit-learn>=1.0"],
     keywords=[
         "machine learning",
         "scikit-learn",
