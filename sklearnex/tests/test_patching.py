@@ -161,10 +161,12 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         est.fit(X, y)
 
         if method:
-            if method != "score":
-                getattr(est, method)(X)
+            if method not in ["score", "partial_fit"]:
+                data = (X,)
             else:
-                est.score(X, y)
+                data = (X, y)
+            getattr(est, method)(*data)
+
     assert all(
         [
             "running accelerated version" in i.message
@@ -196,10 +198,11 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
         if method:
-            if method != "score":
-                getattr(est, method)(X)
+            if method not in ["score", "partial_fit"]:
+                data = (X,)
             else:
-                est.score(X, y)
+                data = (X, y)
+            getattr(est, method)(*data)
 
     assert all(
         [
