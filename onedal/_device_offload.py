@@ -166,7 +166,10 @@ def _extract_array_attr(*args, **kwargs):
     if len(allargs) == 0:
         return None, None, None
     usm_iface = getattr(allargs[0], "__sycl_usm_array_interface__", None)
-    array_api = getattr(allargs[0], "__array_namespace__", None)
+    array_api = None
+    if hasattr(allargs[0], "__array_namespace__", None):
+        array_api = getattr(allargs[0], "__array_namespace__", None)()
+
     dlpack_device = getattr(allargs[0], "__dlpack_device__", None)
     return usm_iface, array_api, dlpack_device
 
@@ -203,6 +206,8 @@ def support_array_api(freefunc=False, queue_param=True):
                 result = _copy_to_usm(data_queue, result)
                 if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
+            # TODO:
+            # add exception for numpy.
             elif array_api:
                 # TODO:
                 # avoid for numpy
