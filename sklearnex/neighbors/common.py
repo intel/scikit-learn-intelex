@@ -27,6 +27,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._utils import PatchingConditionsChain
+from .utils._namespace import get_namespace
 
 
 class KNeighborsDispatchingBase:
@@ -264,3 +265,39 @@ class KNeighborsDispatchingBase:
 
     def _onedal_cpu_supported(self, method_name, *data):
         return self._onedal_supported("cpu", method_name, *data)
+
+    def kneighbors_graph(self, X=None, n_neighbors=None, mode="connectivity"):
+        check_is_fitted(self)
+        if n_neighbors is None:
+            n_neighbors = self.n_neighbors
+
+        # check the input only in self.kneighbors
+        
+        # construct CSR matrix representation of the k-NN graph
+        if mode == "connectivity":
+            A_ind = self.kneighbors(X, n_neighbors, return_distance=False)
+            xp, _ = get_namespace(A_ind)
+            n_queries = A_ind.shape[0]
+            A_data = xp.ones(n_queries * n_neighbors)
+
+        elif mode == "distance":
+            A_data, A_ind = self.kneighbors(X, n_neighbors, return_distance=True)
+            xp, _ = get_namespace(A_ind)
+            A_data = A_data.reshape((-1,))
+
+        else:
+            raise ValueError(
+                'Unsupported mode, must be one of "connectivity", '
+                f'or "distance" but got "{mode}" instead'
+            )
+
+        n_queries = A_ind.shape[0]
+        n_samples_fit = self.n_samples_fit_
+        n_nonzero = n_queries * n_neighbors
+        A_indptr = xp.arange(0, n_nonzero + 1, n_neighbors)
+
+        kneighbors_graph = sp.csr_matrix(
+            (A_data, A_ind.reshape((-1,)), A_indptr), shape=(n_queries, n_samples_fit)
+        )
+
+        return kneighbors_graph
