@@ -30,7 +30,7 @@ from .common import KNeighborsDispatchingBase
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
-class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase):
+class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor):
     __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
