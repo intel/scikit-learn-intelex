@@ -14,12 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
-from scipy import sparse as sp
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from scipy import sparse as sp
 
-from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics import BasicStatistics
 from onedal.tests.utils._device_selection import get_queues
 
@@ -82,12 +81,12 @@ options_and_tests = [
 ]
 
 options_and_tests_csr = [
-        ("sum", "sum", (5e-6, 1e-9)),
-        ("min", "min", (0, 0)),
-        # There is a bug in oneDAL's max computations on GPU
-        #         ("max", "max", (0, 0)),
-        ("mean", "mean", (5e-6, 1e-9)),
-    ]
+    ("sum", "sum", (5e-6, 1e-9)),
+    ("min", "min", (0, 0)),
+    # There is a bug in oneDAL's max computations on GPU
+    #         ("max", "max", (0, 0)),
+    ("mean", "mean", (5e-6, 1e-9)),
+]
 
 
 @pytest.mark.parametrize("queue", get_queues())

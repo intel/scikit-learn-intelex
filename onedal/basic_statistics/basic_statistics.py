@@ -117,7 +117,9 @@ class BasicStatistics(BaseBasicStatistics):
 
         return {k: from_table(v).ravel() for k, v in res.items()}
 
-    def _compute_raw(self, data_table, weights_table, policy, dtype=np.float32, is_csr=False):
+    def _compute_raw(
+        self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
+    ):
         module = self._get_backend("basic_statistics")
         params = self._get_onedal_params(is_csr, dtype)
         result = module.compute(policy, params, data_table, weights_table)
