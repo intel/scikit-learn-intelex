@@ -27,7 +27,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._utils import PatchingConditionsChain
-from .utils._namespace import get_namespace
+from ..utils import get_namespace
 
 
 class KNeighborsDispatchingBase:
@@ -301,3 +301,11 @@ class KNeighborsDispatchingBase:
         )
 
         return kneighbors_graph
+
+    def radius_neighbors(
+        self, X=None, radius=None, return_distance=True, sort_results=False
+    ):
+        if X is not None and get_namespace(X)[0] != np:
+            raise TypeError(f"Sklearnex does not support {type(X)} inputs for radius_neighbors")
+
+        return super().radius_neighbors(X, radius=radius, return_distance=return_distance, sort_results=sort_results)                        
