@@ -50,7 +50,7 @@ struct fptype2t {
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(fptype);
     }
 
-    Ops ops;
+    Ops ops
 };
 
 template <typename Policy, typename Input, typename Ops>
