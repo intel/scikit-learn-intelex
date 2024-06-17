@@ -23,6 +23,7 @@ from sklearn.linear_model import Ridge as sklearn_RidgeRegression
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn.linear_model._ridge import _fit_ridge as daal4py_fit_ridge
 
 from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
@@ -248,6 +249,12 @@ class Ridge(sklearn_RidgeRegression):
         }
         self._onedal_estimator = onedal_RidgeRegression(**onedal_params)
 
+    def _daal_fit(self, X, y, sample_weight=None):
+        daal4py_fit_ridge(self, X, y, sample_weight)
+        self._onedal_estimator.n_features_in_ = _num_features(X, fallback_1d=True)
+        self._onedal_estimator.coef_ = self.coef_
+        self._onedal_estimator.intercept_ = self.intercept_
+
     def _onedal_fit(self, X, y, sample_weight, queue=None):
         assert sample_weight is None
 
@@ -274,7 +281,14 @@ class Ridge(sklearn_RidgeRegression):
 
         self._initialize_onedal_estimator()
         try:
-            self._onedal_estimator.fit(X, y, queue=queue)
+            # Falling back to daal4py if the device is CPU since
+            # onedal does not support non-scalars for alpha, thus
+            # should only be used for GPU to not limit the functionality
+            cpu_device = queue is None or queue.sycl_device.is_cpu
+            if cpu_device:
+                self._daal_fit(X, y)
+            else:
+                self._onedal_estimator.fit(X, y, queue=queue)
             self._save_attributes()
 
         except RuntimeError:

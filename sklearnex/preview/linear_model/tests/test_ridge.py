@@ -32,7 +32,12 @@ def test_sklearnex_onedal_ridge(dataframe, queue):
     onedal_model = Ridge(fit_intercept=True, alpha=5.0)
     sklearn_model = Ridge_sklearn(fit_intercept=True, alpha=5.0)
 
-    X, y = numpy.random.rand(10, 5), numpy.random.rand(10)
+    sample_count, feature_count = 10, 5
+    alpha = 5.0
+    onedal_model = Ridge(fit_intercept=True, alpha=alpha)
+    sklearn_model = Ridge_sklearn(fit_intercept=True, alpha=alpha)
+
+    X, y = numpy.random.rand(sample_count, feature_count), numpy.random.rand(sample_count)
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     onedal_model.fit(X, y)
