@@ -224,3 +224,4 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifi
     predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
     score.__doc__ = sklearn_KNeighborsClassifier.score.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
+    kneighbors_graph.__doc__ = sklearn_KNeighborsClassifier.kneighbors_graph.__doc__
