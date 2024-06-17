@@ -293,13 +293,15 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         return self
 
     # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
-    @wrap_output_data
     def mahalanobis(self, X):
         if sklearn_check_version("1.0"):
-            self._validate_data(X, reset=False, cast_to_ndarray=False)
+            self._check_feature_names(X, reset=False)
 
         precision = self.get_precision()
         # compute mahalanobis distances
+        # pairwise_distances will check n_features (via n_feature matching with
+        # self.location_) , and will check for finiteness via check array
+        # check_feature_names will match _validate_data functionally
         dist = pairwise_distances(
             X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
         )
