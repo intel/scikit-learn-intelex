@@ -308,7 +308,7 @@ class KNeighborsDispatchingBase:
     ):
         if X is not None and "numpy" not in str(get_namespace(X)[0]).lower():
             raise TypeError(
-                f"Sklearnex does not support {type(X)} inputs for radius_neighbors"
+                f"{self.__class__.__name__} does not support {type(X)} inputs for radius_neighbors"
             )
 
         return super().radius_neighbors(
