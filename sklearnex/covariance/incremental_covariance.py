@@ -296,9 +296,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     @wrap_output_data
     def mahalanobis(self, X):
         if sklearn_check_version("1.0"):
-            self._validate_data(X, reset=False, copy=self.copy)
-        else:
-            check_array(X, copy=self.copy)
+            self._validate_data(X, reset=False, cast_to_ndarray=False)
 
         precision = self.get_precision()
         with config_context(assume_finite=True):
@@ -307,7 +305,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
             )
 
-        return np.reshape(dist, (len(X),)) ** 2
+        return (dist.reshape((-1,))) ** 2
 
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
