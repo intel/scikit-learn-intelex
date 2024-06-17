@@ -272,7 +272,7 @@ class KNeighborsDispatchingBase:
             n_neighbors = self.n_neighbors
 
         # check the input only in self.kneighbors
-        
+
         # construct CSR matrix representation of the k-NN graph
         if mode == "connectivity":
             A_ind = self.kneighbors(X, n_neighbors, return_distance=False)
