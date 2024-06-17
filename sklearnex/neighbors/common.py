@@ -22,7 +22,7 @@ from sklearn.neighbors._ball_tree import BallTree
 from sklearn.neighbors._base import VALID_METRICS
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
-from sklearn.utils import check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
