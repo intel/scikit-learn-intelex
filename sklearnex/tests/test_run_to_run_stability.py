@@ -73,10 +73,12 @@ def eval_method(X, y, est, method):
     est.fit(X, y)
 
     if method:
-        if method != "score":
-            res = getattr(est, method)(X)
+        attr = getattr(est, method)
+        if method not in ["score", "partial_fit", "path"]:
+            data = (X,)
         else:
-            res = est.score(X, y)
+            data = (X,y)
+        res = attr(*data)
 
     if not isinstance(res, Iterable):
         res = [res]
