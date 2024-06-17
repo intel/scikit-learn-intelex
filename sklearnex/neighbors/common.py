@@ -19,7 +19,7 @@ import warnings
 import numpy as np
 from scipy import sparse as sp
 from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._base import VALID_METRICS
+from sklearn.neighbors._base import KNeighborsMixin, VALID_METRICS
 from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
 from sklearn.neighbors._kd_tree import KDTree
 from sklearn.utils.validation import check_is_fitted
@@ -314,3 +314,5 @@ class KNeighborsDispatchingBase:
         return super().radius_neighbors(
             X, radius=radius, return_distance=return_distance, sort_results=sort_results
         )
+
+    kneighbors_graph.__doc__ = KNeighborsMixin.kneighbors_graph.__doc__
