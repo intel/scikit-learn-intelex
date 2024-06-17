@@ -34,6 +34,7 @@ from sklearnex import config_context
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, register_hyperparameters
 from ..metrics import pairwise_distances
+from ..utils import get_namespace
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
@@ -305,8 +306,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         dist = pairwise_distances(
             X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
         )
-
-        return (dist.reshape((-1,))) ** 2
+        xp, _ = get_namespace(dist)
+        return (xp.reshape(dist, (-1,))) ** 2
 
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
