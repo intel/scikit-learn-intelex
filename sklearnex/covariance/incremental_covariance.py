@@ -299,11 +299,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             self._validate_data(X, reset=False, cast_to_ndarray=False)
 
         precision = self.get_precision()
-        with config_context(assume_finite=True):
-            # compute mahalanobis distances
-            dist = pairwise_distances(
-                X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
-            )
+        # compute mahalanobis distances
+        dist = pairwise_distances(
+            X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
+        )
 
         return (dist.reshape((-1,))) ** 2
 
