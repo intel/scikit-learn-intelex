@@ -77,7 +77,7 @@ def eval_method(X, y, est, method):
         if method not in ["score", "partial_fit", "path"]:
             data = (X,)
         else:
-            data = (X,y)
+            data = (X, y)
         res = attr(*data)
 
     if not isinstance(res, Iterable):
