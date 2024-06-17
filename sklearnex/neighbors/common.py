@@ -284,7 +284,7 @@ class KNeighborsDispatchingBase:
         elif mode == "distance":
             A_data, A_ind = self.kneighbors(X, n_neighbors, return_distance=True)
             xp, _ = get_namespace(A_ind)
-            A_data = A_data.reshape((-1,))
+            A_data = xp.reshape(A_data, (-1,))
 
         else:
             raise ValueError(
@@ -298,7 +298,7 @@ class KNeighborsDispatchingBase:
         A_indptr = xp.arange(0, n_nonzero + 1, n_neighbors)
 
         kneighbors_graph = sp.csr_matrix(
-            (A_data, A_ind.reshape((-1,)), A_indptr), shape=(n_queries, n_samples_fit)
+            (A_data, xp.reshape(A_ind, (-1,)), A_indptr), shape=(n_queries, n_samples_fit)
         )
 
         return kneighbors_graph
