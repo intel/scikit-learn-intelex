@@ -298,15 +298,19 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
 
+        xp, _ = get_namespace(X)
         precision = self.get_precision()
         # compute mahalanobis distances
         # pairwise_distances will check n_features (via n_feature matching with
         # self.location_) , and will check for finiteness via check array
         # check_feature_names will match _validate_data functionally
+        location = self.location_[np.newaxis, :]
+        if "numpy" not in str(xp).lower():
+            location = xp.asarray(location, device=X.device)    
+        
         dist = pairwise_distances(
-            X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
+            X, location, metric="mahalanobis", VI=precision
         )
-        xp, _ = get_namespace(dist)
         return (xp.reshape(dist, (-1,))) ** 2
 
     _onedal_cpu_supported = _onedal_supported
