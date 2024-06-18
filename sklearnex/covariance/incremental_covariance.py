@@ -331,14 +331,14 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         except ValueError as e:
             # Throw the expected sklearn error in an n_feature length violation
             if "Incompatible dimension for X and Y matrices: X.shape[1] ==" in str(e):
-                n_features = re.findall(r'\s\d+', str(e))[0].lstrip()
+                n_features = re.findall(r"\s\d+", str(e))[0].lstrip()
                 raise ValueError(
                     f"X has {n_features} features, but {self.__class__.__name__} "
                     f"is expecting {self.n_features_in_} features as input."
                 )
             else:
                 raise e
-        
+
         return (xp.reshape(dist, (-1,))) ** 2
 
     _onedal_cpu_supported = _onedal_supported
