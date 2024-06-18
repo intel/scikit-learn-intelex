@@ -26,7 +26,6 @@ from ..utils import get_namespace
 from .common import KNeighborsDispatchingBase
 
 
-
 @control_n_jobs(decorated_methods=["fit", "kneighbors"])
 class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     __doc__ = sklearn_NearestNeighbors.__doc__
