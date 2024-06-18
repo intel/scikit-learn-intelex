@@ -138,6 +138,8 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
                 "Ridge",
             ]:
                 pytest.skip(f"{estimator} does not support GPU queues")
+            elif estimator == "NearestNeighbors" and "radius_neighbors" in method:
+                pytest.skip(f"RadiusNeighbors estimator required, but SYCL queues are not supported")
 
         if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
@@ -185,12 +187,15 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
-        # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
-        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
-            pytest.skip("Hardware does not support fp16 SYCL testing")
-        elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
-            pytest.skip("Hardware does not support fp64 SYCL testing")
-
+        if queue:
+            # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
+            if dtype == np.float16 and not queue.sycl_device.has_aspect_fp16:
+                pytest.skip("Hardware does not support fp16 SYCL testing")
+            elif dtype == np.float64 and not queue.sycl_device.has_aspect_fp64:
+                pytest.skip("Hardware does not support fp64 SYCL testing")
+            elif estimator == "NearestNeighbors" and "radius_neighbors" in method:
+                pytest.skip(f"RadiusNeighbors estimator required, but SYCL queues are not supported")
+        
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
 
