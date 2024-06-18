@@ -118,8 +118,10 @@ SPARSE_INSTANCES = _sklearn_clone_dict(
         str(i): i
         for i in [
             SVC(),
-            KMeans(),
-            KMeans(init="random"),
+            # KMeans sparse instances will be enabled when daal 2024.6 is released
+            # KMeans(),
+            # KMeans(init="random"),
+            # KMeans(init="k-means++"),
         ]
     }
 )
