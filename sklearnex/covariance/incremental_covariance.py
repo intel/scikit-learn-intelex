@@ -19,8 +19,8 @@ import warnings
 
 import numpy as np
 from scipy import linalg
-from sklearn.base import BaseEstimator
-from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.base import BaseEstimator, clone
+from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance, log_likelihood
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -99,7 +99,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     get_precision = sklearn_EmpiricalCovariance.get_precision
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
-    score = wrap_output_data(sklearn_EmpiricalCovariance.score)
 
     def __init__(
         self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True
@@ -197,6 +196,23 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             self._need_to_finalize = True
 
         return self
+
+    @wrap_output_data
+    def score(self, X_test, y=None):
+        est = clone(self)
+        est.set_params(**{"assume_centered":True})
+
+        xp, _ = get_namespace(X_test)
+
+        location = self.location_
+        if "numpy" not in str(xp).lower():
+            location = xp.array(location, device=X_test.device)
+
+        # test_cov is a numpy array, but calculated on device
+        test_cov = est.fit(X_test - location).covariance_
+        res = log_likelihood(test_cov, self.get_precision())
+
+        return res
 
     def partial_fit(self, X, y=None, check_input=True):
         """
@@ -311,6 +327,10 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         dist = pairwise_distances(X, location, metric="mahalanobis", VI=precision)
         return (xp.reshape(dist, (-1,))) ** 2
 
+
+
+        
+    
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
