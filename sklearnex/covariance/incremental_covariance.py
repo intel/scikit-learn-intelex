@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import numbers
+import re
 import warnings
 
 import numpy as np
@@ -325,7 +326,19 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         if "numpy" not in str(xp).lower():
             location = xp.asarray(location, device=X.device)
 
-        dist = pairwise_distances(X, location, metric="mahalanobis", VI=precision)
+        try:
+            dist = pairwise_distances(X, location, metric="mahalanobis", VI=precision)
+        except ValueError as e:
+            # Throw the expected sklearn error in an n_feature length violation
+            if re.search("Incompatible dimension for X and Y matrices", e.args[0]):
+                n_features = 2 #regex here
+                raise ValueError(
+                    f"X has {n_features} features, but {self.__class__.__name__} "
+                    f"is expecting {self.n_features_in_} features as input."
+                )
+            else:
+                raise e
+        
         return (xp.reshape(dist, (-1,))) ** 2
 
     _onedal_cpu_supported = _onedal_supported
