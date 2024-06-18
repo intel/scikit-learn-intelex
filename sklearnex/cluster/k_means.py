@@ -159,7 +159,7 @@ if daal_check_version((2023, "P", 200)):
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd", "elkan"]
             correct_count = self.n_clusters < sample_count
-
+            is_sparse_supported = not issparse(X) or daal_check_version((2024, "P", 600))
             sample_weight = _check_sample_weight(
                 sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
             )
@@ -174,6 +174,10 @@ if daal_check_version((2023, "P", 200)):
                     (
                         np.allclose(sample_weight, np.ones_like(sample_weight)),
                         "Sample weights are not ones.",
+                    ),
+                    (
+                        is_sparse_supported,
+                        "Sparse data is not supported for oneDAL KMeans version < 2024.6.0.",
                     ),
                 ]
             )
@@ -224,6 +228,7 @@ if daal_check_version((2023, "P", 200)):
             assert method_name == "predict"
 
             class_name = self.__class__.__name__
+            is_sparse_supported = not issparse(X) or daal_check_version((2024, "P", 600))
             patching_status = PatchingConditionsChain(
                 f"sklearn.cluster.{class_name}.predict"
             )
@@ -235,6 +240,10 @@ if daal_check_version((2023, "P", 200)):
                     (
                         self.algorithm in supported_algs,
                         "Only lloyd algorithm is supported, elkan is computed using lloyd.",
+                    ),
+                    (
+                        is_sparse_supported,
+                        "Sparse data is not supported for oneDAL KMeans version < 2024.6.0.",
                     ),
                     (
                         hasattr(self, "_onedal_estimator"),

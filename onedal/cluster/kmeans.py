@@ -176,6 +176,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         n_centroids=None,
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
+        # Use host policy for KMeans init, only for sparse data
+        init_policy = self._get_policy(None, None) if is_sparse else policy
 
         if isinstance(init, str) and init == "k-means++":
             if not is_sparse:
@@ -188,7 +190,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 alg = self._get_kmeans_init(
                     cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_csr"
                 )
-            centers_table = alg.compute_raw(X_table, policy, dtype)
+            centers_table = alg.compute_raw(X_table, init_policy, dtype)
         elif isinstance(init, str) and init == "random":
             if not is_sparse:
                 alg = self._get_kmeans_init(
@@ -198,14 +200,16 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 alg = self._get_kmeans_init(
                     cluster_count=n_clusters, seed=random_seed, algorithm="random_csr"
                 )
-            centers_table = alg.compute_raw(X_table, policy, dtype)
+            centers_table = alg.compute_raw(X_table, init_policy, dtype)
         elif _is_arraylike_not_scalar(init):
             if sp.issparse(init):
+                # oneDAL KMeans doesn't support sparse centroids
                 centers = init.toarray()
             else:
                 centers = np.asarray(init)
             assert centers.shape[0] == n_clusters
             assert centers.shape[1] == X_table.column_count
+            # Use original policy for KMeans init when arraylike init is provided
             centers = _convert_to_supported(policy, init)
             centers_table = to_table(centers)
         else:
@@ -292,7 +296,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         is_sparse = sp.issparse(X)
         for _ in range(self._n_init):
             if use_custom_init:
-                # random_seed = random_state.tomaxint()
                 random_seed = random_state.randint(np.iinfo("i").max)
                 centroids_table = self._init_centroids_custom(
                     X_table, init, random_seed, policy, is_sparse, dtype=dtype
