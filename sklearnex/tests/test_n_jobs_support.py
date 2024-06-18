@@ -22,14 +22,23 @@ import pytest
 from sklearn.base import BaseEstimator
 from sklearn.datasets import make_classification
 
-from sklearnex.tests._utils import PATCHED_MODELS, SPECIAL_INSTANCES
+from sklearnex.decomposition import PCA
+from sklearnex.dispatcher import get_patch_map
+from sklearnex.svm import SVC, NuSVC
+
+ESTIMATORS = set(
+    filter(
+        lambda x: inspect.isclass(x) and issubclass(x, BaseEstimator),
+        [value[0][0][2] for value in get_patch_map().values()],
+    )
+)
 
 X, Y = make_classification(n_samples=40, n_features=4, random_state=42)
 
 
-@pytest.mark.parametrize("estimator", PATCHED_MODELS.keys())
+@pytest.mark.parametrize("estimator_class", ESTIMATORS)
 @pytest.mark.parametrize("n_jobs", [None, -1, 1, 2])
-def test_standard_n_jobs_support(caplog, estimator, n_jobs):
+def test_n_jobs_support(caplog, estimator_class, n_jobs):
     def check_estimator_doc(estimator):
         if estimator.__doc__ is not None:
             assert "n_jobs" in estimator.__doc__
@@ -62,10 +71,12 @@ def test_standard_n_jobs_support(caplog, estimator, n_jobs):
 
     caplog.set_level(logging.DEBUG, logger="sklearnex")
     estimator_kwargs = {"n_jobs": n_jobs}
+    # by default, [Nu]SVC.predict_proba is restricted by @available_if decorator
+    if estimator_class in [SVC, NuSVC]:
+        estimator_kwargs["probability"] = True
     # explicitly request oneDAL's PCA-Covariance algorithm
-    if "PCA" in estimator:
+    if estimator_class == PCA:
         estimator_kwargs["svd_solver"] = "covariance_eigh"
-    estimator_class = PATCHED_MODELS[i]
     estimator_instance = estimator_class(**estimator_kwargs)
     # check `n_jobs` parameter doc entry
     check_estimator_doc(estimator_class)
