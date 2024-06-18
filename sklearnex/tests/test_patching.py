@@ -138,7 +138,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
                 "Ridge",
             ]:
                 pytest.skip(f"{estimator} does not support GPU queues")
-            elif estimator == "NearestNeighbors" and "radius_neighbors" in method:
+            elif "NearestNeighbors" in estimator and "radius_neighbors" in method:
                 pytest.skip(
                     f"RadiusNeighbors estimator required, but SYCL queues are not supported"
                 )
@@ -195,7 +195,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
                 pytest.skip("Hardware does not support fp16 SYCL testing")
             elif dtype == np.float64 and not queue.sycl_device.has_aspect_fp64:
                 pytest.skip("Hardware does not support fp64 SYCL testing")
-            elif estimator == "NearestNeighbors" and "radius_neighbors" in method:
+            elif "NearestNeighbors" in estimator and "radius_neighbors" in method:
                 pytest.skip(
                     f"RadiusNeighbors estimator required, but SYCL queues are not supported"
                 )

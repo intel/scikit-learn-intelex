@@ -207,7 +207,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         location = self.location_
         if "numpy" not in str(xp).lower():
-            location = xp.array(location, device=X_test.device)
+            location = xp.asarray(location, device=X_test.device)
 
         # test_cov is a numpy array, but calculated on device
         test_cov = est.fit(X_test - location).covariance_
