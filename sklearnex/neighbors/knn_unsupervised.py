@@ -88,10 +88,14 @@ class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     def radius_neighbors(
         self, X=None, radius=None, return_distance=True, sort_results=False
     ):
-        _onedal_estimator = getattr(self, "_onedal_estimator", None)
-
+        if X is not None and "numpy" not in str(get_namespace(X)[0]).lower():
+            raise TypeError(
+                f"{self.__class__.__name__} does not support {type(X)} inputs for radius_neighbors"
+            )
+        # This definitely doesn't cover all cases, and doesn't raise an error to the user
+        # It must be updated.
         if (
-            _onedal_estimator is not None
+            hasattr(self, "_onedal_estimator")
             or getattr(self, "_tree", 0) is None
             and self._fit_method == "kd_tree"
         ):
