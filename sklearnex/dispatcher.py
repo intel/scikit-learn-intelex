@@ -93,10 +93,12 @@ def get_patch_map_core(preview=False):
             ]
 
             # Ridge
-            cluster_module, _, _ = mapping["ridge"][0][0]
+            linear_model_module, _, _ = mapping["ridge"][0][0]
             sklearn_obj = mapping["ridge"][0][1]
             mapping.pop("ridge")
-            mapping["ridge"] = [[(cluster_module, "ridge", Ridge_sklearnex), sklearn_obj]]
+            mapping["ridge"] = [
+                [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
+            ]
 
         return mapping
 
