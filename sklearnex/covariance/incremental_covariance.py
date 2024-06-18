@@ -306,11 +306,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         # check_feature_names will match _validate_data functionally
         location = self.location_[np.newaxis, :]
         if "numpy" not in str(xp).lower():
-            location = xp.asarray(location, device=X.device)    
-        
-        dist = pairwise_distances(
-            X, location, metric="mahalanobis", VI=precision
-        )
+            location = xp.asarray(location, device=X.device)
+
+        dist = pairwise_distances(X, location, metric="mahalanobis", VI=precision)
         return (xp.reshape(dist, (-1,))) ** 2
 
     _onedal_cpu_supported = _onedal_supported
