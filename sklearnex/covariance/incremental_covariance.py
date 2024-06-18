@@ -20,7 +20,8 @@ import warnings
 import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator, clone
-from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance, log_likelihood
+from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
