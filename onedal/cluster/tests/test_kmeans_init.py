@@ -85,6 +85,8 @@ if daal_check_version((2023, "P", 200)):
         d, i = nn.fit(rs_centroids).kneighbors(cs)
         # We have applied 2 sigma rule once
         desired_accuracy = int(0.9973 * n_cluster)
+        if d.dtype == np.float64:
+            desired_accuracy = desired_accuracy - 1
         correctness = d.reshape(-1) <= (vs * 3)
         exp_accuracy = np.count_nonzero(correctness)
 

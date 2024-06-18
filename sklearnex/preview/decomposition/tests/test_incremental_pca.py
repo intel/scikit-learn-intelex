@@ -74,7 +74,7 @@ def check_pca_on_gold_data(incpca, dtype, whiten, transformed_data):
     )
 
     tol = 1e-7
-    if dtype == np.float32:
+    if transformed_data.dtype == np.float32:
         tol = 7e-6 if whiten else 1e-6
 
     assert incpca.n_samples_seen_ == expected_n_samples_seen_
@@ -112,7 +112,7 @@ def check_pca_on_gold_data(incpca, dtype, whiten, transformed_data):
 
 
 def check_pca(incpca, dtype, whiten, data, transformed_data):
-    tol = 3e-3 if dtype == np.float32 else 2e-6
+    tol = 3e-3 if transformed_data.dtype == np.float32 else 2e-6
 
     n_components = incpca.n_components_
 
