@@ -201,7 +201,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     @wrap_output_data
     def score(self, X_test, y=None):
         est = clone(self)
-        est.set_params(**{"assume_centered":True})
+        est.set_params(**{"assume_centered": True})
 
         xp, _ = get_namespace(X_test)
 
@@ -328,10 +328,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         dist = pairwise_distances(X, location, metric="mahalanobis", VI=precision)
         return (xp.reshape(dist, (-1,))) ** 2
 
-
-
-        
-    
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
