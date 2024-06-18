@@ -57,7 +57,7 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,pandas,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter_="numpy,pandas,dpnp,dpctl,array_api", device_filter_="cpu,gpu"
 ):
     dataframes_and_queues = []
 
@@ -129,10 +129,11 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         # standard, but maintaining data on a device
         # using the method `from_dlpack` is.
         xp = array_api_modules[target_df]
-        return xp.from_dlpack(
-            _convert_to_dataframe(
-                obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs
-            )
-        )
+        # return xp.from_dlpack(
+        #     _convert_to_dataframe(
+        #         obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs
+        #     )
+        # )
+        return xp.from_dlpack(obj)
 
     raise RuntimeError("Unsupported dataframe conversion")

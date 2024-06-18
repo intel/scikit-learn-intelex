@@ -126,6 +126,7 @@ def _transfer_to_host(queue, *data):
         elif array_api is not None:
             # TODO:
             # get info about the device, for backward conversions.
+            item._array = item._array.copy()
             item = np.from_dlpack(item).copy()
             has_host_data = True
         else:
@@ -167,10 +168,12 @@ def _extract_array_attr(*args, **kwargs):
         return None, None, None
     usm_iface = getattr(allargs[0], "__sycl_usm_array_interface__", None)
     array_api = None
-    if hasattr(allargs[0], "__array_namespace__", None):
+    dlpack_device = None
+    if hasattr(allargs[0], "__array_namespace__"):
         array_api = getattr(allargs[0], "__array_namespace__", None)()
 
-    dlpack_device = getattr(allargs[0], "__dlpack_device__", None)
+    if hasattr(allargs[0], "__dlpack_device__"):
+        dlpack_device = getattr(allargs[0], "__dlpack_device__", None)
     return usm_iface, array_api, dlpack_device
 
 
@@ -192,12 +195,31 @@ if dpnp_available:
         return array
 
 
+def _from_dlpack(data, xp, *args, **kwargs):
+    def _one_from_dlpack(data, xp, *args, **kwargs):
+        return xp.from_dlpack(data, *args, **kwargs)
+
+    if isinstance(data, Iterable):
+        for i in range(len(data)):
+            data[i] = _one_from_dlpack(data[i], xp, *args, **kwargs)
+        return data
+    return _one_from_dlpack(data, xp, *args, **kwargs)
+
+
+def _is_numpy_namespace(xp):
+    """Return True if xp is backed by NumPy."""
+    print("\n_is_numpy_namespace call")
+    return xp.__name__ in {"numpy", "array_api_compat.numpy", "numpy.array_api"}
+
+
 # TODO:
 # rename support_array_api
 def support_array_api(freefunc=False, queue_param=True):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            usm_iface, array_api, dlpack_device = _extract_array_attr(*args, **kwargs)
+            usm_iface, input_array_api, input_dlpack_device = _extract_array_attr(
+                *args, **kwargs
+            )
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if queue_param:
                 hostkwargs["queue"] = data_queue
@@ -208,10 +230,16 @@ def support_array_api(freefunc=False, queue_param=True):
                     result = _convert_to_dpnp(result)
             # TODO:
             # add exception for numpy.
-            elif array_api:
+            elif (
+                input_array_api
+                and not _is_numpy_namespace(input_array_api)
+                and hasattr(result, "__array_namespace__")
+            ):
                 # TODO:
                 # avoid for numpy
-                result = array_api.from_dlpack(result, copy=True, device=dlpack_device)
+                result = _from_dlpack(
+                    result, input_array_api, copy=True, device=input_dlpack_device
+                )
             return result
 
         if freefunc:

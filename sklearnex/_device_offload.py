@@ -20,13 +20,15 @@ from functools import wraps
 from onedal._device_offload import (
     _copy_to_usm,
     _extract_array_attr,
+    _from_dlpack,
     _get_global_queue,
+    _is_numpy_namespace,
     _transfer_to_host,
     dpnp_available,
 )
 
 if dpnp_available:
-    from onedal._device_offload import _convert_to_dpnp
+    from onedal._device_offload import _convert_to_dpnp, _from_dlpack
 
 try:
     from dpctl.tensor import usm_ndarray
@@ -94,6 +96,9 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     )
 
 
+# TODO:
+# support input data
+# wrap output data
 def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -104,10 +109,14 @@ def wrap_output_data(func):
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
                 result = _convert_to_dpnp(result)
-        elif array_api:
-            # TODO:
-            # avoid for numpy
-            result = array_api.from_dlpack(result, copy=True, device=dlpack_device)
+        # TODO:
+        # update condition
+        elif (
+            array_api
+            and not _is_numpy_namespace(array_api)
+            and hasattr(result, "__array_namespace__")
+        ):
+            result = _from_dlpack(result, array_api, copy=True, device=dlpack_device)
         return result
 
     return wrapper
