@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import numpy as np
+from scipy.sparse import issparse
 from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
@@ -79,6 +80,9 @@ if daal_check_version((2023, "P", 200)):
 
         def _compute(self, X, module, queue):
             policy = self._get_policy(queue, X)
+            # oneDAL KMeans Init for sparse data does not have GPU support
+            if issparse(X):
+                policy = self._get_policy(None, None)
             _, X_table, dtype = self._get_params_and_input(X, policy)
 
             centroids = self._compute_raw(X_table, module, policy, dtype)

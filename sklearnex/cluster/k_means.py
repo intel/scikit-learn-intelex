@@ -224,7 +224,7 @@ if daal_check_version((2023, "P", 200)):
 
             self._save_attributes()
 
-        def _onedal_predict_supported(self, method_name, X, sample_weight):
+        def _onedal_predict_supported(self, method_name, X, sample_weight=None):
             assert method_name == "predict"
 
             class_name = self.__class__.__name__
@@ -300,19 +300,21 @@ if daal_check_version((2023, "P", 200)):
                 reset=False,
                 dtype=[np.float64, np.float32],
             )
-            if (
-                sklearn_check_version("1.3")
-                and isinstance(sample_weight, str)
-                and sample_weight == "deprecated"
-            ):
-                sample_weight = None
 
-            if sklearn_check_version("1.3") and sample_weight is not None:
-                warnings.warn(
-                    "'sample_weight' was deprecated in version 1.3 and "
-                    "will be removed in 1.5.",
-                    FutureWarning,
-                )
+            if not sklearn_check_version("1.5"):
+                if (
+                    sklearn_check_version("1.3")
+                    and isinstance(sample_weight, str)
+                    and sample_weight == "deprecated"
+                ):
+                    sample_weight = None
+
+                if sklearn_check_version("1.3") and sample_weight is not None:
+                    warnings.warn(
+                        "'sample_weight' was deprecated in version 1.3 and "
+                        "will be removed in 1.5.",
+                        FutureWarning,
+                    )
 
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
