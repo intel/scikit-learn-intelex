@@ -251,6 +251,7 @@ class BaseSVC(BaseSVM):
                     ensemble=False,
                     cv=cv,
                     method="sigmoid",
+                    n_jobs=n_jobs,
                 )
                 self.clf_prob.fit(X, y, sample_weight)
 
