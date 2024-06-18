@@ -32,17 +32,15 @@ def _get_onedal_threadlocal_config():
     return _threadlocal.global_config
 
 
-# TODO:
-# docstrings
 def _get_config():
-    """Retrieve current values for configuration set by :func:`set_config`
+    """Retrieve current values for configuration set
+    by :func:`sklearnex.set_config`
     Returns
     -------
     config : dict
-        Keys are parameter names that can be passed to :func:`set_config`.
-    See Also
-    --------
-    _set_config : Set global configuration.
+        Keys are parameter names `target_offload` and
+        `allow_fallback_to_host` that can be passed
+        to :func:`sklearnex.set_config`.
     """
     onedal_config = _get_onedal_threadlocal_config().copy()
     return {**onedal_config}
