@@ -22,7 +22,9 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 
 from .._device_offload import dispatch, wrap_output_data
+from ..utils import get_namespace
 from .common import KNeighborsDispatchingBase
+
 
 
 @control_n_jobs(decorated_methods=["fit", "kneighbors"])
