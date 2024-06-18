@@ -330,8 +330,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             dist = pairwise_distances(X, location, metric="mahalanobis", VI=precision)
         except ValueError as e:
             # Throw the expected sklearn error in an n_feature length violation
-            if re.search("Incompatible dimension for X and Y matrices", e.args[0]):
-                n_features = 2 #regex here
+            if "Incompatible dimension for X and Y matrices: X.shape[1] ==" in str(e):
+                n_features = re.findall(r'\s\d+', str(e))[0].lstrip()
                 raise ValueError(
                     f"X has {n_features} features, but {self.__class__.__name__} "
                     f"is expecting {self.n_features_in_} features as input."
