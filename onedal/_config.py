@@ -32,9 +32,14 @@ def _get_onedal_threadlocal_config():
     return _threadlocal.global_config
 
 
-def _get_config():
+def _get_config(copy=True):
     """Retrieve current values for configuration set
     by :func:`sklearnex.set_config`
+    Parameters
+    ----------
+    copy : bool, default=True
+        If False, the values ​​of the global config are returned,
+        which can further be overwritten.
     Returns
     -------
     config : dict
@@ -42,5 +47,7 @@ def _get_config():
         `allow_fallback_to_host` that can be passed
         to :func:`sklearnex.set_config`.
     """
-    onedal_config = _get_onedal_threadlocal_config().copy()
+    onedal_config = _get_onedal_threadlocal_config()
+    if copy:
+        onedal_config = onedal_config.copy()
     return {**onedal_config}
