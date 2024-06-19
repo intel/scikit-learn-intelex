@@ -258,7 +258,7 @@ if daal_check_version((2023, "P", 200)):
 
             @wrap_output_data
             def predict(self, X):
-                self._check_feature_names(X, reset=True)
+                self._check_feature_names(X, reset=False)
                 self._validate_params()
                 return dispatch(
                     self,
@@ -279,7 +279,7 @@ if daal_check_version((2023, "P", 200)):
                 sample_weight="deprecated" if sklearn_check_version("1.3") else None,
             ):
                 if sklearn_check_version("1.0"):
-                    self._check_feature_names(X, reset=True)
+                    self._check_feature_names(X, reset=False)
                 if sklearn_check_version("1.2"):
                     self._validate_params()
                 return dispatch(
