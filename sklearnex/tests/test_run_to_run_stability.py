@@ -80,6 +80,7 @@ def eval_method(X, y, est, method):
             data = (X, y)
         res = attr(*data)
 
+    print(res)
     if not isinstance(res, Iterable):
         results = [_as_numpy(res)] if res != est else []
     else:
