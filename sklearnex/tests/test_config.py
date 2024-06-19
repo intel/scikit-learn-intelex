@@ -17,7 +17,6 @@
 import sklearn
 
 import onedal
-import onedal._config
 import sklearnex
 
 
