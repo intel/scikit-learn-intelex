@@ -37,7 +37,7 @@ ONEDAL_PY_INIT_MODULE(graph) {
     // init in table.cpp
 
     graph_constructor<float>(m, "graph_float");
-    graph_constructor<float>(m, "graph_double");
+    graph_constructor<double>(m, "graph_double");
 
 
     m.def("to_graph", [](py::object obj) -> std::variant<graph_t<float>, graph_t<double>> {
