@@ -50,4 +50,4 @@ def _get_config(copy=True):
     onedal_config = _get_onedal_threadlocal_config()
     if copy:
         onedal_config = onedal_config.copy()
-    return {**onedal_config}
+    return onedal_config
