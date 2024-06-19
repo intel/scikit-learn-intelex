@@ -15,8 +15,8 @@
 # ===============================================================================
 
 import pytest
-from sklearn import get_config
 import scipy.sparse as sp
+from sklearn import get_config
 
 try:
     import dpctl
