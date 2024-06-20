@@ -174,7 +174,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
         # Use host policy for KMeans init, only for csr data
-        init_policy = self._get_policy(None, None)# if is_csr else policy
+        init_policy = self._get_policy(None, None)  # if is_csr else policy
 
         if isinstance(init, str) and init == "k-means++":
             if not is_csr:
