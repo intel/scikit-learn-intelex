@@ -87,9 +87,9 @@ def eval_method(X, y, est, method):
         for i in res:
             # Nearest Neighbors radius_neighbors causes this if statement
             if hasattr(i, "dtype") and i.dtype == np.dtype(object):
-                results += [_asnumpy(j) for j in list(i)]
+                results += [_as_numpy(j) for j in list(i)]
             else:
-                results += [_asnumpy(i)]
+                results += [_as_numpy(i)]
 
     attributes = [method for i in results]
 
