@@ -183,8 +183,7 @@ def _run_on_device(func, obj=None, *args, **kwargs):
 # TODO:
 # move to array api module
 if dpnp_available:
-    # TODO:
-    # will be moved to _arrary_api module
+
     def _convert_to_dpnp(array):
         if isinstance(array, usm_ndarray):
             return dpnp.array(array, copy=False)
