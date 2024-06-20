@@ -43,10 +43,10 @@ struct method2t {
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "random_dense", ops, Float, method::random_dense);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_dense", ops, Float, method::plus_plus_dense);
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240500
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
         ONEDAL_PARAM_DISPATCH_VALUE(method, "random_csr", ops, Float, method::random_csr);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_csr", ops, Float, method::plus_plus_csr);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240500
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240600
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
@@ -86,7 +86,7 @@ struct descriptor_creator<Float,
     }
 };
 
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240500
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
 template <typename Float>
 struct descriptor_creator<Float,
                           dal::kmeans_init::method::random_csr,
@@ -107,7 +107,7 @@ struct descriptor_creator<Float,
                                             dal::kmeans_init::task::init>{};
     }
 };
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240500
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240600
 
 struct params2desc {
     template <typename Float, typename Method, typename Task>
@@ -128,12 +128,12 @@ struct params2desc {
             const auto local_trials_count = params["local_trials_count"].cast<std::int64_t>();
             desc.set_local_trials_count(local_trials_count);
         }
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240500
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
         if constexpr (std::is_same_v<Method, dal::kmeans_init::method::plus_plus_csr>) {
             const auto local_trials_count = params["local_trials_count"].cast<std::int64_t>();
             desc.set_local_trials_count(local_trials_count);
         }
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240500
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240600
         return desc;
     }
 };

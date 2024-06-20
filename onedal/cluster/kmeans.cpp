@@ -38,7 +38,9 @@ struct method2t {
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "lloyd_dense", ops, Float, method::lloyd_dense);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
         ONEDAL_PARAM_DISPATCH_VALUE(method, "lloyd_csr", ops, Float, method::lloyd_csr);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
