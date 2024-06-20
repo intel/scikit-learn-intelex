@@ -18,29 +18,27 @@ import logging
 from abc import ABC
 
 import numpy as np
+from scipy.sparse import issparse
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import Ridge as sklearn_RidgeRegression
 from sklearn.metrics import r2_score
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from daal4py.sklearn.linear_model._ridge import _fit_ridge as daal4py_fit_ridge
 
-from ..._device_offload import dispatch, wrap_output_data
-from ..._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
-from ...utils import get_namespace
-from ...utils.validation import _assert_all_finite
-
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
-
-from scipy.sparse import issparse
-from sklearn.utils.validation import check_X_y
 
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_RidgeRegression
 from onedal.utils import _num_features, _num_samples
+
+from ..._device_offload import dispatch, wrap_output_data
+from ..._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
+from ...utils import get_namespace
+from ...utils.validation import _assert_all_finite
 
 
 def is_numeric_scalar(value):
@@ -55,42 +53,50 @@ class Ridge(sklearn_RidgeRegression):
 
         def __init__(
             self,
-            fit_intercept=True,
             alpha=1.0,
+            fit_intercept=True,
             copy_X=True,
-            positive=False,
-            solver="auto",
+            max_iter=None,
             tol=1e-4,
+            solver="auto",
+            positive=False,
+            random_state=None,
         ):
             super().__init__(
-                fit_intercept=fit_intercept,
                 alpha=alpha,
+                fit_intercept=fit_intercept,
                 copy_X=copy_X,
-                positive=positive,
-                solver=solver,
+                max_iter=max_iter,
                 tol=tol,
+                solver=solver,
+                positive=positive,
+                random_state=random_state,
             )
 
     else:
 
         def __init__(
             self,
-            fit_intercept=True,
             alpha=1.0,
+            fit_intercept=True,
             normalize="deprecated" if sklearn_check_version("1.0") else False,
             copy_X=True,
-            positive=False,
-            solver="auto",
+            max_iter=None,
             tol=1e-4,
+            solver="auto",
+            positive=False,
+            random_state=None,
         ):
             super().__init__(
-                fit_intercept=fit_intercept,
                 alpha=alpha,
+                fit_intercept=fit_intercept,
                 normalize=normalize,
                 copy_X=copy_X,
-                positive=positive,
+                max_iter=max_iter,
                 solver=solver,
                 tol=tol,
+                positive=positive,
+                random_state=random_state,
             )
 
     def fit(self, X, y, sample_weight=None):
@@ -179,6 +185,11 @@ class Ridge(sklearn_RidgeRegression):
 
         dal_ready = patching_status.and_conditions(
             [
+                (
+                    self.solver == "auto",
+                    f"'{self.solver}' solver is not supported. "
+                    "Only 'auto' solver is supported.",
+                ),
                 (sample_weight is None, "Sample weight is not supported."),
                 (
                     not issparse(X) and not issparse(y),
@@ -226,6 +237,11 @@ class Ridge(sklearn_RidgeRegression):
         )
         dal_ready = patching_status.and_conditions(
             [
+                (
+                    self.solver == "auto",
+                    f"'{self.solver}' solver is not supported. "
+                    "Only 'auto' solver is supported.",
+                ),
                 (n_samples > 0, "Number of samples is less than 1."),
                 (not issparse(*data), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
@@ -358,9 +374,7 @@ class Ridge(sklearn_RidgeRegression):
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.coef_ = value
             # checking if the model is already fitted and if so, deleting the model
-            if hasattr(self._onedal_estimator, "_onedal_model") and hasattr(
-                self, "_coef"
-            ):
+            if hasattr(self._onedal_estimator, "_onedal_model"):
                 del self._onedal_estimator._onedal_model
         self._coef = value
 
@@ -373,17 +387,15 @@ class Ridge(sklearn_RidgeRegression):
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             # checking if the model is already fitted and if so, deleting the model
-            if hasattr(self._onedal_estimator, "_onedal_model") and hasattr(
-                self, "_intercept"
-            ):
+            if hasattr(self._onedal_estimator, "_onedal_model"):
                 del self._onedal_estimator._onedal_model
         self._intercept = value
 
     def _save_attributes(self):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self._sparse = False
-        self.coef_ = self._onedal_estimator.coef_
-        self.intercept_ = self._onedal_estimator.intercept_
+        self._coef = self._onedal_estimator.coef_
+        self._intercept = self._onedal_estimator.intercept_
 
     fit.__doc__ = sklearn_RidgeRegression.fit.__doc__
     predict.__doc__ = sklearn_RidgeRegression.predict.__doc__
