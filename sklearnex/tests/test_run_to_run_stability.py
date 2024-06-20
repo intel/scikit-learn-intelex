@@ -74,7 +74,10 @@ def eval_method(X, y, est, method):
 
     if method:
         attr = getattr(est, method)
-        if method not in ["score", "partial_fit", "path"]:
+        if method == "inverse_transform":
+            # PCA's inverse_transform takes (n_samples, n_components)
+            data = (X[:, :est.n_components_],)
+        elif method not in ["score", "partial_fit", "path"]:
             data = (X,)
         else:
             data = (X, y)
@@ -86,6 +89,8 @@ def eval_method(X, y, est, method):
         results = []
         for i in res:
             # Nearest Neighbors radius_neighbors causes this if statement
+            # It is unique in returning a numpy array of numpy arrays in
+            # a list
             if hasattr(i, "dtype") and i.dtype == np.dtype(object):
                 results += [_as_numpy(j) for j in list(i)]
             else:
