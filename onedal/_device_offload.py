@@ -48,8 +48,6 @@ class DummySyclQueue:
             self._filter_string = filter_string
             self.is_cpu = "cpu" in filter_string
             self.is_gpu = "gpu" in filter_string
-            # TODO: check for possibility of fp64 support
-            # on other devices in this dummy class
             self.has_aspect_fp64 = self.is_cpu
 
             if not (self.is_cpu):
