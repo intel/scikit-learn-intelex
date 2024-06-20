@@ -76,7 +76,7 @@ def eval_method(X, y, est, method):
         attr = getattr(est, method)
         if method == "inverse_transform":
             # PCA's inverse_transform takes (n_samples, n_components)
-            data = (X[:, :est.n_components_],)
+            data = (X[:, : est.n_components_],)
         elif method not in ["score", "partial_fit", "path"]:
             data = (X,)
         else:
