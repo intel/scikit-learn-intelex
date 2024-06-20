@@ -80,11 +80,16 @@ def eval_method(X, y, est, method):
             data = (X, y)
         res = attr(*data)
 
-    print(res)
     if not isinstance(res, Iterable):
-        results = [_as_numpy(res)] if res != est else []
+        results = [_as_numpy(res)] if res is not est else []
     else:
-        results = [_as_numpy(i) for i in res]
+        results = []
+        for i in res:
+            # Nearest Neighbors radius_neighbors causes this if statement
+            if hasattr(i, dtype) and i.dtype == np.dtype(object):
+                results += [_asnumpy(j) for j in list(i)]
+            else:
+                results += [_asnumpy(i)]
 
     attributes = [method for i in results]
 
