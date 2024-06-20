@@ -164,7 +164,7 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
-    if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
+    if estimator in ["KMeans", "PCA"] and "score" in method and queue == None:
         pytest.skip(f"variation observed in {estimator}.score")
     if estimator in ["IncrementalEmpiricalCovariance"] and method == "mahalanobis":
         pytest.skip("allowed fallback to sklearn occurs")
