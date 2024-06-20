@@ -23,26 +23,32 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 
+@pytest.mark.parametrize("alpha", [0.5, 1.0, 5.0])
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_onedal_ridge(dataframe, queue):
+def test_ridge_sklearnex_sklearn_conformance(alpha, dataframe, queue):
     from sklearn.linear_model import Ridge as Ridge_sklearn
 
     from sklearnex.preview.linear_model import Ridge as Ridge_sklearnex
 
     sample_count, feature_count = 10, 5
-    alpha = 5.0
 
     sklearnex_model = Ridge_sklearnex(fit_intercept=True, alpha=alpha)
     sklearn_model = Ridge_sklearn(fit_intercept=True, alpha=alpha)
 
     X, y = numpy.random.rand(sample_count, feature_count), numpy.random.rand(sample_count)
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
 
-    sklearnex_model.fit(X, y)
+    sklearnex_model.fit(X_c, y_c)
     sklearn_model.fit(X, y)
     numpy.testing.assert_allclose(sklearnex_model.coef_, sklearn_model.coef_)
 
-    prediction_sklearnex = numpy.asarray(sklearnex_model.predict(X), dtype=numpy.float64)
+    prediction_sklearnex = numpy.asarray(
+        sklearnex_model.predict(X_c), dtype=numpy.float64
+    )
     prediction_sklearn = numpy.asarray(sklearn_model.predict(X), dtype=numpy.float64)
     numpy.testing.assert_allclose(prediction_sklearnex, prediction_sklearn)
+
+    score_sklearnex = sklearnex_model.score(X_c, y_c)
+    score_sklearn = sklearn_model.score(X, y)
+    numpy.testing.assert_allclose(score_sklearnex, score_sklearn)
