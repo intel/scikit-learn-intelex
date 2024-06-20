@@ -48,7 +48,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             "intercept": self.fit_intercept,
             "result_option": (intercept + "coefficients"),
         }
-        if daal_check_version((2024, "P", 5)):
+        if daal_check_version((2024, "P", 500)):
             params["alpha"] = self.alpha
 
         return params
