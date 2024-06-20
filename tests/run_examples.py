@@ -77,6 +77,7 @@ ex_log_dirs = [
 
 available_devices = []
 
+# TODO: replace this in this PR
 try:
     from daal4py.oneapi import sycl_context
 
