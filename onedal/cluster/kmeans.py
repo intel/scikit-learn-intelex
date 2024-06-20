@@ -174,7 +174,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
         # Use host policy for KMeans init, only for csr data
-        init_policy = self._get_policy(None, None)  # if is_csr else policy
+        init_policy = self._get_policy(None, None)# if is_csr else policy
 
         if isinstance(init, str) and init == "k-means++":
             if not is_csr:
@@ -199,7 +199,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 )
             centers_table = alg.compute_raw(X_table, init_policy, dtype)
         elif _is_arraylike_not_scalar(init):
-            if sp.issparse(init):
+            if _is_csr(init):
                 # oneDAL KMeans doesn't support sparse centroids
                 centers = init.toarray()
             else:
@@ -248,7 +248,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     ):
         params = self._get_onedal_params(is_csr, dtype)
 
-        # TODO: check all features for having correct type
         meta = _backend.get_table_metadata(X_table)
         assert meta.get_npy_dtype(0) == dtype
 
