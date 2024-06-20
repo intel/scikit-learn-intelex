@@ -18,7 +18,6 @@ import warnings
 from abc import ABC
 
 import numpy as np
-from scipy import sparse as sp
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
 from onedal import _backend
@@ -38,7 +37,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
-from ..utils import _check_array, _is_arraylike_not_scalar
+from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 
 
 class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
@@ -83,24 +82,22 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
-        if sp.issparse(X):
+        if _is_csr(X):
             variances = mean_variance_axis(X, axis=0)[1]
             mean_var = np.mean(variances)
         else:
             mean_var = np.var(X, axis=0).mean()
         return mean_var * rtol
 
-    def _check_params_vs_input(
-        self, X_table, policy, default_n_init=10, dtype=np.float32
-    ):
+    def _check_params_vs_input(self, X, policy, default_n_init=10, dtype=np.float32):
         # n_clusters
-        if X_table.shape[0] < self.n_clusters:
+        if X.shape[0] < self.n_clusters:
             raise ValueError(
-                f"n_samples={X_table.shape[0]} should be >= n_clusters={self.n_clusters}."
+                f"n_samples={X.shape[0]} should be >= n_clusters={self.n_clusters}."
             )
 
         # tol
-        self._tol = self._tolerance(X_table, self.tol)
+        self._tol = self._tolerance(X, self.tol)
 
         # n-init
         # TODO(1.4): Remove
@@ -139,11 +136,11 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             self._n_init = 1
         assert self.algorithm == "lloyd"
 
-    def _get_onedal_params(self, X_loc, dtype=np.float32, result_options=None):
+    def _get_onedal_params(self, is_csr=False, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": "lloyd_csr" if sp.issparse(X_loc) else "by_default",
+            "method": "lloyd_csr" if is_csr else "by_default",
             "seed": -1,
             "max_iteration_count": self.max_iter,
             "cluster_count": self.n_clusters,
@@ -161,26 +158,26 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         self._check_params_vs_input(X, policy, dtype=dtype)
 
-        params = self._get_onedal_params(X_table, dtype)
+        params = self._get_onedal_params(dtype)
 
         return (params, X_table, dtype)
 
-    def _init_centroids_custom(
+    def _init_centroids_onedal(
         self,
         X_table,
         init,
         random_seed,
         policy,
-        is_sparse,
+        is_csr,
         dtype=np.float32,
         n_centroids=None,
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
-        # Use host policy for KMeans init, only for sparse data
-        init_policy = self._get_policy(None, None) if is_sparse else policy
+        # Use host policy for KMeans init, only for csr data
+        init_policy = self._get_policy(None, None)  # if is_csr else policy
 
         if isinstance(init, str) and init == "k-means++":
-            if not is_sparse:
+            if not is_csr:
                 alg = self._get_kmeans_init(
                     cluster_count=n_clusters,
                     seed=random_seed,
@@ -192,7 +189,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 )
             centers_table = alg.compute_raw(X_table, init_policy, dtype)
         elif isinstance(init, str) and init == "random":
-            if not is_sparse:
+            if not is_csr:
                 alg = self._get_kmeans_init(
                     cluster_count=n_clusters, seed=random_seed, algorithm="random_dense"
                 )
@@ -210,14 +207,15 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             assert centers.shape[0] == n_clusters
             assert centers.shape[1] == X_table.column_count
             # Use original policy for KMeans init when arraylike init is provided
-            centers = _convert_to_supported(policy, init)
+            centers = _convert_to_supported(policy, centers)
             centers_table = to_table(centers)
         else:
             raise TypeError("Unsupported type of the `init` value")
 
         return centers_table
 
-    def _init_centroids_generic(self, X, init, random_state, policy, dtype=np.float32):
+    def _init_centroids_sklearn(self, X, init, random_state, policy, dtype=np.float32):
+        # For oneDAL versions < 2023.2, using the scikit-learn implementation
         n_samples = X.shape[0]
 
         if isinstance(init, str) and init == "k-means++":
@@ -245,8 +243,10 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         centers = _convert_to_supported(policy, centers)
         return to_table(centers)
 
-    def _fit_backend(self, X_table, centroids_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(X_table, dtype)
+    def _fit_backend(
+        self, X_table, centroids_table, module, policy, dtype=np.float32, is_csr=False
+    ):
+        params = self._get_onedal_params(is_csr, dtype)
 
         # TODO: check all features for having correct type
         meta = _backend.get_table_metadata(X_table)
@@ -291,17 +291,17 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             )
             self._validate_center_shape(X, init)
 
-        use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
+        use_onedal_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
 
-        is_sparse = sp.issparse(X)
+        is_csr = _is_csr(X)
         for _ in range(self._n_init):
-            if use_custom_init:
+            if use_onedal_init:
                 random_seed = random_state.randint(np.iinfo("i").max)
-                centroids_table = self._init_centroids_custom(
-                    X_table, init, random_seed, policy, is_sparse, dtype=dtype
+                centroids_table = self._init_centroids_onedal(
+                    X_table, init, random_seed, policy, is_csr, dtype=dtype
                 )
             else:
-                centroids_table = self._init_centroids_generic(
+                centroids_table = self._init_centroids_sklearn(
                     X, init, random_state, policy, dtype=dtype
                 )
 
@@ -309,7 +309,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 print("Initialization complete.")
 
             labels, inertia, model, n_iter = self._fit_backend(
-                X_table, centroids_table, module, policy, dtype
+                X_table, centroids_table, module, policy, dtype, is_csr
             )
 
             if self.verbose:
@@ -365,9 +365,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
     cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
-    def _predict_raw(self, X_table, module, policy, dtype=np.float32):
+    def _predict_raw(self, X_table, module, policy, dtype=np.float32, is_csr=False):
         params = self._get_onedal_params(
-            X_table, dtype, result_options="compute_assignments"
+            is_csr, dtype, result_options="compute_assignments"
         )
 
         result = module.infer(policy, params, self.model_, X_table)
@@ -376,12 +376,13 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
     def _predict(self, X, module, queue=None):
         check_is_fitted(self)
+        is_csr = _is_csr(X)
 
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         X_table, dtype = to_table(X), X.dtype
 
-        return self._predict_raw(X_table, module, policy, dtype)
+        return self._predict_raw(X_table, module, policy, dtype, is_csr)
 
     def _transform(self, X):
         return euclidean_distances(X, self.cluster_centers_)
