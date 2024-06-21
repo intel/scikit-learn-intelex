@@ -201,17 +201,20 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     @wrap_output_data
     def score(self, X_test, y=None):
-        est = clone(self)
-        est.set_params(**{"assume_centered": True})
-
         xp, _ = get_namespace(X_test)
 
         location = self.location_
+        X = self._validate_data(X_test, reset=False)
         if "numpy" not in str(xp).lower():
             location = xp.asarray(location, device=X_test.device)
+            if isinstance(X, np.ndarray):
+                X = X_test
+        
+        est = clone(self)
+        est.set_params(**{"assume_centered": True})
 
         # test_cov is a numpy array, but calculated on device
-        test_cov = est.fit(X_test - location).covariance_
+        test_cov = est.fit(X - location).covariance_
         res = log_likelihood(test_cov, self.get_precision())
 
         return res
