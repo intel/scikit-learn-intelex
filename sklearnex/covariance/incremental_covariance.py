@@ -205,7 +205,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         location = self.location_
         X = self._validate_data(X_test, reset=False)
-        if "numpy" not in str(xp).lower():
+        if "numpy" not in xp.__name__:
             location = xp.asarray(location, device=X_test.device)
             if isinstance(X, np.ndarray):
                 X = X_test
