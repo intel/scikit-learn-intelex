@@ -91,8 +91,6 @@ def _as_numpy(obj, *args, **kwargs):
         return dpt.to_numpy(obj, *args, **kwargs)
     if isinstance(obj, pd.DataFrame) or isinstance(obj, pd.Series):
         return obj.to_array(*args, **kwargs)
-    if hasattr(obj, "__array_namespace__"):
-        return np.from_dlpack(obj, *args, **kwargs)
     if sp.issparse(obj):
         return obj.toarray(*args, **kwargs)
     return np.asarray(obj, *args, **kwargs)
