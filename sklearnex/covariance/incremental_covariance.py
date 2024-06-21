@@ -209,7 +209,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             location = xp.asarray(location, device=X_test.device)
             if isinstance(X, np.ndarray):
                 X = X_test
-        
+
         est = clone(self)
         est.set_params(**{"assume_centered": True})
 
