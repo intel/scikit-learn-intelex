@@ -167,7 +167,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         if method:
             if method == "inverse_transform":
                 # PCA's inverse_transform takes (n_samples, n_components)
-                data = (X[:, : est.n_components_],)
+                data = (X[:, : est.n_components_],) if X.shape[1] != est.n_components_ else (X,)
             elif method not in ["score", "partial_fit", "path"]:
                 data = (X,)
             else:
@@ -212,7 +212,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
         if method:
             if method == "inverse_transform":
                 # PCA's inverse_transform takes (n_samples, n_components)
-                data = (X[:, : est.n_components_],)
+                data = (X[:, : est.n_components_],) if X.shape[1] != est.n_components_ else (X,)
             elif method not in ["score", "partial_fit", "path"]:
                 data = (X,)
             else:
