@@ -89,7 +89,7 @@ class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     def radius_neighbors(
         self, X=None, radius=None, return_distance=True, sort_results=False
     ):
-        if X is not None and "numpy" not in str(get_namespace(X)[0]).lower():
+        if X is not None and "numpy" not in get_namespace(X)[0].__name__:
             raise TypeError(
                 f"{self.__class__.__name__} does not support {type(X)} inputs for radius_neighbors"
             )
