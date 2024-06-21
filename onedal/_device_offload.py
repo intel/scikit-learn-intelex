@@ -180,7 +180,8 @@ def _run_on_device(func, obj=None, *args, **kwargs):
         return func(obj, *args, **kwargs)
     return func(*args, **kwargs)
 
-
+# TODO:
+# move to array api module
 if dpnp_available:
     # TODO:
     # will be moved to _arrary_api module
@@ -192,7 +193,8 @@ if dpnp_available:
                 array[i] = _convert_to_dpnp(array[i])
         return array
 
-
+# TODO:
+# move to array api module
 def _from_dlpack(data, xp, *args, **kwargs):
     def _one_from_dlpack(data, xp, *args, **kwargs):
         return xp.from_dlpack(data, *args, **kwargs)
@@ -203,7 +205,8 @@ def _from_dlpack(data, xp, *args, **kwargs):
         return data
     return _one_from_dlpack(data, xp, *args, **kwargs)
 
-
+# TODO:
+# move to array api module
 def _is_numpy_namespace(xp):
     """Return True if xp is backed by NumPy."""
     print("\n_is_numpy_namespace call")
