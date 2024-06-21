@@ -18,6 +18,7 @@ import numpy
 import pytest
 
 from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -43,12 +44,10 @@ def test_ridge_sklearnex_sklearn_conformance(alpha, dataframe, queue):
     sklearn_model.fit(X, y)
     numpy.testing.assert_allclose(sklearnex_model.coef_, sklearn_model.coef_)
 
-    prediction_sklearnex = numpy.asarray(
-        sklearnex_model.predict(X_c), dtype=numpy.float64
-    )
+    prediction_sklearnex = _as_numpy(sklearnex_model.predict(X_c))
     prediction_sklearn = numpy.asarray(sklearn_model.predict(X), dtype=numpy.float64)
     numpy.testing.assert_allclose(prediction_sklearnex, prediction_sklearn)
 
-    score_sklearnex = sklearnex_model.score(X_c, y_c)
+    score_sklearnex = float(sklearnex_model.score(X_c, y_c))
     score_sklearn = sklearn_model.score(X, y)
     numpy.testing.assert_allclose(score_sklearnex, score_sklearn)
