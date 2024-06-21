@@ -141,11 +141,14 @@ def get_patch_map_core(preview=False):
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import ElasticNet as ElasticNet_sklearnex
         from .linear_model import (
             IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
         )
+        from .linear_model import Lasso as Lasso_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
+        from .linear_model import Ridge as Ridge_sklearnex
         from .manifold import TSNE as TSNE_sklearnex
         from .metrics import pairwise_distances as pairwise_distances_sklearnex
         from .metrics import roc_auc_score as roc_auc_score_sklearnex
@@ -174,6 +177,32 @@ def get_patch_map_core(preview=False):
         mapping["svc"] = [[(svm_module, "SVC", SVC_sklearnex), None]]
         mapping["nusvr"] = [[(svm_module, "NuSVR", NuSVR_sklearnex), None]]
         mapping["nusvc"] = [[(svm_module, "NuSVC", NuSVC_sklearnex), None]]
+
+        # ElasticNet
+        mapping.pop("elasticnet")
+        mapping["elasticnet"] = [
+            [
+                (
+                    linear_model_module,
+                    "ElasticNet",
+                    ElasticNet_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # Lasso
+        mapping.pop("lasso")
+        mapping["lasso"] = [
+            [
+                (
+                    linear_model_module,
+                    "Lasso",
+                    Lasso_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # Linear Regression
         mapping.pop("linear")
@@ -207,6 +236,19 @@ def get_patch_map_core(preview=False):
             ]
         ]
         mapping["logisticregression"] = mapping["log_reg"]
+
+        # Ridge
+        mapping.pop("ridge")
+        mapping["ridge"] = [
+            [
+                (
+                    linear_model_module,
+                    "Ridge",
+                    Ridge_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # manifold
         mapping.pop("tsne")
