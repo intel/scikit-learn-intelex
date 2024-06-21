@@ -326,7 +326,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         # self.location_) , and will check for finiteness via check array
         # check_feature_names will match _validate_data functionally
         location = self.location_[np.newaxis, :]
-        if "numpy" not in str(xp).lower():
+        if "numpy" not in xp.__name__:
             location = xp.asarray(location, device=X.device)
 
         try:
