@@ -58,7 +58,7 @@ jobs:
           pip install cpufeature
           pacman -S -y --noconfirm zip dos2unix tree wget gcc
           echo "Download intel DPC++ compiler"
-          wget -q -O dpcpp_installer.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/3165d8c7-088f-410f-9723-6d8ee88d9e5b/w_dpcpp-cpp-compiler_p_2024.1.2.505_offline.exe
+          wget -q -O dpcpp_installer.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7991e201-ca0f-4689-bdb6-1ed73a8246fd/w_dpcpp-cpp-compiler_p_2024.2.0.491_offline.exe
           echo "Unpacking DPC++ installer"
           Start-Process ".\dpcpp_installer.exe" -ArgumentList "--s --x --f oneAPI" -Wait
           echo "Installing DPC++ compiler"
