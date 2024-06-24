@@ -39,6 +39,7 @@ from sklearn.datasets import (
 )
 
 import daal4py as d4p
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import _as_numpy, get_dataframes_and_queues
 from sklearnex.cluster import DBSCAN, KMeans
 from sklearnex.decomposition import PCA
@@ -118,10 +119,15 @@ SPARSE_INSTANCES = _sklearn_clone_dict(
         str(i): i
         for i in [
             SVC(),
-            # KMeans sparse instances will be enabled when daal 2024.6 is released
-            # KMeans(),
-            # KMeans(init="random"),
-            # KMeans(init="k-means++"),
+            *(
+                []
+                if not daal_check_version((2024, "P", 600))
+                else [
+                    KMeans(),
+                    KMeans(init="random"),
+                    KMeans(init="k-means++"),
+                ]
+            ),
         ]
     }
 )
