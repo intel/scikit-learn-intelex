@@ -25,7 +25,9 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
+)
 def test_sklearnex_import(dataframe, queue):
     from sklearnex.cluster import KMeans
 
