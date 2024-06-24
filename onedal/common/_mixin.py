@@ -15,6 +15,17 @@
 # ==============================================================================
 
 
+class ClusterMixin:
+    _estimator_type = "clusterer"
+
+    def fit_predict(self, X, y=None, queue=None, **kwargs):
+        self.fit(X, queue=queue, **kwargs)
+        return self.labels_
+
+    def _more_tags(self):
+        return {"preserves_dtype": []}
+
+
 class ClassifierMixin:
     _estimator_type = "classifier"
 
@@ -39,3 +50,13 @@ class RegressorMixin:
 
     def _more_tags(self):
         return {"requires_y": True}
+
+
+class TransformerMixin:
+    _estimator_type = "transformer"
+
+    def fit_transform(self, X, y=None, queue=None, **fit_params):
+        if y is None:
+            return self.fit(X, queue=queue, **fit_params).transform(X, queue=queue)
+        else:
+            return self.fit(X, y, queue=queue, **fit_params).transform(X, queue=queue)
