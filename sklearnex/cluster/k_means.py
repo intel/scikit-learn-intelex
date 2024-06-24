@@ -24,7 +24,6 @@ if daal_check_version((2023, "P", 200)):
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.cluster import KMeans as sklearn_KMeans
-    from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
     from sklearn.utils.validation import (
         _check_sample_weight,
         _deprecate_positional_args,
@@ -87,10 +86,12 @@ if daal_check_version((2023, "P", 200)):
             self._cluster_centers_ = self._onedal_estimator.cluster_centers_
             self._sparse = False
 
-            self.n_iter_ = property(_get_n_iter, _set_n_iter)
-            self.labels_ = property(_get_labels, _set_labels)
-            self.inertia_ = property(_get_labels, _set_inertia)
-            self.cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
+            self.n_iter_ = property(self._get_n_iter, self._set_n_iter)
+            self.labels_ = property(self._get_labels, self._set_labels)
+            self.inertia_ = property(self._get_labels, self._set_inertia)
+            self.cluster_centers_ = property(
+                self._get_cluster_centers, self._set_cluster_centers
+            )
 
             self._is_in_fit = True
             self.n_iter_ = self._n_iter_
@@ -99,7 +100,7 @@ if daal_check_version((2023, "P", 200)):
             self.cluster_centers_ = self._cluster_centers_
             self._is_in_fit = False
 
-    @control_n_jobs(decorated_methods=["fit", "predict"])
+    @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
     class KMeans(sklearn_KMeans, BaseKMeans):
         __doc__ = sklearn_KMeans.__doc__
         n_iter_, inertia_ = None, None
@@ -220,7 +221,6 @@ if daal_check_version((2023, "P", 200)):
                 self._check_params(X)
 
             self._n_features_out = self.n_clusters
-            self._n_threads = _openmp_effective_n_threads()
 
             self._initialize_onedal_estimator()
             self._onedal_estimator.fit(X, queue=queue)
