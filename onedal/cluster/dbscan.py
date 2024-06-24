@@ -15,13 +15,13 @@
 # ===============================================================================
 
 import numpy as np
-from sklearn.base import ClusterMixin
-from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import get_dtype, make2d
 
 from ..common._base import BaseEstimator
+from ..common._mixin import ClusterMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils import _check_array
 
 
 class BaseDBSCAN(BaseEstimator, ClusterMixin):
@@ -58,7 +58,7 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
 
     def _fit(self, X, y, sample_weight, module, queue):
         policy = self._get_policy(queue, X)
-        X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+        X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         sample_weight = make2d(sample_weight) if sample_weight is not None else None
         X = make2d(X)
 
