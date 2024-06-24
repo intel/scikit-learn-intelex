@@ -41,39 +41,39 @@ if daal_check_version((2023, "P", 200)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
-    def get_cluster_centers(self):
-        return self._cluster_centers_
-
-    def set_cluster_centers(self, value):
-        self._cluster_centers_ = value
-        if hasattr(self, "_onedal_estimator"):
-            self._onedal_estimator.cluster_centers_ = value
-
-    def get_labels(self):
-        return self._labels_
-
-    def set_labels(self, value):
-        self._labels_ = value
-        if hasattr(self, "_onedal_estimator"):
-            self._onedal_estimator.labels_ = value
-
-    def get_inertia(self):
-        return self._inertia_
-
-    def set_inertia(self, value):
-        self._inertia_ = value
-        if hasattr(self, "_onedal_estimator"):
-            self._onedal_estimator.inertia_ = value
-
-    def get_n_iter(self):
-        return self._n_iter_
-
-    def set_n_iter(self, value):
-        self._n_iter_ = value
-        if hasattr(self, "_onedal_estimator"):
-            self._onedal_estimator.n_iter_ = value
-
     class BaseKMeans(ABC):
+        def _get_cluster_centers(self):
+            return self._cluster_centers_
+
+        def _set_cluster_centers(self, value):
+            self._cluster_centers_ = value
+            if hasattr(self, "_onedal_estimator"):
+                self._onedal_estimator.cluster_centers_ = value
+
+        def _get_labels(self):
+            return self._labels_
+
+        def _set_labels(self, value):
+            self._labels_ = value
+            if hasattr(self, "_onedal_estimator"):
+                self._onedal_estimator.labels_ = value
+
+        def _get_inertia(self):
+            return self._inertia_
+
+        def _set_inertia(self, value):
+            self._inertia_ = value
+            if hasattr(self, "_onedal_estimator"):
+                self._onedal_estimator.inertia_ = value
+
+        def _get_n_iter(self):
+            return self._n_iter_
+
+        def _set_n_iter(self, value):
+            self._n_iter_ = value
+            if hasattr(self, "_onedal_estimator"):
+                self._onedal_estimator.n_iter_ = value
+
         def _save_attributes(self):
             assert hasattr(self, "_onedal_estimator")
             self.n_features_in_ = self._onedal_estimator.n_features_in_
@@ -87,10 +87,10 @@ if daal_check_version((2023, "P", 200)):
             self._cluster_centers_ = self._onedal_estimator.cluster_centers_
             self._sparse = False
 
-            self.n_iter_ = property(get_n_iter, set_n_iter)
-            self.labels_ = property(get_labels, set_labels)
-            self.inertia_ = property(get_labels, set_inertia)
-            self.cluster_centers_ = property(get_cluster_centers, set_cluster_centers)
+            self.n_iter_ = property(_get_n_iter, _set_n_iter)
+            self.labels_ = property(_get_labels, _set_labels)
+            self.inertia_ = property(_get_labels, _set_inertia)
+            self.cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
             self._is_in_fit = True
             self.n_iter_ = self._n_iter_
