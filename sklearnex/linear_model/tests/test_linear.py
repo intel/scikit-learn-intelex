@@ -57,32 +57,41 @@ def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
     assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
 
 
-def test_sklearnex_import_ridge():
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_sklearnex_import_ridge(dataframe, queue):
     from sklearnex.linear_model import Ridge
 
     X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
     y = np.dot(X, np.array([1, 2])) + 3
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     ridgereg = Ridge().fit(X, y)
     assert "daal4py" in ridgereg.__module__
     assert_allclose(ridgereg.intercept_, 4.5)
     assert_allclose(ridgereg.coef_, [0.8, 1.4])
 
 
-def test_sklearnex_import_lasso():
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_sklearnex_import_lasso(dataframe, queue):
     from sklearnex.linear_model import Lasso
 
     X = [[0, 0], [1, 1], [2, 2]]
     y = [0, 1, 2]
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     lasso = Lasso(alpha=0.1).fit(X, y)
     assert "daal4py" in lasso.__module__
     assert_allclose(lasso.intercept_, 0.15)
     assert_allclose(lasso.coef_, [0.85, 0.0])
 
 
-def test_sklearnex_import_elastic():
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_sklearnex_import_elastic(dataframe, queue):
     from sklearnex.linear_model import ElasticNet
 
     X, y = make_regression(n_features=2, random_state=0)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     elasticnet = ElasticNet(random_state=0).fit(X, y)
     assert "daal4py" in elasticnet.__module__
     assert_allclose(elasticnet.intercept_, 1.451, atol=1e-3)
