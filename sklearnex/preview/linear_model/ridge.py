@@ -18,7 +18,7 @@ import logging
 
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
-if daal_check_version((2024, "P", 500)):
+if daal_check_version((2024, "P", 600)):
     from abc import ABC
 
     import numpy as np
