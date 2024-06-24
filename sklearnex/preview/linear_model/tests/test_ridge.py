@@ -16,6 +16,7 @@
 
 import numpy
 import pytest
+from sklearn.exceptions import NotFittedError
 
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
@@ -51,3 +52,34 @@ def test_ridge_sklearnex_sklearn_conformance(alpha, dataframe, queue):
     score_sklearnex = float(sklearnex_model.score(X_c, y_c))
     score_sklearn = sklearn_model.score(X, y)
     numpy.testing.assert_allclose(score_sklearnex, score_sklearn)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_ridge_score_before_fit(dataframe, queue):
+    from sklearnex.preview.linear_model import Ridge
+
+    sample_count, feature_count = 10, 5
+
+    model = Ridge(fit_intercept=True, alpha=0.5)
+
+    X, y = numpy.random.rand(sample_count, feature_count), numpy.random.rand(sample_count)
+    X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+
+    with pytest.raises(NotFittedError):
+        model.score(X_c, y_c)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_ridge_predict_before_fit(dataframe, queue):
+    from sklearnex.preview.linear_model import Ridge
+
+    sample_count, feature_count = 10, 5
+
+    model = Ridge(fit_intercept=True, alpha=0.5)
+
+    X = numpy.random.rand(sample_count, feature_count)
+    X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+
+    with pytest.raises(NotFittedError):
+        model.predict(X_c)

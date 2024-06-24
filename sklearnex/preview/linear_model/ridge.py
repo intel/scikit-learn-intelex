@@ -141,6 +141,8 @@ if daal_check_version((2024, "P", 500)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
+            check_is_fitted(self)
+
             return dispatch(
                 self,
                 "score",
