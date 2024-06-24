@@ -42,5 +42,5 @@ def test_sklearnex_import(dataframe, queue):
     else:
         assert "daal4py" in kmeans.__module__
 
-    result_cluster_labels = kmeans.predict(y)
+    result_cluster_labels = kmeans.predict(X_test)
     assert_allclose(expected_cluster_labels, _as_numpy(result_cluster_labels))
