@@ -30,14 +30,14 @@ from onedal.tests.utils._dataframes_support import (
 def test_sklearnex_import(dataframe, queue):
     from sklearnex.cluster import KMeans
 
-    X = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
-    y = np.array([[0, 0], [12, 3]])
+    X_train = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
+    X_test = np.array([[0, 0], [12, 3]])
     expected_cluster_labels = np.array([1, 0], dtype=np.int32)
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    X_train = _convert_to_dataframe(X_train, sycl_queue=queue, target_df=dataframe)
+    X_test = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
 
     kmeans = KMeans(n_clusters=2, random_state=0).fit(X)
-    if daal_check_version((2023, "P", 200)):
+    if daal_check_version((2024, "P", 600)):
         assert "sklearnex" in kmeans.__module__
     else:
         assert "daal4py" in kmeans.__module__
