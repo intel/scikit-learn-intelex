@@ -337,7 +337,7 @@ deselected_tests:
   - ensemble/_hist_gradient_boosting/tests/test_compare_lightgbm.py::test_same_predictions_multiclass_classification >=0.24,<1.0
   - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=0.24,<1.0
   - utils/tests/test_validation.py::test_check_array_pandas_dtype_casting >=1.0,<1.2
-  - utils/tests/test_validation.py::test_check_sparse_pandas_sp_format <1.2
+  - utils/tests/test_validation.py::test_check_sparse_pandas_sp_format <=1.2
 
   # Failure due to non-uniformity in the MT2203 engine causing
   # bad Random Forest fits for small datasets with large n_estimators
