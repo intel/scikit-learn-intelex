@@ -97,6 +97,13 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
                 self.negative_outlier_factor_, 100.0 * self.contamination
             )
 
+        if sklearn_check_version("1.6"):
+            if np.min(self.negative_outlier_factor_) < -1e7 and not self.novelty:
+                warnings.warn(
+                    "Duplicate values are leading to incorrect results. "
+                    "Increase the number of neighbors for more accurate results."
+                )
+
         return self
 
     def fit(self, X, y=None):
