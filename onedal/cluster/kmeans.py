@@ -21,14 +21,14 @@ import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
 from onedal import _backend
+from onedal.basic_statistics import BasicStatistics
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 
 if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
-else:
-    from sklearn.cluster import _kmeans_plusplus
 
+from sklearn.cluster._kmeans import _kmeans_plusplus
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_random_state
@@ -78,26 +78,28 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
-    def _tolerance(self, X, rtol):
+    def _tolerance(self, X_table, rtol, is_csr, policy, dtype):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
-        if _is_csr(X):
-            variances = mean_variance_axis(X, axis=0)[1]
-            mean_var = np.mean(variances)
-        else:
-            mean_var = np.var(X, axis=0).mean()
+        dummy = to_table(None)
+        bs = BasicStatistics("variance")
+
+        res = bs.compute_raw(X_table, dummy, policy, dtype, is_csr)
+        mean_var = from_table(res["variance"]).mean()
         return mean_var * rtol
 
-    def _check_params_vs_input(self, X, policy, default_n_init=10, dtype=np.float32):
+    def _check_params_vs_input(
+        self, X_table, is_csr, policy, default_n_init=10, dtype=np.float32
+    ):
         # n_clusters
-        if X.shape[0] < self.n_clusters:
+        if X_table.shape[0] < self.n_clusters:
             raise ValueError(
-                f"n_samples={X.shape[0]} should be >= n_clusters={self.n_clusters}."
+                f"n_samples={X_table.shape[0]} should be >= n_clusters={self.n_clusters}."
             )
 
         # tol
-        self._tol = self._tolerance(X, self.tol)
+        self._tol = self._tolerance(X_table, self.tol, is_csr, policy, dtype)
 
         # n-init
         # TODO(1.4): Remove
@@ -148,7 +150,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             "result_options": "" if result_options is None else result_options,
         }
 
-    def _get_params_and_input(self, X, policy):
+    def _get_params_and_input(self, X, is_csr, policy):
         X = _check_array(
             X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
         )
@@ -156,9 +158,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         dtype = get_dtype(X)
         X_table = to_table(X)
 
-        self._check_params_vs_input(X, policy, dtype=dtype)
+        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
 
-        params = self._get_onedal_params(dtype)
+        params = self._get_onedal_params(is_csr, dtype)
 
         return (params, X_table, dtype)
 
@@ -215,7 +217,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         return centers_table
 
     def _init_centroids_sklearn(self, X, init, random_state, policy, dtype=np.float32):
-        # For oneDAL versions < 2023.2, using the scikit-learn implementation
+        # For oneDAL versions < 2023.2 or callable init,
+        # using the scikit-learn implementation
         n_samples = X.shape[0]
 
         if isinstance(init, str) and init == "k-means++":
@@ -262,7 +265,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
     def _fit(self, X, module, queue=None):
         policy = self._get_policy(queue, X)
-        _, X_table, dtype = self._get_params_and_input(X, policy)
+        is_csr = _is_csr(X)
+        _, X_table, dtype = self._get_params_and_input(X, is_csr, policy)
 
         self.n_features_in_ = X_table.column_count
 
@@ -292,7 +296,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         use_onedal_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
 
-        is_csr = _is_csr(X)
         for _ in range(self._n_init):
             if use_onedal_init:
                 random_seed = random_state.randint(np.iinfo("i").max)
@@ -365,9 +368,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
     def _predict_raw(self, X_table, module, policy, dtype=np.float32, is_csr=False):
-        params = self._get_onedal_params(
-            is_csr, dtype, result_options="compute_assignments"
-        )
+        params = self._get_onedal_params(is_csr, dtype)
 
         result = module.infer(policy, params, self.model_, X_table)
 

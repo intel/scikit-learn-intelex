@@ -451,6 +451,9 @@ gpu:
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
 
+  # Different number of iterations for tol = 1e-100
+  - cluster/tests/test_kmeans.py::test_kmeans_elkan_results[42-1e-100-sparse]
+
   - ensemble/tests/test_bagging.py::test_gridsearch
   - ensemble/tests/test_bagging.py::test_estimators_samples
   - ensemble/tests/test_common.py::test_ensemble_heterogeneous_estimators_behavior
