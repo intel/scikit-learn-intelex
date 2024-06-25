@@ -33,7 +33,6 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_random_state
 from sklearn.utils.sparsefuncs import mean_variance_axis
-from sklearn.utils.validation import check_is_fitted
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
@@ -375,7 +374,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         return from_table(result.responses).reshape(-1)
 
     def _predict(self, X, module, queue=None):
-        check_is_fitted(self)
         is_csr = _is_csr(X)
 
         policy = self._get_policy(queue, X)
@@ -496,7 +494,6 @@ class KMeans(_BaseKMeans):
         X_new : ndarray of shape (n_samples, n_clusters)
             X transformed in the new space.
         """
-        check_is_fitted(self)
 
         return self._transform(X)
 

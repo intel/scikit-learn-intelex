@@ -42,35 +42,43 @@ if daal_check_version((2023, "P", 200)):
     from .._utils import PatchingConditionsChain
 
     class BaseKMeans(ABC):
-        def _get_cluster_centers(self):
-            return self._cluster_centers_
+        @property
+        def _cluster_centers_(self):
+            return self.__cluster_centers_
 
-        def _set_cluster_centers(self, value):
-            self._cluster_centers_ = value
+        @_cluster_centers_.setter
+        def _cluster_centers_(self, value):
+            self.__cluster_centers_ = value
             if hasattr(self, "_onedal_estimator"):
                 self._onedal_estimator.cluster_centers_ = value
 
-        def _get_labels(self):
-            return self._labels_
+        @property
+        def labels_(self):
+            return self.__labels
 
-        def _set_labels(self, value):
-            self._labels_ = value
+        @labels_.setter
+        def labels_(self, value):
+            self.__labels = value
             if hasattr(self, "_onedal_estimator"):
                 self._onedal_estimator.labels_ = value
 
-        def _get_inertia(self):
-            return self._inertia_
+        @property
+        def inertia_(self):
+            return self.__inertia
 
-        def _set_inertia(self, value):
-            self._inertia_ = value
+        @inertia_.setter
+        def inertia_(self, value):
+            self.__inertia = value
             if hasattr(self, "_onedal_estimator"):
                 self._onedal_estimator.inertia_ = value
 
-        def _get_n_iter(self):
-            return self._n_iter_
+        @property
+        def n_iter_(self):
+            return self.__n_iter
 
-        def _set_n_iter(self, value):
-            self._n_iter_ = value
+        @n_iter_.setter
+        def n_iter_(self, value):
+            self.__n_iter = value
             if hasattr(self, "_onedal_estimator"):
                 self._onedal_estimator.n_iter_ = value
 
@@ -85,14 +93,6 @@ if daal_check_version((2023, "P", 200)):
             self._inertia_ = self._onedal_estimator.inertia_
             self._algorithm = self._onedal_estimator.algorithm
             self._cluster_centers_ = self._onedal_estimator.cluster_centers_
-            self._sparse = False
-
-            self.n_iter_ = property(self._get_n_iter, self._set_n_iter)
-            self.labels_ = property(self._get_labels, self._set_labels)
-            self.inertia_ = property(self._get_labels, self._set_inertia)
-            self.cluster_centers_ = property(
-                self._get_cluster_centers, self._set_cluster_centers
-            )
 
             self._is_in_fit = True
             self.n_iter_ = self._n_iter_
@@ -162,12 +162,19 @@ if daal_check_version((2023, "P", 200)):
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd", "elkan"]
             correct_count = self.n_clusters < sample_count
+
             is_data_supported = (
                 _is_csr(X) and daal_check_version((2024, "P", 600))
             ) or not issparse(X)
-            sample_weight = _check_sample_weight(
-                sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
-            )
+
+            _acceptable_sample_weights = True
+            if sample_weight:
+                sample_weight = _check_sample_weight(
+                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
+                )
+                _acceptable_sample_weights = np.allclose(
+                    sample_weight, np.ones_like(sample_weight)
+                )
 
             patching_status.and_conditions(
                 [
@@ -177,8 +184,8 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
-                        np.allclose(sample_weight, np.ones_like(sample_weight)),
-                        "Sample weights are not ones.",
+                        _acceptable_sample_weights,
+                        "oneDAL doesn't support sample_weight, either None or ones are acceptable",
                     ),
                     (
                         is_data_supported,
@@ -190,10 +197,6 @@ if daal_check_version((2023, "P", 200)):
             return patching_status
 
         def fit(self, X, y=None, sample_weight=None):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            if sklearn_check_version("1.2"):
-                self._validate_params()
 
             dispatch(
                 self,
@@ -204,22 +207,22 @@ if daal_check_version((2023, "P", 200)):
                 },
                 X,
                 y,
-                sample_weight,
+                sample_weight=sample_weight,
             )
 
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+            else:
+                self._check_params(X)
+
             X = self._validate_data(
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
             )
-
-            if sklearn_check_version("1.2"):
-                self._check_params_vs_input(X)
-            else:
-                self._check_params(X)
 
             self._n_features_out = self.n_clusters
             self._n_threads = _openmp_effective_n_threads()
@@ -265,8 +268,7 @@ if daal_check_version((2023, "P", 200)):
 
             @wrap_output_data
             def predict(self, X):
-                self._check_feature_names(X, reset=False)
-                self._validate_params()
+
                 return dispatch(
                     self,
                     "predict",
@@ -285,10 +287,7 @@ if daal_check_version((2023, "P", 200)):
                 X,
                 sample_weight="deprecated" if sklearn_check_version("1.3") else None,
             ):
-                if sklearn_check_version("1.0"):
-                    self._check_feature_names(X, reset=False)
-                if sklearn_check_version("1.2"):
-                    self._validate_params()
+
                 return dispatch(
                     self,
                     "predict",
@@ -297,10 +296,12 @@ if daal_check_version((2023, "P", 200)):
                         "sklearn": sklearn_KMeans.predict,
                     },
                     X,
-                    sample_weight,
+                    sample_weight=sample_weight,
                 )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
+            check_is_fitted(self)
+            self._validate_params()
             X = self._validate_data(
                 X,
                 accept_sparse="csr",
@@ -308,15 +309,11 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            if not sklearn_check_version("1.5"):
-                if (
-                    sklearn_check_version("1.3")
-                    and isinstance(sample_weight, str)
-                    and sample_weight == "deprecated"
-                ):
+            if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
+                if isinstance(sample_weight, str) and sample_weight == "deprecated":
                     sample_weight = None
 
-                if sklearn_check_version("1.3") and sample_weight is not None:
+                if sample_weight:
                     warnings.warn(
                         "'sample_weight' was deprecated in version 1.3 and "
                         "will be removed in 1.5.",
@@ -338,11 +335,8 @@ if daal_check_version((2023, "P", 200)):
                 f"Unknown method {method_name} in {self.__class__.__name__}"
             )
 
-        def _onedal_gpu_supported(self, method_name, *data):
-            return self._onedal_supported(method_name, *data)
-
-        def _onedal_cpu_supported(self, method_name, *data):
-            return self._onedal_supported(method_name, *data)
+        _onedal_gpu_supported = _onedal_supported
+        _onedal_cpu_supported = _onedal_supported
 
         @wrap_output_data
         def fit_transform(self, X, y=None, sample_weight=None):
