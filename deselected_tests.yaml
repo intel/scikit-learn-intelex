@@ -184,8 +184,6 @@ deselected_tests:
   # oneAPI Data Analytics Library (oneDAL) does not check convergence for tol == 0.0 for ease of benchmarking
   - cluster/tests/test_k_means.py::test_kmeans_convergence >=0.23
   - cluster/tests/test_k_means.py::test_kmeans_verbose >=0.23
-  # oneDAL uses lloyd algorithm for elkan, so doesn't make sense to raise the warning
-  - cluster/tests/test_k_means.py::test_warning_elkan_1_cluster
 
   # The Newton-CG solver solution computed in float32 disagrees with that of float64 by a small
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645

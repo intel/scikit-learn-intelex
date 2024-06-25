@@ -154,6 +154,7 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_fit(self, X, _, sample_weight, queue=None):
             if sklearn_check_version("1.2"):
                 self._validate_params()
+                self._check_params_vs_input(X)
             else:
                 self._check_params(X)
 
