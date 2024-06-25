@@ -204,7 +204,20 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         xp, _ = get_namespace(X_test)
 
         location = self.location_
-        X = self._validate_data(X_test, reset=False)
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                reset=first_pass,
+                copy=self.copy,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                copy=self.copy,
+            )
+
         if "numpy" not in xp.__name__:
             location = xp.asarray(location, device=X_test.device)
             if isinstance(X, np.ndarray):
