@@ -301,7 +301,7 @@ if daal_check_version((2023, "P", 200)):
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             check_is_fitted(self)
-            self._validate_params()
+
             X = self._validate_data(
                 X,
                 accept_sparse="csr",
