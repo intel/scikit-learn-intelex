@@ -83,8 +83,7 @@ options_and_tests = [
 options_and_tests_csr = [
     ("sum", "sum", (5e-6, 1e-9)),
     ("min", "min", (0, 0)),
-    # There is a bug in oneDAL's max computations on GPU
-    #         ("max", "max", (0, 0)),
+    ("max", "max", (0, 0)),
     ("mean", "mean", (5e-6, 1e-9)),
 ]
 
@@ -240,12 +239,12 @@ def test_1d_input_on_random_data(queue, option, data_size, weighted, dtype):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_basic_csr(queue, dtype):
     seed = 42
-    s_count, f_count = 5000, 3008
+    row_count, column_count = 5000, 3008
 
     gen = np.random.default_rng(seed)
 
     data = sp.random_array(
-        shape=(s_count, f_count),
+        shape=(row_count, column_count),
         density=0.01,
         format="csr",
         dtype=dtype,
@@ -266,26 +265,29 @@ def test_basic_csr(queue, dtype):
 @pytest.mark.parametrize("option", options_and_tests_csr)
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_options_csr(queue, option, dtype):
+    result_option, function, tols = option
+    fp32tol, fp64tol = tols
+
+    if result_option == "max":
+        pytest.skip("There is a bug in oneDAL's max computations on GPU")
+
     seed = 42
-    s_count, f_count = 20046, 4007
+    row_count, column_count = 20046, 4007
 
     gen = np.random.default_rng(seed)
 
     data = sp.random_array(
-        shape=(s_count, f_count),
+        shape=(row_count, column_count),
         density=0.002,
         format="csr",
         dtype=dtype,
         random_state=gen,
     )
 
-    result_option, function, tols = option
-    fp32tol, fp64tol = tols
+    basicstat = BasicStatistics(result_options=result_option)
+    result = basicstat.fit(data, queue=queue)
 
-    alg = BasicStatistics(result_options=result_option)
-    res = alg.fit(data, queue=queue)
-
-    res = getattr(res, result_option)
+    res = getattr(result, result_option)
     func = getattr(data, function)
     gtr = func(axis=0)
     if type(gtr).__name__ != "ndarray":
