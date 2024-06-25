@@ -120,7 +120,7 @@ if daal_check_version((2024, "P", 1)):
                 },
                 X,
                 y,
-                sample_weight,
+                sample_weight=sample_weight,
             )
             return self
 
@@ -313,24 +313,16 @@ if daal_check_version((2024, "P", 1)):
             }
             self._onedal_estimator = onedal_LogisticRegression(**onedal_params)
 
-        def _onedal_fit(self, X, y, sample_weight, queue=None):
+        def _onedal_fit(self, X, y, sample_weight=None, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return self._onedal_cpu_fit(X, y, sample_weight)
 
             assert sample_weight is None
 
-            check_params = {
-                "X": X,
-                "y": y,
-                "dtype": [np.float64, np.float32],
-                "accept_sparse": False,
-                "multi_output": False,
-                "force_all_finite": True,
-            }
             if sklearn_check_version("1.2"):
-                X, y = self._validate_data(**check_params)
+                X, y = self._validate_data(X, y, dtype=[np.float64, np.float32])
             else:
-                X, y = check_X_y(**check_params)
+                X, y = check_X_y(X, y, dtype=[np.float64, np.float32])
             self._initialize_onedal_estimator()
             try:
                 self._onedal_estimator.fit(X, y, queue=queue)
