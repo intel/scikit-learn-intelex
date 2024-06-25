@@ -206,14 +206,14 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         location = self.location_
         if sklearn_check_version("1.0"):
             X = self._validate_data(
-                X,
+                X_test,
                 dtype=[np.float64, np.float32],
                 reset=False,
                 copy=self.copy,
             )
         else:
             X = check_array(
-                X,
+                X_test,
                 dtype=[np.float64, np.float32],
                 copy=self.copy,
             )
