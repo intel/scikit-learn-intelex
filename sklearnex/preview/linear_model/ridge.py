@@ -418,5 +418,5 @@ else:
     from daal4py.sklearn.linear_model._ridge import Ridge
 
     logging.warning(
-        "Preview Ridge requires oneDAL version >= 2024.5 but it was not found"
+        "Preview Ridge requires oneDAL version >= 2024.6 but it was not found"
     )
