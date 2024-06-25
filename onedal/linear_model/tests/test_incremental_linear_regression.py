@@ -88,7 +88,7 @@ def test_full_results(queue, num_blocks, dtype):
         model.partial_fit(X_split[i], y_split[i], queue=queue)
     model.finalize_fit()
 
-    if queue.sycl_device.is_gpu:
+    if queue and queue.sycl_device.is_gpu:
         tol = 5e-3 if model.coef_.dtype == np.float32 else 1e-5
     else:
         tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
@@ -129,7 +129,7 @@ def test_no_intercept_results(queue, num_blocks, dtype):
     model.finalize_fit()
 
     # TODO Find out is it necessary to have accuracy so different for float32 and float64
-    if queue.sycl_device.is_gpu:
+    if queue and queue.sycl_device.is_gpu:
         tol = 3e-3 if model.coef_.dtype == np.float32 else 1e-7
     else:
         tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-7
