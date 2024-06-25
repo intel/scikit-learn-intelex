@@ -19,7 +19,6 @@ import logging
 from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 200)):
-    from abc import ABC
 
     import numpy as np
     from scipy.sparse import issparse
@@ -41,68 +40,8 @@ if daal_check_version((2023, "P", 200)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
-    class BaseKMeans(ABC):
-        @property
-        def _cluster_centers_(self):
-            return self.__cluster_centers_
-
-        @_cluster_centers_.setter
-        def _cluster_centers_(self, value):
-            self.__cluster_centers_ = value
-            if hasattr(self, "_onedal_estimator"):
-                self._onedal_estimator.cluster_centers_ = value
-
-        @property
-        def labels_(self):
-            return self.__labels
-
-        @labels_.setter
-        def labels_(self, value):
-            self.__labels = value
-            if hasattr(self, "_onedal_estimator"):
-                self._onedal_estimator.labels_ = value
-
-        @property
-        def inertia_(self):
-            return self.__inertia
-
-        @inertia_.setter
-        def inertia_(self, value):
-            self.__inertia = value
-            if hasattr(self, "_onedal_estimator"):
-                self._onedal_estimator.inertia_ = value
-
-        @property
-        def n_iter_(self):
-            return self.__n_iter
-
-        @n_iter_.setter
-        def n_iter_(self, value):
-            self.__n_iter = value
-            if hasattr(self, "_onedal_estimator"):
-                self._onedal_estimator.n_iter_ = value
-
-        def _save_attributes(self):
-            assert hasattr(self, "_onedal_estimator")
-            self.n_features_in_ = self._onedal_estimator.n_features_in_
-            self.fit_status_ = 0
-            self._tol = self._onedal_estimator._tol
-            self._n_init = self._onedal_estimator._n_init
-            self._n_iter_ = self._onedal_estimator.n_iter_
-            self._labels_ = self._onedal_estimator.labels_
-            self._inertia_ = self._onedal_estimator.inertia_
-            self._algorithm = self._onedal_estimator.algorithm
-            self._cluster_centers_ = self._onedal_estimator.cluster_centers_
-
-            self._is_in_fit = True
-            self.n_iter_ = self._n_iter_
-            self.labels_ = self._labels_
-            self.inertia_ = self._inertia_
-            self.cluster_centers_ = self._cluster_centers_
-            self._is_in_fit = False
-
     @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
-    class KMeans(sklearn_KMeans, BaseKMeans):
+    class KMeans(sklearn_KMeans):
         __doc__ = sklearn_KMeans.__doc__
         n_iter_, inertia_ = None, None
         labels_, cluster_centers_ = None, None
@@ -168,7 +107,7 @@ if daal_check_version((2023, "P", 200)):
             ) or not issparse(X)
 
             _acceptable_sample_weights = True
-            if sample_weight:
+            if sample_weight is not None:
                 sample_weight = _check_sample_weight(
                     sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
                 )
@@ -207,7 +146,7 @@ if daal_check_version((2023, "P", 200)):
                 },
                 X,
                 y,
-                sample_weight=sample_weight,
+                sample_weight,
             )
 
             return self
@@ -350,6 +289,16 @@ if daal_check_version((2023, "P", 200)):
             return self._transform(X)
 
         score = support_usm_ndarray()(sklearn_KMeans.score)
+
+        def _save_attributes(self):
+            assert hasattr(self, "_onedal_estimator")
+            self.cluster_centers_ = self._onedal_estimator.cluster_centers_
+            self.labels_ = self._onedal_estimator.labels_
+            self.inertia_ = self._onedal_estimator.inertia_
+            self.n_iter_ = self._onedal_estimator.n_iter_
+            self.n_features_in_ = self._onedal_estimator.n_features_in_
+
+            self._n_init = self._onedal_estimator._n_init
 
         fit.__doc__ = sklearn_KMeans.fit.__doc__
         predict.__doc__ = sklearn_KMeans.predict.__doc__

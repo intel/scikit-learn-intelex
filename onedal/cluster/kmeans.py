@@ -309,14 +309,14 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 )
 
             if self.verbose:
-                print("Initialization complete.")
+                print("Initialization complete")
 
             labels, inertia, model, n_iter = self._fit_backend(
                 X_table, centroids_table, module, policy, dtype, is_csr
             )
 
             if self.verbose:
-                print("KMeans iteration completed with inertia {}.".format(inertia))
+                print("Iteration {}, inertia {}.".format(n_iter, inertia))
 
             if is_better_iteration(inertia, labels):
                 best_model, best_n_iter = model, n_iter
