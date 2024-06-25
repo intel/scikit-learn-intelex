@@ -28,7 +28,7 @@ if daal_check_version((2024, "P", 1)):
     from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
     from sklearn.metrics import accuracy_score
     from sklearn.utils.multiclass import type_of_target
-    from sklearn.utils.validation import check_X_y
+    from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
@@ -107,10 +107,6 @@ if daal_check_version((2024, "P", 1)):
         _onedal_cpu_fit = daal4py_fit
 
         def fit(self, X, y, sample_weight=None):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
-            if sklearn_check_version("1.2"):
-                self._validate_params()
             dispatch(
                 self,
                 "fit",
@@ -126,8 +122,6 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict(self, X):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
                 "predict",
@@ -140,8 +134,6 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_proba(self, X):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
                 "predict_proba",
@@ -154,8 +146,6 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_log_proba(self, X):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
                 "predict_log_proba",
@@ -168,8 +158,6 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
                 "score",
@@ -200,8 +188,7 @@ if daal_check_version((2024, "P", 1)):
 
         def _onedal_gpu_fit_supported(self, method_name, *data):
             assert method_name == "fit"
-            assert len(data) == 3
-            X, y, sample_weight = data
+            X, y = data[0], data[1]
 
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
@@ -319,10 +306,14 @@ if daal_check_version((2024, "P", 1)):
 
             assert sample_weight is None
 
-            if sklearn_check_version("1.2"):
+            if sklearn_check_version("1.0"):
                 X, y = self._validate_data(X, y, dtype=[np.float64, np.float32])
             else:
                 X, y = check_X_y(X, y, dtype=[np.float64, np.float32])
+
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+
             self._initialize_onedal_estimator()
             try:
                 self._onedal_estimator.fit(X, y, queue=queue)
@@ -340,7 +331,12 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+            else:
+                X = check_array(X, dtype=[np.float64, np.float32])
+
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict(X, queue=queue)
 
@@ -348,7 +344,12 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+            else:
+                X = check_array(X, dtype=[np.float64, np.float32])
+
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_proba(X, queue=queue)
 
@@ -356,7 +357,12 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+            else:
+                X = check_array(X, dtype=[np.float64, np.float32])
+
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
 
