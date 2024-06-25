@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import logging
 import numbers
 import warnings
 from math import ceil

@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from collections.abc import Iterable
 from functools import wraps
 
 from onedal._device_offload import (
@@ -25,21 +24,9 @@ from onedal._device_offload import (
 )
 
 if dpnp_available:
+    import dpnp
     from onedal._device_offload import _convert_to_dpnp
 
-try:
-    from dpctl.tensor import usm_ndarray
-
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
-
-try:
-    import dpnp
-
-    dpnp_available = True
-except ImportError:
-    dpnp_available = False
 
 from ._config import get_config
 
