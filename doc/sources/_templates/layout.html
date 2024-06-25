@@ -15,3 +15,8 @@
       }
       </script>
 {% endblock %}
+
+{% block menu %}
+  {% include "versions.html" %}
+  {{ super() }}
+{% endblock %}
