@@ -233,3 +233,63 @@ def test_1d_input_on_random_data(queue, option, data_size, weighted, dtype):
 
     tol = fp32tol if res.dtype == np.float32 else fp64tol
     assert_allclose(gtr, res, atol=tol)
+
+
+@pytest.mark.skipif(not hasattr(sp, "random_array"), reason="requires scipy>=1.12.0")
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_basic_csr(queue, dtype):
+    seed = 42
+    s_count, f_count = 5000, 3008
+
+    gen = np.random.default_rng(seed)
+
+    data = sp.random_array(
+        shape=(s_count, f_count),
+        density=0.01,
+        format="csr",
+        dtype=dtype,
+        random_state=gen,
+    )
+
+    basicstat = BasicStatistics(result_options="mean")
+    result = basicstat.fit(data, queue=queue)
+
+    res_mean = result.mean
+    gtr_mean = data.mean(axis=0)
+    tol = 5e-6 if res_mean.dtype == np.float32 else 1e-9
+    assert_allclose(gtr_mean, res_mean, rtol=tol)
+
+
+@pytest.mark.skipif(not hasattr(sp, "random_array"), reason="requires scipy>=1.12.0")
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("option", options_and_tests_csr)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_options_csr(queue, option, dtype):
+    seed = 42
+    s_count, f_count = 20046, 4007
+
+    gen = np.random.default_rng(seed)
+
+    data = sp.random_array(
+        shape=(s_count, f_count),
+        density=0.002,
+        format="csr",
+        dtype=dtype,
+        random_state=gen,
+    )
+
+    result_option, function, tols = option
+    fp32tol, fp64tol = tols
+
+    alg = BasicStatistics(result_options=result_option)
+    res = alg.fit(data, queue=queue)
+
+    res = getattr(res, result_option)
+    func = getattr(data, function)
+    gtr = func(axis=0)
+    if type(gtr).__name__ != "ndarray":
+        gtr = gtr.toarray().flatten()
+    tol = fp32tol if res.dtype == np.float32 else fp64tol
+
+    assert_allclose(gtr, res, rtol=tol)
