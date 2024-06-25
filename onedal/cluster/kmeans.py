@@ -175,6 +175,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
         # Use host policy for KMeans init, only for csr data
+        # as oneDAL KMeansInit for CSR data is not implemented on GPU
         init_policy = self._get_policy(None, None) if is_csr else policy
 
         if isinstance(init, str) and init == "k-means++":
@@ -201,13 +202,14 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             centers_table = alg.compute_raw(X_table, init_policy, dtype)
         elif _is_arraylike_not_scalar(init):
             if _is_csr(init):
-                # oneDAL KMeans doesn't support sparse centroids
+                # oneDAL KMeans only supports Dense Centroids
                 centers = init.toarray()
             else:
                 centers = np.asarray(init)
             assert centers.shape[0] == n_clusters
             assert centers.shape[1] == X_table.column_count
-            # Use original policy for KMeans init when arraylike init is provided
+            # KMeans is implemented on both CPU and GPU for Dense and CSR data
+            # The original policy can be used here
             centers = _convert_to_supported(policy, centers)
             centers_table = to_table(centers)
         else:
