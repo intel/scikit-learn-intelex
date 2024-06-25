@@ -26,7 +26,7 @@ from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
-from .._device_offload import dispatch, wrap_output_data
+from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
@@ -85,6 +85,9 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(X, force_all_finite=False)
+
         onedal_params = {
             "eps": self.eps,
             "min_samples": self.min_samples,
@@ -186,3 +189,5 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         )
 
         return self
+
+    fit.__doc__ = sklearn_DBSCAN.fit.__doc__

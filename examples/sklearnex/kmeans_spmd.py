@@ -22,7 +22,7 @@ from dpctl import SyclQueue
 from mpi4py import MPI
 from sklearn.datasets import load_digits
 
-from onedal.spmd.cluster import KMeans
+from sklearnex.spmd.cluster import KMeans
 
 
 def get_data_slice(chunk, count):

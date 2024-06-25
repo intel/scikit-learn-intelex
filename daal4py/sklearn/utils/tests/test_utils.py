@@ -19,10 +19,6 @@ import pytest
 from daal4py.sklearn import _utils
 
 
-def injected_get_daal_version():
-    return (2020, "P", 100)
-
-
 @pytest.mark.parametrize(
     "required_version,expected",
     [
@@ -51,5 +47,5 @@ def injected_get_daal_version():
     ],
 )
 def test_daal_check_version(required_version, expected):
-    actual = _utils.daal_check_version(required_version, injected_get_daal_version)
+    actual = _utils.daal_check_version(required_version, (2020, "P", 100))
     assert actual == expected, f"{required_version=}, {expected=}, {actual=}"

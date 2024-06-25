@@ -57,10 +57,11 @@ cb_unavailable_str = "CatBoost not available"
 
 # CatBoost's SHAP value calculation seems to be buggy
 # See https://github.com/catboost/catboost/issues/2556
-# Disable SHAP tests temporarily
-catboost_shap_temp_disabled_on = datetime(2024, 1, 1)
-# Check once per month
-catboost_skip_shap = datetime.today().month == catboost_shap_temp_disabled_on.month
+# Disable SHAP tests temporarily until it's next major version
+if cb_available:
+    catboost_skip_shap = tuple(map(int, cb.__version__.split("."))) < (1, 3, 0)
+else:
+    catboost_skip_shap = True
 catboost_skip_shap_msg = (
     "CatBoost SHAP calculation is buggy. "
     "See https://github.com/catboost/catboost/issues/2556."

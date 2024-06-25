@@ -52,15 +52,16 @@ jobs:
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
-      pip install isort black[jupyter]
-      isort --check . && black --check .
+      pip install isort black[jupyter]==24.1.1
+      isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: Linux
+  dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.8_Sklearn1.0:
-        PYTHON_VERSION: '3.8'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
         SKLEARN_VERSION: '1.0'
       Python3.9_Sklearn1.1:
         PYTHON_VERSION: '3.9'
@@ -71,19 +72,23 @@ jobs:
       Python3.11_Sklearn1.3:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.3'
-      Python3.12_Sklearn1.3:
+      Python3.12_Sklearn1.4:
         PYTHON_VERSION: '3.12'
-        SKLEARN_VERSION: '1.3'
+        SKLEARN_VERSION: '1.4'
+      Python3.12_Sklearn1.5:
+        PYTHON_VERSION: '3.12'
+        SKLEARN_VERSION: '1.5'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
 - job: Windows
+  dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.8_Sklearn1.0:
-        PYTHON_VERSION: '3.8'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
         SKLEARN_VERSION: '1.0'
       Python3.9_Sklearn1.1:
         PYTHON_VERSION: '3.9'
@@ -94,9 +99,12 @@ jobs:
       Python3.11_Sklearn1.3:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: '1.3'
-      Python3.12_Sklearn1.3:
+      Python3.12_Sklearn1.4:
         PYTHON_VERSION: '3.12'
-        SKLEARN_VERSION: '1.3'
+        SKLEARN_VERSION: '1.4'
+      Python3.12_Sklearn1.5:
+        PYTHON_VERSION: '3.12'
+        SKLEARN_VERSION: '1.5'
   pool:
     vmImage: 'windows-latest'
   steps:

@@ -15,17 +15,16 @@
 # ===============================================================================
 
 import numpy as np
-from sklearn.base import ClusterMixin
-from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import get_dtype, make2d
-from onedal import _backend
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator
+from ..common._mixin import ClusterMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils import _check_array
 
 
-class BaseDBSCAN(ClusterMixin):
+class BaseDBSCAN(BaseEstimator, ClusterMixin):
     def __init__(
         self,
         eps=0.5,
@@ -47,9 +46,6 @@ class BaseDBSCAN(ClusterMixin):
         self.p = p
         self.n_jobs = n_jobs
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
     def _get_onedal_params(self, dtype=np.float32):
         return {
             "fptype": "float" if dtype == np.float32 else "double",
@@ -62,7 +58,7 @@ class BaseDBSCAN(ClusterMixin):
 
     def _fit(self, X, y, sample_weight, module, queue):
         policy = self._get_policy(queue, X)
-        X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+        X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         sample_weight = make2d(sample_weight) if sample_weight is not None else None
         X = make2d(X)
 
@@ -109,4 +105,6 @@ class DBSCAN(BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
-        return super()._fit(X, y, sample_weight, _backend.dbscan.clustering, queue)
+        return super()._fit(
+            X, y, sample_weight, self._get_backend("dbscan", "clustering", None), queue
+        )

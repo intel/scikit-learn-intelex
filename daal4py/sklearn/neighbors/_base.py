@@ -97,9 +97,9 @@ def daal4py_fit(estimator, X, fptype):
         "k": estimator.n_neighbors,
         "voteWeights": "voteUniform" if weights == "uniform" else "voteDistance",
         "resultsToCompute": "computeIndicesOfNeighbors|computeDistances",
-        "resultsToEvaluate": "none"
-        if getattr(estimator, "_y", None) is None
-        else "computeClassLabels",
+        "resultsToEvaluate": (
+            "none" if getattr(estimator, "_y", None) is None else "computeClassLabels"
+        ),
     }
     if hasattr(estimator, "classes_"):
         params["nClasses"] = len(estimator.classes_)
@@ -128,10 +128,7 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
             )
         )
 
-    if sklearn_check_version("0.22"):
-        check_is_fitted(estimator)
-    else:
-        check_is_fitted(estimator, [])
+    check_is_fitted(estimator)
 
     if n_neighbors is None:
         n_neighbors = estimator.n_neighbors
@@ -175,9 +172,9 @@ def daal4py_kneighbors(estimator, X=None, n_neighbors=None, return_distance=True
         "k": n_neighbors,
         "voteWeights": "voteUniform" if weights == "uniform" else "voteDistance",
         "resultsToCompute": "computeIndicesOfNeighbors|computeDistances",
-        "resultsToEvaluate": "none"
-        if getattr(estimator, "_y", None) is None
-        else "computeClassLabels",
+        "resultsToEvaluate": (
+            "none" if getattr(estimator, "_y", None) is None else "computeClassLabels"
+        ),
     }
     if hasattr(estimator, "classes_"):
         params["nClasses"] = len(estimator.classes_)
@@ -267,7 +264,7 @@ def validate_data(
             X, y = check_X_y(X, y, **check_params)
         out = X, y
 
-    if sklearn_check_version("0.23") and check_params.get("ensure_2d", True):
+    if check_params.get("ensure_2d", True):
         estimator._check_n_features(X, reset=reset)
 
     return out
@@ -386,10 +383,7 @@ class NeighborsBase(BaseNeighborsBase):
         weights = getattr(self, "weights", "uniform")
 
         def stock_fit(self, X, y):
-            if sklearn_check_version("0.24"):
-                result = super(NeighborsBase, self)._fit(X, y)
-            else:
-                result = super(NeighborsBase, self)._fit(X)
+            result = super(NeighborsBase, self)._fit(X, y)
             return result
 
         if self.n_neighbors is not None:
@@ -482,10 +476,7 @@ class KNeighborsMixin(BaseKNeighborsMixin):
                 or getattr(self, "_tree", 0) is None
                 and self._fit_method == "kd_tree"
             ):
-                if sklearn_check_version("0.24"):
-                    BaseNeighborsBase._fit(self, self._fit_X, getattr(self, "_y", None))
-                else:
-                    BaseNeighborsBase._fit(self, self._fit_X)
+                BaseNeighborsBase._fit(self, self._fit_X, getattr(self, "_y", None))
             result = super(KNeighborsMixin, self).kneighbors(
                 X, n_neighbors, return_distance
             )
@@ -504,17 +495,9 @@ class RadiusNeighborsMixin(BaseRadiusNeighborsMixin):
             or getattr(self, "_tree", 0) is None
             and self._fit_method == "kd_tree"
         ):
-            if sklearn_check_version("0.24"):
-                BaseNeighborsBase._fit(self, self._fit_X, getattr(self, "_y", None))
-            else:
-                BaseNeighborsBase._fit(self, self._fit_X)
-        if sklearn_check_version("0.22"):
-            result = BaseRadiusNeighborsMixin.radius_neighbors(
-                self, X, radius, return_distance, sort_results
-            )
-        else:
-            result = BaseRadiusNeighborsMixin.radius_neighbors(
-                self, X, radius, return_distance
-            )
+            BaseNeighborsBase._fit(self, self._fit_X, getattr(self, "_y", None))
+        result = BaseRadiusNeighborsMixin.radius_neighbors(
+            self, X, radius, return_distance, sort_results
+        )
 
         return result

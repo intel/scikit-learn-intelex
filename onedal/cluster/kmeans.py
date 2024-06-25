@@ -29,19 +29,19 @@ if daal_check_version((2023, "P", 200)):
 else:
     from sklearn.cluster import _kmeans_plusplus
 
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
-from sklearn.utils import check_array, check_random_state
+from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_is_fitted
 
 from onedal.basic_statistics import BasicStatistics
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator as onedal_BaseEstimator
+from ..common._mixin import ClusterMixin, TransformerMixin
 from ..utils import _check_array, _is_arraylike_not_scalar
 
 
-class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
+class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def __init__(
         self,
         n_clusters,
@@ -76,14 +76,22 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
                 f"match the number of features of the data {X.shape[1]}."
             )
 
+    def _get_kmeans_init(self, cluster_count, seed, algorithm):
+        return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
+
+    def _get_basic_statistics_backend(self, result_options):
+        return BasicStatistics(result_options)
+
     def _tolerance(self, rtol, X_table, policy, dtype=np.float32):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
         # TODO: Support CSR in Basic Statistics
+        is_sparse = False
         dummy = to_table(None)
-        bs = BasicStatistics("variance")
-        res = bs.compute_raw(X_table, dummy, policy, dtype)
+        bs = self._get_basic_statistics_backend("variance")
+
+        res = bs.compute_raw(X_table, dummy, policy, dtype, is_sparse)
         mean_var = from_table(res["variance"]).mean()
         return mean_var * rtol
 
@@ -136,9 +144,6 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             self._n_init = 1
         assert self.algorithm == "lloyd"
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
     def _get_onedal_params(self, dtype=np.float32):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
@@ -170,12 +175,12 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
 
         if isinstance(init, str) and init == "k-means++":
-            alg = KMeansInit(
+            alg = self._get_kmeans_init(
                 cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_dense"
             )
             centers_table = alg.compute_raw(X_table, policy, dtype)
         elif isinstance(init, str) and init == "random":
-            alg = KMeansInit(
+            alg = self._get_kmeans_init(
                 cluster_count=n_clusters, seed=random_seed, algorithm="random_dense"
             )
             centers_table = alg.compute_raw(X_table, policy, dtype)
@@ -247,7 +252,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
             if best_inertia is None:
                 return True
             else:
-                mod = _backend.kmeans_common
+                mod = self._get_backend("kmeans_common", None, None)
                 better_inertia = inertia < best_inertia
                 same_clusters = mod._is_same_clustering(
                     labels, best_labels, self.n_clusters
@@ -259,7 +264,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         init = self.init
         init_is_array_like = _is_arraylike_not_scalar(init)
         if init_is_array_like:
-            init = check_array(init, dtype=dtype, copy=True, order="C")
+            init = _check_array(init, dtype=dtype, copy=True, order="C")
             self._validate_center_shape(X, init)
 
         use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
@@ -327,7 +332,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, BaseEstimator, ABC):
         self.n_iter_ = 0
         self.inertia_ = 0
 
-        self.model_ = _backend.kmeans.clustering.model()
+        self.model_ = self._get_backend("kmeans", "clustering", "model")
         self.model_.centroids = to_table(self._cluster_centers_)
         self.n_features_in_ = self.model_.centroids.column_count
         self.labels_ = np.arange(self.model_.centroids.row_count)
@@ -384,8 +389,8 @@ class KMeans(_BaseKMeans):
         self.algorithm = algorithm
         assert self.algorithm == "lloyd"
 
-    def fit(self, X, queue=None):
-        return super()._fit(X, _backend.kmeans.clustering, queue)
+    def fit(self, X, y=None, queue=None):
+        return super()._fit(X, self._get_backend("kmeans", "clustering", None), queue)
 
     def predict(self, X, queue=None):
         """Predict the closest cluster each sample in X belongs to.
@@ -404,9 +409,9 @@ class KMeans(_BaseKMeans):
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        return super()._predict(X, _backend.kmeans.clustering, queue)
+        return super()._predict(X, self._get_backend("kmeans", "clustering", None), queue)
 
-    def fit_predict(self, X, queue=None):
+    def fit_predict(self, X, y=None, queue=None):
         """Compute cluster centers and predict cluster index for each sample.
 
         Convenience method; equivalent to calling fit(X) followed by
@@ -417,14 +422,17 @@ class KMeans(_BaseKMeans):
         X : array-like of shape (n_samples, n_features)
             New data to transform.
 
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
         Returns
         -------
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        return self.fit(X, queue).labels_
+        return self.fit(X, queue=queue).labels_
 
-    def fit_transform(self, X, queue=None):
+    def fit_transform(self, X, y=None, queue=None):
         """Compute clustering and transform X to cluster-distance space.
 
         Equivalent to fit(X).transform(X), but more efficiently implemented.
@@ -433,6 +441,9 @@ class KMeans(_BaseKMeans):
         ----------
         X : array-like of shape (n_samples, n_features)
             New data to transform.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
@@ -488,7 +499,7 @@ def k_means(
         random_state=random_state,
         copy_x=copy_x,
         algorithm=algorithm,
-    ).fit(X, queue)
+    ).fit(X, queue=queue)
     if return_n_iter:
         return est.cluster_centers_, est.labels_, est.inertia_, est.n_iter_
     else:

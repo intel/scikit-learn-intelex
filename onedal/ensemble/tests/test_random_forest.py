@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_classification, make_regression
@@ -49,7 +48,7 @@ def test_rf_regression(queue):
 
     # GPU and CPU implementations of Random Forest use RNGs differently. They build
     # different ensembles of trees, thereby requiring separate check values.
-    if queue.sycl_device.is_gpu:
+    if queue and queue.sycl_device.is_gpu:
         if daal_check_version((2024, "P", 0)):
             assert_allclose([1.82], rf.predict([[0, 0, 0, 0]], queue=queue), atol=1e-2)
         else:

@@ -137,6 +137,9 @@ class KNeighborsDispatchingBase:
             self.n_features_in_ = X.data.shape[1]
 
     def _onedal_supported(self, device, method_name, *data):
+        if method_name == "fit":
+            self._fit_validation(data[0], data[1])
+
         class_name = self.__class__.__name__
         is_classifier = "Classifier" in class_name
         is_regressor = "Regressor" in class_name
@@ -249,7 +252,7 @@ class KNeighborsDispatchingBase:
                     class_count >= 2, "One-class case is not supported."
                 )
             return patching_status
-        if method_name in ["predict", "predict_proba", "kneighbors"]:
+        if method_name in ["predict", "predict_proba", "kneighbors", "score"]:
             patching_status.and_condition(
                 hasattr(self, "_onedal_estimator"), "oneDAL model was not trained."
             )

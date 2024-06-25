@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # ===============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +18,7 @@
 
 import multiprocessing
 import os
+import platform as plt
 import subprocess
 import sys
 from distutils import log
@@ -124,24 +126,6 @@ def custom_build_cmake_clib(
 ):
     import pybind11
 
-    try:
-        import dpctl
-
-        dpctl_available = dpctl.__version__ >= "0.14"
-        dpctl_include = dpctl.get_include()
-    except ImportError:
-        import importlib.util
-
-        try:
-            dpctl_include = os.path.join(
-                importlib.util.find_spec("dpctl").submodule_search_locations[0], "include"
-            )
-            dpctl_available = dpctl_include is not None
-        except AttributeError:
-            dpctl_available = False
-
-    log.info(f"Is DPCTL available: {str(dpctl_available)}")
-
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
     log.info(f"Project directory is: {root_dir}")
 
@@ -157,7 +141,7 @@ def custom_build_cmake_clib(
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
 
-    if iface == "dpc":
+    if iface in ["dpc", "spmd_dpc"]:
         if IS_WIN:
             cxx = "icx"
         else:
@@ -165,7 +149,7 @@ def custom_build_cmake_clib(
     elif cxx is None:
         raise RuntimeError("CXX compiler shall be specified")
 
-    build_distribute = iface == "dpc" and dpctl_available and not no_dist and IS_LIN
+    build_distribute = iface == "spmd_dpc" and not no_dist and IS_LIN
 
     log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
 
@@ -185,6 +169,9 @@ def custom_build_cmake_clib(
         else:
             MPI_LIBS = "mpi"
 
+    arch_dir = plt.machine()
+    plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
+    arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
     use_parameters_arg = "yes" if use_parameters_lib else "no"
     log.info(f"Build using parameters library: {use_parameters_arg}")
 
@@ -202,23 +189,16 @@ def custom_build_cmake_clib(
         "-DNUMPY_INCLUDE_DIRS=" + numpy_include,
         "-DPYTHON_LIBRARY_DIR=" + python_library_dir,
         "-DoneDAL_INCLUDE_DIRS=" + jp(os.environ["DALROOT"], "include"),
-        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", "intel64"),
+        "-DoneDAL_LIBRARY_DIR=" + jp(os.environ["DALROOT"], "lib", arch_dir),
         "-Dpybind11_DIR=" + pybind11.get_cmake_dir(),
         "-DoneDAL_USE_PARAMETERS_LIB=" + use_parameters_arg,
     ]
-
-    if dpctl_available:
-        cmake_args += [
-            "-DDPCTL_INCLUDE_DIR=" + dpctl_include,
-            "-DONEDAL_DPCTL_INTEGRATION:BOOL=ON",
-        ]
 
     if build_distribute:
         cmake_args += [
             "-DMPI_INCLUDE_DIRS=" + MPI_INCDIRS,
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
             "-DMPI_LIBS=" + MPI_LIBS,
-            "-DONEDAL_DIST_SPMD:BOOL=ON",
         ]
 
     cpu_count = multiprocessing.cpu_count()

@@ -18,12 +18,12 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
 from onedal import _backend
 
-from ..common._policy import _get_policy
+from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils import _is_csr
 
 
 class BaseBasicStatistics(metaclass=ABCMeta):
@@ -47,9 +47,6 @@ class BaseBasicStatistics(metaclass=ABCMeta):
             "second_order_raw_moment",
         ]
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
     def _get_result_options(self, options):
         if options == "all":
             options = self.get_all_result_options()
@@ -58,16 +55,18 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         assert isinstance(options, str)
         return options
 
-    def _get_onedal_params(self, dtype=np.float32):
+    def _get_onedal_params(self, is_csr, dtype=np.float32):
         options = self._get_result_options(self.options)
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.algorithm,
+            "method": "sparse" if is_csr else self.algorithm,
             "result_option": options,
         }
 
-    def _compute_raw(self, data_table, weights_table, module, policy, dtype=np.float32):
-        params = self._get_onedal_params(dtype)
+    def _compute_raw(
+        self, data_table, weights_table, module, policy, dtype=np.float32, is_csr=False
+    ):
+        params = self._get_onedal_params(is_csr, dtype)
 
         result = module.train(policy, params, data_table, weights_table)
 
@@ -79,8 +78,10 @@ class BaseBasicStatistics(metaclass=ABCMeta):
     def _compute(self, data, weights, module, queue):
         policy = self._get_policy(queue, data, weights)
 
-        if not (data is None):
+        is_csr = _is_csr(data)
+        if not (data is None) and not is_csr:
             data = np.asarray(data)
+
         if not (weights is None):
             weights = np.asarray(weights)
 
@@ -89,12 +90,12 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         data_table, weights_table = to_table(data, weights)
 
         dtype = data.dtype
-        res = self._compute_raw(data_table, weights_table, module, policy, dtype)
+        res = self._compute_raw(data_table, weights_table, module, policy, dtype, is_csr)
 
         return {k: from_table(v).ravel() for k, v in res.items()}
 
 
-class BasicStatistics(BaseBasicStatistics):
+class BasicStatistics(BaseEstimator, BaseBasicStatistics):
     """
     Basic Statistics oneDAL implementation.
     """
@@ -103,9 +104,18 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def compute(self, data, weights=None, queue=None):
-        return super()._compute(data, weights, _backend.basic_statistics.compute, queue)
+        return super()._compute(
+            data, weights, self._get_backend("basic_statistics", "compute", None), queue
+        )
 
-    def compute_raw(self, data_table, weights_table, policy, dtype=np.float32):
+    def compute_raw(
+        self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
+    ):
         return super()._compute_raw(
-            data_table, weights_table, _backend.basic_statistics.compute, policy, dtype
+            data_table,
+            weights_table,
+            self._get_backend("basic_statistics", "compute", None),
+            policy,
+            dtype,
+            is_csr,
         )

@@ -20,14 +20,14 @@ import pytest
 
 
 def get_queues(filter_="cpu,gpu"):
-    queues = []
+    queues = [None] if "cpu" in filter_ else []
 
     try:
         import dpctl
 
-        if dpctl.has_cpu_devices and "cpu" in filter_:
+        if dpctl.has_cpu_devices() and "cpu" in filter_:
             queues.append(pytest.param(dpctl.SyclQueue("cpu"), id="SyclQueue_CPU"))
-        if dpctl.has_gpu_devices and "gpu" in filter_:
+        if dpctl.has_gpu_devices() and "gpu" in filter_:
             queues.append(pytest.param(dpctl.SyclQueue("gpu"), id="SyclQueue_GPU"))
     finally:
         return queues

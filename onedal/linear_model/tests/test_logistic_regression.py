@@ -14,7 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2024, "P", 1)):
     import numpy as np
@@ -39,6 +39,12 @@ if daal_check_version((2024, "P", 1)):
         model.fit(X_train, y_train, queue=queue)
         y_pred = model.predict(X_test, queue=queue)
         assert accuracy_score(y_test, y_pred) > 0.95
+
+        assert hasattr(model, "n_iter_")
+        assert hasattr(model, "coef_")
+        assert hasattr(model, "intercept_")
+        if daal_check_version((2024, "P", 300)):
+            assert hasattr(model, "_n_inner_iter")
 
     @pytest.mark.parametrize("queue", get_queues("gpu"))
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])

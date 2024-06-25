@@ -154,7 +154,8 @@ dal::table convert_to_table(PyObject *obj) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
         if (array_is_behaved(ary) || array_is_behaved_F(ary)) {
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ary);
-            SET_NPY_FEATURE(PyArray_DESCR(ary)->type,
+            SET_NPY_FEATURE(array_type(ary),
+                            array_type_sizeof(ary),
                             MAKE_HOMOGEN_TABLE,
                             throw std::invalid_argument("Found unsupported array type"));
 #undef MAKE_HOMOGEN_TABLE
@@ -164,7 +165,7 @@ dal::table convert_to_table(PyObject *obj) {
                 "[convert_to_table] Numpy input Could not convert Python object to onedal table.");
         }
     }
-    else if (strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0) {
+    else if (strcmp(Py_TYPE(obj)->tp_name, "csr_matrix") == 0 || strcmp(Py_TYPE(obj)->tp_name, "csr_array") == 0) {
         PyObject *py_data = PyObject_GetAttrString(obj, "data");
         PyObject *py_column_indices = PyObject_GetAttrString(obj, "indices");
         PyObject *py_row_indices = PyObject_GetAttrString(obj, "indptr");
@@ -207,6 +208,7 @@ dal::table convert_to_table(PyObject *obj) {
                                      row_count,         \
                                      column_count);
         SET_NPY_FEATURE(array_type(np_data),
+                        array_type_sizeof(np_data),
                         MAKE_CSR_TABLE,
                         throw std::invalid_argument("Found unsupported data type in csr_matrix"));
 #undef MAKE_CSR_TABLE

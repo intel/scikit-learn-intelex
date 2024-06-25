@@ -14,28 +14,21 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
 from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
 from ..._device_offload import support_usm_ndarray
-from ...common._spmd_policy import _get_spmd_policy
+from .._base import BaseEstimatorSPMD
 
 
-class NeighborsCommonBaseSPMD(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
-
-
-class KNeighborsClassifier(NeighborsCommonBaseSPMD, KNeighborsClassifier_Batch):
+class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
     @support_usm_ndarray()
     def fit(self, X, y, queue=None):
-        return super().fit(X, y, queue)
+        return super().fit(X, y, queue=queue)
 
     @support_usm_ndarray()
     def predict(self, X, queue=None):
-        return super().predict(X, queue)
+        return super().predict(X, queue=queue)
 
     @support_usm_ndarray()
     def predict_proba(self, X, queue=None):
@@ -43,10 +36,10 @@ class KNeighborsClassifier(NeighborsCommonBaseSPMD, KNeighborsClassifier_Batch):
 
     @support_usm_ndarray()
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
-        return super().kneighbors(X, n_neighbors, return_distance, queue)
+        return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
 
-class KNeighborsRegressor(NeighborsCommonBaseSPMD, KNeighborsRegressor_Batch):
+class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
     @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         if queue is not None and queue.sycl_device.is_gpu:
@@ -59,7 +52,7 @@ class KNeighborsRegressor(NeighborsCommonBaseSPMD, KNeighborsRegressor_Batch):
 
     @support_usm_ndarray()
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
-        return super().kneighbors(X, n_neighbors, return_distance, queue)
+        return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
     @support_usm_ndarray()
     def predict(self, X, queue=None):
@@ -72,11 +65,11 @@ class KNeighborsRegressor(NeighborsCommonBaseSPMD, KNeighborsRegressor_Batch):
         return params
 
 
-class NearestNeighbors(NeighborsCommonBaseSPMD):
+class NearestNeighbors(BaseEstimatorSPMD):
     @support_usm_ndarray()
     def fit(self, X, y, queue=None):
-        return super().fit(X, y, queue)
+        return super().fit(X, y, queue=queue)
 
     @support_usm_ndarray()
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
-        return super().kneighbors(X, n_neighbors, return_distance, queue)
+        return super().kneighbors(X, n_neighbors, return_distance, queue=queue)

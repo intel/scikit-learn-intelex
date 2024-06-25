@@ -14,20 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
 from ..._device_offload import support_usm_ndarray
-from ...common._spmd_policy import _get_spmd_policy
+from .._base import BaseEstimatorSPMD
 
 
-class BaseBasicStatisticsSPMD(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
-
-
-class BasicStatistics(BaseBasicStatisticsSPMD, BasicStatistics_Batch):
+class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
     @support_usm_ndarray()
     def compute(self, data, weights=None, queue=None):
-        return super().compute(data, weights, queue)
+        return super().compute(data, weights=weights, queue=queue)

@@ -14,22 +14,15 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import ABC
-
 from onedal.ensemble import RandomForestClassifier as RandomForestClassifier_Batch
 from onedal.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
-from ...common._spmd_policy import _get_spmd_policy
+from .._base import BaseEstimatorSPMD
 
 
-class BaseForestSPMD(ABC):
-    def _get_policy(self, queue, *data):
-        return _get_spmd_policy(queue)
-
-
-class RandomForestClassifier(BaseForestSPMD, RandomForestClassifier_Batch):
+class RandomForestClassifier(BaseEstimatorSPMD, RandomForestClassifier_Batch):
     pass
 
 
-class RandomForestRegressor(BaseForestSPMD, RandomForestRegressor_Batch):
+class RandomForestRegressor(BaseEstimatorSPMD, RandomForestRegressor_Batch):
     pass

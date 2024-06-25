@@ -52,9 +52,15 @@ struct params2desc {
             desc.set_bias(params["bias"].cast<bool>());
         }
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240001
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240400
+        if (params.contains("assumeCentered")) {
+            desc.set_assume_centered(params["assumeCentered"].cast<bool>());
+        }
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240400
         return desc;
     }
 };
+
 
 template <typename Policy, typename Task>
 void init_compute_ops(py::module_& m) {
@@ -86,6 +92,33 @@ void init_compute_ops(py::module_& m) {
     );
 }
 
+template <typename Policy, typename Task>
+void init_partial_compute_ops(pybind11::module_& m) {
+    using prev_result_t = dal::covariance::partial_compute_result<Task>;
+    m.def("partial_compute", [](
+        const Policy& policy,
+        const pybind11::dict& params,
+        const prev_result_t& prev,
+        const table& data) {
+            using namespace dal::covariance;
+            using input_t = partial_compute_input<Task>;
+            partial_compute_ops ops(policy, input_t{prev, data}, params2desc{});
+            return fptype2t{ method2t{ Task{}, ops } }(params);
+        }
+    );
+}
+
+template <typename Policy, typename Task>
+void init_finalize_compute_ops(pybind11::module_& m) {
+    using namespace dal::covariance;
+    using input_t = partial_compute_result<Task>;
+    m.def("finalize_compute", [](const Policy& policy, const pybind11::dict& params, const input_t& data) {
+        finalize_compute_ops ops(policy, data, params2desc{});
+        return fptype2t{ method2t{ Task{}, ops } }(params);
+    });
+}
+
+
 template <typename Task>
 inline void init_compute_result(py::module_& m) {
     using namespace dal::covariance;
@@ -94,6 +127,17 @@ inline void init_compute_result(py::module_& m) {
         .def(py::init())
         .def_property("cov_matrix", &result_t::get_cov_matrix, &result_t::set_cov_matrix)
         .def_property("means", &result_t::get_means, &result_t::set_means);
+}
+
+template <typename Task>
+inline void init_partial_compute_result(pybind11::module_& m) {
+    using namespace dal::covariance;
+    using result_t = partial_compute_result<Task>;
+    pybind11::class_<result_t>(m, "partial_compute_result")
+        .def(pybind11::init())
+        .def_property("partial_n_rows", &result_t::get_partial_n_rows, &result_t::set_partial_n_rows)
+        .def_property("partial_crossproduct", &result_t::get_partial_crossproduct, &result_t::set_partial_crossproduct)
+        .def_property("partial_sums", &result_t::get_partial_sum, &result_t::set_partial_sum);
 }
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
@@ -116,7 +160,10 @@ void init_compute_hyperparameters(py::module_& m) {
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_result);
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_partial_compute_ops);
+ONEDAL_PY_DECLARE_INSTANTIATOR(init_finalize_compute_ops);
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_hyperparameters);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
@@ -129,14 +176,18 @@ ONEDAL_PY_INIT_MODULE(covariance) {
 
     auto sub = m.def_submodule("covariance");
     #ifdef ONEDAL_DATA_PARALLEL_SPMD
-        ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list_spmd, task::compute);
+        ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task::compute);
     #else    
         ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task::compute);
+        ONEDAL_PY_INSTANTIATE(init_partial_compute_ops, sub, policy_list, task::compute); 
+        ONEDAL_PY_INSTANTIATE(init_finalize_compute_ops, sub, policy_list, task::compute);
+        ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task::compute);
+        ONEDAL_PY_INSTANTIATE(init_partial_compute_result, sub, task::compute);
+        #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+            ONEDAL_PY_INSTANTIATE(init_compute_hyperparameters, sub, task::compute);
+        #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     #endif
-    ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task::compute);
-    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
-        ONEDAL_PY_INSTANTIATE(init_compute_hyperparameters, sub, task::compute);
-    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
+
 }
 
 } // namespace oneapi::dal::python

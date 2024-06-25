@@ -14,12 +14,15 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
 from sklearn.exceptions import NotFittedError
+from sklearn.metrics import accuracy_score
 from sklearn.svm import NuSVC as sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
+from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVC
@@ -31,7 +34,7 @@ from onedal.svm import NuSVC as onedal_NuSVC
 
 
 @control_n_jobs(
-    decorated_methods=["fit", "predict", "_predict_proba", "decision_function"]
+    decorated_methods=["fit", "predict", "_predict_proba", "decision_function", "score"]
 )
 class NuSVC(sklearn_NuSVC, BaseSVC):
     __doc__ = sklearn_NuSVC.__doc__
@@ -78,39 +81,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         )
 
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit the SVM model according to the given training data.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features) \
-                or (n_samples, n_samples)
-            Training vectors, where `n_samples` is the number of samples
-            and `n_features` is the number of features.
-            For kernel="precomputed", the expected shape of X is
-            (n_samples, n_samples).
-
-        y : array-like of shape (n_samples,)
-            Target values (class labels in classification, real numbers in
-            regression).
-
-        sample_weight : array-like of shape (n_samples,), default=None
-            Per-sample weights. Rescale C per sample. Higher weights
-            force the classifier to put more emphasis on these points.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-
-        Notes
-        -----
-        If X and y are not C-ordered and contiguous arrays of np.float64 and
-        X is not a scipy.sparse.csr_matrix, X and/or y may be copied.
-
-        If X is a dense array, then the other methods will not support sparse
-        matrices as input.
-        """
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("1.0"):
@@ -124,29 +94,13 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             },
             X,
             y,
-            sample_weight,
+            sample_weight=sample_weight,
         )
 
         return self
 
     @wrap_output_data
     def predict(self, X):
-        """
-        Perform regression on samples in X.
-
-        For an one-class model, +1 (inlier) or -1 (outlier) is returned.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            For kernel="precomputed", the expected shape of X is
-            (n_samples_test, n_samples_train).
-
-        Returns
-        -------
-        y_pred : ndarray of shape (n_samples,)
-            The predicted values.
-        """
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         return dispatch(
@@ -157,6 +111,22 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
                 "sklearn": sklearn_NuSVC.predict,
             },
             X,
+        )
+
+    @wrap_output_data
+    def score(self, X, y, sample_weight=None):
+        if sklearn_check_version("1.0"):
+            self._check_feature_names(X, reset=False)
+        return dispatch(
+            self,
+            "score",
+            {
+                "onedal": self.__class__._onedal_score,
+                "sklearn": sklearn_NuSVC.score,
+            },
+            X,
+            y,
+            sample_weight=sample_weight,
         )
 
     if sklearn_check_version("1.0"):
@@ -191,12 +161,50 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             """
             return self._predict_proba(X)
 
+        @available_if(sklearn_NuSVC._check_proba)
+        def predict_log_proba(self, X):
+            """Compute log probabilities of possible outcomes for samples in X.
+
+            The model need to have probability information computed at training
+            time: fit with attribute `probability` set to True.
+
+            Parameters
+            ----------
+            X : array-like of shape (n_samples, n_features) or \
+                    (n_samples_test, n_samples_train)
+                For kernel="precomputed", the expected shape of X is
+                (n_samples_test, n_samples_train).
+
+            Returns
+            -------
+            T : ndarray of shape (n_samples, n_classes)
+                Returns the log-probabilities of the sample for each class in
+                the model. The columns correspond to the classes in sorted
+                order, as they appear in the attribute :term:`classes_`.
+
+            Notes
+            -----
+            The probability model is created using cross validation, so
+            the results can be slightly different than those obtained by
+            predict. Also, it will produce meaningless results on very small
+            datasets.
+            """
+            xp, _ = get_namespace(X)
+
+            return xp.log(self.predict_proba(X))
+
     else:
 
         @property
         def predict_proba(self):
             self._check_proba()
             return self._predict_proba
+
+        def _predict_log_proba(self, X):
+            xp, _ = get_namespace(X)
+            return xp.log(self.predict_proba(X))
+
+        predict_proba.__doc__ = sklearn_NuSVC.predict_proba.__doc__
 
     @wrap_output_data
     def _predict_proba(self, X):
@@ -232,12 +240,33 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             X,
         )
 
+    decision_function.__doc__ = sklearn_NuSVC.decision_function.__doc__
+
+    def _get_sample_weight(self, X, y, sample_weight=None):
+        sample_weight = super()._get_sample_weight(X, y, sample_weight)
+        if sample_weight is None:
+            return sample_weight
+
+        weight_per_class = [
+            np.sum(sample_weight[y == class_label]) for class_label in np.unique(y)
+        ]
+
+        for i in range(len(weight_per_class)):
+            for j in range(i + 1, len(weight_per_class)):
+                if self.nu * (weight_per_class[i] + weight_per_class[j]) / 2 > min(
+                    weight_per_class[i], weight_per_class[j]
+                ):
+                    raise ValueError("specified nu is infeasible")
+
+        return sample_weight
+
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
+        X, _, weights = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
             "nu": self.nu,
             "kernel": self.kernel,
             "degree": self.degree,
-            "gamma": self.gamma,
+            "gamma": self._compute_gamma_sigma(X),
             "coef0": self.coef0,
             "tol": self.tol,
             "shrinking": self.shrinking,
@@ -249,10 +278,16 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         }
 
         self._onedal_estimator = onedal_NuSVC(**onedal_params)
-        self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
+        self._onedal_estimator.fit(X, y, weights, queue=queue)
 
         if self.probability:
-            self._fit_proba(X, y, sample_weight, queue=queue)
+            self._fit_proba(
+                X,
+                y,
+                sample_weight=sample_weight,
+                queue=queue,
+            )
+
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
@@ -274,3 +309,13 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     def _onedal_decision_function(self, X, queue=None):
         return self._onedal_estimator.decision_function(X, queue=queue)
+
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return accuracy_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
+
+    fit.__doc__ = sklearn_NuSVC.fit.__doc__
+    predict.__doc__ = sklearn_NuSVC.predict.__doc__
+    decision_function.__doc__ = sklearn_NuSVC.decision_function.__doc__
+    score.__doc__ = sklearn_NuSVC.score.__doc__

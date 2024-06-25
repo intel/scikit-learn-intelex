@@ -15,15 +15,16 @@
 # ===============================================================================
 
 from .coordinate_descent import ElasticNet, Lasso
+from .incremental_linear import IncrementalLinearRegression
 from .linear import LinearRegression
-from .logistic_path import LogisticRegression, logistic_regression_path
+from .logistic_regression import LogisticRegression
 from .ridge import Ridge
 
 __all__ = [
-    "Ridge",
+    "ElasticNet",
+    "IncrementalLinearRegression",
+    "Lasso",
     "LinearRegression",
     "LogisticRegression",
-    "logistic_regression_path",
-    "ElasticNet",
-    "Lasso",
+    "Ridge",
 ]

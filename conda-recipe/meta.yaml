@@ -14,7 +14,7 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2021.6' %}
+{% set version = '2024.1' %}
 {% set buildnumber = 0 %}
 
 package:
@@ -42,7 +42,7 @@ requirements:
         - python
         - setuptools
         - numpy {{ numpy }}
-        - dal-devel ==2021.6.0
+        - dal-devel ==2024.1.0
         - cython
         - jinja2
         - mpich  # [osx]
@@ -52,9 +52,9 @@ requirements:
         - make
     run:
         - python
-        - dpcpp_cpp_rt ==2022.0.1  # [linux]
-        - dpcpp_cpp_rt ==2022.0.0  # [win or osx]
-        - dal ==2021.6.0
+        - dpcpp_cpp_rt ==2024.1.0  # [linux]
+        - dpcpp_cpp_rt ==2024.1.0  # [win or osx]
+        - dal ==2024.1.0
     ignore_run_exports:
         - numpy
 
@@ -107,6 +107,4 @@ extra:
     recipe-maintainers:
         # GitHub IDs for maintainers of the recipe.
         - napetrov
-        - Pahandrovich
-        - agorshk
-        - vmeshche
+        - Alexsandruss

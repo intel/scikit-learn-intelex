@@ -140,7 +140,7 @@ def do_patch(name, get_map=_get_map_of_algorithms):
         for descriptor in get_map()[lname]:
             which, what, replacer = descriptor[0]
             if descriptor[1] is None:
-                descriptor[1] = getattr(which, what, None)
+                descriptor[1] = getattr(which, what, False)
             setattr(which, what, replacer)
     else:
         raise ValueError("Has no patch for: " + name)
@@ -152,7 +152,10 @@ def do_unpatch(name, get_map=_get_map_of_algorithms):
         for descriptor in get_map()[lname]:
             if descriptor[1] is not None:
                 which, what, _ = descriptor[0]
-                setattr(which, what, descriptor[1])
+                if descriptor[1]:
+                    setattr(which, what, descriptor[1])
+                elif hasattr(which, what):
+                    delattr(which, what)
     else:
         raise ValueError("Has no patch for: " + name)
 
@@ -204,7 +207,7 @@ def _is_enabled(name, get_map=_get_map_of_algorithms):
         enabled = True
         for descriptor in get_map()[lname]:
             which, what, replacer = descriptor[0]
-            enabled = enabled and getattr(which, what) == replacer
+            enabled = enabled and getattr(which, what, None) == replacer
         return enabled
     else:
         raise ValueError("Has no patch for: " + name)

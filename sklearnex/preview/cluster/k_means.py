@@ -172,24 +172,6 @@ if daal_check_version((2023, "P", 200)):
             return patching_status
 
         def fit(self, X, y=None, sample_weight=None):
-            """Compute k-means clustering.
-
-            Parameters
-            ----------
-            X : array-like or sparse matrix, shape=(n_samples, n_features)
-                Training instances to cluster. It must be noted that the data
-                will be converted to C ordering, which will cause a memory
-                copy if the given data is not C-contiguous.
-
-            y : Ignored
-                not used, present here for API consistency by convention.
-
-            sample_weight : array-like, shape (n_samples,), optional
-                The weights for each observation in X. If None, all observations
-                are assigned equal weight (default: None)
-
-            """
-
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
@@ -257,24 +239,6 @@ if daal_check_version((2023, "P", 200)):
 
         @wrap_output_data
         def predict(self, X):
-            """Compute k-means clustering.
-
-            Parameters
-            ----------
-            X : array-like or sparse matrix, shape=(n_samples, n_features)
-                Training instances to cluster. It must be noted that the data
-                will be converted to C ordering, which will cause a memory
-                copy if the given data is not C-contiguous.
-
-            y : Ignored
-                not used, present here for API consistency by convention.
-
-            sample_weight : array-like, shape (n_samples,), optional
-                The weights for each observation in X. If None, all observations
-                are assigned equal weight (default: None)
-
-            """
-
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
@@ -317,51 +281,19 @@ if daal_check_version((2023, "P", 200)):
 
         @wrap_output_data
         def fit_transform(self, X, y=None, sample_weight=None):
-            """Compute clustering and transform X to cluster-distance space.
-
-            Equivalent to fit(X).transform(X), but more efficiently implemented.
-
-            Parameters
-            ----------
-            X : {array-like, sparse matrix} of shape (n_samples, n_features)
-                New data to transform.
-
-            y : Ignored
-                Not used, present here for API consistency by convention.
-
-            sample_weight : array-like of shape (n_samples,), default=None
-                The weights for each observation in X. If None, all observations
-                are assigned equal weight.
-
-            Returns
-            -------
-            X_new : ndarray of shape (n_samples, n_clusters)
-                X transformed in the new space.
-            """
             return self.fit(X, sample_weight=sample_weight)._transform(X)
 
         @wrap_output_data
         def transform(self, X):
-            """Transform X to a cluster-distance space.
-
-            In the new space, each dimension is the distance to the cluster
-            centers. Note that even if X is sparse, the array returned by
-            `transform` will typically be dense.
-
-            Parameters
-            ----------
-            X : {array-like, sparse matrix} of shape (n_samples, n_features)
-                New data to transform.
-
-            Returns
-            -------
-            X_new : ndarray of shape (n_samples, n_clusters)
-                X transformed in the new space.
-            """
             check_is_fitted(self)
 
             X = self._check_test_data(X)
             return self._transform(X)
+
+        fit.__doc__ = sklearn_KMeans.fit.__doc__
+        predict.__doc__ = sklearn_KMeans.predict.__doc__
+        transform.__doc__ = sklearn_KMeans.transform.__doc__
+        fit_transform.__doc__ = sklearn_KMeans.fit_transform.__doc__
 
 else:
     from daal4py.sklearn.cluster import KMeans

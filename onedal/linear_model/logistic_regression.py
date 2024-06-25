@@ -18,14 +18,12 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-from sklearn.base import BaseEstimator
 
-from daal4py.sklearn._utils import get_dtype, make2d
-from onedal import _backend
+from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 
+from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin
-from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import (
     _check_array,
@@ -36,7 +34,7 @@ from ..utils import (
 )
 
 
-class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
+class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, tol, C, fit_intercept, solver, max_iter, algorithm):
         self.tol = tol
@@ -45,9 +43,6 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
         self.solver = solver
         self.max_iter = max_iter
         self.algorithm = algorithm
-
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
@@ -59,7 +54,11 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
             "max_iter": self.max_iter,
             "C": self.C,
             "optimizer": self.solver,
-            "result_option": (intercept + "coefficients|iterations_count"),
+            "result_option": (
+                intercept
+                + "coefficients|iterations_count"
+                + ("|inner_iterations_count" if self.solver == "newton-cg" else "")
+            ),
         }
 
     def _fit(self, X, y, module, queue):
@@ -89,6 +88,10 @@ class BaseLogisticRegression(BaseEstimator, metaclass=ABCMeta):
 
         self._onedal_model = result.model
         self.n_iter_ = np.array([result.iterations_count])
+
+        # _n_inner_iter is the total number of cg-solver iterations
+        if daal_check_version((2024, "P", 300)) and self.solver == "newton-cg":
+            self._n_inner_iter = result.inner_iterations_count
 
         coeff = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = coeff[:, 1:], coeff[:, 0]
@@ -213,18 +216,24 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
         )
 
     def fit(self, X, y, queue=None):
-        return super()._fit(X, y, _backend.logistic_regression.classification, queue)
+        return super()._fit(
+            X, y, self._get_backend("logistic_regression", "classification", None), queue
+        )
 
     def predict(self, X, queue=None):
-        y = super()._predict(X, _backend.logistic_regression.classification, queue)
+        y = super()._predict(
+            X, self._get_backend("logistic_regression", "classification", None), queue
+        )
         return y
 
     def predict_proba(self, X, queue=None):
-        y = super()._predict_proba(X, _backend.logistic_regression.classification, queue)
+        y = super()._predict_proba(
+            X, self._get_backend("logistic_regression", "classification", None), queue
+        )
         return y
 
     def predict_log_proba(self, X, queue=None):
         y = super()._predict_log_proba(
-            X, _backend.logistic_regression.classification, queue
+            X, self._get_backend("logistic_regression", "classification", None), queue
         )
         return y

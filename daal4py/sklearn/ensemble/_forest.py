@@ -152,11 +152,9 @@ def check_sample_weight(sample_weight, X, dtype=None):
 
 
 class RandomForestBase:
-    def fit(self, X, y, sample_weight=None):
-        ...
+    def fit(self, X, y, sample_weight=None): ...
 
-    def predict(self, X):
-        ...
+    def predict(self, X): ...
 
     def _check_parameters(self) -> None:
         if not self.bootstrap and self.max_samples is not None:
@@ -652,8 +650,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             return super().predict_proba(X)
         X = check_array(X, dtype=[np.float64, np.float32])
         check_is_fitted(self)
-        if sklearn_check_version("0.23"):
-            self._check_n_features(X, reset=False)
+        self._check_n_features(X, reset=False)
         return self._daal_predict_proba(X)
 
     if sklearn_check_version("1.0"):
@@ -672,10 +669,7 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
             if self._cached_estimators_:
                 return self._cached_estimators_
 
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "daal_model_")
+        check_is_fitted(self)
         classes_ = self.classes_[0]
         n_classes_ = self.n_classes_[0]
         # convert model to estimators
@@ -830,9 +824,9 @@ class RandomForestClassifier(RandomForestClassifier_original, RandomForestBase):
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
         if self.oob_score:
-            parameters[
-                "resultsToCompute"
-            ] = "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+            parameters["resultsToCompute"] = (
+                "computeOutOfBagErrorAccuracy|computeOutOfBagErrorDecisionFunction"
+            )
 
         if daal_check_version((2023, "P", 200)):
             parameters["binningStrategy"] = self.binningStrategy
@@ -1245,10 +1239,7 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if hasattr(self, "_cached_estimators_"):
             if self._cached_estimators_:
                 return self._cached_estimators_
-        if sklearn_check_version("0.22"):
-            check_is_fitted(self)
-        else:
-            check_is_fitted(self, "daal_model_")
+        check_is_fitted(self)
         # convert model to estimators
         params = {
             "criterion": self.criterion,
@@ -1367,9 +1358,9 @@ class RandomForestRegressor(RandomForestRegressor_original, RandomForestBase):
         if self.bootstrap:
             parameters["observationsPerTreeFraction"] = n_samples_bootstrap
         if self.oob_score:
-            parameters[
-                "resultsToCompute"
-            ] = "computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
+            parameters["resultsToCompute"] = (
+                "computeOutOfBagErrorR2|computeOutOfBagErrorPrediction"
+            )
 
         if daal_check_version((2023, "P", 200)):
             parameters["binningStrategy"] = self.binningStrategy

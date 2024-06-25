@@ -42,7 +42,7 @@ IF DEFINED TBBROOT (
 %PYTHON% -m unittest discover -v -s %1\tests -p test*.py || set exitcode=1
 
 pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
-pytest --verbose --pyargs %1\sklearnex || set exitcode=1
+pytest --verbose --pyargs sklearnex || set exitcode=1
 pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set exitcode=1
 python %1\.ci\scripts\test_global_patch.py || set exitcode=1
 EXIT /B %exitcode%

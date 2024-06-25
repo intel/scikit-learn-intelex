@@ -1,5 +1,6 @@
 # ==============================================================================
 # Copyright 2021 Intel Corporation
+# Copyright 2024 Fujitsu Limited
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +15,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.common.hyperparameters import get_hyperparameters
+import os
 
 from . import utils
 from ._config import config_context, get_config, set_config
@@ -41,21 +42,22 @@ __all__ = [
     "linear_model",
     "manifold",
     "metrics",
+    "model_selection",
     "neighbors",
     "patch_sklearn",
     "set_config",
     "sklearn_is_patched",
-    "sklearn_is_patchedget_patch_map",
     "svm",
     "unpatch_sklearn",
     "utils",
 ]
+onedal_iface_flag = os.environ.get("OFF_ONEDAL_IFACE", "0")
+if onedal_iface_flag == "0":
+    from onedal import _is_spmd_backend
+    from onedal.common.hyperparameters import get_hyperparameters
 
-
-from onedal import _is_dpc_backend
-
-if _is_dpc_backend:
-    __all__.append("spmd")
+    if _is_spmd_backend:
+        __all__.append("spmd")
 
 
 from ._utils import set_sklearn_ex_verbose

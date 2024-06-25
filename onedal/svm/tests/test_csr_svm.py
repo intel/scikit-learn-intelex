@@ -16,16 +16,12 @@
 
 import numpy as np
 import pytest
-import sklearn.utils.estimator_checks
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy import sparse as sp
-from sklearn import datasets, metrics
-from sklearn.base import clone as clone_estimator
-from sklearn.datasets import make_blobs, make_classification
-from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.model_selection import train_test_split
-from sklearn.utils.estimator_checks import check_estimator
+from sklearn import datasets
+from sklearn.datasets import make_classification
 
+from onedal.common._mixin import ClassifierMixin
 from onedal.svm import SVC, SVR
 from onedal.tests.utils._device_selection import (
     get_queues,
@@ -33,13 +29,9 @@ from onedal.tests.utils._device_selection import (
 )
 
 
-def is_classifier(estimator):
-    return getattr(estimator, "_estimator_type", None) == "classifier"
-
-
-def check_svm_model_equal(queue, svm, X_train, y_train, X_test, decimal=6):
-    sparse_svm = clone_estimator(svm)
-    dense_svm = clone_estimator(svm)
+def check_svm_model_equal(
+    queue, dense_svm, sparse_svm, X_train, y_train, X_test, decimal=6
+):
     dense_svm.fit(X_train.toarray(), y_train, queue=queue)
     if sp.issparse(X_test):
         X_test_dense = X_test.toarray()
@@ -60,7 +52,7 @@ def check_svm_model_equal(queue, svm, X_train, y_train, X_test, decimal=6):
         sparse_svm.predict(X_test, queue=queue),
     )
 
-    if is_classifier(svm):
+    if isinstance(dense_svm, ClassifierMixin) and isinstance(sparse_svm, ClassifierMixin):
         assert_array_almost_equal(
             dense_svm.decision_function(X_test_dense, queue=queue),
             sparse_svm.decision_function(X_test, queue=queue),
@@ -77,8 +69,9 @@ def _test_simple_dataset(queue, kernel):
     sparse_X2 = sp.dok_matrix(X2)
 
     dataset = sparse_X, Y, sparse_X2
-    clf = SVC(kernel=kernel, gamma=1)
-    check_svm_model_equal(queue, clf, *dataset)
+    clf0 = SVC(kernel=kernel, gamma=1)
+    clf1 = SVC(kernel=kernel, gamma=1)
+    check_svm_model_equal(queue, clf0, clf1, *dataset)
 
 
 @pass_if_not_implemented_for_gpu(reason="csr svm is not implemented")
@@ -105,8 +98,9 @@ def _test_binary_dataset(queue, kernel):
     sparse_X = sp.csr_matrix(X)
 
     dataset = sparse_X, y, sparse_X
-    clf = SVC(kernel=kernel)
-    check_svm_model_equal(queue, clf, *dataset)
+    clf0 = SVC(kernel=kernel)
+    clf1 = SVC(kernel=kernel)
+    check_svm_model_equal(queue, clf0, clf1, *dataset)
 
 
 @pass_if_not_implemented_for_gpu(reason="csr svm is not implemented")
@@ -139,8 +133,9 @@ def _test_iris(queue, kernel):
 
     dataset = sparse_iris_data, iris.target, sparse_iris_data
 
-    clf = SVC(kernel=kernel)
-    check_svm_model_equal(queue, clf, *dataset, decimal=2)
+    clf0 = SVC(kernel=kernel)
+    clf1 = SVC(kernel=kernel)
+    check_svm_model_equal(queue, clf0, clf1, *dataset, decimal=2)
 
 
 @pass_if_not_implemented_for_gpu(reason="csr svm is not implemented")
@@ -156,8 +151,9 @@ def _test_diabetes(queue, kernel):
     sparse_diabetes_data = sp.csr_matrix(diabetes.data)
     dataset = sparse_diabetes_data, diabetes.target, sparse_diabetes_data
 
-    clf = SVR(kernel=kernel, C=0.1)
-    check_svm_model_equal(queue, clf, *dataset)
+    clf0 = SVR(kernel=kernel, C=0.1)
+    clf1 = SVR(kernel=kernel, C=0.1)
+    check_svm_model_equal(queue, clf0, clf1, *dataset)
 
 
 @pass_if_not_implemented_for_gpu(reason="csr svm is not implemented")

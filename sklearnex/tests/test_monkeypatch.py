@@ -17,6 +17,12 @@
 import sklearnex
 from daal4py.sklearn._utils import daal_check_version
 
+# General use of patch_sklearn and unpatch_sklearn in pytest is not recommended.
+# It changes global state and can impact the operation of other tests. This file
+# specifically tests patch_sklearn and unpatch_sklearn and is exempt from this.
+# If sklearnex patching is necessary in testing, use the 'with_sklearnex' pytest
+# fixture.
+
 
 def test_monkey_patching():
     _tokens = sklearnex.get_patch_names()
@@ -27,129 +33,170 @@ def test_monkey_patching():
         for c in v:
             _classes.append(c[0])
 
-    sklearnex.patch_sklearn()
+    try:
+        sklearnex.patch_sklearn()
 
-    for i, _ in enumerate(_tokens):
-        t = _tokens[i]
-        p = _classes[i][0]
-        n = _classes[i][1]
+        for i, _ in enumerate(_tokens):
+            t = _tokens[i]
+            p = _classes[i][0]
+            n = _classes[i][1]
 
-        class_module = getattr(p, n).__module__
-        assert class_module.startswith("daal4py") or class_module.startswith(
-            "sklearnex"
-        ), "Patching has completed with error."
+            class_module = getattr(p, n).__module__
+            assert class_module.startswith("daal4py") or class_module.startswith(
+                "sklearnex"
+            ), "Patching has completed with error."
 
-    for i, _ in enumerate(_tokens):
-        t = _tokens[i]
-        p = _classes[i][0]
-        n = _classes[i][1]
+        for i, _ in enumerate(_tokens):
+            t = _tokens[i]
+            p = _classes[i][0]
+            n = _classes[i][1]
 
-        sklearnex.unpatch_sklearn(t)
-        class_module = getattr(p, n).__module__
-        assert class_module.startswith("sklearn"), "Unpatching has completed with error."
+            sklearnex.unpatch_sklearn(t)
+            sklearn_class = getattr(p, n, None)
+            if sklearn_class is not None:
+                sklearn_class = sklearn_class.__module__
+            assert sklearn_class is None or sklearn_class.startswith(
+                "sklearn"
+            ), "Unpatching has completed with error."
 
-    sklearnex.unpatch_sklearn()
+    finally:
+        sklearnex.unpatch_sklearn()
 
-    for i, _ in enumerate(_tokens):
-        t = _tokens[i]
-        p = _classes[i][0]
-        n = _classes[i][1]
+    try:
+        for i, _ in enumerate(_tokens):
+            t = _tokens[i]
+            p = _classes[i][0]
+            n = _classes[i][1]
 
-        class_module = getattr(p, n).__module__
-        assert class_module.startswith("sklearn"), "Unpatching has completed with error."
+            sklearn_class = getattr(p, n, None)
+            if sklearn_class is not None:
+                sklearn_class = sklearn_class.__module__
+            assert sklearn_class is None or sklearn_class.startswith(
+                "sklearn"
+            ), "Unpatching has completed with error."
 
-    sklearnex.unpatch_sklearn()
+    finally:
+        sklearnex.unpatch_sklearn()
 
-    for i, _ in enumerate(_tokens):
-        t = _tokens[i]
-        p = _classes[i][0]
-        n = _classes[i][1]
+    try:
+        for i, _ in enumerate(_tokens):
+            t = _tokens[i]
+            p = _classes[i][0]
+            n = _classes[i][1]
 
-        sklearnex.patch_sklearn(t)
+            sklearnex.patch_sklearn(t)
 
-        class_module = getattr(p, n).__module__
-        assert class_module.startswith("daal4py") or class_module.startswith(
-            "sklearnex"
-        ), "Patching has completed with error."
-
-    sklearnex.unpatch_sklearn()
+            class_module = getattr(p, n).__module__
+            assert class_module.startswith("daal4py") or class_module.startswith(
+                "sklearnex"
+            ), "Patching has completed with error."
+    finally:
+        sklearnex.unpatch_sklearn()
 
 
 def test_patch_by_list_simple():
-    sklearnex.patch_sklearn(["LogisticRegression"])
+    try:
+        sklearnex.patch_sklearn(["LogisticRegression"])
 
-    from sklearn.ensemble import RandomForestRegressor
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.neighbors import KNeighborsRegressor
-    from sklearn.svm import SVC
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.neighbors import KNeighborsRegressor
+        from sklearn.svm import SVC
 
-    assert RandomForestRegressor.__module__.startswith("sklearn")
-    assert KNeighborsRegressor.__module__.startswith("sklearn")
-    assert LogisticRegression.__module__.startswith("daal4py")
-    assert SVC.__module__.startswith("sklearn")
-
-    sklearnex.unpatch_sklearn()
+        assert RandomForestRegressor.__module__.startswith("sklearn")
+        assert KNeighborsRegressor.__module__.startswith("sklearn")
+        if daal_check_version((2024, "P", 1)):
+            assert LogisticRegression.__module__.startswith("sklearnex")
+        else:
+            assert LogisticRegression.__module__.startswith("daal4py")
+        assert SVC.__module__.startswith("sklearn")
+    finally:
+        sklearnex.unpatch_sklearn()
 
 
 def test_patch_by_list_many_estimators():
-    sklearnex.patch_sklearn(["LogisticRegression", "SVC"])
+    try:
+        sklearnex.patch_sklearn(["LogisticRegression", "SVC"])
 
-    from sklearn.ensemble import RandomForestRegressor
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.neighbors import KNeighborsRegressor
-    from sklearn.svm import SVC
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.neighbors import KNeighborsRegressor
+        from sklearn.svm import SVC
 
-    assert RandomForestRegressor.__module__.startswith("sklearn")
-    assert KNeighborsRegressor.__module__.startswith("sklearn")
-    assert LogisticRegression.__module__.startswith("daal4py")
-    assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith("sklearnex")
+        assert RandomForestRegressor.__module__.startswith("sklearn")
+        assert KNeighborsRegressor.__module__.startswith("sklearn")
+        if daal_check_version((2024, "P", 1)):
+            assert LogisticRegression.__module__.startswith("sklearnex")
+        else:
+            assert LogisticRegression.__module__.startswith("daal4py")
+        assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith(
+            "sklearnex"
+        )
 
-    sklearnex.unpatch_sklearn()
+    finally:
+        sklearnex.unpatch_sklearn()
 
 
 def test_unpatch_by_list_many_estimators():
-    sklearnex.patch_sklearn()
+    try:
+        sklearnex.patch_sklearn()
 
-    from sklearn.ensemble import RandomForestRegressor
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.neighbors import KNeighborsRegressor
-    from sklearn.svm import SVC
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.neighbors import KNeighborsRegressor
+        from sklearn.svm import SVC
 
-    assert RandomForestRegressor.__module__.startswith("sklearnex")
-    assert KNeighborsRegressor.__module__.startswith(
-        "daal4py"
-    ) or KNeighborsRegressor.__module__.startswith("sklearnex")
-    assert LogisticRegression.__module__.startswith("daal4py")
-    assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith("sklearnex")
+        assert RandomForestRegressor.__module__.startswith("sklearnex")
+        assert KNeighborsRegressor.__module__.startswith(
+            "daal4py"
+        ) or KNeighborsRegressor.__module__.startswith("sklearnex")
+        if daal_check_version((2024, "P", 1)):
+            assert LogisticRegression.__module__.startswith("sklearnex")
+        else:
+            assert LogisticRegression.__module__.startswith("daal4py")
+        assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith(
+            "sklearnex"
+        )
 
-    sklearnex.unpatch_sklearn(["KNeighborsRegressor", "RandomForestRegressor"])
+        sklearnex.unpatch_sklearn(["KNeighborsRegressor", "RandomForestRegressor"])
 
-    from sklearn.ensemble import RandomForestRegressor
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.neighbors import KNeighborsRegressor
-    from sklearn.svm import SVC
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.neighbors import KNeighborsRegressor
+        from sklearn.svm import SVC
 
-    assert RandomForestRegressor.__module__.startswith("sklearn")
-    assert KNeighborsRegressor.__module__.startswith("sklearn")
-    assert LogisticRegression.__module__.startswith("daal4py")
-    assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith("sklearnex")
+        assert RandomForestRegressor.__module__.startswith("sklearn")
+        assert KNeighborsRegressor.__module__.startswith("sklearn")
+        if daal_check_version((2024, "P", 1)):
+            assert LogisticRegression.__module__.startswith("sklearnex")
+        else:
+            assert LogisticRegression.__module__.startswith("daal4py")
+
+        assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith(
+            "sklearnex"
+        )
+    finally:
+        sklearnex.unpatch_sklearn()
 
 
 def test_patching_checker():
     for name in [None, "SVC", "PCA"]:
-        sklearnex.patch_sklearn(name=name)
-        assert sklearnex.sklearn_is_patched(name=name)
+        try:
+            sklearnex.patch_sklearn(name=name)
+            assert sklearnex.sklearn_is_patched(name=name)
 
-        sklearnex.unpatch_sklearn(name=name)
-        assert not sklearnex.sklearn_is_patched(name=name)
+        finally:
+            sklearnex.unpatch_sklearn(name=name)
+            assert not sklearnex.sklearn_is_patched(name=name)
+    try:
+        sklearnex.patch_sklearn()
+        patching_status_map = sklearnex.sklearn_is_patched(return_map=True)
+        assert len(patching_status_map) == len(sklearnex.get_patch_names())
+        for status in patching_status_map.values():
+            assert status
+    finally:
+        sklearnex.unpatch_sklearn()
 
-    sklearnex.patch_sklearn()
-    patching_status_map = sklearnex.sklearn_is_patched(return_map=True)
-    assert len(patching_status_map) == len(sklearnex.get_patch_names())
-    for status in patching_status_map.values():
-        assert status
-
-    sklearnex.unpatch_sklearn()
     patching_status_map = sklearnex.sklearn_is_patched(return_map=True)
     assert len(patching_status_map) == len(sklearnex.get_patch_names())
     for status in patching_status_map.values():
@@ -161,67 +208,61 @@ def test_preview_namespace():
         from sklearn.cluster import DBSCAN
         from sklearn.decomposition import PCA
         from sklearn.ensemble import RandomForestClassifier
-        from sklearn.linear_model import LinearRegression, LogisticRegression
+        from sklearn.linear_model import LinearRegression
         from sklearn.svm import SVC
 
         return (
             LinearRegression(),
-            LogisticRegression(),
             PCA(),
             DBSCAN(),
             SVC(),
             RandomForestClassifier(),
         )
 
-    # BUG: previous patching tests force PCA to be patched with daal4py.
-    # This unpatching returns behavior to expected
-    sklearnex.unpatch_sklearn()
-    # behavior with enabled preview
-    sklearnex.patch_sklearn(preview=True)
     from sklearnex.dispatcher import _is_preview_enabled
 
-    assert _is_preview_enabled()
+    try:
+        sklearnex.patch_sklearn(preview=True)
 
-    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
-    assert "sklearnex" in rfc.__module__
+        assert _is_preview_enabled()
 
-    if daal_check_version((2023, "P", 100)):
-        assert "sklearnex" in lr.__module__
-    else:
-        assert "daal4py" in lr.__module__
+        lr, pca, dbscan, svc, rfc = get_estimators()
+        assert "sklearnex" in rfc.__module__
 
-    if daal_check_version((2024, "P", 1)):
-        assert "sklearnex" in log_reg.__module__
-    else:
-        assert "daal4py" in log_reg.__module__
+        if daal_check_version((2023, "P", 100)):
+            assert "sklearnex" in lr.__module__
+        else:
+            assert "daal4py" in lr.__module__
 
-    assert "sklearnex.preview" in pca.__module__
-    assert "sklearnex" in dbscan.__module__
-    assert "sklearnex" in svc.__module__
-    sklearnex.unpatch_sklearn()
+        assert "sklearnex" in pca.__module__
+        assert "sklearnex" in dbscan.__module__
+        assert "sklearnex" in svc.__module__
+
+    finally:
+        sklearnex.unpatch_sklearn()
 
     # no patching behavior
-    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
+    lr, pca, dbscan, svc, rfc = get_estimators()
     assert "sklearn." in lr.__module__ and "daal4py" not in lr.__module__
-    assert "sklearn." in log_reg.__module__ and "daal4py" not in log_reg.__module__
     assert "sklearn." in pca.__module__ and "daal4py" not in pca.__module__
     assert "sklearn." in dbscan.__module__ and "daal4py" not in dbscan.__module__
     assert "sklearn." in svc.__module__ and "daal4py" not in svc.__module__
     assert "sklearn." in rfc.__module__ and "daal4py" not in rfc.__module__
 
     # default patching behavior
-    sklearnex.patch_sklearn()
-    assert not _is_preview_enabled()
+    try:
+        sklearnex.patch_sklearn()
+        assert not _is_preview_enabled()
 
-    lr, log_reg, pca, dbscan, svc, rfc = get_estimators()
-    if daal_check_version((2023, "P", 100)):
-        assert "sklearnex" in lr.__module__
-    else:
-        assert "daal4py" in lr.__module__
+        lr, pca, dbscan, svc, rfc = get_estimators()
+        if daal_check_version((2023, "P", 100)):
+            assert "sklearnex" in lr.__module__
+        else:
+            assert "daal4py" in lr.__module__
 
-    assert "daal4py" in log_reg.__module__
-    assert "daal4py" in pca.__module__
-    assert "sklearnex" in rfc.__module__
-    assert "sklearnex" in dbscan.__module__
-    assert "sklearnex" in svc.__module__
-    sklearnex.unpatch_sklearn()
+        assert "sklearnex" in pca.__module__
+        assert "sklearnex" in rfc.__module__
+        assert "sklearnex" in dbscan.__module__
+        assert "sklearnex" in svc.__module__
+    finally:
+        sklearnex.unpatch_sklearn()

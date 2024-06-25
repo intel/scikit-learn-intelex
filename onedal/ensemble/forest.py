@@ -21,27 +21,15 @@ from math import ceil
 from numbers import Number
 
 import numpy as np
-from scipy import sparse as sp
 from sklearn.ensemble import BaseEnsemble
-from sklearn.exceptions import DataConversionWarning
-from sklearn.utils import (
-    check_array,
-    check_random_state,
-    compute_sample_weight,
-    deprecated,
-)
-from sklearn.utils.validation import (
-    _num_samples,
-    check_consistent_length,
-    check_is_fitted,
-)
+from sklearn.utils import check_random_state
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version
 from onedal import _backend
 
+from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..common._policy import _get_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import (
     _check_array,
@@ -52,7 +40,7 @@ from ..utils import (
 )
 
 
-class BaseForest(BaseEnsemble, metaclass=ABCMeta):
+class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
@@ -109,45 +97,15 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.variable_importance_mode = variable_importance_mode
         self.algorithm = algorithm
 
-    def _to_absolute_max_features(
-        self, max_features, n_features, is_classification=False
-    ):
-        if max_features is None:
+    def _to_absolute_max_features(self, n_features):
+        if self.max_features is None:
             return n_features
-        if isinstance(max_features, str):
-            if max_features == "auto":
-                if not sklearn_check_version("1.3"):
-                    if sklearn_check_version("1.1"):
-                        warnings.warn(
-                            "`max_features='auto'` has been deprecated in 1.1 "
-                            "and will be removed in 1.3. To keep the past behaviour, "
-                            "explicitly set `max_features=1.0` or remove this "
-                            "parameter as it is also the default value for "
-                            "RandomForestRegressors and ExtraTreesRegressors.",
-                            FutureWarning,
-                        )
-                    return (
-                        max(1, int(np.sqrt(n_features)))
-                        if is_classification
-                        else n_features
-                    )
-            if max_features == "sqrt":
-                return max(1, int(np.sqrt(n_features)))
-            if max_features == "log2":
-                return max(1, int(np.log2(n_features)))
-            allowed_string_values = (
-                '"sqrt" or "log2"'
-                if sklearn_check_version("1.3")
-                else '"auto", "sqrt" or "log2"'
-            )
-            raise ValueError(
-                "Invalid value for max_features. Allowed string "
-                f"values are {allowed_string_values}."
-            )
-        if isinstance(max_features, (numbers.Integral, np.integer)):
-            return max_features
-        if max_features > 0.0:
-            return max(1, int(max_features * n_features))
+        elif isinstance(self.max_features, str):
+            return max(1, int(getattr(np, self.max_features)(n_features)))
+        elif isinstance(self.max_features, (numbers.Integral, np.integer)):
+            return self.max_features
+        elif self.max_features > 0.0:
+            return max(1, int(self.max_features * n_features))
         return 0
 
     def _get_observations_per_tree_fraction(self, n_samples, max_samples):
@@ -155,27 +113,12 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             return 1.0
 
         if isinstance(max_samples, numbers.Integral):
-            if not sklearn_check_version("1.2"):
-                if not (1 <= max_samples <= n_samples):
-                    msg = "`max_samples` must be in range 1 to {} but got value {}"
-                    raise ValueError(msg.format(n_samples, max_samples))
-            else:
-                if max_samples > n_samples:
-                    msg = "`max_samples` must be <= n_samples={} but got value {}"
-                    raise ValueError(msg.format(n_samples, max_samples))
+            if not (1 <= max_samples <= n_samples):
+                msg = "`max_samples` must be in range 1 to {} but got value {}"
+                raise ValueError(msg.format(n_samples, max_samples))
             return max(float(max_samples / n_samples), 1 / n_samples)
 
         if isinstance(max_samples, numbers.Real):
-            if sklearn_check_version("1.2"):
-                pass
-            elif sklearn_check_version("1.0"):
-                if not (0 < float(max_samples) <= 1):
-                    msg = "`max_samples` must be in range (0.0, 1.0] but got value {}"
-                    raise ValueError(msg.format(max_samples))
-            else:
-                if not (0 < float(max_samples) < 1):
-                    msg = "`max_samples` must be in range (0, 1) but got value {}"
-                    raise ValueError(msg.format(max_samples))
             return max(float(max_samples), 1 / n_samples)
 
         msg = "`max_samples` should be int or float, but got type '{}'"
@@ -183,9 +126,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
     def _get_onedal_params(self, data):
         n_samples, n_features = data.shape
-        features_per_node = self._to_absolute_max_features(
-            self.max_features, n_features, self.is_classification
-        )
 
         self.observations_per_tree_fraction = self._get_observations_per_tree_fraction(
             n_samples=n_samples, max_samples=self.max_samples
@@ -230,7 +170,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             "min_weight_fraction_in_leaf_node": self.min_weight_fraction_leaf,
             "min_impurity_decrease_in_split_node": self.min_impurity_decrease,
             "tree_count": int(self.n_estimators),
-            "features_per_node": features_per_node,
+            "features_per_node": self._to_absolute_max_features(n_features),
             "max_tree_depth": int(0 if self.max_depth is None else self.max_depth),
             "min_observations_in_leaf_node": min_observations_in_leaf_node,
             "min_observations_in_split_node": min_observations_in_split_node,
@@ -243,7 +183,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             "error_metric_mode": self.error_metric_mode,
             "variable_importance_mode": self.variable_importance_mode,
         }
-        if self.is_classification:
+        if isinstance(self, ClassifierMixin):
             onedal_params["class_count"] = (
                 0 if self.classes_ is None else len(self.classes_)
             )
@@ -349,9 +289,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         return sample_weight
 
-    def _get_policy(self, queue, *data):
-        return _get_policy(queue, *data)
-
     def _fit(self, X, y, sample_weight, module, queue):
         X, y = _check_X_y(
             X,
@@ -363,8 +300,6 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         y = self._validate_targets(y, X.dtype)
 
         self.n_features_in_ = X.shape[1]
-        if not sklearn_check_version("1.0"):
-            self.n_features_ = self.n_features_in_
 
         if sample_weight is not None and len(sample_weight) > 0:
             sample_weight = self._get_sample_weight(sample_weight, X)
@@ -379,8 +314,8 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self._onedal_model = train_result.model
 
         if self.oob_score:
-            if self.is_classification:
-                self.oob_score_ = from_table(train_result.oob_err_accuracy)[0, 0]
+            if isinstance(self, ClassifierMixin):
+                self.oob_score_ = from_table(train_result.oob_err_accuracy).item()
                 self.oob_decision_function_ = from_table(
                     train_result.oob_err_decision_function
                 )
@@ -392,7 +327,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
                         UserWarning,
                     )
             else:
-                self.oob_score_ = from_table(train_result.oob_err_r2)[0, 0]
+                self.oob_score_ = from_table(train_result.oob_err_r2).item()
                 self.oob_prediction_ = from_table(
                     train_result.oob_err_prediction
                 ).reshape(-1)
@@ -452,7 +387,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features="sqrt" if sklearn_check_version("1.1") else "auto",
+        max_features="sqrt",
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,
@@ -500,7 +435,6 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = True
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -516,16 +450,24 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
-            X, y, sample_weight, _backend.decision_forest.classification, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        pred = super()._predict(X, _backend.decision_forest.classification, queue)
+        pred = super()._predict(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(X, _backend.decision_forest.classification, queue)
+        return super()._predict_proba(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -537,7 +479,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features=1.0 if sklearn_check_version("1.1") else "auto",
+        max_features=1.0,
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,
@@ -585,7 +527,6 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = False
 
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
@@ -593,11 +534,19 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                 sample_weight[sample_weight == 0.0] = 1.0
             sample_weight = [sample_weight]
         return super()._fit(
-            X, y, sample_weight, _backend.decision_forest.regression, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "regression", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
+        return (
+            super()
+            ._predict(X, self._get_backend("decision_forest", "regression", None), queue)
+            .ravel()
+        )
 
 
 class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
@@ -609,7 +558,7 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features="auto",
+        max_features="sqrt",
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,
@@ -657,7 +606,6 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = True
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -673,16 +621,24 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
-            X, y, sample_weight, _backend.decision_forest.classification, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        pred = super()._predict(X, _backend.decision_forest.classification, queue)
+        pred = super()._predict(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(X, _backend.decision_forest.classification, queue)
+        return super()._predict_proba(
+            X, self._get_backend("decision_forest", "classification", None), queue
+        )
 
 
 class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -694,7 +650,7 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        max_features="auto",
+        max_features=1.0,
         max_leaf_nodes=None,
         min_impurity_decrease=0.0,
         min_impurity_split=None,
@@ -742,7 +698,6 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             variable_importance_mode=variable_importance_mode,
             algorithm=algorithm,
         )
-        self.is_classification = False
 
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
@@ -750,8 +705,16 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
                 sample_weight[sample_weight == 0.0] = 1.0
             sample_weight = [sample_weight]
         return super()._fit(
-            X, y, sample_weight, _backend.decision_forest.regression, queue
+            X,
+            y,
+            sample_weight,
+            self._get_backend("decision_forest", "regression", None),
+            queue,
         )
 
     def predict(self, X, queue=None):
-        return super()._predict(X, _backend.decision_forest.regression, queue).ravel()
+        return (
+            super()
+            ._predict(X, self._get_backend("decision_forest", "regression", None), queue)
+            .ravel()
+        )

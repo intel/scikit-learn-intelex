@@ -13,27 +13,70 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
+
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
+
 #include "oneapi/dal/detail/spmd_policy.hpp"
-#include "onedal/common/pybind11_helpers.hpp"
 #include "oneapi/dal/spmd/mpi/communicator.hpp"
-#include "dpctl4pybind11.hpp"
+
+#include "onedal/common/policy_common.hpp"
+#include "onedal/common/pybind11_helpers.hpp"
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
-ONEDAL_PY_INIT_MODULE(spmd_policy) {
-    import_dpctl();
-    py::class_<dal::detail::spmd_policy<detail::data_parallel_policy>>(m, "spmd_data_parallel_policy")
-        .def(py::init([](sycl::queue &q) {
-            detail::data_parallel_policy local_policy = detail::data_parallel_policy(q);
-            // TODO:
-            // Communicator hardcoded. Implement passing spmd communicator.
-            spmd::communicator<spmd::device_memory_access::usm> comm = dal::preview::spmd::make_communicator<dal::preview::spmd::backend::mpi>(q);
-            detail::spmd_policy<detail::data_parallel_policy> spmd_policy{ local_policy, comm };
-            return spmd_policy;
-        }));
+using dp_policy_t = dal::detail::data_parallel_policy;
+using spmd_policy_t = dal::detail::spmd_policy<dp_policy_t>;
+
+inline spmd_policy_t make_spmd_policy(dp_policy_t&& local) {
+    sycl::queue& queue = local.get_queue();
+    using backend_t = dal::preview::spmd::backend::mpi;
+    auto comm = dal::preview::spmd::make_communicator<backend_t>(queue);
+    return spmd_policy_t{ std::forward<dp_policy_t>(local), std::move(comm) };
 }
+
+template <typename... Args>
+inline spmd_policy_t make_spmd_policy(Args&&... args) {
+    auto local = make_dp_policy(std::forward<Args>(args)...);
+    return make_spmd_policy(std::move(local));
+}
+
+template <typename Arg, typename Policy = spmd_policy_t>
+inline void instantiate_costructor(py::class_<Policy>& policy) {
+    policy.def(py::init([](const Arg& arg) {
+        return make_spmd_policy(arg);
+    }));
+}
+
+void instantiate_spmd_policy(py::module& m) {
+    constexpr const char name[] = "spmd_data_parallel_policy";
+    py::class_<spmd_policy_t> policy(m, name);
+    policy.def(py::init<spmd_policy_t>());
+    policy.def(py::init([](const dp_policy_t& local) {
+        return make_spmd_policy(local);
+    }));
+    policy.def(py::init([](std::uint32_t id) {
+        return make_spmd_policy(id);
+    }));
+    policy.def(py::init([](const std::string& filter) {
+        return make_spmd_policy(filter);
+    }));
+    policy.def(py::init([](const py::object& syclobj) {
+        return make_spmd_policy(syclobj);
+    }));
+    policy.def("get_device_id", [](const spmd_policy_t& policy) {
+        return get_device_id(policy.get_local());
+    });
+    policy.def("get_device_name", [](const spmd_policy_t& policy) {
+        return get_device_name(policy.get_local());
+    });
+}
+
+ONEDAL_PY_INIT_MODULE(spmd_policy) {
+    instantiate_spmd_policy(m);
+} // ONEDAL_PY_INIT_MODULE(spmd_policy)
+
 } // namespace oneapi::dal::python
-#endif
+
+#endif // ONEDAL_DATA_PARALLEL_SPMD

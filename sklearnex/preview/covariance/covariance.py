@@ -14,21 +14,26 @@
 # limitations under the License.
 # ===============================================================================
 
+import warnings
+
+import numpy as np
 from scipy import sparse as sp
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.utils import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
+from sklearnex import config_context
+from sklearnex.metrics import pairwise_distances
 
-from ..._device_offload import dispatch
+from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
-@control_n_jobs(decorated_methods=["fit"])
+@control_n_jobs(decorated_methods=["fit", "mahalanobis"])
 class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     __doc__ = sklearn_EmpiricalCovariance.__doc__
 
@@ -39,15 +44,25 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
-        self.covariance_ = self._onedal_estimator.covariance_
+        if not daal_check_version((2024, "P", 400)) and self.assume_centered:
+            location = self._onedal_estimator.location_[None, :]
+            self._onedal_estimator.covariance_ += np.dot(location.T, location)
+            self._onedal_estimator.location_ = np.zeros_like(np.squeeze(location))
+        self._set_covariance(self._onedal_estimator.covariance_)
         self.location_ = self._onedal_estimator.location_
 
     _onedal_covariance = staticmethod(onedal_EmpiricalCovariance)
 
     def _onedal_fit(self, X, queue=None):
+        if X.shape[0] == 1:
+            warnings.warn(
+                "Only one sample available. You may want to reshape your data array"
+            )
+
         onedal_params = {
             "method": "dense",
             "bias": True,
+            "assume_centered": self.assume_centered,
         }
 
         self._onedal_estimator = self._onedal_covariance(**onedal_params)
@@ -59,18 +74,10 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         patching_status = PatchingConditionsChain(
             f"sklearn.covariance.{class_name}.{method_name}"
         )
-        if method_name == "fit":
+        if method_name in ["fit", "mahalanobis"]:
             (X,) = data
             patching_status.and_conditions(
                 [
-                    (
-                        self.assume_centered == False,
-                        "assume_centered parameter is not supported on oneDAL side",
-                    ),
-                    (
-                        self.store_precision == False,
-                        "precision matrix calculation is not supported on oneDAL side",
-                    ),
                     (not sp.issparse(X), "X is sparse. Sparse input is not supported."),
                 ]
             )
@@ -84,9 +91,9 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("0.23"):
-            self._validate_data(X)
+            X = self._validate_data(X, force_all_finite=False)
         else:
-            check_array(X)
+            X = check_array(X, force_all_finite=False)
 
         dispatch(
             self,
@@ -100,4 +107,27 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
         return self
 
+    # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
+    @wrap_output_data
+    def mahalanobis(self, X):
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(X, reset=False)
+        else:
+            X = check_array(X)
+
+        precision = self.get_precision()
+        with config_context(assume_finite=True):
+            # compute mahalanobis distances
+            dist = pairwise_distances(
+                X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
+            )
+
+        return np.reshape(dist, (len(X),)) ** 2
+
+    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
+    score = wrap_output_data(sklearn_EmpiricalCovariance.score)
+
     fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
+    mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis
+    error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
+    score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__

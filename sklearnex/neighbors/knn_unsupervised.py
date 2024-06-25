@@ -14,92 +14,22 @@
 # limitations under the License.
 # ===============================================================================
 
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
-
-import warnings
-
-import numpy as np
-from sklearn import __version__ as sklearn_version
-from sklearn.neighbors._ball_tree import BallTree
-from sklearn.neighbors._base import VALID_METRICS
-from sklearn.neighbors._base import NeighborsBase as sklearn_NeighborsBase
-from sklearn.neighbors._kd_tree import KDTree
 from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
-from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
 
-if sklearn_check_version("0.22") and Version(sklearn_version) < Version("0.23"):
-
-    class NearestNeighbors_(sklearn_NearestNeighbors):
-        def __init__(
-            self,
-            n_neighbors=5,
-            radius=1.0,
-            algorithm="auto",
-            leaf_size=30,
-            metric="minkowski",
-            p=2,
-            metric_params=None,
-            n_jobs=None,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                radius=radius,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-            )
-
-else:
-
-    class NearestNeighbors_(sklearn_NearestNeighbors):
-        if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {
-                **sklearn_NearestNeighbors._parameter_constraints
-            }
-
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            *,
-            n_neighbors=5,
-            radius=1.0,
-            algorithm="auto",
-            leaf_size=30,
-            metric="minkowski",
-            p=2,
-            metric_params=None,
-            n_jobs=None,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                radius=radius,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-            )
-
 
 @control_n_jobs(decorated_methods=["fit", "kneighbors"])
-class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
+class NearestNeighbors(sklearn_NearestNeighbors, KNeighborsDispatchingBase):
+    __doc__ = sklearn_NearestNeighbors.__doc__
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**NearestNeighbors_._parameter_constraints}
+        _parameter_constraints: dict = {**sklearn_NearestNeighbors._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(
@@ -125,7 +55,6 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         )
 
     def fit(self, X, y=None):
-        self._fit_validation(X, y)
         dispatch(
             self,
             "fit",
@@ -151,8 +80,8 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
                 "sklearn": sklearn_NearestNeighbors.kneighbors,
             },
             X,
-            n_neighbors,
-            return_distance,
+            n_neighbors=n_neighbors,
+            return_distance=return_distance,
         )
 
     @wrap_output_data
@@ -166,18 +95,10 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
             or getattr(self, "_tree", 0) is None
             and self._fit_method == "kd_tree"
         ):
-            if sklearn_check_version("0.24"):
-                sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
-            else:
-                sklearn_NearestNeighbors.fit(self, self._fit_X)
-        if sklearn_check_version("0.22"):
-            result = sklearn_NearestNeighbors.radius_neighbors(
-                self, X, radius, return_distance, sort_results
-            )
-        else:
-            result = sklearn_NearestNeighbors.radius_neighbors(
-                self, X, radius, return_distance
-            )
+            sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
+        result = sklearn_NearestNeighbors.radius_neighbors(
+            self, X, radius, return_distance, sort_results
+        )
 
         return result
 
@@ -219,3 +140,7 @@ class NearestNeighbors(NearestNeighbors_, KNeighborsDispatchingBase):
         self._fit_X = self._onedal_estimator._fit_X
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree
+
+    fit.__doc__ = sklearn_NearestNeighbors.__doc__
+    kneighbors.__doc__ = sklearn_NearestNeighbors.kneighbors.__doc__
+    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__

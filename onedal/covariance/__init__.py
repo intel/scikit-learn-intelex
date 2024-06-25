@@ -15,5 +15,6 @@
 # ===============================================================================
 
 from .covariance import EmpiricalCovariance
+from .incremental_covariance import IncrementalEmpiricalCovariance
 
-__all__ = ["EmpiricalCovariance"]
+__all__ = ["EmpiricalCovariance", "IncrementalEmpiricalCovariance"]

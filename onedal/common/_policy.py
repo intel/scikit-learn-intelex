@@ -75,4 +75,4 @@ if _is_dpc_backend:
                 if isinstance(queue, DummySyclQueue):
                     super().__init__(self._queue.sycl_device.get_filter_string())
                     return
-            super().__init__(self._queue.addressof_ref())
+            super().__init__(self._queue)

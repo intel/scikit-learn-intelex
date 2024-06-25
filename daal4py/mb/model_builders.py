@@ -30,6 +30,8 @@ try:
 except (ImportError, ModuleNotFoundError):
     pandas_is_imported = False
 
+from sklearn.utils.metaestimators import available_if
+
 
 def parse_dtype(dt):
     if dt == np.double:
@@ -338,12 +340,13 @@ class GBTDAALModel(GBTDAALBaseModel):
                 X, fptype, "computeClassLabels", pred_contribs, pred_interactions
             )
 
+    def _check_proba(self):
+        return not self._is_regression
+
+    @available_if(_check_proba)
     def predict_proba(self, X):
         fptype = getFPType(X)
-        if self._is_regression:
-            raise NotImplementedError("Can't predict probabilities for regression task")
-        else:
-            return self._predict_classification(X, fptype, "computeClassProbabilities")
+        return self._predict_classification(X, fptype, "computeClassProbabilities")
 
 
 def convert_model(model):

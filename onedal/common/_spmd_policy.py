@@ -14,13 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
+from onedal import _is_spmd_backend
 
-from onedal import _backend, _is_dpc_backend
+if _is_spmd_backend:
+    from onedal import _spmd_backend
 
-if _is_dpc_backend:
-
-    class _SPMDDataParallelInteropPolicy(_backend.spmd_data_parallel_policy):
+    class _SPMDDataParallelInteropPolicy(_spmd_backend.spmd_data_parallel_policy):
         def __init__(self, queue):
             self._queue = queue
             super().__init__(self._queue)

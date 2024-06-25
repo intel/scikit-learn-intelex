@@ -24,8 +24,7 @@ steps:
     displayName: "System info"
   - script: |
       conda update -y -q conda
-      if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.10') ]; then export DPCPP_PACKAGE="dpctl>=0.15 "; else export DPCPP_PACKAGE=""; fi
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) intel::dal-devel mpich pyyaml $DPCPP_PACKAGE "dpcpp-cpp-rt>=2024.0.0"
+      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) intel::dal-devel mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
     displayName: "Conda create"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -47,7 +46,7 @@ steps:
       bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt
       pip install $(python .ci/scripts/get_compatible_scipy_version.py)
-      if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.10') ]; then conda install -q -y -c intel dpnp; fi
+      if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.10') ] && [ $(SKLEARN_VERSION) != "1.0" ]; then conda install -q -y -c intel dpctl=0.16.0 dpnp=0.14.0; fi
       pip list
     displayName: "Install testing requirements"
   - script: |

@@ -853,9 +853,11 @@ class cython_interface(object):
                             nm = nm.replace(x[0], x[0] + "_")
                 if nm not in opt_params:
                     opt_params[nm] = (
-                        [[x[0] + "_", x[1], x[2]] for x in p[1].template_args]
-                        if p[1].template_args
-                        else False,
+                        (
+                            [[x[0] + "_", x[1], x[2]] for x in p[1].template_args]
+                            if p[1].template_args
+                            else False
+                        ),
                         [splitns(x)[1] for x in parms],
                     )
                 for a in parms:

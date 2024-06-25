@@ -14,7 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from scipy import sparse as sp
+
+from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 100)):
     import numpy as np
@@ -30,6 +32,14 @@ if daal_check_version((2023, "P", 100)):
         ("max", np.max, (1e-5, 1e-7)),
         ("mean", np.mean, (1e-5, 1e-7)),
         ("standard_deviation", np.std, (3e-5, 3e-5)),
+    ]
+
+    options_and_tests_csr = [
+        ("sum", "sum", (5e-6, 1e-9)),
+        ("min", "min", (0, 0)),
+        # There is a bug in oneDAL's max computations on GPU
+        #         ("max", "max", (0, 0)),
+        ("mean", "mean", (5e-6, 1e-9)),
     ]
 
     @pytest.mark.parametrize("queue", get_queues())
@@ -97,4 +107,62 @@ if daal_check_version((2023, "P", 100)):
         res, gtr = res[result_option], function(weighted, axis=0)
 
         tol = fp32tol if res.dtype == np.float32 else fp64tol
+        assert_allclose(gtr, res, rtol=tol)
+
+    @pytest.mark.skipif(not hasattr(sp, "random_array"), reason="requires scipy>=1.12.0")
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    def test_basic_csr(queue, dtype):
+        seed = 42
+        s_count, f_count = 5000, 3008
+
+        gen = np.random.default_rng(seed)
+
+        data = sp.random_array(
+            shape=(s_count, f_count),
+            density=0.01,
+            format="csr",
+            dtype=dtype,
+            random_state=gen,
+        )
+
+        alg = BasicStatistics(result_options="mean")
+        res = alg.compute(data, queue=queue)
+
+        res_mean = res["mean"]
+        gtr_mean = data.mean(axis=0)
+        tol = 5e-6 if res_mean.dtype == np.float32 else 1e-9
+        assert_allclose(gtr_mean, res_mean, rtol=tol)
+
+    @pytest.mark.skipif(not hasattr(sp, "random_array"), reason="requires scipy>=1.12.0")
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("option", options_and_tests_csr)
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    def test_options_csr(queue, option, dtype):
+        seed = 42
+        s_count, f_count = 20046, 4007
+
+        gen = np.random.default_rng(seed)
+
+        data = sp.random_array(
+            shape=(s_count, f_count),
+            density=0.002,
+            format="csr",
+            dtype=dtype,
+            random_state=gen,
+        )
+
+        result_option, function, tols = option
+        fp32tol, fp64tol = tols
+
+        alg = BasicStatistics(result_options=result_option)
+        res = alg.compute(data, queue=queue)
+
+        res = res[result_option]
+        func = getattr(data, function)
+        gtr = func(axis=0)
+        if type(gtr).__name__ != "ndarray":
+            gtr = gtr.toarray().flatten()
+        tol = fp32tol if res.dtype == np.float32 else fp64tol
+
         assert_allclose(gtr, res, rtol=tol)

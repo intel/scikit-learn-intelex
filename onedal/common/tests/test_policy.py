@@ -29,7 +29,9 @@ from onedal.tests.utils._device_selection import (
 @pytest.mark.parametrize("queue", get_queues())
 def test_queue_passed_directly(queue):
     device_name = device_type_to_str(queue)
-    assert _get_policy(queue).get_device_name() == device_name
+    test_queue = _get_policy(queue)
+    test_device_name = test_queue.get_device_name()
+    assert test_device_name == device_name
 
 
 @pytest.mark.parametrize("queue", get_queues())
@@ -45,6 +47,11 @@ def test_with_numpy_data(queue):
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
 @pytest.mark.parametrize("memtype", get_memory_usm())
 def test_with_usm_ndarray_data(queue, memtype):
+    if queue is None:
+        pytest.skip(
+            "dpctl Memory object with queue=None uses cached default (gpu if available)"
+        )
+
     from dpctl.tensor import usm_ndarray
 
     device_name = device_type_to_str(queue)

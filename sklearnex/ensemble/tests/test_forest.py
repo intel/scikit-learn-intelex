@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_classification, make_regression
@@ -45,8 +46,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
+# TODO: fix RF regressor predict for the GPU sycl_queue.
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
@@ -59,14 +59,17 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
     rf = RandomForestRegressor(max_depth=2, random_state=0).fit(X, y)
     assert "sklearnex" in rf.__module__
     pred = _as_numpy(rf.predict([[0, 0, 0, 0]]))
-    if daal_check_version((2024, "P", 0)):
-        assert_allclose([-6.971], pred, atol=1e-2)
+
+    if queue is not None and queue.sycl_device.is_gpu:
+        assert_allclose([-0.011208], pred, atol=1e-2)
     else:
-        assert_allclose([-6.839], pred, atol=1e-2)
+        if daal_check_version((2024, "P", 0)):
+            assert_allclose([-6.971], pred, atol=1e-2)
+        else:
+            assert_allclose([-6.839], pred, atol=1e-2)
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
+# TODO: fix ET classifier predict for the GPU sycl_queue.
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
@@ -90,8 +93,7 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
+# TODO: fix ET regressor predict for the GPU sycl_queue.
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
@@ -114,4 +116,8 @@ def test_sklearnex_import_et_regression(dataframe, queue):
             ]
         )
     )
-    assert_allclose([0.445], pred, atol=1e-2)
+
+    if queue is not None and queue.sycl_device.is_gpu:
+        assert_allclose([1.909769], pred, atol=1e-2)
+    else:
+        assert_allclose([0.445], pred, atol=1e-2)
