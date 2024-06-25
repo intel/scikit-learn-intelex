@@ -208,7 +208,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             X = self._validate_data(
                 X,
                 dtype=[np.float64, np.float32],
-                reset=first_pass,
+                reset=False,
                 copy=self.copy,
             )
         else:
