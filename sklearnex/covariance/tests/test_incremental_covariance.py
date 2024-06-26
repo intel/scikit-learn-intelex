@@ -184,7 +184,7 @@ def test_whitened_toy_score(dataframe, queue):
 
     # fit data
     est = IncrementalEmpiricalCovariance()
-    est.fit(X)
+    est.fit(X_df)
     # location_ attribute approximately zero (10,), covariance_ identity (10,10)
 
     # The log-likelihood can be calculated simply due to covariance_
@@ -194,7 +194,7 @@ def test_whitened_toy_score(dataframe, queue):
         -(n - slogdet(pinvh(np.cov(X.T, bias=1)))[1] + n * np.log(2 * np.pi)) / 2
     )
     # expected_result = -14.1780602988
-    result = _as_numpy(est.score(X))
+    result = _as_numpy(est.score(X_df))
     assert_allclose(expected_result, result, atol=1e-6, err_msg=err_msg)
 
 
