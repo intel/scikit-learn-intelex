@@ -107,6 +107,8 @@ if daal_check_version((2024, "P", 1)):
         _onedal_cpu_fit = daal4py_fit
 
         def fit(self, X, y, sample_weight=None):
+            if sklearn_check_version("1.2"):
+                self._validate_params()
             dispatch(
                 self,
                 "fit",
@@ -316,9 +318,6 @@ if daal_check_version((2024, "P", 1)):
                 X, y = self._validate_data(X, y, dtype=[np.float64, np.float32])
             else:
                 X, y = check_X_y(X, y, dtype=[np.float64, np.float32])
-
-            if sklearn_check_version("1.2"):
-                self._validate_params()
 
             self._initialize_onedal_estimator()
             try:
