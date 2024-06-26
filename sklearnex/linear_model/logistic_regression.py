@@ -116,7 +116,7 @@ if daal_check_version((2024, "P", 1)):
                 },
                 X,
                 y,
-                sample_weight=sample_weight,
+                sample_weight,
             )
             return self
 
@@ -188,7 +188,8 @@ if daal_check_version((2024, "P", 1)):
 
         def _onedal_gpu_fit_supported(self, method_name, *data):
             assert method_name == "fit"
-            X, y, sample_weight = data if len(data) == 3 else (*data, None)
+            assert len(data) == 3
+            X, y, sample_weight = data
 
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
