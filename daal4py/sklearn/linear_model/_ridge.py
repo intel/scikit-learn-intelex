@@ -51,10 +51,9 @@ def _daal4py_fit(self, X, y_):
     if ridge_params.size != 1 and ridge_params.size != y.shape[1]:
         raise ValueError(
             "Number of targets and number of penalties do not correspond: "
-            f"{ridge_params.size} != {y.shape[1]}"
+            f"{y.shape[1]} != {ridge_params.size}"
         )
-    ridge_params = ridge_params.reshape((1, -1))
-
+    ridge_params = ridge_params.reshape((-1, 1))
     ridge_alg = daal4py.ridge_regression_training(
         fptype=_fptype,
         method="defaultDense",
