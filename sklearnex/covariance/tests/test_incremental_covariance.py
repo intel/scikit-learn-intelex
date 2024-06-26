@@ -194,7 +194,7 @@ def test_whitened_diabetes_score(dataframe, queue):
         # offset should have no influence in this case
         # due to the nature of the whitening in PCA
         err_msg = f" incorrect score evaluation with offset = {offset}, result = {result}"
-        np.assert_allclose(expected_result, result, atol=1e-6, err_msg=err_msg)
+        assert_allclose(expected_result, result, atol=1e-6, err_msg=err_msg)
 
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
