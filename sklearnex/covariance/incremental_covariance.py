@@ -15,7 +15,6 @@
 # ===============================================================================
 
 import numbers
-import re
 import warnings
 
 import numpy as np
@@ -24,6 +23,7 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
+from sklearn.utils.validation import _num_features
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
@@ -349,7 +349,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             if "Incompatible dimension for X and Y matrices: X.shape[1] ==" in str(e):
                 n_features = re.findall(r"\s\d+", str(e))[0].lstrip()
                 raise ValueError(
-                    f"X has {n_features} features, but {self.__class__.__name__} "
+                    f"X has {_num_features(X)} features, but {self.__class__.__name__} "
                     f"is expecting {self.n_features_in_} features as input."
                 )
             else:
