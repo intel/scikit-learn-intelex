@@ -220,6 +220,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         if "numpy" not in xp.__name__:
             location = xp.asarray(location, device=X_test.device)
+            # depending on the sklearn version, check_array
+            # and validate_data will return only numpy arrays
+            # which will break dpnp/dpctl support. If the
+            # array namespace isn't from numpy and the data
+            # is now a numpy array, it has been validated and
+            # the original can be used.
             if isinstance(X, np.ndarray):
                 X = X_test
 
