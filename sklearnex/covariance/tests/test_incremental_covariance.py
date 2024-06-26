@@ -173,6 +173,7 @@ def test_whitened_toy_score(dataframe, queue):
 
     # Load a sklearn toy dataset with sufficient data
     X, _ = load_diabetes(return_X_y=True)
+    n = X.shape[1]
 
     # Transform the data into uncorrelated, unity variance components
     X = PCA(whiten=True).fit_transform(X)
@@ -186,7 +187,6 @@ def test_whitened_toy_score(dataframe, queue):
     # location_ attribute approximately zero (10,), covariance_ identity (10,10)
 
     # The log-likelihood can be calculated simply due to covariance_
-    n = X.shape[1]
     expected_result = -(n - slogdet(est.get_precision())[1] + n * np.log(2 * np.pi)) / 2
     # expected_result = -14.1780602988
     result = _as_numpy(est.score(X))
