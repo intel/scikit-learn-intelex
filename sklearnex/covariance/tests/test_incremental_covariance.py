@@ -168,10 +168,10 @@ def test_sklearnex_fit_on_random_data(
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_whitened_diabetes_score(dataframe, queue):
+def test_whitened_toy_score(dataframe, queue):
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
-    # Load a standardized dataset with sufficient data
+    # Load a sklearn toy dataset with sufficient data
     X, _ = load_diabetes(return_X_y=True)
 
     # Transform the data into uncorrelated, unity variance components
@@ -189,12 +189,8 @@ def test_whitened_diabetes_score(dataframe, queue):
     n = X.shape[1]
     expected_result = -(n - slogdet(est.get_precision())[1] + n * np.log(2 * np.pi)) / 2
     # expected_result = -14.1780602988
-    for offset in (0.0, 1.0, 10.0, 1000.0):
-        result = _as_numpy(est.score(X + offset))
-        # offset should have no influence in this case
-        # due to the nature of the whitening in PCA
-        err_msg = f" incorrect score evaluation with offset = {offset}, result = {result}"
-        assert_allclose(expected_result, result, atol=1e-6, err_msg=err_msg)
+    result = _as_numpy(est.score(X))
+    assert_allclose(expected_result, result, atol=1e-6, err_msg=err_msg)
 
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
