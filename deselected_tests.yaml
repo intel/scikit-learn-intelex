@@ -742,6 +742,7 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_fit_idempotent]
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_regressor_data_not_an_array]
 
   # GPU implementation of Extra Trees doesn't support sample_weights
   # comparisons to GPU with sample weights will use different algorithms
