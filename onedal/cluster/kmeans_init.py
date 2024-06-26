@@ -15,12 +15,14 @@
 # ==============================================================================
 
 import numpy as np
+from scipy.sparse import issparse
 from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils import _check_array
 
 if daal_check_version((2023, "P", 200)):
 
@@ -56,16 +58,18 @@ if daal_check_version((2023, "P", 200)):
             }
 
         def _get_params_and_input(self, X, policy):
-            X_loc = np.asarray(X)
-            types = [np.float32, np.float64]
-            if get_dtype(X_loc) not in types:
-                X_loc = X_loc.astype(np.float64)
+            X = _check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                accept_sparse="csr",
+                force_all_finite=False,
+            )
 
-            X_loc = _convert_to_supported(policy, X_loc)
+            X = _convert_to_supported(policy, X)
 
-            dtype = get_dtype(X_loc)
+            dtype = get_dtype(X)
             params = self._get_onedal_params(dtype)
-            return (params, to_table(X_loc), dtype)
+            return (params, to_table(X), dtype)
 
         def _compute_raw(self, X_table, module, policy, dtype=np.float32):
             params = self._get_onedal_params(dtype)
@@ -76,6 +80,9 @@ if daal_check_version((2023, "P", 200)):
 
         def _compute(self, X, module, queue):
             policy = self._get_policy(queue, X)
+            # oneDAL KMeans Init for sparse data does not have GPU support
+            if issparse(X):
+                policy = self._get_policy(None, None)
             _, X_table, dtype = self._get_params_and_input(X, policy)
 
             centroids = self._compute_raw(X_table, module, policy, dtype)
