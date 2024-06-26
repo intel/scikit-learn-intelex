@@ -136,6 +136,8 @@ if daal_check_version((2023, "P", 200)):
             return patching_status
 
         def fit(self, X, y=None, sample_weight=None):
+            if sklearn_check_version("1.2"):
+                self._validate_params()
 
             dispatch(
                 self,
@@ -152,17 +154,16 @@ if daal_check_version((2023, "P", 200)):
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
-            if sklearn_check_version("1.2"):
-                self._validate_params()
-                self._check_params_vs_input(X)
-            else:
-                self._check_params(X)
-
             X = self._validate_data(
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
             )
+
+            if sklearn_check_version("1.2"):
+                self._check_params_vs_input(X)
+            else:
+                self._check_params(X)
 
             self._n_features_out = self.n_clusters
             self._n_threads = _openmp_effective_n_threads()
@@ -208,6 +209,7 @@ if daal_check_version((2023, "P", 200)):
 
             @wrap_output_data
             def predict(self, X):
+                self._validate_params()
 
                 return dispatch(
                     self,
@@ -227,6 +229,8 @@ if daal_check_version((2023, "P", 200)):
                 X,
                 sample_weight="deprecated" if sklearn_check_version("1.3") else None,
             ):
+                if sklearn_check_version("1.2"):
+                    self._validate_params()
 
                 return dispatch(
                     self,
