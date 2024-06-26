@@ -196,7 +196,11 @@ if daal_check_version((2024, "P", 1)):
                 f"sklearn.linear_model.{class_name}.fit"
             )
 
-            target = type_of_target(y, input_name="y") if sklearn_check_version("1.1") else type_of_target(y)
+            target = (
+                type_of_target(y, input_name="y")
+                if sklearn_check_version("1.1")
+                else type_of_target(y)
+            )
             dal_ready = patching_status.and_conditions(
                 [
                     (self.penalty == "l2", "Only l2 penalty is supported."),
