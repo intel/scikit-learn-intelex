@@ -195,7 +195,7 @@ def test_whitened_toy_score(dataframe, queue):
     )
     # expected_result = -14.1780602988
     result = _as_numpy(est.score(X_df))
-    assert_allclose(expected_result, result, atol=1e-6, err_msg=err_msg)
+    assert_allclose(expected_result, result, atol=1e-6)
 
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
