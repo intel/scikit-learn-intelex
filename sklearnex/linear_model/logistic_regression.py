@@ -198,7 +198,7 @@ if daal_check_version((2024, "P", 1)):
                 f"sklearn.linear_model.{class_name}.fit"
             )
 
-            target = (
+            target_type = (
                 type_of_target(y, input_name="y")
                 if sklearn_check_version("1.1")
                 else type_of_target(y)
@@ -221,7 +221,7 @@ if daal_check_version((2024, "P", 1)):
                     (self.l1_ratio is None, "l1 ratio is not supported."),
                     (sample_weight is None, "Sample weight is not supported."),
                     (
-                        target == "binary",
+                        target_type == "binary",
                         "Only binary classification is supported",
                     ),
                 ]
