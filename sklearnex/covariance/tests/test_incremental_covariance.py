@@ -169,6 +169,8 @@ def test_sklearnex_fit_on_random_data(
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_whitened_diabetes_score(dataframe, queue):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
     # Load a standardized dataset with sufficient data
     X, _ = load_diabetes(return_X_y=True)
 
