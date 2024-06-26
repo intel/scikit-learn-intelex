@@ -21,18 +21,6 @@ from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.logistic_path import (
     LogisticRegression as LogisticRegression_daal4py,
 )
-from daal4py.sklearn.linear_model.logistic_path import daal4py_fit, daal4py_predict
-
-
-class BaseLogisticRegression(ABC):
-    def _save_attributes(self):
-        assert hasattr(self, "_onedal_estimator")
-        self.classes_ = self._onedal_estimator.classes_
-        self.coef_ = self._onedal_estimator.coef_
-        self.intercept_ = self._onedal_estimator.intercept_
-        self.n_features_in_ = self._onedal_estimator.n_features_in_
-        self.n_iter_ = self._onedal_estimator.n_iter_
-
 
 if daal_check_version((2024, "P", 1)):
     import numpy as np
@@ -44,12 +32,22 @@ if daal_check_version((2024, "P", 1)):
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
+    from daal4py.sklearn.linear_model.logistic_path import daal4py_fit, daal4py_predict
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
     from onedal.utils import _num_samples
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
     from ..utils.validation import _assert_all_finite
+
+    class BaseLogisticRegression(ABC):
+        def _save_attributes(self):
+            assert hasattr(self, "_onedal_estimator")
+            self.classes_ = self._onedal_estimator.classes_
+            self.coef_ = self._onedal_estimator.coef_
+            self.intercept_ = self._onedal_estimator.intercept_
+            self.n_features_in_ = self._onedal_estimator.n_features_in_
+            self.n_iter_ = self._onedal_estimator.n_iter_
 
     @control_n_jobs(
         decorated_methods=[
@@ -82,7 +80,7 @@ if daal_check_version((2024, "P", 1)):
             random_state=None,
             solver="lbfgs",
             max_iter=100,
-            multi_class="auto",
+            multi_class="deprecated" if sklearn_check_version("1.5") else "auto",
             verbose=0,
             warm_start=False,
             n_jobs=None,
@@ -146,7 +144,7 @@ if daal_check_version((2024, "P", 1)):
                 self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
-                "predict",
+                "predict_proba",
                 {
                     "onedal": self.__class__._onedal_predict_proba,
                     "sklearn": sklearn_LogisticRegression.predict_proba,
@@ -160,7 +158,7 @@ if daal_check_version((2024, "P", 1)):
                 self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
-                "predict",
+                "predict_log_proba",
                 {
                     "onedal": self.__class__._onedal_predict_log_proba,
                     "sklearn": sklearn_LogisticRegression.predict_log_proba,

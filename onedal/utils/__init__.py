@@ -22,6 +22,7 @@ from .validation import (
     _column_or_1d,
     _is_arraylike,
     _is_arraylike_not_scalar,
+    _is_csr,
     _is_integral_float,
     _is_multilabel,
     _num_features,
@@ -44,4 +45,5 @@ __all__ = [
     "_num_samples",
     "_is_arraylike",
     "_is_arraylike_not_scalar",
+    "_is_csr",
 ]

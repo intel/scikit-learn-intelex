@@ -23,6 +23,10 @@
 #include "npy4daal.h"
 #include "daal4py_defines.h"
 
+#if NPY_ABI_VERSION < 0x02000000
+  #define PyDataType_NAMES(descr) ((descr)->names)
+#endif
+
 // ************************************************************************************
 // ************************************************************************************
 // Numpy type conversion code, taken from numpy.i (SWIG typemap-code)
@@ -352,7 +356,7 @@ static daal::data_management::NumericTablePtr _make_npynt(PyObject * nda)
     else if (array_numdims(nda) == 1)
     {
         PyArray_Descr * descr = PyArray_DESCR(array);
-        if (descr->names)
+        if (PyDataType_NAMES(descr))
         {
             // the given array is a structured numpy array.
             ptr = new NpyNumericTable<NpyStructHandler>(array);
