@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 from numpy.linalg import slogdet
 from numpy.testing import assert_allclose
+from scipy.linalg import pinvh
 from sklearn.covariance.tests.test_covariance import (
     test_covariance,
     test_EmpiricalCovariance_validates_mahalanobis,
@@ -187,7 +188,11 @@ def test_whitened_toy_score(dataframe, queue):
     # location_ attribute approximately zero (10,), covariance_ identity (10,10)
 
     # The log-likelihood can be calculated simply due to covariance_
-    expected_result = -(n - slogdet(est.get_precision())[1] + n * np.log(2 * np.pi)) / 2
+    # use of scipy.linalg.pinvh, np.linalg.sloget and np.cov for estimator
+    # independence
+    expected_result = (
+        -(n - slogdet(pinvh(np.cov(X.T, bias=1)))[1] + n * np.log(2 * np.pi)) / 2
+    )
     # expected_result = -14.1780602988
     result = _as_numpy(est.score(X))
     assert_allclose(expected_result, result, atol=1e-6, err_msg=err_msg)
