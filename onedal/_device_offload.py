@@ -211,7 +211,6 @@ def _from_dlpack(data, xp, *args, **kwargs):
 # move to array api module
 def _is_numpy_namespace(xp):
     """Return True if xp is backed by NumPy."""
-    print("\n_is_numpy_namespace call")
     return xp.__name__ in {"numpy", "array_api_compat.numpy", "numpy.array_api"}
 
 
