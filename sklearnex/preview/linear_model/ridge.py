@@ -23,32 +23,58 @@ if daal_check_version((2024, "P", 600)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.exceptions import NotFittedError
     from sklearn.linear_model import Ridge as sklearn_RidgeRegression
     from sklearn.metrics import r2_score
     from sklearn.utils.validation import check_is_fitted, check_X_y
 
-    from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn.linear_model._ridge import _fit_ridge as daal4py_fit_ridge
 
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
         from sklearn.linear_model._base import _deprecate_normalize
 
-    from onedal.common.hyperparameters import get_hyperparameters
     from onedal.linear_model import LinearRegression as onedal_RidgeRegression
     from onedal.utils import _num_features, _num_samples
 
     from ..._device_offload import dispatch, wrap_output_data
-    from ..._utils import (
-        PatchingConditionsChain,
-        get_patch_message,
-        register_hyperparameters,
-    )
+    from ..._utils import PatchingConditionsChain, get_patch_message
     from ...utils import get_namespace
     from ...utils.validation import _assert_all_finite
 
     def is_numeric_scalar(value):
+        """
+        Determines if the provided value is an instance of either int or float.
+
+        Args:
+        value: The value to be checked.
+
+        Returns:
+        bool: True if the value is either an int or a float, False otherwise.
+        """
         return isinstance(value, (int, float))
+
+    def _test_type_and_finiteness(X_in):
+        """
+        Checks if the input is of a supported type and is finite.
+
+        Args:
+        X_in: The input to be checked.
+
+        Returns:
+        bool: True if the input is of a supported type and is finite, False otherwise.
+        """
+
+        xp, _ = get_namespace(X_in)
+        X = xp.asarray(X_in)
+
+        if np.iscomplexobj(X):
+            return False
+
+        try:
+            _assert_all_finite(X)
+        except BaseException:
+            return False
+
+        return True
 
     class Ridge(sklearn_RidgeRegression):
         __doc__ = sklearn_RidgeRegression.__doc__
@@ -155,20 +181,6 @@ if daal_check_version((2024, "P", 600)):
                 sample_weight=sample_weight,
             )
 
-        def _test_type_and_finiteness(self, X_in):
-            xp, _ = get_namespace(X_in)
-            X = xp.asarray(X_in)
-
-            if np.iscomplexobj(X):
-                return False
-
-            try:
-                _assert_all_finite(X)
-            except BaseException:
-                return False
-
-            return True
-
         def _onedal_fit_supported(self, patching_status, method_name, *data):
             assert method_name == "fit"
             assert len(data) == 3
@@ -221,12 +233,12 @@ if daal_check_version((2024, "P", 600)):
                 return patching_status
 
             if not patching_status.and_condition(
-                self._test_type_and_finiteness(X), "Input X is not supported."
+                _test_type_and_finiteness(X), "Input X is not supported."
             ):
                 return patching_status
 
             patching_status.and_condition(
-                self._test_type_and_finiteness(y), "Input y is not supported."
+                _test_type_and_finiteness(y), "Input y is not supported."
             )
 
             return patching_status
@@ -260,7 +272,7 @@ if daal_check_version((2024, "P", 600)):
                 return patching_status
 
             patching_status.and_condition(
-                self._test_type_and_finiteness(data[0]), "Input X is not supported."
+                _test_type_and_finiteness(data[0]), "Input X is not supported."
             )
 
             return patching_status
