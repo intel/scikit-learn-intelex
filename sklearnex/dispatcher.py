@@ -117,6 +117,9 @@ def get_patch_map_core(preview=False):
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
 
+        if sklearn_check_version("1.4"):
+            import sklearn.utils._array_api as _array_api_module
+
         if sklearn_check_version("1.2.1"):
             import sklearn.utils.parallel as parallel_module
         else:
@@ -161,6 +164,10 @@ def get_patch_map_core(preview=False):
         from .svm import SVR as SVR_sklearnex
         from .svm import NuSVC as NuSVC_sklearnex
         from .svm import NuSVR as NuSVR_sklearnex
+
+        if sklearn_check_version("1.4"):
+            from .utils._array_api import _convert_to_numpy as _convert_to_numpy_sklearnex
+            from .utils._array_api import get_namespace as get_namespace_sklearnex
 
         # DBSCAN
         mapping.pop("dbscan")
@@ -420,6 +427,24 @@ def get_patch_map_core(preview=False):
         mapping["_funcwrapper"] = [
             [(parallel_module, "_FuncWrapper", _FuncWrapper_sklearnex), None]
         ]
+        if sklearn_check_version("1.4"):
+            # Necessary for array_api support
+            mapping["get_namespace"] = [
+                [
+                    (
+                        _array_api_module,
+                        "get_namespace",
+                        get_namespace_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
+            mapping["_convert_to_numpy"] = [
+                [
+                    (_array_api_module, "_convert_to_numpy", _convert_to_numpy_sklearnex),
+                    None,
+                ]
+            ]
     return mapping
 
 
