@@ -22,6 +22,7 @@ from sklearnex.model_selection import train_test_split
 try:
     import dpctl
     import dpctl.tensor as dpt
+    from dpctl import SyclQueue
     from mpi4py import MPI
 
     mpi_libs_available = True
@@ -33,7 +34,17 @@ mpi_libs_and_gpu_available = mpi_libs_available and gpu_is_available
 
 
 def get_local_tensor(full_data, data_parallel=True):
-    from dpctl import SyclQueue
+    """Splits data across ranks.
+
+    Called on each rank to extract the subset of data assigned to that rank.
+
+    Args:
+        full_data (numpy array): The entire set of data
+        data_parallel (bool): Whether or not to return dpctl array
+
+    Returns:
+        local_dpt_data (numpy or dpctl array): The subset of data used by the rank
+    """
 
     # create sycl queue and gather communicator details
     q = SyclQueue("gpu")
@@ -41,9 +52,8 @@ def get_local_tensor(full_data, data_parallel=True):
     rank = comm.Get_rank()
     size = comm.Get_size()
 
-    data_rows = full_data.shape[0]
-
     # divide data across ranks and move to dpt tensor
+    data_rows = full_data.shape[0]
     local_start = rank * data_rows // size
     local_end = (1 + rank) * data_rows // size
     local_data = full_data[local_start:local_end]
