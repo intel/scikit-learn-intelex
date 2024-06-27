@@ -32,6 +32,7 @@ if daal_check_version((2024, "P", 100)):
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
+    from ..utils import get_namespace
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
@@ -42,7 +43,6 @@ if daal_check_version((2024, "P", 100)):
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
-    from sklearnex.utils import get_namespace
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
@@ -209,6 +209,24 @@ if daal_check_version((2024, "P", 100)):
             else:
                 # Scikit-learn PCA["covariance_eigh"] was fit
                 return self._transform(X_fit, xp, x_is_centered=x_is_centered)
+
+        @wrap_output_data
+        def inverse_transform(X):
+            xp, _ = get_namespace(X)
+
+            mean = self.mean_
+            if self.whiten:
+                components = (
+                    xp.sqrt(self.explained_variance_[:, np.newaxis]) * self.components_
+                )
+            else:
+                components = self.components_
+
+            if "numpy" not in xp.__name__:
+                components = xp.asarray(location, device=X.device)
+                mean = xp.asarray(mean, device=X.device)
+
+            return X @ components + mean
 
         def _onedal_supported(self, method_name, X):
             class_name = self.__class__.__name__
@@ -381,6 +399,7 @@ if daal_check_version((2024, "P", 100)):
         fit.__doc__ = sklearn_PCA.fit.__doc__
         transform.__doc__ = sklearn_PCA.transform.__doc__
         fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
+        inverse_transform.__doc__ = sklearn_PCA.inverse_transform.__doc__
 
 else:
     from daal4py.sklearn.decomposition import PCA
