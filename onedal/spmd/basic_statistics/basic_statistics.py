@@ -29,5 +29,4 @@ class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
 
     @support_usm_ndarray()
     def fit(self, data, sample_weight=None, queue=None):
-        super().fit(data, sample_weight=sample_weight, queue=queue)
-        return self
+        return super().fit(data, sample_weight=sample_weight, queue=queue)
