@@ -64,7 +64,7 @@ def get_patch_map_core(preview=False):
             sklearn_obj = mapping["kmeans"][0][1]
             mapping.pop("kmeans")
             mapping["kmeans"] = [
-                [(cluster_module, "kmeans", KMeans_sklearnex), sklearn_obj]
+                [(cluster_module, "KMeans", KMeans_sklearnex), sklearn_obj]
             ]
 
             # Covariance
@@ -111,6 +111,9 @@ def get_patch_map_core(preview=False):
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
+        import sklearn.manifold as manifold_module
+        import sklearn.metrics as metrics_module
+        import sklearn.model_selection as model_selection_module
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
 
@@ -138,11 +141,18 @@ def get_patch_map_core(preview=False):
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import ElasticNet as ElasticNet_sklearnex
         from .linear_model import (
             IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
         )
+        from .linear_model import Lasso as Lasso_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
+        from .linear_model import Ridge as Ridge_sklearnex
+        from .manifold import TSNE as TSNE_sklearnex
+        from .metrics import pairwise_distances as pairwise_distances_sklearnex
+        from .metrics import roc_auc_score as roc_auc_score_sklearnex
+        from .model_selection import train_test_split as train_test_split_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -167,6 +177,32 @@ def get_patch_map_core(preview=False):
         mapping["svc"] = [[(svm_module, "SVC", SVC_sklearnex), None]]
         mapping["nusvr"] = [[(svm_module, "NuSVR", NuSVR_sklearnex), None]]
         mapping["nusvc"] = [[(svm_module, "NuSVC", NuSVC_sklearnex), None]]
+
+        # ElasticNet
+        mapping.pop("elasticnet")
+        mapping["elasticnet"] = [
+            [
+                (
+                    linear_model_module,
+                    "ElasticNet",
+                    ElasticNet_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # Lasso
+        mapping.pop("lasso")
+        mapping["lasso"] = [
+            [
+                (
+                    linear_model_module,
+                    "Lasso",
+                    Lasso_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # Linear Regression
         mapping.pop("linear")
@@ -200,6 +236,54 @@ def get_patch_map_core(preview=False):
             ]
         ]
         mapping["logisticregression"] = mapping["log_reg"]
+
+        # Ridge
+        mapping.pop("ridge")
+        mapping["ridge"] = [
+            [
+                (
+                    linear_model_module,
+                    "Ridge",
+                    Ridge_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # manifold
+        mapping.pop("tsne")
+        mapping["tsne"] = [
+            [
+                (manifold_module, "TSNE", TSNE_sklearnex),
+                None,
+            ]
+        ]
+
+        # metrics
+        mapping.pop("distances")
+        mapping.pop("roc_auc_score")
+        mapping["distances"] = [
+            [
+                (metrics_module, "pairwise_distances", pairwise_distances_sklearnex),
+                None,
+            ]
+        ]
+        mapping["pairwise_distances"] = mapping["distances"]
+        mapping["roc_auc_score"] = [
+            [
+                (metrics_module, "roc_auc_score", roc_auc_score_sklearnex),
+                None,
+            ]
+        ]
+
+        # model_selection
+        mapping.pop("train_test_split")
+        mapping["train_test_split"] = [
+            [
+                (model_selection_module, "train_test_split", train_test_split_sklearnex),
+                None,
+            ]
+        ]
 
         # kNN
         mapping.pop("knn_classifier")

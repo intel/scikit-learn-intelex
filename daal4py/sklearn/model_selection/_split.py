@@ -25,7 +25,6 @@ from sklearn.utils.validation import _num_samples
 import daal4py as d4p
 from daal4py.sklearn._utils import PatchingConditionsChain
 
-from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
 
 try:
@@ -63,7 +62,6 @@ def get_dtypes(data):
     return None
 
 
-@support_usm_ndarray(freefunc=True)
 def train_test_split(*arrays, **options):
     n_arrays = len(arrays)
     if n_arrays == 0:
