@@ -16,8 +16,6 @@
 
 from __future__ import print_function
 
-import warnings
-
 import numpy as np
 import sklearn.svm._base as svm_base
 import sklearn.svm._classes as svm_classes
