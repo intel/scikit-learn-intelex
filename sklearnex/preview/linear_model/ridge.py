@@ -40,7 +40,7 @@ if daal_check_version((2024, "P", 600)):
     from ...utils import get_namespace
     from ...utils.validation import _assert_all_finite
 
-    def is_numeric_scalar(value):
+    def _is_numeric_scalar(value):
         """
         Determines if the provided value is an instance of either int or float.
 
@@ -283,7 +283,7 @@ if daal_check_version((2024, "P", 600)):
             )
 
             if method_name == "fit":
-                alpha_is_scalar = is_numeric_scalar(self.alpha)
+                alpha_is_scalar = _is_numeric_scalar(self.alpha)
                 dal_ready = patching_status.and_condition(
                     alpha_is_scalar,
                     "Non-scalar alpha is not supported for GPU.",
@@ -358,7 +358,7 @@ if daal_check_version((2024, "P", 600)):
                 # onedal does not support non-scalars for alpha, thus
                 # should only be used for GPU/CPU with scalar alpha to not limit the functionality
                 cpu_device = queue is None or queue.sycl_device.is_cpu
-                if cpu_device and not is_numeric_scalar(self.alpha):
+                if cpu_device and not _is_numeric_scalar(self.alpha):
                     self._daal_fit(X, y)
                 else:
                     self._onedal_estimator.fit(X, y, queue=queue)
