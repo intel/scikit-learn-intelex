@@ -20,7 +20,7 @@ import pytest
 
 
 def get_queues(filter_="cpu,gpu"):
-    queues = []
+    queues = [None] if "cpu" in filter_ else []
 
     try:
         import dpctl

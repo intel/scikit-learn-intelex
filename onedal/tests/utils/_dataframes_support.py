@@ -69,8 +69,9 @@ def get_dataframes_and_queues(
     def get_df_and_q(dataframe: str):
         df_and_q = []
         for queue in get_queues(device_filter_):
-            id = "{}-{}".format(dataframe, queue.id)
-            df_and_q.append(pytest.param(dataframe, queue.values[0], id=id))
+            if queue:
+                id = "{}-{}".format(dataframe, queue.id)
+                df_and_q.append(pytest.param(dataframe, queue.values[0], id=id))
         return df_and_q
 
     if dpctl_available and "dpctl" in dataframe_filter_:

@@ -64,7 +64,7 @@ def get_patch_map_core(preview=False):
             sklearn_obj = mapping["kmeans"][0][1]
             mapping.pop("kmeans")
             mapping["kmeans"] = [
-                [(cluster_module, "kmeans", KMeans_sklearnex), sklearn_obj]
+                [(cluster_module, "KMeans", KMeans_sklearnex), sklearn_obj]
             ]
 
             # Covariance
