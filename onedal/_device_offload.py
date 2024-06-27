@@ -180,6 +180,7 @@ def _run_on_device(func, obj=None, *args, **kwargs):
         return func(obj, *args, **kwargs)
     return func(*args, **kwargs)
 
+
 # TODO:
 # move to array api module
 if dpnp_available:
@@ -192,6 +193,7 @@ if dpnp_available:
                 array[i] = _convert_to_dpnp(array[i])
         return array
 
+
 # TODO:
 # move to array api module
 def _from_dlpack(data, xp, *args, **kwargs):
@@ -203,6 +205,7 @@ def _from_dlpack(data, xp, *args, **kwargs):
             data[i] = _one_from_dlpack(data[i], xp, *args, **kwargs)
         return data
     return _one_from_dlpack(data, xp, *args, **kwargs)
+
 
 # TODO:
 # move to array api module
