@@ -88,9 +88,9 @@ def generate_classification_data(n_samples, n_features, n_classes=2, random_stat
     return X_train, X_test, y_train, y_test
 
 
-def generate_statistic_data(n_samples, n_features):
+def generate_statistic_data(n_samples, n_features random_state=42):
     # Generates statistical data and divides between train and test
-    gen = np.random.default_rng(42)
+    gen = np.random.default_rng(random_state)
     data = gen.uniform(low=-0.3, high=+0.7, size=(n_samples, n_features))
     return data
 
