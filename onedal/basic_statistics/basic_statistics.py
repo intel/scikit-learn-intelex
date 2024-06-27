@@ -76,9 +76,9 @@ class BasicStatistics(BaseBasicStatistics):
 
         is_csr = _is_csr(data)
 
-        if not (data is None) and not is_csr:
+        if data is not None and not is_csr:
             data = _check_array(data, ensure_2d=False)
-        if not (sample_weight is None):
+        if sample_weight is not None:
             sample_weight = _check_array(sample_weight, ensure_2d=False)
 
         data, sample_weight = _convert_to_supported(policy, data, sample_weight)
@@ -104,9 +104,9 @@ class BasicStatistics(BaseBasicStatistics):
 
         is_csr = _is_csr(data)
 
-        if not (data is None):
+        if data is not None:
             data = _check_array(data, ensure_2d=False)
-        if not (weights is None):
+        if weights is not None:
             weights = _check_array(weights, ensure_2d=False)
 
         policy = self._get_policy(queue, data, weights)
