@@ -23,7 +23,7 @@ from onedal.tests.utils._spmd_support import (
     generate_regression_data,
     get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_all_close,
+    spmd_assert_allclose,
 )
 
 
@@ -76,7 +76,7 @@ def test_linear_spmd_manual():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    spmd_assert_all_close(spmd_result, batch_result)
+    spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -115,4 +115,4 @@ def test_linear_spmd_synthetic(n_samples, n_features):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    spmd_assert_all_close(spmd_result, batch_result)
+    spmd_assert_allclose(spmd_result, batch_result)

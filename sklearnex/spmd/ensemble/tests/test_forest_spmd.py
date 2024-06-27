@@ -24,7 +24,7 @@ from onedal.tests.utils._spmd_support import (
     generate_regression_data,
     get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_all_close,
+    spmd_assert_allclose,
 )
 
 
@@ -79,7 +79,7 @@ def test_rfcls_spmd_manual():
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_all_close(spmd_result, batch_result)
+    spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -119,7 +119,7 @@ def test_rfcls_spmd_synthetic(n_samples, n_features_and_classes, n_estimators, m
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_all_close(spmd_result, batch_result)
+    spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -173,7 +173,7 @@ def test_rfreg_spmd_manual():
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_all_close(spmd_result, batch_result)
+    spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -211,4 +211,4 @@ def test_rfreg_spmd_synthetic(n_samples, n_features, n_estimators, max_depth):
 
     # TODO: remove skips when SPMD and batch are aligned
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_all_close(spmd_result, batch_result)
+    spmd_assert_allclose(spmd_result, batch_result)

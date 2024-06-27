@@ -22,7 +22,7 @@ from onedal.tests.utils._spmd_support import (
     generate_clustering_data,
     get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_all_close,
+    spmd_assert_allclose,
 )
 
 
@@ -44,7 +44,7 @@ def test_dbscan_spmd_manual():
     spmd_model = DBSCAN_SPMD(eps=3, min_samples=2).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=3, min_samples=2).fit(data)
 
-    spmd_assert_all_close(spmd_model.labels_, batch_model.labels_)
+    spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
 
 
 @pytest.mark.skipif(
@@ -70,6 +70,6 @@ def test_dbscan_spmd_synthetic(n_samples, n_features_and_eps, centers, min_sampl
     spmd_model = DBSCAN_SPMD(eps=eps, min_samples=min_samples).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=eps, min_samples=min_samples).fit(data)
 
-    spmd_assert_all_close(spmd_model.labels_, batch_model.labels_)
+    spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
     if np.all(batch_model.labels_ == -1):
         raise ValueError("No labels given - try raising epsilon")

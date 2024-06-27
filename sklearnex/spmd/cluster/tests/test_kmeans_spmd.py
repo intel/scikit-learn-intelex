@@ -19,12 +19,12 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._spmd_support import (
-    assert_centers_all_close,
-    assert_kmeans_labels_all_close,
+    assert_unordered_allclose,
+    assert_kmeans_labels_allclose,
     generate_clustering_data,
     get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_all_close,
+    spmd_assert_allclose,
 )
 
 
@@ -63,8 +63,8 @@ def test_kmeans_spmd_manual():
     spmd_model = KMeans_SPMD(n_clusters=2, random_state=0).fit(local_dpt_X_train)
     batch_model = KMeans_Batch(n_clusters=2, random_state=0).fit(X_train)
 
-    assert_centers_all_close(spmd_model.cluster_centers_, batch_model.cluster_centers_)
-    assert_kmeans_labels_all_close(
+    assert_unordered_allclose(spmd_model.cluster_centers_, batch_model.cluster_centers_)
+    assert_kmeans_labels_allclose(
         spmd_model.labels_,
         batch_model.labels_,
         spmd_model.cluster_centers_,
@@ -76,7 +76,7 @@ def test_kmeans_spmd_manual():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    assert_kmeans_labels_all_close(
+    assert_kmeans_labels_allclose(
         spmd_result,
         batch_result,
         spmd_model.cluster_centers_,
@@ -113,7 +113,7 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters):
         n_clusters=n_clusters, max_iter=1, random_state=0
     ).fit(X_train)
     # TODO: centers do not match up after init
-    # assert_centers_all_close(spmd_model_init.cluster_centers_, batch_model_init.cluster_centers_)
+    # assert_unordered_allclose(spmd_model_init.cluster_centers_, batch_model_init.cluster_centers_)
 
     # ensure labels from fit of batch algo matches spmd, using same init
     spmd_model = KMeans_SPMD(
@@ -123,8 +123,8 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters):
         n_clusters=n_clusters, init=spmd_model_init.cluster_centers_, random_state=0
     ).fit(X_train)
 
-    assert_centers_all_close(spmd_model.cluster_centers_, batch_model.cluster_centers_)
-    assert_kmeans_labels_all_close(
+    assert_unordered_allclose(spmd_model.cluster_centers_, batch_model.cluster_centers_)
+    assert_kmeans_labels_allclose(
         spmd_model.labels_,
         batch_model.labels_,
         spmd_model.cluster_centers_,
@@ -137,7 +137,7 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    assert_kmeans_labels_all_close(
+    assert_kmeans_labels_allclose(
         spmd_result,
         batch_result,
         spmd_model.cluster_centers_,

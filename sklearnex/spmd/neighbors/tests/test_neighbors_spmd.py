@@ -20,12 +20,12 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from onedal.tests.utils._spmd_support import (
-    assert_neighbors_all_close,
+    assert_unordered_allclose,
     generate_classification_data,
     generate_regression_data,
     get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_all_close,
+    spmd_assert_allclose,
 )
 
 
@@ -80,9 +80,9 @@ def test_knncls_spmd_manual():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    assert_neighbors_all_close(spmd_indcs, batch_indcs)
-    assert_neighbors_all_close(spmd_dists, batch_dists)
-    spmd_assert_all_close(spmd_result, batch_result)
+    assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
+    assert_unordered_allclose(spmd_dists, batch_dists, localize=True)
+    spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -123,9 +123,9 @@ def test_knncls_spmd_synthetic(
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    assert_neighbors_all_close(spmd_indcs, batch_indcs)
-    assert_neighbors_all_close(spmd_dists, batch_dists)
-    spmd_assert_all_close(spmd_result, batch_result)
+    assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
+    assert_unordered_allclose(spmd_dists, batch_dists, localize=True)
+    spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -178,9 +178,9 @@ def test_knnreg_spmd_manual():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    assert_neighbors_all_close(spmd_indcs, batch_indcs)
-    assert_neighbors_all_close(spmd_dists, batch_dists)
-    spmd_assert_all_close(spmd_result, batch_result)
+    assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
+    assert_unordered_allclose(spmd_dists, batch_dists, localize=True)
+    spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -219,6 +219,6 @@ def test_knnreg_spmd_synthetic(n_samples, n_features, n_neighbors, weights, metr
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    assert_neighbors_all_close(spmd_indcs, batch_indcs)
-    assert_neighbors_all_close(spmd_dists, batch_dists)
-    spmd_assert_all_close(spmd_result, batch_result, atol=1e-4)
+    assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
+    assert_unordered_allclose(spmd_dists, batch_dists, localize=True)
+    spmd_assert_allclose(spmd_result, batch_result, atol=1e-4)
