@@ -143,7 +143,7 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 )
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
@@ -166,7 +166,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
 
 
 @pytest.mark.allow_sklearn_fallback
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_stability(estimator, method, dataframe, queue):
     if queue is None and estimator in ["LogisticRegression(solver='newton-cg')"]:
@@ -188,7 +188,7 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
     _run_test(est, method, datasets)
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
@@ -210,7 +210,7 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
     _run_test(est, method, datasets)
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
 def test_other_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
