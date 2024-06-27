@@ -211,7 +211,7 @@ if daal_check_version((2024, "P", 100)):
                 return self._transform(X_fit, xp, x_is_centered=x_is_centered)
 
         @wrap_output_data
-        def inverse_transform(X):
+        def inverse_transform(self, X):
             xp, _ = get_namespace(X)
 
             mean = self.mean_
