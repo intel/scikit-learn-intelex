@@ -14,12 +14,12 @@
 # limitations under the License.
 # ===============================================================================
 
-from sklearn.base import ClusterMixin
 from sklearn.utils import check_array
 
 from onedal.datatypes._data_conversion import get_dtype, make2d
 
 from ..common._base import BaseEstimator
+from ..common._mixin import ClusterMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils._array_api import get_namespace
 

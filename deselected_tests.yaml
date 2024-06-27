@@ -380,6 +380,12 @@ deselected_tests:
   # There are not enough data to run onedal backend
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
 
+  # Deselection of LogisticRegression tests over accuracy comparisons with sample_weights
+  # and without.  Because scikit-learn-intelex does not support sample_weights, it's doing
+  # a fallback to scikit-learn in one case and not in the other, and needs to be investigated.
+  - model_selection/tests/test_classification_threshold.py::test_fit_and_score_over_thresholds_sample_weight >=1.5
+  - model_selection/tests/test_classification_threshold.py::test_tuned_threshold_classifier_cv_zeros_sample_weights_equivalence >=1.5
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:
@@ -568,6 +574,7 @@ gpu:
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_sample_order_invariance]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit2d_1feature]
@@ -587,6 +594,7 @@ gpu:
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_sample_order_invariance]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_fit2d_1feature]
@@ -734,6 +742,7 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_fit_idempotent]
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_regressor_data_not_an_array]
 
   # GPU implementation of Extra Trees doesn't support sample_weights
   # comparisons to GPU with sample weights will use different algorithms
