@@ -17,30 +17,30 @@
 from onedal.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
 from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
-from ..._device_offload import support_usm_ndarray
+from ..._device_offload import support_array_api
 from .._base import BaseEstimatorSPMD
 
 
 class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
-    @support_usm_ndarray()
+    @support_array_api()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
 
-    @support_usm_ndarray()
+    @support_array_api()
     def predict(self, X, queue=None):
         return super().predict(X, queue=queue)
 
-    @support_usm_ndarray()
+    @support_array_api()
     def predict_proba(self, X, queue=None):
         raise NotImplementedError("predict_proba not supported in distributed mode.")
 
-    @support_usm_ndarray()
+    @support_array_api()
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
         return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
 
 class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
-    @support_usm_ndarray()
+    @support_array_api()
     def fit(self, X, y, queue=None):
         if queue is not None and queue.sycl_device.is_gpu:
             return super()._fit(X, y, queue=queue)
@@ -50,11 +50,11 @@ class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
                 "CPU. Consider running on it on GPU."
             )
 
-    @support_usm_ndarray()
+    @support_array_api()
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
         return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
-    @support_usm_ndarray()
+    @support_array_api()
     def predict(self, X, queue=None):
         return self._predict_gpu(X, queue=queue)
 
@@ -66,10 +66,10 @@ class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
 
 
 class NearestNeighbors(BaseEstimatorSPMD):
-    @support_usm_ndarray()
+    @support_array_api()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
 
-    @support_usm_ndarray()
+    @support_array_api()
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
         return super().kneighbors(X, n_neighbors, return_distance, queue=queue)

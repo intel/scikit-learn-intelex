@@ -16,11 +16,11 @@
 
 from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
-from ..._device_offload import support_usm_ndarray
+from ..._device_offload import support_array_api
 from .._base import BaseEstimatorSPMD
 
 
 class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
-    @support_usm_ndarray()
+    @support_array_api()
     def compute(self, data, weights=None, queue=None):
         return super().compute(data, weights=weights, queue=queue)

@@ -18,14 +18,17 @@ from functools import wraps
 
 from onedal._device_offload import (
     _copy_to_usm,
+    _extract_array_attr,
+    _from_dlpack,
     _get_global_queue,
+    _is_numpy_namespace,
     _transfer_to_host,
     dpnp_available,
 )
 
 if dpnp_available:
     import dpnp
-    from onedal._device_offload import _convert_to_dpnp
+    from onedal._device_offload import _convert_to_dpnp, _from_dlpack
 
 
 from ._config import get_config
@@ -80,19 +83,27 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     )
 
 
+# TODO:
+# support input data
+# wrap output data
 def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())
-        if len(data) == 0:
-            usm_iface = None
-        else:
-            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+        usm_iface, array_api, dlpack_device = _extract_array_attr(*args, **kwargs)
         result = func(self, *args, **kwargs)
         if usm_iface is not None:
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
                 result = _convert_to_dpnp(result)
+        # TODO:
+        # update condition
+        elif (
+            array_api
+            and not _is_numpy_namespace(array_api)
+            and hasattr(result, "__array_namespace__")
+        ):
+            result = _from_dlpack(result, array_api, copy=True, device=dlpack_device)
         return result
 
     return wrapper
