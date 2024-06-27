@@ -110,7 +110,7 @@ def generate_clustering_data(n_samples, n_features, centers=None, random_state=4
 def spmd_assert_allclose(spmd_result, batch_result, **kwargs):
     """Calls assert_allclose on spmd and batch results.
 
-    Called on each rank to compare the spmd result specific to that rank and 
+    Called on each rank to compare the spmd result specific to that rank and
     subset of batch result that corresponds to that rank.
 
     Args:
@@ -136,8 +136,8 @@ def spmd_assert_allclose(spmd_result, batch_result, **kwargs):
 def assert_unordered_allclose(spmd_result, batch_result, localize=False):
     """Checks if rows in spmd and batch results are aligned, even if not in the same order.
 
-    Called to verify correct unordered results are present. Useful to check KMeans centers 
-    or KNN neighbors, where order does not matter. Sorts inputs to handle unordering. Also 
+    Called to verify correct unordered results are present. Useful to check KMeans centers
+    or KNN neighbors, where order does not matter. Sorts inputs to handle unordering. Also
     capable of handling localization.
 
     Args:
@@ -162,7 +162,7 @@ def assert_unordered_allclose(spmd_result, batch_result, localize=False):
 def assert_kmeans_labels_allclose(spmd_labels, batch_labels, spmd_centers, batch_centers):
     """Checks if labels for spmd and batch results are aligned, even cluster indices don't match.
 
-    Called to verify labels are assigned the same way on spmd and batch. Uses raw labels (which 
+    Called to verify labels are assigned the same way on spmd and batch. Uses raw labels (which
     may not match) to identify cluster center and ensure results match.
 
     Args:
