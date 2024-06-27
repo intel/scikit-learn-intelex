@@ -208,11 +208,6 @@ deselected_tests:
   # sufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
 
-  # The regression coefficients for multi-target problem differ from scikit-learn for small datasets.
-  # Coefficients matches for first label only and the coefficients are close for larger datasets.
-  # See: https://github.com/IntelPython/daal4py/issues/275
-  - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties >=0.24
-
   # Different interpretation of trees compared to scikit-learn
   # Looks like we need to align tree traversal. This problem will be fixed
   - ensemble/tests/test_forest.py::test_min_samples_leaf

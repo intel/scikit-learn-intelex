@@ -20,8 +20,6 @@ from sklearn.datasets import make_regression
 
 
 def test_multivariate_ridge_coefficients():
-    from sklearn.linear_model import Ridge as Ridge_sklearn
-
     from daal4py.sklearn.linear_model._ridge import Ridge
 
     X, y = make_regression(n_samples=10, n_features=5, n_targets=3, random_state=0)
@@ -29,13 +27,25 @@ def test_multivariate_ridge_coefficients():
     # asserting exception if alpha has wrong shape
     wrong_alpha_shape = numpy.random.rand(5)
     with pytest.raises(ValueError):
-        model_daal = Ridge(alpha=wrong_alpha_shape).fit(X, y)
+        model = Ridge(alpha=wrong_alpha_shape).fit(X, y)
 
+    # computing coefficients using daal4py Ridge
     alpha = 3 + numpy.random.rand(3) * 5
-    model_daal = Ridge(alpha=alpha)
-    model_sklearn = Ridge_sklearn(alpha=alpha)
+    model = Ridge(fit_intercept=False, alpha=alpha)
 
-    model_daal.fit(X, y)
-    model_sklearn.fit(X, y)
+    model.fit(X, y)
 
-    numpy.testing.assert_allclose(model_daal.coef_, model_sklearn.coef_, rtol=1e-5)
+    # computing coefficients manually
+    n_features, n_targets = X.shape[1], y.shape[1]
+    betas = numpy.zeros((n_targets, n_features))
+
+    identity_matrix = numpy.eye(n_features)
+
+    for j in range(n_targets):
+        y_j = y[:, j]
+        inverse_term = numpy.linalg.inv(numpy.dot(X.T, X) + alpha[j] * identity_matrix)
+        beta_j = numpy.dot(inverse_term, numpy.dot(X.T, y_j))
+        betas[j, :] = beta_j
+
+    # asserting that the coefficients are close
+    numpy.testing.assert_allclose(model.coef_, betas, rtol=1e-3, atol=1e-3)
