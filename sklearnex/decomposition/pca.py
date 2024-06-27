@@ -223,7 +223,7 @@ if daal_check_version((2024, "P", 100)):
                 components = self.components_
 
             if "numpy" not in xp.__name__:
-                components = xp.asarray(location, device=X.device)
+                components = xp.asarray(components, device=X.device)
                 mean = xp.asarray(mean, device=X.device)
 
             return X @ components + mean
