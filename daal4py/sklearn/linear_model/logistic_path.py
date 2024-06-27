@@ -73,8 +73,6 @@ else:
 from sklearn.linear_model._logistic import _logistic_regression_path as lr_path_original
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder
 
-from .._device_offload import support_usm_ndarray
-
 
 # Code adapted from sklearn.linear_model.logistic version 0.21
 def __logistic_regression_path(
@@ -880,7 +878,6 @@ def daal4py_predict(self, X, resultsToEvaluate):
         return LogisticRegression_original.predict_log_proba(self, X)
 
 
-@support_usm_ndarray()
 def logistic_regression_path(
     X,
     y,
@@ -997,7 +994,6 @@ class LogisticRegression(LogisticRegression_original):
         self.n_jobs = n_jobs
         self.l1_ratio = l1_ratio
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
@@ -1005,15 +1001,12 @@ class LogisticRegression(LogisticRegression_original):
             self._validate_params()
         return daal4py_fit(self, X, y, sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return daal4py_predict(self, X, "computeClassLabels")
 
-    @support_usm_ndarray()
     def predict_log_proba(self, X):
         return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-    @support_usm_ndarray()
     def predict_proba(self, X):
         return daal4py_predict(self, X, "computeClassProbabilities")
 

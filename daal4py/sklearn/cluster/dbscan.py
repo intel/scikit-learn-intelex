@@ -24,7 +24,6 @@ from sklearn.utils.validation import _check_sample_weight
 
 import daal4py
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from .._utils import PatchingConditionsChain, getFPType, make2d, sklearn_check_version
 
@@ -83,7 +82,6 @@ class DBSCAN(DBSCAN_original):
         self.p = p
         self.n_jobs = n_jobs
 
-    @support_usm_ndarray()
     def fit(self, X, y=None, sample_weight=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -160,7 +158,6 @@ class DBSCAN(DBSCAN_original):
             return self
         return super().fit(X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def fit_predict(self, X, y=None, sample_weight=None):
         return super().fit_predict(X, y, sample_weight)
 
