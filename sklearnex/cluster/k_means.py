@@ -17,6 +17,8 @@
 from daal4py.sklearn.cluster import KMeans
 from onedal._device_offload import support_usm_ndarray
 
+# Note: `sklearnex.cluster.KMeans` only has functional
+# sycl GPU support. No GPU device will be offload.
 KMeans.fit = support_usm_ndarray(queue_param=False)(KMeans.fit)
 KMeans.fit_predict = support_usm_ndarray(queue_param=False)(KMeans.fit_predict)
 KMeans.predict = support_usm_ndarray(queue_param=False)(KMeans.predict)

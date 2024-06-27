@@ -27,8 +27,6 @@ from onedal.tests.utils._dataframes_support import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import(dataframe, queue):
-    if queue and queue.sycl_device.is_gpu:
-        pytest.skip("Kmeasn predict for the GPU sycl_queue is buggy.")
 
     from sklearnex.cluster import KMeans
 
