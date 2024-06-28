@@ -229,6 +229,7 @@ class BaseSVC(BaseSVM):
         return recip_freq[le.transform(classes)]
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
+        # TODO: rewrite this method when probabilities output is implemented in oneDAL
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
