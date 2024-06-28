@@ -27,6 +27,7 @@ from time import gmtime, strftime
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
+from onedal._device_offload import dpctl_available
 
 print("Starting examples validation")
 # First item is major version - 2021,
@@ -75,28 +76,14 @@ ex_log_dirs = [
     (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
-available_devices = []
+available_devices = ["cpu"]
 
-# TODO: replace this in this PR
-try:
-    from daal4py.oneapi import sycl_context
+gpu_available = False
+if dpctl_available and dpctl.has_gpu_devices():
+    gpu_available = True
+    available_devices.append("gpu")
 
-    sycl_extention_available = True
-except ModuleNotFoundError:
-    sycl_extention_available = False
-print("Sycl extensions available: {}".format(sycl_extention_available))
-
-if sycl_extention_available:
-    try:
-        with sycl_context("gpu"):
-            gpu_available = True
-            available_devices.append("gpu")
-    except RuntimeError:
-        gpu_available = False
-    available_devices.append("cpu")
-    # validate that host and cpu devices avaialbe for logging reasons. Examples and
-    # vaidaton logic assumes that host and cpu devices are always available
-    print("Sycl gpu device: {}".format(gpu_available))
+print("GPU device available: {}".format(gpu_available))
 
 
 def check_version(rule, target):
