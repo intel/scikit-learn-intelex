@@ -186,11 +186,6 @@ if daal_check_version((2024, "P", 600)):
             assert len(data) == 3
             X, y, sample_weight = data
 
-            if not patching_status:
-                patching_status = PatchingConditionsChain(
-                    f"sklearn.linear_model.{self.__class__.__name__}.fit"
-                )
-
             normalize_is_set = (
                 hasattr(self, "normalize")
                 and self.normalize
@@ -246,11 +241,6 @@ if daal_check_version((2024, "P", 600)):
         def _onedal_predict_supported(self, patching_status, method_name, *data):
             assert method_name in ["predict", "score"]
             assert len(data) <= 2
-
-            if not patching_status:
-                patching_status = PatchingConditionsChain(
-                    f"sklearn.linear_model.{self.__class__.__name__}.fit"
-                )
 
             n_samples = _num_samples(data[0])
             model_is_sparse = issparse(self.coef_) or (
@@ -353,25 +343,17 @@ if daal_check_version((2024, "P", 600)):
                 )
 
             self._initialize_onedal_estimator()
-            try:
-                # Falling back to daal4py if the device is CPU since
-                # onedal does not support non-scalars for alpha, thus
-                # should only be used for GPU/CPU with scalar alpha to not limit the functionality
-                cpu_device = queue is None or queue.sycl_device.is_cpu
-                if cpu_device and not _is_numeric_scalar(self.alpha):
-                    self._daal_fit(X, y)
-                else:
-                    self._onedal_estimator.fit(X, y, queue=queue)
-                self._save_attributes()
 
-            except RuntimeError:
-                logging.getLogger("sklearnex").info(
-                    f"{self.__class__.__name__}.fit "
-                    + get_patch_message("sklearn_after_onedal")
-                )
+            # Falling back to daal4py if the device is CPU since
+            # onedal does not support non-scalars for alpha, thus
+            # should only be used for GPU/CPU with scalar alpha to not limit the functionality
+            cpu_device = queue is None or queue.sycl_device.is_cpu
+            if cpu_device and not _is_numeric_scalar(self.alpha):
+                self._daal_fit(X, y)
+            else:
+                self._onedal_estimator.fit(X, y, queue=queue)
 
-                del self._onedal_estimator
-                super().fit(X, y)
+            self._save_attributes()
 
         def _onedal_predict(self, X, queue=None):
             if sklearn_check_version("1.0"):
