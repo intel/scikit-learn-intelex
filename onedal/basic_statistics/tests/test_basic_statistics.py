@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy import sparse as sp
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics import BasicStatistics
 from onedal.tests.utils._device_selection import get_queues
 
@@ -295,3 +296,19 @@ def test_options_csr(queue, option, dtype):
     tol = fp32tol if res.dtype == np.float32 else fp64tol
 
     assert_allclose(gtr, res, rtol=tol)
+
+
+def test_warning():
+    basicstat = BasicStatistics()
+    data = np.array([0, 1])
+
+    with pytest.warns(
+        UserWarning,
+        match="Method `compute` was deprecated in version 2024.6 and will be removed in 2026.0. Use `fit` instead.",
+    ) as warn_record:
+        basicstat.compute(data)
+
+    if daal_check_version((2026, "P", 0)):
+        assert len(warn_record) == 0
+    else:
+        assert len(warn_record) == 1

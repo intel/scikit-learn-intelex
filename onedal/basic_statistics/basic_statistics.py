@@ -98,8 +98,8 @@ class BasicStatistics(BaseBasicStatistics):
 
     def compute(self, data, weights=None, queue=None):
         warnings.warn(
-            "Method `compute` was deprecated in version 2024.3 and will be "
-            "removed in 2024.5. Use `fit` instead."
+            "Method `compute` was deprecated in version 2024.6 and will be "
+            "removed in 2026.0. Use `fit` instead."
         )
 
         is_csr = _is_csr(data)
