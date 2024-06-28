@@ -19,8 +19,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._spmd_support import (
-    assert_unordered_allclose,
     assert_kmeans_labels_allclose,
+    assert_unordered_allclose,
     generate_clustering_data,
     get_local_tensor,
     mpi_libs_and_gpu_available,
