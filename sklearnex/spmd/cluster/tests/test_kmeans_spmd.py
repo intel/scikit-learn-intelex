@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from sklearnex.tests._utils_spmd import (
+from ....tests._utils_spmd import (
     assert_kmeans_labels_allclose,
     assert_unordered_allclose,
     generate_clustering_data,

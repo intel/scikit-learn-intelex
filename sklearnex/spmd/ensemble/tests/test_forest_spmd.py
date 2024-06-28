@@ -19,7 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
-from sklearnex.tests._utils_spmd import (
+from ....tests._utils_spmd import (
     generate_classification_data,
     generate_regression_data,
     get_local_tensor,

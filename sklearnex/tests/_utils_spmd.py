@@ -19,8 +19,6 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_blobs, make_classification, make_regression
 from sklearn.model_selection import train_test_split
 
-from onedal.tests.utils._device_selection import is_dpctl_available
-
 try:
     import dpctl
     import dpctl.tensor as dpt
