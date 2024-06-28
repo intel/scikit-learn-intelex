@@ -19,8 +19,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 from ....tests._utils_spmd import (
-    generate_statistic_data,
-    get_local_tensor,
+    _generate_statistic_data,
+    _get_local_tensor,
     mpi_libs_and_gpu_available,
 )
 
@@ -49,7 +49,7 @@ def test_pca_spmd_gold():
         ]
     )
 
-    local_dpt_data = get_local_tensor(data)
+    local_dpt_data = _get_local_tensor(data)
 
     # ensure results of batch algo match spmd
     spmd_result = PCA_SPMD(n_components=2).fit(local_dpt_data)
@@ -89,9 +89,9 @@ def test_pca_spmd_synthetic(n_samples, n_features, n_components, whiten):
     from sklearnex.spmd.decomposition import PCA as PCA_SPMD
 
     # Generate data and process into dpt
-    data = generate_statistic_data(n_samples, n_features)
+    data = _generate_statistic_data(n_samples, n_features)
 
-    local_dpt_data = get_local_tensor(data)
+    local_dpt_data = _get_local_tensor(data)
 
     # ensure results of batch algo match spmd
     spmd_result = PCA_SPMD(n_components=n_components, whiten=whiten).fit(local_dpt_data)

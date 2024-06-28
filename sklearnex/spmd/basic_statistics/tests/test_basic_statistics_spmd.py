@@ -19,8 +19,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 from ....tests._utils_spmd import (
-    generate_statistic_data,
-    get_local_tensor,
+    _generate_statistic_data,
+    _get_local_tensor,
     mpi_libs_and_gpu_available,
 )
 
@@ -48,7 +48,7 @@ def test_basic_stats_spmd_gold():
         ]
     )
 
-    local_dpt_data = get_local_tensor(data)
+    local_dpt_data = _get_local_tensor(data)
 
     # ensure results of batch algo match spmd
     spmd_result = BasicStatistics_SPMD().compute(local_dpt_data)
@@ -71,9 +71,9 @@ def test_basic_stats_spmd_synthetic(n_samples, n_features):
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
 
     # Generate data and process into dpt
-    data = generate_statistic_data(n_samples, n_features)
+    data = _generate_statistic_data(n_samples, n_features)
 
-    local_dpt_data = get_local_tensor(data)
+    local_dpt_data = _get_local_tensor(data)
 
     # ensure results of batch algo match spmd
     spmd_result = BasicStatistics_SPMD().compute(local_dpt_data)

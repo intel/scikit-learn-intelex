@@ -19,10 +19,10 @@ import pytest
 from numpy.testing import assert_allclose
 
 from ....tests._utils_spmd import (
-    generate_classification_data,
-    get_local_tensor,
+    _generate_classification_data,
+    _get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_allclose,
+    _spmd_assert_allclose,
 )
 
 
@@ -60,9 +60,9 @@ def test_logistic_spmd_gold():
         ]
     )
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LogisticRegression_SPMD(random_state=0, solver="newton-cg").fit(
@@ -79,7 +79,7 @@ def test_logistic_spmd_gold():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 # parametrize max_iter, C, tol
@@ -102,11 +102,11 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol):
     from sklearnex.spmd.linear_model import LogisticRegression as LogisticRegression_SPMD
 
     # Generate data and process into dpt
-    X_train, X_test, y_train, _ = generate_classification_data(n_samples, n_features)
+    X_train, X_test, y_train, _ = _generate_classification_data(n_samples, n_features)
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LogisticRegression_SPMD(
@@ -125,4 +125,4 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)

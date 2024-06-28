@@ -19,10 +19,10 @@ import pytest
 from numpy.testing import assert_allclose
 
 from ....tests._utils_spmd import (
-    generate_clustering_data,
-    get_local_tensor,
+    _generate_clustering_data,
+    _get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_allclose,
+    _spmd_assert_allclose,
 )
 
 
@@ -38,13 +38,13 @@ def test_dbscan_spmd_gold():
 
     data = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
 
-    local_dpt_data = get_local_tensor(data)
+    local_dpt_data = _get_local_tensor(data)
 
     # ensure labels from fit of batch algo matches spmd
     spmd_model = DBSCAN_SPMD(eps=3, min_samples=2).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=3, min_samples=2).fit(data)
 
-    spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
+    _spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
 
 
 @pytest.mark.skipif(
@@ -62,14 +62,14 @@ def test_dbscan_spmd_synthetic(n_samples, n_features_and_eps, centers, min_sampl
     from sklearnex.cluster import DBSCAN as DBSCAN_Batch
     from sklearnex.spmd.cluster import DBSCAN as DBSCAN_SPMD
 
-    data, _, _, _ = generate_clustering_data(n_samples, n_features, centers=centers)
+    data, _, _, _ = _generate_clustering_data(n_samples, n_features, centers=centers)
 
-    local_dpt_data = get_local_tensor(data)
+    local_dpt_data = _get_local_tensor(data)
 
     # ensure labels from fit of batch algo matches spmd
     spmd_model = DBSCAN_SPMD(eps=eps, min_samples=min_samples).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=eps, min_samples=min_samples).fit(data)
 
-    spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
+    _spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
     if np.all(batch_model.labels_ == -1):
         raise ValueError("No labels given - try raising epsilon")

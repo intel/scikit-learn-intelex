@@ -20,10 +20,10 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from ....tests._utils_spmd import (
-    generate_regression_data,
-    get_local_tensor,
+    _generate_regression_data,
+    _get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_allclose,
+    _spmd_assert_allclose,
 )
 
 
@@ -61,9 +61,9 @@ def test_linear_spmd_gold():
         ]
     )
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LinearRegression_SPMD().fit(local_dpt_X_train, local_dpt_y_train)
@@ -76,7 +76,7 @@ def test_linear_spmd_gold():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -92,11 +92,11 @@ def test_linear_spmd_synthetic(n_samples, n_features):
     from sklearnex.spmd.linear_model import LinearRegression as LinearRegression_SPMD
 
     # Generate data and process into dpt
-    X_train, X_test, y_train, _ = generate_regression_data(n_samples, n_features)
+    X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # TODO: support linear regression on wide datasets and remove this skip
     if local_dpt_X_train.shape[0] < n_features:
@@ -115,4 +115,4 @@ def test_linear_spmd_synthetic(n_samples, n_features):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)

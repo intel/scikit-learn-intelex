@@ -20,11 +20,11 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from ....tests._utils_spmd import (
-    generate_classification_data,
-    generate_regression_data,
-    get_local_tensor,
+    _generate_classification_data,
+    _generate_regression_data,
+    _get_local_tensor,
     mpi_libs_and_gpu_available,
-    spmd_assert_allclose,
+    _spmd_assert_allclose,
 )
 
 
@@ -64,9 +64,9 @@ def test_rfcls_spmd_gold():
         ]
     )
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestClassifier_SPMD(n_estimators=3, random_state=0).fit(
@@ -79,7 +79,7 @@ def test_rfcls_spmd_gold():
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -100,13 +100,13 @@ def test_rfcls_spmd_synthetic(n_samples, n_features_and_classes, n_estimators, m
     )
 
     # Generate data and process into dpt
-    X_train, X_test, y_train, _ = generate_classification_data(
+    X_train, X_test, y_train, _ = _generate_classification_data(
         n_samples, n_features, n_classes
     )
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestClassifier_SPMD(
@@ -119,7 +119,7 @@ def test_rfcls_spmd_synthetic(n_samples, n_features_and_classes, n_estimators, m
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -158,9 +158,9 @@ def test_rfreg_spmd_gold():
         ]
     )
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestRegressor_SPMD(n_estimators=3, random_state=0).fit(
@@ -173,7 +173,7 @@ def test_rfreg_spmd_gold():
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -193,11 +193,11 @@ def test_rfreg_spmd_synthetic(n_samples, n_features, n_estimators, max_depth):
     )
 
     # Generate data and process into dpt
-    X_train, X_test, y_train, _ = generate_regression_data(n_samples, n_features)
+    X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
 
-    local_dpt_X_train = get_local_tensor(X_train)
-    local_dpt_y_train = get_local_tensor(y_train)
-    local_dpt_X_test = get_local_tensor(X_test)
+    local_dpt_X_train = _get_local_tensor(X_train)
+    local_dpt_y_train = _get_local_tensor(y_train)
+    local_dpt_X_test = _get_local_tensor(X_test)
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestRegressor_Batch(
@@ -211,4 +211,4 @@ def test_rfreg_spmd_synthetic(n_samples, n_features, n_estimators, max_depth):
 
     # TODO: remove skips when SPMD and batch are aligned
     pytest.skip("SPMD and batch random forest results not aligned")
-    spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
