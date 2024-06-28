@@ -206,11 +206,6 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
     return NULL;
 }
 
-#ifdef _DPCPP_
-    #include "oneapi/oneapi_api.h"
-// Disable returning of sycl buffer from algorithms
-// static int __oneAPI_imp = import__oneapi();
-#endif
 // Convert a oneDAL NT to a numpy nd-array
 // tries to avoid copying the data, instead we try to share the memory with DAAL
 PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
