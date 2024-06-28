@@ -36,6 +36,7 @@ steps:
       set PREFIX=%CONDA_PREFIX%
       set PYTHON=python
       call conda-recipe\bld.bat
+      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
       set DALROOT=%CONDA_PREFIX%
       python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: 'Build daal4py/sklearnex'

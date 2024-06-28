@@ -16,6 +16,7 @@
 
 import sklearn
 
+import onedal
 import sklearnex
 
 
@@ -33,7 +34,10 @@ def test_set_config_works():
     )
 
     config = sklearnex.get_config()
+    onedal_config = onedal._config._get_config()
     assert config["target_offload"] == "cpu:0"
     assert config["allow_fallback_to_host"]
     assert config["assume_finite"]
+    assert onedal_config["target_offload"] == "cpu:0"
+    assert onedal_config["allow_fallback_to_host"]
     sklearnex.set_config(**default_config)
