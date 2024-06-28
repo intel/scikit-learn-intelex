@@ -34,7 +34,7 @@ from onedal.tests.utils._spmd_support import (
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_knncls_spmd_manual():
+def test_knncls_spmd_gold():
     # Import spmd and batch algo
     from sklearnex.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
     from sklearnex.spmd.neighbors import KNeighborsClassifier as KNeighborsClassifier_SPMD
@@ -133,7 +133,7 @@ def test_knncls_spmd_synthetic(
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_knnreg_spmd_manual():
+def test_knnreg_spmd_gold():
     # Import spmd and batch algo
     from sklearnex.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
     from sklearnex.spmd.neighbors import KNeighborsRegressor as KNeighborsRegressor_SPMD

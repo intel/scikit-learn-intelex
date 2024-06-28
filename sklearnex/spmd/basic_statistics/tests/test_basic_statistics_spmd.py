@@ -30,7 +30,7 @@ from onedal.tests.utils._spmd_support import (
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_basic_stats_spmd_manual():
+def test_basic_stats_spmd_gold():
     # Import spmd and batch algo
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD

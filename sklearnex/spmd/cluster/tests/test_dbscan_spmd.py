@@ -31,7 +31,7 @@ from onedal.tests.utils._spmd_support import (
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_dbscan_spmd_manual():
+def test_dbscan_spmd_gold():
     # Import spmd and batch algo
     from sklearnex.cluster import DBSCAN as DBSCAN_Batch
     from sklearnex.spmd.cluster import DBSCAN as DBSCAN_SPMD

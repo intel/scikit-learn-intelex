@@ -32,7 +32,7 @@ from onedal.tests.utils._spmd_support import (
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_linear_spmd_manual():
+def test_linear_spmd_gold():
     # Import spmd and batch algo
     from sklearnex.linear_model import LinearRegression as LinearRegression_Batch
     from sklearnex.spmd.linear_model import LinearRegression as LinearRegression_SPMD

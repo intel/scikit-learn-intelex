@@ -33,7 +33,7 @@ from onedal.tests.utils._spmd_support import (
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_rfcls_spmd_manual():
+def test_rfcls_spmd_gold():
     # Import spmd and batch algo
     from sklearnex.ensemble import RandomForestClassifier as RandomForestClassifier_Batch
     from sklearnex.spmd.ensemble import (
@@ -127,7 +127,7 @@ def test_rfcls_spmd_synthetic(n_samples, n_features_and_classes, n_estimators, m
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
-def test_rfreg_spmd_manual():
+def test_rfreg_spmd_gold():
     # Import spmd and batch algo
     from sklearnex.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
     from sklearnex.spmd.ensemble import (
