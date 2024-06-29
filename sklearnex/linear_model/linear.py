@@ -272,18 +272,8 @@ class LinearRegression(sklearn_LinearRegression):
             )
 
         self._initialize_onedal_estimator()
-        try:
-            self._onedal_estimator.fit(X, y, queue=queue)
-            self._save_attributes()
-
-        except RuntimeError:
-            logging.getLogger("sklearnex").info(
-                f"{self.__class__.__name__}.fit "
-                + get_patch_message("sklearn_after_onedal")
-            )
-
-            del self._onedal_estimator
-            super().fit(X, y)
+        self._onedal_estimator.fit(X, y, queue=queue)
+        self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
