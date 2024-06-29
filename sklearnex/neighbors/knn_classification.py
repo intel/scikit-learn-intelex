@@ -39,58 +39,28 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
             **sklearn_KNeighborsClassifier._parameter_constraints
         }
 
-    if sklearn_check_version("1.0"):
-
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                weights=weights,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-            )
-
-    else:
-
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_neighbors=5,
-            *,
-            weights="uniform",
-            algorithm="auto",
-            leaf_size=30,
-            p=2,
-            metric="minkowski",
-            metric_params=None,
-            n_jobs=None,
-            **kwargs,
-        ):
-            super().__init__(
-                n_neighbors=n_neighbors,
-                weights=weights,
-                algorithm=algorithm,
-                leaf_size=leaf_size,
-                metric=metric,
-                p=p,
-                metric_params=metric_params,
-                n_jobs=n_jobs,
-                **kwargs,
-            )
+    def __init__(
+        self,
+        n_neighbors=5,
+        *,
+        weights="uniform",
+        algorithm="auto",
+        leaf_size=30,
+        p=2,
+        metric="minkowski",
+        metric_params=None,
+        n_jobs=None,
+    ):
+        super().__init__(
+            n_neighbors=n_neighbors,
+            weights=weights,
+            algorithm=algorithm,
+            leaf_size=leaf_size,
+            metric=metric,
+            p=p,
+            metric_params=metric_params,
+            n_jobs=n_jobs,
+        )
 
     def fit(self, X, y):
         dispatch(
@@ -108,8 +78,7 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
     @wrap_output_data
     def predict(self, X):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict",
@@ -123,8 +92,7 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
     @wrap_output_data
     def predict_proba(self, X):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict_proba",
@@ -138,8 +106,7 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
         check_is_fitted(self)
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "score",
@@ -155,7 +122,7 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
     @wrap_output_data
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True):
         check_is_fitted(self)
-        if sklearn_check_version("1.0") and X is not None:
+        if X is not None:
             self._check_feature_names(X, reset=False)
         return dispatch(
             self,

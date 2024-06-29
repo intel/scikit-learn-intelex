@@ -65,8 +65,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        self._check_feature_names(X, reset=True)
         dispatch(
             self,
             "fit",
@@ -82,8 +81,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict",
@@ -96,8 +94,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "score",

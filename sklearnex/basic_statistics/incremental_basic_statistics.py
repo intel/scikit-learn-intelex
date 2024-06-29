@@ -143,17 +143,11 @@ class IncrementalBasicStatistics(BaseEstimator):
     def _onedal_partial_fit(self, X, sample_weight=None, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-            )
+        X = self._validate_data(
+            X,
+            dtype=[np.float64, np.float32],
+            reset=first_pass,
+        )
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
@@ -175,10 +169,7 @@ class IncrementalBasicStatistics(BaseEstimator):
         self._need_to_finalize = True
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32])
-        else:
-            X = check_array(X, dtype=[np.float64, np.float32])
+        X = self._validate_data(X, dtype=[np.float64, np.float32])
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)

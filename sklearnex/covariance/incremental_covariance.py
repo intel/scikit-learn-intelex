@@ -160,21 +160,13 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             if sklearn_check_version("1.2"):
                 self._validate_params()
 
-            if sklearn_check_version("1.0"):
-                X = self._validate_data(
-                    X,
-                    dtype=[np.float64, np.float32],
-                    reset=first_pass,
-                    copy=self.copy,
-                    force_all_finite=False,
-                )
-            else:
-                X = check_array(
-                    X,
-                    dtype=[np.float64, np.float32],
-                    copy=self.copy,
-                    force_all_finite=False,
-                )
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                reset=first_pass,
+                copy=self.copy,
+                force_all_finite=False,
+            )
 
         onedal_params = {
             "method": "dense",
@@ -266,15 +258,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             self._validate_params()
 
         # finite check occurs on onedal side
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
-            )
-        else:
-            X = check_array(
-                X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
-            )
-            self.n_features_in_ = X.shape[1]
+        X = self._validate_data(
+            X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
+        )
 
         self.batch_size_ = self.batch_size if self.batch_size else 5 * self.n_features_in_
 
@@ -294,10 +280,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
     @wrap_output_data
     def mahalanobis(self, X):
-        if sklearn_check_version("1.0"):
-            self._validate_data(X, reset=False, copy=self.copy)
-        else:
-            check_array(X, copy=self.copy)
+        self._validate_data(X, reset=False, copy=self.copy)
 
         precision = self.get_precision()
         with config_context(assume_finite=True):

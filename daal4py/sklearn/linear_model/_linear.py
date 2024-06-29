@@ -23,7 +23,7 @@ from .._utils import sklearn_check_version
 from ..utils.base import _daal_validate_data
 from ..utils.validation import _daal_check_array
 
-if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+if not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
 
 import logging
@@ -152,8 +152,7 @@ def _fit_linear(self, X, y, sample_weight=None):
 
 
 def _predict_linear(self, X):
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=False)
+    self._check_feature_names(X, reset=False)
     is_df = is_DataFrame(X)
     X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
     X = np.asarray(X) if not sp.issparse(X) and not is_df else X
@@ -224,7 +223,7 @@ class LinearRegression(LinearRegression_original):
         def __init__(
             self,
             fit_intercept=True,
-            normalize="deprecated" if sklearn_check_version("1.0") else False,
+            normalize="deprecated",
             copy_X=True,
             n_jobs=None,
             positive=False,
@@ -238,14 +237,13 @@ class LinearRegression(LinearRegression_original):
             )
 
     def fit(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+        if not sklearn_check_version("1.2"):
             self._normalize = _deprecate_normalize(
                 self.normalize,
                 default=False,
                 estimator_name=self.__class__.__name__,
             )
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        self._check_feature_names(X, reset=True)
         if sklearn_check_version("1.2"):
             self._validate_params()
 

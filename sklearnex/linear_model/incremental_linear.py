@@ -130,19 +130,12 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-                reset=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-            )
+        X = self._validate_data(
+            X,
+            dtype=[np.float64, np.float32],
+            copy=self.copy_X,
+            reset=False,
+        )
 
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
@@ -161,30 +154,15 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._validate_params()
 
         if check_input:
-            if sklearn_check_version("1.0"):
-                X, y = self._validate_data(
-                    X,
-                    y,
-                    dtype=[np.float64, np.float32],
-                    reset=first_pass,
-                    copy=self.copy_X,
-                    multi_output=True,
-                    force_all_finite=False,
-                )
-            else:
-                X = check_array(
-                    X,
-                    dtype=[np.float64, np.float32],
-                    copy=self.copy_X,
-                    force_all_finite=False,
-                )
-                y = check_array(
-                    y,
-                    dtype=[np.float64, np.float32],
-                    copy=False,
-                    ensure_2d=False,
-                    force_all_finite=False,
-                )
+            X, y = self._validate_data(
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                reset=first_pass,
+                copy=self.copy_X,
+                multi_output=True,
+                force_all_finite=False,
+            )
 
         if first_pass:
             self.n_samples_seen_ = X.shape[0]
@@ -211,27 +189,14 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
-                X,
-                y,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-                multi_output=True,
-                ensure_2d=True,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy_X,
-            )
-            y = check_array(
-                y,
-                dtype=[np.float64, np.float32],
-                copy=False,
-                ensure_2d=False,
-            )
+        X, y = self._validate_data(
+            X,
+            y,
+            dtype=[np.float64, np.float32],
+            copy=self.copy_X,
+            multi_output=True,
+            ensure_2d=True,
+        )
 
         n_samples, n_features = X.shape
 

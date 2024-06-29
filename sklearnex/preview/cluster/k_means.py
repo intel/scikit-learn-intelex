@@ -72,34 +72,6 @@ if daal_check_version((2023, "P", 200)):
                     algorithm=algorithm,
                 )
 
-        elif sklearn_check_version("1.0"):
-
-            @_deprecate_positional_args
-            def __init__(
-                self,
-                n_clusters=8,
-                *,
-                init="k-means++",
-                n_init=10,
-                max_iter=300,
-                tol=1e-4,
-                verbose=0,
-                random_state=None,
-                copy_x=True,
-                algorithm="auto",
-            ):
-                super().__init__(
-                    n_clusters=n_clusters,
-                    init=init,
-                    max_iter=max_iter,
-                    tol=tol,
-                    n_init=n_init,
-                    verbose=verbose,
-                    random_state=random_state,
-                    copy_x=copy_x,
-                    algorithm=algorithm,
-                )
-
         else:
 
             @_deprecate_positional_args
@@ -111,11 +83,9 @@ if daal_check_version((2023, "P", 200)):
                 n_init=10,
                 max_iter=300,
                 tol=1e-4,
-                precompute_distances="deprecated",
                 verbose=0,
                 random_state=None,
                 copy_x=True,
-                n_jobs="deprecated",
                 algorithm="auto",
             ):
                 super().__init__(
@@ -123,12 +93,10 @@ if daal_check_version((2023, "P", 200)):
                     init=init,
                     max_iter=max_iter,
                     tol=tol,
-                    precompute_distances=precompute_distances,
                     n_init=n_init,
                     verbose=verbose,
                     random_state=random_state,
                     copy_x=copy_x,
-                    n_jobs=n_jobs,
                     algorithm=algorithm,
                 )
 
@@ -172,8 +140,7 @@ if daal_check_version((2023, "P", 200)):
             return patching_status
 
         def fit(self, X, y=None, sample_weight=None):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
+            self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
                 self._validate_params()
 
@@ -239,8 +206,7 @@ if daal_check_version((2023, "P", 200)):
 
         @wrap_output_data
         def predict(self, X):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
+            self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
                 self._validate_params()
 

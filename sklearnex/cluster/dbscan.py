@@ -84,8 +84,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(X, force_all_finite=False)
+        X = self._validate_data(X, force_all_finite=False)
 
         onedal_params = {
             "eps": self.eps,

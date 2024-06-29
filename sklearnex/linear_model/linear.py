@@ -29,7 +29,7 @@ from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
 from ..utils.validation import _assert_all_finite
 
-if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+if not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
 
 from scipy.sparse import issparse
@@ -67,7 +67,7 @@ class LinearRegression(sklearn_LinearRegression):
         def __init__(
             self,
             fit_intercept=True,
-            normalize="deprecated" if sklearn_check_version("1.0") else False,
+            normalize="deprecated",
             copy_X=True,
             n_jobs=None,
             positive=False,
@@ -81,10 +81,7 @@ class LinearRegression(sklearn_LinearRegression):
             )
 
     def fit(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
-        if sklearn_check_version("1.2"):
-            self._validate_params()
+        self._check_feature_names(X, reset=True)
 
         # It is necessary to properly update coefs for predict if we
         # fallback to sklearn in dispatch
@@ -264,7 +261,7 @@ class LinearRegression(sklearn_LinearRegression):
         else:
             X, y = check_X_y(**check_params)
 
-        if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+        if not sklearn_check_version("1.2"):
             self._normalize = _deprecate_normalize(
                 self.normalize,
                 default=False,
@@ -286,8 +283,7 @@ class LinearRegression(sklearn_LinearRegression):
             super().fit(X, y)
 
     def _onedal_predict(self, X, queue=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
 
         X = self._validate_data(X, accept_sparse=False, reset=False)
         if not hasattr(self, "_onedal_estimator"):

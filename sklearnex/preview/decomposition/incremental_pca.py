@@ -64,16 +64,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         first_pass = not hasattr(self, "components_")
 
         if check_input:
-            if sklearn_check_version("1.0"):
-                X = self._validate_data(
-                    X, dtype=[np.float64, np.float32], reset=first_pass
-                )
-            else:
-                X = check_array(
-                    X,
-                    dtype=[np.float64, np.float32],
-                    copy=self.copy,
-                )
+            X = self._validate_data(X, dtype=[np.float64, np.float32], reset=first_pass)
 
         n_samples, n_features = X.shape
 
@@ -118,14 +109,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         if sklearn_check_version("1.2"):
             self._validate_params()
 
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                copy=self.copy,
-            )
+        X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
 
         n_samples, n_features = X.shape
 
