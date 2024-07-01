@@ -274,36 +274,6 @@ def daal_tsne_gradient_descent(init, p, size_iter, params, results, dtype=0):
                             data_or_file(<PyObject*>size_iter),
                             data_or_file(<PyObject*>params),
                             data_or_file(<PyObject*>results), dtype)
-
-
-def _execute_with_context(func):
-    def exec_func(*args, **keyArgs):
-        if 'daal4py.oneapi' in sys.modules:
-            import daal4py.oneapi as d4p_oneapi
-            devname = d4p_oneapi._get_device_name_sycl_ctxt()
-            ctxparams = d4p_oneapi._get_sycl_ctxt_params()
-
-            if devname == 'gpu' and ctxparams.get('host_offload_on_fail', False):
-                import logging
-                classname = func.__qualname__.split('.')[0]
-                try:
-                    res = func(*args, **keyArgs)
-                    logging.info(f"{classname} successfully run on gpu")
-                    return res
-                except RuntimeError as e:
-                    logging.info(f"{classname} failed to run on gpu. Fallback to host")
-                    gpu_ctx = d4p_oneapi._get_sycl_ctxt()
-                    host_ctx = d4p_oneapi.sycl_execution_context('host')
-                    try:
-                        host_ctx.apply()
-                        res = func(*args, **keyArgs)
-                    finally:
-                        del host_ctx
-                        gpu_ctx.apply()
-                    return res
-
-        return func(*args, **keyArgs)
-    return exec_func
 """
 
 ###############################################################################
@@ -1057,7 +1027,6 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
-    @_execute_with_context
     def _compute(self,
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
                  setup=False):
