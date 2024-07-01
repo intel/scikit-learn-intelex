@@ -304,11 +304,11 @@ def test_warning():
 
     with pytest.warns(
         UserWarning,
-        match="Method `compute` was deprecated in version 2024.6 and will be removed in 2026.0. Use `fit` instead.",
+        match="Method `compute` was deprecated in version 2024.6 and will be removed in 2025.0. Use `fit` instead.",
     ) as warn_record:
         basicstat.compute(data)
 
-    if daal_check_version((2026, "P", 0)):
+    if daal_check_version((2025, "P", 0)):
         assert len(warn_record) == 0
     else:
         assert len(warn_record) == 1
