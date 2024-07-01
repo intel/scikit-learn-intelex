@@ -73,23 +73,41 @@ def eval_method(X, y, est, method):
     est.fit(X, y)
 
     if method:
-        if method != "score":
-            res = getattr(est, method)(X)
+        attr = getattr(est, method)
+        if method == "inverse_transform":
+            # PCA's inverse_transform takes (n_samples, n_components)
+            data = (
+                (X[:, : est.n_components_],) if X.shape[1] != est.n_components_ else (X,)
+            )
+        elif method not in ["score", "partial_fit", "path"]:
+            data = (X,)
         else:
-            res = est.score(X, y)
+            data = (X, y)
+        res = attr(*data)
 
     if not isinstance(res, Iterable):
-        res = [res]
+        results = [_as_numpy(res)] if res is not est else []
+    else:
+        results = []
+        for i in res:
+            # Nearest Neighbors radius_neighbors causes this if statement
+            # It is unique in returning a numpy array of numpy arrays in
+            # a list
+            if hasattr(i, "dtype") and i.dtype == np.dtype(object):
+                results += [_as_numpy(j) for j in list(i)]
+            else:
+                results += [_as_numpy(i)]
+
+    attributes = [method for i in results]
 
     # if estimator follows sklearn design rules, then set attributes should have a
     # trailing underscore
-    attributes = [
+    attributes += [
         i
         for i in dir(est)
         if hasattr(est, i) and not i.startswith("_") and i.endswith("_")
     ]
-    results = [getattr(est, i) for i in attributes] + [_as_numpy(i) for i in res]
-    attributes += [method for i in res]
+    results += [getattr(est, i) for i in attributes if i != method]
     return results, attributes
 
 
@@ -148,8 +166,10 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
-    if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
+    if estimator in ["KMeans", "PCA"] and "score" in method and queue == None:
         pytest.skip(f"variation observed in {estimator}.score")
+    if estimator in ["IncrementalEmpiricalCovariance"] and method == "mahalanobis":
+        pytest.skip("allowed fallback to sklearn occurs")
 
     est = PATCHED_MODELS[estimator]()
 

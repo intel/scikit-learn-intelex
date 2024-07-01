@@ -15,7 +15,7 @@
 # ==============================================================================
 
 from functools import partial
-from inspect import isclass
+from inspect import getattr_static, isclass, signature
 
 import numpy as np
 from scipy import sparse as sp
@@ -112,7 +112,7 @@ SPECIAL_INSTANCES = _sklearn_clone_dict(
 )
 
 
-def gen_models_info(algorithms):
+def gen_models_info(algorithms, required_inputs=["X", "y"]):
     output = []
     for i in algorithms:
 
@@ -123,14 +123,24 @@ def gen_models_info(algorithms):
         else:
             raise KeyError(f"Unrecognized sklearnex estimator: {i}")
 
-        methods = set()
-        candidates = set(
-            [i for i in dir(est) if not i.startswith("_") and not i.endswith("_")]
-        )
+        # remove BaseEstimator methods (get_params, set_params)
+        candidates = set(dir(est)) - set(dir(BaseEstimator))
+        # remove private methods
+        candidates = set([i for i in candidates if not i.startswith("_")])
+        # required to enable other methods
+        candidates = candidates - {"fit"}
 
-        for mixin, method, _ in mixin_map:
-            if issubclass(est, mixin):
-                methods |= candidates & set(method)
+        # allow only callable methods with any of the required inputs
+        if required_inputs:
+            methods = []
+            for j in candidates:
+                attr = getattr_static(est, j)
+                if callable(attr):
+                    params = signature(attr).parameters
+                    if any([k in params for k in required_inputs]):
+                        methods += [j]
+        else:
+            methods = candidates
 
         output += [[i, j] for j in methods] if methods else [[i, None]]
 

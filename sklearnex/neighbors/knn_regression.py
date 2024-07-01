@@ -30,7 +30,7 @@ from .common import KNeighborsDispatchingBase
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
-class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase):
+class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor):
     __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -152,24 +152,6 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
             return_distance=return_distance,
         )
 
-    @wrap_output_data
-    def radius_neighbors(
-        self, X=None, radius=None, return_distance=True, sort_results=False
-    ):
-        _onedal_estimator = getattr(self, "_onedal_estimator", None)
-
-        if (
-            _onedal_estimator is not None
-            or getattr(self, "_tree", 0) is None
-            and self._fit_method == "kd_tree"
-        ):
-            sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
-        result = sklearn_NearestNeighbors.radius_neighbors(
-            self, X, radius, return_distance, sort_results
-        )
-
-        return result
-
     def _onedal_fit(self, X, y, queue=None):
         onedal_params = {
             "n_neighbors": self.n_neighbors,
@@ -218,5 +200,4 @@ class KNeighborsRegressor(sklearn_KNeighborsRegressor, KNeighborsDispatchingBase
     fit.__doc__ = sklearn_KNeighborsRegressor.__doc__
     predict.__doc__ = sklearn_KNeighborsRegressor.predict.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsRegressor.kneighbors.__doc__
-    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
     score.__doc__ = sklearn_KNeighborsRegressor.score.__doc__

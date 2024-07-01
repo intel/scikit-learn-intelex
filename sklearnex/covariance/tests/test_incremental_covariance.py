@@ -16,13 +16,18 @@
 
 import numpy as np
 import pytest
+from numpy.linalg import slogdet
 from numpy.testing import assert_allclose
+from scipy.linalg import pinvh
 from sklearn.covariance.tests.test_covariance import (
     test_covariance,
     test_EmpiricalCovariance_validates_mahalanobis,
 )
+from sklearn.datasets import load_diabetes
+from sklearn.decomposition import PCA
 
 from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -161,6 +166,36 @@ def test_sklearnex_fit_on_random_data(
 
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_whitened_toy_score(dataframe, queue):
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
+    # Load a sklearn toy dataset with sufficient data
+    X, _ = load_diabetes(return_X_y=True)
+    n = X.shape[1]
+
+    # Transform the data into uncorrelated, unity variance components
+    X = PCA(whiten=True).fit_transform(X)
+
+    # change dataframe
+    X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+
+    # fit data
+    est = IncrementalEmpiricalCovariance()
+    est.fit(X_df)
+    # location_ attribute approximately zero (10,), covariance_ identity (10,10)
+
+    # The log-likelihood can be calculated simply due to covariance_
+    # use of scipy.linalg.pinvh, np.linalg.sloget and np.cov for estimator
+    # independence
+    expected_result = (
+        -(n - slogdet(pinvh(np.cov(X.T, bias=1)))[1] + n * np.log(2 * np.pi)) / 2
+    )
+    # expected_result = -14.1780602988
+    result = _as_numpy(est.score(X_df))
+    assert_allclose(expected_result, result, atol=1e-6)
 
 
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests

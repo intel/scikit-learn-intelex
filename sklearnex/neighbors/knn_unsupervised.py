@@ -22,11 +22,12 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 
 from .._device_offload import dispatch, wrap_output_data
+from ..utils import get_namespace
 from .common import KNeighborsDispatchingBase
 
 
 @control_n_jobs(decorated_methods=["fit", "kneighbors"])
-class NearestNeighbors(sklearn_NearestNeighbors, KNeighborsDispatchingBase):
+class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     __doc__ = sklearn_NearestNeighbors.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_NearestNeighbors._parameter_constraints}
@@ -88,10 +89,14 @@ class NearestNeighbors(sklearn_NearestNeighbors, KNeighborsDispatchingBase):
     def radius_neighbors(
         self, X=None, radius=None, return_distance=True, sort_results=False
     ):
-        _onedal_estimator = getattr(self, "_onedal_estimator", None)
-
+        if X is not None and "numpy" not in get_namespace(X)[0].__name__:
+            raise TypeError(
+                f"{self.__class__.__name__} does not support {type(X)} inputs for radius_neighbors"
+            )
+        # This definitely doesn't cover all cases, and doesn't raise an error to the user
+        # It must be updated.
         if (
-            _onedal_estimator is not None
+            hasattr(self, "_onedal_estimator")
             or getattr(self, "_tree", 0) is None
             and self._fit_method == "kd_tree"
         ):

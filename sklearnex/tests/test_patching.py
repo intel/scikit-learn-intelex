@@ -138,6 +138,10 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
                 "Ridge",
             ]:
                 pytest.skip(f"{estimator} does not support GPU queues")
+            elif "NearestNeighbors" in estimator and "radius_neighbors" in method:
+                pytest.skip(
+                    f"RadiusNeighbors estimator required, but SYCL queues are not supported"
+                )
 
         if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
@@ -161,10 +165,19 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         est.fit(X, y)
 
         if method:
-            if method != "score":
-                getattr(est, method)(X)
+            if method == "inverse_transform":
+                # PCA's inverse_transform takes (n_samples, n_components)
+                data = (
+                    (X[:, : est.n_components_],)
+                    if X.shape[1] != est.n_components_
+                    else (X,)
+                )
+            elif method not in ["score", "partial_fit", "path"]:
+                data = (X,)
             else:
-                est.score(X, y)
+                data = (X, y)
+            getattr(est, method)(*data)
+
     assert all(
         [
             "running accelerated version" in i.message
@@ -183,11 +196,16 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
-        # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
-        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
-            pytest.skip("Hardware does not support fp16 SYCL testing")
-        elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
-            pytest.skip("Hardware does not support fp64 SYCL testing")
+        if queue:
+            # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
+            if dtype == np.float16 and not queue.sycl_device.has_aspect_fp16:
+                pytest.skip("Hardware does not support fp16 SYCL testing")
+            elif dtype == np.float64 and not queue.sycl_device.has_aspect_fp64:
+                pytest.skip("Hardware does not support fp64 SYCL testing")
+            elif "NearestNeighbors" in estimator and "radius_neighbors" in method:
+                pytest.skip(
+                    f"RadiusNeighbors estimator required, but SYCL queues are not supported"
+                )
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
@@ -196,10 +214,18 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
         if method:
-            if method != "score":
-                getattr(est, method)(X)
+            if method == "inverse_transform":
+                # PCA's inverse_transform takes (n_samples, n_components)
+                data = (
+                    (X[:, : est.n_components_],)
+                    if X.shape[1] != est.n_components_
+                    else (X,)
+                )
+            elif method not in ["score", "partial_fit", "path"]:
+                data = (X,)
             else:
-                est.score(X, y)
+                data = (X, y)
+            getattr(est, method)(*data)
 
     assert all(
         [
