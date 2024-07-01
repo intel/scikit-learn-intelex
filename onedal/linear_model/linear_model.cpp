@@ -85,8 +85,14 @@ struct params2desc {
 
         const auto intercept = params["intercept"].cast<bool>();
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
+        const auto alpha = params["alpha"].cast<double>();
+        auto desc = linear_regression::descriptor<Float, Method, Task>(intercept, alpha)
+            .set_result_options(get_onedal_result_options(params));
+#else
         auto desc = linear_regression::descriptor<Float, Method, Task>(intercept)
             .set_result_options(get_onedal_result_options(params));
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
         return desc;
     }
 };
