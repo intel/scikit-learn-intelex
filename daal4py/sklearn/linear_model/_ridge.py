@@ -34,7 +34,7 @@ from .._utils import (
     sklearn_check_version,
 )
 
-if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+if not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -101,7 +101,7 @@ def _daal4py_predict(self, X):
 
 
 def _fit_ridge(self, _X, _y, sample_weight=None):
-    if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+    if not sklearn_check_version("1.2"):
         self._normalize = _deprecate_normalize(
             self.normalize, default=False, estimator_name=self.__class__.__name__
         )
@@ -122,26 +122,15 @@ def _fit_ridge(self, _X, _y, sample_weight=None):
                 include_boundaries="left",
             )
 
-    if sklearn_check_version("1.0"):
-        X, y = self._validate_data(
-            _X,
-            _y,
-            accept_sparse=["csr", "csc", "coo"],
-            dtype=[np.float64, np.float32],
-            multi_output=True,
-            y_numeric=True,
-            ensure_2d=True,
-        )
-    else:
-        X, y = check_X_y(
-            _X,
-            _y,
-            ["csr", "csc", "coo"],
-            dtype=[np.float64, np.float32],
-            multi_output=True,
-            y_numeric=True,
-        )
-        self.n_features_in_ = X.shape[1]
+    X, y = self._validate_data(
+        _X,
+        _y,
+        accept_sparse=["csr", "csc", "coo"],
+        dtype=[np.float64, np.float32],
+        multi_output=True,
+        y_numeric=True,
+        ensure_2d=True,
+    )
 
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
@@ -191,18 +180,13 @@ def _fit_ridge(self, _X, _y, sample_weight=None):
 
 
 def _predict_ridge(self, _X):
-    if sklearn_check_version("1.0"):
-        X = self._validate_data(
-            _X,
-            accept_sparse=["csr", "csc", "coo"],
-            dtype=[np.float64, np.float32],
-            reset=False,
-            ensure_2d=True,
-        )
-    else:
-        X = check_array(
-            _X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
-        )
+    X = self._validate_data(
+        _X,
+        accept_sparse=["csr", "csc", "coo"],
+        dtype=[np.float64, np.float32],
+        reset=False,
+        ensure_2d=True,
+    )
     good_shape_for_daal = (
         True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
     )
@@ -267,7 +251,7 @@ class Ridge(Ridge_original, _BaseRidge):
             self.positive = positive
             self.random_state = random_state
 
-    elif sklearn_check_version("1.0"):
+    else:
 
         def __init__(
             self,
@@ -289,28 +273,6 @@ class Ridge(Ridge_original, _BaseRidge):
             self.tol = tol
             self.solver = solver
             self.positive = positive
-            self.random_state = random_state
-
-    else:
-
-        def __init__(
-            self,
-            alpha=1.0,
-            fit_intercept=True,
-            normalize=False,
-            copy_X=True,
-            max_iter=None,
-            tol=1e-3,
-            solver="auto",
-            random_state=None,
-        ):
-            self.alpha = alpha
-            self.fit_intercept = fit_intercept
-            self.normalize = normalize
-            self.copy_X = copy_X
-            self.max_iter = max_iter
-            self.tol = tol
-            self.solver = solver
             self.random_state = random_state
 
     def fit(self, X, y, sample_weight=None):

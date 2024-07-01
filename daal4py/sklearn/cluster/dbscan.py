@@ -121,8 +121,7 @@ class DBSCAN(DBSCAN_original):
             if self.eps <= 0.0:
                 raise ValueError(f"eps == {self.eps}, must be > 0.0.")
 
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        self._check_feature_names(X, reset=True)
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)

@@ -110,10 +110,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
     @wrap_output_data
     def mahalanobis(self, X):
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(X, reset=False)
-        else:
-            X = check_array(X)
+        X = self._validate_data(X, reset=False)
 
         precision = self.get_precision()
         with config_context(assume_finite=True):

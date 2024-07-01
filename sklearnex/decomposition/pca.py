@@ -176,8 +176,7 @@ if daal_check_version((2024, "P", 100)):
 
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
+            self._check_feature_names(X, reset=False)
             X = self._validate_data(
                 X,
                 dtype=[np.float64, np.float32],

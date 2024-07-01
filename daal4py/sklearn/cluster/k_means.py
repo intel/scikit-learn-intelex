@@ -310,8 +310,7 @@ def _fit(self, X, y=None, sample_weight=None):
             raise ValueError(f"n_init should be > 0, got {self.n_init} instead.")
 
         random_state = check_random_state(self.random_state)
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        self._check_feature_names(X, reset=True)
 
         if self.max_iter <= 0:
             raise ValueError(f"max_iter should be > 0, got {self.max_iter} instead.")
@@ -413,8 +412,7 @@ def _fit(self, X, y=None, sample_weight=None):
 
 
 def _daal4py_check_test_data(self, X):
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=False)
+    self._check_feature_names(X, reset=False)
     X = check_array(
         X, accept_sparse="csr", dtype=[np.float64, np.float32], accept_large_sparse=False
     )
@@ -514,7 +512,7 @@ class KMeans(KMeans_original):
                 algorithm=algorithm,
             )
 
-    elif sklearn_check_version("1.0"):
+    else:
 
         @_deprecate_positional_args
         def __init__(
@@ -539,38 +537,6 @@ class KMeans(KMeans_original):
                 verbose=verbose,
                 random_state=random_state,
                 copy_x=copy_x,
-                algorithm=algorithm,
-            )
-
-    else:
-
-        @_deprecate_positional_args
-        def __init__(
-            self,
-            n_clusters=8,
-            *,
-            init="k-means++",
-            n_init=10,
-            max_iter=300,
-            tol=1e-4,
-            precompute_distances="deprecated",
-            verbose=0,
-            random_state=None,
-            copy_x=True,
-            n_jobs="deprecated",
-            algorithm="auto",
-        ):
-            super(KMeans, self).__init__(
-                n_clusters=n_clusters,
-                init=init,
-                max_iter=max_iter,
-                tol=tol,
-                precompute_distances=precompute_distances,
-                n_init=n_init,
-                verbose=verbose,
-                random_state=random_state,
-                copy_x=copy_x,
-                n_jobs=n_jobs,
                 algorithm=algorithm,
             )
 

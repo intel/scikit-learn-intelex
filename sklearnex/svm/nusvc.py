@@ -18,19 +18,16 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
 from sklearn.svm import NuSVC as sklearn_NuSVC
+from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
+from onedal.svm import NuSVC as onedal_NuSVC
 from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVC
-
-if sklearn_check_version("1.0"):
-    from sklearn.utils.metaestimators import available_if
-
-from onedal.svm import NuSVC as onedal_NuSVC
 
 
 @control_n_jobs(
@@ -83,8 +80,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        self._check_feature_names(X, reset=True)
         dispatch(
             self,
             "fit",
@@ -101,8 +97,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict",
@@ -115,8 +110,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "score",
@@ -129,107 +123,85 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             sample_weight=sample_weight,
         )
 
-    if sklearn_check_version("1.0"):
+    @available_if(sklearn_NuSVC._check_proba)
+    def predict_proba(self, X):
+        """
+        Compute probabilities of possible outcomes for samples in X.
 
-        @available_if(sklearn_NuSVC._check_proba)
-        def predict_proba(self, X):
-            """
-            Compute probabilities of possible outcomes for samples in X.
+        The model need to have probability information computed at training
+        time: fit with attribute `probability` set to True.
 
-            The model need to have probability information computed at training
-            time: fit with attribute `probability` set to True.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            For kernel="precomputed", the expected shape of X is
+            (n_samples_test, n_samples_train).
 
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features)
-                For kernel="precomputed", the expected shape of X is
-                (n_samples_test, n_samples_train).
+        Returns
+        -------
+        T : ndarray of shape (n_samples, n_classes)
+            Returns the probability of the sample for each class in
+            the model. The columns correspond to the classes in sorted
+            order, as they appear in the attribute :term:`classes_`.
 
-            Returns
-            -------
-            T : ndarray of shape (n_samples, n_classes)
-                Returns the probability of the sample for each class in
-                the model. The columns correspond to the classes in sorted
-                order, as they appear in the attribute :term:`classes_`.
+        Notes
+        -----
+        The probability model is created using cross validation, so
+        the results can be slightly different than those obtained by
+        predict. Also, it will produce meaningless results on very small
+        datasets.
+        """
+        return self._predict_proba(X)
 
-            Notes
-            -----
-            The probability model is created using cross validation, so
-            the results can be slightly different than those obtained by
-            predict. Also, it will produce meaningless results on very small
-            datasets.
-            """
-            return self._predict_proba(X)
+    @available_if(sklearn_NuSVC._check_proba)
+    def predict_log_proba(self, X):
+        """Compute log probabilities of possible outcomes for samples in X.
 
-        @available_if(sklearn_NuSVC._check_proba)
-        def predict_log_proba(self, X):
-            """Compute log probabilities of possible outcomes for samples in X.
+        The model need to have probability information computed at training
+        time: fit with attribute `probability` set to True.
 
-            The model need to have probability information computed at training
-            time: fit with attribute `probability` set to True.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features) or \
+                (n_samples_test, n_samples_train)
+            For kernel="precomputed", the expected shape of X is
+            (n_samples_test, n_samples_train).
 
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features) or \
-                    (n_samples_test, n_samples_train)
-                For kernel="precomputed", the expected shape of X is
-                (n_samples_test, n_samples_train).
+        Returns
+        -------
+        T : ndarray of shape (n_samples, n_classes)
+            Returns the log-probabilities of the sample for each class in
+            the model. The columns correspond to the classes in sorted
+            order, as they appear in the attribute :term:`classes_`.
 
-            Returns
-            -------
-            T : ndarray of shape (n_samples, n_classes)
-                Returns the log-probabilities of the sample for each class in
-                the model. The columns correspond to the classes in sorted
-                order, as they appear in the attribute :term:`classes_`.
+        Notes
+        -----
+        The probability model is created using cross validation, so
+        the results can be slightly different than those obtained by
+        predict. Also, it will produce meaningless results on very small
+        datasets.
+        """
+        xp, _ = get_namespace(X)
 
-            Notes
-            -----
-            The probability model is created using cross validation, so
-            the results can be slightly different than those obtained by
-            predict. Also, it will produce meaningless results on very small
-            datasets.
-            """
-            xp, _ = get_namespace(X)
-
-            return xp.log(self.predict_proba(X))
-
-    else:
-
-        @property
-        def predict_proba(self):
-            self._check_proba()
-            return self._predict_proba
-
-        def _predict_log_proba(self, X):
-            xp, _ = get_namespace(X)
-            return xp.log(self.predict_proba(X))
-
-        predict_proba.__doc__ = sklearn_NuSVC.predict_proba.__doc__
+        return xp.log(self.predict_proba(X))
 
     @wrap_output_data
     def _predict_proba(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-        sklearn_pred_proba = (
-            sklearn_NuSVC.predict_proba
-            if sklearn_check_version("1.0")
-            else sklearn_NuSVC._predict_proba
-        )
+        self._check_feature_names(X, reset=False)
 
         return dispatch(
             self,
             "predict_proba",
             {
                 "onedal": self.__class__._onedal_predict_proba,
-                "sklearn": sklearn_pred_proba,
+                "sklearn": sklearn_NuSVC.predict_proba,
             },
             X,
         )
 
     @wrap_output_data
     def decision_function(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+        self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "decision_function",

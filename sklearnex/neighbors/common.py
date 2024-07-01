@@ -33,8 +33,7 @@ class KNeighborsDispatchingBase:
     def _fit_validation(self, X, y=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        self._check_feature_names(X, reset=True)
         if self.metric_params is not None and "p" in self.metric_params:
             if self.p is not None:
                 warnings.warn(

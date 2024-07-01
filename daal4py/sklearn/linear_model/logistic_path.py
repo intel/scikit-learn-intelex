@@ -783,8 +783,7 @@ def daal4py_fit(self, X, y, sample_weight=None):
 
 def daal4py_predict(self, X, resultsToEvaluate):
     check_is_fitted(self)
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=False)
+    self._check_feature_names(X, reset=False)
     X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
     try:
         fptype = getFPType(X)
@@ -995,8 +994,7 @@ class LogisticRegression(LogisticRegression_original):
         self.l1_ratio = l1_ratio
 
     def fit(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        self._check_feature_names(X, reset=True)
         if sklearn_check_version("1.2"):
             self._validate_params()
         return daal4py_fit(self, X, y, sample_weight)
