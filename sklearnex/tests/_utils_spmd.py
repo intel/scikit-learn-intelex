@@ -152,9 +152,13 @@ def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
     sorted_spmd_result = spmd_result[np.argsort(np.linalg.norm(spmd_result, axis=1))]
     if localize:
         local_batch_result = _get_local_tensor(batch_result, data_parallel=False)
-        sorted_batch_result = local_batch_result[np.argsort(np.linalg.norm(local_batch_result, axis=1))]
+        sorted_batch_result = local_batch_result[
+            np.argsort(np.linalg.norm(local_batch_result, axis=1))
+        ]
     else:
-        sorted_batch_result = batch_result[np.argsort(np.linalg.norm(batch_result, axis=1))]
+        sorted_batch_result = batch_result[
+            np.argsort(np.linalg.norm(batch_result, axis=1))
+        ]
 
     assert_allclose(sorted_spmd_result, sorted_batch_result)
 
