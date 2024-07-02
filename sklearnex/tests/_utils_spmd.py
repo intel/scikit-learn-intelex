@@ -30,7 +30,7 @@ try:
 except (ImportError, ModuleNotFoundError):
     mpi_libs_available = False
 
-mpi_libs_and_gpu_available = mpi_libs_available and gpu_is_available
+_mpi_libs_and_gpu_available = mpi_libs_available and gpu_is_available
 
 
 def _get_local_tensor(full_data, data_parallel=True):

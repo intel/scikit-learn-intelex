@@ -24,13 +24,13 @@ from ....tests._utils_spmd import (
     _generate_classification_data,
     _generate_regression_data,
     _get_local_tensor,
-    mpi_libs_and_gpu_available,
+    _mpi_libs_and_gpu_available,
     _spmd_assert_allclose,
 )
 
 
 @pytest.mark.skipif(
-    not mpi_libs_and_gpu_available,
+    not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
@@ -86,7 +86,7 @@ def test_knncls_spmd_gold():
 
 
 @pytest.mark.skipif(
-    not mpi_libs_and_gpu_available,
+    not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.parametrize("n_samples", [200, 10000])
@@ -129,7 +129,7 @@ def test_knncls_spmd_synthetic(
 
 
 @pytest.mark.skipif(
-    not mpi_libs_and_gpu_available,
+    not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.mpi
@@ -184,7 +184,7 @@ def test_knnreg_spmd_gold():
 
 
 @pytest.mark.skipif(
-    not mpi_libs_and_gpu_available,
+    not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
 @pytest.mark.parametrize("n_samples", [200, 10000])
