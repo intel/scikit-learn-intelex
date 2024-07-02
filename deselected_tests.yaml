@@ -190,6 +190,13 @@ deselected_tests:
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
 
+  # Logistic Regression coeffs change due to fix for loss scaling
+  # (https://github.com/scikit-learn/scikit-learn/pull/26721)
+  - feature_selection/tests/test_from_model.py::test_importance_getter[estimator0-named_steps.logisticregression.coef_]
+  - inspection/_plot/tests/test_boundary_decision_display.py::test_class_of_interest_binary[predict_proba]
+  - linear_model/tests/test_sag.py::test_sag_pobj_matches_logistic_regression[csr_matrix]
+  - linear_model/tests/test_sag.py::test_sag_pobj_matches_logistic_regression[csr_array]
+
   # This fails on certain platforms. While weighted data does not go through DAAL,
   # unweighted does. Since convergence does not occur (comment in the test
   # suggests that) and because coefficients are slightly different,
