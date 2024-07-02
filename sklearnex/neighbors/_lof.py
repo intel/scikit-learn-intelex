@@ -97,6 +97,8 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
                 self.negative_outlier_factor_, 100.0 * self.contamination
             )
 
+        # adoption of warning for data with duplicated samples from
+        # https://github.com/scikit-learn/scikit-learn/pull/28773
         if sklearn_check_version("1.6"):
             if np.min(self.negative_outlier_factor_) < -1e7 and not self.novelty:
                 warnings.warn(
