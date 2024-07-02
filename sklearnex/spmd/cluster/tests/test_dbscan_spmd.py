@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from ....tests._utils_spmd import (
+from sklearnex.tests._utils_spmd import (
     _generate_clustering_data,
     _get_local_tensor,
     _mpi_libs_and_gpu_available,
