@@ -57,7 +57,7 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,np_sycl,pandas,dpnp,dpctl",
+    dataframe_filter_="numpy,pandas,dpnp,dpctl",
     device_filter_="cpu,gpu",
 ):
     """Get supported dataframes for testing.
