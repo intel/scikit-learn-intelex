@@ -159,7 +159,9 @@ def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
     assert_allclose(sorted_spmd_result, sorted_batch_result)
 
 
-def _assert_kmeans_labels_allclose(spmd_labels, batch_labels, spmd_centers, batch_centers):
+def _assert_kmeans_labels_allclose(
+    spmd_labels, batch_labels, spmd_centers, batch_centers
+):
     """Checks if labels for spmd and batch results are aligned, even cluster indices don't match.
 
     Called to verify labels are assigned the same way on spmd and batch. Uses raw labels (which
