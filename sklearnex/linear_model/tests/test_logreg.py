@@ -37,11 +37,10 @@ def prepare_input(X, y, dataframe, queue):
     return X_train, X_test, y_train, y_test
 
 
-@pytest.mark.parametrize(
-    "dataframe,queue",
-    get_dataframes_and_queues(device_filter_="cpu"),
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_multiclass_classification(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("Logistic Regression fit for the GPU sycl_queue is buggy.")
     from sklearnex.linear_model import LogisticRegression
 
     X, y = load_iris(return_X_y=True)
