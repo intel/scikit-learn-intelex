@@ -24,7 +24,7 @@ steps:
     displayName: "System info"
   - script: |
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) intel::dal-devel mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
+      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) intel::dal-devel mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
     displayName: "Conda create"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
