@@ -63,13 +63,13 @@ if daal_check_version((2024, "P", 600)):
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
     def test_no_intercept_results(queue, dtype):
         seed = 42
-        f_count, r_count = 19, 7
-        s_count, t_count = 3500, 1999
+        n_features, n_targets = 19, 7
+        n_train_samples, n_test_samples = 3500, 1999
 
         gen = np.random.default_rng(seed)
 
-        X = gen.random(size=(s_count, f_count), dtype=dtype)
-        y = gen.random(size=(s_count, r_count), dtype=dtype)
+        X = gen.random(size=(n_train_samples, n_features), dtype=dtype)
+        y = gen.random(size=(n_train_samples, n_targets), dtype=dtype)
         alpha = 0.5
 
         lambda_identity = alpha * np.eye(X.shape[1])
@@ -80,13 +80,13 @@ if daal_check_version((2024, "P", 600)):
         model = LinearRegression(fit_intercept=False, alpha=alpha)
         model.fit(X, y, queue=queue)
 
-        if queue.sycl_device.is_gpu:
+        if queue and queue.sycl_device.is_gpu:
             tol = 5e-3 if model.coef_.dtype == np.float32 else 1e-5
         else:
             tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
         assert_allclose(coef, model.coef_.T, rtol=tol)
 
-        Xt = gen.random(size=(t_count, f_count), dtype=dtype)
+        Xt = gen.random(size=(n_test_samples, n_features), dtype=dtype)
         gtr = Xt @ coef
 
         res = model.predict(Xt, queue=queue)
