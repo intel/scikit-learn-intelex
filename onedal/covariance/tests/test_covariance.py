@@ -25,7 +25,7 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("np_sycl"))
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,np_sycl"))
 def test_onedal_import_covariance(dataframe, queue):
     from onedal.covariance import EmpiricalCovariance
 
