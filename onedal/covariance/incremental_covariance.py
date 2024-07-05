@@ -58,9 +58,37 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self._reset()
 
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = self._get_backend(
             "covariance", None, "partial_compute_result"
         )
+
+    def __getstate__(self):
+        self.finalize_fit()
+        data = self.__dict__.copy()
+        partial_result_data = dict()
+        partial_result_data['partial_n_rows'] = from_table(data["_partial_result"].partial_n_rows)
+        partial_result_data['partial_crossproduct'] = from_table(data["_partial_result"].partial_crossproduct)
+        partial_result_data['partial_sums'] = from_table(data["_partial_result"].partial_sums)
+        data["_partial_result"] = partial_result_data
+        data.pop('_policy', None)
+
+        return data
+
+    def __setstate__(self, data):
+        partial_result = self._get_backend(
+            "covariance", None, "partial_compute_result"
+        )
+        if data["_partial_result"]["partial_n_rows"].size > 0:
+            partial_result.partial_n_rows = to_table(data["_partial_result"]["partial_n_rows"])
+        if data["_partial_result"]["partial_crossproduct"].size > 0:
+            partial_result.partial_crossproduct = to_table(data["_partial_result"]["partial_crossproduct"])
+        if data["_partial_result"]["partial_sums"].size > 0:
+            partial_result.partial_sums = to_table(data["_partial_result"]["partial_sums"])
+
+        data["_partial_result"] = partial_result
+
+        self.__dict__ = data
 
     def partial_fit(self, X, y=None, queue=None):
         """
@@ -105,6 +133,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             self._partial_result,
             table_X,
         )
+        self._need_to_finalize = True
 
     def finalize_fit(self, queue=None):
         """
@@ -121,21 +150,22 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self : object
             Returns the instance itself.
         """
-        params = self._get_onedal_params(self._dtype)
-        result = self._get_backend(
-            "covariance",
-            None,
-            "finalize_compute",
-            self._policy,
-            params,
-            self._partial_result,
-        )
-        if daal_check_version((2024, "P", 1)) or (not self.bias):
-            self.covariance_ = from_table(result.cov_matrix)
-        else:
-            n_rows = self._partial_result.partial_n_rows
-            self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
+        if self._need_to_finalize:
+            params = self._get_onedal_params(self._dtype)
+            result = self._get_backend(
+                "covariance",
+                None,
+                "finalize_compute",
+                self._policy,
+                params,
+                self._partial_result,
+            )
+            if daal_check_version((2024, "P", 1)) or (not self.bias):
+                self.covariance_ = from_table(result.cov_matrix)
+            else:
+                n_rows = self._partial_result.partial_n_rows
+                self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
 
-        self.location_ = from_table(result.means).ravel()
+            self.location_ = from_table(result.means).ravel()
 
         return self
