@@ -20,6 +20,10 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn.linear_model.tests.test_ridge import (
+    _test_multivariate_ridge_alpha_shape,
+    _test_multivariate_ridge_coefficients,
+)
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
@@ -115,3 +119,15 @@ def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
 
     tol = 1e-5 if _as_numpy(y_pred).dtype == np.float32 else 1e-7
     assert_allclose(gtr, _as_numpy(y_pred), rtol=tol)
+
+
+def test_sklearnex_multivariate_ridge_coefs():
+    from sklearnex.linear_model import Ridge
+
+    _test_multivariate_ridge_coefficients(Ridge, random_state=0)
+
+
+def test_sklearnex_multivariate_ridge_alpha_shape():
+    from sklearnex.linear_model import Ridge
+
+    _test_multivariate_ridge_alpha_shape(Ridge, random_state=0)

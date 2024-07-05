@@ -19,20 +19,14 @@ import pytest
 from sklearn.datasets import make_regression
 
 
-def test_multivariate_ridge_coefficients():
-    from daal4py.sklearn.linear_model._ridge import Ridge
-
-    X, y = make_regression(n_samples=10, n_features=5, n_targets=3, random_state=0)
-
-    # asserting exception if alpha has wrong shape
-    wrong_alpha_shape = numpy.random.rand(5)
-    with pytest.raises(ValueError):
-        model = Ridge(alpha=wrong_alpha_shape).fit(X, y)
+def _test_multivariate_ridge_coefficients(ridge_class, random_state):
+    X, y = make_regression(
+        n_samples=10, n_features=5, n_targets=3, random_state=random_state
+    )
+    alpha = 3 + numpy.random.rand(3) * 5
 
     # computing coefficients using daal4py Ridge
-    alpha = 3 + numpy.random.rand(3) * 5
-    model = Ridge(fit_intercept=False, alpha=alpha)
-
+    model = ridge_class(fit_intercept=False, alpha=alpha)
     model.fit(X, y)
 
     # computing coefficients manually
@@ -49,3 +43,27 @@ def test_multivariate_ridge_coefficients():
 
     # asserting that the coefficients are close
     numpy.testing.assert_allclose(model.coef_, betas, rtol=1e-3, atol=1e-3)
+
+
+def _test_multivariate_ridge_alpha_shape(ridge_class, random_state):
+    X, y = make_regression(
+        n_samples=10, n_features=5, n_targets=3, random_state=random_state
+    )
+    wrong_shape_alpha = numpy.random.rand(5)
+    # asserting exception if alpha has wrong shape
+    with pytest.raises(ValueError):
+        ridge_class(alpha=wrong_shape_alpha).fit(X, y)
+
+
+def test_multivariate_ridge_coefficients():
+    from daal4py.sklearn.linear_model._ridge import Ridge
+
+    random_state = 0
+    _test_multivariate_ridge_coefficients(Ridge, random_state)
+
+
+def test_multivariate_ridge_alpha_shape():
+    from daal4py.sklearn.linear_model._ridge import Ridge
+
+    random_state = 0
+    _test_multivariate_ridge_alpha_shape(Ridge, random_state)
