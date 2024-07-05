@@ -17,6 +17,8 @@
 from daal4py.sklearn.linear_model import Ridge
 from onedal._device_offload import support_array_api
 
+# Note: `sklearnex.linear_model.Ridge` only has functional
+# sycl GPU support. No GPU device will be offloaded.
 Ridge.fit = support_array_api(queue_param=False)(Ridge.fit)
 Ridge.predict = support_array_api(queue_param=False)(Ridge.predict)
 Ridge.score = support_array_api(queue_param=False)(Ridge.score)

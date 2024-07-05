@@ -38,8 +38,7 @@ def prepare_input(X, y, dataframe, queue):
 
 
 @pytest.mark.parametrize(
-    "dataframe,queue",
-    get_dataframes_and_queues(device_filter_="cpu"),
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
 )
 def test_sklearnex_multiclass_classification(dataframe, queue):
     from sklearnex.linear_model import LogisticRegression

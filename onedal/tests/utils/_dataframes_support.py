@@ -59,6 +59,34 @@ from onedal.tests.utils._device_selection import get_queues
 def get_dataframes_and_queues(
     dataframe_filter_="numpy,pandas,dpnp,dpctl,array_api", device_filter_="cpu,gpu"
 ):
+    """Get supported dataframes for testing.
+
+    This is meant to be used for testing purposes only.
+
+    Parameters
+    ----------
+    dataframe_filter_ : str, default="numpy,pandas,dpnp,dpctl"
+        Configure output pytest.params for the certain dataframe formats.
+    device_filter_ : str, default="cpu,gpu"
+        Configure output pytest.params with certain sycl queue for the dataframe,
+        where it is applicable.
+
+    Returns
+    -------
+    list[pytest.param]
+        The list of pytest params, included dataframe name (str),
+        sycl queue, if applicable for the test case, and test
+        case id (str).
+
+    Notes
+    -----
+        Do not use filters for the test cases disabling. Use `pytest.skip`
+        or `pytest.xfail` instead.
+
+    See Also
+    --------
+    _convert_to_dataframe : Converted input object to certain dataframe format.
+    """
     dataframes_and_queues = []
 
     if "numpy" in dataframe_filter_:
@@ -95,6 +123,7 @@ def _as_numpy(obj, *args, **kwargs):
 
 
 def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs):
+    """Converted input object to certain dataframe format."""
     if target_df is None:
         return obj
     elif target_df == "numpy":
