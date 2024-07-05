@@ -19,11 +19,9 @@ import logging
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 if daal_check_version((2024, "P", 600)):
-    from abc import ABC
-
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.linear_model import Ridge as sklearn_RidgeRegression
+    from sklearn.linear_model import Ridge as sklearn_Ridge
     from sklearn.metrics import r2_score
     from sklearn.utils.validation import check_is_fitted, check_X_y
 
@@ -32,11 +30,11 @@ if daal_check_version((2024, "P", 600)):
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
         from sklearn.linear_model._base import _deprecate_normalize
 
-    from onedal.linear_model import LinearRegression as onedal_RidgeRegression
+    from onedal.linear_model import Ridge as onedal_Ridge
     from onedal.utils import _num_features, _num_samples
 
     from ..._device_offload import dispatch, wrap_output_data
-    from ..._utils import PatchingConditionsChain, get_patch_message
+    from ..._utils import PatchingConditionsChain
     from ...utils import get_namespace
     from ...utils.validation import _assert_all_finite
 
@@ -76,13 +74,11 @@ if daal_check_version((2024, "P", 600)):
 
         return True
 
-    class Ridge(sklearn_RidgeRegression):
-        __doc__ = sklearn_RidgeRegression.__doc__
+    class Ridge(sklearn_Ridge):
+        __doc__ = sklearn_Ridge.__doc__
 
         if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {
-                **sklearn_RidgeRegression._parameter_constraints
-            }
+            _parameter_constraints: dict = {**sklearn_Ridge._parameter_constraints}
 
             def __init__(
                 self,
@@ -143,7 +139,7 @@ if daal_check_version((2024, "P", 600)):
                 "fit",
                 {
                     "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_RidgeRegression.fit,
+                    "sklearn": sklearn_Ridge.fit,
                 },
                 X,
                 y,
@@ -160,7 +156,7 @@ if daal_check_version((2024, "P", 600)):
                 "predict",
                 {
                     "onedal": self.__class__._onedal_predict,
-                    "sklearn": sklearn_RidgeRegression.predict,
+                    "sklearn": sklearn_Ridge.predict,
                 },
                 X,
             )
@@ -174,7 +170,7 @@ if daal_check_version((2024, "P", 600)):
                 "score",
                 {
                     "onedal": self.__class__._onedal_score,
-                    "sklearn": sklearn_RidgeRegression.score,
+                    "sklearn": sklearn_Ridge.score,
                 },
                 X,
                 y,
@@ -309,7 +305,7 @@ if daal_check_version((2024, "P", 600)):
                 "alpha": self.alpha,
                 "copy_X": self.copy_X,
             }
-            self._onedal_estimator = onedal_RidgeRegression(**onedal_params)
+            self._onedal_estimator = onedal_Ridge(**onedal_params)
 
         def _daal_fit(self, X, y, sample_weight=None):
             daal4py_fit_ridge(self, X, y, sample_weight)
@@ -404,9 +400,9 @@ if daal_check_version((2024, "P", 600)):
             self._coef = self._onedal_estimator.coef_
             self._intercept = self._onedal_estimator.intercept_
 
-        fit.__doc__ = sklearn_RidgeRegression.fit.__doc__
-        predict.__doc__ = sklearn_RidgeRegression.predict.__doc__
-        score.__doc__ = sklearn_RidgeRegression.score.__doc__
+        fit.__doc__ = sklearn_Ridge.fit.__doc__
+        predict.__doc__ = sklearn_Ridge.predict.__doc__
+        score.__doc__ = sklearn_Ridge.score.__doc__
 
 else:
     from daal4py.sklearn.linear_model._ridge import Ridge

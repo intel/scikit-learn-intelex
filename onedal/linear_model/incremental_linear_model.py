@@ -42,11 +42,9 @@ class IncrementalLinearRegression(BaseLinearRegression):
         Algorithm used for computation on oneDAL side
     """
 
-    def __init__(self, fit_intercept=True, alpha=0.0, copy_X=False, algorithm="norm_eq"):
+    def __init__(self, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
         module = self._get_backend("linear_model", "regression")
-        super().__init__(
-            fit_intercept=fit_intercept, alpha=alpha, copy_X=copy_X, algorithm=algorithm
-        )
+        super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
         self._partial_result = module.partial_train_result()
 
     def _reset(self):
