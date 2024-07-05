@@ -98,7 +98,7 @@ class BasicStatistics(BaseBasicStatistics):
 
     def compute(self, data, weights=None, queue=None):
         warnings.warn(
-            "Method `compute` was deprecated in version 2024.6 and will be "
+            "Method `compute` was deprecated in version 2024.7 and will be "
             "removed in 2025.0. Use `fit` instead."
         )
 

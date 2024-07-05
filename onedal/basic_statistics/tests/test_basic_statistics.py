@@ -304,7 +304,7 @@ def test_warning():
 
     with pytest.warns(
         UserWarning,
-        match="Method `compute` was deprecated in version 2024.6 and will be removed in 2025.0. Use `fit` instead.",
+        match="Method `compute` was deprecated in version 2024.7 and will be removed in 2025.0. Use `fit` instead.",
     ) as warn_record:
         basicstat.compute(data)
 
