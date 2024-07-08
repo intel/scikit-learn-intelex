@@ -43,6 +43,7 @@ from sklearnex.tests._utils import (
     SPECIAL_INSTANCES,
     UNPATCHED_FUNCTIONS,
     UNPATCHED_MODELS,
+    call_method,
     gen_dataset,
     gen_models_info,
 )
@@ -165,18 +166,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
         est.fit(X, y)
 
         if method:
-            if method == "inverse_transform":
-                # PCA's inverse_transform takes (n_samples, n_components)
-                data = (
-                    (X[:, : est.n_components_],)
-                    if X.shape[1] != est.n_components_
-                    else (X,)
-                )
-            elif method not in ["score", "partial_fit", "path"]:
-                data = (X,)
-            else:
-                data = (X, y)
-            getattr(est, method)(*data)
+            call_method(est, method, X, y)
 
     assert all(
         [

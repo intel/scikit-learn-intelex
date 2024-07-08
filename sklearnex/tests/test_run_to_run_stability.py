@@ -25,6 +25,7 @@ from _utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     _sklearn_clone_dict,
+    call_method,
     gen_dataset,
     gen_models_info,
 )
@@ -73,17 +74,7 @@ def eval_method(X, y, est, method):
     est.fit(X, y)
 
     if method:
-        attr = getattr(est, method)
-        if method == "inverse_transform":
-            # PCA's inverse_transform takes (n_samples, n_components)
-            data = (
-                (X[:, : est.n_components_],) if X.shape[1] != est.n_components_ else (X,)
-            )
-        elif method not in ["score", "partial_fit", "path"]:
-            data = (X,)
-        else:
-            data = (X, y)
-        res = attr(*data)
+        res = call_method(est, method, X, y)
 
     if not isinstance(res, Iterable):
         results = [_as_numpy(res)] if res is not est else []

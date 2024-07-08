@@ -150,6 +150,23 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
     return output
 
 
+def call_method(estimator, method, X, y, **kwargs):
+    # generalized interface to most sklearn estimator methods
+    # useful for repository wide testing
+    if method == "inverse_transform":
+        # PCA's inverse_transform takes (n_samples, n_components)
+        data = (
+            (X[:, : estimator.n_components_],)
+            if X.shape[1] != estimator.n_components_
+            else (X,)
+        )
+    elif method not in ["score", "partial_fit", "path"]:
+        data = (X,)
+    else:
+        data = (X, y)
+    return getattr(est, method)(*data, **kwargs)
+
+
 def gen_dataset_type(est):
     # est should be an estimator or estimator class
     # dataset initialized to classification, but will be swapped
