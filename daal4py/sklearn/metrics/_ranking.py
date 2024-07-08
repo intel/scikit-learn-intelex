@@ -29,7 +29,6 @@ from sklearn.utils.multiclass import is_multilabel
 
 import daal4py as d4p
 
-from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, get_patch_message, sklearn_check_version
 from ..utils.validation import _assert_all_finite
 
@@ -119,7 +118,6 @@ def _daal_type_of_target(y):
     return result
 
 
-@support_usm_ndarray(freefunc=True)
 def roc_auc_score(
     y_true,
     y_score,

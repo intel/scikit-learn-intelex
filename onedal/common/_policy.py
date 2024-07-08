@@ -18,10 +18,6 @@ import sys
 
 from onedal import _backend, _is_dpc_backend
 
-oneapi_is_available = "daal4py.oneapi" in sys.modules
-if oneapi_is_available:
-    from daal4py.oneapi import _get_sycl_ctxt, sycl_execution_context
-
 
 def _get_policy(queue, *data):
     data_queue = _get_queue(*data)
@@ -46,33 +42,18 @@ def _get_queue(*data):
     return None
 
 
-class _Daal4PyContextReset:
-    def __init__(self):
-        self._d4p_context = None
-        if oneapi_is_available:
-            self._d4p_context = _get_sycl_ctxt()
-
-    def __del__(self):
-        if self._d4p_context:
-            self._d4p_context.apply()
-
-
 class _HostInteropPolicy(_backend.host_policy):
     def __init__(self):
         super().__init__()
-        self._d4p_interop = _Daal4PyContextReset()
 
 
 if _is_dpc_backend:
+    from onedal._device_offload import DummySyclQueue
 
     class _DataParallelInteropPolicy(_backend.data_parallel_policy):
         def __init__(self, queue):
             self._queue = queue
-            self._d4p_interop = _Daal4PyContextReset()
-            if "sklearnex" in sys.modules:
-                from sklearnex._device_offload import DummySyclQueue
-
-                if isinstance(queue, DummySyclQueue):
-                    super().__init__(self._queue.sycl_device.get_filter_string())
-                    return
+            if isinstance(queue, DummySyclQueue):
+                super().__init__(self._queue.sycl_device.get_filter_string())
+                return
             super().__init__(self._queue)
