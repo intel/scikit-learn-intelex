@@ -223,6 +223,11 @@ if daal_check_version((2024, "P", 100)):
                 components = self.components_
 
             if "numpy" not in xp.__name__:
+                # DPCtl and dpnp require inputs to be on the same device for
+                # matrix multiplication and division. The type and location
+                # of the components and mean are dependent on the sklearn
+                # version, this makes sure it is of the same type and on the
+                # same device as the data (compute follows data).
                 components = xp.asarray(components, device=X.device)
                 mean = xp.asarray(mean, device=X.device)
 
