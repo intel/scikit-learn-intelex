@@ -345,6 +345,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         # check_feature_names will match _validate_data functionally
         location = self.location_[np.newaxis, :]
         if "numpy" not in xp.__name__:
+            # Guarantee that inputs to pairwise_distances match in type and location
             location = xp.asarray(location, device=X.device)
 
         try:
