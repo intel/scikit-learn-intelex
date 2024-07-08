@@ -16,11 +16,11 @@
 
 import numpy
 import pytest
+from numpy.testing import assert_allclose
 from sklearn.exceptions import NotFittedError
 
 from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -41,8 +41,8 @@ def test_sklearnex_import_ridge(dataframe, queue):
     else:
         assert "daal4py" in ridgereg.__module__
 
-    numpy.testing.assert_allclose(ridgereg.intercept_, 3.86, rtol=1e-2)
-    numpy.testing.assert_allclose(ridgereg.coef_, [0.91, 1.64], rtol=1e-2)
+    assert_allclose(ridgereg.intercept_, 3.86, rtol=1e-2)
+    assert_allclose(ridgereg.coef_, [0.91, 1.64], rtol=1e-2)
 
 
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 1.0])
@@ -60,7 +60,7 @@ def test_ridge_coefficients(alpha):
     xt_y = numpy.dot(X.T, y)
     coefficients_manual = numpy.dot(inverse_term, xt_y)
 
-    numpy.testing.assert_allclose(ridgereg.coef_, coefficients_manual, rtol=1e-2)
+    assert_allclose(ridgereg.coef_, coefficients_manual, rtol=1e-2)
 
 
 if daal_check_version((2024, "P", 600)):
