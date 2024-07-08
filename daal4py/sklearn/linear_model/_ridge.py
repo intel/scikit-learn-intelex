@@ -25,7 +25,6 @@ from sklearn.utils import check_array, check_X_y
 
 import daal4py
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from .._utils import (
     PatchingConditionsChain,
@@ -316,16 +315,11 @@ class Ridge(Ridge_original, _BaseRidge):
             self.solver = solver
             self.random_state = random_state
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         return _fit_ridge(self, X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return _predict_ridge(self, X)
 
-    score = support_usm_ndarray()(Ridge_original.score)
-
     fit.__doc__ = Ridge_original.fit.__doc__
     predict.__doc__ = Ridge_original.predict.__doc__
-    score.__doc__ = Ridge_original.score.__doc__

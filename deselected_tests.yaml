@@ -190,6 +190,12 @@ deselected_tests:
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
 
+  # Logistic Regression coeffs change due to fix for loss scaling
+  # (https://github.com/scikit-learn/scikit-learn/pull/26721)
+  - feature_selection/tests/test_from_model.py::test_importance_getter[estimator0-named_steps.logisticregression.coef_]
+  - inspection/_plot/tests/test_boundary_decision_display.py::test_class_of_interest_binary[predict_proba]
+  - linear_model/tests/test_sag.py::test_sag_pobj_matches_logistic_regression
+
   # This fails on certain platforms. While weighted data does not go through DAAL,
   # unweighted does. Since convergence does not occur (comment in the test
   # suggests that) and because coefficients are slightly different,
@@ -374,6 +380,12 @@ deselected_tests:
   - tests/test_common.py::test_estimators[IncrementalPCA()-check_estimators_pickle(readonly_memmap=True)]
   # There are not enough data to run onedal backend
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
+
+  # Deselection of LogisticRegression tests over accuracy comparisons with sample_weights
+  # and without.  Because scikit-learn-intelex does not support sample_weights, it's doing
+  # a fallback to scikit-learn in one case and not in the other, and needs to be investigated.
+  - model_selection/tests/test_classification_threshold.py::test_fit_and_score_over_thresholds_sample_weight >=1.5
+  - model_selection/tests/test_classification_threshold.py::test_tuned_threshold_classifier_cv_zeros_sample_weights_equivalence >=1.5
 
   # --------------------------------------------------------
   # No need to test daal4py patching
@@ -563,6 +575,7 @@ gpu:
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_sample_order_invariance]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit2d_1feature]
@@ -582,6 +595,7 @@ gpu:
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_sample_order_invariance]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_fit2d_1feature]

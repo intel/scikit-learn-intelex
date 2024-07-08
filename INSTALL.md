@@ -26,7 +26,6 @@ To install Intel(R) Extension for Scikit-learn*, use one of the following scenar
 - [Install from Anaconda Cloud](#install-from-anaconda-cloud)
   - [Install via Anaconda Cloud from Conda-Forge Channel](#install-via-anaconda-cloud-from-conda-forge-channel)
   - [Install via Anaconda Cloud from Intel Channel](#install-via-anaconda-cloud-from-intel-channel)
-  - [Install via Anaconda Cloud from Main Channel](#install-via-anaconda-cloud-from-main-channel)
 - [Build from Sources](#build-from-sources)
   - [Prerequisites](#prerequisites)
   - [Configure the Build with Environment Variables](#configure-the-build-with-environment-variables)
@@ -52,7 +51,6 @@ Applicable for:
 * PyPI
 * Anaconda Cloud from Conda-Forge Channel
 * Anaconda Cloud from Intel Channel
-* Anaconda Cloud from Main Channel
 
 
 
@@ -126,16 +124,6 @@ We recommend this installation for the users of Intel® Distribution for Python.
   conda config --add channels intel
   conda config --set channel_priority strict
   conda install scikit-learn-intelex
-  ```
-
-### Install via Anaconda Cloud from Main Channel
-
-> **_NOTE:_** You may not find the latest version on the Anaconda Main channel since it usually lags on versions deployed. 
-
-- Install into a newly created environment (recommended):
-
-  ```bash
-  conda create -n env python=3.10 scikit-learn-intelex
   ```
 
 > **_NOTE:_** If you do not specify the version of Python, the latest one is downloaded. 
