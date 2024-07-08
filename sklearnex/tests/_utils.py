@@ -164,7 +164,7 @@ def call_method(estimator, method, X, y, **kwargs):
         data = (X,)
     else:
         data = (X, y)
-    return getattr(est, method)(*data, **kwargs)
+    return getattr(estimator, method)(*data, **kwargs)
 
 
 def gen_dataset_type(est):
