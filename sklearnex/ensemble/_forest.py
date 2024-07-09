@@ -39,9 +39,9 @@ from sklearn.tree import (
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
 from sklearn.utils.validation import (
+    _check_sample_weight,
     check_array,
     check_is_fitted,
-    _check_sample_weight,
     check_X_y,
 )
 
