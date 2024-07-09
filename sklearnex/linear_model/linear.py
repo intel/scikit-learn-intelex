@@ -182,7 +182,7 @@ class LinearRegression(sklearn_LinearRegression):
         if not dal_ready:
             return patching_status
 
-        patching_status.and_condition(
+        patching_status.and_conditions(
             [
                 (not np.iscomplexobj(X), "Input X is not supported."),
                 (not np.iscomplexobj(y), "Input y is not supported."),
