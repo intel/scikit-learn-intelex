@@ -36,7 +36,7 @@ def test_diabetes(queue, dtype):
     model = LinearRegression(fit_intercept=True)
     model.fit(X_train, y_train, queue=queue)
     y_pred = model.predict(X_test, queue=queue)
-    assert mean_squared_error(y_test, y_pred) < 2396
+    assert_allclose(mean_squared_error(y_test, y_pred), 2395.567, rtol=1e-5)
 
 
 @pytest.mark.parametrize("queue", get_queues())

@@ -38,7 +38,7 @@ if daal_check_version((2024, "P", 600)):
         model = Ridge(fit_intercept=True, alpha=0.1)
         model.fit(X_train, y_train, queue=queue)
         y_pred = model.predict(X_test, queue=queue)
-        assert mean_squared_error(y_test, y_pred) < 2396
+        assert_allclose(mean_squared_error(y_test, y_pred), 2388.775, rtol=1e-5)
 
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])
