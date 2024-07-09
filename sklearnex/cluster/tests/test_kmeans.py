@@ -33,7 +33,6 @@ def test_sklearnex_import(dataframe, queue):
 
     X_train = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
     X_test = np.array([[0, 0], [12, 3]])
-    expected_cluster_labels = np.array([1, 0], dtype=np.int32)
     X_train = _convert_to_dataframe(X_train, sycl_queue=queue, target_df=dataframe)
     X_test = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
 
@@ -44,4 +43,9 @@ def test_sklearnex_import(dataframe, queue):
         assert "daal4py" in kmeans.__module__
 
     result_cluster_labels = kmeans.predict(X_test)
+    if queue and queue.sycl_device.is_gpu:
+        # KMeans Init Dense GPU implementation is different from CPU
+        expected_cluster_labels = np.array([0, 1], dtype=np.int32)
+    else:
+        expected_cluster_labels = np.array([1, 0], dtype=np.int32)
     assert_allclose(expected_cluster_labels, _as_numpy(result_cluster_labels))
