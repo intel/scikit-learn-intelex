@@ -209,6 +209,38 @@ def test_whitened_toy_score(dataframe, queue):
     assert_allclose(expected_result, result, atol=1e-6)
 
 
+@pytest.mark.parametrize("dtype", [np.float32])
+def test_pickle(dataframe, queue, dtype):
+    import pickle
+
+    from sklearnex.covariance import IncrementalEmpiricalCovariance
+
+    inccov = IncrementalEmpiricalCovariance()
+    dump = pickle.dumps(inccov)
+    inccov_loaded = pickle.loads(dump)
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=(10, 10))
+    X = X.astype(dtype)
+    X_split = np.array_split(X, 2)
+    X_split_df = _convert_to_dataframe(X_split[0], sycl_queue=queue, target_df=dataframe)
+    inccov.partial_fit(X_split_df)
+    inccov_loaded.partial_fit(X_split_df)
+    dump = pickle.dumps(inccov_loaded)
+    inccov_loaded = pickle.loads(dump)
+    X_split_df = _convert_to_dataframe(X_split[1], sycl_queue=queue, target_df=dataframe)
+    inccov.partial_fit(X_split_df)
+    inccov_loaded.partial_fit(X_split_df)
+    dump = pickle.dumps(inccov)
+    inccov_loaded = pickle.loads(dump)
+
+    dump = pickle.dumps(inccov_loaded)
+    inccov_loaded = pickle.loads(dump)
+
+    assert_allclose(inccov.location_, inccov_loaded.location_, atol=1e-6)
+    assert_allclose(inccov.covariance_, inccov_loaded.covariance_, atol=1e-6)
+
+
 # Monkeypatch IncrementalEmpiricalCovariance into relevant sklearn.covariance tests
 @pytest.mark.allow_sklearn_fallback
 @pytest.mark.parametrize(
