@@ -48,11 +48,12 @@ def _daal4py_fit(self, X, y_):
 
     ridge_params = np.asarray(self.alpha, dtype=X.dtype)
     if ridge_params.size != 1 and ridge_params.size != y.shape[1]:
+        # incorrect order of parameters in the error message is intentional to match sklearn
         raise ValueError(
             "Number of targets and number of penalties do not correspond: "
             f"{ridge_params.size} != {y.shape[1]}"
         )
-    ridge_params = ridge_params.reshape((1, -1))
+    ridge_params = ridge_params.reshape((-1, 1))
 
     ridge_alg = daal4py.ridge_regression_training(
         fptype=_fptype,
@@ -60,6 +61,7 @@ def _daal4py_fit(self, X, y_):
         interceptFlag=(self.fit_intercept is True),
         ridgeParameters=ridge_params,
     )
+
     try:
         ridge_res = ridge_alg.compute(X, y)
     except RuntimeError:
