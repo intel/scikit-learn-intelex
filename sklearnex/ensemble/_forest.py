@@ -38,7 +38,12 @@ from sklearn.tree import (
 )
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import (
+    check_array,
+    check_is_fitted,
+    _check_sample_weight,
+    check_X_y,
+)
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import (
@@ -78,7 +83,7 @@ class BaseForest(ABC):
         )
 
         if sample_weight is not None:
-            sample_weight = self._check_sample_weight(sample_weight, X)
+            sample_weight = _check_sample_weight(sample_weight, X)
 
         if y.ndim == 2 and y.shape[1] == 1:
             warnings.warn(
@@ -288,38 +293,6 @@ class BaseForest(ABC):
             raise ValueError(
                 "min_bin_size must be integral number but was " "%r" % self.min_bin_size
             )
-
-    def _check_sample_weight(self, sample_weight, X, dtype=None):
-        n_samples = _num_samples(X)
-
-        if dtype is not None and dtype not in [np.float32, np.float64]:
-            dtype = np.float64
-
-        if sample_weight is None:
-            sample_weight = np.ones(n_samples, dtype=dtype)
-        elif isinstance(sample_weight, numbers.Number):
-            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
-        else:
-            if dtype is None:
-                dtype = [np.float64, np.float32]
-            sample_weight = check_array(
-                sample_weight,
-                accept_sparse=False,
-                ensure_2d=False,
-                dtype=dtype,
-                order="C",
-                force_all_finite=False,
-            )
-            if sample_weight.ndim != 1:
-                raise ValueError("Sample weights must be 1D array or scalar")
-
-            if sample_weight.shape != (n_samples,):
-                raise ValueError(
-                    "sample_weight.shape == {}, expected {}!".format(
-                        sample_weight.shape, (n_samples,)
-                    )
-                )
-        return sample_weight
 
     @property
     def estimators_(self):
