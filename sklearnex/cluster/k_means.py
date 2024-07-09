@@ -209,7 +209,8 @@ if daal_check_version((2023, "P", 200)):
 
             @wrap_output_data
             def predict(self, X):
-                self._validate_params()
+                if sklearn_check_version("1.2"):
+                    self._validate_params()
 
                 return dispatch(
                     self,
