@@ -213,7 +213,7 @@ class LinearRegression(sklearn_LinearRegression):
             return patching_status
 
         patching_status.and_condition(
-            self._test_type_and_finiteness(data[0]), "Input X is not supported."
+            not np.iscomplexobj(data[0]), "Input X is not supported."
         )
 
         return patching_status
@@ -242,7 +242,6 @@ class LinearRegression(sklearn_LinearRegression):
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
             "multi_output": True,
-            "force_all_finite": False,
         }
         if sklearn_check_version("1.2"):
             X, y = self._validate_data(**check_params)
