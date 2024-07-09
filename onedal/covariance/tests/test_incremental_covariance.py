@@ -27,8 +27,8 @@ def test_on_gold_data_unbiased(queue, dtype):
     from onedal.covariance import IncrementalEmpiricalCovariance
 
     X = np.array([[0, 1], [0, 1]])
-    X_split = np.array_split(X, 2)
     X = X.astype(dtype)
+    X_split = np.array_split(X, 2)
     inccov = IncrementalEmpiricalCovariance()
 
     for i in range(2):
