@@ -24,7 +24,7 @@ if daal_check_version((2024, "P", 600)):
     from sklearn.metrics import mean_squared_error
     from sklearn.model_selection import train_test_split
 
-    from onedal.linear_model import LinearRegression
+    from onedal.linear_model import Ridge
     from onedal.tests.utils._device_selection import get_queues
 
     @pytest.mark.parametrize("queue", get_queues())
@@ -35,7 +35,7 @@ if daal_check_version((2024, "P", 600)):
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, train_size=0.8, random_state=777
         )
-        model = LinearRegression(fit_intercept=True, alpha=0.1)
+        model = Ridge(fit_intercept=True, alpha=0.1)
         model.fit(X_train, y_train, queue=queue)
         y_pred = model.predict(X_test, queue=queue)
         assert mean_squared_error(y_test, y_pred) < 2396
@@ -45,7 +45,7 @@ if daal_check_version((2024, "P", 600)):
     def test_pickle(queue, dtype):
         X, y = load_diabetes(return_X_y=True)
         X, y = X.astype(dtype), y.astype(dtype)
-        model = LinearRegression(fit_intercept=True, alpha=0.5)
+        model = Ridge(fit_intercept=True, alpha=0.5)
         model.fit(X, y, queue=queue)
         expected = model.predict(X, queue=queue)
 
@@ -77,7 +77,7 @@ if daal_check_version((2024, "P", 600)):
         xt_y = np.dot(X.T, y)
         coef = np.dot(inverse_term, xt_y)
 
-        model = LinearRegression(fit_intercept=False, alpha=alpha)
+        model = Ridge(fit_intercept=False, alpha=alpha)
         model.fit(X, y, queue=queue)
 
         if queue and queue.sycl_device.is_gpu:

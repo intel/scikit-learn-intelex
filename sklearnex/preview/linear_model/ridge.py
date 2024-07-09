@@ -35,8 +35,6 @@ if daal_check_version((2024, "P", 600)):
 
     from ..._device_offload import dispatch, wrap_output_data
     from ..._utils import PatchingConditionsChain
-    from ...utils import get_namespace
-    from ...utils.validation import _assert_all_finite
 
     def _is_numeric_scalar(value):
         """
@@ -49,30 +47,6 @@ if daal_check_version((2024, "P", 600)):
         bool: True if the value is either an int or a float, False otherwise.
         """
         return isinstance(value, (int, float))
-
-    def _test_type_and_finiteness(X_in):
-        """
-        Checks if the input is of a supported type and is finite.
-
-        Args:
-        X_in: The input to be checked.
-
-        Returns:
-        bool: True if the input is of a supported type and is finite, False otherwise.
-        """
-
-        xp, _ = get_namespace(X_in)
-        X = xp.asarray(X_in)
-
-        if np.iscomplexobj(X):
-            return False
-
-        try:
-            _assert_all_finite(X)
-        except BaseException:
-            return False
-
-        return True
 
     class Ridge(sklearn_Ridge):
         __doc__ = sklearn_Ridge.__doc__
@@ -195,7 +169,7 @@ if daal_check_version((2024, "P", 600)):
             # Check if equations are well defined
             is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
 
-            dal_ready = patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (
                         self.solver == "auto",
@@ -217,19 +191,9 @@ if daal_check_version((2024, "P", 600)):
                         not positive_is_set,
                         "Forced positive coefficients are not supported.",
                     ),
+                    (not np.iscomplexobj(X), "Input X is not supported."),
+                    (not np.iscomplexobj(y), "Input y is not supported."),
                 ]
-            )
-
-            if not dal_ready:
-                return patching_status
-
-            if not patching_status.and_condition(
-                _test_type_and_finiteness(X), "Input X is not supported."
-            ):
-                return patching_status
-
-            patching_status.and_condition(
-                _test_type_and_finiteness(y), "Input y is not supported."
             )
 
             return patching_status
@@ -242,7 +206,7 @@ if daal_check_version((2024, "P", 600)):
             model_is_sparse = issparse(self.coef_) or (
                 self.fit_intercept and issparse(self.intercept_)
             )
-            dal_ready = patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (
                         self.solver == "auto",
@@ -252,13 +216,8 @@ if daal_check_version((2024, "P", 600)):
                     (n_samples > 0, "Number of samples is less than 1."),
                     (not issparse(data[0]), "Sparse input is not supported."),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
+                    (not np.iscomplexobj(data[0]), "Input X is not supported."),
                 ]
-            )
-            if not dal_ready:
-                return patching_status
-
-            patching_status.and_condition(
-                _test_type_and_finiteness(data[0]), "Input X is not supported."
             )
 
             return patching_status
@@ -270,7 +229,7 @@ if daal_check_version((2024, "P", 600)):
 
             if method_name == "fit":
                 alpha_is_scalar = _is_numeric_scalar(self.alpha)
-                dal_ready = patching_status.and_condition(
+                patching_status.and_condition(
                     alpha_is_scalar,
                     "Non-scalar alpha is not supported for GPU.",
                 )
@@ -323,7 +282,6 @@ if daal_check_version((2024, "P", 600)):
                 "accept_sparse": ["csr", "csc", "coo"],
                 "y_numeric": True,
                 "multi_output": True,
-                "force_all_finite": False,
             }
             if sklearn_check_version("1.2"):
                 X, y = self._validate_data(**check_params)
@@ -406,6 +364,11 @@ if daal_check_version((2024, "P", 600)):
 
 else:
     from daal4py.sklearn.linear_model._ridge import Ridge
+    from onedal._device_offload import support_usm_ndarray
+
+    Ridge.fit = support_usm_ndarray(queue_param=False)(Ridge.fit)
+    Ridge.predict = support_usm_ndarray(queue_param=False)(Ridge.predict)
+    Ridge.score = support_usm_ndarray(queue_param=False)(Ridge.score)
 
     logging.warning(
         "Preview Ridge requires oneDAL version >= 2024.6 but it was not found"

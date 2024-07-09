@@ -34,24 +34,29 @@ def test_sklearnex_import_ridge(dataframe, queue):
     y = numpy.dot(X, numpy.array([1, 2])) + 3
     X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
-    ridgereg = Ridge(alpha=0.5).fit(X_c, y_c)
+    ridge_reg = Ridge(alpha=0.5).fit(X_c, y_c)
 
     if daal_check_version((2024, "P", 600)):
-        assert "preview" in ridgereg.__module__
+        assert "preview" in ridge_reg.__module__
     else:
-        assert "daal4py" in ridgereg.__module__
+        assert "daal4py" in ridge_reg.__module__
 
-    assert_allclose(ridgereg.intercept_, 3.86, rtol=1e-2)
-    assert_allclose(ridgereg.coef_, [0.91, 1.64], rtol=1e-2)
+    assert_allclose(ridge_reg.intercept_, 3.86, rtol=1e-2)
+    assert_allclose(ridge_reg.coef_, [0.91, 1.64], rtol=1e-2)
 
 
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("sample_size", [100, 1000])
+@pytest.mark.parametrize("feature_size", [10, 50])
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 1.0])
-def test_ridge_coefficients(alpha):
+def test_ridge_coefficients(dataframe, queue, sample_size, feature_size, alpha):
     from sklearnex.preview.linear_model import Ridge
 
-    X = numpy.random.rand(10, 5)
-    y = numpy.random.rand(10)
-    ridgereg = Ridge(fit_intercept=False, alpha=alpha).fit(X, y)
+    X = numpy.random.rand(sample_size, feature_size)
+    y = numpy.random.rand(sample_size)
+    X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    ridge_reg = Ridge(fit_intercept=False, alpha=alpha).fit(X_c, y_c)
 
     # computing the coefficients manually
     # using the normal equation formula: (X^T * X + lambda * I)^-1 * X^T * y
@@ -60,7 +65,7 @@ def test_ridge_coefficients(alpha):
     xt_y = numpy.dot(X.T, y)
     coefficients_manual = numpy.dot(inverse_term, xt_y)
 
-    assert_allclose(ridgereg.coef_, coefficients_manual, rtol=1e-2)
+    assert_allclose(ridge_reg.coef_, coefficients_manual)
 
 
 if daal_check_version((2024, "P", 600)):
