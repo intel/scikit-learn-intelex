@@ -16,8 +16,11 @@
 
 import numpy as np
 from sklearn.base import BaseEstimator
+from sklearn.utils import check_array
+from sklearn.utils.validation import _check_sample_weight
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.basic_statistics import BasicStatistics as onedal_BasicStatistics
 
 from .._device_offload import dispatch
@@ -87,6 +90,14 @@ class BasicStatistics(BaseEstimator):
     _onedal_gpu_supported = _onedal_supported
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(X, dtype=[np.float64, np.float32])
+        else:
+            X = check_array(X, dtype=[np.float64, np.float32])
+
+        if sample_weight is not None:
+            sample_weight = _check_sample_weight(sample_weight, X)
+        
         onedal_params = {
             "result_options": self.options,
         }
