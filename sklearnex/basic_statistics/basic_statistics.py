@@ -97,7 +97,7 @@ class BasicStatistics(BaseEstimator):
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
-        
+
         onedal_params = {
             "result_options": self.options,
         }
