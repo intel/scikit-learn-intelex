@@ -81,7 +81,7 @@ inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
         column_count = static_cast<std::int64_t>(array_size(np_data, 1));
     }
     const auto layout =
-        array_is_behaved_F(np_data) ? dal::data_layout::column_major : dal::data_layout::row_major;
+        array_is_behaved_C(np_data) ? dal::data_layout::row_major : dal::data_layout::column_major;
     auto res_table = dal::homogen_table(data_pointer,
                                         row_count,
                                         column_count,
@@ -152,7 +152,7 @@ dal::table convert_to_table(PyObject *obj) {
     }
     if (is_array(obj)) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
-        if (array_is_behaved(ary) || array_is_behaved_F(ary)) {
+        if (array_is_behaved_C(ary) || array_is_behaved_F(ary)) {
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ary);
             SET_NPY_FEATURE(array_type(ary),
                             array_type_sizeof(ary),
