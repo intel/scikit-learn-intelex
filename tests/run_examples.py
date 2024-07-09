@@ -79,9 +79,11 @@ ex_log_dirs = [
 available_devices = ["cpu"]
 
 gpu_available = False
-if dpctl_available and dpctl.has_gpu_devices():
-    gpu_available = True
-    available_devices.append("gpu")
+if dpctl_available:
+    import dpctl
+    if dpctl.has_gpu_devices():
+        gpu_available = True
+        available_devices.append("gpu")
 
 print("GPU device available: {}".format(gpu_available))
 
