@@ -138,19 +138,6 @@ class LinearRegression(sklearn_LinearRegression):
             sample_weight=sample_weight,
         )
 
-    def _test_type_and_finiteness(self, X_in):
-        X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
-
-        dtype = X.dtype
-        if "complex" in str(type(dtype)):
-            return False
-
-        try:
-            _assert_all_finite(X)
-        except BaseException:
-            return False
-        return True
-
     def _onedal_fit_supported(self, method_name, *data):
         assert method_name == "fit"
         assert len(data) == 3
@@ -196,13 +183,11 @@ class LinearRegression(sklearn_LinearRegression):
         if not dal_ready:
             return patching_status
 
-        if not patching_status.and_condition(
-            self._test_type_and_finiteness(X), "Input X is not supported."
-        ):
-            return patching_status
-
         patching_status.and_condition(
-            self._test_type_and_finiteness(y), "Input y is not supported."
+            [
+                (not np.iscomplexobj(X), "Input X is not supported."),
+                (not np.iscomplexobj(y), "Input y is not supported."),
+            ]
         )
 
         return patching_status
