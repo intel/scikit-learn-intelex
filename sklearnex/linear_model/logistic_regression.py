@@ -263,7 +263,7 @@ if daal_check_version((2024, "P", 1)):
                 return patching_status
 
             patching_status.and_condition(
-                self._test_type_and_finiteness(*data), "Input X is not supported."
+                not np.iscomplexobj(*data), "Input X is not supported."
             )
 
             return patching_status
