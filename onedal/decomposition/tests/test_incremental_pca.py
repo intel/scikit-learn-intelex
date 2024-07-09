@@ -196,3 +196,62 @@ def test_on_random_data(
         whiten and queue is not None and queue.sycl_device.device_type.name == "gpu"
     ):
         assert_allclose(transformed_data, expected_transformed_data, atol=tol)
+
+
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32])
+def test_pickle(queue, dtype):
+    import pickle
+
+    from onedal.decomposition import IncrementalPCA
+
+    incpca = IncrementalPCA()
+    dump = pickle.dumps(incpca)
+    incpca_loaded = pickle.loads(dump)
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=(10, 10))
+    X = X.astype(dtype)
+    X_split = np.array_split(X, 2)
+    incpca.partial_fit(X_split[0], queue=queue)
+    incpca_loaded.partial_fit(X_split[0], queue=queue)
+    assert incpca._need_to_finalize == True
+    assert incpca_loaded._need_to_finalize == True
+
+    dump = pickle.dumps(incpca_loaded)
+    incpca_loaded = pickle.loads(dump)
+    assert incpca._need_to_finalize == True
+    # Finalize is called during serialization to make sure partial results are finalized correctly.
+    assert incpca_loaded._need_to_finalize == False
+
+    incpca.partial_fit(X_split[1], queue=queue)
+    incpca_loaded.partial_fit(X_split[1], queue=queue)
+    assert incpca._need_to_finalize == True
+    assert incpca_loaded._need_to_finalize == True
+
+    dump = pickle.dumps(incpca_loaded)
+    incpca_loaded = pickle.loads(dump)
+
+    assert incpca._need_to_finalize == True
+    assert incpca_loaded._need_to_finalize == False
+
+    incpca.finalize_fit()
+    incpca_loaded.finalize_fit()
+
+    dump = pickle.dumps(incpca_loaded)
+    incpca_loaded = pickle.loads(dump)
+
+    assert_allclose(incpca.singular_values_, incpca_loaded.singular_values_, atol=1e-6)
+    assert_allclose(incpca.n_samples_seen_, incpca_loaded.n_samples_seen_, atol=1e-6)
+    assert_allclose(incpca.n_features_in_, incpca_loaded.n_features_in_, atol=1e-6)
+    assert_allclose(incpca.mean_, incpca_loaded.mean_, atol=1e-6)
+    assert_allclose(incpca.var_, incpca_loaded.var_, atol=1e-6)
+    assert_allclose(
+        incpca.explained_variance_, incpca_loaded.explained_variance_, atol=1e-6
+    )
+    assert_allclose(incpca.components_, incpca_loaded.components_, atol=1e-6)
+    assert_allclose(
+        incpca.explained_variance_ratio_,
+        incpca_loaded.explained_variance_ratio_,
+        atol=1e-6,
+    )
