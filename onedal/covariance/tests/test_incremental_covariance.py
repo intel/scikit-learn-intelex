@@ -121,36 +121,47 @@ def test_partial_fit_on_random_data(
     assert_allclose(expected_covariance, result.covariance_, atol=1e-6)
     assert_allclose(expected_means, result.location_, atol=1e-6)
 
+
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("row_count", [2])
-@pytest.mark.parametrize("column_count", [2])
 @pytest.mark.parametrize("dtype", [np.float32])
-def test_pickle(queue, row_count, column_count, dtype):
-    from onedal.covariance import IncrementalEmpiricalCovariance
+def test_pickle(queue, dtype):
     import pickle
-    from onedal.datatypes import from_table, to_table
+
+    from onedal.covariance import IncrementalEmpiricalCovariance
+
     inccov = IncrementalEmpiricalCovariance()
     dump = pickle.dumps(inccov)
     inccov_loaded = pickle.loads(dump)
     seed = 77
     gen = np.random.default_rng(seed)
-    X = gen.uniform(low=-0.3, high=+0.7, size=(2, 2))
+    X = gen.uniform(low=-0.3, high=+0.7, size=(10, 10))
     X = X.astype(dtype)
     X_split = np.array_split(X, 2)
     inccov.partial_fit(X_split[0], queue=queue)
     inccov_loaded.partial_fit(X_split[0], queue=queue)
+    assert inccov._need_to_finalize == True
+    assert inccov_loaded._need_to_finalize == True
+
     dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
+    assert inccov._need_to_finalize == True
+    # Finalize is called during serialization to make sure partial results are finalized correctly.
+    assert inccov_loaded._need_to_finalize == False
+
     inccov.partial_fit(X_split[1], queue=queue)
     inccov_loaded.partial_fit(X_split[1], queue=queue)
-    dump = pickle.dumps(inccov)
+    assert inccov._need_to_finalize == True
+    assert inccov_loaded._need_to_finalize == True
+
+    dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
 
-    inccov_loaded._partial_result = inccov._partial_result
-    inccov_loaded._policy = inccov._policy
-    
+    assert inccov._need_to_finalize == True
+    assert inccov_loaded._need_to_finalize == False
+
     inccov.finalize_fit()
     inccov_loaded.finalize_fit()
+
     dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
 
