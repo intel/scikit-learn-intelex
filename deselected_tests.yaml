@@ -280,8 +280,6 @@ deselected_tests:
   # Need to rework getting policy to correctly obtain it for method without data (finalize_fit)
   # and avoid keeping it in class attribute, also need to investigate how to implement
   # partial result serialization
-  - tests/test_common.py::test_estimators[IncrementalEmpiricalCovariance()-check_estimators_pickle]
-  - tests/test_common.py::test_estimators[IncrementalEmpiricalCovariance()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle]
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[IncrementalPCA()-check_estimators_pickle]
