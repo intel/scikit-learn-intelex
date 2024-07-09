@@ -218,7 +218,7 @@ if daal_check_version((2024, "P", 1)):
             if not dal_ready:
                 return patching_status
 
-            patching_status.and_condition(
+            patching_status.and_conditions(
                 [
                     (not np.iscomplexobj(X), "Input X is not supported."),
                     (not np.iscomplexobj(y), "Input y is not supported."),
