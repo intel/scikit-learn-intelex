@@ -46,11 +46,10 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-# TODO: fix RF regressor predict for the GPU sycl_queue.
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_rf_regression(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("RF regressor predict for the GPU sycl_queue is buggy.")
     from sklearnex.ensemble import RandomForestRegressor
 
     X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
@@ -69,11 +68,10 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
             assert_allclose([-6.839], pred, atol=1e-2)
 
 
-# TODO: fix ET classifier predict for the GPU sycl_queue.
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_et_classifier(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("ET classifier predict for the GPU sycl_queue is buggy.")
     from sklearnex.ensemble import ExtraTreesClassifier
 
     X, y = make_classification(
@@ -93,11 +91,10 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
     assert_allclose([1], _as_numpy(rf.predict([[0, 0, 0, 0]])))
 
 
-# TODO: fix ET regressor predict for the GPU sycl_queue.
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_et_regression(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("ET regressor predict for the GPU sycl_queue is buggy.")
     from sklearnex.ensemble import ExtraTreesRegressor
 
     X, y = make_regression(n_features=1, random_state=0, shuffle=False)

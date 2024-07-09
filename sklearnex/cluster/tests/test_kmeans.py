@@ -16,6 +16,7 @@
 
 import numpy as np
 import pytest
+import pytest
 from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
