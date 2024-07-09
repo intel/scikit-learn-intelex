@@ -325,6 +325,25 @@ def getpyexts():
         language="c++",
     )
     exts.extend(cythonize(ext, nthreads=n_threads))
+
+    if not no_dist:
+        mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
+        mpi_depens = glob.glob(jp(os.path.abspath("src"), "*.h"))
+        mpi_extra_link = ela + ["-Wl,-rpath,{}".format(x) for x in MPI_LIBDIRS]
+        exts.append(
+            Extension(
+                "daal4py.mpi_transceiver",
+                MPI_CPPS,
+                depends=mpi_depens,
+                include_dirs=mpi_include_dir,
+                extra_compile_args=eca,
+                define_macros=get_daal_type_defines(),
+                extra_link_args=mpi_extra_link,
+                libraries=libraries_plat + MPI_LIBS,
+                library_dirs=ONEDAL_LIBDIRS + MPI_LIBDIRS,
+                language="c++",
+            )
+        )
     return exts
 
 
