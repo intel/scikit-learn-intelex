@@ -66,24 +66,34 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self.finalize_fit()
         data = self.__dict__.copy()
         partial_result_data = dict()
-        partial_result_data['partial_n_rows'] = from_table(data["_partial_result"].partial_n_rows)
-        partial_result_data['partial_crossproduct'] = from_table(data["_partial_result"].partial_crossproduct)
-        partial_result_data['partial_sums'] = from_table(data["_partial_result"].partial_sums)
+        partial_result_data["partial_n_rows"] = from_table(
+            data["_partial_result"].partial_n_rows
+        )
+        partial_result_data["partial_crossproduct"] = from_table(
+            data["_partial_result"].partial_crossproduct
+        )
+        partial_result_data["partial_sums"] = from_table(
+            data["_partial_result"].partial_sums
+        )
         data["_partial_result"] = partial_result_data
-        data.pop('_policy', None)
+        data.pop("_policy", None)
 
         return data
 
     def __setstate__(self, data):
-        partial_result = self._get_backend(
-            "covariance", None, "partial_compute_result"
-        )
+        partial_result = self._get_backend("covariance", None, "partial_compute_result")
         if data["_partial_result"]["partial_n_rows"].size > 0:
-            partial_result.partial_n_rows = to_table(data["_partial_result"]["partial_n_rows"])
+            partial_result.partial_n_rows = to_table(
+                data["_partial_result"]["partial_n_rows"]
+            )
         if data["_partial_result"]["partial_crossproduct"].size > 0:
-            partial_result.partial_crossproduct = to_table(data["_partial_result"]["partial_crossproduct"])
+            partial_result.partial_crossproduct = to_table(
+                data["_partial_result"]["partial_crossproduct"]
+            )
         if data["_partial_result"]["partial_sums"].size > 0:
-            partial_result.partial_sums = to_table(data["_partial_result"]["partial_sums"])
+            partial_result.partial_sums = to_table(
+                data["_partial_result"]["partial_sums"]
+            )
 
         data["_partial_result"] = partial_result
 
@@ -171,5 +181,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
 
             self.location_ = from_table(result.means).ravel()
+
+        self._need_to_finalize = False
 
         return self
