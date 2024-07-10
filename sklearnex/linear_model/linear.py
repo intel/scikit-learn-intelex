@@ -160,7 +160,7 @@ class LinearRegression(sklearn_LinearRegression):
         # Check if equations are well defined
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
 
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (sample_weight is None, "Sample weight is not supported."),
                 (
@@ -177,15 +177,6 @@ class LinearRegression(sklearn_LinearRegression):
                     "The shape of X (fitting) does not satisfy oneDAL requirements:"
                     "Number of features + 1 >= number of samples.",
                 ),
-            ]
-        )
-        if not dal_ready:
-            return patching_status
-
-        patching_status.and_conditions(
-            [
-                (not np.iscomplexobj(X), "Input X is not supported."),
-                (not np.iscomplexobj(y), "Input y is not supported."),
             ]
         )
 
