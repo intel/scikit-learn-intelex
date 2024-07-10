@@ -124,12 +124,14 @@ def test_partial_fit_on_random_data(
 
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("dtype", [np.float32])
-def test_pickle(queue, dtype):
+def test_incremental_estimator_pickle(queue, dtype):
     import pickle
 
     from onedal.covariance import IncrementalEmpiricalCovariance
 
     inccov = IncrementalEmpiricalCovariance()
+
+    # Check that estimator can be serialized without any data.
     dump = pickle.dumps(inccov)
     inccov_loaded = pickle.loads(dump)
     seed = 77
@@ -139,11 +141,14 @@ def test_pickle(queue, dtype):
     X_split = np.array_split(X, 2)
     inccov.partial_fit(X_split[0], queue=queue)
     inccov_loaded.partial_fit(X_split[0], queue=queue)
+    
     assert inccov._need_to_finalize == True
     assert inccov_loaded._need_to_finalize == True
 
+    # Check that estmator can be serialized after partial_fit call.
     dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
+
     assert inccov._need_to_finalize == True
     # Finalize is called during serialization to make sure partial results are finalized correctly.
     assert inccov_loaded._need_to_finalize == False
@@ -162,6 +167,7 @@ def test_pickle(queue, dtype):
     inccov.finalize_fit()
     inccov_loaded.finalize_fit()
 
+    # Check that finalized estimator can be serialized.
     dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
 
