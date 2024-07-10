@@ -123,7 +123,7 @@ def test_partial_fit_on_random_data(
 
 
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("dtype", [np.float32])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_incremental_estimator_pickle(queue, dtype):
     import pickle
 
