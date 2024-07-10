@@ -229,11 +229,11 @@ def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     X_split_df = _convert_to_dataframe(X_split[0], sycl_queue=queue, target_df=dataframe)
     inccov.partial_fit(X_split_df)
     inccov_loaded.partial_fit(X_split_df)
-    
+
     # Check that estmator can be serialized after partial_fit call.
     dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
-    
+
     X_split_df = _convert_to_dataframe(X_split[1], sycl_queue=queue, target_df=dataframe)
     inccov.partial_fit(X_split_df)
     inccov_loaded.partial_fit(X_split_df)
