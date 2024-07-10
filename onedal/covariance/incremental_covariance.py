@@ -63,37 +63,38 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         )
 
     def __getstate__(self):
+        """
+        Converts estimator's data to serializable format.
+        All tables contained in partial result are converted to np.arrays.
+
+        Notes
+        -----
+        Since finalize_fit can't be dispatched without directly provided queue
+        and the dispatching policy can't be serialized, the computation is finalized
+        here and the policy is not saved in serialized data.
+        """
         self.finalize_fit()
         data = self.__dict__.copy()
-        partial_result_data = dict()
-        partial_result_data["partial_n_rows"] = from_table(
-            data["_partial_result"].partial_n_rows
-        )
-        partial_result_data["partial_crossproduct"] = from_table(
-            data["_partial_result"].partial_crossproduct
-        )
-        partial_result_data["partial_sums"] = from_table(
-            data["_partial_result"].partial_sums
-        )
+
+        tables_to_save = ["partial_n_rows", "partial_crossproduct", "partial_sums"]
+        partial_result_data = {
+            table_name: from_table(getattr(data["_partial_result"], table_name))
+            for table_name in tables_to_save
+        }
         data["_partial_result"] = partial_result_data
         data.pop("_policy", None)
 
         return data
 
     def __setstate__(self, data):
+        """
+        Restores estimator from serializable data.
+        """
         partial_result = self._get_backend("covariance", None, "partial_compute_result")
-        if data["_partial_result"]["partial_n_rows"].size > 0:
-            partial_result.partial_n_rows = to_table(
-                data["_partial_result"]["partial_n_rows"]
-            )
-        if data["_partial_result"]["partial_crossproduct"].size > 0:
-            partial_result.partial_crossproduct = to_table(
-                data["_partial_result"]["partial_crossproduct"]
-            )
-        if data["_partial_result"]["partial_sums"].size > 0:
-            partial_result.partial_sums = to_table(
-                data["_partial_result"]["partial_sums"]
-            )
+        saved_tables = data["_partial_result"]
+        for table_name, table_data in saved_tables.items():
+            if table_data.size > 0:
+                setattr(partial_result, table_name, to_table(table_data))
 
         data["_partial_result"] = partial_result
 
