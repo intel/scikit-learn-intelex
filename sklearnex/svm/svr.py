@@ -65,6 +65,8 @@ class SVR(sklearn_SVR, BaseSVR):
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
+        elif self.C < 0:
+            raise ValueError("Penalty term must be positive; got (C=%r)" % self.C)
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(
