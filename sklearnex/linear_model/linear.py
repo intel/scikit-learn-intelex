@@ -192,18 +192,12 @@ class LinearRegression(sklearn_LinearRegression):
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
         )
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (n_samples > 0, "Number of samples is less than 1."),
                 (not issparse(data[0]), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
             ]
-        )
-        if not dal_ready:
-            return patching_status
-
-        patching_status.and_condition(
-            not np.iscomplexobj(data[0]), "Input X is not supported."
         )
 
         return patching_status
