@@ -141,9 +141,7 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
                 pytest.skip(f"{estimator} does not support GPU queues")
 
         if "NearestNeighbors" in estimator and "radius" in method:
-            pytest.skip(
-                f"RadiusNeighbors estimator not implemented in sklearnex"
-            )
+            pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
         if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
@@ -195,9 +193,7 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
                 pytest.skip("Hardware does not support fp64 SYCL testing")
 
         if "NearestNeighbors" in estimator and "radius" in method:
-            pytest.skip(
-                f"RadiusNeighbors estimator not implemented in sklearnex"
-            )
+            pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
         X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
