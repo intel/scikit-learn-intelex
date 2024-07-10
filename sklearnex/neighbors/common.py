@@ -150,7 +150,7 @@ class KNeighborsDispatchingBase:
             f"sklearn.neighbors.{class_name}.{method_name}"
         )
         if not patching_status.and_condition(
-            not "radius" in method_name, "RadiusNeighbors not implemented in sklearnex"
+            "radius" not in method_name, "RadiusNeighbors not implemented in sklearnex"
         ):
             return patching_status
 
