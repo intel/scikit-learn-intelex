@@ -160,3 +160,4 @@ class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     fit.__doc__ = sklearn_NearestNeighbors.__doc__
     kneighbors.__doc__ = sklearn_NearestNeighbors.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
+    radius_neighbors_graph.__doc__ = sklearn_NearestNeighbors.radius_neighbors_graph.__doc__
