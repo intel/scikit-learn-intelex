@@ -89,23 +89,35 @@ class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     def radius_neighbors(
         self, X=None, radius=None, return_distance=True, sort_results=False
     ):
-        if X is not None and "numpy" not in get_namespace(X)[0].__name__:
-            raise TypeError(
-                f"{self.__class__.__name__} does not support {type(X)} inputs for radius_neighbors"
-            )
-        # This definitely doesn't cover all cases, and doesn't raise an error to the user
-        # It must be updated.
-        if (
-            hasattr(self, "_onedal_estimator")
-            or getattr(self, "_tree", 0) is None
-            and self._fit_method == "kd_tree"
-        ):
-            sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
-        result = sklearn_NearestNeighbors.radius_neighbors(
-            self, X, radius, return_distance, sort_results
+        return dispatch(
+            self,
+            "radius_neighbors",
+            {
+                "onedal": None,
+                "sklearn": sklearn_NearestNeighbors.radius_neighbors,
+            },
+            X,
+            radius=radius,
+            return_distance=return_distance,
+            sort_results=sort_results,
         )
 
-        return result
+    @wrap_output_data
+    def radius_neighbors_graph(
+        self, X=None, radius=None, mode="connectivity", sort_results=False
+    ):
+        return dispatch(
+            self,
+            "radius_neighbors_graph",
+            {
+                "onedal": None,
+                "sklearn": sklearn_NearestNeighbors.radius_neighbors_graph,
+            },
+            X,
+            radius=radius,
+            mode=mode,
+            sort_results=sort_results,
+        )
 
     def _onedal_fit(self, X, y=None, queue=None):
         onedal_params = {
