@@ -70,7 +70,7 @@ jobs:
       bash .ci/scripts/describe_system.sh
     displayName: 'System info'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
+      . /usr/share/miniforge/etc/profile.d/conda.sh
       conda activate CB
       pip install -r dependencies-dev
       pip install -r requirements-doc.txt
@@ -78,14 +78,14 @@ jobs:
       pip install jupyter matplotlib requests
     displayName: 'Install requirements'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
+      . /usr/share/miniforge/etc/profile.d/conda.sh
       conda activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
       python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py/sklearnex'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
+      . /usr/share/miniforge/etc/profile.d/conda.sh
       conda activate CB
       cd examples/notebooks
       jupyter nbconvert --execute --ExecutePreprocessor.timeout=10900 --to notebook $(ls | grep -E '.*\.ipynb' | grep -v "dbscan.*")

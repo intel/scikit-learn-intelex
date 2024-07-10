@@ -74,12 +74,12 @@ jobs:
       conda create -y -q -n CB -c $(conda.channel) python=$(python.version) scikit-learn-intelex pandas pytest pyyaml
     displayName: 'Install scikit-learn-intelex'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
+      . /usr/share/miniforge/etc/profile.d/conda.sh
       $(conda.activate) CB
       bash .ci/scripts/describe_system.sh
     displayName: 'System info'
   - script: |
-      . /usr/share/miniconda/etc/profile.d/conda.sh
+      . /usr/share/miniforge/etc/profile.d/conda.sh
       $(conda.activate) CB
       bash .ci/scripts/run_sklearn_tests.sh
     displayName: 'Sklearn testing'
