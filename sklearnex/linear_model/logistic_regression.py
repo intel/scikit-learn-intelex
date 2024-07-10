@@ -191,7 +191,7 @@ if daal_check_version((2024, "P", 1)):
                 if sklearn_check_version("1.1")
                 else type_of_target(y)
             )
-            dal_ready = patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (self.penalty == "l2", "Only l2 penalty is supported."),
                     (self.dual == False, "dual=True is not supported."),
