@@ -210,14 +210,17 @@ def test_whitened_toy_score(dataframe, queue):
 
 
 @pytest.mark.parametrize("dtype", [np.float32])
-def test_pickle(dataframe, queue, dtype):
+def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     import pickle
 
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
     inccov = IncrementalEmpiricalCovariance()
+
+    # Check that estimator can be serialized without any data.
     dump = pickle.dumps(inccov)
     inccov_loaded = pickle.loads(dump)
+
     seed = 77
     gen = np.random.default_rng(seed)
     X = gen.uniform(low=-0.3, high=+0.7, size=(10, 10))
@@ -226,14 +229,21 @@ def test_pickle(dataframe, queue, dtype):
     X_split_df = _convert_to_dataframe(X_split[0], sycl_queue=queue, target_df=dataframe)
     inccov.partial_fit(X_split_df)
     inccov_loaded.partial_fit(X_split_df)
+    
+    # Check that estmator can be serialized after partial_fit call.
     dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
+    
     X_split_df = _convert_to_dataframe(X_split[1], sycl_queue=queue, target_df=dataframe)
     inccov.partial_fit(X_split_df)
     inccov_loaded.partial_fit(X_split_df)
     dump = pickle.dumps(inccov)
     inccov_loaded = pickle.loads(dump)
 
+    assert_allclose(inccov.location_, inccov_loaded.location_, atol=1e-6)
+    assert_allclose(inccov.covariance_, inccov_loaded.covariance_, atol=1e-6)
+
+    # Check that finalized estimator can be serialized.
     dump = pickle.dumps(inccov_loaded)
     inccov_loaded = pickle.loads(dump)
 
