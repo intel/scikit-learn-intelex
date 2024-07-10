@@ -199,13 +199,15 @@ def test_on_random_data(
 
 
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("dtype", [np.float32])
-def test_pickle(queue, dtype):
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_incremental_estimator_pickle(queue, dtype):
     import pickle
 
     from onedal.decomposition import IncrementalPCA
 
     incpca = IncrementalPCA()
+
+    # Check that estimator can be serialized without any data.
     dump = pickle.dumps(incpca)
     incpca_loaded = pickle.loads(dump)
     seed = 77
@@ -218,6 +220,7 @@ def test_pickle(queue, dtype):
     assert incpca._need_to_finalize == True
     assert incpca_loaded._need_to_finalize == True
 
+    # Check that estmator can be serialized after partial_fit call.
     dump = pickle.dumps(incpca_loaded)
     incpca_loaded = pickle.loads(dump)
     assert incpca._need_to_finalize == True
@@ -238,6 +241,7 @@ def test_pickle(queue, dtype):
     incpca.finalize_fit()
     incpca_loaded.finalize_fit()
 
+    # Check that finalized estimator can be serialized.
     dump = pickle.dumps(incpca_loaded)
     incpca_loaded = pickle.loads(dump)
 
