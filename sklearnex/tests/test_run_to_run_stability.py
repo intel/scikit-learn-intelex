@@ -233,6 +233,8 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
 def test_other_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.score")
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
     est = STABILITY_INSTANCES[estimator]
 
