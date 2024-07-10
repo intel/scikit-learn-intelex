@@ -150,10 +150,11 @@ class KNeighborsDispatchingBase:
             f"sklearn.neighbors.{class_name}.{method_name}"
         )
         if not patching_status.and_condition(
-            "radius" in method_name,
+            not "radius" in method_name,
             "RadiusNeighbors not implemented in sklearnex"
         ):
             return patching_status
+
 
         if not patching_status.and_condition(
             not isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase)),
