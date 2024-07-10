@@ -102,7 +102,6 @@ class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
             sort_results=sort_results,
         )
 
-    @wrap_output_data
     def radius_neighbors_graph(
         self, X=None, radius=None, mode="connectivity", sort_results=False
     ):
