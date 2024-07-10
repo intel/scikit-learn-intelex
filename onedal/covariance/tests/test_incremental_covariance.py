@@ -141,7 +141,7 @@ def test_incremental_estimator_pickle(queue, dtype):
     X_split = np.array_split(X, 2)
     inccov.partial_fit(X_split[0], queue=queue)
     inccov_loaded.partial_fit(X_split[0], queue=queue)
-    
+
     assert inccov._need_to_finalize == True
     assert inccov_loaded._need_to_finalize == True
 
