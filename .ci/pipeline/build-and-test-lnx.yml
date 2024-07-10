@@ -25,7 +25,7 @@ steps:
   - script: |
       conda config --add channels conda-forge
       conda config --set channel_priority strict
-      conda config --remove channels intel defaults
+      conda config --remove channels intel
       conda update -y -q conda
       conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
     displayName: "Conda create"
