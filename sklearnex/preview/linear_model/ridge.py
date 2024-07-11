@@ -191,8 +191,6 @@ if daal_check_version((2024, "P", 600)):
                         not positive_is_set,
                         "Forced positive coefficients are not supported.",
                     ),
-                    (not np.iscomplexobj(X), "Input X is not supported."),
-                    (not np.iscomplexobj(y), "Input y is not supported."),
                 ]
             )
 
@@ -216,7 +214,6 @@ if daal_check_version((2024, "P", 600)):
                     (n_samples > 0, "Number of samples is less than 1."),
                     (not issparse(data[0]), "Sparse input is not supported."),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
-                    (not np.iscomplexobj(data[0]), "Input X is not supported."),
                 ]
             )
 
