@@ -66,7 +66,7 @@ class SVR(sklearn_SVR, BaseSVR):
         if sklearn_check_version("1.2"):
             self._validate_params()
         elif self.C <= 0:
-            # else if added to correct issues with 
+            # else if added to correct issues with
             # sklearn tests:
             # svm/tests/test_sparse.py::test_error
             # svm/tests/test_svm.py::test_bad_input

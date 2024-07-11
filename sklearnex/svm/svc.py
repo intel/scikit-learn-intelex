@@ -87,7 +87,7 @@ class SVC(sklearn_SVC, BaseSVC):
             self._validate_params()
         elif self.C <= 0:
             raise ValueError("C <= 0")
-            # else if added to correct issues with 
+            # else if added to correct issues with
             # sklearn tests:
             # svm/tests/test_sparse.py::test_error
             # svm/tests/test_svm.py::test_bad_input
