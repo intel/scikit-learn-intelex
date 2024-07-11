@@ -84,7 +84,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         if sklearn_check_version("1.2"):
             self._validate_params()
         elif self.nu <= 0 or self.nu > 1:
-            raise ValueError("Margin error upper bound outside range: nu <= 0 or nu > 1")
+            raise ValueError("nu <= 0 or nu > 1")
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(
