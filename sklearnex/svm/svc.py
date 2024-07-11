@@ -86,7 +86,6 @@ class SVC(sklearn_SVC, BaseSVC):
         if sklearn_check_version("1.2"):
             self._validate_params()
         elif self.C <= 0:
-            raise ValueError("C <= 0")
             # else if added to correct issues with
             # sklearn tests:
             # svm/tests/test_sparse.py::test_error
@@ -96,6 +95,7 @@ class SVC(sklearn_SVC, BaseSVC):
             # Without this, a segmentation fault with
             # Windows fatal exception: access violation
             # occurs
+            raise ValueError("C <= 0")
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(
