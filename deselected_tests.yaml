@@ -391,6 +391,7 @@ deselected_tests:
 
   # Remove windows seg fault for out of bounds parameters in SVM
   - svm/tests/test_sparse.py::test_error <1.2 win32
+  - svm/tests/test_svm.py::test_bad_input <1.2 win32
 
   # --------------------------------------------------------
   # No need to test daal4py patching
