@@ -153,6 +153,8 @@ deselected_tests:
   # scikit-learn expects an exception for sparse matrices with 64-bit integer indices,
   # scikit-learn-intelex works correctly with 64-bit integer indices
   - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_array]
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_matrix]
   - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
 
   # SVC._dual_coef_ is changing after fitting, but the result of prediction is still the same
@@ -190,6 +192,12 @@ deselected_tests:
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
 
+  # Logistic Regression coeffs change due to fix for loss scaling
+  # (https://github.com/scikit-learn/scikit-learn/pull/26721)
+  - feature_selection/tests/test_from_model.py::test_importance_getter[estimator0-named_steps.logisticregression.coef_]
+  - inspection/_plot/tests/test_boundary_decision_display.py::test_class_of_interest_binary[predict_proba]
+  - linear_model/tests/test_sag.py::test_sag_pobj_matches_logistic_regression
+
   # This fails on certain platforms. While weighted data does not go through DAAL,
   # unweighted does. Since convergence does not occur (comment in the test
   # suggests that) and because coefficients are slightly different,
@@ -207,11 +215,6 @@ deselected_tests:
   # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to scikit-learn),
   # sufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
-
-  # The regression coefficients for multi-target problem differ from scikit-learn for small datasets.
-  # Coefficients matches for first label only and the coefficients are close for larger datasets.
-  # See: https://github.com/IntelPython/daal4py/issues/275
-  - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties >=0.24
 
   # Different interpretation of trees compared to scikit-learn
   # Looks like we need to align tree traversal. This problem will be fixed
