@@ -37,7 +37,10 @@ from sklearnex.tests._utils_spmd import (
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
 @pytest.mark.mpi
 def test_rfcls_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
@@ -70,9 +73,15 @@ def test_rfcls_spmd_gold(dataframe, queue):
         ]
     )
 
-    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_train = _convert_to_dataframe(
+        _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_y_train = _convert_to_dataframe(
+        _get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_X_test = _convert_to_dataframe(
+        _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
+    )
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestClassifier_SPMD(n_estimators=3, random_state=0).fit(
@@ -96,9 +105,14 @@ def test_rfcls_spmd_gold(dataframe, queue):
 @pytest.mark.parametrize("n_features_and_classes", [(5, 2), (25, 2), (25, 10)])
 @pytest.mark.parametrize("n_estimators", [10, 100])
 @pytest.mark.parametrize("max_depth", [3, None])
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
 @pytest.mark.mpi
-def test_rfcls_spmd_synthetic(n_samples, n_features_and_classes, n_estimators, max_depth, dataframe, queue):
+def test_rfcls_spmd_synthetic(
+    n_samples, n_features_and_classes, n_estimators, max_depth, dataframe, queue
+):
     n_features, n_classes = n_features_and_classes
     # Import spmd and batch algo
     from sklearnex.ensemble import RandomForestClassifier as RandomForestClassifier_Batch
@@ -111,9 +125,15 @@ def test_rfcls_spmd_synthetic(n_samples, n_features_and_classes, n_estimators, m
         n_samples, n_features, n_classes
     )
 
-    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_train = _convert_to_dataframe(
+        _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_y_train = _convert_to_dataframe(
+        _get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_X_test = _convert_to_dataframe(
+        _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
+    )
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestClassifier_SPMD(
@@ -133,7 +153,10 @@ def test_rfcls_spmd_synthetic(n_samples, n_features_and_classes, n_estimators, m
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
 @pytest.mark.mpi
 def test_rfreg_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
@@ -166,9 +189,15 @@ def test_rfreg_spmd_gold(dataframe, queue):
         ]
     )
 
-    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_train = _convert_to_dataframe(
+        _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_y_train = _convert_to_dataframe(
+        _get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_X_test = _convert_to_dataframe(
+        _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
+    )
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestRegressor_SPMD(n_estimators=3, random_state=0).fit(
@@ -192,9 +221,14 @@ def test_rfreg_spmd_gold(dataframe, queue):
 @pytest.mark.parametrize("n_features", [5, 25])
 @pytest.mark.parametrize("n_estimators", [10, 100])
 @pytest.mark.parametrize("max_depth", [3, None])
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
 @pytest.mark.mpi
-def test_rfreg_spmd_synthetic(n_samples, n_features, n_estimators, max_depth, dataframe, queue):
+def test_rfreg_spmd_synthetic(
+    n_samples, n_features, n_estimators, max_depth, dataframe, queue
+):
     # Import spmd and batch algo
     from sklearnex.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
     from sklearnex.spmd.ensemble import (
@@ -204,9 +238,15 @@ def test_rfreg_spmd_synthetic(n_samples, n_features, n_estimators, max_depth, da
     # Generate data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
 
-    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_train = _convert_to_dataframe(
+        _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_y_train = _convert_to_dataframe(
+        _get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_X_test = _convert_to_dataframe(
+        _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
+    )
 
     # ensure predictions of batch algo match spmd
     spmd_model = RandomForestRegressor_Batch(

@@ -37,7 +37,10 @@ from sklearnex.tests._utils_spmd import (
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
 @pytest.mark.mpi
 def test_kmeans_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
@@ -62,14 +65,20 @@ def test_kmeans_spmd_gold(dataframe, queue):
     )
     X_test = np.array([[0, 0], [12, 3], [2, 2], [7, 8]])
 
-    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_train = _convert_to_dataframe(
+        _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_X_test = _convert_to_dataframe(
+        _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
+    )
 
     # ensure labels from fit of batch algo matches spmd
     spmd_model = KMeans_SPMD(n_clusters=2, random_state=0).fit(local_dpt_X_train)
     batch_model = KMeans_Batch(n_clusters=2, random_state=0).fit(X_train)
 
-    _assert_unordered_allclose(_as_numpy(spmd_model.cluster_centers_), batch_model.cluster_centers_)
+    _assert_unordered_allclose(
+        _as_numpy(spmd_model.cluster_centers_), batch_model.cluster_centers_
+    )
     _assert_kmeans_labels_allclose(
         _as_numpy(spmd_model.labels_),
         batch_model.labels_,
@@ -97,7 +106,10 @@ def test_kmeans_spmd_gold(dataframe, queue):
 @pytest.mark.parametrize("n_samples", [200, 10000])
 @pytest.mark.parametrize("n_features", [5, 25])
 @pytest.mark.parametrize("n_clusters", [2, 5, 15])
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue",
+    get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
+)
 @pytest.mark.mpi
 def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, queue):
     # Import spmd and batch algo
@@ -109,8 +121,12 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
         n_samples, n_features, centers=n_clusters
     )
 
-    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
-    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_train = _convert_to_dataframe(
+        _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
+    )
+    local_dpt_X_test = _convert_to_dataframe(
+        _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
+    )
 
     # kmeans init
     spmd_model_init = KMeans_SPMD(n_clusters=n_clusters, max_iter=1, random_state=0).fit(
@@ -130,7 +146,9 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
         n_clusters=n_clusters, init=spmd_model_init.cluster_centers_, random_state=0
     ).fit(X_train)
 
-    _assert_unordered_allclose(_as_numpy(spmd_model.cluster_centers_), batch_model.cluster_centers_)
+    _assert_unordered_allclose(
+        _as_numpy(spmd_model.cluster_centers_), batch_model.cluster_centers_
+    )
     _assert_kmeans_labels_allclose(
         _as_numpy(spmd_model.labels_),
         batch_model.labels_,
