@@ -56,7 +56,7 @@ def test_basic_stats_spmd_gold(dataframe, queue):
         ]
     )
 
-    local_data = _convert_to_dataframe(
+    local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
 
