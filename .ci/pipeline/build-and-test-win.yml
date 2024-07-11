@@ -16,7 +16,7 @@
 steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) intel::dal-devel impi-devel clang-format pyyaml
+  - script: conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
