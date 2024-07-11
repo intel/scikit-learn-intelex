@@ -67,6 +67,15 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             self._validate_params()
         elif self.nu <= 0 or self.nu > 1:
             raise ValueError("nu <= 0 or nu > 1")
+            # else if added to correct issues with 
+            # sklearn tests:
+            # svm/tests/test_sparse.py::test_error
+            # svm/tests/test_svm.py::test_bad_input
+            # for sklearn versions < 1.2 (i.e. without
+            # validate_params parameter checking)
+            # Without this, a segmentation fault with
+            # Windows fatal exception: access violation
+            # occurs
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(
