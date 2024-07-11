@@ -19,6 +19,11 @@ import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from sklearnex.tests._utils_spmd import (
     _generate_regression_data,
     _get_local_tensor,
@@ -31,8 +36,9 @@ from sklearnex.tests._utils_spmd import (
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_linear_spmd_gold():
+def test_linear_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
     from sklearnex.linear_model import LinearRegression as LinearRegression_Batch
     from sklearnex.spmd.linear_model import LinearRegression as LinearRegression_SPMD
@@ -61,9 +67,9 @@ def test_linear_spmd_gold():
         ]
     )
 
-    local_dpt_X_train = _get_local_tensor(X_train)
-    local_dpt_y_train = _get_local_tensor(y_train)
-    local_dpt_X_test = _get_local_tensor(X_test)
+    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LinearRegression_SPMD().fit(local_dpt_X_train, local_dpt_y_train)
@@ -76,7 +82,7 @@ def test_linear_spmd_gold():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    _spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
 
 
 @pytest.mark.skipif(
@@ -85,8 +91,9 @@ def test_linear_spmd_gold():
 )
 @pytest.mark.parametrize("n_samples", [100, 10000])
 @pytest.mark.parametrize("n_features", [10, 100])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_linear_spmd_synthetic(n_samples, n_features):
+def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue):
     # Import spmd and batch algo
     from sklearnex.linear_model import LinearRegression as LinearRegression_Batch
     from sklearnex.spmd.linear_model import LinearRegression as LinearRegression_SPMD
@@ -94,9 +101,9 @@ def test_linear_spmd_synthetic(n_samples, n_features):
     # Generate data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
 
-    local_dpt_X_train = _get_local_tensor(X_train)
-    local_dpt_y_train = _get_local_tensor(y_train)
-    local_dpt_X_test = _get_local_tensor(X_test)
+    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
 
     # TODO: support linear regression on wide datasets and remove this skip
     if local_dpt_X_train.shape[0] < n_features:
@@ -115,4 +122,4 @@ def test_linear_spmd_synthetic(n_samples, n_features):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    _spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)

@@ -18,6 +18,10 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from sklearnex.tests._utils_spmd import (
     _generate_statistic_data,
     _get_local_tensor,
@@ -29,8 +33,9 @@ from sklearnex.tests._utils_spmd import (
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_pca_spmd_gold():
+def test_pca_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
     from sklearnex.decomposition import PCA as PCA_Batch
     from sklearnex.spmd.decomposition import PCA as PCA_SPMD
@@ -49,7 +54,7 @@ def test_pca_spmd_gold():
         ]
     )
 
-    local_dpt_data = _get_local_tensor(data)
+    local_dpt_data = _convert_to_dataframe(_get_local_tensor(data), sycl_queue=queue, target_df=dataframe)
 
     # ensure results of batch algo match spmd
     spmd_result = PCA_SPMD(n_components=2).fit(local_dpt_data)
@@ -76,8 +81,9 @@ def test_pca_spmd_gold():
 @pytest.mark.parametrize("n_features", [10, 100])
 @pytest.mark.parametrize("n_components", [0.5, 3, "mle", None])
 @pytest.mark.parametrize("whiten", [True, False])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_pca_spmd_synthetic(n_samples, n_features, n_components, whiten):
+def test_pca_spmd_synthetic(n_samples, n_features, n_components, whiten, dataframe, queue):
     # TODO: Resolve issues with batch fallback and lack of support for n_rows_rank < r_cols
     if n_components == "mle" or n_components == 3:
         pytest.skip("Avoid error in case of batch fallback to sklearn")
@@ -91,7 +97,7 @@ def test_pca_spmd_synthetic(n_samples, n_features, n_components, whiten):
     # Generate data and process into dpt
     data = _generate_statistic_data(n_samples, n_features)
 
-    local_dpt_data = _get_local_tensor(data)
+    local_dpt_data = _convert_to_dataframe(_get_local_tensor(data), sycl_queue=queue, target_df=dataframe)
 
     # ensure results of batch algo match spmd
     spmd_result = PCA_SPMD(n_components=n_components, whiten=whiten).fit(local_dpt_data)

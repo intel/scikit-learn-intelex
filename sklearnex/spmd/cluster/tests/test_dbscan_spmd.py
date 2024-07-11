@@ -18,6 +18,11 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from sklearnex.tests._utils_spmd import (
     _generate_clustering_data,
     _get_local_tensor,
@@ -30,21 +35,22 @@ from sklearnex.tests._utils_spmd import (
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_dbscan_spmd_gold():
+def test_dbscan_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
     from sklearnex.cluster import DBSCAN as DBSCAN_Batch
     from sklearnex.spmd.cluster import DBSCAN as DBSCAN_SPMD
 
     data = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
 
-    local_dpt_data = _get_local_tensor(data)
+    local_dpt_data = _convert_to_dataframe(_get_local_tensor(data), sycl_queue=queue, target_df=dataframe)
 
     # ensure labels from fit of batch algo matches spmd
     spmd_model = DBSCAN_SPMD(eps=3, min_samples=2).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=3, min_samples=2).fit(data)
 
-    _spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
+    _spmd_assert_allclose(_as_numpy(spmd_model.labels_), batch_model.labels_)
 
 
 @pytest.mark.skipif(
@@ -55,8 +61,9 @@ def test_dbscan_spmd_gold():
 @pytest.mark.parametrize("n_features_and_eps", [(5, 3), (5, 10), (25, 10)])
 @pytest.mark.parametrize("centers", [10, None])
 @pytest.mark.parametrize("min_samples", [2, 5, 15])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_dbscan_spmd_synthetic(n_samples, n_features_and_eps, centers, min_samples):
+def test_dbscan_spmd_synthetic(n_samples, n_features_and_eps, centers, min_samples, dataframe, queue):
     n_features, eps = n_features_and_eps
     # Import spmd and batch algo
     from sklearnex.cluster import DBSCAN as DBSCAN_Batch
@@ -64,12 +71,12 @@ def test_dbscan_spmd_synthetic(n_samples, n_features_and_eps, centers, min_sampl
 
     data, _, _, _ = _generate_clustering_data(n_samples, n_features, centers=centers)
 
-    local_dpt_data = _get_local_tensor(data)
+    local_dpt_data = _convert_to_dataframe(_get_local_tensor(data), sycl_queue=queue, target_df=dataframe)
 
     # ensure labels from fit of batch algo matches spmd
     spmd_model = DBSCAN_SPMD(eps=eps, min_samples=min_samples).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=eps, min_samples=min_samples).fit(data)
 
-    _spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
+    _spmd_assert_allclose(_as_numpy(spmd_model.labels_), batch_model.labels_)
     if np.all(batch_model.labels_ == -1):
         raise ValueError("No labels given - try raising epsilon")

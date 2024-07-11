@@ -33,14 +33,13 @@ except (ImportError, ModuleNotFoundError):
 _mpi_libs_and_gpu_available = mpi_libs_available and gpu_is_available
 
 
-def _get_local_tensor(full_data, data_parallel=True):
+def _get_local_tensor(full_data):
     """Splits data across ranks.
 
     Called on each rank to extract the subset of data assigned to that rank.
 
     Args:
         full_data (numpy array): The entire set of data
-        data_parallel (bool): Whether or not to return dpctl array
 
     Returns:
         local_dpt_data (numpy or dpctl array): The subset of data used by the rank
@@ -58,12 +57,7 @@ def _get_local_tensor(full_data, data_parallel=True):
     local_end = (1 + rank) * data_rows // size
     local_data = full_data[local_start:local_end]
 
-    if not data_parallel:
-        return local_data
-
-    local_dpt_data = dpt.asarray(local_data, usm_type="device", sycl_queue=q)
-
-    return local_dpt_data
+    return local_data
 
 
 def _generate_regression_data(n_samples, n_features, random_state=42):
@@ -122,7 +116,7 @@ def _spmd_assert_allclose(spmd_result, batch_result, **kwargs):
     """
 
     # extract chunk from batch result to match with local spmd result
-    local_batch_result = _get_local_tensor(batch_result, data_parallel=False)
+    local_batch_result = _get_local_tensor(batch_result)
 
     # convert to numpy if needed
     if not isinstance(spmd_result, np.ndarray):
@@ -151,7 +145,7 @@ def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
 
     sorted_spmd_result = spmd_result[np.argsort(np.linalg.norm(spmd_result, axis=1))]
     if localize:
-        local_batch_result = _get_local_tensor(batch_result, data_parallel=False)
+        local_batch_result = _get_local_tensor(batch_result)
         sorted_batch_result = local_batch_result[
             np.argsort(np.linalg.norm(local_batch_result, axis=1))
         ]
@@ -183,5 +177,5 @@ def _assert_kmeans_labels_allclose(
 
     if isinstance(spmd_labels, dpt.usm_ndarray):
         spmd_labels = dpt.to_numpy(spmd_labels)
-    local_batch_labels = _get_local_tensor(batch_labels, data_parallel=False)
+    local_batch_labels = _get_local_tensor(batch_labels)
     assert_allclose(spmd_centers[spmd_labels], batch_centers[local_batch_labels])

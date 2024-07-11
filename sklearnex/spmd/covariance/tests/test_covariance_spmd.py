@@ -18,6 +18,10 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from sklearnex.tests._utils_spmd import (
     _generate_statistic_data,
     _get_local_tensor,
@@ -29,8 +33,9 @@ from sklearnex.tests._utils_spmd import (
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_covariance_spmd_gold():
+def test_covariance_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
     from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
     from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
@@ -48,7 +53,7 @@ def test_covariance_spmd_gold():
         ]
     )
 
-    local_dpt_data = _get_local_tensor(data)
+    local_dpt_data = _convert_to_dataframe(_get_local_tensor(data), sycl_queue=queue, target_df=dataframe)
 
     # ensure results of batch algo match spmd
     spmd_result = EmpiricalCovariance_SPMD().fit(local_dpt_data)
@@ -65,8 +70,9 @@ def test_covariance_spmd_gold():
 @pytest.mark.parametrize("n_samples", [100, 10000])
 @pytest.mark.parametrize("n_features", [10, 100])
 @pytest.mark.parametrize("assume_centered", [True, False])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_covariance_spmd_synthetic(n_samples, n_features, assume_centered):
+def test_covariance_spmd_synthetic(n_samples, n_features, assume_centered, dataframe, queue):
     # Import spmd and batch algo
     from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
     from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
@@ -74,7 +80,7 @@ def test_covariance_spmd_synthetic(n_samples, n_features, assume_centered):
     # Generate data and process into dpt
     data = _generate_statistic_data(n_samples, n_features)
 
-    local_dpt_data = _get_local_tensor(data)
+    local_dpt_data = _convert_to_dataframe(_get_local_tensor(data), sycl_queue=queue, target_df=dataframe)
 
     # ensure results of batch algo match spmd
     spmd_result = EmpiricalCovariance_SPMD(assume_centered=assume_centered).fit(

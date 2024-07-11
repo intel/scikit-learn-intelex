@@ -18,6 +18,11 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from sklearnex.tests._utils_spmd import (
     _generate_classification_data,
     _get_local_tensor,
@@ -30,8 +35,9 @@ from sklearnex.tests._utils_spmd import (
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
 )
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_logistic_spmd_gold():
+def test_logistic_spmd_gold(dataframe, queue):
     # Import spmd and batch algo
     from sklearnex.linear_model import LogisticRegression as LogisticRegression_Batch
     from sklearnex.spmd.linear_model import LogisticRegression as LogisticRegression_SPMD
@@ -60,9 +66,9 @@ def test_logistic_spmd_gold():
         ]
     )
 
-    local_dpt_X_train = _get_local_tensor(X_train)
-    local_dpt_y_train = _get_local_tensor(y_train)
-    local_dpt_X_test = _get_local_tensor(X_test)
+    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LogisticRegression_SPMD(random_state=0, solver="newton-cg").fit(
@@ -79,7 +85,7 @@ def test_logistic_spmd_gold():
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    _spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
 
 
 # parametrize max_iter, C, tol
@@ -91,8 +97,9 @@ def test_logistic_spmd_gold():
 @pytest.mark.parametrize("n_features", [10, 100])
 @pytest.mark.parametrize("C", [0.5, 1.0, 2.0])
 @pytest.mark.parametrize("tol", [1e-2, 1e-4])
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"))
 @pytest.mark.mpi
-def test_logistic_spmd_synthetic(n_samples, n_features, C, tol):
+def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue):
     # TODO: Resolve numerical issues when n_rows_rank < n_cols
     if n_samples <= n_features:
         pytest.skip("Numerical issues when rank rows < columns")
@@ -104,9 +111,9 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol):
     # Generate data and process into dpt
     X_train, X_test, y_train, _ = _generate_classification_data(n_samples, n_features)
 
-    local_dpt_X_train = _get_local_tensor(X_train)
-    local_dpt_y_train = _get_local_tensor(y_train)
-    local_dpt_X_test = _get_local_tensor(X_test)
+    local_dpt_X_train = _convert_to_dataframe(_get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_y_train = _convert_to_dataframe(_get_local_tensor(y_train), sycl_queue=queue, target_df=dataframe)
+    local_dpt_X_test = _convert_to_dataframe(_get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LogisticRegression_SPMD(
@@ -125,4 +132,4 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    _spmd_assert_allclose(spmd_result, batch_result)
+    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
