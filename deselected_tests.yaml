@@ -389,6 +389,9 @@ deselected_tests:
   - model_selection/tests/test_classification_threshold.py::test_fit_and_score_over_thresholds_sample_weight >=1.5
   - model_selection/tests/test_classification_threshold.py::test_tuned_threshold_classifier_cv_zeros_sample_weights_equivalence >=1.5
 
+  # Remove windows seg fault for out of bounds parameters in SVM
+  - svm/tests/test_sparse.py::test_error
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:
