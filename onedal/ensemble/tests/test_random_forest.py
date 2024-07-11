@@ -37,10 +37,10 @@ def test_rf_classifier(queue):
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
-# TODO:
-# fix RF regressor predict for the GPU sycl_queue.
-@pytest.mark.parametrize("queue", get_queues("cpu"))
+@pytest.mark.parametrize("queue", get_queues())
 def test_rf_regression(queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("RF regressor predict for the GPU sycl_queue is buggy.")
     X, y = make_regression(
         n_samples=100, n_features=4, n_informative=2, random_state=0, shuffle=False
     )
@@ -79,11 +79,12 @@ def test_rf_classifier_random_splitter(queue):
     assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
 
 
-# TODO:
-# fix RF regressor predict for the GPU sycl_queue.
-@pytest.mark.skip(reason="fix RF regressor predict for the GPU sycl_queue")
 @pytest.mark.parametrize("queue", get_queues("gpu"))
 def test_rf_regression_random_splitter(queue):
+    # splitter_mode selection only for GPU enabled.
+    # For CPU only `best` mode is supported.
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("RF regressor predict for the GPU sycl_queue is buggy.")
     X, y = make_regression(
         n_samples=100, n_features=4, n_informative=2, random_state=0, shuffle=False
     )

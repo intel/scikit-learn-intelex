@@ -26,9 +26,10 @@ from onedal.tests.utils._device_selection import (
 )
 
 
-# TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize("queue", get_queues("cpu"))
+@pytest.mark.parametrize("queue", get_queues())
 def test_dense_self_linear_kernel(queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("Linear kernel for the GPU sycl_queue is buggy.")
     rng = np.random.RandomState(0)
     X = np.array(5 * rng.random_sample((10, 4)))
 
@@ -49,12 +50,13 @@ def _test_dense_small_linear_kernel(queue, scale, shift, dtype):
     assert_allclose(result, expected, rtol=tol)
 
 
-# TODO: investigate sporadic failures on GPU
-@pytest.mark.parametrize("queue", get_queues("cpu"))
+@pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("scale", [1.0, 2.0])
 @pytest.mark.parametrize("shift", [0.0, 1.0])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_dense_small_linear_kernel(queue, scale, shift, dtype):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("Linear kernel for the GPU sycl_queue is buggy.")
     _test_dense_small_linear_kernel(queue, scale, shift, dtype)
 
 
