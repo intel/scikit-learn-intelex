@@ -19,7 +19,6 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -55,7 +54,7 @@ def test_dbscan_spmd_gold(dataframe, queue):
     spmd_model = DBSCAN_SPMD(eps=3, min_samples=2).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=3, min_samples=2).fit(data)
 
-    _spmd_assert_allclose(_as_numpy(spmd_model.labels_), batch_model.labels_)
+    _spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
 
 
 @pytest.mark.skipif(
@@ -89,6 +88,6 @@ def test_dbscan_spmd_synthetic(
     spmd_model = DBSCAN_SPMD(eps=eps, min_samples=min_samples).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=eps, min_samples=min_samples).fit(data)
 
-    _spmd_assert_allclose(_as_numpy(spmd_model.labels_), batch_model.labels_)
+    _spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
     if np.all(batch_model.labels_ == -1):
         raise ValueError("No labels given - try raising epsilon")

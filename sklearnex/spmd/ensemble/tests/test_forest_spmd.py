@@ -20,7 +20,6 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -94,7 +93,7 @@ def test_rfcls_spmd_gold(dataframe, queue):
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -146,7 +145,7 @@ def test_rfcls_spmd_synthetic(
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -210,7 +209,7 @@ def test_rfreg_spmd_gold(dataframe, queue):
     batch_result = batch_model.predict(X_test)
 
     pytest.skip("SPMD and batch random forest results not aligned")
-    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -260,4 +259,4 @@ def test_rfreg_spmd_synthetic(
 
     # TODO: remove skips when SPMD and batch are aligned
     pytest.skip("SPMD and batch random forest results not aligned")
-    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)

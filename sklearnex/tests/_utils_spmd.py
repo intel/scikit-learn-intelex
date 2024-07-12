@@ -19,9 +19,10 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_blobs, make_classification, make_regression
 from sklearn.model_selection import train_test_split
 
+from onedal.tests.utils._dataframes_support import _as_numpy
+
 try:
     import dpctl
-    import dpctl.tensor as dpt
     from dpctl import SyclQueue
     from mpi4py import MPI
 
@@ -39,10 +40,10 @@ def _get_local_tensor(full_data):
     Called on each rank to extract the subset of data assigned to that rank.
 
     Args:
-        full_data (numpy array): The entire set of data
+        full_data (numpy or dpctl array): The entire set of data
 
     Returns:
-        local_dpt_data (numpy or dpctl array): The subset of data used by the rank
+        local_data (numpy or dpctl array): The subset of data used by the rank
     """
 
     # create sycl queue and gather communicator details
@@ -112,19 +113,13 @@ def _spmd_assert_allclose(spmd_result, batch_result, **kwargs):
         batch_result (numpy array): The result for all data, computed by the batch estimator
 
     Raises:
-        AssertionError: If all results are adequately close.
+        AssertionError: If all results are not adequately close.
     """
 
     # extract chunk from batch result to match with local spmd result
     local_batch_result = _get_local_tensor(batch_result)
 
-    # convert to numpy if needed
-    if not isinstance(spmd_result, np.ndarray):
-        numpy_spmd_result = dpt.to_numpy(spmd_result)
-    else:
-        numpy_spmd_result = spmd_result
-
-    assert_allclose(numpy_spmd_result, local_batch_result, **kwargs)
+    assert_allclose(_as_numpy(spmd_result), local_batch_result, **kwargs)
 
 
 def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
@@ -140,7 +135,7 @@ def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
         localize (bool): Whether of not spmd result is specific to the rank, in which case batch result needs to be localized
 
     Raises:
-        AssertionError: If all results are adequately close.
+        AssertionError: If results do not match.
     """
 
     sorted_spmd_result = spmd_result[np.argsort(np.linalg.norm(spmd_result, axis=1))]
@@ -154,7 +149,7 @@ def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
             np.argsort(np.linalg.norm(batch_result, axis=1))
         ]
 
-    assert_allclose(sorted_spmd_result, sorted_batch_result)
+    assert_allclose(_as_numpy(sorted_spmd_result), sorted_batch_result)
 
 
 def _assert_kmeans_labels_allclose(
@@ -172,10 +167,10 @@ def _assert_kmeans_labels_allclose(
         batch_centers (numpy array): Centers computed by batch estimator
 
     Raises:
-        AssertionError: If all results are adequately close.
+        AssertionError: If clusters are not correctly assigned.
     """
 
-    if isinstance(spmd_labels, dpt.usm_ndarray):
-        spmd_labels = dpt.to_numpy(spmd_labels)
     local_batch_labels = _get_local_tensor(batch_labels)
-    assert_allclose(spmd_centers[spmd_labels], batch_centers[local_batch_labels])
+    assert_allclose(
+        spmd_centers[_as_numpy(spmd_labels)], batch_centers[local_batch_labels]
+    )

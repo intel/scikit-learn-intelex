@@ -61,8 +61,8 @@ def test_basic_stats_spmd_gold(dataframe, queue):
     )
 
     # ensure results of batch algo match spmd
-    spmd_result = BasicStatistics_SPMD().compute(local_dpt_data)
-    batch_result = BasicStatistics_Batch().compute(data)
+    spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
+    batch_result = BasicStatistics_Batch().fit(data)
 
     for option in batch_result.keys():
         assert_allclose(spmd_result[option], batch_result[option])
@@ -92,8 +92,8 @@ def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue):
     )
 
     # ensure results of batch algo match spmd
-    spmd_result = BasicStatistics_SPMD().compute(local_dpt_data)
-    batch_result = BasicStatistics_Batch().compute(data)
+    spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
+    batch_result = BasicStatistics_Batch().fit(data)
 
     for option in batch_result.keys():
         assert_allclose(spmd_result[option], batch_result[option])

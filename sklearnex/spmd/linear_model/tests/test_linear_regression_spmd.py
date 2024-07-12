@@ -20,7 +20,6 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -91,7 +90,7 @@ def test_linear_spmd_gold(dataframe, queue):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
@@ -140,4 +139,4 @@ def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue):
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)

@@ -19,7 +19,6 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -76,13 +75,11 @@ def test_kmeans_spmd_gold(dataframe, queue):
     spmd_model = KMeans_SPMD(n_clusters=2, random_state=0).fit(local_dpt_X_train)
     batch_model = KMeans_Batch(n_clusters=2, random_state=0).fit(X_train)
 
-    _assert_unordered_allclose(
-        _as_numpy(spmd_model.cluster_centers_), batch_model.cluster_centers_
-    )
+    _assert_unordered_allclose(spmd_model.cluster_centers_, batch_model.cluster_centers_)
     _assert_kmeans_labels_allclose(
-        _as_numpy(spmd_model.labels_),
+        spmd_model.labels_,
         batch_model.labels_,
-        _as_numpy(spmd_model.cluster_centers_),
+        spmd_model.cluster_centers_,
         batch_model.cluster_centers_,
     )
     assert_allclose(spmd_model.n_iter_, batch_model.n_iter_, atol=1)
@@ -92,9 +89,9 @@ def test_kmeans_spmd_gold(dataframe, queue):
     batch_result = batch_model.predict(X_test)
 
     _assert_kmeans_labels_allclose(
-        _as_numpy(spmd_result),
+        spmd_result,
         batch_result,
-        _as_numpy(spmd_model.cluster_centers_),
+        spmd_model.cluster_centers_,
         batch_model.cluster_centers_,
     )
 
@@ -146,13 +143,11 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
         n_clusters=n_clusters, init=spmd_model_init.cluster_centers_, random_state=0
     ).fit(X_train)
 
-    _assert_unordered_allclose(
-        _as_numpy(spmd_model.cluster_centers_), batch_model.cluster_centers_
-    )
+    _assert_unordered_allclose(spmd_model.cluster_centers_, batch_model.cluster_centers_)
     _assert_kmeans_labels_allclose(
-        _as_numpy(spmd_model.labels_),
+        spmd_model.labels_,
         batch_model.labels_,
-        _as_numpy(spmd_model.cluster_centers_),
+        spmd_model.cluster_centers_,
         batch_model.cluster_centers_,
     )
     # TODO: KMeans iterations are not aligned
@@ -163,8 +158,8 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
     batch_result = batch_model.predict(X_test)
 
     _assert_kmeans_labels_allclose(
-        _as_numpy(spmd_result),
+        spmd_result,
         batch_result,
-        _as_numpy(spmd_model.cluster_centers_),
+        spmd_model.cluster_centers_,
         batch_model.cluster_centers_,
     )
