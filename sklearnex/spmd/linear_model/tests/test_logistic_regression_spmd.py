@@ -77,22 +77,25 @@ def test_logistic_spmd_gold(dataframe, queue):
     local_dpt_X_test = _convert_to_dataframe(
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
+    dpt_X_train = _convert_to_dataframe(X_train, sycl_queue=queue, target_df=dataframe)
+    dpt_y_train = _convert_to_dataframe(y_train, sycl_queue=queue, target_df=dataframe)
+    dpt_X_test = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LogisticRegression_SPMD(random_state=0, solver="newton-cg").fit(
         local_dpt_X_train, local_dpt_y_train
     )
     batch_model = LogisticRegression_Batch(random_state=0, solver="newton-cg").fit(
-        X_train, y_train
+        dpt_X_train, dpt_y_train
     )
 
     # TODO: Logistic Regression coefficients do not align
-    # assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=5e-4)
-    # assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=5e-4)
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=5e-4)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=5e-4)
 
     # ensure predictions of batch algo match spmd
-    spmd_result = spmd_model.predict(local_dpt_X_test)
-    batch_result = batch_model.predict(X_test)
+    spmd_result = spmd_model.predict(dpt_X_test)
+    batch_result = batch_model.predict(dpt_X_test)
 
     _spmd_assert_allclose(spmd_result, batch_result)
 
@@ -132,6 +135,9 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue
     local_dpt_X_test = _convert_to_dataframe(
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
+    dpt_X_train = _convert_to_dataframe(X_train, sycl_queue=queue, target_df=dataframe)
+    dpt_y_train = _convert_to_dataframe(y_train, sycl_queue=queue, target_df=dataframe)
+    dpt_X_test = _convert_to_dataframe(X_test, sycl_queue=queue, target_df=dataframe)
 
     # ensure trained model of batch algo matches spmd
     spmd_model = LogisticRegression_SPMD(
@@ -139,16 +145,16 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue
     ).fit(local_dpt_X_train, local_dpt_y_train)
     batch_model = LogisticRegression_Batch(
         random_state=0, solver="newton-cg", C=C, tol=tol
-    ).fit(X_train, y_train)
+    ).fit(dpt_X_train, dpt_y_train)
 
     # TODO: Logistic Regression coefficients do not align
     # Not deterministic so no n_iter_ check and relatively flexible coef_ check
     # if n_samples > 10 * n_features:
-    #     assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol)
-    #     assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=tol)
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=tol)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)
-    batch_result = batch_model.predict(X_test)
+    batch_result = batch_model.predict(dpt_X_test)
 
     _spmd_assert_allclose(spmd_result, batch_result)
