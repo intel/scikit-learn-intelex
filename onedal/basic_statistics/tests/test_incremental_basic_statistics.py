@@ -19,87 +19,26 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.basic_statistics import IncrementalBasicStatistics
-from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
-    _convert_to_dataframe,
-    get_dataframes_and_queues,
+from onedal.basic_statistics.tests.test_basic_statistics import (
+    expected_max,
+    expected_mean,
+    expected_sum,
+    options_and_tests,
 )
 from onedal.tests.utils._device_selection import get_queues
 
 
-def expected_sum(X):
-    return np.sum(X, axis=0)
-
-
-def expected_max(X):
-    return np.max(X, axis=0)
-
-
-def expected_min(X):
-    return np.min(X, axis=0)
-
-
-def expected_mean(X):
-    return np.mean(X, axis=0)
-
-
-def expected_standard_deviation(X):
-    return np.std(X, axis=0)
-
-
-def expected_variance(X):
-    return np.var(X, axis=0)
-
-
-def expected_variation(X):
-    return expected_standard_deviation(X) / expected_mean(X)
-
-
-def expected_sum_squares(X):
-    return np.sum(np.square(X), axis=0)
-
-
-def expected_sum_squares_centered(X):
-    return np.sum(np.square(X - expected_mean(X)), axis=0)
-
-
-def expected_standard_deviation(X):
-    return np.sqrt(expected_variance(X))
-
-
-def expected_second_order_raw_moment(X):
-    return np.mean(np.square(X), axis=0)
-
-
-options_and_tests = [
-    ("sum", expected_sum, (3e-4, 1e-7)),
-    ("min", expected_min, (1e-7, 1e-7)),
-    ("max", expected_max, (1e-7, 1e-7)),
-    ("mean", expected_mean, (3e-7, 1e-7)),
-    ("variance", expected_variance, (2e-3, 2e-3)),
-    ("variation", expected_variation, (5e-2, 5e-2)),
-    ("sum_squares", expected_sum_squares, (2e-4, 1e-7)),
-    ("sum_squares_centered", expected_sum_squares_centered, (2e-4, 1e-7)),
-    ("standard_deviation", expected_standard_deviation, (2e-3, 2e-3)),
-    ("second_order_raw_moment", expected_second_order_raw_moment, (1e-6, 1e-7)),
-]
-
-
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,np_sycl"))
+@pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_multiple_options_on_gold_data(dataframe, queue, weighted, dtype):
+def test_multiple_options_on_gold_data(queue, weighted, dtype):
     X = np.array([[0, 0], [1, 1]])
     X = X.astype(dtype=dtype)
     X_split = np.array_split(X, 2)
-    X_split = _convert_to_dataframe(X_split, sycl_queue=queue, target_df=dataframe)
     if weighted:
         weights = np.array([1, 0.5])
         weights = weights.astype(dtype=dtype)
         weights_split = np.array_split(weights, 2)
-        weights_split = _convert_to_dataframe(
-            weights_split, sycl_queue=queue, target_df=dataframe
-        )
 
     incbs = IncrementalBasicStatistics()
     for i in range(2):
@@ -114,19 +53,19 @@ def test_multiple_options_on_gold_data(dataframe, queue, weighted, dtype):
         expected_weighted_mean = np.array([0.25, 0.25])
         expected_weighted_min = np.array([0, 0])
         expected_weighted_max = np.array([0.5, 0.5])
-        assert_allclose(expected_weighted_mean, _as_numpy(result.mean))
-        assert_allclose(expected_weighted_max, _as_numpy(result.max))
-        assert_allclose(expected_weighted_min, _as_numpy(result.min))
+        assert_allclose(expected_weighted_mean, result.mean)
+        assert_allclose(expected_weighted_max, result.max)
+        assert_allclose(expected_weighted_min, result.min)
     else:
         expected_mean = np.array([0.5, 0.5])
         expected_min = np.array([0, 0])
         expected_max = np.array([1, 1])
-        assert_allclose(expected_mean, _as_numpy(result.mean))
-        assert_allclose(expected_max, _as_numpy(result.max))
-        assert_allclose(expected_min, _as_numpy(result.min))
+        assert_allclose(expected_mean, result.mean)
+        assert_allclose(expected_max, result.max)
+        assert_allclose(expected_min, result.min)
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,np_sycl"))
+@pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
 @pytest.mark.parametrize("option", options_and_tests)
 @pytest.mark.parametrize("row_count", [100, 1000])
@@ -134,7 +73,7 @@ def test_multiple_options_on_gold_data(dataframe, queue, weighted, dtype):
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_single_option_on_random_data(
-    dataframe, queue, num_batches, option, row_count, column_count, weighted, dtype
+    queue, num_batches, option, row_count, column_count, weighted, dtype
 ):
     result_option, function, tols = option
     fp32tol, fp64tol = tols
@@ -147,19 +86,6 @@ def test_single_option_on_random_data(
         weights = gen.uniform(low=-0.5, high=+1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
         weights_split = np.array_split(weights, num_batches)
-
-    if weighted:
-        weighted_data = np.diag(weights) @ data
-        gtr = function(weighted_data)
-    else:
-        gtr = function(data)
-
-    data_split = _convert_to_dataframe(data_split, sycl_queue=queue, target_df=dataframe)
-    if weighted:
-        weights_split = _convert_to_dataframe(
-            weights_split, sycl_queue=queue, target_df=dataframe
-        )
-
     incbs = IncrementalBasicStatistics(result_options=result_option)
 
     for i in range(num_batches):
@@ -170,20 +96,24 @@ def test_single_option_on_random_data(
     result = incbs.finalize_fit()
 
     res = getattr(result, result_option)
-    res = _as_numpy(res)
+    if weighted:
+        weighted_data = np.diag(weights) @ data
+        gtr = function(weighted_data)
+    else:
+        gtr = function(data)
 
     tol = fp32tol if res.dtype == np.float32 else fp64tol
     assert_allclose(gtr, res, atol=tol)
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,np_sycl"))
+@pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_multiple_options_on_random_data(
-    dataframe, queue, num_batches, row_count, column_count, weighted, dtype
+    queue, num_batches, row_count, column_count, weighted, dtype
 ):
     seed = 42
     gen = np.random.default_rng(seed)
@@ -194,7 +124,16 @@ def test_multiple_options_on_random_data(
         weights = gen.uniform(low=-0.5, high=+1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
         weights_split = np.array_split(weights, num_batches)
+    incbs = IncrementalBasicStatistics(result_options=["mean", "max", "sum"])
 
+    for i in range(num_batches):
+        if weighted:
+            incbs.partial_fit(data_split[i], weights_split[i], queue=queue)
+        else:
+            incbs.partial_fit(data_split[i], queue=queue)
+    result = incbs.finalize_fit()
+
+    res_mean, res_max, res_sum = result.mean, result.max, result.sum
     if weighted:
         weighted_data = np.diag(weights) @ data
         gtr_mean, gtr_max, gtr_sum = (
@@ -209,41 +148,20 @@ def test_multiple_options_on_random_data(
             expected_sum(data),
         )
 
-    data_split = _convert_to_dataframe(data_split, sycl_queue=queue, target_df=dataframe)
-    if weighted:
-        weights_split = _convert_to_dataframe(
-            weights_split, sycl_queue=queue, target_df=dataframe
-        )
-
-    incbs = IncrementalBasicStatistics(result_options=["mean", "max", "sum"])
-
-    for i in range(num_batches):
-        if weighted:
-            incbs.partial_fit(data_split[i], weights_split[i], queue=queue)
-        else:
-            incbs.partial_fit(data_split[i], queue=queue)
-    result = incbs.finalize_fit()
-
-    res_mean, res_max, res_sum = (
-        _as_numpy(result.mean),
-        _as_numpy(result.max),
-        _as_numpy(result.sum),
-    )
-
     tol = 3e-4 if res_mean.dtype == np.float32 else 1e-7
     assert_allclose(gtr_mean, res_mean, atol=tol)
     assert_allclose(gtr_max, res_max, atol=tol)
     assert_allclose(gtr_sum, res_sum, atol=tol)
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues("numpy,np_sycl"))
+@pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_all_option_on_random_data(
-    dataframe, queue, num_batches, row_count, column_count, weighted, dtype
+    queue, num_batches, row_count, column_count, weighted, dtype
 ):
     seed = 77
     gen = np.random.default_rng(seed)
@@ -254,13 +172,6 @@ def test_all_option_on_random_data(
         weights = gen.uniform(low=-0.5, high=+1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
         weights_split = np.array_split(weights, num_batches)
-
-    data_split = _convert_to_dataframe(data_split, sycl_queue=queue, target_df=dataframe)
-    if weighted:
-        weights_split = _convert_to_dataframe(
-            weights_split, sycl_queue=queue, target_df=dataframe
-        )
-
     incbs = IncrementalBasicStatistics(result_options="all")
 
     for i in range(num_batches):
@@ -277,7 +188,6 @@ def test_all_option_on_random_data(
         result_option, function, tols = option
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
-        res = _as_numpy(res)
         if weighted:
             gtr = function(weighted_data)
         else:
