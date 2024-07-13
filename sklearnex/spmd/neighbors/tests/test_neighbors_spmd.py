@@ -96,7 +96,7 @@ def test_knncls_spmd_gold(dataframe, queue):
 
     _assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
     _assert_unordered_allclose(spmd_dists, batch_dists, localize=True)
-    _spmd_assert_allclose(_as_numpy(spmd_result), batch_result)
+    _spmd_assert_allclose(spmd_result, batch_result)
 
 
 @pytest.mark.skipif(
