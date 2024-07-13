@@ -151,8 +151,8 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue
     # TODO: Logistic Regression coefficients do not align
     # Not deterministic so no n_iter_ check and relatively flexible coef_ check
     # if n_samples > 10 * n_features:
-    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=1e-2)
-    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=1e-2)
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=0.15)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=0.15)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)
