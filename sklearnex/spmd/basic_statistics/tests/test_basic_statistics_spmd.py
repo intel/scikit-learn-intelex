@@ -96,5 +96,5 @@ def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue):
     spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
     batch_result = BasicStatistics_Batch().fit(data)
 
-    for option in batch_result.keys():
+    for option in (opt[0] for opt in options_and_tests):
         assert_allclose(getattr(spmd_result, option), getattr(batch_result, option))
