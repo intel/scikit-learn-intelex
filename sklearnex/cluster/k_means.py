@@ -23,6 +23,7 @@ if daal_check_version((2023, "P", 200)):
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.cluster import KMeans as sklearn_KMeans
+    from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
     from sklearn.utils.validation import (
         _check_sample_weight,
         _deprecate_positional_args,
@@ -166,6 +167,7 @@ if daal_check_version((2023, "P", 200)):
             self._n_features_out = self.n_clusters
 
             self._initialize_onedal_estimator()
+            self._n_threads = _openmp_effective_n_threads()
             self._onedal_estimator.fit(X, queue=queue)
 
             self._save_attributes()
@@ -201,12 +203,8 @@ if daal_check_version((2023, "P", 200)):
                         "Supported data formats: Dense, CSR (oneDAL version >= 2024.6.0).",
                     ),
                     (
-                        hasattr(self, "_onedal_estimator"),
-                        "oneDAL model was not fit.",
-                    ),
-                    (
                         _acceptable_sample_weights,
-                        "oneDAL doesn't support sample_weight, either None or ones are acceptable",
+                        "oneDAL doesn't support sample_weight, None or ones are acceptable",
                     ),
                 ]
             )
