@@ -20,8 +20,8 @@ from daal4py.sklearn._utils import get_dtype
 from daal4py.sklearn._utils import make2d as d4p_make2d
 from onedal import _backend, _is_dpc_backend
 
-from ..utils._array_api import get_namespace
 from ..utils import _is_csr
+from ..utils._array_api import get_namespace
 
 
 # TODO:
