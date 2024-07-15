@@ -208,13 +208,11 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 X_test,
                 dtype=[np.float64, np.float32],
                 reset=False,
-                copy=self.copy,
             )
         else:
             X = check_array(
                 X_test,
                 dtype=[np.float64, np.float32],
-                copy=self.copy,
             )
 
         if "numpy" not in xp.__name__:
