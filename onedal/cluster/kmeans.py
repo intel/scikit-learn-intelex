@@ -380,7 +380,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         if result_options:
             # Only set for score function
-            return result.objective_function_value * -1
+            return result.objective_function_value * (-1)
         else:
             return from_table(result.responses).ravel()
 
