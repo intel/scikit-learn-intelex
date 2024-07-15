@@ -20,6 +20,8 @@ from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 200)):
 
+    import warnings
+
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.cluster import KMeans as sklearn_KMeans
