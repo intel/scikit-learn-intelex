@@ -89,7 +89,7 @@ class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
         self, X=None, radius=None, return_distance=True, sort_results=False
     ):
         if (
-            _onedal_estimator is not None
+            hasattr(self, "_onedal_estimator")
             or getattr(self, "_tree", 0) is None
             and self._fit_method == "kd_tree"
         ):
