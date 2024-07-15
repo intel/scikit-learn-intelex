@@ -38,7 +38,6 @@ if daal_check_version((2024, "P", 1)):
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
-    from ..utils.validation import _assert_all_finite
 
     class BaseLogisticRegression(ABC):
         def _save_attributes(self):
@@ -177,17 +176,6 @@ if daal_check_version((2024, "P", 1)):
                 y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
             )
 
-        def _test_type_and_finiteness(self, X_in):
-            X = np.asarray(X_in)
-
-            if np.iscomplexobj(X):
-                return False
-            try:
-                _assert_all_finite(X)
-            except BaseException:
-                return False
-            return True
-
         def _onedal_gpu_fit_supported(self, method_name, *data):
             assert method_name == "fit"
             assert len(data) == 3
@@ -203,7 +191,7 @@ if daal_check_version((2024, "P", 1)):
                 if sklearn_check_version("1.1")
                 else type_of_target(y)
             )
-            dal_ready = patching_status.and_conditions(
+            patching_status.and_conditions(
                 [
                     (self.penalty == "l2", "Only l2 penalty is supported."),
                     (self.dual == False, "dual=True is not supported."),
@@ -225,18 +213,6 @@ if daal_check_version((2024, "P", 1)):
                         "Only binary classification is supported",
                     ),
                 ]
-            )
-
-            if not dal_ready:
-                return patching_status
-
-            if not patching_status.and_condition(
-                self._test_type_and_finiteness(X), "Input X is not supported."
-            ):
-                return patching_status
-
-            patching_status.and_condition(
-                self._test_type_and_finiteness(y), "Input y is not supported."
             )
 
             return patching_status
@@ -271,12 +247,6 @@ if daal_check_version((2024, "P", 1)):
                         "oneDAL model was not trained.",
                     ),
                 ]
-            )
-            if not dal_ready:
-                return patching_status
-
-            patching_status.and_condition(
-                self._test_type_and_finiteness(*data), "Input X is not supported."
             )
 
             return patching_status

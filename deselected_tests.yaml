@@ -153,6 +153,8 @@ deselected_tests:
   # scikit-learn expects an exception for sparse matrices with 64-bit integer indices,
   # scikit-learn-intelex works correctly with 64-bit integer indices
   - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_array]
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_matrix]
   - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
 
   # SVC._dual_coef_ is changing after fitting, but the result of prediction is still the same
@@ -750,9 +752,6 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=ones)]
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=ones)]
-
-  # Single value incorrect in some CI runs with Linux and GPU hardware, requires further analysis
-  - tests/test_common.py::test_estimators[PCA()-check_methods_subset_invariance]
 
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   # NearestNeighbors
