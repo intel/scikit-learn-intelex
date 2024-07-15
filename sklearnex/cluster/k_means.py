@@ -264,7 +264,7 @@ if daal_check_version((2023, "P", 200)):
                 if isinstance(sample_weight, str) and sample_weight == "deprecated":
                     sample_weight = None
 
-                if sample_weight:
+                if sample_weight is not None:
                     warnings.warn(
                         "'sample_weight' was deprecated in version 1.3 and "
                         "will be removed in 1.5.",
@@ -328,7 +328,7 @@ if daal_check_version((2023, "P", 200)):
                 if isinstance(sample_weight, str) and sample_weight == "deprecated":
                     sample_weight = None
 
-                if sample_weight:
+                if sample_weight is not None:
                     warnings.warn(
                         "'sample_weight' was deprecated in version 1.3 and "
                         "will be removed in 1.5.",
