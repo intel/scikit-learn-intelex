@@ -380,9 +380,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         if result_options:
             # Only set for score function
-            return result.objective_function_value * -1
+            return from_table(result.objective_function_value) * -1
         else:
-            return result.responses.ravel()
+            return from_table(result.responses).ravel()
 
     def _score(self, X, module, queue=None):
         result_options = "compute_exact_objective_function"
