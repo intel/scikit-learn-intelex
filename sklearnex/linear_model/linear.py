@@ -27,7 +27,6 @@ from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
-from ..utils.validation import _assert_all_finite
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
@@ -138,19 +137,6 @@ class LinearRegression(sklearn_LinearRegression):
             sample_weight=sample_weight,
         )
 
-    def _test_type_and_finiteness(self, X_in):
-        X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
-
-        dtype = X.dtype
-        if "complex" in str(type(dtype)):
-            return False
-
-        try:
-            _assert_all_finite(X)
-        except BaseException:
-            return False
-        return True
-
     def _onedal_fit_supported(self, method_name, *data):
         assert method_name == "fit"
         assert len(data) == 3
@@ -174,7 +160,7 @@ class LinearRegression(sklearn_LinearRegression):
         # Check if equations are well defined
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
 
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (sample_weight is None, "Sample weight is not supported."),
                 (
@@ -193,17 +179,6 @@ class LinearRegression(sklearn_LinearRegression):
                 ),
             ]
         )
-        if not dal_ready:
-            return patching_status
-
-        if not patching_status.and_condition(
-            self._test_type_and_finiteness(X), "Input X is not supported."
-        ):
-            return patching_status
-
-        patching_status.and_condition(
-            self._test_type_and_finiteness(y), "Input y is not supported."
-        )
 
         return patching_status
 
@@ -217,18 +192,12 @@ class LinearRegression(sklearn_LinearRegression):
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
         )
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (n_samples > 0, "Number of samples is less than 1."),
                 (not issparse(data[0]), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
             ]
-        )
-        if not dal_ready:
-            return patching_status
-
-        patching_status.and_condition(
-            self._test_type_and_finiteness(data[0]), "Input X is not supported."
         )
 
         return patching_status
@@ -257,7 +226,6 @@ class LinearRegression(sklearn_LinearRegression):
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
             "multi_output": True,
-            "force_all_finite": False,
         }
         if sklearn_check_version("1.2"):
             X, y = self._validate_data(**check_params)

@@ -24,7 +24,6 @@ from sklearn.neighbors._classification import (
 )
 from sklearn.utils.validation import check_array
 
-from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 from ._base import KNeighborsMixin, NeighborsBase, parse_auto_method, prediction_algorithm
 
@@ -124,15 +123,12 @@ class KNeighborsClassifier(KNeighborsMixin, BaseClassifierMixin, NeighborsBase):
             weights if sklearn_check_version("1.0") else _check_weights(weights)
         )
 
-    @support_usm_ndarray()
     def fit(self, X, y):
         return NeighborsBase._fit(self, X, y)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return daal4py_classifier_predict(self, X, BaseKNeighborsClassifier.predict)
 
-    @support_usm_ndarray()
     def predict_proba(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)

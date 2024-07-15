@@ -73,8 +73,6 @@ else:
 from sklearn.linear_model._logistic import _logistic_regression_path as lr_path_original
 from sklearn.preprocessing import LabelBinarizer, LabelEncoder
 
-from .._device_offload import support_usm_ndarray
-
 
 # Code adapted from sklearn.linear_model.logistic version 0.21
 def __logistic_regression_path(
@@ -426,6 +424,10 @@ def __logistic_regression_path(
                 (classes.size, n_features + int(fit_intercept)), order="F", dtype=X.dtype
             )
 
+    # Adoption of https://github.com/scikit-learn/scikit-learn/pull/26721
+    if solver in ["lbfgs", "newton-cg", "newton-cholesky"]:
+        sw_sum = len(X) if sample_weight is None else np.sum(sample_weight)
+
     if coef is not None:
         # it must work both giving the bias term and not
         if multi_class == "ovr":
@@ -592,7 +594,7 @@ def __logistic_regression_path(
                     X,
                     target,
                     0.0,
-                    1.0 / (2 * C * C_daal_multiplier),
+                    1.0 / (2 * C * C_daal_multiplier * sw_sum),
                     fit_intercept,
                     value=True,
                     gradient=True,
@@ -600,10 +602,10 @@ def __logistic_regression_path(
                 )
             else:
                 if sklearn_check_version("1.1"):
-                    l2_reg_strength = 1.0 / C
+                    l2_reg_strength = 1.0 / (C * sw_sum)
                     extra_args = (X, target, sample_weight, l2_reg_strength, n_threads)
                 else:
-                    extra_args = (X, target, 1.0 / C, sample_weight)
+                    extra_args = (X, target, 1.0 / (C * sw_sum), sample_weight)
 
             iprint = [-1, 50, 1, 100, 101][
                 np.searchsorted(np.array([0, 1, 2, 3]), verbose)
@@ -614,7 +616,13 @@ def __logistic_regression_path(
                 method="L-BFGS-B",
                 jac=True,
                 args=extra_args,
-                options={"iprint": iprint, "gtol": tol, "maxiter": max_iter},
+                options={
+                    "maxiter": max_iter,
+                    "maxls": 50,
+                    "iprint": iprint,
+                    "gtol": tol,
+                    "ftol": 64 * np.finfo(float).eps,
+                },
             )
             n_iter_i = _check_optimize_result(
                 solver,
@@ -629,7 +637,7 @@ def __logistic_regression_path(
             if _dal_ready:
 
                 def make_ncg_funcs(f, value=False, gradient=False, hessian=False):
-                    daal_penaltyL2 = 1.0 / (2 * C * C_daal_multiplier)
+                    daal_penaltyL2 = 1.0 / (2 * C * C_daal_multiplier * sw_sum)
                     _obj_, X_, y_, n_samples = daal_extra_args_func(
                         classes.size,
                         w0,
@@ -662,10 +670,10 @@ def __logistic_regression_path(
                 )
             else:
                 if sklearn_check_version("1.1"):
-                    l2_reg_strength = 1.0 / C
+                    l2_reg_strength = 1.0 / (C * sw_sum)
                     args = (X, target, sample_weight, l2_reg_strength, n_threads)
                 else:
-                    args = (X, target, 1.0 / C, sample_weight)
+                    args = (X, target, 1.0 / (C * sw_sum), sample_weight)
 
                 w0, n_iter_i = _newton_cg(
                     hess, func, grad, w0, args=args, maxiter=max_iter, tol=tol
@@ -880,7 +888,6 @@ def daal4py_predict(self, X, resultsToEvaluate):
         return LogisticRegression_original.predict_log_proba(self, X)
 
 
-@support_usm_ndarray()
 def logistic_regression_path(
     X,
     y,
@@ -997,7 +1004,6 @@ class LogisticRegression(LogisticRegression_original):
         self.n_jobs = n_jobs
         self.l1_ratio = l1_ratio
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
@@ -1005,15 +1011,12 @@ class LogisticRegression(LogisticRegression_original):
             self._validate_params()
         return daal4py_fit(self, X, y, sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return daal4py_predict(self, X, "computeClassLabels")
 
-    @support_usm_ndarray()
     def predict_log_proba(self, X):
         return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-    @support_usm_ndarray()
     def predict_proba(self, X):
         return daal4py_predict(self, X, "computeClassProbabilities")
 
