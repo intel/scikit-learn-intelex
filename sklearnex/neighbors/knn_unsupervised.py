@@ -88,6 +88,12 @@ class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     def radius_neighbors(
         self, X=None, radius=None, return_distance=True, sort_results=False
     ):
+        if (
+            _onedal_estimator is not None
+            or getattr(self, "_tree", 0) is None
+            and self._fit_method == "kd_tree"
+        ):
+            sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
         return dispatch(
             self,
             "radius_neighbors",
