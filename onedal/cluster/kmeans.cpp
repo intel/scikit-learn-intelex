@@ -69,9 +69,6 @@ struct params2desc {
         desc.set_max_iteration_count(params["max_iteration_count"].cast<std::int64_t>());
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240200
         auto result_options = params["result_options"].cast<std::string>();
-        if (result_options == "compute_assignments") {
-            desc.set_result_options(result_options::compute_assignments);
-        }
         if (result_options == "compute_exact_objective_function") {
             desc.set_result_options(result_options::compute_exact_objective_function);
         }

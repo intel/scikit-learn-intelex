@@ -368,21 +368,28 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
     cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
 
-    def _predict_raw(self, X_table, module, policy, dtype=np.float32, is_csr=False):
-        params = self._get_onedal_params(is_csr, dtype)
-
-        result = module.infer(policy, params, self.model_, X_table)
-
-        return from_table(result.responses).reshape(-1)
-
-    def _predict(self, X, module, queue=None):
+    def _predict(self, X, module, queue=None, result_options=None):
         is_csr = _is_csr(X)
 
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         X_table, dtype = to_table(X), X.dtype
+        params = self._get_onedal_params(is_csr, dtype, result_options)
 
-        return self._predict_raw(X_table, module, policy, dtype, is_csr)
+        result = module.infer(policy, params, self.model_, X_table)
+
+        if result_options:
+            # Only set for score function
+            return result.objective_function_value * -1
+        else:
+            return result.responses.ravel()
+
+    def _score(self, X, module, queue=None):
+        result_options = "compute_exact_objective_function"
+
+        return self._predict(
+            X, self._get_backend("kmeans", "clustering", None), queue, result_options
+        )
 
     def _transform(self, X):
         return euclidean_distances(X, self.cluster_centers_)
@@ -498,6 +505,21 @@ class KMeans(_BaseKMeans):
         """
 
         return self._transform(X)
+
+    def score(self, X, queue=None):
+        """Opposite of the value of X on the K-means objective.
+
+        Parameters
+        ----------
+        X: {array-like, sparse matrix} of shape (n_samples, n_features)
+            New data.
+
+        Returns
+        -------
+        score: float
+            Opposite of the value of X on the K-means objective.
+        """
+        return super()._score(X, self._get_backend("kmeans", "clustering", None), queue)
 
 
 def k_means(

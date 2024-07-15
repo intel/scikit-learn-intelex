@@ -174,8 +174,6 @@ if daal_check_version((2023, "P", 200)):
             self._save_attributes()
 
         def _onedal_predict_supported(self, method_name, X, sample_weight=None):
-            assert method_name == "predict"
-
             class_name = self.__class__.__name__
             is_data_supported = (
                 _is_csr(X) and daal_check_version((2024, "P", 600))
@@ -185,6 +183,15 @@ if daal_check_version((2023, "P", 200)):
             )
 
             supported_algs = ["auto", "full", "lloyd", "elkan"]
+
+            _acceptable_sample_weights = True
+            if sample_weight is not None:
+                sample_weight = _check_sample_weight(
+                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
+                )
+                _acceptable_sample_weights = np.allclose(
+                    sample_weight, np.ones_like(sample_weight)
+                )
 
             patching_status.and_conditions(
                 [
@@ -199,6 +206,10 @@ if daal_check_version((2023, "P", 200)):
                     (
                         hasattr(self, "_onedal_estimator"),
                         "oneDAL model was not fit.",
+                    ),
+                    (
+                        _acceptable_sample_weights,
+                        "oneDAL doesn't support sample_weight, either None or ones are acceptable",
                     ),
                 ]
             )
@@ -274,7 +285,7 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_supported(self, method_name, *data):
             if method_name == "fit":
                 return self._onedal_fit_supported(method_name, *data)
-            if method_name == "predict":
+            if method_name in ["predict", "score"]:
                 return self._onedal_predict_supported(method_name, *data)
             raise RuntimeError(
                 f"Unknown method {method_name} in {self.__class__.__name__}"
@@ -294,7 +305,46 @@ if daal_check_version((2023, "P", 200)):
             X = self._check_test_data(X)
             return self._transform(X)
 
-        score = support_usm_ndarray()(sklearn_KMeans.score)
+        @wrap_output_data
+        def score(self, X, y=None, sample_weight=None):
+            return dispatch(
+                self,
+                "score",
+                {
+                    "onedal": self.__class__._onedal_score,
+                    "sklearn": sklearn_KMeans.score,
+                },
+                X,
+                y,
+                sample_weight=sample_weight,
+            )
+
+        def _onedal_score(self, X, y, sample_weight=None, queue=None):
+            check_is_fitted(self)
+
+            X = self._validate_data(
+                X,
+                accept_sparse="csr",
+                reset=False,
+                dtype=[np.float64, np.float32],
+            )
+
+            if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
+                if isinstance(sample_weight, str) and sample_weight == "deprecated":
+                    sample_weight = None
+
+                if sample_weight:
+                    warnings.warn(
+                        "'sample_weight' was deprecated in version 1.3 and "
+                        "will be removed in 1.5.",
+                        FutureWarning,
+                    )
+
+            if not hasattr(self, "_onedal_estimator"):
+                self._initialize_onedal_estimator()
+                self._onedal_estimator.cluster_centers_ = self.cluster_centers_
+
+            return self._onedal_estimator.score(X, queue=queue)
 
         def _save_attributes(self):
             assert hasattr(self, "_onedal_estimator")
