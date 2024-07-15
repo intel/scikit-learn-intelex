@@ -81,7 +81,8 @@ inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
         column_count = static_cast<std::int64_t>(array_size(np_data, 1));
     }
     // If both array_is_behaved_C(np_data) and array_is_behaved_F(np_data) are true 
-    // (for example, if the array has only one column), then row-major layout will be chosen.
+    // (for example, if the array has only one column), then row-major layout will be chosen
+    // which is default on oneDAL side.
     const auto layout =
         array_is_behaved_C(np_data) ? dal::data_layout::row_major : dal::data_layout::column_major;
     auto res_table = dal::homogen_table(data_pointer,
