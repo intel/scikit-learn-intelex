@@ -23,7 +23,6 @@ if daal_check_version((2023, "P", 200)):
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.cluster import KMeans as sklearn_KMeans
-    from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
     from sklearn.utils.validation import (
         _check_sample_weight,
         _deprecate_positional_args,
@@ -33,7 +32,6 @@ if daal_check_version((2023, "P", 200)):
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
-    from onedal._device_offload import support_usm_ndarray
     from onedal.cluster import KMeans as onedal_KMeans
     from onedal.utils import _is_csr
 
@@ -166,7 +164,6 @@ if daal_check_version((2023, "P", 200)):
                 self._check_params(X)
 
             self._n_features_out = self.n_clusters
-            self._n_threads = _openmp_effective_n_threads()
 
             self._initialize_onedal_estimator()
             self._onedal_estimator.fit(X, queue=queue)
@@ -360,6 +357,7 @@ if daal_check_version((2023, "P", 200)):
         predict.__doc__ = sklearn_KMeans.predict.__doc__
         transform.__doc__ = sklearn_KMeans.transform.__doc__
         fit_transform.__doc__ = sklearn_KMeans.fit_transform.__doc__
+        score.__doc__ = sklearn_KMeans.score.__doc__
 
 else:
     from daal4py.sklearn.cluster import KMeans

@@ -157,7 +157,8 @@ void init_infer_result(py::module_& m) {
 
     auto cls = py::class_<result_t>(m, "infer_result")
                    .def(py::init())
-                   .DEF_ONEDAL_PY_PROPERTY(responses, result_t);
+                   .DEF_ONEDAL_PY_PROPERTY(responses, result_t)
+                   .DEF_ONEDAL_PY_PROPERTY(objective_function_value, result_t);
 }
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
