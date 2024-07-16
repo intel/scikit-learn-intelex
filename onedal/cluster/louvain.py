@@ -15,7 +15,7 @@
 # ===============================================================================
 
 import numpy as np
-import scipy
+import scipy.sparse as sp
 from sklearn.base import ClusterMixin
 from sklearn.utils import check_array
 
@@ -46,8 +46,8 @@ class Louvain(BaseEstimator, ClusterMixin):
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
         assert queue is None, "Louvain is implemented only on CPU"
-        assert isinstance(X, scipy.csr_matrix) or isinstance(
-            X, scipy.csr_array
+        assert isinstance(X, sp.csr_matrix) or (
+            hasattr(sp, "csr_array") and isinstance(X, sp.csr_array)
         ), "input must be CSR sparse"
         X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         X = make2d(X)
