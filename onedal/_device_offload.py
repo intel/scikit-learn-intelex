@@ -180,13 +180,16 @@ if dpnp_available:
 def support_usm_ndarray(freefunc=False, queue_param=True):
     """
     Handles USMArray input. Puts SYCLQueue from data to decorated function arguments.
-    Converts output of decorated function to dpnp.ndarray if input was of this type.
+    Converts output of decorated function to dpctl.tensor/dpnp.ndarray if input was of this type.
 
     Parameters
     ----------
     freefunc (bool) : Set to True if decorates free function.
-    queue_param (bool) : Set to True if queue from data should be provided to the decorated function args.
-                         Queue will not be changed if provided explicitly.
+    queue_param (bool) : Set to False if the decorated function has no `queue` parameter
+
+    Notes
+    -----
+    Queue will not be changed if provided explicitly.
     """
 
     def decorator(func):
