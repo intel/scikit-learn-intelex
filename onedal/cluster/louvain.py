@@ -47,13 +47,14 @@ class Louvain(BaseEstimator, ClusterMixin):
     def fit(self, X, y=None, sample_weight=None, queue=None):
         assert queue is None, "Louvain is implemented only on CPU"
         assert isinstance(X, scipy.csr_matrix) or isinstance(X, scipy.csr_array)
-        # limitations in oneDAL's shared object force the topology to double type
         X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         X = make2d(X)
 
+        # limitations in oneDAL's shared object force the topology to double type
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
-        X = X.astype(np.float64)  # only np.float64 topologies supported
+        X = X.astype(np.float64)
+
         if sample_weight:
             result = module.vertex_partioning(
                 params, to_graph(X), to_table(sample_weight)
