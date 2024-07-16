@@ -53,6 +53,9 @@ class Louvain(BaseEstimator, ClusterMixin):
         X = X.astype(np.float64)
 
         if sample_weight:
+            assert isinstance(
+                sample_weight, np.array
+            ), "sample_weight must be a finite numpy array"
             result = module.vertex_partioning(
                 params, to_graph(X), to_table(sample_weight)
             )
