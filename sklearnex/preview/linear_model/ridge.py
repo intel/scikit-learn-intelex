@@ -270,6 +270,7 @@ if daal_check_version((2024, "P", 600)):
             self._onedal_estimator.intercept_ = self.intercept_
 
         def _onedal_fit(self, X, y, sample_weight, queue=None):
+            # `Sample weight` is not supported. Expected to be None value.
             assert sample_weight is None
 
             check_params = {
@@ -351,7 +352,6 @@ if daal_check_version((2024, "P", 600)):
 
         def _save_attributes(self):
             self.n_features_in_ = self._onedal_estimator.n_features_in_
-            self._sparse = False
             self._coef = self._onedal_estimator.coef_
             self._intercept = self._onedal_estimator.intercept_
 
