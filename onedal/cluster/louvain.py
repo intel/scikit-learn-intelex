@@ -43,7 +43,7 @@ class Louvain(BaseEstimator, ClusterMixin):
         }
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
-        assert queue is None, "Louvain is implemented only on CPU"
+        assert queue is None, "Louvain is implemented only for CPU"
         assert _is_csr(X), "input must be CSR sparse"
 
         X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
