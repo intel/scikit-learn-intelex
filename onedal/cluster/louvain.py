@@ -15,22 +15,21 @@
 # ===============================================================================
 
 import numpy as np
+import scipy
 from sklearn.base import ClusterMixin
 from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import get_dtype, make2d
 
 from ..common._base import BaseEstimator
-from ..datatypes import from_table, to_graph
+from ..common._mixin import ClusterMixin
+from ..datatypes import _convert_to_supported, from_table, to_graph
+from ..utils import _check_array
 
 
 class Louvain(BaseEstimator, ClusterMixin):
     def __init__(
-        self,
-        resolution=1.0,
-        *,
-        accuracy_threshold=.0001,
-        max_iteration_count=10
+        self, resolution=1.0, *, accuracy_threshold=0.0001, max_iteration_count=10
     ):
         self.resolution = resolution
         self.accuracy_threshold = accuracy_threshold
@@ -45,17 +44,22 @@ class Louvain(BaseEstimator, ClusterMixin):
             "max_iteration_count": int(self.max_iteration_count),
         }
 
-    def _fit(self, X, module, queue):
-        assert(queue==None)
-        X = check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+    def fit(self, X, y=None, sample_weight=None, queue=None):
+        assert queue is None, "Louvain is implemented only on CPU"
+        assert isinstance(X, scipy.csr_matrix) or isinstance(X, scipy.csr_array)
+        # limitations in oneDAL's shared object force the topology to double type
+        X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         X = make2d(X)
 
-        types = [np.float32, np.float64]
-        if get_dtype(X) not in types:
-            X = X.astype(np.float64)
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
-        result = module.vertex_partioning(params, to_graph(X), to_table(sample_weight))
+        X = X.astype(np.float64)  # only np.float64 topologies supported
+        if sample_weight:
+            result = module.vertex_partioning(
+                params, to_graph(X), to_table(sample_weight)
+            )
+        else:
+            result = module.vertex_partioning(params, to_graph(X))
 
         self.labels_ = from_table(result.labels).ravel()
         self.modularity_ = float(result.modularity)
