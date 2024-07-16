@@ -22,6 +22,8 @@ import numpy as np
 
 from ._config import _get_config
 
+from .utils._array_api import _from_dlpack, _is_numpy_namespace
+
 try:
     from dpctl import SyclQueue
     from dpctl.memory import MemoryUSMDevice, as_usm_memory
@@ -37,6 +39,9 @@ try:
     dpnp_available = True
 except ImportError:
     dpnp_available = False
+
+if dpnp_available:
+    from .utils._array_api import _convert_to_dpnp
 
 
 class DummySyclQueue:
@@ -181,41 +186,6 @@ def _run_on_device(func, obj=None, *args, **kwargs):
     return func(*args, **kwargs)
 
 
-# TODO:
-# move to array api module
-if dpnp_available:
-
-    def _convert_to_dpnp(array):
-        if isinstance(array, usm_ndarray):
-            return dpnp.array(array, copy=False)
-        elif isinstance(array, Iterable):
-            for i in range(len(array)):
-                array[i] = _convert_to_dpnp(array[i])
-        return array
-
-
-# TODO:
-# move to array api module
-def _from_dlpack(data, xp, *args, **kwargs):
-    def _one_from_dlpack(data, xp, *args, **kwargs):
-        return xp.from_dlpack(data, *args, **kwargs)
-
-    if isinstance(data, Iterable):
-        for i in range(len(data)):
-            data[i] = _one_from_dlpack(data[i], xp, *args, **kwargs)
-        return data
-    return _one_from_dlpack(data, xp, *args, **kwargs)
-
-
-# TODO:
-# move to array api module
-def _is_numpy_namespace(xp):
-    """Return True if xp is backed by NumPy."""
-    return xp.__name__ in {"numpy", "array_api_compat.numpy", "numpy.array_api"}
-
-
-# TODO:
-# rename support_array_api
 def support_array_api(freefunc=False, queue_param=True):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
