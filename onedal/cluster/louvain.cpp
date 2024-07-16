@@ -94,7 +94,7 @@ void init_vertex_partitioning_result(py::module_& m) {
 template <typename Float>
 using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
 
-// float topologies are currently unsupported in the oneDAL shared object
+// float topologies are currently not exported to the oneDAL shared object
 //ONEDAL_PY_TYPE2STR(graph_t<float>, "");
 ONEDAL_PY_TYPE2STR(graph_t<double>, "");
 ONEDAL_PY_TYPE2STR(preview::louvain::task::vertex_partitioning, "vertex_partitioning");
