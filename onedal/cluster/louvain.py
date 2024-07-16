@@ -15,16 +15,13 @@
 # ===============================================================================
 
 import numpy as np
-import scipy.sparse as sp
-from sklearn.base import ClusterMixin
-from sklearn.utils import check_array
 
 from daal4py.sklearn._utils import get_dtype, make2d
 
 from ..common._base import BaseEstimator
 from ..common._mixin import ClusterMixin
 from ..datatypes import _convert_to_supported, from_table, to_graph, to_table
-from ..utils import _check_array
+from ..utils.validation import _check_array, _is_csr
 
 
 class Louvain(BaseEstimator, ClusterMixin):
@@ -46,9 +43,7 @@ class Louvain(BaseEstimator, ClusterMixin):
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
         assert queue is None, "Louvain is implemented only on CPU"
-        assert isinstance(X, sp.csr_matrix) or (
-            hasattr(sp, "csr_array") and isinstance(X, sp.csr_array)
-        ), "input must be CSR sparse"
+        assert _is_csr(X), "input must be CSR sparse"
         X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         X = make2d(X)
 
