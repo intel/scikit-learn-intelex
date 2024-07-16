@@ -56,7 +56,6 @@ struct params2desc {
     }
 };
 
-
 template <typename Task, typename Graph>
 void init_vertex_partitioning_ops(py::module_& m) {
     m.def("vertex_partitioning",
