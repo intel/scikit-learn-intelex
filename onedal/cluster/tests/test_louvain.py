@@ -16,6 +16,7 @@
 
 import numpy as np
 import pytest
+import scipy.sparse as sp
 from sklearn.cluster.tests.common import generate_clustered_data
 
 from onedal.cluster import Louvain

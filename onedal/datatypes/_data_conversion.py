@@ -93,3 +93,5 @@ else:
             return x
 
         return _apply_and_pass(func, *data)
+
+to_graph = _backend.to_graph
