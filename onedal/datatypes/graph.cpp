@@ -40,19 +40,20 @@ ONEDAL_PY_INIT_MODULE(graph) {
     graph_constructor<double>(m, "graph_double");
 
 
-    m.def("to_graph", [](py::object obj) -> std::variant<graph_t<float>, graph_t<double>> {
+    m.def("to_graph", [](py::object obj)-> graph_t<double> {
         auto* obj_ptr = obj.ptr();
         if (strcmp(Py_TYPE(obj_ptr)->tp_name, "csr_matrix") == 0 || strcmp(Py_TYPE(obj_ptr)->tp_name, "csr_array") == 0){
             PyObject *py_data = PyObject_GetAttrString(obj_ptr, "data");
-            if (array_type(py_data) == NPY_CDOUBLELTR){
+            auto datatype = array_type(py_data);
+            if (datatype == NPY_DOUBLE || datatype == NPY_CDOUBLE || datatype == NPY_CDOUBLELTR){
                 return convert_to_undirected_graph<double>(obj_ptr, NPY_CDOUBLELTR);
             }
-            else if (array_type(py_data) == NPY_CFLOATLTR){
-                return convert_to_undirected_graph<float>(obj_ptr, NPY_CFLOATLTR);
-            }
+            //else if (datatype == NPY_FLOAT || datatype == NPY_CFLOAT || datatype == NPY_CFLOATLTR){
+            //    return convert_to_undirected_graph<float>(obj_ptr, NPY_CFLOATLTR);
+            //}
         }
         throw std::invalid_argument(
-            "[convert_to_undirected_graph] Not available input format for convert Python object to onedal graph.");  
+            "[convert_to_undirected_graph] Not available input format for converting Python object to onedal graph.");  
     });
 }
 

@@ -63,7 +63,8 @@ class Louvain(BaseEstimator, ClusterMixin):
                 params, to_graph(X), to_table(sample_weight)
             )
         else:
-            result = module.vertex_partioning(params, to_graph(X))
+            print(type(X))
+            result = module.vertex_partitioning(params, to_graph(X))
 
         self.labels_ = from_table(result.labels).ravel()
         self.modularity_ = float(result.modularity)
