@@ -35,7 +35,7 @@ class Louvain(BaseEstimator, ClusterMixin):
         self.accuracy_threshold = accuracy_threshold
         self.max_iteration_count = max_iteration_count
 
-    def _get_onedal_params(self, dtype=np.float32):
+    def _get_onedal_params(self, dtype=np.float64):
         return {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": "by_default",
