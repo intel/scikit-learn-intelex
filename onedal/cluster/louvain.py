@@ -43,6 +43,7 @@ class Louvain(BaseEstimator, ClusterMixin):
         }
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
+        # queue is only included to match convention for all onedal estimators
         assert queue is None, "Louvain is implemented only for CPU"
         assert _is_csr(X), "input must be CSR sparse"
 
