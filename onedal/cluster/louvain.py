@@ -25,6 +25,7 @@ from ..utils.validation import _check_array, _is_csr
 
 
 class Louvain(BaseEstimator, ClusterMixin):
+
     def __init__(
         self, resolution=1.0, *, accuracy_threshold=0.0001, max_iteration_count=10
     ):
@@ -52,11 +53,12 @@ class Louvain(BaseEstimator, ClusterMixin):
         params = self._get_onedal_params(dtype)
         X = X.astype(np.float64)
 
+        module = self._get_backend("louvain", "vertex_partitioning", None)
         if sample_weight:
             assert isinstance(
                 sample_weight, np.array
             ), "sample_weight must be a finite numpy array"
-            result = module.vertex_partioning(
+            result = module.vertex_partitioning(
                 params, to_graph(X), to_table(sample_weight)
             )
         else:
