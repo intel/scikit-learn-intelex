@@ -192,7 +192,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             else:
                 self.n_samples_seen_ += X.shape[0]
 
-            self._onedal_estimator.partial_fit(X, queue)
+            self._onedal_estimator.partial_fit(X, queue=queue)
         finally:
             self._need_to_finalize = True
 
@@ -326,7 +326,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue, check_input=False)
 
-        self._onedal_finalize_fit()
+        self._onedal_finalize_fit(queue=queue)
 
         return self
 
