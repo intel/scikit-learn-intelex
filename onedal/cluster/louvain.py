@@ -16,11 +16,11 @@
 
 import numpy as np
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from daal4py.sklearn._utils import get_dtype
 
 from ..common._base import BaseEstimator
 from ..common._mixin import ClusterMixin
-from ..datatypes import _convert_to_supported, from_table, to_graph, to_table
+from ..datatypes import from_table, to_graph, to_table
 from ..utils.validation import _check_array, _is_csr
 
 
@@ -45,7 +45,6 @@ class Louvain(BaseEstimator, ClusterMixin):
         assert queue is None, "Louvain is implemented only on CPU"
         assert _is_csr(X), "input must be CSR sparse"
         X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
-        X = make2d(X)
 
         # limitations in oneDAL's shared object force the topology to double type
         dtype = get_dtype(X)
