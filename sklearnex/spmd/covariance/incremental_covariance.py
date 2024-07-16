@@ -14,8 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
-from ...covariance import IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_batch
-from onedal.spmd.covariance import IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance
+from onedal.spmd.covariance import (
+    IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
+)
+
+from ...covariance import (
+    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_batch,
+)
+
 
 class IncrementalEmpiricalCovariance(IncrementalEmpiricalCovariance_batch):
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)

@@ -14,13 +14,16 @@
 # limitations under the License.
 # ==============================================================================
 
-from ...covariance import IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_Batch
-
 from ..._device_offload import support_usm_ndarray
+from ...covariance import (
+    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_Batch,
+)
 from .._base import BaseEstimatorSPMD
 
 
-class IncrementalEmpiricalCovariance(BaseEstimatorSPMD, IncrementalEmpiricalCovariance_Batch):
+class IncrementalEmpiricalCovariance(
+    BaseEstimatorSPMD, IncrementalEmpiricalCovariance_Batch
+):
     @support_usm_ndarray()
     def partial_fit(self, X, y=None, queue=None):
         return super().partial_fit(X, queue=queue)

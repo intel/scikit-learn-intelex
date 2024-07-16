@@ -21,11 +21,13 @@ from mpi4py import MPI
 
 from sklearnex.spmd.covariance import IncrementalEmpiricalCovariance
 
+
 def get_local_data(data, comm):
     rank = comm.Get_rank()
     num_ranks = comm.Get_size()
     local_size = (data.shape[0] + num_ranks - 1) // num_ranks
-    return data[rank * local_size: (rank + 1) * local_size]
+    return data[rank * local_size : (rank + 1) * local_size]
+
 
 q = dpctl.SyclQueue("gpu")
 comm = MPI.COMM_WORLD
