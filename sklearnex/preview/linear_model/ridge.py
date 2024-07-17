@@ -19,6 +19,8 @@ import logging
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 if daal_check_version((2024, "P", 600)):
+    import numbers
+
     import numpy as np
     from scipy.sparse import issparse
     from sklearn.linear_model import Ridge as sklearn_Ridge
@@ -38,15 +40,15 @@ if daal_check_version((2024, "P", 600)):
 
     def _is_numeric_scalar(value):
         """
-        Determines if the provided value is an instance of either int or float.
+        Determines if the provided value is a numeric scalar.
 
         Args:
         value: The value to be checked.
 
         Returns:
-        bool: True if the value is either an int or a float, False otherwise.
+        bool: True if the value is a numeric scalar, False otherwise.
         """
-        return isinstance(value, (int, float))
+        return isinstance(value, numbers.Real)
 
     class Ridge(sklearn_Ridge):
         __doc__ = sklearn_Ridge.__doc__
@@ -225,9 +227,8 @@ if daal_check_version((2024, "P", 600)):
             )
 
             if method_name == "fit":
-                alpha_is_scalar = _is_numeric_scalar(self.alpha)
                 patching_status.and_condition(
-                    alpha_is_scalar,
+                    _is_numeric_scalar(self.alpha),
                     "Non-scalar alpha is not supported for GPU.",
                 )
 
@@ -296,8 +297,8 @@ if daal_check_version((2024, "P", 600)):
 
             self._initialize_onedal_estimator()
 
-            # Falling back to daal4py if the device is CPU since
-            # onedal does not support non-scalars for alpha, thus
+            # Falling back to daal4py if the device is CPU and alpha is array-like
+            # since onedal does not yet support non-scalars for alpha, thus
             # should only be used for GPU/CPU with scalar alpha to not limit the functionality
             cpu_device = queue is None or queue.sycl_device.is_cpu
             if cpu_device and not _is_numeric_scalar(self.alpha):

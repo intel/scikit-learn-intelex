@@ -294,7 +294,11 @@ class Ridge(BaseLinearRegression):
         module = self._get_backend("linear_model", "regression")
 
         X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=False, ensure_2d=False
+            X,
+            dtype=[np.float64, np.float32],
+            force_all_finite=False,
+            ensure_2d=False,
+            copy=self.copy_X,
         )
 
         y = np.asarray(y).astype(dtype=get_dtype(X))
