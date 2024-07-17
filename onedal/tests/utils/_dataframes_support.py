@@ -39,6 +39,8 @@ try:
     # GPU-no-copy.
     import array_api_strict
 
+    # TODO:
+    # get this from onedal._config._get_config
     # Run check if "array_api_dispatch" is configurable
     array_api_enabled = lambda: get_config()["array_api_dispatch"]
     array_api_enabled()
@@ -164,6 +166,9 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         #         obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs
         #     )
         # )
-        return xp.from_dlpack(obj)
+        if hasattr(obj, "__dlpack__"):
+            return xp.from_dlpack(obj)
+        else:
+            return xp.asarray(obj)
 
     raise RuntimeError("Unsupported dataframe conversion")
