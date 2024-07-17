@@ -23,13 +23,11 @@ from onedal._device_offload import (
     _transfer_to_host,
     dpnp_available,
 )
-
 from onedal.utils._array_api import _from_dlpack, _is_numpy_namespace
 
 if dpnp_available:
     import dpnp
     from onedal.utils._array_api import _convert_to_dpnp
-
 
 from ._config import get_config
 

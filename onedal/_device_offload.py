@@ -21,7 +21,6 @@ from functools import wraps
 import numpy as np
 
 from ._config import _get_config
-
 from .utils._array_api import _from_dlpack, _is_numpy_namespace
 
 try:
@@ -184,6 +183,7 @@ def _run_on_device(func, obj=None, *args, **kwargs):
     if obj is not None:
         return func(obj, *args, **kwargs)
     return func(*args, **kwargs)
+
 
 # TODO:
 # update docstrings.
