@@ -178,11 +178,27 @@ if dpnp_available:
 
 
 def support_usm_ndarray(freefunc=False, queue_param=True):
+    """
+    Handles USMArray input. Puts SYCLQueue from data to decorated function arguments.
+    Converts output of decorated function to dpctl.tensor/dpnp.ndarray if input was of this type.
+
+    Parameters
+    ----------
+    freefunc (bool) : Set to True if decorates free function.
+    queue_param (bool) : Set to False if the decorated function has no `queue` parameter
+
+    Notes
+    -----
+    Queue will not be changed if provided explicitly.
+    """
+
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
             usm_iface = _extract_usm_iface(*args, **kwargs)
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-            if queue_param:
+            if queue_param and not (
+                "queue" in hostkwargs and hostkwargs["queue"] is not None
+            ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
             if usm_iface is not None and hasattr(result, "__array_interface__"):
