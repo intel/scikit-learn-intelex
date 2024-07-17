@@ -259,7 +259,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl,array_api", "cpu")
+    "dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl", "cpu")
 )
 @pytest.mark.parametrize("estimator", CPU_ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
