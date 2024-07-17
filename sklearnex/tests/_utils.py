@@ -44,6 +44,22 @@ from sklearnex.svm import SVC, NuSVC
 
 
 def _load_all_models(with_sklearnex=True, estimator=True):
+    """Convert sklearnex patch_map into a dictionary of estimators or functions
+
+    Parameters
+    ----------
+    with_sklearnex: bool (default=True)
+        Discover estimators and methods with sklearnex patching enabled (True)
+        or disabled (False) from the sklearnex patch_map
+
+    estimator: bool (default=True)
+        yield estimators (True) or functions (False)
+
+    Returns
+    -------
+    dict: {name:estimator}
+        estimator is a class or function from sklearn or sklearnex
+    """
     # insure that patch state is correct as dictated by patch_sklearn boolean
     # and return it to the previous state no matter what occurs.
     already_patched_map = sklearn_is_patched(return_map=True)
@@ -91,11 +107,17 @@ mixin_map = [
 
 
 class _sklearn_clone_dict(dict):
+    """Special dict type for returning state-free sklearn/sklearnex estimators
+    with the same parameters"""
 
     def __getitem__(self, key):
         return clone(super().__getitem__(key))
 
 
+# Special dictionary of sklearnex estimators which must be specifically tested, this
+# could be because of supported non-default parameters, blocked support via sklearn's
+# 'available_if' decorator, or not being a native sklearn estimator (i.e. those not in
+# the default PATCHED_MODELS dictionary)
 SPECIAL_INSTANCES = _sklearn_clone_dict(
     {
         str(i): i
@@ -113,36 +135,53 @@ SPECIAL_INSTANCES = _sklearn_clone_dict(
 
 
 def gen_models_info(algorithms, required_inputs=["X", "y"]):
-    output = []
-    for i in algorithms:
+    """Generate estimator-attribute pairs for pytest test collection.
 
-        if i in PATCHED_MODELS:
-            est = PATCHED_MODELS[i]
-        elif isinstance(algorithms[i], BaseEstimator):
-            est = algorithms[i].__class__
+    Parameters
+    ----------
+    algorithms : iterable (list, tuple, 1D array-like object)
+        Iterable of valid sklearnex estimators or keys from PATCHED_MODELS
+
+    required_inputs : list, tuple of strings or None
+        list of required args/kwargs for callable attribute (only non-private,
+        non-BaseEstimator attributes).  Only one must be present, None
+        signifies taking all non-private attribues, callable or not.
+
+    Returns
+    -------
+    list of 2-element tuples: (estimator, string)
+        Returns a list of valid methods or attributes without "fit"
+    """
+    output = []
+    for estimator in algorithms:
+
+        if estimator in PATCHED_MODELS:
+            est = PATCHED_MODELS[estimator]
+        elif isinstance(algorithms[estimator], BaseEstimator):
+            est = algorithms[estimator].__class__
         else:
-            raise KeyError(f"Unrecognized sklearnex estimator: {i}")
+            raise KeyError(f"Unrecognized sklearnex estimator: {estimator}")
 
         # remove BaseEstimator methods (get_params, set_params)
         candidates = set(dir(est)) - set(dir(BaseEstimator))
         # remove private methods
-        candidates = set([i for i in candidates if not i.startswith("_")])
+        candidates = set([attr for attr in candidates if not attr.startswith("_")])
         # required to enable other methods
         candidates = candidates - {"fit"}
 
         # allow only callable methods with any of the required inputs
         if required_inputs:
             methods = []
-            for j in candidates:
-                attr = getattr_static(est, j)
-                if callable(attr):
-                    params = signature(attr).parameters
-                    if any([k in params for k in required_inputs]):
-                        methods += [j]
+            for attr in candidates:
+                attribute = getattr_static(est, attr)
+                if callable(attribute):
+                    params = signature(attribute).parameters
+                    if any([inp in params for inp in required_inputs]):
+                        methods += [attr]
         else:
             methods = candidates
 
-        output += [[i, j] for j in methods] if methods else [[i, None]]
+        output += [(estimator, j) for j in methods] if methods else [(estimator, None)]
 
     # In the case that no methods are available, set method to None.
     # This will allow estimators without mixins to still test the fit
@@ -151,7 +190,28 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
 
 
 def call_method(estimator, method, X, y, **kwargs):
-    # generalized interface to most sklearn estimator methods
+    """Generalized interface to call most sklearn estimator methods
+
+    Parameters
+    ----------
+    estimator : sklearn or sklearnex estimator instance
+
+    method: string
+        Valid callable method to estimator
+
+    X: array-like
+        data
+
+    y: array-like (for 'score', 'partial-fit', and 'path')
+        X-dependent data
+
+    **kwargs: keyword dict
+        keyword arguments to estimator.method
+
+    Returns
+    -------
+    return value from estimator.method
+    """
     # useful for repository wide testing
     if method == "inverse_transform":
         # PCA's inverse_transform takes (n_samples, n_components)
@@ -167,10 +227,10 @@ def call_method(estimator, method, X, y, **kwargs):
     return getattr(estimator, method)(*data, **kwargs)
 
 
-def gen_dataset_type(est):
+def _gen_dataset_type(est):
     # est should be an estimator or estimator class
     # dataset initialized to classification, but will be swapped
-    # for other types as necessary
+    # for other types as necessary. Private method.
     dataset = "classification"
     estimator = est.__class__ if isinstance(est, BaseEstimator) else est
 
@@ -194,7 +254,39 @@ def gen_dataset(
     target_df=None,
     dtype=None,
 ):
-    dataset_type = gen_dataset_type(est)
+    """Generate dataset for pytest testing.
+
+    Parameters
+    ----------
+    est : sklearn or sklearnex estimator class
+        Must inherit an sklearn Mixin or sklearn's BaseEstimator
+
+    dataset: dataset dict
+        Dictionary with keys "classification" and/or "regression"
+        Value must be a list of object which yield X, y array
+        objects when called, ideally using a lambda or
+        functools.partial.
+
+    sparse: bool (default False)
+        Convert X data to a scipy.sparse csr_matrix format.
+
+    queue: SYCL queue or None
+        Queue necessary for device offloading following the
+        SYCL 2020 standard, usually generated by dpctl.
+
+    target_df: string or None
+        dataframe type for returned dataset, as dictated by
+        onedal's _convert_to_dataframe.
+
+    dtype: numpy dtype or None
+       target datatype for returned datasets (see DTYPES).
+
+    Returns
+    -------
+    list of 2-element list X,y: (array-like, array-like)
+        list of datasets for analysis
+    """
+    dataset_type = _gen_dataset_type(est)
     output = []
     # load data
     flag = dtype is None
