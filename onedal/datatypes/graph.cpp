@@ -39,6 +39,7 @@ ONEDAL_PY_INIT_MODULE(graph) {
     graph_constructor<float>(m, "graph_float");
     graph_constructor<double>(m, "graph_double");
 
+    //py::class_<dal::preview::detail::topology> topo_obj(m, typestr);
 
     m.def("to_graph", [](py::object obj)-> graph_t<double> {
         auto* obj_ptr = obj.ptr();
