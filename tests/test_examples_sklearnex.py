@@ -16,6 +16,7 @@
 
 import os
 import subprocess
+import sys
 import unittest
 
 from daal4py.sklearn._utils import get_daal_version
@@ -43,7 +44,7 @@ def test_generator(file):
     def testit(self):
         # Run the script and capture its exit code
         process = subprocess.run(
-            ["python", os.path.join(examples_path, file)],
+            [sys.executable, os.path.join(examples_path, file)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=True,
