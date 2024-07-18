@@ -125,7 +125,9 @@ def _transfer_to_host(queue, *data):
                 order=order,
             )
             has_usm_data = True
-        elif array_api is not None:
+        # TODO:
+        # update conditions.
+        elif array_api and not _is_numpy_namespace(array_api):
             # TODO:
             # get info about the device, for backward conversions.
             item._array = item._array.copy()
