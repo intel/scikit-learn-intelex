@@ -25,6 +25,8 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import json
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -34,6 +36,11 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../"))
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+doc_version_path = os.path.join(script_dir, "doc_version.json")
+
+with open(doc_version_path) as jsonFile:
+    doc_version = json.load(jsonFile)
 
 # -- Project information -----------------------------------------------------
 
@@ -42,9 +49,9 @@ copyright = "Intel"
 author = "Intel"
 
 # The short X.Y version
-version = "2024.3.0"
+version = doc_version["version"]
 # The full version, including alpha/beta/rc tags
-release = "2024.3.0"
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -138,6 +145,7 @@ html_theme_options = {
     "titles_only": False,
 }
 
+html_context = {"current_version": version, "project_name": "scikit-learn-intelex"}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -147,6 +155,7 @@ html_static_path = ["_static"]
 
 def setup(app):
     app.add_css_file("custom.css")
+    app.add_js_file("version_switcher.js")
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
