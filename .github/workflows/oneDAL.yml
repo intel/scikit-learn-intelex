@@ -13,7 +13,7 @@ permissions:
 jobs:
   build_lnx:
     name: build Linux
-    if: github.repository == 'icfaust/scikit-learn-intelex'
+    if: github.repository == 'intel/scikit-learn-intelex'
     runs-on: ubuntu-latest
 
     steps:
