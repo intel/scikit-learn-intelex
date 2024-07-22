@@ -70,7 +70,7 @@ class BaseForest(ABC):
         X, y = self._validate_data(
             X,
             y,
-            multi_output=False,
+            multi_output=True,
             accept_sparse=False,
             dtype=[np.float64, np.float32],
             force_all_finite=False,
