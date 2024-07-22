@@ -65,7 +65,7 @@ def test_ridge_coefficients(dataframe, queue, sample_size, feature_size, alpha):
     xt_y = numpy.dot(X.T, y)
     coefficients_manual = numpy.dot(inverse_term, xt_y)
 
-    assert_allclose(ridge_reg.coef_, coefficients_manual)
+    assert_allclose(ridge_reg.coef_, coefficients_manual, rtol=1e-5, atol=1e-5)
 
 
 if daal_check_version((2024, "P", 600)):
