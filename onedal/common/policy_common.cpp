@@ -84,11 +84,6 @@ sycl::queue get_queue_from_python(const py::object& syclobj) {
     }
 }
 
-sycl::queue get_queue_by_filter_string(const std::string& filter) {
-    sycl::ext::oneapi::filter_selector selector{ filter };
-    return sycl::queue{ selector };
-}
-
 sycl::queue get_queue_by_device_id(std::uint32_t id) {
     if (auto device = get_device_by_id(id)) {
         return sycl::queue{ device.value() };
@@ -135,11 +130,6 @@ dp_policy_t make_dp_policy(std::uint32_t id) {
 
 dp_policy_t make_dp_policy(const py::object& syclobj) {
     sycl::queue queue = get_queue_from_python(syclobj);
-    return dp_policy_t{ std::move(queue) };
-}
-
-dp_policy_t make_dp_policy(const std::string& filter) {
-    sycl::queue queue = get_queue_by_filter_string(filter);
     return dp_policy_t{ std::move(queue) };
 }
 
