@@ -51,6 +51,7 @@ jobs:
           repository: oneapi-src/oneDAL
       - name: Install DPC++
         run: |
+          # DPC++ installation will be stored to speed up testing CI (due to install time)
           $env:PATH="C:\msys64\usr\bin;$env:PATH"
           echo $env:PATH=C:\msys64\usr\bin;$env:PATH >> $env.GITHUB_ENV
           pip install cpufeature
@@ -63,7 +64,7 @@ jobs:
           Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept --install-dir=dpcpp" -Wait
           # This can take 20 minutes...
           echo "DPC++ install complete"
-      - name: Prepare Intel openCL CPU runtime
+      - name: Prepare Intel OpenCL CPU runtime
         run: |
           # Store the unpacked runtime to centralize and reduce external downloads
           $env:PATH="C:\msys64\usr\bin;$env:PATH"
