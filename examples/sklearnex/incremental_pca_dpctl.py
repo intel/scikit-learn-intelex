@@ -27,8 +27,6 @@ incpca = IncrementalPCA()
 
 # We do partial_fit for each batch and then print final result.
 X_1 = dpt.asarray([[-1, -1], [-2, -1]], sycl_queue=queue)
-# print(dir(X_1))
-# print(X_1.sycl_device)
 result = incpca.partial_fit(X_1)
 
 X_2 = dpt.asarray([[-3, -2], [1, 1]], sycl_queue=queue)

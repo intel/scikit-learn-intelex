@@ -721,9 +721,6 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=ones)]
 
-  # Single value incorrect in some CI runs with Linux and GPU hardware, requires further analysis
-  - tests/test_common.py::test_estimators[PCA()-check_methods_subset_invariance]
-
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   # NearestNeighbors
   - cluster/tests/test_dbscan.py
