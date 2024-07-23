@@ -141,9 +141,7 @@ The package is available for Windows* OS, Linux* OS, and macOS*.
 
 ### Prerequisites
 * Python version >= 3.8, <= 3.12
-* daal4py >= 2024.3
-
-**TIP:** [Build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md) or get it from [distribution channels](https://intelpython.github.io/daal4py/#getting-daal4py).
+* [daal4py layer requirements](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md)
 
 ### Configure the Build with Environment Variables
 * ``SKLEARNEX_VERSION``: sets the package version

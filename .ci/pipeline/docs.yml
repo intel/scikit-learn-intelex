@@ -65,7 +65,6 @@ jobs:
       export PREFIX=$(dirname $(dirname $(which python)))
       export DALROOT=$PREFIX
       ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: 'Build daal4py/sklearnex'
   - script: |
       export LD_LIBRARY_PATH=$(dirname $(dirname $(which python)))/lib:$LD_LIBRARY_PATH
