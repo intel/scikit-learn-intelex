@@ -45,6 +45,7 @@ using dp_policy_t = detail::data_parallel_policy;
 
 dp_policy_t make_dp_policy(std::uint32_t id);
 dp_policy_t make_dp_policy(const py::object& syclobj);
+dp_policy_t make_dp_policy(const std::string& filter);
 inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
     return dp_policy_t{ policy };
 }

@@ -59,6 +59,9 @@ void instantiate_spmd_policy(py::module& m) {
     policy.def(py::init([](std::uint32_t id) {
         return make_spmd_policy(id);
     }));
+    policy.def(py::init([](const std::string& filter) {
+        return make_spmd_policy(filter);
+    }));
     policy.def(py::init([](const py::object& syclobj) {
         return make_spmd_policy(syclobj);
     }));
