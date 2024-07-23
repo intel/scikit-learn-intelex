@@ -21,7 +21,7 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import r2_score
 from sklearn.preprocessing import LabelEncoder
 
 from daal4py.sklearn._utils import sklearn_check_version
@@ -79,7 +79,7 @@ class BaseSVM(BaseEstimator, ABC):
             )
             return patching_status
         inference_methods = (
-            ["predict"]
+            ["predict", "score"]
             if class_name.endswith("R")
             else ["predict", "predict_proba", "decision_function", "score"]
         )
@@ -229,6 +229,7 @@ class BaseSVC(BaseSVM):
         return recip_freq[le.transform(classes)]
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
+        # TODO: rewrite this method when probabilities output is implemented in oneDAL
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
@@ -239,26 +240,13 @@ class BaseSVC(BaseSVM):
         cfg = get_config()
         cfg["target_offload"] = queue
         with config_context(**cfg):
-            try:
-                n_splits = 5
-                n_jobs = n_splits if queue is None or queue.sycl_device.is_cpu else 1
-                cv = StratifiedKFold(
-                    n_splits=n_splits, shuffle=True, random_state=self.random_state
-                )
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base,
-                    ensemble=False,
-                    cv=cv,
-                    method="sigmoid",
-                )
-                self.clf_prob.fit(X, y, sample_weight)
-
-            except ValueError:
-                clf_base = clf_base.fit(X, y, sample_weight)
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base, cv="prefit", method="sigmoid"
-                )
-                self.clf_prob.fit(X, y, sample_weight)
+            clf_base.fit(X, y)
+            self.clf_prob = CalibratedClassifierCV(
+                clf_base,
+                ensemble=False,
+                cv="prefit",
+                method="sigmoid",
+            ).fit(X, y)
 
     def _save_attributes(self):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
@@ -322,3 +310,8 @@ class BaseSVR(BaseSVM):
 
         if sklearn_check_version("1.1"):
             self.n_iter_ = self._onedal_estimator.n_iter_
+
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return r2_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )

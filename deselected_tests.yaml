@@ -29,6 +29,11 @@ deselected_tests:
   - neighbors/tests/test_neighbors.py::test_kneighbors_brute_backend[float64-kulsinski] <1.3
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend[kulsinski] <1.3
 
+  # sklearnex PCA always chooses "covariance_eigh" solver instead of "full" when solver="auto"
+  # resulting in solver assignment check failure for sklearn version >= 1.5
+  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[1000-500-400-full] >=1.5
+  - decomposition/tests/test_pca.py::test_pca_svd_solver_auto[1000-500-0.5-full] >=1.5
+
   # test for KMeans FutureWarning is not removed from sklearn tests suit yet
   - cluster/tests/test_k_means.py::test_change_n_init_future_warning[KMeans-10] ==1.4.dev0
 
@@ -97,11 +102,6 @@ deselected_tests:
   - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[asarray-X]
   - utils/tests/test_validation.py::test_check_array_links_to_imputer_doc_only_for_X[csr_matrix-X]
 
-  # Extra warning from scikit-learn-intelex fails scikit-learn warning check
-  # TODO: investigate - is this warning expected?
-  - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-ElasticNet] >=1.1,<1.2
-  - linear_model/tests/test_coordinate_descent.py::test_assure_warning_when_normalize[True-1-Lasso] >=1.1,<1.2
-
   # TODO: investigate copy failure of read-only buffer
   - linear_model/tests/test_coordinate_descent.py::test_read_only_buffer
 
@@ -153,6 +153,8 @@ deselected_tests:
   # scikit-learn expects an exception for sparse matrices with 64-bit integer indices,
   # scikit-learn-intelex works correctly with 64-bit integer indices
   - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_data]
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_array]
+  - tests/test_common.py::test_estimators[NuSVC()-check_estimator_sparse_matrix]
   - utils/tests/test_estimator_checks.py::test_xfail_ignored_in_check_estimator
 
   # SVC._dual_coef_ is changing after fitting, but the result of prediction is still the same
@@ -190,6 +192,12 @@ deselected_tests:
   # margin above the test threshold, see https://github.com/scikit-learn/scikit-learn/pull/13645
   - linear_model/tests/test_logistic.py::test_dtype_match
 
+  # Logistic Regression coeffs change due to fix for loss scaling
+  # (https://github.com/scikit-learn/scikit-learn/pull/26721)
+  - feature_selection/tests/test_from_model.py::test_importance_getter[estimator0-named_steps.logisticregression.coef_]
+  - inspection/_plot/tests/test_boundary_decision_display.py::test_class_of_interest_binary[predict_proba]
+  - linear_model/tests/test_sag.py::test_sag_pobj_matches_logistic_regression
+
   # This fails on certain platforms. While weighted data does not go through DAAL,
   # unweighted does. Since convergence does not occur (comment in the test
   # suggests that) and because coefficients are slightly different,
@@ -207,11 +215,6 @@ deselected_tests:
   # oneAPI Data Analytics Library (oneDAL) doesn't support sample_weight (back to scikit-learn),
   # sufficient accuracy (similar to previous cases)
   - linear_model/tests/test_coordinate_descent.py::test_enet_sample_weight_consistency >=0.23
-
-  # The regression coefficients for multi-target problem differ from scikit-learn for small datasets.
-  # Coefficients matches for first label only and the coefficients are close for larger datasets.
-  # See: https://github.com/IntelPython/daal4py/issues/275
-  - linear_model/tests/test_ridge.py::test_ridge_cv_individual_penalties >=0.24
 
   # Different interpretation of trees compared to scikit-learn
   # Looks like we need to align tree traversal. This problem will be fixed
@@ -259,7 +262,7 @@ deselected_tests:
   - preprocessing/tests/test_discretization.py::test_nonuniform_strategies[kmeans-expected_2bins1-expected_3bins1-expected_5bins1] >=0.24
 
   # OOB scores in scikit-learn and oneDAL are different because of different random number generators
-  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]  
+  - ensemble/tests/test_forest.py::test_forest_classifier_oob[X1-y1-0.65-array-ExtraTreesClassifier]
   - ensemble/tests/test_forest.py::test_forest_classifier_oob[True-X1-y1-0.65-array-ExtraTreesClassifier] >=1.3
   - ensemble/tests/test_forest.py::test_forest_regressor_oob[True-X0-y0-0.7-array-ExtraTreesRegressor] >=1.3
   - ensemble/tests/test_forest.py::test_forest_regressor_oob[X0-y0-0.7-array-RandomForestRegressor] >=1.2 darwin
@@ -320,9 +323,6 @@ deselected_tests:
   # test checks only the exact number of options that are used
   - tests/test_config.py::test_config_context
 
-  # HalvingGridSearchCV with Ridge and PCA didn't have feature_name_in. Need to fix.
-  - tests/test_common.py::test_pandas_column_name_consistency >=1.0.1
-
   # Some scikit-learn-intelex docstrings differ from scikit-learn.
   - tests/test_docstrings.py >=1.0.2
 
@@ -340,6 +340,7 @@ deselected_tests:
   - ensemble/_hist_gradient_boosting/tests/test_compare_lightgbm.py::test_same_predictions_multiclass_classification >=0.24,<1.0
   - ensemble/tests/test_gradient_boosting.py::test_gradient_boosting_with_init_pipeline >=0.24,<1.0
   - utils/tests/test_validation.py::test_check_array_pandas_dtype_casting >=1.0,<1.2
+  - utils/tests/test_validation.py::test_check_sparse_pandas_sp_format <1.2
 
   # Failure due to non-uniformity in the MT2203 engine causing
   # bad Random Forest fits for small datasets with large n_estimators
@@ -381,6 +382,12 @@ deselected_tests:
   - tests/test_common.py::test_estimators[IncrementalPCA()-check_estimators_pickle(readonly_memmap=True)]
   # There are not enough data to run onedal backend
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
+
+  # Deselection of LogisticRegression tests over accuracy comparisons with sample_weights
+  # and without.  Because scikit-learn-intelex does not support sample_weights, it's doing
+  # a fallback to scikit-learn in one case and not in the other, and needs to be investigated.
+  - model_selection/tests/test_classification_threshold.py::test_fit_and_score_over_thresholds_sample_weight >=1.5
+  - model_selection/tests/test_classification_threshold.py::test_tuned_threshold_classifier_cv_zeros_sample_weights_equivalence >=1.5
 
   # --------------------------------------------------------
   # No need to test daal4py patching
@@ -452,6 +459,8 @@ public:
   # Failed in stock scikit-learn
   - metrics/tests/test_common.py::test_not_symmetric_metric[precision_recall_curve]
   - metrics/tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
+  # Fails from numpy 2.0 and sklearn 1.4+
+  - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_raise_on_all_zero_weights
 
   # --------------------------------------------------------
   # The following tests currently fail with GPU offload
@@ -568,6 +577,7 @@ gpu:
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_sample_order_invariance]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit2d_1feature]
@@ -587,6 +597,7 @@ gpu:
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_nan_inf]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_overwrite_params]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[GaussianMixture()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_sample_order_invariance]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_methods_subset_invariance]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_fit2d_1feature]
@@ -646,6 +657,9 @@ gpu:
 
   # KMeans based (unsupported for GPU)
   - cluster/tests/test_k_means.py
+  - tests/test_common.py::test_pandas_column_name_consistency[KMeans()]
+  - tests/test_common.py::test_pandas_column_name_consistency[GaussianMixture()]
+  - tests/test_common.py::test_pandas_column_name_consistency[BayesianGaussianMixture()]
   - tests/test_common.py::test_estimators[KMeans()
   - tests/test_common.py::test_estimators[BayesianGaussianMixture()-check_fit_check_is_fitted]
   - tests/test_common.py::test_estimators[GaussianMixture()-check_fit_check_is_fitted]
@@ -725,15 +739,19 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_class_weight_classifiers]
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[RandomForestRegressor()-check_regressor_data_not_an_array]
+  - ensemble/tests/test_forest.py::test_max_samples_boundary_classifiers[ExtraTreesClassifier]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifier_data_not_an_array]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_classifiers_train(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_fit_idempotent]
+  - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_regressor_data_not_an_array]
 
   # GPU implementation of Extra Trees doesn't support sample_weights
   # comparisons to GPU with sample weights will use different algorithms
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=ones)]
   - tests/test_common.py::test_estimators[ExtraTreesClassifier()-check_sample_weights_invariance(kind=zeros)]
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=ones)]
-
-  # Single value incorrect in some CI runs with Linux and GPU hardware, requires further analysis
-  - tests/test_common.py::test_estimators[PCA()-check_methods_subset_invariance]
 
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   # NearestNeighbors
@@ -744,7 +762,7 @@ gpu:
   - manifold/tests/test_t_sne.py::test_gradient_bh_multithread_match_sequential
   - neighbors/tests/test_kde.py::test_kernel_density_sampling
   - tests/test_common.py::test_check_n_features_in_after_fitting[NearestNeighbors()]
-  - tests/test_common.py::test_estimators[NearestNeighbors()] 
+  - tests/test_common.py::test_estimators[NearestNeighbors()]
   - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv0]
   - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv1]
   - manifold/tests/test_t_sne.py::test_barnes_hut_angle
@@ -1096,7 +1114,7 @@ gpu:
   - neighbors/tests/test_neighbors.py::test_auto_algorithm
   - neighbors/tests/test_neighbors.py::test_radius_neighbors_brute_backend
   - svm/tests/test_sparse.py::test_consistent_proba
-  - svm/tests/test_svm.py::test_consistent_proba 
+  - svm/tests/test_svm.py::test_consistent_proba
   - svm/tests/test_svm.py::test_libsvm_parameters
   - svm/tests/test_svm.py::test_negative_weight_equal_coeffs
   - svm/tests/test_svm.py::test_unicode_kernel

@@ -47,12 +47,16 @@ def test_generator(file):
             [sys.executable, os.path.join(examples_path, file)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            check=True,
+            check=False,
         )  # nosec
         exit_code = process.returncode
 
         # Assert that the exit code is 0
-        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            exit_code,
+            0,
+            msg=f"Example has failed, the example's output:\n{process.stdout.decode()}\n{process.stderr.decode()}",
+        )
 
     setattr(TestsklearnexExamples, "test_" + os.path.splitext(file)[0], testit)
     print("Generating tests for " + os.path.splitext(file)[0])

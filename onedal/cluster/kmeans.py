@@ -29,15 +29,15 @@ if daal_check_version((2023, "P", 200)):
 else:
     from sklearn.cluster import _kmeans_plusplus
 
-from sklearn.base import ClusterMixin, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
-from sklearn.utils import check_array, check_random_state
+from sklearn.utils import check_random_state
 from sklearn.utils.validation import check_is_fitted
 
 from onedal.basic_statistics import BasicStatistics
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
+from ..common._mixin import ClusterMixin, TransformerMixin
 from ..utils import _check_array, _is_arraylike_not_scalar
 
 
@@ -87,9 +87,10 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         if rtol == 0.0:
             return rtol
         # TODO: Support CSR in Basic Statistics
+        is_sparse = False
         dummy = to_table(None)
         bs = self._get_basic_statistics_backend("variance")
-        res = bs.compute_raw(X_table, dummy, policy, dtype)
+        res = bs._compute_raw(X_table, dummy, policy, dtype, is_sparse)
         mean_var = from_table(res["variance"]).mean()
         return mean_var * rtol
 
@@ -262,7 +263,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         init = self.init
         init_is_array_like = _is_arraylike_not_scalar(init)
         if init_is_array_like:
-            init = check_array(init, dtype=dtype, copy=True, order="C")
+            init = _check_array(init, dtype=dtype, copy=True, order="C")
             self._validate_center_shape(X, init)
 
         use_custom_init = daal_check_version((2023, "P", 200)) and not callable(self.init)
