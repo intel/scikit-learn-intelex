@@ -11,6 +11,7 @@ env:
   DPCPP_VERSION: 2024.2
   DPCTL_VERSION: 0.17.0
   DPNP_VERSION: 0.15.0
+  DPCTL_PY_VERSIONS: '3.9\|3.11'
 
 jobs:
   sklearn_lnx:
