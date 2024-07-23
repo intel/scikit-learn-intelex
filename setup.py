@@ -645,12 +645,7 @@ setup(
         "numpy>=1.21.6 ; python_version == '3.10'",
         "numpy>=1.23.5 ; python_version >= '3.11'",
     ],
-    keywords=[
-        "machine learning",
-        "scikit-learn",
-        "data science",
-        "data analytics"
-    ],
+    keywords=["machine learning", "scikit-learn", "data science", "data analytics"],
     packages=get_packages_with_tests(packages_with_tests),
     package_data={
         "daal4py.oneapi": [
