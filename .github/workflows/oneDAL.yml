@@ -1,0 +1,116 @@
+name: oneDAL-nightly
+
+on:
+  schedule:
+    - cron: '0 21 * * *'
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build_lnx:
+    name: build Linux
+    if: github.repository == 'intel/scikit-learn-intelex'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout oneDAL
+        uses: actions/checkout@v4
+        with:
+          repository: oneapi-src/oneDAL
+      - name: Install DPC++
+        run: .ci/env/apt.sh dpcpp
+      - name: System Info
+        run: |
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh
+          .ci/scripts/describe_system.sh
+      - name: Make daal
+        run: |
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target daal
+      - name: Make onedal
+        run: |
+          source /opt/intel/oneapi/compiler/latest/env/vars.sh
+          .ci/scripts/build.sh --compiler icx  --optimizations avx2 --target onedal
+      - name: Archive build
+        uses: actions/upload-artifact@v4
+        with:
+          name: __release_lnx
+          path: ./__release_lnx_icx
+
+  build_win:
+    name: build Windows
+    if: github.repository == 'intel/scikit-learn-intelex'
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout oneDAL
+        uses: actions/checkout@v4
+        with:
+          repository: oneapi-src/oneDAL
+      - name: Install DPC++
+        run: |
+          # DPC++ installation will be stored to speed up testing CI (due to install time)
+          $env:PATH="C:\msys64\usr\bin;$env:PATH"
+          echo $env:PATH=C:\msys64\usr\bin;$env:PATH >> $env.GITHUB_ENV
+          pip install cpufeature
+          pacman -S -y --noconfirm zip dos2unix tree wget gcc
+          echo "Download intel DPC++ compiler"
+          wget -q -O dpcpp_installer.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7991e201-ca0f-4689-bdb6-1ed73a8246fd/w_dpcpp-cpp-compiler_p_2024.2.0.491_offline.exe
+          echo "Unpacking DPC++ installer"
+          Start-Process ".\dpcpp_installer.exe" -ArgumentList "--s --x --f oneAPI" -Wait
+          echo "Installing DPC++ compiler"
+          Start-Process ".\oneAPI\bootstrapper.exe" -ArgumentList "-s --eula=accept --install-dir=dpcpp" -Wait
+          # This can take 20 minutes...
+          echo "DPC++ install complete"
+      - name: Prepare Intel OpenCL CPU runtime
+        run: |
+          # Store the unpacked runtime to centralize and reduce external downloads
+          $env:PATH="C:\msys64\usr\bin;$env:PATH"
+          echo "Download intel opencl runtime"
+          wget -q -O opencl_installer.exe https://registrationcenter-download.intel.com/akdlm/IRC_NAS/d9883ab0-0e26-47fd-9612-950b95460d72/w_opencl_runtime_p_2024.2.0.980.exe
+          echo "Unpacking opencl runtime installer"
+          Start-Process ".\opencl_installer.exe" -ArgumentList "--s --x --f ocl" -Wait
+          Move-Item -Path ".\ocl\w_opencl_runtime_p_2024.2.0.980.msi" -Destination ".\opencl_rt.msi"
+      - name: System Info
+        run: |
+          echo "source dpcpp"
+          cmd.exe "/K" '".\dpcpp\compiler\latest\env\vars.bat" && powershell'
+          Get-Variable -Scope script
+          bash .ci/scripts/describe_system.sh
+      - name: Make daal
+        shell: cmd
+        run: |
+          call .\.ci\scripts\build.bat daal vc avx2
+      - name: Make onedal
+        shell: cmd
+        run: |
+          call .\.ci\scripts\build.bat onedal_c vc avx2
+      - name: Make oneapi_dpc
+        shell: cmd
+        run: |
+          call .\dpcpp\compiler\latest\env\vars.bat
+          call .\dpcpp\compiler\latest\bin\sycl-ls.exe
+          call .\.ci\scripts\build.bat onedal_dpc vc avx2
+      - name: Archive build
+        uses: actions/upload-artifact@v4
+        with:
+          name: __release_win
+          path: .\__release_win_vc
+      - name: Compress DPC++
+        shell: cmd
+        run: |
+          tar -cvzf icx.zip .\dpcpp
+      - name: Archive DPC++
+        uses: actions/upload-artifact@v4
+        with:
+          name: icx_compiler
+          path: .\icx.zip
+      - name: Archive Intel OpenCL CPU runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencl_rt_installer
+          path: .\opencl_rt.msi
