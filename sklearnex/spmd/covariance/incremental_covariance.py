@@ -15,13 +15,13 @@
 # ==============================================================================
 
 from onedal.spmd.covariance import (
-    IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
+    IncrementalEmpiricalCovariance as onedalSPMD_IncrementalEmpiricalCovariance,
 )
 
 from ...covariance import (
-    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_batch,
+    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_nonSPMD,
 )
 
 
-class IncrementalEmpiricalCovariance(IncrementalEmpiricalCovariance_batch):
-    _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
+class IncrementalEmpiricalCovariance(IncrementalEmpiricalCovariance_nonSPMD):
+    _onedal_incremental_covariance = staticmethod(onedalSPMD_IncrementalEmpiricalCovariance)
