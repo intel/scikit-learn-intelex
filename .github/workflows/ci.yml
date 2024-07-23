@@ -6,7 +6,6 @@ on:
     branches:
       - main
 
-
 env:
   TBB_VERSION: 2021.13
   DPCPP_VERSION: 2024.2
@@ -21,6 +20,10 @@ jobs:
         include:
           - PYTHON_VERSION: "3.9"
             SKLEARN_VERSION: "1.1"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.2"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.5"
     name: Linux_nightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
     runs-on: ubuntu-latest
 
@@ -49,6 +52,17 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: ./__release_lnx
+      - name: Set Environment Variables
+        id: set-env
+        run: |
+          # Disable SPMD testing
+          echo "NO_DIST=1" >> "$GITHUB_ENV"
+          # Determine dpctl support
+          DPCFLAG="0"
+          if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
+          # Turn off dpcpp building if it is not tested
+          if [ ${DPCFLAG}=='' ]; then echo "DPCPPROOT=/opt/intel/oneapi/compiler/latest" >> "$GITHUB_ENV"; fi
+          echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
       - name: apt-get
         run: sudo apt-get update && sudo apt-get install -y clang-format
       - name: dpcpp installation
@@ -61,40 +75,39 @@ jobs:
           source ./env2/bin/activate
           pip install -r dependencies-dev
           pip list
-          echo "DPCPPROOT=/opt/intel/oneapi/compiler/latest" >> "$GITHUB_ENV"
-          echo "NO_DIST=1" >> "$GITHUB_ENV"
       - name: Build daal4py/sklearnex
         run: |
           source ./env2/bin/activate
-          source .github/scripts/activate_components.sh
+          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
           python setup.py install --single-version-externally-managed --record=record.txt
           python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
       - name: Install testing requirements
         run: |
           source ./env2/bin/activate
-          source .github/scripts/activate_components.sh
+          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
           pip install --upgrade -r requirements-test.txt
           pip install $(python .ci/scripts/get_compatible_scipy_version.py) pyyaml
-          if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '3.9\|3.11') ]; then pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}; fi
+          if [ '${{ steps.set-env.outputs.DPCFLAG }}'=='' ]; then pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}; fi
           pip list
       - name: Sklearnex testing
         run: |
           source env2/bin/activate
-          source .github/scripts/activate_components.sh
+          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
           cd .ci
           ../conda-recipe/run_test.sh
       - name: Sklearn testing
         run: |
           source env2/bin/activate
-          source .github/scripts/activate_components.sh
+          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/run_sklearn_tests.sh cpu
       - name: Sklearn testing [preview]
         run: |
           source env2/bin/activate
-          source .github/scripts/activate_components.sh
+          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
           export SKLEARNEX_PREVIEW='YES'
           bash .ci/scripts/run_sklearn_tests.sh cpu
+
   sklearn_win:
     strategy:
       fail-fast: false
@@ -102,6 +115,10 @@ jobs:
         include:
           - PYTHON_VERSION: "3.9"
             SKLEARN_VERSION: "1.1"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.2"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.5"
     name: Windows_nightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
     runs-on: windows-2022
 
@@ -111,7 +128,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.PYTHON_VERSION }}          
+          python-version: ${{ matrix.PYTHON_VERSION }}
       - name: Get run ID of "oneDAL-nightly" workflow
         id: get-run-id
         shell: bash
@@ -139,7 +156,24 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: .
+      - name: Unzip Compiler
+        shell: cmd
+        run: |
+          tar -xvzf icx.zip
+          echo "Unzip complete"
+      - name: Set Environment Variables
+        id: set-env
+        shell: bash
+        run: |
+          echo "C:\msys64\usr\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\bin;" >> $GITHUB_PATH
+          # Disable SPMD testing
+          echo "NO_DIST=1" >> "$GITHUB_ENV"
+          # Determine dpctl support
+          DPCFLAG="0"
+          if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
+          echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
       - name: Download Intel OpenCL CPU Runtime artifact
+        if: ${{ steps.set-env.outputs.DPCFLAG == '' }}
         uses: actions/download-artifact@v4
         with:
           name: opencl_rt_installer
@@ -147,24 +181,16 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: .
-      - name: Unzip Compiler
-        shell: cmd
-        run: |
-          tar -xvzf icx.zip
-          echo "Unzip complete"
       - name: Install Intel OpenCL CPU Runtime
+        if: ${{ steps.set-env.outputs.DPCFLAG == '' }}
         run: |
           Start-Process msiexec -ArgumentList "/i opencl_rt.msi /qn" -Wait
           echo "Installed Intel OpenCL CPU Runtime"
-      - name: Set Environment Variables
-        shell: bash
-        run: |
-          echo "C:\msys64\usr\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\bin;" >> $GITHUB_PATH
-          # Disable SPMD testing
-          echo "NO_DIST=1" >> "$GITHUB_ENV"
       - name: Install dependencies
         shell: cmd
         run: |
+          echo ${{ steps.set-env.outputs.DPCFLAG }}
+          echo "hello"
           python -m venv env2
           call .\env2\Scripts\activate.bat
           pip install --upgrade setuptools
@@ -173,6 +199,7 @@ jobs:
       - name: System info 
         shell: cmd
         run: |
+          call .\env2\Scripts\activate.bat
           call .\dpcpp\compiler\${{ env.DPCPP_VERSION }}\env\vars.bat
           call .\dpcpp\compiler\${{ env.DPCPP_VERSION }}\bin\sycl-ls.exe
           bash .ci/scripts/describe_system.sh
@@ -180,7 +207,7 @@ jobs:
         shell: cmd
         run: |
           call .\env2\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }}
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
           set PREFIX=.
           set PYTHON=python
           call .\conda-recipe\bld.bat
@@ -191,19 +218,18 @@ jobs:
         shell: cmd
         run: |
           call .\env2\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }}
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
           pip install --upgrade -r requirements-test.txt
           for /f "delims=" %%c in ('python .ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
           pip install %SCIPY_VERSION%
-          set DPCTL_SUPPORTED=3.9 3.11
-          for %%i in (%DPCTL_SUPPORTED%) do if ${{ matrix.PYTHON_VERSION }}==%%i pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}
+          if "${{ steps.set-env.outputs.DPCFLAG }}"=="" pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}
           pip list
       - name: Sklearnex testing
         shell: cmd
         run: |
           call .\env2\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }}
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
           set PYTHON=python
           cd ..
           call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex
@@ -211,12 +237,12 @@ jobs:
         shell: cmd
         run: |
           call .\env2\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }}
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/run_sklearn_tests.sh
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
           call .\env2\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }}
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
           set SKLEARNEX_PREVIEW=YES
           bash .ci/scripts/run_sklearn_tests.sh
