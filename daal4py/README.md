@@ -110,7 +110,7 @@ conda install impi_rt -c intel
 
 </details>
 
-You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md) as well.
+You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/main/INSTALL.md) as well.
 
 
 # ⚠️ Scikit-learn patching

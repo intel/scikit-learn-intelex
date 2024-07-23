@@ -139,13 +139,34 @@ Intel(R) Extension for Scikit-learn* is easily built from the sources with the m
 
 The package is available for Windows* OS, Linux* OS, and macOS*.
 
+Multi-node (distributed) and streaming support can be disabled if needed.
+
+The build-process (using setup.py) happens in 4 stages:
+1. Creating C++ and Cython sources from oneDAL C++ headers
+2. Building oneDAL Python interfaces via cmake and pybind11
+3. Running Cython on generated sources
+4. Compiling and linking them
+
 ### Prerequisites
 * Python version >= 3.8, <= 3.12
-* [daal4py layer requirements](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md)
+* Jinja2
+* Cython
+* Numpy
+* cmake and pybind11
+* A C++ compiler with C++11 support
+* Clang-Format
+* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
+  * You can use the pre-built `dal-devel` conda package from conda-forge channel
+* MPI (optional, needed for distributed mode)
+  * You can use the pre-built `impi-devel` conda package from conda-forge channel
+* A DPC++ compiler (optional, needed for DPC++ interfaces)
 
 ### Configure the Build with Environment Variables
 * ``SKLEARNEX_VERSION``: sets the package version
 * ``DALROOT``: sets the oneAPI Data Analytics Library path
+* ``NO_DIST``: set to '1', 'yes' or alike to build without support for distributed mode
+* ``NO_STREAM``: set to '1', 'yes' or alike to build without support for streaming mode
+* ``OFF_ONEDAL_IFACE``: set to '1' to build without the support of oneDAL interfaces
 
 ### Build Intel(R) Extension for Scikit-learn
 
@@ -153,25 +174,25 @@ The package is available for Windows* OS, Linux* OS, and macOS*.
 
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py install
+   python setup.py install
    ```
 
 - To install the package in the development mode:
 
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py develop
+   python setup.py develop
    ```
 
-- To install scikit-learn-intelex without downloading daal4py:
+- To install scikit-learn-intelex without check for dependencies:
 
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+   python setup.py install --single-version-externally-managed --record=record.txt
    ```
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py develop --no-deps
+   python setup.py develop --no-deps
    ```
 
 Where: 
