@@ -24,4 +24,6 @@ from ...covariance import (
 
 
 class IncrementalEmpiricalCovariance(IncrementalEmpiricalCovariance_nonSPMD):
-    _onedal_incremental_covariance = staticmethod(onedalSPMD_IncrementalEmpiricalCovariance)
+    _onedal_incremental_covariance = staticmethod(
+        onedalSPMD_IncrementalEmpiricalCovariance
+    )
