@@ -28,6 +28,7 @@ from sklearnex.tests._utils_spmd import (
     _mpi_libs_and_gpu_available,
 )
 
+
 @pytest.mark.skipif(
     not _mpi_libs_and_gpu_available,
     reason="GPU device and MPI libs required for test",
@@ -41,7 +42,9 @@ from sklearnex.tests._utils_spmd import (
 def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered):
     # Import spmd and batch algo
     from sklearnex.covariance import IncrementalEmpiricalCovariance
-    from sklearnex.spmd.covariance import IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_SPMD
+    from sklearnex.spmd.covariance import (
+        IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_SPMD,
+    )
 
     # Create gold data and process into dpt
     data = np.array(
@@ -61,8 +64,12 @@ def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered)
     )
 
     # ensure results of batch algo match spmd
-    spmd_result = IncrementalEmpiricalCovariance_SPMD(assume_centered=assume_centered).fit(local_dpt_data)
-    batch_result = IncrementalEmpiricalCovariance(assume_centered=assume_centered).fit(data)
+    spmd_result = IncrementalEmpiricalCovariance_SPMD(
+        assume_centered=assume_centered
+    ).fit(local_dpt_data)
+    batch_result = IncrementalEmpiricalCovariance(assume_centered=assume_centered).fit(
+        data
+    )
 
     assert_allclose(spmd_result.covariance_, batch_result.covariance_)
     assert_allclose(spmd_result.location_, batch_result.location_)
@@ -79,10 +86,14 @@ def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered)
 @pytest.mark.parametrize("num_blocks", [1, 2])
 @pytest.mark.parametrize("assume_centered", [True, False])
 @pytest.mark.mpi
-def test_incremental_covariance_partial_fit_spmd_gold(dataframe, queue, num_blocks, assume_centered):
+def test_incremental_covariance_partial_fit_spmd_gold(
+    dataframe, queue, num_blocks, assume_centered
+):
     # Import spmd and batch algo
     from sklearnex.covariance import IncrementalEmpiricalCovariance
-    from sklearnex.spmd.covariance import IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_SPMD
+    from sklearnex.spmd.covariance import (
+        IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_SPMD,
+    )
 
     # Create gold data and process into dpt
     data = np.array(
@@ -97,8 +108,7 @@ def test_incremental_covariance_partial_fit_spmd_gold(dataframe, queue, num_bloc
         ]
     )
 
-
-    local_data =  _get_local_tensor(data)
+    local_data = _get_local_tensor(data)
     split_local_data = np.array_split(local_data, num_blocks)
 
     inccov_spmd = IncrementalEmpiricalCovariance_SPMD(assume_centered=assume_centered)
@@ -109,7 +119,6 @@ def test_incremental_covariance_partial_fit_spmd_gold(dataframe, queue, num_bloc
             split_local_data[i], sycl_queue=queue, target_df=dataframe
         )
         inccov_spmd.partial_fit(local_dpt_data)
-
 
     inccov.fit(data)
 
@@ -135,12 +144,14 @@ def test_incremental_covariance_partial_fit_spmd_synthetic(
 ):
     # Import spmd and batch algo
     from sklearnex.covariance import IncrementalEmpiricalCovariance
-    from sklearnex.spmd.covariance import IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_SPMD
+    from sklearnex.spmd.covariance import (
+        IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_SPMD,
+    )
 
     # Generate data and process into dpt
     data = _generate_statistic_data(n_samples, n_features)
 
-    local_data =  _get_local_tensor(data)
+    local_data = _get_local_tensor(data)
     split_local_data = np.array_split(local_data, num_blocks)
 
     inccov_spmd = IncrementalEmpiricalCovariance_SPMD(assume_centered=assume_centered)
@@ -151,7 +162,6 @@ def test_incremental_covariance_partial_fit_spmd_synthetic(
             split_local_data[i], sycl_queue=queue, target_df=dataframe
         )
         inccov_spmd.partial_fit(local_dpt_data)
-
 
     inccov.fit(data)
 

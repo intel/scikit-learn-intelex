@@ -55,6 +55,7 @@ def _get_local_tensor(full_data):
 
     return local_data
 
+
 def _generate_statistic_data(n_samples, n_features, random_state=42):
     # Generates statistical data
     gen = np.random.default_rng(random_state)
