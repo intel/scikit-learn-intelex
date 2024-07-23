@@ -261,7 +261,7 @@ def get_build_options():
     ]
     eca = [
         "-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API",
-        '-Dsklearnex_version="' + sklearnex_version + '"',
+        '-DD4P_VERSION="' + sklearnex_version + '"',
         "-DNPY_ALLOW_THREADS=1",
     ]
     ela = []
