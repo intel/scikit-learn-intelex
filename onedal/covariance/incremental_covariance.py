@@ -58,9 +58,48 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self._reset()
 
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = self._get_backend(
             "covariance", None, "partial_compute_result"
         )
+
+    def __getstate__(self):
+        """
+        Converts estimator's data to serializable format.
+        All tables contained in partial result are converted to np.arrays.
+
+        Notes
+        -----
+        Since finalize_fit can't be dispatched without directly provided queue
+        and the dispatching policy can't be serialized, the computation is finalized
+        here and the policy is not saved in serialized data.
+        """
+        self.finalize_fit()
+        data = self.__dict__.copy()
+
+        tables_to_save = ["partial_n_rows", "partial_crossproduct", "partial_sums"]
+        partial_result_data = {
+            table_name: from_table(getattr(data["_partial_result"], table_name))
+            for table_name in tables_to_save
+        }
+        data["_partial_result"] = partial_result_data
+        data.pop("_policy", None)
+
+        return data
+
+    def __setstate__(self, data):
+        """
+        Restores estimator from serializable data.
+        """
+        partial_result = self._get_backend("covariance", None, "partial_compute_result")
+        saved_tables = data["_partial_result"]
+        for table_name, table_data in saved_tables.items():
+            if table_data.size > 0:
+                setattr(partial_result, table_name, to_table(table_data))
+
+        data["_partial_result"] = partial_result
+
+        self.__dict__ = data
 
     def partial_fit(self, X, y=None, queue=None):
         """
@@ -105,6 +144,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             self._partial_result,
             table_X,
         )
+        self._need_to_finalize = True
 
     def finalize_fit(self, queue=None):
         """
@@ -121,21 +161,24 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self : object
             Returns the instance itself.
         """
-        params = self._get_onedal_params(self._dtype)
-        result = self._get_backend(
-            "covariance",
-            None,
-            "finalize_compute",
-            self._policy,
-            params,
-            self._partial_result,
-        )
-        if daal_check_version((2024, "P", 1)) or (not self.bias):
-            self.covariance_ = from_table(result.cov_matrix)
-        else:
-            n_rows = self._partial_result.partial_n_rows
-            self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
+        if self._need_to_finalize:
+            params = self._get_onedal_params(self._dtype)
+            result = self._get_backend(
+                "covariance",
+                None,
+                "finalize_compute",
+                self._policy,
+                params,
+                self._partial_result,
+            )
+            if daal_check_version((2024, "P", 1)) or (not self.bias):
+                self.covariance_ = from_table(result.cov_matrix)
+            else:
+                n_rows = self._partial_result.partial_n_rows
+                self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
 
-        self.location_ = from_table(result.means).ravel()
+            self.location_ = from_table(result.means).ravel()
+
+        self._need_to_finalize = False
 
         return self
