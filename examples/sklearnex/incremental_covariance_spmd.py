@@ -29,22 +29,30 @@ def get_local_data(data, comm):
     return data[rank * local_size : (rank + 1) * local_size]
 
 
+# We create SYCL queue and MPI communicator to perform computation on multiple GPUs
+
 q = dpctl.SyclQueue("gpu")
 comm = MPI.COMM_WORLD
-num_batches = 2
 
+num_batches = 2
 seed = 77
 num_samples, num_features = 3000, 3
 drng = np.random.default_rng(seed)
 X = drng.random(size=(num_samples, num_features))
+
+# Local data are obtained for each GPU and splitted into batches
 
 X_local = get_local_data(X, comm)
 X_split = np.array_split(X_local, num_batches)
 
 cov = IncrementalEmpiricalCovariance()
 
+# Partial fit is called for each batch on each GPU
+
 for i in range(num_batches):
     dpt_X = dpt.asarray(X_split[i], usm_type="device", sycl_queue=q)
     cov.partial_fit(dpt_X)
+
+# Finalization of results is performed in a lazy way after requesting results like in non-SPMD incremental estimators.
 
 print(f"Computed covariance values on rank {comm.Get_rank()}:\n", cov.covariance_)
