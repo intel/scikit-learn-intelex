@@ -53,6 +53,9 @@ def get_patch_map_core(preview=False):
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
             from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
+            from .preview.linear_model import (
+                IncrementalRidge as IncrementalRidge_sklearnex,
+            )
             from .preview.linear_model import Ridge as Ridge_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
@@ -98,6 +101,18 @@ def get_patch_map_core(preview=False):
             mapping.pop("ridge")
             mapping["ridge"] = [
                 [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
+            ]
+
+            # IncrementalRidge
+            mapping["incrementalridge"] = [
+                [
+                    (
+                        linear_model_module,
+                        "IncrementalRidge",
+                        IncrementalRidge_sklearnex,
+                    ),
+                    None,
+                ]
             ]
 
         return mapping

@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+from .incremental_ridge import IncrementalRidge
 from .ridge import Ridge
 
-__all__ = ["Ridge"]
+__all__ = ["Ridge", "IncrementalRidge"]
