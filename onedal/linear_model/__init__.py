@@ -15,7 +15,12 @@
 # ===============================================================================
 
 from .incremental_linear_model import IncrementalLinearRegression
-from .linear_model import LinearRegression
+from .linear_model import LinearRegression, Ridge
 from .logistic_regression import LogisticRegression
 
-__all__ = ["IncrementalLinearRegression", "LinearRegression", "LogisticRegression"]
+__all__ = [
+    "IncrementalLinearRegression",
+    "LinearRegression",
+    "LogisticRegression",
+    "Ridge",
+]
