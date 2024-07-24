@@ -88,7 +88,7 @@ jobs:
           source .github/scripts/activate_components.sh
           bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
           pip install --upgrade -r requirements-test.txt
-          pip install $(python .ci/scripts/get_compatible_scipy_version.py) pyyaml
+          pip install $(python .ci/scripts/get_compatible_scipy_version.py ${{ matrix.SKLEARN_VERSION }}) pyyaml
           if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}; fi
           pip list
       - name: Sklearnex testing
@@ -222,7 +222,7 @@ jobs:
           call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
           pip install --upgrade -r requirements-test.txt
-          for /f "delims=" %%c in ('python .ci\scripts\get_compatible_scipy_version.py') do set SCIPY_VERSION=%%c
+          for /f "delims=" %%c in ('python .ci\scripts\get_compatible_scipy_version.py ${{ matrix.SKLEARN_VERSION }}') do set SCIPY_VERSION=%%c
           pip install %SCIPY_VERSION%
           if "${{ steps.set-env.outputs.DPCFLAG }}"=="" pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}
           pip list
