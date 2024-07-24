@@ -20,11 +20,11 @@ jobs:
       matrix:
         include:
           - PYTHON_VERSION: "3.9"
-            SKLEARN_VERSION: "1.1"
-          - PYTHON_VERSION: "3.10"
-            SKLEARN_VERSION: "1.2"
-          - PYTHON_VERSION: "3.11"
             SKLEARN_VERSION: "1.5"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.4"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.1"
     name: Linux_nightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
     runs-on: ubuntu-latest
 
@@ -62,7 +62,7 @@ jobs:
           DPCFLAG="0"
           if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
           # Turn off dpcpp building if it is not tested
-          if [ ${DPCFLAG}=='' ]; then echo "DPCPPROOT=/opt/intel/oneapi/compiler/latest" >> "$GITHUB_ENV"; fi
+          if [ ${DPCFLAG} == "" ]; then echo "DPCPPROOT=/opt/intel/oneapi/compiler/latest" >> "$GITHUB_ENV"; fi
           echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
       - name: apt-get
         run: sudo apt-get update && sudo apt-get install -y clang-format
@@ -85,29 +85,29 @@ jobs:
       - name: Install testing requirements
         run: |
           source ./env2/bin/activate
-          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
+          source .github/scripts/activate_components.sh
           bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
           pip install --upgrade -r requirements-test.txt
           pip install $(python .ci/scripts/get_compatible_scipy_version.py) pyyaml
-          if [ '${{ steps.set-env.outputs.DPCFLAG }}'=='' ]; then pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}; fi
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}; fi
           pip list
       - name: Sklearnex testing
         run: |
           source env2/bin/activate
-          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
+          source .github/scripts/activate_components.sh
           cd .ci
           ../conda-recipe/run_test.sh
       - name: Sklearn testing
         run: |
           source env2/bin/activate
-          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
-          bash .ci/scripts/run_sklearn_tests.sh cpu
+          source .github/scripts/activate_components.sh
+          bash .ci/scripts/run_sklearn_tests.sh
       - name: Sklearn testing [preview]
         run: |
           source env2/bin/activate
-          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
+          source .github/scripts/activate_components.sh
           export SKLEARNEX_PREVIEW='YES'
-          bash .ci/scripts/run_sklearn_tests.sh cpu
+          bash .ci/scripts/run_sklearn_tests.sh
 
   sklearn_win:
     strategy:
@@ -115,11 +115,11 @@ jobs:
       matrix:
         include:
           - PYTHON_VERSION: "3.9"
-            SKLEARN_VERSION: "1.1"
-          - PYTHON_VERSION: "3.10"
-            SKLEARN_VERSION: "1.2"
-          - PYTHON_VERSION: "3.11"
             SKLEARN_VERSION: "1.5"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.4"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.1"
     name: Windows_nightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
     runs-on: windows-2022
 
