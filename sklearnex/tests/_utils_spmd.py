@@ -84,7 +84,7 @@ def _generate_classification_data(n_samples, n_features, n_classes=2, random_sta
 
 
 def _generate_statistic_data(n_samples, n_features, random_state=42):
-    # Generates statistical data and divides between train and test
+    # Generates statistical data
     gen = np.random.default_rng(random_state)
     data = gen.uniform(low=-0.3, high=+0.7, size=(n_samples, n_features))
     return data
@@ -92,14 +92,14 @@ def _generate_statistic_data(n_samples, n_features, random_state=42):
 
 def _generate_clustering_data(n_samples, n_features, centers=None, random_state=42):
     # Generates clustering data and divides between train and test
-    X, y = make_blobs(
+    X, _ = make_blobs(
         n_samples=n_samples,
         centers=centers,
         n_features=n_features,
         random_state=random_state,
     )
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=random_state)
-    return X_train, X_test, y_train, y_test
+    X_train, X_test = train_test_split(X, random_state=random_state)
+    return X_train, X_test
 
 
 def _spmd_assert_allclose(spmd_result, batch_result, **kwargs):

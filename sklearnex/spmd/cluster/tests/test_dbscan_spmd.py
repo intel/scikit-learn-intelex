@@ -16,7 +16,6 @@
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -50,7 +49,7 @@ def test_dbscan_spmd_gold(dataframe, queue):
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure labels from fit of batch algo matches spmd
+    # Ensure labels from fit of batch algo matches spmd
     spmd_model = DBSCAN_SPMD(eps=3, min_samples=2).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=3, min_samples=2).fit(data)
 
@@ -78,16 +77,18 @@ def test_dbscan_spmd_synthetic(
     from sklearnex.cluster import DBSCAN as DBSCAN_Batch
     from sklearnex.spmd.cluster import DBSCAN as DBSCAN_SPMD
 
-    data, _, _, _ = _generate_clustering_data(n_samples, n_features, centers=centers)
+    data, _ = _generate_clustering_data(n_samples, n_features, centers=centers)
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure labels from fit of batch algo matches spmd
+    # Ensure labels from fit of batch algo matches spmd
     spmd_model = DBSCAN_SPMD(eps=eps, min_samples=min_samples).fit(local_dpt_data)
     batch_model = DBSCAN_Batch(eps=eps, min_samples=min_samples).fit(data)
 
     _spmd_assert_allclose(spmd_model.labels_, batch_model.labels_)
+
+    # Ensure meaningful test setup
     if np.all(batch_model.labels_ == -1):
         raise ValueError("No labels given - try raising epsilon")

@@ -44,7 +44,7 @@ def test_basic_stats_spmd_gold(dataframe, queue):
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
 
-    # Create gold data and process into dpt
+    # Create gold data and convert to dataframe
     data = np.array(
         [
             [0.0, 0.0, 0.0],
@@ -61,7 +61,7 @@ def test_basic_stats_spmd_gold(dataframe, queue):
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure results of batch algo match spmd
+    # Ensure results of batch algo match spmd
     spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
     batch_result = BasicStatistics_Batch().fit(data)
 
@@ -85,14 +85,14 @@ def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue):
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
 
-    # Generate data and process into dpt
+    # Generate data and convert to dataframe
     data = _generate_statistic_data(n_samples, n_features)
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure results of batch algo match spmd
+    # Ensure results of batch algo match spmd
     spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
     batch_result = BasicStatistics_Batch().fit(data)
 

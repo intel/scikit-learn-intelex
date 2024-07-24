@@ -43,7 +43,7 @@ def test_pca_spmd_gold(dataframe, queue):
     from sklearnex.decomposition import PCA as PCA_Batch
     from sklearnex.spmd.decomposition import PCA as PCA_SPMD
 
-    # Create gold data and process into dpt
+    # Create gold data and convert to dataframe
     data = np.array(
         [
             [0.0, 0.0, 0.0],
@@ -61,7 +61,7 @@ def test_pca_spmd_gold(dataframe, queue):
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure results of batch algo match spmd
+    # Ensure results of batch algo match spmd
     spmd_result = PCA_SPMD(n_components=2).fit(local_dpt_data)
     batch_result = PCA_Batch(n_components=2).fit(data)
 
@@ -94,7 +94,7 @@ def test_pca_spmd_gold(dataframe, queue):
 def test_pca_spmd_synthetic(
     n_samples, n_features, n_components, whiten, dataframe, queue
 ):
-    # TODO: Resolve issues with batch fallback and lack of support for n_rows_rank < r_cols
+    # TODO: Resolve issues with batch fallback and lack of support for n_rows_rank < n_cols
     if n_components == "mle" or n_components == 3:
         pytest.skip("Avoid error in case of batch fallback to sklearn")
     if n_samples <= n_features:
@@ -104,14 +104,14 @@ def test_pca_spmd_synthetic(
     from sklearnex.decomposition import PCA as PCA_Batch
     from sklearnex.spmd.decomposition import PCA as PCA_SPMD
 
-    # Generate data and process into dpt
+    # Generate data and convert to dataframe
     data = _generate_statistic_data(n_samples, n_features)
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure results of batch algo match spmd
+    # Ensure results of batch algo match spmd
     spmd_result = PCA_SPMD(n_components=n_components, whiten=whiten).fit(local_dpt_data)
     batch_result = PCA_Batch(n_components=n_components, whiten=whiten).fit(data)
 

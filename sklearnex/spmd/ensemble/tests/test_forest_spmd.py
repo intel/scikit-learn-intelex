@@ -16,7 +16,6 @@
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 from sklearn.datasets import make_regression
 
 from onedal.tests.utils._dataframes_support import (
@@ -48,7 +47,7 @@ def test_rfcls_spmd_gold(dataframe, queue):
         RandomForestClassifier as RandomForestClassifier_SPMD,
     )
 
-    # Create gold data and process into dpt
+    # Create gold data and convert to dataframe
     X_train = np.array(
         [
             [0.0, 0.0],
@@ -82,7 +81,7 @@ def test_rfcls_spmd_gold(dataframe, queue):
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = RandomForestClassifier_SPMD(n_estimators=3, random_state=0).fit(
         local_dpt_X_train, local_dpt_y_train
     )
@@ -119,7 +118,7 @@ def test_rfcls_spmd_synthetic(
         RandomForestClassifier as RandomForestClassifier_SPMD,
     )
 
-    # Generate data and process into dpt
+    # Generate data and convert to dataframe
     X_train, X_test, y_train, _ = _generate_classification_data(
         n_samples, n_features, n_classes
     )
@@ -134,7 +133,7 @@ def test_rfcls_spmd_synthetic(
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = RandomForestClassifier_SPMD(
         n_estimators=n_estimators, max_depth=max_depth, random_state=0
     ).fit(local_dpt_X_train, local_dpt_y_train)
@@ -164,7 +163,7 @@ def test_rfreg_spmd_gold(dataframe, queue):
         RandomForestRegressor as RandomForestRegressor_SPMD,
     )
 
-    # Create gold data and process into dpt
+    # Create gold data and convert to dataframe
     X_train = np.array(
         [
             [0.0, 0.0],
@@ -198,7 +197,7 @@ def test_rfreg_spmd_gold(dataframe, queue):
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = RandomForestRegressor_SPMD(n_estimators=3, random_state=0).fit(
         local_dpt_X_train, local_dpt_y_train
     )
@@ -234,7 +233,7 @@ def test_rfreg_spmd_synthetic(
         RandomForestRegressor as RandomForestRegressor_SPMD,
     )
 
-    # Generate data and process into dpt
+    # Generate data and convert to dataframe
     X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
 
     local_dpt_X_train = _convert_to_dataframe(
@@ -247,7 +246,7 @@ def test_rfreg_spmd_synthetic(
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = RandomForestRegressor_Batch(
         n_estimators=n_estimators, max_depth=max_depth, random_state=0
     ).fit(local_dpt_X_train, local_dpt_y_train)

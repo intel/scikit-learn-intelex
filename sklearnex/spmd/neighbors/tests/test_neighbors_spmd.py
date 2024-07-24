@@ -17,7 +17,6 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from sklearn.datasets import make_regression
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -47,7 +46,7 @@ def test_knncls_spmd_gold(dataframe, queue):
     from sklearnex.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
     from sklearnex.spmd.neighbors import KNeighborsClassifier as KNeighborsClassifier_SPMD
 
-    # Create gold data and process into dpt
+    # Create gold data and convert to dataframe
     X_train = np.array(
         [
             [0.0, 0.0],
@@ -82,7 +81,7 @@ def test_knncls_spmd_gold(dataframe, queue):
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = KNeighborsClassifier_SPMD(n_neighbors=1, algorithm="brute").fit(
         local_dpt_X_train, local_dpt_y_train
     )
@@ -126,7 +125,7 @@ def test_knncls_spmd_synthetic(
     from sklearnex.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
     from sklearnex.spmd.neighbors import KNeighborsClassifier as KNeighborsClassifier_SPMD
 
-    # Generate data and process into dpt
+    # Generate data and convert to dataframe
     X_train, X_test, y_train, _ = _generate_classification_data(
         n_samples, n_features, n_classes
     )
@@ -141,7 +140,7 @@ def test_knncls_spmd_synthetic(
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = KNeighborsClassifier_SPMD(
         n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute"
     ).fit(local_dpt_X_train, local_dpt_y_train)
@@ -172,7 +171,7 @@ def test_knnreg_spmd_gold(dataframe, queue):
     from sklearnex.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
     from sklearnex.spmd.neighbors import KNeighborsRegressor as KNeighborsRegressor_SPMD
 
-    # Create gold data and process into dpt
+    # Create gold data and convert to dataframe
     X_train = np.array(
         [
             [0.0, 0.0],
@@ -206,7 +205,7 @@ def test_knnreg_spmd_gold(dataframe, queue):
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = KNeighborsRegressor_SPMD(n_neighbors=1, algorithm="brute").fit(
         local_dpt_X_train, local_dpt_y_train
     )
@@ -246,7 +245,7 @@ def test_knnreg_spmd_synthetic(
     from sklearnex.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
     from sklearnex.spmd.neighbors import KNeighborsRegressor as KNeighborsRegressor_SPMD
 
-    # Generate data and process into dpt
+    # Generate data and convert to dataframe
     X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
 
     local_dpt_X_train = _convert_to_dataframe(
@@ -259,7 +258,7 @@ def test_knnreg_spmd_synthetic(
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_model = KNeighborsRegressor_SPMD(
         n_neighbors=n_neighbors, weights=weights, metric=metric, algorithm="brute"
     ).fit(local_dpt_X_train, local_dpt_y_train)

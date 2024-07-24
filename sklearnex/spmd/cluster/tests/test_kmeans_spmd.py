@@ -28,7 +28,6 @@ from sklearnex.tests._utils_spmd import (
     _generate_clustering_data,
     _get_local_tensor,
     _mpi_libs_and_gpu_available,
-    _spmd_assert_allclose,
 )
 
 
@@ -71,7 +70,7 @@ def test_kmeans_spmd_gold(dataframe, queue):
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # ensure labels from fit of batch algo matches spmd
+    # Ensure labels from fit of batch algo matches spmd
     spmd_model = KMeans_SPMD(n_clusters=2, random_state=0).fit(local_dpt_X_train)
     batch_model = KMeans_Batch(n_clusters=2, random_state=0).fit(X_train)
 
@@ -84,7 +83,7 @@ def test_kmeans_spmd_gold(dataframe, queue):
     )
     assert_allclose(spmd_model.n_iter_, batch_model.n_iter_, atol=1)
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
@@ -114,7 +113,7 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
     from sklearnex.spmd.cluster import KMeans as KMeans_SPMD
 
     # TODO: investigate issues when centers != n_clusters (spmd and batch results don't match for all values of K)
-    X_train, X_test, _, _ = _generate_clustering_data(
+    X_train, X_test = _generate_clustering_data(
         n_samples, n_features, centers=n_clusters
     )
 
@@ -125,7 +124,7 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
         _get_local_tensor(X_test), sycl_queue=queue, target_df=dataframe
     )
 
-    # kmeans init
+    # Validate KMeans init
     spmd_model_init = KMeans_SPMD(n_clusters=n_clusters, max_iter=1, random_state=0).fit(
         local_dpt_X_train
     )
@@ -135,7 +134,7 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
     # TODO: centers do not match up after init
     # _assert_unordered_allclose(spmd_model_init.cluster_centers_, batch_model_init.cluster_centers_)
 
-    # ensure labels from fit of batch algo matches spmd, using same init
+    # Ensure labels from fit of batch algo matches spmd, using same init
     spmd_model = KMeans_SPMD(
         n_clusters=n_clusters, init=spmd_model_init.cluster_centers_, random_state=0
     ).fit(local_dpt_X_train)
@@ -153,7 +152,7 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
     # TODO: KMeans iterations are not aligned
     # assert_allclose(spmd_model.n_iter_, batch_model.n_iter_, atol=1)
 
-    # ensure predictions of batch algo match spmd
+    # Ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 

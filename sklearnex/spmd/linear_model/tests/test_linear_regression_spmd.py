@@ -17,7 +17,6 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from sklearn.datasets import make_regression
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -45,7 +44,7 @@ def test_linear_spmd_gold(dataframe, queue):
     from sklearnex.linear_model import LinearRegression as LinearRegression_Batch
     from sklearnex.spmd.linear_model import LinearRegression as LinearRegression_SPMD
 
-    # Create gold data and process into dpt
+    # Create gold data and convert to dataframe
     X_train = np.array(
         [
             [0.0, 0.0],
@@ -109,7 +108,7 @@ def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue):
     from sklearnex.linear_model import LinearRegression as LinearRegression_Batch
     from sklearnex.spmd.linear_model import LinearRegression as LinearRegression_SPMD
 
-    # Generate data and process into dpt
+    # Generate data and convert to dataframe
     X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
 
     local_dpt_X_train = _convert_to_dataframe(
@@ -132,8 +131,8 @@ def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue):
     spmd_model = LinearRegression_SPMD().fit(local_dpt_X_train, local_dpt_y_train)
     batch_model = LinearRegression_Batch().fit(X_train, y_train)
 
-    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=1e-7, atol=1e-7)
-    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=1e-7, atol=1e-7)
+    assert_allclose(spmd_model.coef_, batch_model.coef_)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)
