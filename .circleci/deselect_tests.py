@@ -129,7 +129,7 @@ def create_pytest_switches(
         pytest_switches = []
         for test_name in filtered_deselection:
             if test_name:
-                pytest_switches.extend(["--deselect", base_dir + test_name])
+                pytest_switches.extend(["--deselect=" + base_dir + test_name])
     return pytest_switches
 
 
