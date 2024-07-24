@@ -119,7 +119,8 @@
 #define is_array(a)         ((a) && PyArray_Check(a))
 #define array_type(a)       PyArray_TYPE((PyArrayObject *)a)
 #define array_type_sizeof(a) PyArray_ITEMSIZE((PyArrayObject *)a)
-#define array_is_behaved(a) (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
+#define array_is_behaved_C(a) \
+    (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
 #define array_is_behaved_F(a) \
     (PyArray_ISFARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
 #define array_is_native(a) (PyArray_ISNOTSWAPPED((PyArrayObject *)a))
