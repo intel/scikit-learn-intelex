@@ -72,7 +72,7 @@ class IncrementalEmpiricalCovariance(
 
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
-        self._partial_result = policy = super(
+        self._partial_result = super(
             IncrementalEmpiricalCovariance_Batch, self
         )._get_backend(
             "covariance",
