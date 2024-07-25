@@ -235,9 +235,9 @@ class BaseSVC(BaseSVM):
         # LibSVM uses the random seed to control cross-validation for probability generation
         # CalibratedClassifierCV with "prefit" does not use an RNG nor a seed. This may
         # impact users without their knowledge, so display a warning.
-        if self.random_seed is not None:
+        if self.random_state is not None:
             warnings.warn(
-                "Random seed does not influence oneDAL SVM results",
+                "random_state does not influence oneDAL SVM results",
                 warnings.RuntimeWarning,
             )
 
