@@ -80,16 +80,16 @@ if daal_check_version((2024, "P", 600)):
                     random_state=random_state,
                 )
 
-        else:
+        elif sklearn_check_version("1.0"):
 
             def __init__(
                 self,
                 alpha=1.0,
                 fit_intercept=True,
-                normalize="deprecated" if sklearn_check_version("1.0") else False,
+                normalize="deprecated",
                 copy_X=True,
                 max_iter=None,
-                tol=1e-4,
+                tol=1e-3,
                 solver="auto",
                 positive=False,
                 random_state=None,
@@ -103,6 +103,30 @@ if daal_check_version((2024, "P", 600)):
                     solver=solver,
                     tol=tol,
                     positive=positive,
+                    random_state=random_state,
+                )
+
+        else:
+
+            def __init__(
+                self,
+                alpha=1.0,
+                fit_intercept=True,
+                normalize=False,
+                copy_X=True,
+                max_iter=None,
+                tol=1e-3,
+                solver="auto",
+                random_state=None,
+            ):
+                super().__init__(
+                    alpha=alpha,
+                    fit_intercept=fit_intercept,
+                    normalize=normalize,
+                    copy_X=copy_X,
+                    max_iter=max_iter,
+                    tol=tol,
+                    solver=solver,
                     random_state=random_state,
                 )
 
