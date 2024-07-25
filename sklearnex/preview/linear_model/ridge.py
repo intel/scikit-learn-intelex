@@ -34,7 +34,6 @@ if daal_check_version((2024, "P", 600)):
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
 
-
     from onedal.linear_model import Ridge as onedal_Ridge
     from onedal.utils import _num_features, _num_samples
 
@@ -284,8 +283,12 @@ if daal_check_version((2024, "P", 600)):
                     self.max_iter = check_scalar(
                         self.max_iter, "max_iter", target_type=numbers.Integral, min_val=1
                     )
-                self.tol = check_scalar(self.tol, "tol", target_type=numbers.Real, min_val=0.0)
-                if self.alpha is not None and not isinstance(self.alpha, (np.ndarray, tuple)):
+                self.tol = check_scalar(
+                    self.tol, "tol", target_type=numbers.Real, min_val=0.0
+                )
+                if self.alpha is not None and not isinstance(
+                    self.alpha, (np.ndarray, tuple)
+                ):
                     self.alpha = check_scalar(
                         self.alpha,
                         "alpha",
