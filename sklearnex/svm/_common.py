@@ -14,9 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 from abc import ABC
 from numbers import Number, Real
-import warnings
 
 import numpy as np
 from scipy import sparse as sp
