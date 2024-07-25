@@ -92,7 +92,7 @@ def _generate_classification_data(
 def _generate_statistic_data(n_samples, n_features, dtype=np.float64, random_state=42):
     # Generates statistical data
     gen = np.random.default_rng(random_state)
-    data = gen.uniform(low=-0.3, high=+0.7, size=(n_samples, n_features), dtype=dtype)
+    data = gen.uniform(low=-0.3, high=+0.7, size=(n_samples, n_features)).astype(dtype)
     return data
 
 
