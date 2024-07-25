@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,15 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
-from ..._device_offload import support_usm_ndarray
-from .._base import BaseEstimatorSPMD
+from onedal.spmd.basic_statistics import (
+    IncrementalBasicStatistics as onedalSPMD_IncrementalBasicStatistics,
+)
+
+from ...basic_statistics import (
+    IncrementalBasicStatistics as IncrementalBasicStatistics_nonSPMD,
+)
 
 
-class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
-    @support_usm_ndarray()
-    def compute(self, data, weights=None, queue=None):
-        return super().compute(data, weights=weights, queue=queue)
-
-    @support_usm_ndarray()
-    def fit(self, data, sample_weight=None, queue=None):
-        return super().fit(data, sample_weight=sample_weight, queue=queue)
+class IncrementalBasicStatistics(IncrementalBasicStatistics_nonSPMD):
+    _onedal_basic_statistics = staticmethod(onedalSPMD_IncrementalBasicStatistics)

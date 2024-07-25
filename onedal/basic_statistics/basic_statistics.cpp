@@ -224,6 +224,7 @@ ONEDAL_PY_INIT_MODULE(basic_statistics) {
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task::compute);
+    ONEDAL_PY_INSTANTIATE(init_finalize_compute_ops, sub, policy_spmd, task::compute);
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task::compute);
     ONEDAL_PY_INSTANTIATE(init_partial_compute_ops, sub, policy_list, task::compute);
