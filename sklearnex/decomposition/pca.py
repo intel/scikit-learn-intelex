@@ -42,7 +42,8 @@ if daal_check_version((2024, "P", 100)):
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
-    from sklearnex.utils import get_namespace
+
+    from ..utils import get_namespace
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
@@ -133,9 +134,10 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_fit(self, X, queue=None):
+            xp, is_array_api_compliant = get_namespace(X)
             X = self._validate_data(
                 X,
-                dtype=[np.float64, np.float32],
+                dtype=[xp.float64, xp.float32],
                 ensure_2d=True,
                 copy=self.copy,
             )
@@ -147,7 +149,7 @@ if daal_check_version((2024, "P", 100)):
                 "whiten": self.whiten,
             }
             self._onedal_estimator = onedal_PCA(**onedal_params)
-            self._onedal_estimator.fit(X, queue=queue)
+            self._onedal_estimator._fit(X, xp, is_array_api_compliant, queue=queue)
             self._save_attributes()
 
             U = None
@@ -155,7 +157,6 @@ if daal_check_version((2024, "P", 100)):
             Vt = self.components_
 
             if sklearn_check_version("1.5"):
-                xp, _ = get_namespace(X)
                 x_is_centered = not self.copy
 
                 return U, S, Vt, X, x_is_centered, xp
@@ -175,17 +176,20 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_transform(self, X, queue=None):
+            xp, is_array_api_compliant = get_namespace(X)
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 self._check_feature_names(X, reset=False)
             X = self._validate_data(
                 X,
-                dtype=[np.float64, np.float32],
+                dtype=[xp.float64, xp.float32],
                 reset=False,
             )
             self._validate_n_features_in_after_fitting(X)
 
-            return self._onedal_estimator.predict(X, queue=queue)
+            return self._onedal_estimator._predict(
+                X, xp, is_array_api_compliant, queue=queue
+            )
 
         def fit_transform(self, X, y=None):
             if sklearn_check_version("1.5"):
@@ -211,13 +215,21 @@ if daal_check_version((2024, "P", 100)):
                 return self._transform(X_fit, xp, x_is_centered=x_is_centered)
 
         def _onedal_supported(self, method_name, X):
+            xp, is_array_api_compliant = get_namespace(X)
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f"sklearn.decomposition.{class_name}.{method_name}"
             )
 
             if method_name == "fit":
-                shape_tuple, _is_shape_compatible = self._get_shape_compatibility(X)
+                shape_tuple, _is_shape_compatible = self._get_shape_compatibility(
+                    X, xp, is_array_api_compliant
+                )
+                is_sparse_X = False
+                if not is_array_api_compliant:
+                    # TODO:
+                    # check it
+                    is_sparse_X = issparse(X)
                 patching_status.and_conditions(
                     [
                         (
@@ -234,7 +246,7 @@ if daal_check_version((2024, "P", 100)):
                                 "solvers are supported."
                             ),
                         ),
-                        (not issparse(X), "oneDAL PCA does not support sparse data"),
+                        (not is_sparse_X, "oneDAL PCA does not support sparse data"),
                     ]
                 )
                 return patching_status
@@ -260,7 +272,7 @@ if daal_check_version((2024, "P", 100)):
         def _onedal_gpu_supported(self, method_name, *data):
             return self._onedal_supported(method_name, *data)
 
-        def _get_shape_compatibility(self, X):
+        def _get_shape_compatibility(self, X, xp, is_array_api_compliant):
             _is_shape_compatible = False
             _empty_shape = (0, 0)
             if hasattr(X, "shape"):
@@ -268,9 +280,9 @@ if daal_check_version((2024, "P", 100)):
                 if len(shape_tuple) == 1:
                     shape_tuple = (1, shape_tuple[0])
             elif isinstance(X, list):
-                if np.ndim(X) == 1:
+                if xp.ndim(X) == 1:
                     shape_tuple = (1, len(X))
-                elif np.ndim(X) == 2:
+                elif xp.ndim(X) == 2:
                     shape_tuple = (len(X), len(X[0]))
             else:
                 return _empty_shape, _is_shape_compatible
