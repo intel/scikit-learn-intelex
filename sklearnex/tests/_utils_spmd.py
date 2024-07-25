@@ -61,16 +61,20 @@ def _get_local_tensor(full_data):
     return local_data
 
 
-def _generate_regression_data(n_samples, n_features, random_state=42):
+def _generate_regression_data(n_samples, n_features, dtype=np.float64, random_state=42):
     # Generates regression data and divides between train and test
     X, y = make_regression(
         n_samples=n_samples, n_features=n_features, random_state=random_state
     )
+    X = X.astype(dtype)
+    y = y.astype(dtype)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=random_state)
     return X_train, X_test, y_train, y_test
 
 
-def _generate_classification_data(n_samples, n_features, n_classes=2, random_state=42):
+def _generate_classification_data(
+    n_samples, n_features, n_classes=2, dtype=np.float64, random_state=42
+):
     # Generates classification data and divides between train and test
     X, y = make_classification(
         n_samples=n_samples,
@@ -79,18 +83,22 @@ def _generate_classification_data(n_samples, n_features, n_classes=2, random_sta
         n_informative=int(0.5 * n_classes + 1),
         random_state=random_state,
     )
+    X = X.astype(dtype)
+    y = y.astype(dtype)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=random_state)
     return X_train, X_test, y_train, y_test
 
 
-def _generate_statistic_data(n_samples, n_features, random_state=42):
+def _generate_statistic_data(n_samples, n_features, dtype=np.float64, random_state=42):
     # Generates statistical data
     gen = np.random.default_rng(random_state)
-    data = gen.uniform(low=-0.3, high=+0.7, size=(n_samples, n_features))
+    data = gen.uniform(low=-0.3, high=+0.7, size=(n_samples, n_features), dtype=dtype)
     return data
 
 
-def _generate_clustering_data(n_samples, n_features, centers=None, random_state=42):
+def _generate_clustering_data(
+    n_samples, n_features, centers=None, dtype=np.float64, random_state=42
+):
     # Generates clustering data and divides between train and test
     X, _ = make_blobs(
         n_samples=n_samples,
@@ -98,6 +106,7 @@ def _generate_clustering_data(n_samples, n_features, centers=None, random_state=
         n_features=n_features,
         random_state=random_state,
     )
+    X = X.astype(dtype)
     X_train, X_test = train_test_split(X, random_state=random_state)
     return X_train, X_test
 

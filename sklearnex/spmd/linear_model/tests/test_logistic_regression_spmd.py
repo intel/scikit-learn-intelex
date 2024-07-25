@@ -113,8 +113,9 @@ def test_logistic_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
-def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue):
+def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue, dtype):
     # TODO: Resolve numerical issues when n_rows_rank < n_cols
     if n_samples <= n_features:
         pytest.skip("Numerical issues when rank rows < columns")
@@ -124,7 +125,9 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue
     from sklearnex.spmd.linear_model import LogisticRegression as LogisticRegression_SPMD
 
     # Generate data and convert to dataframe
-    X_train, X_test, y_train, _ = _generate_classification_data(n_samples, n_features)
+    X_train, X_test, y_train, _ = _generate_classification_data(
+        n_samples, n_features, dtype=dtype
+    )
 
     local_dpt_X_train = _convert_to_dataframe(
         _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe

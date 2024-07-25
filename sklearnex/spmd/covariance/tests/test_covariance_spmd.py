@@ -79,9 +79,10 @@ def test_covariance_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_covariance_spmd_synthetic(
-    n_samples, n_features, assume_centered, dataframe, queue
+    n_samples, n_features, assume_centered, dataframe, queue, dtype
 ):
     # Import spmd and batch algo
     # TODO: Align sklearnex spmd to sklearnex estimator with bias and swap onedal with sklearnex
@@ -89,7 +90,7 @@ def test_covariance_spmd_synthetic(
     from sklearnex.spmd.covariance import EmpiricalCovariance as EmpiricalCovariance_SPMD
 
     # Generate data and convert to dataframe
-    data = _generate_statistic_data(n_samples, n_features)
+    data = _generate_statistic_data(n_samples, n_features, dtype=dtype)
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe

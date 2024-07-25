@@ -102,14 +102,17 @@ def test_linear_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
-def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue):
+def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue, dtype):
     # Import spmd and batch algo
     from sklearnex.linear_model import LinearRegression as LinearRegression_Batch
     from sklearnex.spmd.linear_model import LinearRegression as LinearRegression_SPMD
 
     # Generate data and convert to dataframe
-    X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
+    X_train, X_test, y_train, _ = _generate_regression_data(
+        n_samples, n_features, dtype=dtype
+    )
 
     local_dpt_X_train = _convert_to_dataframe(
         _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe

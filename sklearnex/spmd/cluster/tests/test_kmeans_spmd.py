@@ -106,14 +106,19 @@ def test_kmeans_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
-def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, queue):
+def test_kmeans_spmd_synthetic(
+    n_samples, n_features, n_clusters, dataframe, queue, dtype
+):
     # Import spmd and batch algo
     from sklearnex.cluster import KMeans as KMeans_Batch
     from sklearnex.spmd.cluster import KMeans as KMeans_SPMD
 
     # TODO: investigate issues when centers != n_clusters (spmd and batch results don't match for all values of K)
-    X_train, X_test = _generate_clustering_data(n_samples, n_features, centers=n_clusters)
+    X_train, X_test = _generate_clustering_data(
+        n_samples, n_features, centers=n_clusters, dtype=dtype
+    )
 
     local_dpt_X_train = _convert_to_dataframe(
         _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe

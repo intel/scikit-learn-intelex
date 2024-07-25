@@ -75,18 +75,19 @@ def test_basic_stats_spmd_gold(dataframe, queue):
 )
 @pytest.mark.parametrize("n_samples", [100, 10000])
 @pytest.mark.parametrize("n_features", [10, 100])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
 @pytest.mark.mpi
-def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue):
+def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue, dtype):
     # Import spmd and batch algo
     from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
     from sklearnex.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
 
     # Generate data and convert to dataframe
-    data = _generate_statistic_data(n_samples, n_features)
+    data = _generate_statistic_data(n_samples, n_features, dtype=dtype)
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe

@@ -110,6 +110,7 @@ def test_knncls_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_knncls_spmd_synthetic(
     n_samples,
@@ -118,6 +119,7 @@ def test_knncls_spmd_synthetic(
     weights,
     dataframe,
     queue,
+    dtype,
     metric="euclidean",
 ):
     n_features, n_classes = n_features_and_classes
@@ -127,7 +129,7 @@ def test_knncls_spmd_synthetic(
 
     # Generate data and convert to dataframe
     X_train, X_test, y_train, _ = _generate_classification_data(
-        n_samples, n_features, n_classes
+        n_samples, n_features, n_classes, dtype=dtype
     )
 
     local_dpt_X_train = _convert_to_dataframe(
@@ -237,16 +239,19 @@ def test_knnreg_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_knnreg_spmd_synthetic(
-    n_samples, n_features, n_neighbors, weights, metric, dataframe, queue
+    n_samples, n_features, n_neighbors, weights, metric, dataframe, queue, dtype
 ):
     # Import spmd and batch algo
     from sklearnex.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
     from sklearnex.spmd.neighbors import KNeighborsRegressor as KNeighborsRegressor_SPMD
 
     # Generate data and convert to dataframe
-    X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
+    X_train, X_test, y_train, _ = _generate_regression_data(
+        n_samples, n_features, dtype=dtype
+    )
 
     local_dpt_X_train = _convert_to_dataframe(
         _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe

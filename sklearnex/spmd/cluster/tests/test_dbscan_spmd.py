@@ -68,16 +68,19 @@ def test_dbscan_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_dbscan_spmd_synthetic(
-    n_samples, n_features_and_eps, centers, min_samples, dataframe, queue
+    n_samples, n_features_and_eps, centers, min_samples, dataframe, queue, dtype
 ):
     n_features, eps = n_features_and_eps
     # Import spmd and batch algo
     from sklearnex.cluster import DBSCAN as DBSCAN_Batch
     from sklearnex.spmd.cluster import DBSCAN as DBSCAN_SPMD
 
-    data, _ = _generate_clustering_data(n_samples, n_features, centers=centers)
+    data, _ = _generate_clustering_data(
+        n_samples, n_features, centers=centers, dtype=dtype
+    )
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe

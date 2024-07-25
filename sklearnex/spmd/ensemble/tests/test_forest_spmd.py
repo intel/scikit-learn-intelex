@@ -107,9 +107,10 @@ def test_rfcls_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_rfcls_spmd_synthetic(
-    n_samples, n_features_and_classes, n_estimators, max_depth, dataframe, queue
+    n_samples, n_features_and_classes, n_estimators, max_depth, dataframe, queue, dtype
 ):
     n_features, n_classes = n_features_and_classes
     # Import spmd and batch algo
@@ -120,7 +121,7 @@ def test_rfcls_spmd_synthetic(
 
     # Generate data and convert to dataframe
     X_train, X_test, y_train, _ = _generate_classification_data(
-        n_samples, n_features, n_classes
+        n_samples, n_features, n_classes, dtype=dtype
     )
 
     local_dpt_X_train = _convert_to_dataframe(
@@ -223,9 +224,10 @@ def test_rfreg_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_rfreg_spmd_synthetic(
-    n_samples, n_features, n_estimators, max_depth, dataframe, queue
+    n_samples, n_features, n_estimators, max_depth, dataframe, queue, dtype
 ):
     # Import spmd and batch algo
     from sklearnex.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
@@ -234,7 +236,9 @@ def test_rfreg_spmd_synthetic(
     )
 
     # Generate data and convert to dataframe
-    X_train, X_test, y_train, _ = _generate_regression_data(n_samples, n_features)
+    X_train, X_test, y_train, _ = _generate_regression_data(
+        n_samples, n_features, dtype=dtype
+    )
 
     local_dpt_X_train = _convert_to_dataframe(
         _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe

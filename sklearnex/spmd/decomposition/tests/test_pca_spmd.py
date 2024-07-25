@@ -90,9 +90,10 @@ def test_pca_spmd_gold(dataframe, queue):
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_pca_spmd_synthetic(
-    n_samples, n_features, n_components, whiten, dataframe, queue
+    n_samples, n_features, n_components, whiten, dataframe, queue, dtype
 ):
     # TODO: Resolve issues with batch fallback and lack of support for n_rows_rank < n_cols
     if n_components == "mle" or n_components == 3:
@@ -105,7 +106,7 @@ def test_pca_spmd_synthetic(
     from sklearnex.spmd.decomposition import PCA as PCA_SPMD
 
     # Generate data and convert to dataframe
-    data = _generate_statistic_data(n_samples, n_features)
+    data = _generate_statistic_data(n_samples, n_features, dtype=dtype)
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
