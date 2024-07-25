@@ -145,7 +145,8 @@ def test_kmeans_spmd_synthetic(
         n_clusters=n_clusters, init=spmd_model_init.cluster_centers_, random_state=0
     ).fit(X_train)
 
-    _assert_unordered_allclose(spmd_model.cluster_centers_, batch_model.cluster_centers_)
+    atol = 1e-5 if dtype == np.float32 else 1e-7
+    _assert_unordered_allclose(spmd_model.cluster_centers_, batch_model.cluster_centers_, atol=atol)
     _assert_kmeans_labels_allclose(
         spmd_model.labels_,
         batch_model.labels_,

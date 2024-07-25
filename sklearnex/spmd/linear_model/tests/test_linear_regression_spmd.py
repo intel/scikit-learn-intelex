@@ -134,8 +134,9 @@ def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue, dtype):
     spmd_model = LinearRegression_SPMD().fit(local_dpt_X_train, local_dpt_y_train)
     batch_model = LinearRegression_Batch().fit(X_train, y_train)
 
-    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=1e-7, atol=1e-7)
-    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=1e-7, atol=1e-7)
+    tol = 1e-4 if dtype == np.float32 else 1e-7
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol, atol=tol)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=tol, atol=tol)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)

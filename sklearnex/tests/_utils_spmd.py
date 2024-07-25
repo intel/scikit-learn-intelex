@@ -131,7 +131,7 @@ def _spmd_assert_allclose(spmd_result, batch_result, **kwargs):
     assert_allclose(_as_numpy(spmd_result), local_batch_result, **kwargs)
 
 
-def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
+def _assert_unordered_allclose(spmd_result, batch_result, localize=False, **kwargs):
     """Checks if rows in spmd and batch results are aligned, even if not in the same order.
 
     Called to verify correct unordered results are present. Useful to check KMeans centers
@@ -158,7 +158,7 @@ def _assert_unordered_allclose(spmd_result, batch_result, localize=False):
             np.argsort(np.linalg.norm(batch_result, axis=1))
         ]
 
-    assert_allclose(_as_numpy(sorted_spmd_result), sorted_batch_result)
+    assert_allclose(_as_numpy(sorted_spmd_result), sorted_batch_result, **kwargs)
 
 
 def _assert_kmeans_labels_allclose(
