@@ -18,6 +18,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <iostream>
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
@@ -279,10 +280,11 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     PyArrayObject *row_indices = reinterpret_cast<PyArrayObject *>(np_row_indices);
 
     const Float *edge_pointer = static_cast<Float *>(array_data(edge_data));
-    const std::int64_t edge_count = static_cast<std::int64_t>(array_size(edge_data, 0));
-    const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0));
+    const std::int64_t col_count = static_cast<std::int64_t>(array_size(edge_data, 0));
+    const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0)) - 1;
     const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices));
     const std::int64_t *rows = static_cast<std::int64_t *>(array_data(row_indices));
+    std::cout << col_count << " " << vertex_count << std::endl;
 
     auto& graph_impl = dal::detail::get_impl(res);
     using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
@@ -292,11 +294,11 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
 
     for (std::int64_t u = 0; u < vertex_count; u++) {
         degrees[u] = rows[u + 1] - rows[u];
+        std::cout << degrees[u] << std::endl;
     }
 
-    graph_impl.set_topology(vertex_count, edge_count, rows, cols, edge_count, degrees);
-    graph_impl.get_topology()._degrees = degrees_array;
-    graph_impl.set_edge_values(edge_pointer, edge_count);
+    graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
+    graph_impl.set_edge_values(edge_pointer, col_count/2);
 
     Py_INCREF(edge_data);
     //Py_DECREF(np_column_indices);
