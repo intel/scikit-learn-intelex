@@ -20,11 +20,11 @@ jobs:
       matrix:
         include:
           - PYTHON_VERSION: "3.9"
-            SKLEARN_VERSION: "1.5"
-          - PYTHON_VERSION: "3.10"
-            SKLEARN_VERSION: "1.4"
-          - PYTHON_VERSION: "3.11"
             SKLEARN_VERSION: "1.1"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.2"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.3"
     name: Linux_nightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
     runs-on: ubuntu-latest
 
@@ -115,11 +115,11 @@ jobs:
       matrix:
         include:
           - PYTHON_VERSION: "3.9"
-            SKLEARN_VERSION: "1.5"
-          - PYTHON_VERSION: "3.10"
-            SKLEARN_VERSION: "1.4"
-          - PYTHON_VERSION: "3.11"
             SKLEARN_VERSION: "1.1"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.2"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.3"
     name: Windows_nightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
     runs-on: windows-2022
 
@@ -190,8 +190,6 @@ jobs:
       - name: Install dependencies
         shell: cmd
         run: |
-          echo ${{ steps.set-env.outputs.DPCFLAG }}
-          echo "hello"
           python -m venv env2
           call .\env2\Scripts\activate.bat
           pip install --upgrade setuptools
@@ -213,7 +211,6 @@ jobs:
           set PYTHON=python
           call .\conda-recipe\bld.bat
           IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
-          set CONDA_PREFIX=%DALROOT%
           python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
       - name: Install testing requirements
         shell: cmd
