@@ -284,7 +284,7 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices));
     const std::int64_t *rows = static_cast<std::int64_t *>(array_data(row_indices));
 
-    auto& graph_impl = dal::detail::get_impl(res);
+    auto& graph_impl = dal::detail::get_impl(res);  
     using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
 
     dal::preview::detail::rebinded_allocator ra(graph_impl._vertex_allocator);
@@ -292,7 +292,6 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
 
     for (std::int64_t u = 0; u < vertex_count; u++) {
         degrees[u] = rows[u + 1] - rows[u];
-        std::cout << degrees[u] << std::endl;
     }
 
     graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
