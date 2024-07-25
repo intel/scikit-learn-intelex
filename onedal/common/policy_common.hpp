@@ -54,7 +54,10 @@ std::uint32_t get_device_id(const dp_policy_t& policy);
 std::size_t get_used_memory(const py::object& syclobj);
 std::string get_device_name(const dp_policy_t& policy);
 
-struct FilterSelectorWrapper {
+/// TODO: This is a workaround class.
+/// It hides deprecated ``sycl::ext::oneapi::filter_selector`` to get rid of build warnings
+/// until a better solution is provided.
+struct filter_selector_wrapper {
     FilterSelectorWrapper(std::string Filter) : FilterSelector{Filter} {}
 
     int operator()(const sycl::device &Dev) {
