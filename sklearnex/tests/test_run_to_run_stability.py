@@ -81,7 +81,7 @@ def eval_method(X, y, est, method):
     else:
         results = [_as_numpy(i) for i in res]
 
-    attributes = [method for i in results]
+    attributes = [method] * len(results)
 
     # if estimator follows sklearn design rules, then set attributes should have a
     # trailing underscore
