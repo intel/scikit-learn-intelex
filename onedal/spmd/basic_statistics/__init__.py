@@ -15,5 +15,6 @@
 # ==============================================================================
 
 from .basic_statistics import BasicStatistics
+from .incremental_basic_statistics import IncrementalBasicStatistics
 
 __all__ = ["BasicStatistics"]
