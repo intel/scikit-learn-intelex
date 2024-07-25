@@ -79,9 +79,7 @@ def eval_method(X, y, est, method):
     if not isinstance(res, Iterable):
         results = [_as_numpy(res)] if res is not est else []
     else:
-        results = []
-        for i in res:
-            results += [_as_numpy(i)]
+        results = [_as_numpy(i) for i in res]
 
     attributes = [method for i in results]
 

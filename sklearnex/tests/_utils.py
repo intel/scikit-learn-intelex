@@ -181,7 +181,11 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
         else:
             methods = candidates
 
-        output += [(estimator, j) for j in methods] if methods else [(estimator, None)]
+        output += (
+            [(estimator, method) for method in methods]
+            if methods
+            else [(estimator, None)]
+        )
 
     # In the case that no methods are available, set method to None.
     # This will allow estimators without mixins to still test the fit
