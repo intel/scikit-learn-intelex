@@ -238,7 +238,7 @@ class BaseSVC(BaseSVM):
         if self.random_state is not None:
             warnings.warn(
                 "random_state does not influence oneDAL SVM results",
-                warnings.RuntimeWarning,
+                RuntimeWarning,
             )
 
         params = self.get_params()
