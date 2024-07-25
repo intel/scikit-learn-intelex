@@ -29,6 +29,7 @@ jobs:
     name: build Linux
     if: github.repository == 'intel/scikit-learn-intelex'
     runs-on: ubuntu-latest
+    timeout-minutes: 120
 
     steps:
       - name: Checkout oneDAL
@@ -59,6 +60,7 @@ jobs:
     name: build Windows
     if: github.repository == 'intel/scikit-learn-intelex'
     runs-on: windows-2022
+    timeout-minutes: 120
 
     steps:
       - name: Checkout oneDAL
