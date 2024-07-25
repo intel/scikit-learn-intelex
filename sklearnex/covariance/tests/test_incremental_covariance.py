@@ -37,7 +37,7 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype, assume_cent
         from dpctl import device_type
 
         is_gpu = queue is not None and queue.sycl_device.device_type == device_type.gpu
-    finally:
+    except:
         is_gpu = False
     if assume_centered and is_gpu and not daal_check_version((2024, "P", 700)):
         pytest.skip("There is a bug on oneDAL side")
@@ -151,7 +151,7 @@ def test_sklearnex_fit_on_random_data(
         from dpctl import device_type
 
         is_gpu = queue is not None and queue.sycl_device.device_type == device_type.gpu
-    finally:
+    except:
         is_gpu = False
     if assume_centered and is_gpu and not daal_check_version((2024, "P", 700)):
         pytest.skip("There is a bug on oneDAL side")
