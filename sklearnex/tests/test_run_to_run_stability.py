@@ -25,6 +25,7 @@ from _utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     _sklearn_clone_dict,
+    call_method,
     gen_dataset,
     gen_models_info,
 )
@@ -73,23 +74,23 @@ def eval_method(X, y, est, method):
     est.fit(X, y)
 
     if method:
-        if method != "score":
-            res = getattr(est, method)(X)
-        else:
-            res = est.score(X, y)
+        res = call_method(est, method, X, y)
 
     if not isinstance(res, Iterable):
-        res = [res]
+        results = [_as_numpy(res)] if res is not est else []
+    else:
+        results = [_as_numpy(i) for i in res]
+
+    attributes = [method] * len(results)
 
     # if estimator follows sklearn design rules, then set attributes should have a
     # trailing underscore
-    attributes = [
+    attributes += [
         i
         for i in dir(est)
         if hasattr(est, i) and not i.startswith("_") and i.endswith("_")
     ]
-    results = [getattr(est, i) for i in attributes] + [_as_numpy(i) for i in res]
-    attributes += [method for i in res]
+    results += [getattr(est, i) for i in attributes if i != method]
     return results, attributes
 
 
@@ -148,8 +149,13 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
-    if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
+    if estimator in ["KMeans", "PCA"] and "score" in method and queue == None:
         pytest.skip(f"variation observed in {estimator}.score")
+    if estimator in ["IncrementalEmpiricalCovariance"] and method == "mahalanobis":
+        pytest.skip("allowed fallback to sklearn occurs")
+
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
     est = PATCHED_MODELS[estimator]()
 
@@ -173,6 +179,8 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
     if "KMeans" in estimator and method == "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.score")
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
     est = SPECIAL_INSTANCES[estimator]
 
@@ -194,6 +202,8 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.score")
 
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
     est = SPARSE_INSTANCES[estimator]
 
     if method and not hasattr(est, method):
@@ -215,6 +225,8 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
 def test_other_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.score")
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
     est = STABILITY_INSTANCES[estimator]
 
