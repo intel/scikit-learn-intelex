@@ -113,9 +113,7 @@ def test_kmeans_spmd_synthetic(n_samples, n_features, n_clusters, dataframe, que
     from sklearnex.spmd.cluster import KMeans as KMeans_SPMD
 
     # TODO: investigate issues when centers != n_clusters (spmd and batch results don't match for all values of K)
-    X_train, X_test = _generate_clustering_data(
-        n_samples, n_features, centers=n_clusters
-    )
+    X_train, X_test = _generate_clustering_data(n_samples, n_features, centers=n_clusters)
 
     local_dpt_X_train = _convert_to_dataframe(
         _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
