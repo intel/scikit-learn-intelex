@@ -230,3 +230,6 @@ _karate_club = sp.csr_array(
 def test_Louvain_karate_club():
     est = Louvain()
     est.fit(_karate_club)
+    print(est.labels_)
+    print(est.modularity_)
+    print(est.community_count_)

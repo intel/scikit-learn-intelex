@@ -17,7 +17,6 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
-#include <iostream>
 
 #include "onedal/version.hpp"
 
@@ -304,7 +303,6 @@ struct vertex_partitioning_ops {
     auto operator()(const pybind11::dict& params) {
         auto desc = ops.template operator()<Float, Method, Task, Args...>(params);
         // temporary fix for bug in dal/detail/vertex_paritioning_ops.hpp (cannot take an input struct)
-        std::cout << "stuck in oneDAL\n";
         return dal::preview::vertex_partitioning(desc, input.get_graph(), input.get_initial_partition());
         }
 

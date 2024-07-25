@@ -46,8 +46,8 @@ ONEDAL_PY_INIT_MODULE(graph) {
         if (strcmp(Py_TYPE(obj_ptr)->tp_name, "csr_matrix") == 0 || strcmp(Py_TYPE(obj_ptr)->tp_name, "csr_array") == 0){
             PyObject *py_data = PyObject_GetAttrString(obj_ptr, "data");
             auto datatype = array_type(py_data);
-            if (datatype == NPY_DOUBLE || datatype == NPY_CDOUBLE || datatype == NPY_CDOUBLELTR){
-                return convert_to_undirected_graph<double>(obj_ptr, NPY_CDOUBLELTR);
+            if (datatype == NPY_DOUBLE || datatype == NPY_CDOUBLE){
+                return convert_to_undirected_graph<double>(obj_ptr, datatype);
             }
             //else if (datatype == NPY_FLOAT || datatype == NPY_CFLOAT || datatype == NPY_CFLOATLTR){
             //    return convert_to_undirected_graph<float>(obj_ptr, NPY_CFLOATLTR);

@@ -18,7 +18,6 @@
 
 #include <stdexcept>
 #include <string>
-#include <iostream>
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
@@ -284,7 +283,6 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0)) - 1;
     const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices));
     const std::int64_t *rows = static_cast<std::int64_t *>(array_data(row_indices));
-    std::cout << col_count << " " << vertex_count << std::endl;
 
     auto& graph_impl = dal::detail::get_impl(res);
     using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
