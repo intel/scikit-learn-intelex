@@ -305,7 +305,7 @@ if daal_check_version((2024, "P", 600)):
                 "y_numeric": True,
                 "multi_output": True,
             }
-            if sklearn_check_version("1.2"):
+            if sklearn_check_version("1.0"):
                 X, y = self._validate_data(**check_params)
             else:
                 X, y = check_X_y(**check_params)
