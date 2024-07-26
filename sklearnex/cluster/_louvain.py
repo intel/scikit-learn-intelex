@@ -22,6 +22,7 @@ from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.metrics.pairwise import KERNEL_PARAMS, pairwise_kernels
 from sklearn.utils._param_validation import Interval, StrOptions
+from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
