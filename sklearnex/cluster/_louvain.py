@@ -26,6 +26,7 @@ from sklearn.utils._param_validation import Interval, StrOptions
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from onedal.cluster import Louvain as onedal_Louvain
+from onedal.utils.validation import _is_csr
 
 from .._device_offload import dispatch
 from ..neighbors import NearestNeighbors
@@ -233,7 +234,27 @@ class Louvain(ClusterMixin, BaseEstimator):
         self.verbose = verbose
 
     def fit(self, X, y=None):
-        dispatch(
+        """Perform Louvain clustering from features, or affinity matrix.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features) or \
+                (n_samples, n_samples)
+            Training instances to cluster, similarities / affinities between
+            instances if ``affinity='precomputed'``, or distances between
+            instances if ``affinity='precomputed_nearest_neighbors``. If a
+            sparse matrix is provided in a format other than ``csr_matrix``,
+            it will be converted into a sparse ``csr_matrix``.
+
+        y : Ignored
+            Not used, present here for API consistency by convention.
+
+        Returns
+        -------
+        self : object
+            A fitted instance of the estimator.
+        """
+        return dispatch(
             self,
             "fit",
             {
@@ -241,93 +262,65 @@ class Louvain(ClusterMixin, BaseEstimator):
                 "sklearn": None,
             },
             X,
-            y,
+            y=y,
         )
-        return self
 
     def _onedal_fit(self, X, y, queue=None):
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(X, force_all_finite=False)
+        
+        X = self._validate_data(
+            X,
+            accept_sparse=["csr"],
+            dtype=np.float64,
+            ensure_min_samples=2,
+        )
+
+        if self.affinity == "nearest_neighbors":
+            connectivity = kneighbors_graph(
+                X, n_neighbors=self.n_neighbors, include_self=True, n_jobs=self.n_jobs
+            )
+            self.affinity_matrix_ = 0.5 * (connectivity + connectivity.T)
+        elif self.affinity == "precomputed_nearest_neighbors":
+            estimator = NearestNeighbors(
+                n_neighbors=self.n_neighbors, n_jobs=self.n_jobs, metric="precomputed"
+            ).fit(X)
+            connectivity = estimator.kneighbors_graph(X=X, mode="connectivity")
+            self.affinity_matrix_ = 0.5 * (connectivity + connectivity.T)
+        elif self.affinity == "precomputed":
+            self.affinity_matrix_ = X
+        else:
+            params = self.kernel_params
+            if params is None:
+                params = {}
+            if not callable(self.affinity):
+                params["gamma"] = self.gamma
+                params["degree"] = self.degree
+                params["coef0"] = self.coef0
+            self.affinity_matrix_ = pairwise_kernels(
+                X, metric=self.affinity, filter_params=True, **params
+            )
 
         onedal_params = {
-            "eps": self.eps,
-            "min_samples": self.min_samples,
-            "metric": self.metric,
-            "metric_params": self.metric_params,
-            "algorithm": self.algorithm,
-            "leaf_size": self.leaf_size,
-            "p": self.p,
-            "n_jobs": self.n_jobs,
+            "resolution": self.resolution,
+            "tol": self.tol,
+            "max_iter": self.max_iter,
         }
-        self._onedal_estimator = self._onedal_dbscan(**onedal_params)
+        self._onedal_estimator = onedal_Louvain(**onedal_params)
 
-        self._onedal_estimator.fit(X, y=y, sample_weight=sample_weight, queue=queue)
-        self._save_attributes()
+        self._onedal_estimator.fit(X if _is_csr(X) else sp.csr_matrix(X), y=y, queue=queue)
+        return self
+
 
     def _onedal_supported(self, method_name, *data):
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
             f"sklearn.cluster.{class_name}.{method_name}"
         )
-        self._validate_params()
+
+        if sklearn_check_version("1.2"):
+            self._validate_params()
         return patching_status
 
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
-    def fit(self, X, y=None, sample_weight=None):
-        if sklearn_check_version("1.2"):
-            self._validate_params()
-        elif sklearn_check_version("1.1"):
-            check_scalar(
-                self.eps,
-                "eps",
-                target_type=numbers.Real,
-                min_val=0.0,
-                include_boundaries="neither",
-            )
-            check_scalar(
-                self.min_samples,
-                "min_samples",
-                target_type=numbers.Integral,
-                min_val=1,
-                include_boundaries="left",
-            )
-            check_scalar(
-                self.leaf_size,
-                "leaf_size",
-                target_type=numbers.Integral,
-                min_val=1,
-                include_boundaries="left",
-            )
-            if self.p is not None:
-                check_scalar(
-                    self.p,
-                    "p",
-                    target_type=numbers.Real,
-                    min_val=0.0,
-                    include_boundaries="left",
-                )
-            if self.n_jobs is not None:
-                check_scalar(self.n_jobs, "n_jobs", target_type=numbers.Integral)
-        else:
-            if self.eps <= 0.0:
-                raise ValueError(f"eps == {self.eps}, must be > 0.0.")
-
-        if sample_weight is not None:
-            sample_weight = _check_sample_weight(sample_weight, X)
-        dispatch(
-            self,
-            "fit",
-            {
-                "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_DBSCAN.fit,
-            },
-            X,
-            y,
-            sample_weight,
-        )
-
-        return self
-
-    fit.__doc__ = sklearn_DBSCAN.fit.__doc__
+    
