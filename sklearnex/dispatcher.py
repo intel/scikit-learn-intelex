@@ -414,7 +414,7 @@ def get_patch_map_core(preview=False):
         ]
 
         # Louvain
-        #mapping["louvain"] = [
+        # mapping["louvain"] = [
         #    [
         #        (
         #            cluster_module,
@@ -423,7 +423,7 @@ def get_patch_map_core(preview=False):
         #        ),
         #        None,
         #    ]
-        #]
+        # ]
 
         # Configs
         mapping["set_config"] = [
