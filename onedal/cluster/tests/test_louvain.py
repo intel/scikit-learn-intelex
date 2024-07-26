@@ -269,12 +269,12 @@ _karate_labels = np.array(
 )
 
 
-@pytest.mark.parametrize("accuracy_threshold", [1e-6, 1e-4, 1e-2])
+@pytest.mark.parametrize("tol", [1e-6, 1e-4, 1e-2])
 @pytest.mark.parametrize("max_iter", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float64, np.float32])
-def test_karate_club(dtype, max_iter, accuracy_threshold):
+def test_karate_club(dtype, max_iter, tol):
     # test against a well-known network dataset (smoke test)
-    est = Louvain(max_iter=max_iter, accuracy_threshold=accuracy_threshold)
+    est = Louvain(max_iter=max_iter, tol=tol)
     X = _karate_club.astype(dtype)
     est.fit(X)
 
