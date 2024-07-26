@@ -100,5 +100,8 @@ def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue, dty
     tol = 1e-5 if dtype == np.float32 else 1e-7
     for option in (opt[0] for opt in options_and_tests):
         assert_allclose(
-            getattr(spmd_result, option), getattr(batch_result, option), atol=tol, rtol=tol
+            getattr(spmd_result, option),
+            getattr(batch_result, option),
+            atol=tol,
+            rtol=tol,
         )

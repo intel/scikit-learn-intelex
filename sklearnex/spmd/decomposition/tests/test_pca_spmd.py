@@ -119,9 +119,7 @@ def test_pca_spmd_synthetic(
     tol = 1e-3 if dtype == np.float32 else 1e-7
     assert_allclose(spmd_result.mean_, batch_result.mean_, atol=tol)
     assert_allclose(spmd_result.components_, batch_result.components_, atol=tol, rtol=tol)
-    assert_allclose(
-        spmd_result.singular_values_, batch_result.singular_values_, atol=tol
-    )
+    assert_allclose(spmd_result.singular_values_, batch_result.singular_values_, atol=tol)
     assert_allclose(spmd_result.noise_variance_, batch_result.noise_variance_, atol=tol)
     assert_allclose(
         spmd_result.explained_variance_ratio_,
