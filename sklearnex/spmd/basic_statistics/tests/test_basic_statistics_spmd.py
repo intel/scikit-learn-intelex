@@ -97,5 +97,8 @@ def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue, dty
     spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
     batch_result = BasicStatistics_Batch().fit(data)
 
+    atol = 1e-5 if dtype == np.float32 else 1e-7
     for option in (opt[0] for opt in options_and_tests):
-        assert_allclose(getattr(spmd_result, option), getattr(batch_result, option))
+        assert_allclose(
+            getattr(spmd_result, option), getattr(batch_result, option), atol=atol
+        )

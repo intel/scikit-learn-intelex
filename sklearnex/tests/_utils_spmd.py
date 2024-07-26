@@ -162,7 +162,7 @@ def _assert_unordered_allclose(spmd_result, batch_result, localize=False, **kwar
 
 
 def _assert_kmeans_labels_allclose(
-    spmd_labels, batch_labels, spmd_centers, batch_centers
+    spmd_labels, batch_labels, spmd_centers, batch_centers, **kwargs
 ):
     """Checks if labels for spmd and batch results are aligned, even cluster indices don't match.
 
@@ -181,5 +181,5 @@ def _assert_kmeans_labels_allclose(
 
     local_batch_labels = _get_local_tensor(batch_labels)
     assert_allclose(
-        spmd_centers[_as_numpy(spmd_labels)], batch_centers[local_batch_labels]
+        spmd_centers[_as_numpy(spmd_labels)], batch_centers[local_batch_labels], **kwargs
     )

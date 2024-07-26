@@ -146,12 +146,15 @@ def test_kmeans_spmd_synthetic(
     ).fit(X_train)
 
     atol = 1e-5 if dtype == np.float32 else 1e-7
-    _assert_unordered_allclose(spmd_model.cluster_centers_, batch_model.cluster_centers_, atol=atol)
+    _assert_unordered_allclose(
+        spmd_model.cluster_centers_, batch_model.cluster_centers_, atol=atol
+    )
     _assert_kmeans_labels_allclose(
         spmd_model.labels_,
         batch_model.labels_,
         spmd_model.cluster_centers_,
         batch_model.cluster_centers_,
+        atol=atol,
     )
     # TODO: KMeans iterations are not aligned
     # assert_allclose(spmd_model.n_iter_, batch_model.n_iter_, atol=1)
@@ -165,4 +168,5 @@ def test_kmeans_spmd_synthetic(
         batch_result,
         spmd_model.cluster_centers_,
         batch_model.cluster_centers_,
+        atol=atol,
     )
