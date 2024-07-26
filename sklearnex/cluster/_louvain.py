@@ -24,6 +24,7 @@ from sklearn.metrics.pairwise import KERNEL_PARAMS, pairwise_kernels
 from sklearn.utils._param_validation import Interval, StrOptions
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import Louvain as onedal_Louvain
 from onedal.utils.validation import _is_csr
 
@@ -274,12 +275,17 @@ class Louvain(ClusterMixin, BaseEstimator):
 
     def _onedal_fit(self, X, y, queue=None):
 
-        X = self._validate_data(
-            X,
-            accept_sparse=["csr"],
-            dtype=np.float64,
-            ensure_min_samples=2,
-        )
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(
+                X,
+                accept_sparse=["csr"],
+                dtype=np.float64,
+                ensure_min_samples=2,
+            )
+        else:
+            X = check_array(
+                X, accept_sparse=["csr"], dtype=np.float64, ensure_min_samples=2
+            )
 
         if (
             self.affinity == "nearest_neighbors"
