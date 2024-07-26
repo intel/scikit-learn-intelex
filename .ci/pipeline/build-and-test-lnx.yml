@@ -35,7 +35,6 @@ steps:
       pip list
     displayName: "Install develop requirements"
   - script: |
-      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       export DALROOT=$CONDA_PREFIX

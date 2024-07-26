@@ -28,7 +28,6 @@ build:
     number: {{ buildnumber }}
     include_recipe: False
     script_env:
-    - DPCPPROOT
     - DALROOT
     ignore_run_exports:
        - python
