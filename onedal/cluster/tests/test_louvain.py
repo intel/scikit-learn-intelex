@@ -24,7 +24,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 from onedal.cluster import Louvain
 
 # Common network dataset https://en.wikipedia.org/wiki/Zachary%27s_karate_club
-_karate_club = sp.csr_array(
+_karate_club = sp.csr_matrix(
     (
         np.ones((156,), dtype=np.float64),
         np.array(
