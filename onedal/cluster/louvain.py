@@ -28,9 +28,7 @@ from ..utils.validation import _check_array, _check_X_y, _is_csr
 
 class Louvain(BaseEstimator, ClusterMixin):
 
-    def __init__(
-        self, resolution=1.0, *, tol=0.0001, max_iter=10
-    ):
+    def __init__(self, resolution=1.0, *, tol=0.0001, max_iter=10):
         self.resolution = resolution
         self.tol = tol
         self.max_iter = max_iter
