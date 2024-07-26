@@ -20,6 +20,14 @@ rem %1 - scikit-learn-intelex repo root
 set MPIROOT=%PREFIX%\Library
 set exitcode=0
 
+IF DEFINED DPCPPROOT (
+    echo "Sourcing DPCPPROOT"
+    call "%DPCPPROOT%\env\vars.bat" || set exitcode=1
+    set "CC=dpcpp"
+    set "CXX=dpcpp"
+    dpcpp --version
+)
+
 IF DEFINED DALROOT (
     echo "Sourcing DALROOT"
     call "%DALROOT%\env\vars.bat" || set exitcode=1

@@ -23,6 +23,11 @@ IF NOT DEFINED DALROOT (set DALROOT=%PREFIX%)
 
 set "BUILD_ARGS="
 
+IF DEFINED DPCPPROOT (
+    echo "Sourcing DPCPPROOT"
+    call "%DPCPPROOT%\env\vars.bat"
+)
+
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
 %PYTHON% setup.py build %BUILD_ARGS%

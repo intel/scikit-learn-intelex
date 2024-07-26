@@ -21,6 +21,11 @@ else
     ARGS="--old-and-unmanageable"
 fi
 
+# if dpc++ vars path is specified
+if [ ! -z "${DPCPPROOT}" ]; then
+    source ${DPCPPROOT}/env/vars.sh
+fi
+
 if [ -z "${DALROOT}" ]; then
     export DALROOT=${PREFIX}
 fi

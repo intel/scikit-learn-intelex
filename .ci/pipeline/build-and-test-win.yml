@@ -34,6 +34,7 @@ steps:
       call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
       call activate CB
       set PREFIX=%CONDA_PREFIX%
+      set DALROOT=%CONDA_PREFIX%
       set PYTHON=python
       call conda-recipe\bld.bat
       IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
