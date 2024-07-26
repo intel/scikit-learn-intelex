@@ -309,9 +309,9 @@ def test_forced_community_labels():
     # rotate labels
     y = (est.labels_ - 1) % est.community_count_
 
-    # refit using labels 
+    # refit using labels
     labels = est.fit(X, est.labels_).labels_
-    
+
     # refit using rotated labels
     est.fit(X, y)
 

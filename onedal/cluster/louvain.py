@@ -50,9 +50,8 @@ class Louvain(BaseEstimator, ClusterMixin):
         if y is None:
             X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         else:
-            X, y = _check_X_y(
-                X, y, accept_sparse="csr", dtype=[np.float64, np.float32])
-            y = y.astype(np.int64) # restriction by oneDAL initial partition
+            X, y = _check_X_y(X, y, accept_sparse="csr", dtype=[np.float64, np.float32])
+            y = y.astype(np.int64)  # restriction by oneDAL initial partition
 
         # limitations in oneDAL's shared object force the topology to double type
         dtype = get_dtype(X)
