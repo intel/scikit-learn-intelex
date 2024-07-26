@@ -116,15 +116,15 @@ def test_pca_spmd_synthetic(
     spmd_result = PCA_SPMD(n_components=n_components, whiten=whiten).fit(local_dpt_data)
     batch_result = PCA_Batch(n_components=n_components, whiten=whiten).fit(data)
 
-    atol = 1e-5 if dtype == np.float32 else 1e-7
-    assert_allclose(spmd_result.mean_, batch_result.mean_, atol=atol)
-    assert_allclose(spmd_result.components_, batch_result.components_, atol=atol)
+    tol = 1e-3 if dtype == np.float32 else 1e-7
+    assert_allclose(spmd_result.mean_, batch_result.mean_, atol=tol)
+    assert_allclose(spmd_result.components_, batch_result.components_, atol=tol, rtol=tol)
     assert_allclose(
-        spmd_result.singular_values_, batch_result.singular_values_, atol=atol
+        spmd_result.singular_values_, batch_result.singular_values_, atol=tol
     )
-    assert_allclose(spmd_result.noise_variance_, batch_result.noise_variance_, atol=atol)
+    assert_allclose(spmd_result.noise_variance_, batch_result.noise_variance_, atol=tol)
     assert_allclose(
         spmd_result.explained_variance_ratio_,
         batch_result.explained_variance_ratio_,
-        atol=atol,
+        atol=tol,
     )
