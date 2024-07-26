@@ -21,7 +21,6 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.metrics.pairwise import KERNEL_PARAMS, pairwise_kernels
-from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -33,6 +32,8 @@ from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 from ..neighbors import NearestNeighbors
 
+if sklearn_check_version("1.2"):
+    from sklearn.utils._param_validation import Interval, StrOptions
 
 @control_n_jobs(decorated_methods=["fit"])
 class Louvain(ClusterMixin, BaseEstimator):
