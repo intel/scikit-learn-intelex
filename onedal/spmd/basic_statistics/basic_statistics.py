@@ -27,6 +27,6 @@ class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
     def compute(self, data, weights=None, queue=None):
         return super().compute(data, weights=weights, queue=queue)
 
-    @support_usm_ndarray()
+    @support_array_api()
     def fit(self, data, sample_weight=None, queue=None):
         return super().fit(data, sample_weight=sample_weight, queue=queue)
