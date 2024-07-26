@@ -33,13 +33,11 @@ void graph_constructor(py::module &m, const char* typestr) {
 }
 
 ONEDAL_PY_INIT_MODULE(graph) {
-    //init_numpy();
-    // init in table.cpp
+    // init of numpy occurs in table.cpp
 
-    graph_constructor<float>(m, "graph_float");
     graph_constructor<double>(m, "graph_double");
 
-    //py::class_<dal::preview::detail::topology> topo_obj(m, typestr);
+    // float topologies are currently not exported to the oneDAL shared object
 
     m.def("to_graph", [](py::object obj)-> graph_t<double> {
         auto* obj_ptr = obj.ptr();
@@ -49,9 +47,6 @@ ONEDAL_PY_INIT_MODULE(graph) {
             if (datatype == NPY_DOUBLE || datatype == NPY_CDOUBLE){
                 return convert_to_undirected_graph<double>(obj_ptr, datatype);
             }
-            //else if (datatype == NPY_FLOAT || datatype == NPY_CFLOAT || datatype == NPY_CFLOATLTR){
-            //    return convert_to_undirected_graph<float>(obj_ptr, NPY_CFLOATLTR);
-            //}
         }
         throw std::invalid_argument(
             "[convert_to_undirected_graph] Not available input format for converting Python object to onedal graph.");  

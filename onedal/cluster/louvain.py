@@ -21,7 +21,7 @@ from daal4py.sklearn._utils import get_dtype
 from ..common._base import BaseEstimator
 from ..common._mixin import ClusterMixin
 from ..datatypes import from_table, to_graph, to_table
-from ..utils.validation import _check_array, _is_csr
+from ..utils.validation import _check_array, _check_X_y, _is_csr
 
 
 class Louvain(BaseEstimator, ClusterMixin):
@@ -42,12 +42,17 @@ class Louvain(BaseEstimator, ClusterMixin):
             "max_iteration_count": int(self.max_iteration_count),
         }
 
-    def fit(self, X, y=None, sample_weight=None, queue=None):
+    def fit(self, X, y=None, queue=None):
         # queue is only included to match convention for all onedal estimators
         assert queue is None, "Louvain is implemented only for CPU"
         assert _is_csr(X), "input must be CSR sparse"
 
-        X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+        if y:
+            X, y = _check_X_y(
+                X, y, accept_sparse="csr", dtype=[np.float64, np.float32], y_numeric=True
+            )
+        else:
+            X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
 
         # limitations in oneDAL's shared object force the topology to double type
         dtype = get_dtype(X)
@@ -55,15 +60,9 @@ class Louvain(BaseEstimator, ClusterMixin):
         X = X.astype(np.float64)
 
         module = self._get_backend("louvain", "vertex_partitioning", None)
-        if sample_weight:
-            assert isinstance(
-                sample_weight, np.array
-            ), "sample_weight must be a finite numpy array"
-            result = module.vertex_partitioning(
-                params, to_graph(X), to_table(sample_weight)
-            )
-        else:
-            result = module.vertex_partitioning(params, to_graph(X))
+
+        data = (params, to_graph(X), to_table(y)) if y else (params, to_graph(X))
+        result = module.vertex_partitioning(*data)
 
         self.labels_ = from_table(result.labels).ravel()
         self.modularity_ = float(result.modularity)

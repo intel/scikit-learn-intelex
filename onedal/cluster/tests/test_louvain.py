@@ -15,13 +15,16 @@
 # ===============================================================================
 
 import numpy as np
+from numpy.testing import assert_allclose
 import pytest
 import scipy.sparse as sp
 from sklearn.cluster.tests.common import generate_clustered_data
+from sklearn.metrics.pairwise import pairwise_kernels
+
 
 from onedal.cluster import Louvain
 
-# Common networking dataset https://en.wikipedia.org/wiki/Zachary%27s_karate_club
+# Common network dataset https://en.wikipedia.org/wiki/Zachary%27s_karate_club
 _karate_club = sp.csr_array(
     (
         np.ones((156,), dtype=np.float64),
@@ -227,9 +230,116 @@ _karate_club = sp.csr_array(
     )
 )
 
-def test_louvain_karate_club():
+_karate_labels = np.array(
+    [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        2,
+        0,
+        1,
+        0,
+        0,
+        0,
+        2,
+        2,
+        1,
+        0,
+        2,
+        0,
+        2,
+        0,
+        2,
+        2,
+        3,
+        3,
+        2,
+        2,
+        3,
+        2,
+        2,
+        3,
+        2,
+        2,
+    ]
+)
+
+
+@pytest.mark.parametrize("accuracy_threshold", [1e-6, 1e-4, 1e-2])
+@pytest.mark.parametrize("max_iteration_count", [10, 100])
+@pytest.mark.parametrize("dtype", [np.float64, np.float32])
+def test_karate_club(dtype, max_iteration_count, accuracy_threshold):
+    # test against a well-known network dataset (smoke test)
+    est = Louvain(
+        max_iteration_count=max_iteration_count, accuracy_threshold=accuracy_threshold
+    )
+    X = _karate_club.astype(dtype)
+    est.fit(X)
+
+    assert est.community_count_ == 4
+    assert est.modularity_ >= -0.5 and est.modularity_ <= 1.0
+    assert_allclose(est.labels_, _karate_labels.astype(dtype))
+
+
+@pytest.mark.parametrize("scaling", [1e-2, 1.0, 10.0, 1000.0])
+@pytest.mark.parametrize("dtype", [np.float64, np.float32])
+def test_scaled_karate(dtype, scaling):
+    # calculation of the labels should be using relative
+    # values rather than absolute values
     est = Louvain()
-    est.fit(_karate_club)
-    print(est.labels_)
-    print(est.modularity_)
-    print(est.community_count_)
+    X = scaling * _karate_club.astype(dtype)
+    labels = est.fit_predict(X)
+
+    assert est.community_count_ == 4
+    assert est.modularity_ >= -0.5 and est.modularity_ <= 1.0
+    assert_allclose(labels, _karate_labels.astype(dtype))
+
+
+def test_forced_community_labels():
+    # use the initial values to force the label values to exchange
+    # This tests the initialization given by the y value
+    est = Louvain()
+    X = _karate_club
+    est.fit(X)
+
+    # rotate labels
+    y = (est._labels - 1) % est.community_count_
+
+    labels = est.fit(X, y)
+
+    # labels should match y, rather than original labels
+    # But the communities themselves should stay the same
+    assert est.community_count_ == 4
+    assert est.modularity_ >= -0.5 and est.modularity_ <= 1.0
+    assert_allclose(est.labels_, y)
+
+
+@pytest.mark.paramterize("n_samples", [20, 40, 100])
+@pytest.mark.parametrize("n_clusters", [2, 3, 4])
+@pytest.mark.parametrize("metric", ["linear", "rbf", "cosine"])
+def test_resolution_simple_clusters(metric, n_clusters, n_samples):
+    # iterate through resolutions to show community_count
+    # is correlated to resolution (via different
+    # affinity matrices)
+
+    X = generate_clustered_data(n_clusters=n_clusters, n_samples_per_cluster=n_samples)
+
+    # Convert into a sparse affinity matrix
+    X = sp.csr_matrix(pairwise_kernels(X, metric=metric), dtype=np.float64)
+
+    community = -1  # begin with unphysical value to guarantee success
+    for res in [1e-4, 1e-2, 1, 100]:
+        est = Louvain(resolution=res)
+        est.fit(X)
+
+        assert (
+            est.community_count_ >= community
+        ), f"resolution={res} violates expected trend"
+        assert est.modularity_ >= -0.5 and est.modularity_ <= 1.0
+
+        community = est.community_count_
