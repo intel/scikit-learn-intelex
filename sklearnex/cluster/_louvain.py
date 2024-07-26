@@ -299,8 +299,8 @@ class Louvain(ClusterMixin, BaseEstimator):
                 n_jobs=self.n_jobs,
                 metric="precomputed" if "precomputed" in self.affinity else "minkowski",
             ).fit(X)
-            connectivity = estimator.kneighbors_graph(X=X, mode="connectivity")
-            self.affinity_matrix_ = 0.5 * (connectivity + connectivity.T)
+            dist = estimator.kneighbors_graph(X=X, mode="distance")
+            self.affinity_matrix_ = 0.5 * (dist + dist.T)
         elif self.affinity == "precomputed":
             self.affinity_matrix_ = X
         else:
