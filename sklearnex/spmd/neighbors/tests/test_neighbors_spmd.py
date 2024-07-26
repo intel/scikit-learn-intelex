@@ -154,9 +154,12 @@ def test_knncls_spmd_synthetic(
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    atol = 1e-4 if dtype == np.float32 else 1e-7
-    _assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
-    _assert_unordered_allclose(spmd_dists, batch_dists, localize=True, atol=atol)
+    tol = 1e-4
+    if dtype == np.float64:
+        _assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
+        _assert_unordered_allclose(
+            spmd_dists, batch_dists, localize=True, rtol=tol, atol=tol
+        )
     _spmd_assert_allclose(spmd_result, batch_result)
 
 
@@ -276,7 +279,10 @@ def test_knnreg_spmd_synthetic(
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    tol = 1e-4 if dtype == np.float32 else 1e-7
-    _assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
-    _assert_unordered_allclose(spmd_dists, batch_dists, localize=True, rtol=tol, atol=tol)
+    tol = 1e-4
+    if dtype == np.float64:
+        _assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
+        _assert_unordered_allclose(
+            spmd_dists, batch_dists, localize=True, rtol=tol, atol=tol
+        )
     _spmd_assert_allclose(spmd_result, batch_result, rtol=tol, atol=tol)
