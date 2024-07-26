@@ -21,7 +21,6 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.metrics.pairwise import KERNEL_PARAMS, pairwise_kernels
-from sklearn.neighbors import kneighbors_graph
 from sklearn.utils._param_validation import Interval, StrOptions
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -282,14 +281,14 @@ class Louvain(ClusterMixin, BaseEstimator):
             ensure_min_samples=2,
         )
 
-        if self.affinity == "nearest_neighbors":
-            connectivity = kneighbors_graph(
-                X, n_neighbors=self.n_neighbors, include_self=True, n_jobs=self.n_jobs
-            )
-            self.affinity_matrix_ = 0.5 * (connectivity + connectivity.T)
-        elif self.affinity == "precomputed_nearest_neighbors":
+        if (
+            self.affinity == "nearest_neighbors"
+            or self.affinity == "precomputed_nearest_neighbors"
+        ):
             estimator = NearestNeighbors(
-                n_neighbors=self.n_neighbors, n_jobs=self.n_jobs, metric="precomputed"
+                n_neighbors=self.n_neighbors,
+                n_jobs=self.n_jobs,
+                metric="precomputed" if "precomputed" in self.affinity else "minkowski",
             ).fit(X)
             connectivity = estimator.kneighbors_graph(X=X, mode="connectivity")
             self.affinity_matrix_ = 0.5 * (connectivity + connectivity.T)
