@@ -48,8 +48,8 @@ struct params2desc {
         using namespace dal::preview::louvain;
 
         auto desc = descriptor<Float, Method, Task>();
-        desc.set_accuracy_threshold(params["accuracy_threshold"].cast<double>());
         desc.set_resolution(params["resolution"].cast<double>());
+        desc.set_accuracy_threshold(params["accuracy_threshold"].cast<double>());
         desc.set_max_iteration_count(params["max_iteration_count"].cast<std::int64_t>());
 
         return desc;

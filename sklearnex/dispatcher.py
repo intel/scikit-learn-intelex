@@ -143,6 +143,7 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .cluster import Louvain as Louvain_sklearnex
         from .covariance import (
             IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
         )
@@ -407,6 +408,18 @@ def get_patch_map_core(preview=False):
                     linear_model_module,
                     "IncrementalLinearRegression",
                     IncrementalLinearRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # Louvain
+        mapping["louvain"] = [
+            [
+                (
+                    cluster_module,
+                    "Louvain",
+                    Louvain_sklearnex,
                 ),
                 None,
             ]

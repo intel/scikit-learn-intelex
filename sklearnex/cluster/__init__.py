@@ -16,5 +16,6 @@
 
 from .dbscan import DBSCAN
 from .k_means import KMeans
+from ._louvain import Louvain
 
-__all__ = ["KMeans", "DBSCAN"]
+__all__ = ["KMeans", "DBSCAN", "Louvain"]

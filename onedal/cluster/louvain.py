@@ -14,6 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
+import warnings
+
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
@@ -27,24 +29,25 @@ from ..utils.validation import _check_array, _check_X_y, _is_csr
 class Louvain(BaseEstimator, ClusterMixin):
 
     def __init__(
-        self, resolution=1.0, *, accuracy_threshold=0.0001, max_iteration_count=10
+        self, resolution=1.0, *, tol=0.0001, max_iter=10
     ):
         self.resolution = resolution
-        self.accuracy_threshold = accuracy_threshold
-        self.max_iteration_count = max_iteration_count
+        self.tol = tol
+        self.max_iter = max_iter
 
     def _get_onedal_params(self, dtype=np.float64):
         return {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": "by_default",
-            "accuracy_threshold": float(self.accuracy_threshold),
             "resolution": float(self.resolution),
-            "max_iteration_count": int(self.max_iteration_count),
+            "accuracy_threshold": float(self.tol),
+            "max_iteration_count": int(self.max_iter),
         }
 
     def fit(self, X, y=None, queue=None):
         # queue is only included to match convention for all onedal estimators
-        assert queue is None, "Louvain is implemented only for CPU"
+        if queue is not None:
+            warnings.warn("Louvain is implemented only for CPU")
         assert _is_csr(X), "input must be CSR sparse"
 
         if y is None:
