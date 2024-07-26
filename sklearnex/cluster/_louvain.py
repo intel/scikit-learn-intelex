@@ -356,7 +356,7 @@ class Louvain(ClusterMixin, BaseEstimator):
     def community_count_(self):
         return self._onedal_estimator.community_count_
     
-    @modularity_.setter
+    @community_count_.setter
     def community_count_(self, val):
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_factory()
