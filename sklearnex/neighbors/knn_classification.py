@@ -32,7 +32,7 @@ from .common import KNeighborsDispatchingBase
 @control_n_jobs(
     decorated_methods=["fit", "predict", "predict_proba", "kneighbors", "score"]
 )
-class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBase):
+class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifier):
     __doc__ = sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
@@ -169,24 +169,6 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
             return_distance=return_distance,
         )
 
-    @wrap_output_data
-    def radius_neighbors(
-        self, X=None, radius=None, return_distance=True, sort_results=False
-    ):
-        _onedal_estimator = getattr(self, "_onedal_estimator", None)
-
-        if (
-            _onedal_estimator is not None
-            or getattr(self, "_tree", 0) is None
-            and self._fit_method == "kd_tree"
-        ):
-            sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
-        result = sklearn_NearestNeighbors.radius_neighbors(
-            self, X, radius, return_distance, sort_results
-        )
-
-        return result
-
     def _onedal_fit(self, X, y, queue=None):
         onedal_params = {
             "n_neighbors": self.n_neighbors,
@@ -242,4 +224,3 @@ class KNeighborsClassifier(sklearn_KNeighborsClassifier, KNeighborsDispatchingBa
     predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
     score.__doc__ = sklearn_KNeighborsClassifier.score.__doc__
     kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
-    radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__

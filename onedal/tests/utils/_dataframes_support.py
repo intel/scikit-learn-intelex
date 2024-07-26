@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import pytest
+import scipy.sparse as sp
 from sklearn import get_config
 
 try:
@@ -121,6 +122,8 @@ def _as_numpy(obj, *args, **kwargs):
         return dpt.to_numpy(obj, *args, **kwargs)
     if isinstance(obj, pd.DataFrame) or isinstance(obj, pd.Series):
         return obj.to_array(*args, **kwargs)
+    if sp.issparse(obj):
+        return obj.toarray(*args, **kwargs)
     return np.asarray(obj, *args, **kwargs)
 
 
