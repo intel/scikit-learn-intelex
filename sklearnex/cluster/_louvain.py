@@ -62,7 +62,7 @@ class Louvain(ClusterMixin, BaseEstimator):
     Parameters
     ----------
     resolution: float, default=1.0
-
+        Modularity scaling parameter for determining cluster size [2]_
 
     tol: float, default=1e-4
         Tolerance for stopping criteria.
@@ -171,6 +171,10 @@ class Louvain(ClusterMixin, BaseEstimator):
     .. [1] :doi:`Fast unfolding of communities in large networks, 2008
            Blondel, Vincent D; Guillaume, Jean-Loup; Lambiotte, Renaud; Lefebvre, Etienne
            <10.1088/1742-5468/2008/10/P10008>`
+
+    .. [2] :doi:`Laplacian Dynamics and Multiscale Modular Structure in Networks, 2009
+            Lambiotte, R; Delvenne J.C; Barahona, M
+            <10.48550/arXiv.0812.1770>`
 
     Examples
     --------
@@ -299,13 +303,7 @@ class Louvain(ClusterMixin, BaseEstimator):
                 X, metric=self.affinity, filter_params=True, **params
             )
 
-        onedal_params = {
-            "resolution": self.resolution,
-            "tol": self.tol,
-            "max_iter": self.max_iter,
-        }
-        self._onedal_estimator = onedal_Louvain(**onedal_params)
-
+        self._onedal_estimator = self._onedal_factory()
         self._onedal_estimator.fit(X if _is_csr(X) else sp.csr_matrix(X), y=y, queue=queue)
         return self
 
@@ -320,7 +318,49 @@ class Louvain(ClusterMixin, BaseEstimator):
             self._validate_params()
         return patching_status
 
+    def _onedal_factory(self):
+        onedal_params = {
+            "resolution": self.resolution,
+            "tol": self.tol,
+            "max_iter": self.max_iter,
+        }
+        return onedal_Louvain(**onedal_params)
+
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
+
+
+    @property
+    def labels_(self):
+        return self._onedal_estimator.labels_
+    
+    @labels_.setter
+    def labels_(self, val):
+        if not hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator = self._onedal_factory()
+        
+        self._onedal_estimator.labels_ = val
+
+    @property
+    def modularity_(self):
+        return self._onedal_estimator.modularity_
+    
+    @modularity_.setter
+    def modularity_(self, val):
+        if not hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator = self._onedal_factory()
+        
+        self._onedal_estimator.modularity_ = val
+       
+    @property
+    def community_count_(self):
+        return self._onedal_estimator.community_count_
+    
+    @modularity_.setter
+    def community_count_(self, val):
+        if not hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator = self._onedal_factory()
+        
+        self._onedal_estimator.community_count__ = val
 
     
