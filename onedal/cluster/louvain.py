@@ -47,12 +47,12 @@ class Louvain(BaseEstimator, ClusterMixin):
         assert queue is None, "Louvain is implemented only for CPU"
         assert _is_csr(X), "input must be CSR sparse"
 
-        if y:
-            X, y = _check_X_y(
-                X, y, accept_sparse="csr", dtype=[np.float64, np.float32], y_numeric=True
-            )
-        else:
+        if y is None:
             X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+        else:
+            X, y = _check_X_y(
+                X, y, accept_sparse="csr", dtype=[np.float64, np.float32])
+            y = y.astype(np.int64) # restriction by oneDAL initial partition
 
         # limitations in oneDAL's shared object force the topology to double type
         dtype = get_dtype(X)
@@ -61,7 +61,7 @@ class Louvain(BaseEstimator, ClusterMixin):
 
         module = self._get_backend("louvain", "vertex_partitioning", None)
 
-        data = (params, to_graph(X), to_table(y)) if y else (params, to_graph(X))
+        data = (params, to_graph(X)) if y is None else (params, to_graph(X), to_table(y))
         result = module.vertex_partitioning(*data)
 
         self.labels_ = from_table(result.labels).ravel()
