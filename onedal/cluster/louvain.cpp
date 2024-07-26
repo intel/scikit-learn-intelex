@@ -111,7 +111,6 @@ ONEDAL_PY_INIT_MODULE(louvain) {
 
     ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_ops, sub, task_list, graph_list);
     ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_result, sub, task_list);
-
 }
 
 } // namespace oneapi::dal::python

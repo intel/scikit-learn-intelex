@@ -34,11 +34,6 @@
     #include "oneapi/dal/table/csr.hpp"
 #endif
 
-
-//template class oneapi::dal::preview::undirected_adjacency_vector_graph<std::int32_t, float>;
-//template class oneapi::dal::preview::undirected_adjacency_vector_graph<std::int32_t, double>;
-
-
 namespace oneapi::dal::python {
 
 #if ONEDAL_VERSION <= 20230100

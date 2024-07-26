@@ -14,8 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 
+from ._louvain import Louvain
 from .dbscan import DBSCAN
 from .k_means import KMeans
-from ._louvain import Louvain
 
 __all__ = ["KMeans", "DBSCAN", "Louvain"]

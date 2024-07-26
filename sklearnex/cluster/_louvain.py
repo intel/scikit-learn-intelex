@@ -28,8 +28,8 @@ from onedal.cluster import Louvain as onedal_Louvain
 from onedal.utils.validation import _is_csr
 
 from .._device_offload import dispatch
-from ..neighbors import NearestNeighbors
 from .._utils import PatchingConditionsChain
+from ..neighbors import NearestNeighbors
 
 
 @control_n_jobs(decorated_methods=["fit"])
@@ -74,7 +74,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         Ignored for ``affinity='nearest_neighbors'``, ``affinity='precomputed'``
         or ``affinity='precomputed_nearest_neighbors'``.
 
-    affinity : str or callable, default='rbf'
+    affinity : str or callable, default='nearest_neighbors'
         How to construct the affinity matrix.
          - 'nearest_neighbors': construct the affinity matrix by computing a
            graph of nearest neighbors.
@@ -220,7 +220,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         tol=1e-4,
         max_iter=10,
         gamma=1.0,
-        affinity="rbf",
+        affinity="nearest_neighbors",
         n_neighbors=10,
         degree=3,
         coef0=1,
