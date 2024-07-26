@@ -35,6 +35,7 @@ from ..neighbors import NearestNeighbors
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
 
+
 @control_n_jobs(decorated_methods=["fit"])
 class Louvain(ClusterMixin, BaseEstimator):
     """Cluster data using the Louvain network clustering algorithm.
