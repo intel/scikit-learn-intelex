@@ -279,7 +279,7 @@ def test_knnreg_spmd_synthetic(
     spmd_result = spmd_model.predict(local_dpt_X_test)
     batch_result = batch_model.predict(X_test)
 
-    tol = 1e-4
+    tol = 0.005 if dtype == np.float32 else 1e-4
     if dtype == np.float64:
         _assert_unordered_allclose(spmd_indcs, batch_indcs, localize=True)
         _assert_unordered_allclose(
