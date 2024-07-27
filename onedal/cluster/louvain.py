@@ -47,7 +47,7 @@ class Louvain(BaseEstimator, ClusterMixin):
         if queue is not None:
             warnings.warn("Louvain is implemented only for CPU")
         assert _is_csr(X), "input must be CSR sparse"
-
+        assert np.sum(X.diagonal()) == 0.0
         if y is None:
             X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         else:
