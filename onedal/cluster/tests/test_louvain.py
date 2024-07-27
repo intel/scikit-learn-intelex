@@ -332,7 +332,7 @@ def test_resolution_simple_clusters(metric, n_clusters, n_samples):
 
     # Convert into a sparse affinity matrix
     X = pairwise_kernels(X, metric=metric)
-    np.fill_diagonal(X, 0.0) # no self loops
+    np.fill_diagonal(X, 0.0)  # no self loops
     X = sp.csr_matrix(X, dtype=np.float64)
     assert X.min() >= 0
 
