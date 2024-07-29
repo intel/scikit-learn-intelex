@@ -19,7 +19,7 @@ from numbers import Number
 
 import numpy as np
 
-from daal4py.sklearn._utils import get_dtype, make2d
+from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
@@ -34,19 +34,24 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def __init__(self, fit_intercept, copy_X, algorithm):
+    def __init__(self, fit_intercept, copy_X, algorithm, alpha=0.0):
         self.fit_intercept = fit_intercept
-        self.algorithm = algorithm
+        self.alpha = alpha
         self.copy_X = copy_X
+        self.algorithm = algorithm
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
-        return {
+        params = {
             "fptype": "float" if dtype == np.float32 else "double",
             "method": self.algorithm,
             "intercept": self.fit_intercept,
             "result_option": (intercept + "coefficients"),
         }
+        if daal_check_version((2024, "P", 600)):
+            params["alpha"] = self.alpha
+
+        return params
 
     def _create_model(self, policy):
         module = self._get_backend("linear_model", "regression")
@@ -159,7 +164,12 @@ class LinearRegression(BaseLinearRegression):
     """
 
     def __init__(
-        self, fit_intercept=True, copy_X=False, *, algorithm="norm_eq", **kwargs
+        self,
+        fit_intercept=True,
+        copy_X=False,
+        *,
+        algorithm="norm_eq",
+        **kwargs,
     ):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
 
@@ -211,6 +221,99 @@ class LinearRegression(BaseLinearRegression):
         else:
             result = module.train(policy, params, X_table, y_table)
 
+        self._onedal_model = result.model
+
+        packed_coefficients = from_table(result.model.packed_coefficients)
+        self.coef_, self.intercept_ = (
+            packed_coefficients[:, 1:],
+            packed_coefficients[:, 0],
+        )
+
+        if self.coef_.shape[0] == 1 and y.ndim == 1:
+            self.coef_ = self.coef_.ravel()
+            self.intercept_ = self.intercept_[0]
+
+        return self
+
+
+class Ridge(BaseLinearRegression):
+    """
+    Ridge Regression oneDAL implementation.
+
+    Parameters
+    ----------
+    alpha : float, default=1.0
+        Regularization strength; must be a positive float. Regularization
+        improves the conditioning of the problem and reduces the variance of
+        the estimates. Larger values specify stronger regularization.
+
+    fit_intercept : bool, default=True
+        Whether to calculate the intercept for this model. If set
+        to False, no intercept will be used in calculations
+        (i.e. data is expected to be centered).
+
+    copy_X : bool, default=True
+        If True, X will be copied; else, it may be overwritten.
+
+    algorithm : string, default="norm_eq"
+        Algorithm used for computation on oneDAL side.
+    """
+
+    def __init__(
+        self,
+        alpha=1.0,
+        fit_intercept=True,
+        copy_X=False,
+        *,
+        algorithm="norm_eq",
+        **kwargs,
+    ):
+        super().__init__(
+            fit_intercept=fit_intercept, alpha=alpha, copy_X=copy_X, algorithm=algorithm
+        )
+
+    def fit(self, X, y, queue=None):
+        """
+        Fit linear model.
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training data.
+
+        y : array-like of shape (n_samples,) or (n_samples, n_targets)
+            Target values. Will be cast to X's dtype if necessary.
+
+        queue : dpctl.SyclQueue
+            If not None, use this queue for computations.
+
+        Returns
+        -------
+        self : object
+            Fitted Estimator.
+        """
+        module = self._get_backend("linear_model", "regression")
+
+        X = _check_array(
+            X,
+            dtype=[np.float64, np.float32],
+            force_all_finite=False,
+            ensure_2d=False,
+            copy=self.copy_X,
+        )
+
+        y = np.asarray(y).astype(dtype=get_dtype(X))
+
+        X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
+
+        policy = self._get_policy(queue, X, y)
+
+        self.n_features_in_ = _num_features(X, fallback_1d=True)
+
+        X, y = _convert_to_supported(policy, X, y)
+        params = self._get_onedal_params(get_dtype(X))
+        X_table, y_table = to_table(X, y)
+
+        result = module.train(policy, params, X_table, y_table)
         self._onedal_model = result.model
 
         packed_coefficients = from_table(result.model.packed_coefficients)
