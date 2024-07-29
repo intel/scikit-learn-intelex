@@ -293,8 +293,8 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     graph_impl.set_edge_values(edge_pointer, col_count/2);
 
     Py_INCREF(edge_data);
-    Py_DECREF(np_column_indices);
-    Py_DECREF(np_row_indices);
+    //Py_DECREF(np_column_indices);
+    //Py_DECREF(np_row_indices);
 
     return res;
 }
