@@ -150,7 +150,7 @@ class Louvain(ClusterMixin, BaseEstimator):
 
     See Also
     --------
-    sklearn.cluster.SpectralClustering : Clustering of a 
+    sklearn.cluster.SpectralClustering : Clustering of a
         normalized Laplacian projection.
     sklearn.cluster.KMeans : K-Means clustering.
     sklearn.cluster.DBSCAN : Density-Based Spatial Clustering of
