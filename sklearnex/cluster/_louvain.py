@@ -294,6 +294,7 @@ class Louvain(ClusterMixin, BaseEstimator):
             )
 
         if y is not None:
+            pass
 
 
         if (
