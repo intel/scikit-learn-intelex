@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,15 @@
 # limitations under the License.
 # ==============================================================================
 
-from .incremental_linear_model import IncrementalLinearRegression
-from .linear_model import LinearRegression
-from .logistic_regression import LogisticRegression
 
-__all__ = ["IncrementalLinearRegression", "LinearRegression", "LogisticRegression"]
+from onedal.spmd.linear_model import (
+    IncrementalLinearRegression as onedalSPMD_IncrementalLinearRegression,
+)
+
+from ...linear_model import (
+    IncrementalLinearRegression as IncrementalLinearRegression_nonSPMD,
+)
+
+
+class IncrementalLinearRegression(IncrementalLinearRegression_nonSPMD):
+    _onedal_incremental_linear = staticmethod(onedalSPMD_IncrementalLinearRegression)

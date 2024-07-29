@@ -147,7 +147,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
             self._onedal_finalize_fit()
-        return self._onedal_estimator.predict(X, queue)
+        return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return r2_score(
@@ -194,17 +194,17 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         onedal_params = {"fit_intercept": self.fit_intercept, "copy_X": self.copy_X}
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_linear(**onedal_params)
-        self._onedal_estimator.partial_fit(X, y, queue)
+        self._onedal_estimator.partial_fit(X, y, queue=queue)
         self._need_to_finalize = True
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
         is_underdetermined = self.n_samples_seen_ < self.n_features_in_ + int(
             self.fit_intercept
         )
         if is_underdetermined:
             raise ValueError("Not enough samples to finalize")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
     def _onedal_fit(self, X, y, queue=None):
@@ -263,8 +263,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 "Only one sample available. You may want to reshape your data array"
             )
 
-        self._onedal_finalize_fit()
-
+        self._onedal_finalize_fit(queue=queue)
         return self
 
     def get_intercept_(self):
