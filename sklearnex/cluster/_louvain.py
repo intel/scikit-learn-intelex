@@ -319,7 +319,6 @@ class Louvain(ClusterMixin, BaseEstimator):
         if not _is_csr(self.affinity_matrix_):
             self.affinity_matrix_ = sp.csr_matrix(self.affinity_matrix_)
 
-
         self._onedal_estimator = self._onedal_factory()
         self._onedal_estimator.fit(self.affinity_matrix_, y=y, queue=queue)
         return self
