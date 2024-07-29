@@ -231,7 +231,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         max_iter=10,
         gamma=1.0,
         affinity="nearest_neighbors",
-        n_neighbors=10,
+        n_neighbors=5,
         degree=3,
         coef0=1,
         kernel_params=None,
