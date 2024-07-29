@@ -314,11 +314,14 @@ class Louvain(ClusterMixin, BaseEstimator):
             self.affinity_matrix_ = pairwise_kernels(
                 X, metric=self.affinity, filter_params=True, **params
             )
+            # Implement truncation here
+
+        if not _is_csr(self.affinity_matrix_):
+            self.affinity_matrix_ = sp.csr_matrix(self.affinity_matrix_)
+
 
         self._onedal_estimator = self._onedal_factory()
-        self._onedal_estimator.fit(
-            X if _is_csr(X) else sp.csr_matrix(X), y=y, queue=queue
-        )
+        self._onedal_estimator.fit(self.affinity_matrix_, y=y, queue=queue)
         return self
 
     def _onedal_supported(self, method_name, *data):
