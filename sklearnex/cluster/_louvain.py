@@ -150,6 +150,8 @@ class Louvain(ClusterMixin, BaseEstimator):
 
     See Also
     --------
+    sklearn.cluster.SpectralClustering : Clustering of a 
+        normalized Laplacian projection.
     sklearn.cluster.KMeans : K-Means clustering.
     sklearn.cluster.DBSCAN : Density-Based Spatial Clustering of
         Applications with Noise.
@@ -257,8 +259,9 @@ class Louvain(ClusterMixin, BaseEstimator):
             sparse matrix is provided in a format other than ``csr_matrix``,
             it will be converted into a sparse ``csr_matrix``.
 
-        y : Ignored
-            Not used, present here for API consistency by convention.
+        y : array-like of shape (n_samples,), default=None
+            Initial partitioning/clustering of the samples in X, default
+            None will use no initial values.
 
         Returns
         -------
@@ -289,6 +292,9 @@ class Louvain(ClusterMixin, BaseEstimator):
             X = check_array(
                 X, accept_sparse=["csr"], dtype=np.float64, ensure_min_samples=2
             )
+
+        if y is not None:
+
 
         if (
             self.affinity == "nearest_neighbors"
