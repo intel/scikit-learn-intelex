@@ -142,6 +142,10 @@ class Louvain(ClusterMixin, BaseEstimator):
 
         .. versionadded:: 0.24
 
+    n_iter_ : int
+        Actual number of iterations. Always equal to max_iter due to
+        oneDAL implementation.
+
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during :term:`fit`. Defined only when `X`
         has feature names that are all strings.
@@ -324,6 +328,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         self._onedal_estimator = self._onedal_factory()
         # y is dropped here, even if it has a value
         self._onedal_estimator.fit(self.affinity_matrix_, queue=queue)
+        self.n_iter_ = self.max_iter
         return self
 
     def _onedal_supported(self, method_name, *data):
