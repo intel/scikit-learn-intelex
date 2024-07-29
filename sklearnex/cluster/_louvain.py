@@ -259,9 +259,8 @@ class Louvain(ClusterMixin, BaseEstimator):
             sparse matrix is provided in a format other than ``csr_matrix``,
             it will be converted into a sparse ``csr_matrix``.
 
-        y : array-like of shape (n_samples,), default=None
-            Initial partitioning/clustering of the samples in X, default
-            None will use no initial values.
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
@@ -293,10 +292,6 @@ class Louvain(ClusterMixin, BaseEstimator):
                 X, accept_sparse=["csr"], dtype=np.float64, ensure_min_samples=2
             )
 
-        if y is not None:
-            pass
-
-
         if (
             self.affinity == "nearest_neighbors"
             or self.affinity == "precomputed_nearest_neighbors"
@@ -327,7 +322,8 @@ class Louvain(ClusterMixin, BaseEstimator):
             self.affinity_matrix_ = sp.csr_matrix(self.affinity_matrix_)
 
         self._onedal_estimator = self._onedal_factory()
-        self._onedal_estimator.fit(self.affinity_matrix_, y=y, queue=queue)
+        # y is dropped here, even if it has a value
+        self._onedal_estimator.fit(self.affinity_matrix_, queue=queue)
         return self
 
     def _onedal_supported(self, method_name, *data):
