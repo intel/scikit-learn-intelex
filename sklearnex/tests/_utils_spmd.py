@@ -128,7 +128,7 @@ def _spmd_assert_allclose(spmd_result, batch_result, **kwargs):
     # extract chunk from batch result to match with local spmd result
     local_batch_result = _get_local_tensor(batch_result)
 
-    assert_allclose(_as_numpy(spmd_result), local_batch_result, **kwargs)
+    assert_allclose(_as_numpy(spmd_result), _as_numpy(local_batch_result), **kwargs)
 
 
 def _assert_unordered_allclose(spmd_result, batch_result, localize=False, **kwargs):
