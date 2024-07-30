@@ -30,7 +30,7 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, IncrementalBasicStatistics_B
             "basic_statistics", None, "partial_compute_result"
         )
 
-    @support_usm_ndarray
+    @support_usm_ndarray()
     def partial_fit(self, X, weights=None, queue=None):
         """
         Computes partial data for basic statistics
@@ -52,7 +52,7 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, IncrementalBasicStatistics_B
         """
         if not hasattr(self, "_queue"):
             self._queue = queue
-        policy = self._get_policy(queue, X)
+        policy = super(IncrementalBasicStatistics_Batch, self)._get_policy(queue, X)
         X, weights = _convert_to_supported(policy, X, weights)
 
         if not hasattr(self, "_onedal_params"):

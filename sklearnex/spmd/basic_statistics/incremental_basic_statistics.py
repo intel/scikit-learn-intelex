@@ -25,4 +25,6 @@ from ...basic_statistics import (
 
 
 class IncrementalBasicStatistics(IncrementalBasicStatistics_nonSPMD):
-    _onedal_basic_statistics = staticmethod(onedalSPMD_IncrementalBasicStatistics)
+    _onedal_incremental_basic_statistics = staticmethod(
+        onedalSPMD_IncrementalBasicStatistics
+    )
