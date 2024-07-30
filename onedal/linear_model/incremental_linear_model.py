@@ -114,7 +114,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
         Parameters
         ----------
         queue : dpctl.SyclQueue
-            Not used here, added for API conformance
+            If not None, use this queue for computations.
 
         Returns
         -------
