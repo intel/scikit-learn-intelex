@@ -292,15 +292,5 @@ def test_incremental_basic_statistics_partial_fit_spmd_synthetic(
             incbs_spmd.partial_fit(local_dpt_data)
             incbs.partial_fit(dpt_data)
 
-    # if weighted:
-    #     incbs_spmd.fit(dpt_data, sample_weight=dpt_weights)
-    # else:
-    #     incbs_spmd.fit(dpt_data)
-
-    # if weighted:
-    #     incbs.fit(dpt_data, sample_weight=dpt_weights)
-    # else:
-    #     incbs.fit(dpt_data)
-
     for option in options_and_tests:
         assert_allclose(getattr(incbs_spmd, option[0]), getattr(incbs, option[0]))
