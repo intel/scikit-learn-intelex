@@ -20,7 +20,7 @@ from daal4py.sklearn._utils import get_dtype
 
 from ..._device_offload import support_usm_ndarray
 from ...covariance import (
-    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_Batch,
+    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_nonSPMD,
 )
 from ...datatypes import _convert_to_supported, to_table
 from ...utils import _check_array
@@ -28,11 +28,11 @@ from .._base import BaseEstimatorSPMD
 
 
 class IncrementalEmpiricalCovariance(
-    BaseEstimatorSPMD, IncrementalEmpiricalCovariance_Batch
+    BaseEstimatorSPMD, IncrementalEmpiricalCovariance_nonSPMD
 ):
     def _reset(self):
         self._partial_result = super(
-            IncrementalEmpiricalCovariance_Batch, self
+            IncrementalEmpiricalCovariance_nonSPMD, self
         )._get_backend("covariance", None, "partial_compute_result")
 
     @support_usm_ndarray()
@@ -63,7 +63,7 @@ class IncrementalEmpiricalCovariance(
         if not hasattr(self, "_queue"):
             self._queue = queue
 
-        policy = super(IncrementalEmpiricalCovariance_Batch, self)._get_policy(queue, X)
+        policy = super(IncrementalEmpiricalCovariance_nonSPMD, self)._get_policy(queue, X)
 
         X = _convert_to_supported(policy, X)
 
@@ -73,7 +73,7 @@ class IncrementalEmpiricalCovariance(
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
         self._partial_result = super(
-            IncrementalEmpiricalCovariance_Batch, self
+            IncrementalEmpiricalCovariance_nonSPMD, self
         )._get_backend(
             "covariance",
             None,
