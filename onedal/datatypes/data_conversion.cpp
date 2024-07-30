@@ -276,6 +276,22 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
 
     dal::preview::detail::rebinded_allocator ra(graph_impl._vertex_allocator);
     auto [degrees_array, degrees] = ra.template allocate_array<vertex_set_t>(vertex_count);
+    
+    
+    // Undirected graphs in oneDAL do not check for self-loops.  This will iterate through
+    // the data to verify that nothing along the diagonal is stored in the csr format.
+    std::int64_t N = col_count < vertex_count ? col_count : vertex_count;
+
+    for(std::int64_t u=0; u < N; ++u) {
+        std::int64_t row_begin = rows[u];
+        std::int64_t row_end = rows[u + 1];
+        for(std::int64_t j = row_begin; j < row_end; ++j){
+            if (cols[j] == u) {
+                throw std::invalid_argument(
+                    "[convert_to_undirected_graph] Self-loops are not allowed.\n");
+            }
+        }
+    }
 
     for (std::int64_t u = 0; u < vertex_count; u++) {
         degrees[u] = rows[u + 1] - rows[u];

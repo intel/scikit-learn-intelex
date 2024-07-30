@@ -62,10 +62,12 @@ class Louvain(BaseEstimator, ClusterMixin):
         module = self._get_backend("louvain", "vertex_partitioning", None)
 
         data = (params, to_graph(X)) if y is None else (params, to_graph(X), to_table(y))
-        result = module.vertex_partitioning(*data)
-
-        self.labels_ = from_table(result.labels).ravel()
-        self.modularity_ = float(result.modularity)
-        self.community_count_ = int(result.community_count)
-        self.n_features_in_ = X.shape[1]
+        self.temp_ = data
+        self.labels_, self.modularity_, self.community_count_ = None, None, None
+        #result = module.vertex_partitioning(*data)
+        # check if to_graph is the source source of memory leak (lazily)
+        #self.labels_ = from_table(result.labels).ravel()
+        #self.modularity_ = float(result.modularity)
+        #self.community_count_ = int(result.community_count)
+        #self.n_features_in_ = X.shape[1]
         return self
