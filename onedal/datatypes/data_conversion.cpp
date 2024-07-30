@@ -243,17 +243,9 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     }
     PyObject *np_data = PyArray_FROMANY(py_data, dtype, 0, 0, NPY_ARRAY_CARRAY);
     PyObject *np_column_indices =
-        PyArray_FROMANY(py_column_indices,
-                        NPY_INT32,
-                        0,
-                        0,
-                        NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
+        PyArray_FROMANY(py_column_indices, NPY_INT32, 0, 0, NPY_ARRAY_CARRAY);
     PyObject *np_row_indices =
-        PyArray_FROMANY(py_row_indices,
-                        NPY_INT64,
-                        0,
-                        0,
-                        NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
+        PyArray_FROMANY(py_row_indices, NPY_INT64, 0, 0, NPY_ARRAY_CARRAY);
 
     PyObject *np_row_count = PyTuple_GetItem(py_shape, 0);
     PyObject *np_column_count = PyTuple_GetItem(py_shape, 1);
@@ -293,8 +285,8 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     graph_impl.set_edge_values(edge_pointer, col_count/2);
 
     Py_INCREF(edge_data);
-    //Py_DECREF(np_column_indices);
-    //Py_DECREF(np_row_indices);
+    Py_INCREF(np_column_indices);
+    Py_INCREF(np_row_indices);
 
     return res;
 }
