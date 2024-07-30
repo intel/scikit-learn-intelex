@@ -106,12 +106,12 @@ class IncrementalPCA(sklearn_IncrementalPCA):
 
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_pca(**onedal_params)
-        self._onedal_estimator.partial_fit(X, queue)
+        self._onedal_estimator.partial_fit(X, queue=queue)
         self._need_to_finalize = True
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
     def _onedal_fit(self, X, queue=None):
@@ -142,7 +142,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
 
-        self._onedal_finalize_fit()
+        self._onedal_finalize_fit(queue=queue)
 
         return self
 
