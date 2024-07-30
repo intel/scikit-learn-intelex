@@ -111,7 +111,7 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda config --add channels intel
+  conda config --add channels https://software.repos.intel.com/python/conda/
   conda config --set channel_priority strict
   conda create -n env python=3.10 scikit-learn-intelex
   ```
@@ -121,7 +121,7 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into your current environment:
 
   ```bash
-  conda config --add channels intel
+  conda config --add channels https://software.repos.intel.com/python/conda/
   conda config --set channel_priority strict
   conda install scikit-learn-intelex
   ```
