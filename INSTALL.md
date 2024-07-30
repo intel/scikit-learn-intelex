@@ -184,7 +184,7 @@ The build-process (using setup.py) happens in 4 stages:
    python setup.py develop
    ```
 
-- To install scikit-learn-intelex without check for dependencies:
+- To install scikit-learn-intelex without checking for dependencies:
 
    ```bash
    cd <checkout-dir>
