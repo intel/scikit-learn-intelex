@@ -26,9 +26,9 @@ from .._base import BaseEstimatorSPMD
 
 class IncrementalBasicStatistics(BaseEstimatorSPMD, IncrementalBasicStatistics_nonSPMD):
     def _reset(self):
-        self._partial_result = super(IncrementalBasicStatistics_nonSPMD, self)._get_backend(
-            "basic_statistics", None, "partial_compute_result"
-        )
+        self._partial_result = super(
+            IncrementalBasicStatistics_nonSPMD, self
+        )._get_backend("basic_statistics", None, "partial_compute_result")
 
     @support_usm_ndarray()
     def partial_fit(self, X, weights=None, queue=None):
@@ -60,7 +60,9 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, IncrementalBasicStatistics_n
             self._onedal_params = self._get_onedal_params(dtype)
 
         X_table, weights_table = to_table(X, weights)
-        self._partial_result = super(IncrementalBasicStatistics_nonSPMD, self)._get_backend(
+        self._partial_result = super(
+            IncrementalBasicStatistics_nonSPMD, self
+        )._get_backend(
             "basic_statistics",
             None,
             "partial_compute",
