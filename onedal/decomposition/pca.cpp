@@ -207,6 +207,7 @@ ONEDAL_PY_INIT_MODULE(decomposition) {
     auto sub = m.def_submodule("decomposition");
     #ifdef ONEDAL_DATA_PARALLEL_SPMD
         ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
+        ONEDAL_PY_INSTANTIATE(init_finalize_train_ops, sub, policy_spmd, task_list);
     #else  
         ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
         ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);

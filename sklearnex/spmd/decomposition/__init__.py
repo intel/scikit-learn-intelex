@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+from .incremental_pca import IncrementalPCA
 from .pca import PCA
 
-__all__ = ["PCA"]
+__all__ = ["IncrementalPCA", "PCA"]
