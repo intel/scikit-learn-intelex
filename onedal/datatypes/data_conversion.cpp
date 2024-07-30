@@ -300,9 +300,9 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
     graph_impl.set_edge_values(edge_pointer, col_count/2);
 
-    Py_INCREF(edge_data);
-    Py_INCREF(np_column_indices);
-    Py_INCREF(np_row_indices);
+    //Py_INCREF(edge_data);
+    //Py_INCREF(np_column_indices);
+    //Py_INCREF(np_row_indices);
 
     return res;
 }
