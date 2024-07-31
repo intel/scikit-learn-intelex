@@ -16,7 +16,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import distutils.command.build as orig_build
 import glob
 
 # System imports
@@ -27,10 +26,11 @@ import shutil
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
-from distutils.sysconfig import get_config_vars
 from os.path import join as jp
+from sysconfig import get_config_vars
 
 import numpy as np
+import setuptools.command.build as orig_build
 import setuptools.command.develop as orig_develop
 from Cython.Build import cythonize
 from setuptools import Extension, setup

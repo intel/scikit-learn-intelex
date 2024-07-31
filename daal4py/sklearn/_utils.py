@@ -28,10 +28,7 @@ from daal4py import _get__daal_link_version__ as dv
 
 DaalVersionTuple = Tuple[int, str, int]
 
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
+from packaging.version import Version
 
 import logging
 

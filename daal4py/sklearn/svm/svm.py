@@ -19,7 +19,9 @@ from __future__ import print_function
 import numpy as np
 import sklearn.svm._base as svm_base
 import sklearn.svm._classes as svm_classes
+from packaging.version import Version
 from scipy import sparse as sp
+from sklearn import __version__ as sklearn_version
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection import StratifiedKFold
@@ -31,13 +33,6 @@ from sklearn.utils.validation import (
     check_consistent_length,
     check_is_fitted,
 )
-
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
-
-from sklearn import __version__ as sklearn_version
 
 import daal4py
 
