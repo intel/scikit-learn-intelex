@@ -24,7 +24,7 @@ import subprocess
 import sys
 from math import floor
 from os.path import join as jp
-from sysconfig import get_config_var
+from sysconfig import get_config_var, get_paths
 
 import numpy as np
 
@@ -60,7 +60,6 @@ def build_cpp(
     import shutil
     import subprocess
     from os.path import basename
-    from sysconfig import get_paths as gp
 
     logger.info(f"building cpp target {targetname}...")
 
@@ -70,7 +69,7 @@ def build_cpp(
         lib_prefix = ""
         lib_suffix = ".lib"
         obj_ext = ".obj"
-        libdirs += [jp(gp()["data"], "libs")]
+        libdirs += [jp(get_paths()["data"], "libs")]
         library_dir_plat = ["/link"] + [f"/LIBPATH:{libdir}" for libdir in libdirs]
         additional_linker_opts = [
             "/DLL",
@@ -138,7 +137,7 @@ def custom_build_cmake_clib(
     logger.info(f"Install directory: {install_directory}")
 
     cmake_generator = "-GNinja" if IS_WIN else ""
-    python_include = gp()["include"]
+    python_include = get_paths()["include"]
     win_python_path_lib = os.path.abspath(jp(get_config_var("LIBDEST"), "..", "libs"))
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
