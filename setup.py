@@ -80,9 +80,9 @@ is_onedal_iface = (
     os.environ.get("OFF_ONEDAL_IFACE", "0") == "0" and ONEDAL_VERSION >= ONEDAL_2021_3
 )
 
-d4p_version = (
-    os.environ["DAAL4PY_VERSION"]
-    if "DAAL4PY_VERSION" in os.environ
+sklearnex_version = (
+    os.environ["SKLEARNEX_VERSION"]
+    if "SKLEARNEX_VERSION" in os.environ
     else time.strftime("%Y%m%d.%H%M%S")
 )
 
@@ -261,7 +261,7 @@ def get_build_options():
     ]
     eca = [
         "-DPY_ARRAY_UNIQUE_SYMBOL=daal4py_array_API",
-        '-DD4P_VERSION="' + d4p_version + '"',
+        '-DD4P_VERSION="' + sklearnex_version + '"',
         "-DNPY_ALLOW_THREADS=1",
     ]
     ela = []
@@ -398,7 +398,7 @@ def gen_pyx(odir):
     odir = os.path.abspath(odir)
     if not os.path.isdir(odir):
         os.mkdir(odir)
-    gen_daal4py(dal_root, odir, d4p_version, no_dist=no_dist, no_stream=no_stream)
+    gen_daal4py(dal_root, odir, sklearnex_version, no_dist=no_dist, no_stream=no_stream)
 
 
 gen_pyx(os.path.abspath("./build"))
@@ -555,6 +555,25 @@ packages_with_tests = [
     "onedal.primitives",
     "onedal.svm",
     "onedal.utils",
+    "sklearnex",
+    "sklearnex.basic_statistics",
+    "sklearnex.cluster",
+    "sklearnex.covariance",
+    "sklearnex.decomposition",
+    "sklearnex.ensemble",
+    "sklearnex.glob",
+    "sklearnex.linear_model",
+    "sklearnex.manifold",
+    "sklearnex.metrics",
+    "sklearnex.model_selection",
+    "sklearnex.neighbors",
+    "sklearnex.preview",
+    "sklearnex.preview.covariance",
+    "sklearnex.preview.cluster",
+    "sklearnex.preview.decomposition",
+    "sklearnex.preview.linear_model",
+    "sklearnex.svm",
+    "sklearnex.utils",
 ]
 
 if ONEDAL_VERSION >= 20230100:
@@ -569,24 +588,32 @@ if build_distribute:
         "onedal.spmd.covariance",
         "onedal.spmd.decomposition",
         "onedal.spmd.ensemble",
+        "sklearnex.spmd",
+        "sklearnex.spmd.covariance",
+        "sklearnex.spmd.decomposition",
+        "sklearnex.spmd.ensemble",
     ]
     if ONEDAL_VERSION >= 20230100:
         packages_with_tests += [
             "onedal.spmd.basic_statistics",
             "onedal.spmd.linear_model",
             "onedal.spmd.neighbors",
+            "sklearnex.spmd.basic_statistics",
+            "sklearnex.spmd.linear_model",
+            "sklearnex.spmd.neighbors",
         ]
     if ONEDAL_VERSION >= 20230200:
-        packages_with_tests += ["onedal.spmd.cluster"]
+        packages_with_tests += ["onedal.spmd.cluster", "sklearnex.spmd.cluster"]
 
 setup(
-    name="daal4py",
-    description="A convenient Python API to Intel(R) oneAPI Data Analytics Library",
+    name="scikit-learn-intelex",
+    description="Intel(R) Extension for Scikit-learn is a "
+    "seamless way to speed up your Scikit-learn application.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache-2.0",
     author="Intel Corporation",
-    version=d4p_version,
+    version=sklearnex_version,
     url="https://github.com/intel/scikit-learn-intelex",
     author_email="onedal.maintainers@intel.com",
     maintainer_email="onedal.maintainers@intel.com",
@@ -606,6 +633,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Topic :: Scientific/Engineering",
         "Topic :: System",
         "Topic :: Software Development",

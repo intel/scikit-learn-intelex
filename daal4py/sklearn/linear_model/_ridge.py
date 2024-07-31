@@ -179,7 +179,7 @@ def _fit_ridge(self, _X, _y, sample_weight=None):
     if not _dal_ready:
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(_X, _y, sample_weight=sample_weight)
+        return Ridge_original.fit(self, _X, _y, sample_weight=sample_weight)
     self.n_iter_ = None
     res = _daal4py_fit(self, X, y)
     if res is None:
@@ -188,7 +188,7 @@ def _fit_ridge(self, _X, _y, sample_weight=None):
         )
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(_X, _y, sample_weight=sample_weight)
+        return Ridge_original.fit(self, _X, _y, sample_weight=sample_weight)
     return res
 
 

@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 from abc import ABC
 from numbers import Number, Real
 
@@ -230,6 +231,16 @@ class BaseSVC(BaseSVM):
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
         # TODO: rewrite this method when probabilities output is implemented in oneDAL
+
+        # LibSVM uses the random seed to control cross-validation for probability generation
+        # CalibratedClassifierCV with "prefit" does not use an RNG nor a seed. This may
+        # impact users without their knowledge, so display a warning.
+        if self.random_state is not None:
+            warnings.warn(
+                "random_state does not influence oneDAL SVM results",
+                RuntimeWarning,
+            )
+
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
