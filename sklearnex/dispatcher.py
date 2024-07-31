@@ -53,9 +53,6 @@ def get_patch_map_core(preview=False):
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
             from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
-            from .preview.linear_model import (
-                IncrementalRidge as IncrementalRidge_sklearnex,
-            )
             from .preview.linear_model import Ridge as Ridge_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
@@ -101,18 +98,6 @@ def get_patch_map_core(preview=False):
             mapping.pop("ridge")
             mapping["ridge"] = [
                 [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
-            ]
-
-            # IncrementalRidge
-            mapping["incrementalridge"] = [
-                [
-                    (
-                        linear_model_module,
-                        "IncrementalRidge",
-                        IncrementalRidge_sklearnex,
-                    ),
-                    None,
-                ]
             ]
 
         return mapping
@@ -170,6 +155,7 @@ def get_patch_map_core(preview=False):
         from .linear_model import (
             IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
         )
+        from .linear_model import IncrementalRidge as IncrementalRidge_sklearnex
         from .linear_model import Lasso as Lasso_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
@@ -422,6 +408,18 @@ def get_patch_map_core(preview=False):
                     linear_model_module,
                     "IncrementalLinearRegression",
                     IncrementalLinearRegression_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # IncrementalRidge
+        mapping["incrementalridge"] = [
+            [
+                (
+                    linear_model_module,
+                    "IncrementalRidge",
+                    IncrementalRidge_sklearnex,
                 ),
                 None,
             ]
