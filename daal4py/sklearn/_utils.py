@@ -28,9 +28,9 @@ from daal4py import _get__daal_link_version__ as dv
 
 DaalVersionTuple = Tuple[int, str, int]
 
-from packaging.version import Version
-
 import logging
+
+from packaging.version import Version
 
 try:
     from pandas import DataFrame
