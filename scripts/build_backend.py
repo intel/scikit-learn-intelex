@@ -24,7 +24,7 @@ import subprocess
 import sys
 from math import floor
 from os.path import join as jp
-from sysconfig import get_config_var, get_python_inc
+from sysconfig import get_config_var
 
 import numpy as np
 
@@ -138,7 +138,7 @@ def custom_build_cmake_clib(
     logger.info(f"Install directory: {install_directory}")
 
     cmake_generator = "-GNinja" if IS_WIN else ""
-    python_include = get_python_inc()
+    python_include = gp()["include"]
     win_python_path_lib = os.path.abspath(jp(get_config_var("LIBDEST"), "..", "libs"))
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
