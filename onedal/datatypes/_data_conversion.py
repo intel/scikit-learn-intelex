@@ -95,9 +95,4 @@ else:
         return _apply_and_pass(func, *data)
 
 
-def to_graph(array):
-    # do these conversions on numpy side to prevent
-    # too many memory copies from taking place
-    array.indices = array.indices.astype(np.int32)
-    array.indptr = array.indptr.astype(np.int64)
-    return _backend.to_graph(array)
+to_graph = _backend.to_graph
