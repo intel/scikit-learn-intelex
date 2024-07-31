@@ -243,9 +243,17 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     }
     PyObject *np_data = PyArray_FROMANY(py_data, dtype, 0, 0, NPY_ARRAY_CARRAY);
     PyObject *np_column_indices =
-        PyArray_FROMANY(py_column_indices, NPY_INT32, 0, 0, NPY_ARRAY_CARRAY);
+        PyArray_FROMANY(py_column_indices,
+                        NPY_INT32,
+                        0,
+                        0,
+                        NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
     PyObject *np_row_indices =
-        PyArray_FROMANY(py_row_indices, NPY_INT64, 0, 0, NPY_ARRAY_CARRAY);
+        PyArray_FROMANY(py_row_indices,
+                        NPY_INT64,
+                        0,
+                        0,
+                        NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
 
     PyObject *np_row_count = PyTuple_GetItem(py_shape, 0);
     PyObject *np_column_count = PyTuple_GetItem(py_shape, 1);
@@ -268,18 +276,13 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     const Float *edge_pointer = static_cast<Float *>(array_data(edge_data));
     const std::int64_t col_count = static_cast<std::int64_t>(array_size(edge_data, 0));
     const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0)) - 1;
-    const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices));
-    const std::int64_t *rows = static_cast<std::int64_t *>(array_data(row_indices));
-
-    auto& graph_impl = dal::detail::get_impl(res);  
-    using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
-
-    dal::preview::detail::rebinded_allocator ra(graph_impl._vertex_allocator);
-    auto [degrees_array, degrees] = ra.template allocate_array<vertex_set_t>(vertex_count);
-    
+    const std::int32_t *cols_pointer = static_cast<std::int32_t *>(array_data(col_indices));
+    const std::int64_t *rows_pointer = static_cast<std::int64_t *>(array_data(row_indices));
+   
     
     // Undirected graphs in oneDAL do not check for self-loops.  This will iterate through
     // the data to verify that nothing along the diagonal is stored in the csr format.
+    // This closely resembles scipy.sparse
     std::int64_t N = col_count < vertex_count ? col_count : vertex_count;
 
     for(std::int64_t u=0; u < N; ++u) {
@@ -293,12 +296,36 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
         }
     }
 
+    auto& graph_impl = dal::detail::get_impl(res);  
+    using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
+    using edge_set_t = typename dal::preview::graph_traits<graph_t<Float>>::edge_set;
+
+    // zero-copy support does not exist for graph types, since they cannot call the 
+    // python decref like oneDAL table types. Thus copies of the data must be made.
+    dal::preview::detail::rebinded_allocator va(graph_impl._vertex_allocator);
+    dal::preview::detail::rebinded_allocator ea(graph_impl._edge_allocator);
+    dal::preview::detail::rebinded_allocator ra(graph_impl._allocator);
+
+
+    auto [degrees_array, degrees] = va.template allocate_array<vertex_set_t>(vertex_count);
+    auto [cols_array, cols] = va.template allocate_array<vertex_set_t>(col_count);
+    auto [rows_array, rows] = ea.template allocate_array<edge_set_t>(vertex_count + 1);
+    auto [edge_array, edges] = ra.template allocate_array<dal::array<Float>>(col_count);
+
+
     for (std::int64_t u = 0; u < vertex_count; u++) {
-        degrees[u] = rows[u + 1] - rows[u];
+        degrees[u] = rows_pointer[u + 1] - rows_pointer[u];
+        rows[u] = rows_pointer[u];
+    }
+    rows[vertex_count] = rows_pointer[vertex_count];
+
+    for (std::int64_t u = 0; u < cols_count; u++) {
+        cols[u] = cols_pointer[u];
+        edges[u] = edge_pointer[u];
     }
 
-    graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
-    graph_impl.set_edge_values(edge_pointer, col_count/2);
+    graph_impl.set_topology(cols_array, rows_array, degrees_array, cols_count/2);
+    graph_impl.set_edge_values(edges, col_count/2);
 
     //Py_INCREF(edge_data);
     //Py_INCREF(np_column_indices);
