@@ -62,7 +62,7 @@ class Louvain(BaseEstimator, ClusterMixin):
         module = self._get_backend("louvain", "vertex_partitioning", None)
 
         # data = (params, to_graph(X)) if y is None else (params, to_graph(X), to_table(y))
-        data = to_table(X)
+        data = to_table(X.toarray())
         self.temp_ = data
         self.labels_, self.modularity_, self.community_count_ = None, None, None
         # result = module.vertex_partitioning(*data)
