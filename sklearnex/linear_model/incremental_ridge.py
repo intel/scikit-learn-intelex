@@ -17,26 +17,20 @@
 import numbers
 
 import numpy as np
-from scipy.sparse import issparse
 from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
 from sklearn.metrics import r2_score
 from sklearn.utils import gen_batches
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
-from daal4py.sklearn.linear_model._ridge import _fit_ridge as daal4py_fit_ridge
 from daal4py.sklearn.utils.validation import sklearn_check_version
-
-if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
-    from sklearn.linear_model._base import _deprecate_normalize
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
 from onedal.linear_model import IncrementalRidge as onedal_IncrementalRidge
-from onedal.utils import _num_features, _num_samples
 
-from ..._device_offload import dispatch, wrap_output_data
-from ..._utils import PatchingConditionsChain
+from .._device_offload import dispatch, wrap_output_data
+from .._utils import PatchingConditionsChain
 
 
 class IncrementalRidge(BaseEstimator, RegressorMixin, MultiOutputMixin):

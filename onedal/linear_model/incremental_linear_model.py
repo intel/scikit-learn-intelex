@@ -203,10 +203,11 @@ class IncrementalRidge(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
-        if not hasattr(self, "_policy"):
-            self._policy = self._get_policy(queue, X)
+        if not hasattr(self, "_queue"):
+            self._queue = queue
+        policy = self._get_policy(queue, X)
 
-        X, y = _convert_to_supported(self._policy, X, y)
+        X, y = _convert_to_supported(policy, X, y)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
@@ -220,7 +221,7 @@ class IncrementalRidge(BaseLinearRegression):
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)
         self._partial_result = module.partial_train(
-            self._policy, self._params, self._partial_result, X_table, y_table
+            policy, self._params, self._partial_result, X_table, y_table
         )
 
     def finalize_fit(self, queue=None):
@@ -231,7 +232,7 @@ class IncrementalRidge(BaseLinearRegression):
         Parameters
         ----------
         queue : dpctl.SyclQueue
-            Not used here, added for API conformance
+            If available, uses provided queue for computations.
 
         Returns
         -------
@@ -239,7 +240,11 @@ class IncrementalRidge(BaseLinearRegression):
             Returns the instance itself.
         """
         module = self._get_backend("linear_model", "regression")
-        result = module.finalize_train(self._policy, self._params, self._partial_result)
+        if queue is not None:
+            policy = self._get_policy(queue)
+        else:
+            policy = self._get_policy(self._queue)
+        result = module.finalize_train(policy, self._params, self._partial_result)
 
         self._onedal_model = result.model
 
