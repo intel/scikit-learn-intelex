@@ -356,7 +356,7 @@ class Louvain(ClusterMixin, BaseEstimator):
             self._validate_params()
 
         if len(data) > 1:
-            res = type_of_target(data[1])
+            res = type_of_target(data[1], input_name="y")
             if res not in ["binary", "multiclass"]:
                 raise TypeError(f"initial partitioning given by y of incorrect type")
         return patching_status
