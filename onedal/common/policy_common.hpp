@@ -65,7 +65,7 @@ struct filter_selector_wrapper {
     }
 
 private:
-    sycl::ext::oneapi::filter_selector FilterSelector;
+    sycl::ext::oneapi::filter_selector filter_selector_;
 };
 
 #endif // ONEDAL_DATA_PARALLEL
