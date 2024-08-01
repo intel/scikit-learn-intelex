@@ -58,7 +58,7 @@ std::string get_device_name(const dp_policy_t& policy);
 /// It hides deprecated ``sycl::ext::oneapi::filter_selector`` to get rid of build warnings
 /// until a better solution is provided.
 struct filter_selector_wrapper {
-    filter_selector_wrapper(std::string Filter) : FilterSelector{Filter} {}
+    filter_selector_wrapper(std::string filter) : filter_selector_{filter} {}
 
     int operator()(const sycl::device &dev) {
         return filter_selector_(dev);
