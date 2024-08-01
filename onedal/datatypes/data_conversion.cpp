@@ -229,12 +229,10 @@ dal::table convert_to_table(PyObject *obj) {
 
 template <typename Float>
 graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
-    graph_t<Float> res;
-
+     graph_t<Float> res;
     PyObject *py_data = PyObject_GetAttrString(obj, "data");
     PyObject *py_column_indices = PyObject_GetAttrString(obj, "indices");
     PyObject *py_row_indices = PyObject_GetAttrString(obj, "indptr");
-
     PyObject *py_shape = PyObject_GetAttrString(obj, "shape");
     if (!(is_array(py_data) && is_array(py_column_indices) && is_array(py_row_indices) &&
             array_numdims(py_data) == 1 && array_numdims(py_column_indices) == 1 &&
@@ -254,31 +252,25 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
                         0,
                         0,
                         NPY_ARRAY_CARRAY | NPY_ARRAY_ENSURECOPY | NPY_ARRAY_FORCECAST);
-
     PyObject *np_row_count = PyTuple_GetItem(py_shape, 0);
     PyObject *np_column_count = PyTuple_GetItem(py_shape, 1);
     if (!(np_data && np_column_indices && np_row_indices && np_row_count && np_column_count)) {
         throw std::invalid_argument(
             "[convert_to_undirected_graph] Failed accessing csr data when converting.\n");
     }
-
     const std::int64_t row_count = static_cast<std::int64_t>(PyLong_AsSsize_t(np_row_count));
     const std::int64_t column_count =
         static_cast<std::int64_t>(PyLong_AsSsize_t(np_column_count));
-
     // construct graph here, adapted from directed_adjacency_vector_graph_impl.hpp
-
     // access raw col, row and edge data
     PyArrayObject *edge_data = reinterpret_cast<PyArrayObject *>(np_data);
     PyArrayObject *col_indices = reinterpret_cast<PyArrayObject *>(np_column_indices);
     PyArrayObject *row_indices = reinterpret_cast<PyArrayObject *>(np_row_indices);
-
     const Float *edge_pointer = static_cast<Float *>(array_data(edge_data));
     const std::int64_t col_count = static_cast<std::int64_t>(array_size(edge_data, 0));
     const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0)) - 1;
-    const std::int32_t *np_col_array = static_cast<std::int32_t *>(array_data(col_indices));
-    const std::int64_t *np_row_array = static_cast<std::int64_t *>(array_data(row_indices));
-   
+    const std::int32_t *cols = static_cast<std::int32_t *>(array_data(col_indices));
+    const std::int64_t *rows = static_cast<std::int64_t *>(array_data(row_indices));
     
     // Undirected graphs in oneDAL do not check for self-loops.  This will iterate through
     // the data to verify that nothing along the diagonal is stored in the csr format.
@@ -286,50 +278,31 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     std::int64_t N = col_count < vertex_count ? col_count : vertex_count;
 
     for(std::int64_t u=0; u < N; ++u) {
-        std::int64_t row_begin = np_row_array[u];
-        std::int64_t row_end = np_row_array[u + 1];
+        std::int64_t row_begin = rows[u];
+        std::int64_t row_end = rows[u + 1];
         for(std::int64_t j = row_begin; j < row_end; ++j){
-            if (np_col_array[j] == u) {
+            if (cols[j] == u) {
                 throw std::invalid_argument(
                     "[convert_to_undirected_graph] Self-loops are not allowed.\n");
             }
         }
     }
-
+    
     auto& graph_impl = dal::detail::get_impl(res);  
     using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
-    using edge_set_t = typename dal::preview::graph_traits<graph_t<Float>>::edge_set;
-
-    // zero-copy support does not exist for graph types, since they cannot call the 
-    // python decref like oneDAL table types. Thus copies of the data must be made.
-    dal::preview::detail::rebinded_allocator va(graph_impl._vertex_allocator);
-    dal::preview::detail::rebinded_allocator ea(graph_impl._edge_allocator);
-    dal::preview::detail::rebinded_allocator ra(graph_impl._allocator);
-
-
-    auto [degrees_array, degrees] = va.template allocate_array<vertex_set_t>(vertex_count);
-    auto [cols_array, cols] = va.template allocate_array<vertex_set_t>(col_count);
-    auto [rows_array, rows] = ea.template allocate_array<edge_set_t>(vertex_count + 1);
-    auto [edge_array, edges] = ra.template allocate_array<dal::array<Float>>(col_count);
-
-
+    dal::preview::detail::rebinded_allocator ra(graph_impl._vertex_allocator);
+    auto [degrees_array, degrees] = ra.template allocate_array<vertex_set_t>(vertex_count);
     for (std::int64_t u = 0; u < vertex_count; u++) {
-        degrees[u] = np_row_array[u + 1] - np_row_array[u];
-        rows[u] = np_row_array[u];
-    }
-    rows[vertex_count] = np_row_array[vertex_count];
-
-    for (std::int64_t u = 0; u < col_count; u++) {
-        cols[u] = np_col_array[u];
-        edges[u] = edge_pointer[u];
+        degrees[u] = rows[u + 1] - rows[u];
     }
 
-    graph_impl.set_topology(cols_array, rows_array, degrees_array, col_count/2);
-    graph_impl.set_edge_values(edges, col_count/2);
+    graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
+    graph_impl.set_edge_values(edge_pointer, col_count/2);
+    
 
     //Py_INCREF(edge_data);
-    Py_DECREF(np_column_indices);
-    Py_DECREF(np_row_indices);
+    //Py_DECREF(np_column_indices);
+    //Py_DECREF(np_row_indices);
 
     return res;
 }
