@@ -22,6 +22,7 @@ from sklearn.metrics import r2_score
 from sklearn.utils import gen_batches
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
+from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn.utils.validation import sklearn_check_version
 
 if sklearn_check_version("1.2"):
@@ -33,6 +34,9 @@ from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
 
 
+@control_n_jobs(
+    decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
+)
 class IncrementalRidge(BaseEstimator, RegressorMixin, MultiOutputMixin):
     """
     Incremental estimator for Ridge Regression.
@@ -52,6 +56,9 @@ class IncrementalRidge(BaseEstimator, RegressorMixin, MultiOutputMixin):
 
     copy_X : bool, default=True
         If True, X will be copied; else, it may be overwritten.
+
+    n_jobs : int, default=None
+        The number of jobs to use for the computation.
 
     batch_size : int, default=None
         The number of samples to use for each batch. Only used when calling
@@ -92,13 +99,17 @@ class IncrementalRidge(BaseEstimator, RegressorMixin, MultiOutputMixin):
             "fit_intercept": ["boolean"],
             "alpha": [Interval(numbers.Real, 0, None, closed="left")],
             "copy_X": ["boolean"],
+            "n_jobs": [Interval(numbers.Integral, -1, None, closed="left"), None],
             "batch_size": [Interval(numbers.Integral, 1, None, closed="left"), None],
         }
 
-    def __init__(self, fit_intercept=True, alpha=1.0, copy_X=True, batch_size=None):
+    def __init__(
+        self, fit_intercept=True, alpha=1.0, copy_X=True, n_jobs=None, batch_size=None
+    ):
         self.fit_intercept = fit_intercept
         self.alpha = alpha
         self.copy_X = copy_X
+        self.n_jobs = n_jobs
         self.batch_size = batch_size
 
     def _onedal_supported(self, method_name, *data):

@@ -54,6 +54,7 @@ CPU_SKIP_LIST = (
     "IncrementalEmpiricalCovariance",  # dataframe_f issues
     "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "IncrementalPCA",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
+    "IncrementalRidge",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "LogisticRegression(solver='newton-cg')",  # memory leak fortran (1000, 100)
 )
 
@@ -87,9 +88,9 @@ def gen_functions(functions):
     func_dict["pairwise_distances(metric='cosine')"] = lambda x, y: pairwise_distances(
         x, metric="cosine"
     )
-    func_dict["pairwise_distances(metric='correlation')"] = (
-        lambda x, y: pairwise_distances(x, metric="correlation")
-    )
+    func_dict[
+        "pairwise_distances(metric='correlation')"
+    ] = lambda x, y: pairwise_distances(x, metric="correlation")
 
     _assert_all_finite = func_dict.pop("_assert_all_finite")
     func_dict["_assert_all_finite"] = lambda x, y: [
