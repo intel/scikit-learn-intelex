@@ -276,8 +276,8 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     const Float *edge_pointer = static_cast<Float *>(array_data(edge_data));
     const std::int64_t col_count = static_cast<std::int64_t>(array_size(edge_data, 0));
     const std::int64_t vertex_count = static_cast<std::int64_t>(array_size(row_indices, 0)) - 1;
-    const std::int32_t *cols_pointer = static_cast<std::int32_t *>(array_data(col_indices));
-    const std::int64_t *rows_pointer = static_cast<std::int64_t *>(array_data(row_indices));
+    const std::int32_t *np_col_array = static_cast<std::int32_t *>(array_data(col_indices));
+    const std::int64_t *np_row_array = static_cast<std::int64_t *>(array_data(row_indices));
    
     
     // Undirected graphs in oneDAL do not check for self-loops.  This will iterate through
@@ -286,10 +286,10 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     std::int64_t N = col_count < vertex_count ? col_count : vertex_count;
 
     for(std::int64_t u=0; u < N; ++u) {
-        std::int64_t row_begin = rows[u];
-        std::int64_t row_end = rows[u + 1];
+        std::int64_t row_begin = np_row_array[u];
+        std::int64_t row_end = np_row_array[u + 1];
         for(std::int64_t j = row_begin; j < row_end; ++j){
-            if (cols[j] == u) {
+            if (np_col_array[j] == u) {
                 throw std::invalid_argument(
                     "[convert_to_undirected_graph] Self-loops are not allowed.\n");
             }
@@ -314,17 +314,17 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
 
 
     for (std::int64_t u = 0; u < vertex_count; u++) {
-        degrees[u] = rows_pointer[u + 1] - rows_pointer[u];
-        rows[u] = rows_pointer[u];
+        degrees[u] = np_row_array[u + 1] - np_row_array[u];
+        rows[u] = np_row_array[u];
     }
-    rows[vertex_count] = rows_pointer[vertex_count];
+    rows[vertex_count] = np_row_array[vertex_count];
 
     for (std::int64_t u = 0; u < cols_count; u++) {
-        cols[u] = cols_pointer[u];
+        cols[u] = np_col_array[u];
         edges[u] = edge_pointer[u];
     }
 
-    graph_impl.set_topology(cols_array, rows_array, degrees_array, cols_count/2);
+    graph_impl.set_topology(cols_array, rows_array, degrees_array, col_count/2);
     graph_impl.set_edge_values(edges, col_count/2);
 
     //Py_INCREF(edge_data);
