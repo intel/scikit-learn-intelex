@@ -50,7 +50,6 @@ def get_patch_map_core(preview=False):
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.cluster import Louvain as Louvain_sklearnex
-
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
