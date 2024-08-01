@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+from ._louvain import Louvain
 from .k_means import KMeans
 
-__all__ = ["KMeans"]
+__all__ = ["KMeans", "Louvain"]
