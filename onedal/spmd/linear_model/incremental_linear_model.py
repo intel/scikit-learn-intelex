@@ -18,39 +18,23 @@ import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 
-from ..common.hyperparameters import get_hyperparameters
-from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_X_y, _num_features
-from .linear_model import BaseLinearRegression
+from ..._device_offload import support_usm_ndarray
+from ...common.hyperparameters import get_hyperparameters
+from ...datatypes import _convert_to_supported, to_table
+from ...linear_model import (
+    IncrementalLinearRegression as IncrementalLinearRegression_nonSPMD,
+)
+from ...utils import _check_X_y, _num_features
+from .._base import BaseEstimatorSPMD
 
 
-class IncrementalLinearRegression(BaseLinearRegression):
-    """
-    Incremental Linear Regression oneDAL implementation.
-
-    Parameters
-    ----------
-    fit_intercept : bool, default=True
-        Whether to calculate the intercept for this model. If set
-        to False, no intercept will be used in calculations
-        (i.e. data is expected to be centered).
-
-    copy_X : bool, default=True
-        If True, X will be copied; else, it may be overwritten.
-
-    algorithm : string, default="norm_eq"
-        Algorithm used for computation on oneDAL side
-    """
-
-    def __init__(self, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
-        super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
-        self._reset()
-
+class IncrementalLinearRegression(BaseEstimatorSPMD, IncrementalLinearRegression_nonSPMD):
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "linear_model", "regression", "partial_train_result"
-        )
+        self._partial_result = super(
+            IncrementalLinearRegression_nonSPMD, self
+        )._get_backend("linear_model", "regression", "partial_train_result")
 
+    @support_usm_ndarray()
     def partial_fit(self, X, y, queue=None):
         """
         Computes partial data for linear regression
@@ -72,11 +56,13 @@ class IncrementalLinearRegression(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._get_backend("linear_model", "regression")
+        module = super(IncrementalLinearRegression_nonSPMD, self)._get_backend(
+            "linear_model", "regression"
+        )
 
         if not hasattr(self, "_queue"):
             self._queue = queue
-        policy = self._get_policy(queue, X)
+        policy = super(IncrementalLinearRegression_nonSPMD, self)._get_policy(queue, X)
 
         X, y = _convert_to_supported(policy, X, y)
 
@@ -106,46 +92,6 @@ class IncrementalLinearRegression(BaseLinearRegression):
                 policy, self._params, self._partial_result, X_table, y_table
             )
 
+    @support_usm_ndarray()
     def finalize_fit(self, queue=None):
-        """
-        Finalizes linear regression computation and obtains coefficients
-        from the current `_partial_result`.
-
-        Parameters
-        ----------
-        queue : dpctl.SyclQueue
-            If not None, use this queue for computations.
-
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
-
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
-
-        module = self._get_backend("linear_model", "regression")
-        hparams = get_hyperparameters("linear_regression", "train")
-        if hparams is not None and not hparams.is_default:
-            result = module.finalize_train(
-                policy, self._params, hparams.backend, self._partial_result
-            )
-        else:
-            result = module.finalize_train(policy, self._params, self._partial_result)
-
-        self._onedal_model = result.model
-
-        packed_coefficients = from_table(result.model.packed_coefficients)
-        self.coef_, self.intercept_ = (
-            packed_coefficients[:, 1:],
-            packed_coefficients[:, 0],
-        )
-
-        if self.coef_.shape[0] == 1 and self._y_ndim_1:
-            self.coef_ = self.coef_.ravel()
-            self.intercept_ = self.intercept_[0]
-
-        return self
+        return super().finalize_fit(queue=queue)
