@@ -29,9 +29,9 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import Louvain as onedal_Louvain
 from onedal.utils.validation import _is_csr
 
-from .._device_offload import dispatch
-from .._utils import PatchingConditionsChain
-from ..neighbors import NearestNeighbors
+from ..._device_offload import dispatch
+from ..._utils import PatchingConditionsChain
+from ...neighbors import NearestNeighbors
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
