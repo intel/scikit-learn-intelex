@@ -60,8 +60,8 @@ std::string get_device_name(const dp_policy_t& policy);
 struct filter_selector_wrapper {
     filter_selector_wrapper(std::string Filter) : FilterSelector{Filter} {}
 
-    int operator()(const sycl::device &Dev) {
-        return FilterSelector(Dev);
+    int operator()(const sycl::device &dev) {
+        return filter_selector_(dev);
     }
 
 private:
