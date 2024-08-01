@@ -28,14 +28,14 @@ static_assert(false, "DAAL_SYCL_INTERFACE not defined")
 {
     if (dev == "gpu")
 #if INTEL_DAAL_VERSION >= 20240000
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()), from_python);
+        m_ctxt = new daal::services::SyclExecutionContext(sycl::queue(sycl::gpu_selector()), from_python);
 #else // INTEL_DAAL_VERSION >= 20240000
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::gpu_selector()));
+        m_ctxt = new daal::services::SyclExecutionContext(sycl::queue(sycl::gpu_selector()));
 #endif // INTEL_DAAL_VERSION >= 20240000
     else if (dev == "cpu")
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::cpu_selector()));
+        m_ctxt = new daal::services::SyclExecutionContext(sycl::queue(sycl::cpu_selector()));
     else if (dev == "host")
-        m_ctxt = new daal::services::SyclExecutionContext(cl::sycl::queue(cl::sycl::host_selector()));
+        m_ctxt = new daal::services::SyclExecutionContext(sycl::queue(sycl::host_selector()));
     else
     {
         throw std::runtime_error(std::string("Device is not supported: ") + dev);
