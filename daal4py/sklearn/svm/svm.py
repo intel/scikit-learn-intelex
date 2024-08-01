@@ -34,7 +34,7 @@ from sklearn.utils.validation import (
 
 import daal4py
 
-from .._utils import PatchingConditionsChain, getFPType, make2d, sklearn_check_version
+from .._utils import PatchingConditionsChain, getFPType, make2d
 
 
 def _get_libsvm_impl():
@@ -496,14 +496,10 @@ def fit(self, X, y, sample_weight=None):
                 cv = StratifiedKFold(
                     n_splits=n_splits, shuffle=True, random_state=self.random_state
                 )
-                if sklearn_check_version("0.24"):
-                    self.clf_prob = CalibratedClassifierCV(
-                        clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_splits
-                    )
-                else:
-                    self.clf_prob = CalibratedClassifierCV(
-                        clf_base, cv=cv, method="sigmoid"
-                    )
+                self.clf_prob = CalibratedClassifierCV(
+                    clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_splits
+                )
+
                 self.clf_prob.fit(X, y, sample_weight)
             except ValueError:
                 clf_base = clf_base.fit(X, y, sample_weight)
