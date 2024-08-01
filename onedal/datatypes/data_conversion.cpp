@@ -319,7 +319,7 @@ graph_t<Float> convert_to_undirected_graph(PyObject *obj, int dtype) {
     }
     rows[vertex_count] = np_row_array[vertex_count];
 
-    for (std::int64_t u = 0; u < cols_count; u++) {
+    for (std::int64_t u = 0; u < col_count; u++) {
         cols[u] = np_col_array[u];
         edges[u] = edge_pointer[u];
     }
