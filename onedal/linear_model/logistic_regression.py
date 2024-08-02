@@ -63,10 +63,11 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
+        sparsity_enabled = daal_check_version((2024, "P", 600))
         X, y = _check_X_y(
             X,
             y,
-            accept_sparse=True,
+            accept_sparse=sparsity_enabled,
             force_all_finite=True,
             accept_2d_y=False,
             dtype=[np.float64, np.float32],
@@ -153,14 +154,15 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
     def _infer(self, X, module, queue):
         _check_is_fitted(self)
+        sparsity_enabled = daal_check_version((2024, "P", 600))
 
         X = _check_array(
             X,
             dtype=[np.float64, np.float32],
-            accept_sparse=True,
+            accept_sparse=sparsity_enabled,
             force_all_finite=True,
             ensure_2d=False,
-            accept_large_sparse=True,
+            accept_large_sparse=sparsity_enabled,
         )
         is_csr = _is_csr(X)
         _check_n_features(self, X, False)
