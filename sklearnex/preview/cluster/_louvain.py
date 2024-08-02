@@ -97,7 +97,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         increase with similarity) should be used. This property is not checked
         by the clustering algorithm.
 
-    n_neighbors : int, default=10
+    n_neighbors : int, default=5
         Number of neighbors to use when constructing the affinity matrix using
         the nearest neighbors method. Ignored for ``affinity='rbf'``.
 
@@ -107,6 +107,11 @@ class Louvain(ClusterMixin, BaseEstimator):
     coef0 : float, default=1
         Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
+
+    eps : float, default=1e-4
+        The maximum distance between two samples for one to be considered
+        as in the neighborhood of the other. This functions when using the
+        pairwise_kernels or rbf kernel as the affinity generator.
 
     kernel_params : dict of str to any, default=None
         Parameters (keyword arguments) and values for kernel passed as
@@ -219,6 +224,7 @@ class Louvain(ClusterMixin, BaseEstimator):
             "n_neighbors": [Interval(Integral, 1, None, closed="left")],
             "degree": [Interval(Real, 0, None, closed="left")],
             "coef0": [Interval(Real, None, None, closed="neither")],
+            "eps": [Interval(Real, 0.0, None, closed="left")],
             "kernel_params": [dict, None],
             "n_jobs": [Integral, None],
             "verbose": ["verbose"],
@@ -235,6 +241,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         n_neighbors=5,
         degree=3,
         coef0=1,
+        eps=1e-4,
         kernel_params=None,
         n_jobs=None,
         verbose=False,
@@ -247,6 +254,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         self.n_neighbors = n_neighbors
         self.degree = degree
         self.coef0 = coef0
+        self.eps = eps
         self.kernel_params = kernel_params
         self.n_jobs = n_jobs
         self.verbose = verbose
@@ -336,7 +344,8 @@ class Louvain(ClusterMixin, BaseEstimator):
             self.affinity_matrix_ = pairwise_kernels(
                 X, metric=self.affinity, filter_params=True, **params
             )
-            # Implement truncation here
+            # truncation implemented here
+            self.affinity_matrix_[self.affinity_matrix_ < self.eps] = 0
 
         if not _is_csr(self.affinity_matrix_):
             self.affinity_matrix_ = sp.csr_matrix(self.affinity_matrix_)
