@@ -88,9 +88,9 @@ def gen_functions(functions):
     func_dict["pairwise_distances(metric='cosine')"] = lambda x, y: pairwise_distances(
         x, metric="cosine"
     )
-    func_dict[
-        "pairwise_distances(metric='correlation')"
-    ] = lambda x, y: pairwise_distances(x, metric="correlation")
+    func_dict["pairwise_distances(metric='correlation')"] = (
+        lambda x, y: pairwise_distances(x, metric="correlation")
+    )
 
     _assert_all_finite = func_dict.pop("_assert_all_finite")
     func_dict["_assert_all_finite"] = lambda x, y: [
