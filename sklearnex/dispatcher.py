@@ -413,17 +413,18 @@ def get_patch_map_core(preview=False):
             ]
         ]
 
-        # IncrementalRidge
-        mapping["incrementalridge"] = [
-            [
-                (
-                    linear_model_module,
-                    "IncrementalRidge",
-                    IncrementalRidge_sklearnex,
-                ),
-                None,
+        if daal_check_version((2024, "P", 600)):
+            # IncrementalRidge
+            mapping["incrementalridge"] = [
+                [
+                    (
+                        linear_model_module,
+                        "IncrementalRidge",
+                        IncrementalRidge_sklearnex,
+                    ),
+                    None,
+                ]
             ]
-        ]
 
         # Configs
         mapping["set_config"] = [
