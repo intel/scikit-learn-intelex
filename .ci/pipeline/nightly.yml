@@ -82,7 +82,6 @@ jobs:
       conda activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py/sklearnex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
