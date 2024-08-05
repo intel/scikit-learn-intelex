@@ -31,6 +31,8 @@ if daal_check_version((2024, "P", 600)):
 
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
         from sklearn.linear_model._base import _deprecate_normalize
+    if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
+        from sklearn.utils import check_scalar
 
     from onedal.linear_model import Ridge as onedal_Ridge
     from onedal.utils import _num_features, _num_samples
@@ -78,16 +80,16 @@ if daal_check_version((2024, "P", 600)):
                     random_state=random_state,
                 )
 
-        else:
+        elif sklearn_check_version("1.0"):
 
             def __init__(
                 self,
                 alpha=1.0,
                 fit_intercept=True,
-                normalize="deprecated" if sklearn_check_version("1.0") else False,
+                normalize="deprecated",
                 copy_X=True,
                 max_iter=None,
-                tol=1e-4,
+                tol=1e-3,
                 solver="auto",
                 positive=False,
                 random_state=None,
@@ -101,6 +103,30 @@ if daal_check_version((2024, "P", 600)):
                     solver=solver,
                     tol=tol,
                     positive=positive,
+                    random_state=random_state,
+                )
+
+        else:
+
+            def __init__(
+                self,
+                alpha=1.0,
+                fit_intercept=True,
+                normalize=False,
+                copy_X=True,
+                max_iter=None,
+                tol=1e-3,
+                solver="auto",
+                random_state=None,
+            ):
+                super().__init__(
+                    alpha=alpha,
+                    fit_intercept=fit_intercept,
+                    normalize=normalize,
+                    copy_X=copy_X,
+                    max_iter=max_iter,
+                    tol=tol,
+                    solver=solver,
                     random_state=random_state,
                 )
 
@@ -274,6 +300,27 @@ if daal_check_version((2024, "P", 600)):
             # `Sample weight` is not supported. Expected to be None value.
             assert sample_weight is None
 
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+            elif sklearn_check_version("1.1"):
+                if self.max_iter is not None:
+                    self.max_iter = check_scalar(
+                        self.max_iter, "max_iter", target_type=numbers.Integral, min_val=1
+                    )
+                self.tol = check_scalar(
+                    self.tol, "tol", target_type=numbers.Real, min_val=0.0
+                )
+                if self.alpha is not None and not isinstance(
+                    self.alpha, (np.ndarray, tuple)
+                ):
+                    self.alpha = check_scalar(
+                        self.alpha,
+                        "alpha",
+                        target_type=numbers.Real,
+                        min_val=0.0,
+                        include_boundaries="left",
+                    )
+
             check_params = {
                 "X": X,
                 "y": y,
@@ -282,9 +329,8 @@ if daal_check_version((2024, "P", 600)):
                 "y_numeric": True,
                 "multi_output": True,
             }
-            if sklearn_check_version("1.2"):
+            if sklearn_check_version("1.0"):
                 X, y = self._validate_data(**check_params)
-                self._validate_params()
             else:
                 X, y = check_X_y(**check_params)
 
