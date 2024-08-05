@@ -85,7 +85,7 @@ sycl::queue get_queue_from_python(const py::object& syclobj) {
 }
 
 sycl::queue get_queue_by_filter_string(const std::string& filter) {
-    sycl::ext::oneapi::filter_selector selector{ filter };
+    filter_selector_wrapper selector{ filter };
     return sycl::queue{ selector };
 }
 
