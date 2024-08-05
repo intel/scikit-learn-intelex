@@ -35,7 +35,7 @@ static_assert(false, "DAAL_SYCL_INTERFACE not defined")
     else if (dev == "cpu")
         m_ctxt = new daal::services::SyclExecutionContext(sycl::queue(sycl::cpu_selector()));
     else if (dev == "host")
-        m_ctxt = new daal::services::SyclExecutionContext(sycl::queue(sycl::host_selector()));
+        m_ctxt = new daal::services::SyclExecutionContext(sycl::queue(sycl::cpu_selector()));
     else
     {
         throw std::runtime_error(std::string("Device is not supported: ") + dev);
