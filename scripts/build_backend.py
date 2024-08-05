@@ -16,17 +16,19 @@
 # limitations under the License.
 # ===============================================================================
 
+import logging
 import multiprocessing
 import os
 import platform as plt
 import subprocess
 import sys
-from distutils import log
-from distutils.sysconfig import get_config_var, get_python_inc
 from math import floor
 from os.path import join as jp
+from sysconfig import get_config_var, get_paths
 
 import numpy as np
+
+logger = logging.getLogger("sklearnex")
 
 IS_WIN = False
 IS_MAC = False
@@ -46,16 +48,16 @@ def custom_build_cmake_clib(
     import pybind11
 
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
-    log.info(f"Project directory is: {root_dir}")
+    logger.info(f"Project directory is: {root_dir}")
 
     builder_directory = jp(root_dir, "scripts")
     abs_build_temp_path = jp(root_dir, "build", f"backend_{iface}")
     install_directory = jp(root_dir, "onedal")
-    log.info(f"Builder directory: {builder_directory}")
-    log.info(f"Install directory: {install_directory}")
+    logger.info(f"Builder directory: {builder_directory}")
+    logger.info(f"Install directory: {install_directory}")
 
     cmake_generator = "-GNinja" if IS_WIN else ""
-    python_include = get_python_inc()
+    python_include = get_paths()["include"]
     win_python_path_lib = os.path.abspath(jp(get_config_var("LIBDEST"), "..", "libs"))
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
@@ -70,7 +72,7 @@ def custom_build_cmake_clib(
 
     build_distribute = iface == "spmd_dpc" and not no_dist and IS_LIN
 
-    log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
+    logger.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
 
     if build_distribute:
         mpi_root = os.environ["MPIROOT"]
@@ -92,7 +94,7 @@ def custom_build_cmake_clib(
     plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
     arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
     use_parameters_arg = "yes" if use_parameters_lib else "no"
-    log.info(f"Build using parameters library: {use_parameters_arg}")
+    logger.info(f"Build using parameters library: {use_parameters_arg}")
 
     cmake_args = [
         "cmake",
