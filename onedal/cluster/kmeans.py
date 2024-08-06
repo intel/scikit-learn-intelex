@@ -22,6 +22,7 @@ import numpy as np
 from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
 from onedal import _backend
 from onedal.basic_statistics import BasicStatistics
+from onedal.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 
@@ -32,7 +33,6 @@ from sklearn.cluster._kmeans import _kmeans_plusplus
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_random_state
-from sklearn.utils.sparsefuncs import mean_variance_axis
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
@@ -82,10 +82,15 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         if rtol == 0.0:
             return rtol
         dummy = to_table(None)
-        bs = BasicStatistics("variance")
+
+        if not isinstance(policy, _SPMDDataParallelInteropPolicy):
+            bs = BasicStatistics("variance")
+        else:
+            bs = BasicStatistics_SPMD("variance")
 
         res = bs._compute_raw(X_table, dummy, policy, dtype, is_csr)
         mean_var = from_table(res["variance"]).mean()
+
         return mean_var * rtol
 
     def _check_params_vs_input(
