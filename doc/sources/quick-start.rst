@@ -260,7 +260,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
 
       To install, run::
 
-        conda install scikit-learn-intelex -c intel
+        conda install scikit-learn-intelex -c https://software.repos.intel.com/python/conda/
       
       .. list-table:: **Supported Configurations**
          :header-rows: 1
