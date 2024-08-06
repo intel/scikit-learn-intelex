@@ -41,10 +41,10 @@ Check [System](https://intel.github.io/scikit-learn-intelex/latest/system-requir
 
 ## Supported Configurations
 
-| OS / Python version | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** | **Python 3.12** |
-| :------------------ | :------------: | :------------: |  :------------: |  :------------: |  :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+| OS / Python version | **Python 3.9** | **Python 3.10** | **Python 3.11** | **Python 3.12** |
+| :------------------ | :------------: |  :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
 
 Applicable for:
 
@@ -148,7 +148,7 @@ The build-process (using setup.py) happens in 4 stages:
 4. Compiling and linking them
 
 ### Prerequisites
-* Python version >= 3.8, <= 3.12
+* Python version >= 3.9, <= 3.12
 * Jinja2
 * Cython
 * Numpy
