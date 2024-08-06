@@ -629,7 +629,6 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -638,7 +637,7 @@ setup(
         "Topic :: System",
         "Topic :: Software Development",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=[
         "scikit-learn>=1.0",
         "numpy>=1.19.5 ; python_version <= '3.9'",

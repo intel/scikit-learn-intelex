@@ -197,7 +197,6 @@ To install |intelex|, run:
    :align: left
 
    * - OS / Python version
-     - Python 3.8
      - Python 3.9
      - Python 3.10
      - Python 3.11
@@ -237,7 +236,6 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
          :align: left
 
          * - OS / Python version
-           - Python 3.8
            - Python 3.9
            - Python 3.10
            - Python 3.11
@@ -269,7 +267,6 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
          :align: left
 
          * - OS / Python version
-           - Python 3.8
            - Python 3.9
            - Python 3.10
            - Python 3.11
@@ -300,7 +297,6 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
          :align: left
 
          * - OS / Python version
-           - Python 3.8
            - Python 3.9
            - Python 3.10
            - Python 3.11
