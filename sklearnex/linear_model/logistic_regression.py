@@ -238,7 +238,8 @@ if daal_check_version((2024, "P", 1)):
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
                     (
-                        not any([issparse(i) for i in data]),
+                        (not any([issparse(i) for i in data]))
+                        or daal_check_version((2024, "P", 600)),
                         "Sparse input is not supported.",
                     ),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
