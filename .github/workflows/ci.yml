@@ -78,8 +78,6 @@ jobs:
           # Determine dpctl support
           DPCFLAG="0"
           if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
-          # Turn off dpcpp building if it is not tested
-          if [ ${DPCFLAG} == "" ]; then echo "DPCPPROOT=/opt/intel/oneapi/compiler/latest" >> "$GITHUB_ENV"; fi
           echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
       - name: apt-get
         run: sudo apt-get update && sudo apt-get install -y clang-format
