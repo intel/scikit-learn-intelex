@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import numbers
+import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
@@ -224,6 +225,11 @@ class IncrementalRidge(BaseEstimator, RegressorMixin, MultiOutputMixin):
 
         # finite check occurs on onedal side
         self.n_features_in_ = n_features
+
+        if n_samples == 1:
+            warnings.warn(
+                "Only one sample available. You may want to reshape your data array"
+            )
 
         self._onedal_finalize_fit()
 
