@@ -40,7 +40,7 @@ from sklearn.utils import check_random_state
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
-from ..common._spmd_policy import _SPMDDataParallelInteropPolicy as spmd_policy
+from ..common._policy import _DataParallelInteropPolicy, _HostInteropPolicy
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 
 
@@ -88,14 +88,14 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             return rtol
         dummy = to_table(None)
 
-        if not isinstance(policy, spmd_policy):
+        if isinstance(policy, _HostInteropPolicy) or isinstance(
+            policy, _DataParallelInteropPolicy
+        ):
             bs = BasicStatistics("variance")
         elif BasicStatistics_SPMD is not None:
             bs = BasicStatistics_SPMD("variance")
         else:
-            raise ImportError(
-                "Failed to import BasicStatistics from onedal.spmd, check if SPMD backend was built properly"
-            )
+            raise ImportError("Failed to import BasicStatistics from onedal.spmd")
 
         res = bs._compute_raw(X_table, dummy, policy, dtype, is_csr)
         mean_var = from_table(res["variance"]).mean()
