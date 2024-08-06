@@ -394,8 +394,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         result = module.infer(policy, params, self.model_, X_table)
 
-        if result_options:
-            # Only set for score function
+        if result_options:  # This is only set for score function
             return result.objective_function_value * (-1)
         else:
             return from_table(result.responses).ravel()
