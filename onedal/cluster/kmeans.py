@@ -22,7 +22,11 @@ import numpy as np
 from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
 from onedal import _backend
 from onedal.basic_statistics import BasicStatistics
-from onedal.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
+
+try:
+    from onedal.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
+except ImportError:
+    BasicStatistics_SPMD = None
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 
@@ -36,6 +40,7 @@ from sklearn.utils import check_random_state
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
+from ..common._spmd_policy import _SPMDDataParallelInteropPolicy as spmd_policy
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 
 
@@ -83,10 +88,14 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             return rtol
         dummy = to_table(None)
 
-        if not isinstance(policy, _SPMDDataParallelInteropPolicy):
+        if not isinstance(policy, spmd_policy):
             bs = BasicStatistics("variance")
-        else:
+        elif BasicStatistics_SPMD is not None:
             bs = BasicStatistics_SPMD("variance")
+        else:
+            raise ImportError(
+                "Failed to import BasicStatistics from onedal.spmd, check if SPMD backend was built properly"
+            )
 
         res = bs._compute_raw(X_table, dummy, policy, dtype, is_csr)
         mean_var = from_table(res["variance"]).mean()
@@ -105,8 +114,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         # tol
         self._tol = self._tolerance(X_table, self.tol, is_csr, policy, dtype)
 
-        # n-init
-        # TODO(1.4): Remove
         self._n_init = self.n_init
         if self._n_init == "warn":
             warnings.warn(
