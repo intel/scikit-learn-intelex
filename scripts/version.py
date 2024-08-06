@@ -19,7 +19,6 @@ import re
 from ctypes.util import find_library
 from os.path import isfile
 from os.path import join as jp
-from sys import platform
 
 
 def find_defines(defines: list, file_obj):
