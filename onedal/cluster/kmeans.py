@@ -28,7 +28,10 @@ try:
 except ImportError:
     BasicStatistics_SPMD = None
 
-from ..datatypes import _convert_to_supported, from_table, to_table
+try:
+    from ..common._policy import _DataParallelInteropPolicy as dp_policy
+except ImportError:
+    dp_policy = None
 
 if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
@@ -40,7 +43,8 @@ from sklearn.utils import check_random_state
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
-from ..common._policy import _DataParallelInteropPolicy, _HostInteropPolicy
+from ..common._policy import _HostInteropPolicy as host_policy
+from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 
 
@@ -88,9 +92,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             return rtol
         dummy = to_table(None)
 
-        if isinstance(policy, _HostInteropPolicy) or isinstance(
-            policy, _DataParallelInteropPolicy
-        ):
+        _is_host_policy = isinstance(policy, host_policy)
+        _is_dp_policy = dp_policy is not None and isinstance(policy, dp_policy)
+        if _is_host_policy or _is_dp_policy:
             bs = BasicStatistics("variance")
         elif BasicStatistics_SPMD is not None:
             bs = BasicStatistics_SPMD("variance")
