@@ -16,6 +16,7 @@
 # ===============================================================================
 
 import re
+from ctypes.util import find_library
 from os.path import isfile
 from os.path import join as jp
 from sys import platform
@@ -68,3 +69,26 @@ def get_onedal_version(dal_root, version_type="release"):
                 version["__INTEL_DAAL_MINOR_BINARY__"]
             )
     return version
+
+
+def get_onedal_shared_libs(dal_root):
+    """Function to find which oneDAL shared libraries are available in the system"""
+    lib_names = [
+        "onedal",
+        "onedal_core",
+        "onedal_thread",
+        "onedal_dpc",
+        "onedal_parameters",
+    ]
+    major_bin_version, _ = get_onedal_version(dal_root, "binary")
+    found_libraries = []
+    for lib_name in lib_names:
+        possible_aliases = [
+            lib_name,
+            f"lib{lib_name}.so.{major_bin_version}",
+            f"lib{lib_name}.{major_bin_version}.dylib"
+            f"{lib_name}.{major_bin_version}.dll",
+        ]
+        if any(find_library(alias) for alias in possible_aliases):
+            found_libraries.append(lib_name)
+    return found_libraries
