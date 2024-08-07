@@ -116,8 +116,7 @@ def test_logistic_spmd_gold(dataframe, queue):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue, dtype):
-    # TODO: Re-enable coefficient check when oneDAL fix implemented
-    pytest.skip("Test disabled while OneDAL fix in progress")
+    pytest.skip("Sporadic failures on coefficient check. Test disabled while OneDAL fix in progress")
     # TODO: Resolve numerical issues when n_rows_rank < n_cols
     if n_samples <= n_features:
         pytest.skip("Numerical issues when rank rows < columns")
