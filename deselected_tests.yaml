@@ -377,8 +377,6 @@ deselected_tests:
   - model_selection/tests/test_classification_threshold.py::test_fit_and_score_over_thresholds_sample_weight >=1.5
   - model_selection/tests/test_classification_threshold.py::test_tuned_threshold_classifier_cv_zeros_sample_weights_equivalence >=1.5
 
-  # --------------------------------------------------------
-  # No need to test daal4py patching
 reduced_tests:
   - cluster/tests/test_affinity_propagation.py
   - cluster/tests/test_bicluster.py
@@ -450,16 +448,11 @@ public:
   # Fails from numpy 2.0 and sklearn 1.4+
   - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_raise_on_all_zero_weights
 
-  # --------------------------------------------------------
-  # The following tests currently fail with GPU offload
 gpu:
-
   # Segfaults
   - ensemble/tests/test_weight_boosting.py
-
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
-
   - cluster/tests/test_kmeans.py::test_kmeans_elkan_results
   - cluster/tests/test_kmeans.py::test_unsupervised_grid_search
 
@@ -1121,3 +1114,6 @@ gpu:
   - tests/test_common.py::test_estimators[DBSCAN()-check_fit2d_predict1d]
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
+
+preview:
+  # The following preview tests are deselected.
