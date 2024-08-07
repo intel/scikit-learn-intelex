@@ -57,6 +57,25 @@ jobs:
       pip install isort black[jupyter]==24.1.1
       isort --profile black --check . && black --check .
     displayName: 'Linting'
+- job: LinuxCondaRecipe
+  dependsOn: Lint
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Python3.12:
+        PYTHON_VERSION: '3.12'
+  pool:
+    vmImage: 'ubuntu-22.04'
+  steps:
+  - script: |
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+      conda update -y -q conda
+    displayName: "Conda update"
+  - script: |
+      conda create -y -q -n build-env python=$(PYTHON_VERSION) conda-build conda-verify
+      conda build .
+    displayName: "Conda build"
 - job: LinuxCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
