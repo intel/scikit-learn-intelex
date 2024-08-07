@@ -1114,6 +1114,3 @@ gpu:
   - tests/test_common.py::test_estimators[DBSCAN()-check_fit2d_predict1d]
   - tests/test_common.py::test_check_n_features_in_after_fitting[DBSCAN()]
   - tests/test_common.py::test_check_n_features_in_after_fitting[SVC()]
-
-preview:
-  # The following preview tests are deselected.
