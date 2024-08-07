@@ -166,6 +166,7 @@ The build-process (using setup.py) happens in 4 stages:
 * ``DALROOT``: sets the oneAPI Data Analytics Library path
 * ``NO_DIST``: set to '1', 'yes' or alike to build without support for distributed mode
 * ``NO_STREAM``: set to '1', 'yes' or alike to build without support for streaming mode
+* ``NO_DPC``: set to '1', 'yes' or alike to build without support of oneDAL DPC++ interfaces
 * ``OFF_ONEDAL_IFACE``: set to '1' to build without the support of oneDAL interfaces
 
 ### Build Intel(R) Extension for Scikit-learn

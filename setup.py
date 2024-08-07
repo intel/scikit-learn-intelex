@@ -26,6 +26,7 @@ import shutil
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from ctypes.util import find_library
 from os.path import join as jp
 from sysconfig import get_config_vars
 
@@ -38,12 +39,7 @@ from setuptools.command.build_ext import build_ext as _build_ext
 
 import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
-from scripts.version import get_onedal_version
-
-try:
-    from ctypes.utils import find_library
-except ImportError:
-    from ctypes.util import find_library
+from scripts.version import get_onedal_shared_libs, get_onedal_version
 
 IS_WIN = False
 IS_MAC = False
@@ -91,7 +87,12 @@ no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues els
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
 debug_build = os.getenv("DEBUG_BUILD") == "1"
 mpi_root = None if no_dist else os.environ["MPIROOT"]
-dpcpp = shutil.which("icpx") is not None and not (IS_WIN and debug_build)
+dpcpp = (
+    shutil.which("icpx") is not None
+    and "onedal_dpc" in get_onedal_shared_libs(dal_root)
+    and os.environ.get("NO_DPC", None) is None
+    and not (IS_WIN and debug_build)
+)
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
