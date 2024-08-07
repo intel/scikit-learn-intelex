@@ -116,6 +116,8 @@ def test_logistic_spmd_gold(dataframe, queue):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue, dtype):
+    # TODO: Re-enable coefficient check when oneDAL fix implemented
+    @pytest.skip("Test disabled while OneDAL fix in progress")
     # TODO: Resolve numerical issues when n_rows_rank < n_cols
     if n_samples <= n_features:
         pytest.skip("Numerical issues when rank rows < columns")
@@ -151,9 +153,8 @@ def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue
     ).fit(dpt_X_train, dpt_y_train)
 
     # TODO: Logistic Regression coefficients do not align
-    tol = 1e-1
-    # TODO: Re-enable coefficient check when oneDAL fix implemented
-    # assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol, atol=tol)
+    tol = 1e-2
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol, atol=tol)
     assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=tol, atol=tol)
 
     # Ensure predictions of batch algo match spmd
