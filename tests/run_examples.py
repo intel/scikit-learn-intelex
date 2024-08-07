@@ -287,7 +287,7 @@ def run(exdir, logdir, args):
 
 
 def run_all(args):
-    if args.assert_gpu and dpctl_available and "gpu" not in available_devices:
+    if args.assert_gpu and "gpu" not in available_devices:
         raise RuntimeError("GPU device not available or not detected")
 
     success = 0
