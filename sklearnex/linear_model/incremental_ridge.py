@@ -38,7 +38,7 @@ from .._utils import PatchingConditionsChain
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
 )
-class IncrementalRidge(BaseEstimator, RegressorMixin, MultiOutputMixin):
+class IncrementalRidge(MultiOutputMixin, BaseEstimator, RegressorMixin):
     """
     Incremental estimator for Ridge Regression.
     Allows to train Ridge Regression if data is splitted into batches.
