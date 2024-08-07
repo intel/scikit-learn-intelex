@@ -62,18 +62,21 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.12:
-        PYTHON_VERSION: '3.12'
+      Python3.11:
+        PYTHON_VERSION: '3.11'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
   - script: |
       conda config --add channels conda-forge
       conda config --set channel_priority strict
-      conda update -y -q conda
+      conda update -y -q --all
     displayName: "Conda update"
   - script: |
       conda create -y -q -n build-env python=$(PYTHON_VERSION) conda-build conda-verify
+    displayName: "Conda install"
+  - script: |
+      conda activate build-env
       conda build .
     displayName: "Conda build"
 - job: LinuxCondaEnv
