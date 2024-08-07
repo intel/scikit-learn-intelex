@@ -39,6 +39,8 @@ if [ ! -z "${PKG_VERSION}" ]; then
     export DAAL4PY_VERSION=$PKG_VERSION
 fi
 
+export MPIROOT=${PREFIX}
+
 if [ -z "${PYTHON}" ]; then
     export PYTHON=python
 fi

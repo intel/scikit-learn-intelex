@@ -14,72 +14,74 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2025.0' %}
+{% set version = '2024.7' %}
 {% set buildnumber = 0 %}
 
 package:
   name: scikit-learn-intelex
   version: {{ version }}
 
+# Reminder: source should point to github archive for conda-forge pkg
+# source:
+#   url: https://github.com/intel/scikit-learn-intelex/archive/{{ version }}.tar.gz
+#   sha256: ...
 source:
   path: ..
 
 build:
+  skip: true  # [not (linux64 or win)]
   number: {{ buildnumber }}
   include_recipe: False
   script_env:
   - DPCPPROOT
   - DALROOT
-  ignore_run_exports:
-    - python
-    - mpich
 
 requirements:
   build:
     - {{ compiler('cxx') }}  # [not osx]
     - {{ compiler('c') }}  # [not osx]
+    - make  # [linux]
   host:
     - python
     - setuptools
     - numpy {{ numpy }}
-    - dal-devel
+    - mpich
+    - cmake
+    - clang-format
     - cython
     - jinja2
-    - mpich  # [osx]
-    - impi-devel  # [not osx]
-    - clang-tools
     - pybind11
-    - make
+    - dal-devel
   run:
     - python
     - dpcpp-cpp-rt  # [not osx]
     - dal
-  ignore_run_exports:
-    - numpy
+    - {{ pin_compatible('numpy') }}
 
 test:
   requires:
     - pandas
     - scikit-learn
-    - xgboost  # [not win]
-    - lightgbm  # [not win]
+    - xgboost
+    - lightgbm
     - catboost
     - pytest
-    - mpich  # [osx]
-    - impi_rt  # [not osx]
+    - pyyaml
+    - mpich
   source_files:
+    - .ci
     - examples
     - tests
     - daal4py/sklearn
   commands:
-    - python -c "import daal4py, sklearnex"
+    - python -c "import daal4py, sklearnex; sklearnex.patch_sklearn()"
 
 about:
   home: https://intel.github.io/scikit-learn-intelex
   license: Apache-2.0
   license_file:
     - LICENSE
-    - doc/third-party-programs.txt
+    - doc/third-party-programs-sklearnex.txt
   summary: Intel(R) Extension for Scikit-learn* is a seamless way to speed up your Scikit-learn application.
   description: |
     <strong>LEGAL NOTICE: Use of this software package is subject to the
