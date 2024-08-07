@@ -754,18 +754,8 @@ gpu:
   - tests/test_common.py::test_estimators[ExtraTreesRegressor()-check_sample_weights_invariance(kind=ones)]
 
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
-  # NearestNeighbors
-  - cluster/tests/test_dbscan.py
-  - cluster/tests/test_spectral
-  - manifold/tests/test_t_sne.py::test_binary_search_neighbors
-  - manifold/tests/test_t_sne.py::test_binary_perplexity_stability
-  - manifold/tests/test_t_sne.py::test_gradient_bh_multithread_match_sequential
-  - neighbors/tests/test_kde.py::test_kernel_density_sampling
-  - tests/test_common.py::test_check_n_features_in_after_fitting[NearestNeighbors()]
-  - tests/test_common.py::test_estimators[NearestNeighbors()]
-  - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv0]
-  - model_selection/tests/test_search.py::test_search_cv_score_samples_method[search_cv1]
-  - manifold/tests/test_t_sne.py::test_barnes_hut_angle
+  - svm/tests/test_svm.py::test_unfitted
+  - tests/test_common.py::test_estimators[SVC()-check_estimators_unfitted]
 
 preview:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
