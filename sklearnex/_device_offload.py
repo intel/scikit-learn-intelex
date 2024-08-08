@@ -74,8 +74,14 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
         patching_status.write_log(queue=q)
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == "sklearn":
-        patching_status.write_log()
-        return branches[backend](obj, *hostargs, **hostkwargs)
+        if "array_api_dispatch" in get_config() and get_config()["array_api_dispatch"]:
+            # TODO:
+            # logs require update for this branch.
+            patching_status.write_log()
+            return branches[backend](obj, *args, **kwargs)
+        else:
+            patching_status.write_log()
+            return branches[backend](obj, *hostargs, **hostkwargs)
     raise RuntimeError(
         f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
     )
