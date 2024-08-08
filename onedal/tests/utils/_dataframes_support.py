@@ -16,7 +16,8 @@
 
 import pytest
 import scipy.sparse as sp
-from sklearn import get_config
+
+from sklearnex import get_config
 
 try:
     import dpctl
@@ -109,7 +110,13 @@ def get_dataframes_and_queues(
         dataframes_and_queues.extend(get_df_and_q("dpctl"))
     if dpnp_available and "dpnp" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpnp"))
-    if "array_api" in dataframe_filter_ or array_api_enabled():
+    # TODO:
+    # condition requires refactoring.
+    if (
+        "array_api" in dataframe_filter_
+        and "array_api" in array_api_modules
+        or array_api_enabled()
+    ):
         dataframes_and_queues.append(pytest.param("array_api", None, id="array_api"))
 
     return dataframes_and_queues
