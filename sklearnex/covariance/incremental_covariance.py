@@ -35,7 +35,7 @@ from sklearnex import config_context
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, register_hyperparameters
 from ..metrics import pairwise_distances
-from ..utils import get_namespace
+from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
