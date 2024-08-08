@@ -80,6 +80,7 @@ def get_onedal_shared_libs(dal_root):
         "onedal_parameters",
     ]
     major_bin_version, _ = get_onedal_version(dal_root, "binary")
+    print("major version", major_bin_version)
     found_libraries = []
     for lib_name in lib_names:
         possible_aliases = [
@@ -88,6 +89,7 @@ def get_onedal_shared_libs(dal_root):
             f"lib{lib_name}.{major_bin_version}.dylib"
             f"{lib_name}.{major_bin_version}.dll",
         ]
+        print(possible_aliases)
         if any(find_library(alias) for alias in possible_aliases):
             found_libraries.append(lib_name)
     return found_libraries
