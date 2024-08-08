@@ -21,6 +21,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   TBB_VERSION: 2021.13
