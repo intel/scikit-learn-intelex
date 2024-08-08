@@ -19,19 +19,13 @@
 import argparse
 import os.path
 import sys
-
-from yaml import FullLoader
-from yaml import load as yaml_load
-
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
-
 import warnings
 
 import sklearn
+from packaging.version import Version
 from sklearn import __version__ as sklearn_version
+from yaml import FullLoader
+from yaml import load as yaml_load
 
 
 def evaluate_cond(cond, v):
