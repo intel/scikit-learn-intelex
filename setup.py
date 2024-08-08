@@ -93,6 +93,7 @@ dpcpp = (
     and os.environ.get("NO_DPC", None) is None
     and not (IS_WIN and debug_build)
 )
+print(dpcpp, shutil.which("icpx"), shutil.which("icx"), get_onedal_shared_libs(dal_root), (IS_WIN and debug_build))
 
 use_parameters_lib = (not IS_WIN) and (ONEDAL_VERSION >= 20240000)
 
