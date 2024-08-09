@@ -49,6 +49,7 @@ def get_patch_map_core(preview=False):
 
             # Preview classes for patching
             from .preview.cluster import KMeans as KMeans_sklearnex
+            from .preview.cluster import Louvain as Louvain_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
@@ -98,6 +99,18 @@ def get_patch_map_core(preview=False):
             mapping.pop("ridge")
             mapping["ridge"] = [
                 [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
+            ]
+
+            # Louvain
+            mapping["louvain"] = [
+                [
+                    (
+                        cluster_module,
+                        "Louvain",
+                        Louvain_sklearnex,
+                    ),
+                    None,
+                ]
             ]
 
         return mapping
