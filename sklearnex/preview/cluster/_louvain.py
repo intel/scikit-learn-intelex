@@ -108,7 +108,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         Zero coefficient for polynomial and sigmoid kernels.
         Ignored by other kernels.
 
-    eps : float, default=1e-4
+    eps : float, default=1e-2
         The maximum distance between two samples for one to be considered
         as in the neighborhood of the other. This functions when using the
         pairwise_kernels or rbf kernel as the affinity generator.
@@ -241,7 +241,7 @@ class Louvain(ClusterMixin, BaseEstimator):
         n_neighbors=5,
         degree=3,
         coef0=1,
-        eps=1e-4,
+        eps=1e-1,
         kernel_params=None,
         n_jobs=None,
         verbose=False,
@@ -294,7 +294,6 @@ class Louvain(ClusterMixin, BaseEstimator):
     def _onedal_fit(self, X, y=None, queue=None):
 
         if y is None:
-
             if sklearn_check_version("1.0"):
                 X = self._validate_data(
                     X,
