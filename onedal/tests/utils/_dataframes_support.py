@@ -16,7 +16,8 @@
 
 import pytest
 import scipy.sparse as sp
-from sklearn import get_config
+
+from sklearnex import get_config
 
 try:
     import dpctl
@@ -40,6 +41,8 @@ try:
     # GPU-no-copy.
     import array_api_strict
 
+    # TODO:
+    # get this from onedal._config._get_config
     # Run check if "array_api_dispatch" is configurable
     array_api_enabled = lambda: get_config()["array_api_dispatch"]
     array_api_enabled()
@@ -58,7 +61,7 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,pandas,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter_="numpy,pandas,dpnp,dpctl,array_api", device_filter_="cpu,gpu"
 ):
     """Get supported dataframes for testing.
 
@@ -107,7 +110,13 @@ def get_dataframes_and_queues(
         dataframes_and_queues.extend(get_df_and_q("dpctl"))
     if dpnp_available and "dpnp" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpnp"))
-    if "array_api" in dataframe_filter_ or array_api_enabled():
+    # TODO:
+    # condition requires refactoring.
+    if (
+        "array_api" in dataframe_filter_
+        and "array_api" in array_api_modules
+        or array_api_enabled()
+    ):
         dataframes_and_queues.append(pytest.param("array_api", None, id="array_api"))
 
     return dataframes_and_queues
@@ -162,10 +171,14 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         # standard, but maintaining data on a device
         # using the method `from_dlpack` is.
         xp = array_api_modules[target_df]
-        return xp.from_dlpack(
-            _convert_to_dataframe(
-                obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs
-            )
-        )
+        # return xp.from_dlpack(
+        #     _convert_to_dataframe(
+        #         obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs
+        #     )
+        # )
+        if hasattr(obj, "__dlpack__"):
+            return xp.from_dlpack(obj)
+        else:
+            return xp.asarray(obj)
 
     raise RuntimeError("Unsupported dataframe conversion")

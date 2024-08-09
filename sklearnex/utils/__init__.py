@@ -14,7 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-from ._namespace import get_namespace
 from .validation import _assert_all_finite
 
-__all__ = ["get_namespace", "_assert_all_finite"]
+__all__ = ["_assert_all_finite"]

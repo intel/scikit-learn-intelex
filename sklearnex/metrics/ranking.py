@@ -15,6 +15,6 @@
 # ===============================================================================
 
 from daal4py.sklearn.metrics import roc_auc_score
-from onedal._device_offload import support_usm_ndarray
+from onedal._device_offload import support_array_api
 
-roc_auc_score = support_usm_ndarray(freefunc=True, queue_param=False)(roc_auc_score)
+roc_auc_score = support_array_api(freefunc=True, queue_param=False)(roc_auc_score)

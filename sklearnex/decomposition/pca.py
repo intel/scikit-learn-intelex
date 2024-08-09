@@ -32,7 +32,7 @@ if daal_check_version((2024, "P", 100)):
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
-    from ..utils import get_namespace
+    from ..utils._array_api import get_namespace
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar

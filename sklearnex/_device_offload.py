@@ -18,15 +18,16 @@ from functools import wraps
 
 from onedal._device_offload import (
     _copy_to_usm,
+    _extract_array_attr,
     _get_global_queue,
     _transfer_to_host,
     dpnp_available,
 )
+from onedal.utils._array_api import _from_dlpack, _is_numpy_namespace
 
 if dpnp_available:
     import dpnp
-    from onedal._device_offload import _convert_to_dpnp
-
+    from onedal.utils._array_api import _convert_to_dpnp
 
 from ._config import get_config
 
@@ -73,26 +74,41 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
         patching_status.write_log(queue=q)
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == "sklearn":
-        patching_status.write_log()
-        return branches[backend](obj, *hostargs, **hostkwargs)
+        if "array_api_dispatch" in get_config() and get_config()["array_api_dispatch"]:
+            # TODO:
+            # logs require update for this branch.
+            patching_status.write_log()
+            return branches[backend](obj, *args, **kwargs)
+        else:
+            patching_status.write_log()
+            return branches[backend](obj, *hostargs, **hostkwargs)
     raise RuntimeError(
         f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
     )
 
 
+# TODO:
+# support input data
+# wrap output data
 def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())
-        if len(data) == 0:
-            usm_iface = None
-        else:
-            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+        usm_iface, array_api, dlpack_device = _extract_array_attr(*args, **kwargs)
         result = func(self, *args, **kwargs)
         if usm_iface is not None:
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
                 result = _convert_to_dpnp(result)
+        # TODO:
+        # update condition
+        elif (
+            array_api
+            and not _is_numpy_namespace(array_api)
+            and hasattr(result, "__array_namespace__")
+        ):
+            # result = _from_dlpack(result, array_api, copy=True, device=dlpack_device)
+            result = _from_dlpack(result, array_api)
         return result
 
     return wrapper

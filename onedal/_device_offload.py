@@ -21,6 +21,7 @@ from functools import wraps
 import numpy as np
 
 from ._config import _get_config
+from .utils._array_api import _from_dlpack, _is_numpy_namespace
 
 try:
     from dpctl import SyclQueue
@@ -37,6 +38,9 @@ try:
     dpnp_available = True
 except ImportError:
     dpnp_available = False
+
+if dpnp_available:
+    from .utils._array_api import _convert_to_dpnp
 
 
 class DummySyclQueue:
@@ -94,6 +98,9 @@ def _transfer_to_host(queue, *data):
     host_data = []
     for item in data:
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
+        array_api = getattr(item, "__array_namespace__", None)
+        if array_api:
+            array_api = array_api()
         if usm_iface is not None:
             if not dpctl_available:
                 raise RuntimeError(
@@ -120,6 +127,14 @@ def _transfer_to_host(queue, *data):
                 order=order,
             )
             has_usm_data = True
+        # TODO:
+        # update conditions.
+        elif array_api and not _is_numpy_namespace(array_api):
+            # TODO:
+            # get info about the device, for backward conversions.
+            item._array = item._array.copy()
+            item = np.from_dlpack(item).copy()
+            has_host_data = True
         else:
             has_host_data = True
 
@@ -153,11 +168,19 @@ def _get_host_inputs(*args, **kwargs):
     return q, hostargs, hostkwargs
 
 
-def _extract_usm_iface(*args, **kwargs):
+def _extract_array_attr(*args, **kwargs):
     allargs = (*args, *kwargs.values())
     if len(allargs) == 0:
-        return None
-    return getattr(allargs[0], "__sycl_usm_array_interface__", None)
+        return None, None, None
+    usm_iface = getattr(allargs[0], "__sycl_usm_array_interface__", None)
+    array_api = None
+    dlpack_device = None
+    if hasattr(allargs[0], "__array_namespace__"):
+        array_api = getattr(allargs[0], "__array_namespace__", None)()
+
+    if hasattr(allargs[0], "__dlpack_device__"):
+        dlpack_device = getattr(allargs[0], "__dlpack_device__", None)
+    return usm_iface, array_api, dlpack_device
 
 
 def _run_on_device(func, obj=None, *args, **kwargs):
@@ -166,18 +189,9 @@ def _run_on_device(func, obj=None, *args, **kwargs):
     return func(*args, **kwargs)
 
 
-if dpnp_available:
-
-    def _convert_to_dpnp(array):
-        if isinstance(array, usm_ndarray):
-            return dpnp.array(array, copy=False)
-        elif isinstance(array, Iterable):
-            for i in range(len(array)):
-                array[i] = _convert_to_dpnp(array[i])
-        return array
-
-
-def support_usm_ndarray(freefunc=False, queue_param=True):
+# TODO:
+# update docstrings.
+def support_array_api(freefunc=False, queue_param=True):
     """
     Handles USMArray input. Puts SYCLQueue from data to decorated function arguments.
     Converts output of decorated function to dpctl.tensor/dpnp.ndarray if input was of this type.
@@ -194,7 +208,9 @@ def support_usm_ndarray(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            usm_iface = _extract_usm_iface(*args, **kwargs)
+            usm_iface, input_array_api, input_dlpack_device = _extract_array_attr(
+                *args, **kwargs
+            )
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if queue_param and not (
                 "queue" in hostkwargs and hostkwargs["queue"] is not None
@@ -205,6 +221,17 @@ def support_usm_ndarray(freefunc=False, queue_param=True):
                 result = _copy_to_usm(data_queue, result)
                 if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
+            # TODO:
+            # add exception for numpy.
+            elif (
+                input_array_api
+                and not _is_numpy_namespace(input_array_api)
+                and hasattr(result, "__array_namespace__")
+            ):
+                # TODO:
+                # avoid for numpy
+                # result = _from_dlpack(result, input_array_api, device=input_dlpack_device)
+                result = _from_dlpack(result, input_array_api)
             return result
 
         if freefunc:
