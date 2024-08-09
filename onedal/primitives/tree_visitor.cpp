@@ -206,7 +206,7 @@ bool to_sklearn_tree_object_visitor<Task>::call(const df::split_node_info<Task>&
     this->node_ar_ptr[node_id].threshold = info.get_feature_value();
     this->node_ar_ptr[node_id].impurity = info.get_impurity();
     this->node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
-    this->node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
+    this->node_ar_ptr[node_id].weighted_n_node_samples = static_cast<double>(info.get_sample_count());
     this->node_ar_ptr[node_id].missing_go_to_left = false;
 
     // wrap-up
@@ -230,7 +230,7 @@ void to_sklearn_tree_object_visitor<Task>::_onLeafNode(const df::leaf_node_info<
 
     this->node_ar_ptr[node_id].impurity = info.get_impurity();
     this->node_ar_ptr[node_id].n_node_samples = info.get_sample_count();
-    this->node_ar_ptr[node_id].weighted_n_node_samples = info.get_sample_count();
+    this->node_ar_ptr[node_id].weighted_n_node_samples = static_cast<double>(info.get_sample_count());
     this->node_ar_ptr[node_id].missing_go_to_left = false;
 }
 
@@ -253,7 +253,7 @@ bool to_sklearn_tree_object_visitor<df::task::classification>::call(
         
     std::size_t depth = static_cast<const std::size_t>(info.get_level());
     const std::size_t label = info.get_response(); // these may be a slow accesses due to oneDAL abstraction
-    const double nNodeSampleCount = info.get_sample_count(); // do them only once
+    const double nNodeSampleCount = static_cast<const double>(info.get_sample_count()); // do them only once
 
     while(depth--)
     {

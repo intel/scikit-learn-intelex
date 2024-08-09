@@ -49,8 +49,6 @@ bool is_same_clustering(const dal::table& left,
     auto map = dal::array<std::int32_t>::full( //
                           n_clusters, minus_one);
 
-    const auto* const l_ptr = l_arr.get_data();
-    const auto* const r_ptr = r_arr.get_data();
     auto* const m_ptr = map.get_mutable_data();
 
     const auto l_count = l_arr.get_count();

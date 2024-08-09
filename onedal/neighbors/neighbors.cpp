@@ -130,6 +130,7 @@ auto get_onedal_result_options(const py::dict& params) {
         }
     }
     catch (std::regex_error& e) {
+        (void)e;
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
 

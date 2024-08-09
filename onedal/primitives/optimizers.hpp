@@ -26,10 +26,6 @@ namespace oneapi::dal::python {
 
 template<typename Optimizer>
 auto get_optimizer_descriptor(const pybind11::dict& params) {
-    using float_t = typename Optimizer::float_t;
-    using method_t = typename Optimizer::method_t;
-    using task_t = typename Optimizer::task_t;
-    using newton_cg_desc_t = newton_cg::descriptor<float_t, method_t, task_t>;
     auto optimizer = Optimizer{};
     optimizer.set_tolerance(params["tol"].cast<double>());
     optimizer.set_max_iteration(params["max_iter"].cast<std::int64_t>());
