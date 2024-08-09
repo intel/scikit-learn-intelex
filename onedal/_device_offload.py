@@ -99,6 +99,8 @@ def _transfer_to_host(queue, *data):
     for item in data:
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
         array_api = getattr(item, "__array_namespace__", None)
+        if array_api:
+            array_api = array_api()
         if usm_iface is not None:
             if not dpctl_available:
                 raise RuntimeError(
@@ -228,9 +230,7 @@ def support_array_api(freefunc=False, queue_param=True):
             ):
                 # TODO:
                 # avoid for numpy
-                result = _from_dlpack(
-                    result, input_array_api, copy=True, device=input_dlpack_device
-                )
+                result = _from_dlpack(result, input_array_api, device=input_dlpack_device)
             return result
 
         if freefunc:

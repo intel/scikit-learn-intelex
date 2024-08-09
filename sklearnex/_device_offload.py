@@ -107,7 +107,8 @@ def wrap_output_data(func):
             and not _is_numpy_namespace(array_api)
             and hasattr(result, "__array_namespace__")
         ):
-            result = _from_dlpack(result, array_api, copy=True, device=dlpack_device)
+            # result = _from_dlpack(result, array_api, copy=True, device=dlpack_device)
+            result = _from_dlpack(result, array_api)
         return result
 
     return wrapper

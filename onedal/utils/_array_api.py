@@ -18,6 +18,8 @@
 
 from collections.abc import Iterable
 
+import numpy as np
+
 try:
     from dpctl.tensor import usm_ndarray
 
@@ -49,7 +51,9 @@ def _from_dlpack(data, xp, *args, **kwargs):
     def _one_from_dlpack(data, xp, *args, **kwargs):
         return xp.from_dlpack(data, *args, **kwargs)
 
-    if isinstance(data, Iterable):
+    if isinstance(data, np.ndarray):
+        return _one_from_dlpack(data, xp, *args, **kwargs)
+    elif isinstance(data, Iterable):
         for i in range(len(data)):
             data[i] = _one_from_dlpack(data[i], xp, *args, **kwargs)
         return data
