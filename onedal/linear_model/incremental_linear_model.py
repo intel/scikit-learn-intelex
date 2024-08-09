@@ -250,12 +250,8 @@ class IncrementalRidge(BaseLinearRegression):
 
         packed_coefficients = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = (
-            packed_coefficients[:, 1:],
-            packed_coefficients[:, 0],
+            packed_coefficients[:, 1:].squeeze(),
+            packed_coefficients[:, 0].squeeze(),
         )
-
-        if self.coef_.shape[0] == 1 and self._y_ndim_1:
-            self.coef_ = self.coef_.ravel()
-            self.intercept_ = self.intercept_[0]
 
         return self
