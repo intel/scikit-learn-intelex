@@ -230,7 +230,8 @@ def support_array_api(freefunc=False, queue_param=True):
             ):
                 # TODO:
                 # avoid for numpy
-                result = _from_dlpack(result, input_array_api, device=input_dlpack_device)
+                # result = _from_dlpack(result, input_array_api, device=input_dlpack_device)
+                result = _from_dlpack(result, input_array_api)
             return result
 
         if freefunc:
