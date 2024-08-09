@@ -46,7 +46,7 @@ requirements:
     - python
     - setuptools
     - numpy {{ numpy }}
-    - mpich
+    - mpich  # [not win]
     - cmake
     - clang-format
     - cython
