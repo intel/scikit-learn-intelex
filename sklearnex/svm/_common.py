@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 from abc import ABC
 from numbers import Number, Real
 
@@ -22,7 +23,6 @@ from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import r2_score
-from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 
 from daal4py.sklearn._utils import sklearn_check_version
@@ -230,6 +230,17 @@ class BaseSVC(BaseSVM):
         return recip_freq[le.transform(classes)]
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
+        # TODO: rewrite this method when probabilities output is implemented in oneDAL
+
+        # LibSVM uses the random seed to control cross-validation for probability generation
+        # CalibratedClassifierCV with "prefit" does not use an RNG nor a seed. This may
+        # impact users without their knowledge, so display a warning.
+        if self.random_state is not None:
+            warnings.warn(
+                "random_state does not influence oneDAL SVM results",
+                RuntimeWarning,
+            )
+
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
@@ -240,26 +251,13 @@ class BaseSVC(BaseSVM):
         cfg = get_config()
         cfg["target_offload"] = queue
         with config_context(**cfg):
-            try:
-                n_splits = 5
-                n_jobs = n_splits if queue is None or queue.sycl_device.is_cpu else 1
-                cv = StratifiedKFold(
-                    n_splits=n_splits, shuffle=True, random_state=self.random_state
-                )
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base,
-                    ensemble=False,
-                    cv=cv,
-                    method="sigmoid",
-                )
-                self.clf_prob.fit(X, y, sample_weight)
-
-            except ValueError:
-                clf_base = clf_base.fit(X, y, sample_weight)
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base, cv="prefit", method="sigmoid"
-                )
-                self.clf_prob.fit(X, y, sample_weight)
+            clf_base.fit(X, y)
+            self.clf_prob = CalibratedClassifierCV(
+                clf_base,
+                ensemble=False,
+                cv="prefit",
+                method="sigmoid",
+            ).fit(X, y)
 
     def _save_attributes(self):
         self.support_vectors_ = self._onedal_estimator.support_vectors_

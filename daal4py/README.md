@@ -52,8 +52,8 @@ conda install daal4py -c conda-forge
 ```
 
 ```bash
-# Anaconda Cloud from Intel channel (recommended for Intel® Distribution for Python users)
-conda install daal4py -c intel
+# Intel channel (recommended for Intel® Distribution for Python users)
+conda install daal4py -c https://software.repos.intel.com/python/conda/
 ```
 
 ⚠️ Note: *GPU and MPI support are optional dependencies.
@@ -110,7 +110,7 @@ conda install impi_rt -c intel
 
 </details>
 
-You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md) as well.
+You can [build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/main/INSTALL.md) as well.
 
 
 # ⚠️ Scikit-learn patching
