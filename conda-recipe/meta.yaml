@@ -14,11 +14,12 @@
 # limitations under the License.
 #===============================================================================
 
+{% set name = "scikit-learn-intelex" %}
 {% set version = '2024.7' %}
 {% set buildnumber = 0 %}
 
 package:
-  name: scikit-learn-intelex
+  name: {{ name|lower }}
   version: {{ version }}
 
 # Reminder: source should point to github archive for conda-forge pkg
@@ -38,9 +39,9 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }}  # [not osx]
-    - {{ compiler('c') }}  # [not osx]
     - make  # [linux]
+    - {{ compiler('cxx') }}  # [linux64 or win]
+    - {{ stdlib("c") }}    # [linux64 or win]
   host:
     - python
     - setuptools
@@ -52,10 +53,12 @@ requirements:
     - jinja2
     - pybind11
     - dal-devel
+    # - dal-devel =={{ version }}
   run:
     - python
     - dpcpp-cpp-rt  # [not osx]
     - dal
+    # - dal =={{ version }}
     - {{ pin_compatible('numpy') }}
 
 test:
@@ -67,14 +70,14 @@ test:
     - catboost
     - pytest
     - pyyaml
-    - mpich
+    - mpich # [not win]
   source_files:
     - .ci
     - examples
     - tests
     - daal4py/sklearn
   commands:
-    - python -c "import daal4py, sklearnex; sklearnex.patch_sklearn()"
+    - python -c "import sklearnex; sklearnex.patch_sklearn()"
 
 about:
   home: https://intel.github.io/scikit-learn-intelex
