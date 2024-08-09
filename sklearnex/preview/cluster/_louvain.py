@@ -344,6 +344,8 @@ class Louvain(ClusterMixin, BaseEstimator):
             self.affinity_matrix_ = pairwise_kernels(
                 X, metric=self.affinity, filter_params=True, **params
             )
+            # remove self-loops
+            np.fill_diagonal(self.affinity_matrix_, 0.0)
             # truncation implemented here
             self.affinity_matrix_[self.affinity_matrix_ < self.eps] = 0
 
