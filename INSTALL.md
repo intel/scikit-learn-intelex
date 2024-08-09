@@ -41,10 +41,10 @@ Check [System](https://intel.github.io/scikit-learn-intelex/latest/system-requir
 
 ## Supported Configurations
 
-| OS / Python version | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** | **Python 3.12** |
-| :------------------ | :------------: | :------------: |  :------------: |  :------------: |  :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+| OS / Python version | **Python 3.9** | **Python 3.10** | **Python 3.11** | **Python 3.12** |
+| :------------------ | :------------: |  :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
 
 Applicable for:
 
@@ -111,7 +111,7 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda config --add channels intel
+  conda config --add channels https://software.repos.intel.com/python/conda/
   conda config --set channel_priority strict
   conda create -n env python=3.10 scikit-learn-intelex
   ```
@@ -121,7 +121,7 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into your current environment:
 
   ```bash
-  conda config --add channels intel
+  conda config --add channels https://software.repos.intel.com/python/conda/
   conda config --set channel_priority strict
   conda install scikit-learn-intelex
   ```
@@ -148,7 +148,7 @@ The build-process (using setup.py) happens in 4 stages:
 4. Compiling and linking them
 
 ### Prerequisites
-* Python version >= 3.8, <= 3.12
+* Python version >= 3.9, <= 3.12
 * Jinja2
 * Cython
 * Numpy
@@ -166,6 +166,7 @@ The build-process (using setup.py) happens in 4 stages:
 * ``DALROOT``: sets the oneAPI Data Analytics Library path
 * ``NO_DIST``: set to '1', 'yes' or alike to build without support for distributed mode
 * ``NO_STREAM``: set to '1', 'yes' or alike to build without support for streaming mode
+* ``NO_DPC``: set to '1', 'yes' or alike to build without support of oneDAL DPC++ interfaces
 * ``OFF_ONEDAL_IFACE``: set to '1' to build without the support of oneDAL interfaces
 
 ### Build Intel(R) Extension for Scikit-learn
