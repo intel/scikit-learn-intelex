@@ -58,7 +58,8 @@ from onedal.tests.utils._device_selection import get_queues
 
 
 def get_dataframes_and_queues(
-    dataframe_filter_="numpy,pandas,dpnp,dpctl", device_filter_="cpu,gpu"
+    dataframe_filter_="numpy,pandas,dpnp,dpctl",
+    device_filter_="cpu,gpu",
 ):
     """Get supported dataframes for testing.
 
@@ -103,6 +104,8 @@ def get_dataframes_and_queues(
                 df_and_q.append(pytest.param(dataframe, queue.values[0], id=id))
         return df_and_q
 
+    if "np_sycl" in dataframe_filter_:
+        dataframes_and_queues.extend(get_df_and_q("numpy_and_queue"))
     if dpctl_available and "dpctl" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpctl"))
     if dpnp_available and "dpnp" in dataframe_filter_:
@@ -129,7 +132,7 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
     """Converted input object to certain dataframe format."""
     if target_df is None:
         return obj
-    elif target_df == "numpy":
+    elif target_df in "numpy,numpy_and_queue":
         # Numpy ndarray.
         # `sycl_queue` arg is ignored.
         return np.asarray(obj, *args, **kwargs)
