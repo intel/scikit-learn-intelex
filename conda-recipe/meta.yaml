@@ -47,6 +47,7 @@ requirements:
     - setuptools
     - numpy {{ numpy }}
     - mpich  # [not win]
+    - impi-devel  # [win]
     - cmake
     - clang-format
     - cython
@@ -71,6 +72,7 @@ test:
     - pytest
     - pyyaml
     - mpich  # [not win]
+    - impi_rt  # [win]
   source_files:
     - .ci
     - examples
