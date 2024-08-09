@@ -23,7 +23,7 @@ parser.add_argument("--channels", nargs="+", default=["pypi"])
 args = parser.parse_args()
 
 CHANNELS = args.channels
-PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11"]
+PYTHON_VERSIONS = ["3.9", "3.10", "3.11"]
 SYSTEMS = ["ubuntu-latest", "windows-latest"]
 ACTIVATE = {
     "ubuntu-latest": "conda activate",
