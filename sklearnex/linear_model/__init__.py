@@ -16,6 +16,7 @@
 
 from .coordinate_descent import ElasticNet, Lasso
 from .incremental_linear import IncrementalLinearRegression
+from .incremental_ridge import IncrementalRidge
 from .linear import LinearRegression
 from .logistic_regression import LogisticRegression
 from .ridge import Ridge
@@ -23,6 +24,7 @@ from .ridge import Ridge
 __all__ = [
     "ElasticNet",
     "IncrementalLinearRegression",
+    "IncrementalRidge",
     "Lasso",
     "LinearRegression",
     "LogisticRegression",
