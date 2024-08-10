@@ -56,8 +56,19 @@ def _from_dlpack(data, xp, *args, **kwargs):
     elif isinstance(data, Iterable):
         for i in range(len(data)):
             data[i] = _one_from_dlpack(data[i], xp, *args, **kwargs)
-        return data
-    return _one_from_dlpack(data, xp, *args, **kwargs)
+    return data
+
+
+def _asarray(data, xp, *args, **kwargs):
+    def _one_asarray(data, xp, *args, **kwargs):
+        return xp.asarray(data, *args, **kwargs)
+
+    if hasattr(data, "__array_namespace__"):
+        return _one_asarray(data, xp, *args, **kwargs)
+    elif isinstance(data, Iterable):
+        for i in range(len(data)):
+            data[i] = _one_asarray(data[i], xp, *args, **kwargs)
+    return data
 
 
 def _is_numpy_namespace(xp):
@@ -80,6 +91,7 @@ def _get_sycl_namespace(*arrays):
         if hasattr(X, "__array_namespace__"):
             return sycl_type, X.__array_namespace__(), True
         elif dpnp_available and isinstance(X, dpnp.ndarray):
+            # TODO:
             # convert it to dpctl.tensor with namespace.
             return sycl_type, dpnp, False
         else:

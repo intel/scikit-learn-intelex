@@ -164,6 +164,8 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         # DPCtl tensor.
         return dpt.asarray(obj, usm_type="device", sycl_queue=sycl_queue, *args, **kwargs)
     elif target_df in array_api_modules:
+        # TODO:
+        # move this comment from here.
         # use dpctl to define gpu devices via queues and
         # move data to the device. This is necessary as
         # the standard for defining devices is

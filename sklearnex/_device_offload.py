@@ -23,7 +23,7 @@ from onedal._device_offload import (
     _transfer_to_host,
     dpnp_available,
 )
-from onedal.utils._array_api import _from_dlpack, _is_numpy_namespace
+from onedal.utils._array_api import _asarray, _is_numpy_namespace
 
 if dpnp_available:
     import dpnp
@@ -90,25 +90,26 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
 # TODO:
 # support input data
 # wrap output data
+# TODO:
+# add docstrings.
 def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())
-        usm_iface, array_api, dlpack_device = _extract_array_attr(*args, **kwargs)
+        usm_iface, input_array_api, input_array_api_device = _extract_array_attr(
+            *args, **kwargs
+        )
         result = func(self, *args, **kwargs)
         if usm_iface is not None:
             result = _copy_to_usm(usm_iface["syclobj"], result)
             if dpnp_available and isinstance(data[0], dpnp.ndarray):
                 result = _convert_to_dpnp(result)
-        # TODO:
-        # update condition
         elif (
-            array_api
-            and not _is_numpy_namespace(array_api)
+            input_array_api
+            and not _is_numpy_namespace(input_array_api)
             and hasattr(result, "__array_namespace__")
         ):
-            # result = _from_dlpack(result, array_api, copy=True, device=dlpack_device)
-            result = _from_dlpack(result, array_api)
+            result = _asarray(result, input_array_api, device=input_array_api_device)
         return result
 
     return wrapper

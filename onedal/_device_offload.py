@@ -21,7 +21,7 @@ from functools import wraps
 import numpy as np
 
 from ._config import _get_config
-from .utils._array_api import _from_dlpack, _is_numpy_namespace
+from .utils._array_api import _asarray, _is_numpy_namespace
 
 try:
     from dpctl import SyclQueue
@@ -168,19 +168,26 @@ def _get_host_inputs(*args, **kwargs):
     return q, hostargs, hostkwargs
 
 
+# TODO:
+# add docstrings.
 def _extract_array_attr(*args, **kwargs):
     allargs = (*args, *kwargs.values())
     if len(allargs) == 0:
         return None, None, None
-    usm_iface = getattr(allargs[0], "__sycl_usm_array_interface__", None)
+    # Getting first argument attr. For all sklearn-like functions
+    # all data provided in the first position. Other data arguments expected
+    # to have the same attributs.
+    firstarg = allargs[0]
+    usm_iface = getattr(firstarg, "__sycl_usm_array_interface__", None)
     array_api = None
-    dlpack_device = None
-    if hasattr(allargs[0], "__array_namespace__"):
-        array_api = getattr(allargs[0], "__array_namespace__", None)()
-
-    if hasattr(allargs[0], "__dlpack_device__"):
-        dlpack_device = getattr(allargs[0], "__dlpack_device__", None)
-    return usm_iface, array_api, dlpack_device
+    array_api_device = None
+    # TODO:
+    # refactor
+    if hasattr(firstarg, "__array_namespace__"):
+        array_api = getattr(firstarg, "__array_namespace__", None)()
+    if array_api:
+        array_api_device = firstarg.device
+    return usm_iface, array_api, array_api_device
 
 
 def _run_on_device(func, obj=None, *args, **kwargs):
@@ -208,7 +215,7 @@ def support_array_api(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            usm_iface, input_array_api, input_dlpack_device = _extract_array_attr(
+            usm_iface, input_array_api, input_array_api_device = _extract_array_attr(
                 *args, **kwargs
             )
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
@@ -217,21 +224,17 @@ def support_array_api(freefunc=False, queue_param=True):
             ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-            if usm_iface is not None and hasattr(result, "__array_interface__"):
+            # if usm_iface is not None and hasattr(result, "__array_interface__"):
+            if usm_iface is not None and (
+                hasattr(result, "__array_interface__")
+                or isinstance(result, Iterable)
+                and hasattr(result[0], "__array_interface__")
+            ):
                 result = _copy_to_usm(data_queue, result)
                 if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
-            # TODO:
-            # add exception for numpy.
-            elif (
-                input_array_api
-                and not _is_numpy_namespace(input_array_api)
-                and hasattr(result, "__array_namespace__")
-            ):
-                # TODO:
-                # avoid for numpy
-                # result = _from_dlpack(result, input_array_api, device=input_dlpack_device)
-                result = _from_dlpack(result, input_array_api)
+            elif input_array_api and not _is_numpy_namespace(input_array_api):
+                result = _asarray(result, input_array_api, device=input_array_api_device)
             return result
 
         if freefunc:

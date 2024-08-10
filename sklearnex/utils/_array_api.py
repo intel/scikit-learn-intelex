@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+"""Tools to support array_api."""
+
 import numpy as np
 
 from daal4py.sklearn._utils import sklearn_check_version
