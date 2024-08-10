@@ -19,6 +19,16 @@
 #################
 Array API support
 #################
+The `Array API <https://data-apis.org/array-api/latest/>`_ specification defines
+a standard API for all array manipulation libraries with a NumPy-like API.
+Intel(R) Extension for Scikit-Learn's Array API support requires
+`array-api-compat <https://github.com/data-apis/array-api-compat>`__ to be installed.
+
+.. note::
+    Currently, only `array-api-strict <https://github.com/data-apis/array-api-strict>`__, `dpctl <https://intelpython.github.io/dpctl/latest/index.html>`__, `dpnp <https://github.com/IntelPython/dpnp>`__ and `numpy <https://numpy.org/>`__ are known to work with estimators.
+
+Support for DPNP and DPCTL
+----------------------------------
 
 
 Example usage
@@ -26,4 +36,7 @@ Example usage
 
 
 Support for Array API-compatible inputs
+----------------------------------
+
+Planned features
 ----------------------------------
