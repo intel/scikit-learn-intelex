@@ -18,7 +18,6 @@ import random
 from collections.abc import Iterable
 from functools import partial
 from numbers import Number
-from sys import platform
 
 import numpy as np
 import pytest
@@ -158,15 +157,6 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
-    if (
-        "LocalOutlierFactor" in estimator
-        and "array_api" in dataframe
-        and platform == "win32"
-    ):
-        pytest.skip(
-            f"LocalOutlierFactor estimator with array_api input has some accuracy issues on Windows"
-        )
-
     est = PATCHED_MODELS[estimator]()
 
     if method and not hasattr(est, method):
@@ -191,14 +181,6 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in KMeans.score")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
-    if (
-        "LocalOutlierFactor" in estimator
-        and "array_api" in dataframe
-        and platform == "win32"
-    ):
-        pytest.skip(
-            f"LocalOutlierFactor estimator with array_api input has some accuracy issues on Windows"
-        )
 
     est = SPECIAL_INSTANCES[estimator]
 
