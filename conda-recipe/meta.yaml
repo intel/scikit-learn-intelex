@@ -15,7 +15,7 @@
 #===============================================================================
 
 {% set name = "scikit-learn-intelex" %}
-{% set version = '2024.7' %}
+{% set version = "2024.7" %}
 {% set buildnumber = 0 %}
 
 package:
@@ -105,3 +105,5 @@ extra:
     # GitHub IDs for maintainers of the recipe.
     - napetrov
     - Alexsandruss
+    - maria-Petrova
+    - ethanglaser
