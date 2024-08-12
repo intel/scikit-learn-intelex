@@ -127,13 +127,10 @@ def _transfer_to_host(queue, *data):
                 order=order,
             )
             has_usm_data = True
-        # TODO:
-        # update conditions.
         elif array_api and not _is_numpy_namespace(array_api):
-            # TODO:
-            # get info about the device, for backward conversions.
-            item._array = item._array.copy()
-            item = np.from_dlpack(item).copy()
+            # `copy`` param for the `asarray`` is not setted.
+            # The object is copied only if needed.
+            item = np.asarray(item)
             has_host_data = True
         else:
             has_host_data = True
