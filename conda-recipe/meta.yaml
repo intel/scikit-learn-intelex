@@ -41,17 +41,18 @@ requirements:
   build:
     - make  # [linux]
     - {{ compiler('cxx') }}  # [linux64 or win]
-    - {{ stdlib("c") }}    # [linux64 or win]
+    - {{ compiler('c') }}  # [linux64 or win]
   host:
     - python
     - setuptools
-    - numpy {{ numpy }}
-    - mpich
     - cmake
     - clang-format
     - cython
     - jinja2
     - pybind11
+    - numpy {{ numpy }}
+    - mpich  # [not win]
+    - impi-devel  # [win]
     - dal-devel
     # - dal-devel =={{ version }}
   run:
@@ -70,7 +71,8 @@ test:
     - catboost
     - pytest
     - pyyaml
-    - mpich # [not win]
+    - mpich  # [not win]
+    - impi_rt  # [win]
   source_files:
     - .ci
     - examples

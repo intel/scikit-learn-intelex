@@ -17,11 +17,9 @@ rem ============================================================================
 
 IF DEFINED PKG_VERSION (set DAAL4PY_VERSION=%PKG_VERSION%)
 
-set MPIROOT=%PREFIX%\Library
+IF NOT DEFINED MPIROOT (set MPIROOT=%PREFIX%\Library)
 
 IF NOT DEFINED DALROOT (set DALROOT=%PREFIX%)
-
-set "BUILD_ARGS="
 
 IF DEFINED DPCPPROOT (
     echo "Sourcing DPCPPROOT"
@@ -30,6 +28,4 @@ IF DEFINED DPCPPROOT (
 
 set PATH=%PATH%;%PREFIX%\Library\bin\libfabric
 
-%PYTHON% setup.py build %BUILD_ARGS%
-IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
 %PYTHON% setup.py install --single-version-externally-managed --record record.txt
