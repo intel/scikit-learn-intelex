@@ -20,7 +20,6 @@ import scipy.sparse as sp
 from sklearnex import get_config
 
 try:
-    import dpctl
     import dpctl.tensor as dpt
 
     dpctl_available = True
@@ -110,19 +109,24 @@ def get_dataframes_and_queues(
         dataframes_and_queues.extend(get_df_and_q("dpctl"))
     if dpnp_available and "dpnp" in dataframe_filter_:
         dataframes_and_queues.extend(get_df_and_q("dpnp"))
-    # TODO:
-    # condition requires refactoring.
     if (
         "array_api" in dataframe_filter_
         and "array_api" in array_api_modules
         or array_api_enabled()
     ):
+        # TODO:
+        # Generally extend Array API testing with ability to add supported
+        # devices which are available at runtime.
         dataframes_and_queues.append(pytest.param("array_api", None, id="array_api"))
 
     return dataframes_and_queues
 
 
+# TODO:
+# generelize it with scikit-learn's _array_api module
+# `_convert_to_numpy` utility.
 def _as_numpy(obj, *args, **kwargs):
+    """Converted input object to numpy.ndarray format."""
     if dpnp_available and isinstance(obj, dpnp.ndarray):
         return obj.asnumpy(*args, **kwargs)
     if dpctl_available and isinstance(obj, dpt.usm_ndarray):
@@ -164,23 +168,13 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         # DPCtl tensor.
         return dpt.asarray(obj, usm_type="device", sycl_queue=sycl_queue, *args, **kwargs)
     elif target_df in array_api_modules:
+        # Array API input other than DPNP ndarray, DPCtl tensor or
+        # Numpy ndarray.
+
         # TODO:
-        # move this comment from here.
-        # use dpctl to define gpu devices via queues and
-        # move data to the device. This is necessary as
-        # the standard for defining devices is
-        # purposefully not defined in the array_api
-        # standard, but maintaining data on a device
-        # using the method `from_dlpack` is.
+        # Generally extend Array API testing with ability to add supported
+        # devices which are available at runtime.
         xp = array_api_modules[target_df]
-        # return xp.from_dlpack(
-        #     _convert_to_dataframe(
-        #         obj, sycl_queue=sycl_queue, target_df="dpctl", *args, **kwargs
-        #     )
-        # )
-        if hasattr(obj, "__dlpack__"):
-            return xp.from_dlpack(obj)
-        else:
-            return xp.asarray(obj)
+        return xp.asarray(obj)
 
     raise RuntimeError("Unsupported dataframe conversion")

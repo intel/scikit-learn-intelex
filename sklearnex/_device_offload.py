@@ -87,12 +87,12 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     )
 
 
-# TODO:
-# support input data
-# wrap output data
-# TODO:
-# add docstrings.
 def wrap_output_data(func):
+    """
+    Handles Array API input. Converts output of decorated function
+    to input Array API format on the same device.
+    """
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())

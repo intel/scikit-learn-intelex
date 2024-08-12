@@ -165,9 +165,21 @@ def _get_host_inputs(*args, **kwargs):
     return q, hostargs, hostkwargs
 
 
-# TODO:
-# add docstrings.
 def _extract_array_attr(*args, **kwargs):
+    """Extracts USM iface, array namespace and Hardware device
+    the array data resides on.
+
+    Returns
+    -------
+    usm_iface : Dict
+        SUA protocol dictionary describing the array.
+    array_api : str
+        The name of the Array API namespace.
+    array_api_device : Array API device object
+        Hardware device the array data resides on.
+
+    """
+
     allargs = (*args, *kwargs.values())
     if len(allargs) == 0:
         return None, None, None
@@ -178,8 +190,6 @@ def _extract_array_attr(*args, **kwargs):
     usm_iface = getattr(firstarg, "__sycl_usm_array_interface__", None)
     array_api = None
     array_api_device = None
-    # TODO:
-    # refactor
     if hasattr(firstarg, "__array_namespace__"):
         array_api = getattr(firstarg, "__array_namespace__", None)()
     if array_api:
@@ -193,12 +203,11 @@ def _run_on_device(func, obj=None, *args, **kwargs):
     return func(*args, **kwargs)
 
 
-# TODO:
-# update docstrings.
 def support_array_api(freefunc=False, queue_param=True):
     """
-    Handles USMArray input. Puts SYCLQueue from data to decorated function arguments.
-    Converts output of decorated function to dpctl.tensor/dpnp.ndarray if input was of this type.
+    Handles Array API input. Converts output of decorated function
+    to input Array API format on the same device.
+    Puts SYCLQueue from data to decorated function arguments.
 
     Parameters
     ----------
@@ -221,7 +230,6 @@ def support_array_api(freefunc=False, queue_param=True):
             ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-            # if usm_iface is not None and hasattr(result, "__array_interface__"):
             if usm_iface is not None and (
                 hasattr(result, "__array_interface__")
                 or isinstance(result, Iterable)
