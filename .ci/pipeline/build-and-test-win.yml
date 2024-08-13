@@ -51,7 +51,7 @@ steps:
   - script: |
       call activate CB
       cd ..
-      call s\conda-recipe\run_test.bat s
+      call s\conda-recipe\run_test.bat s\
     displayName: 'Sklearnex testing'
   - script: |
       call activate CB
