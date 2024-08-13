@@ -29,18 +29,19 @@ if "Windows" in platform.system():
     current_path = os.path.dirname(__file__)
     path_to_env = site.getsitepackages()[0]
     path_to_libs = os.path.join(path_to_env, "Library", "bin")
-    path_to_oneapi_backend = os.path.join(current_path, "oneapi")
     if sys.version_info.minor >= 8:
         if "DALROOT" in os.environ:
             dal_root_redist = os.path.join(os.environ["DALROOT"], "redist", arch_dir)
             if os.path.exists(dal_root_redist):
                 os.add_dll_directory(dal_root_redist)
                 os.environ["PATH"] = dal_root_redist + os.pathsep + os.environ["PATH"]
+
         try:
             os.add_dll_directory(path_to_libs)
         except FileNotFoundError:
             pass
-        os.add_dll_directory(path_to_oneapi_backend)
+
+
     os.environ["PATH"] = path_to_libs + os.pathsep + os.environ["PATH"]
 
 try:
