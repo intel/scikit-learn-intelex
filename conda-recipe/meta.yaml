@@ -14,6 +14,8 @@
 # limitations under the License.
 #===============================================================================
 
+# NB: this recipe should be synced with conda-forge one
+
 {% set name = "scikit-learn-intelex" %}
 {% set version = "2024.7" %}
 {% set buildnumber = 0 %}

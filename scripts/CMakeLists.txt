@@ -27,6 +27,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(WIN32)
+    # hint CMake to get python from PYTHON env. variable if defined
     if(DEFINED ENV{PYTHON})
         set(PYTHON_EXECUTABLE $ENV{PYTHON})
     endif()
