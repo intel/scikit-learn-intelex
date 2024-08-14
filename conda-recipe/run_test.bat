@@ -15,29 +15,13 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-rem %1 - scikit-learn-intelex repo root
+rem %1 - scikit-learn-intelex repo root (leave empty if it's PWD)
 
-set MPIROOT=%PREFIX%\Library
 set exitcode=0
 
-IF DEFINED DPCPPROOT (
-    echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat" || set exitcode=1
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
-    dpcpp --version
-)
+IF NOT DEFINED PYTHON (set PYTHON="python")
 
-IF DEFINED DALROOT (
-    echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat" || set exitcode=1
-    echo "Finish sourcing DALROOT"
-)
-
-IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT"
-    call "%TBBROOT%\env\vars.bat" || set exitcode=1
-)
+%PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
 %PYTHON% -m unittest discover -v -s %1%tests -p test*.py || set exitcode=1
 

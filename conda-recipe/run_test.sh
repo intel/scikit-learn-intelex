@@ -15,26 +15,15 @@
 # limitations under the License.
 #===============================================================================
 
-daal4py_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-count=3
-while [[ count -ne 0 ]]; do
-    if [[ -d $daal4py_dir/daal4py/ && -d $daal4py_dir/tests/ && -d $daal4py_dir/examples/daal4py ]]; then
-        break
-    fi
-    daal4py_dir="$( dirname "${daal4py_dir}" )"
-    count=$(($count - 1))
-done
+daal4py_dir="$( cd "$( dirname "$( dirname "${BASH_SOURCE[0]}" )")" && pwd )"
 
-echo "daal4py_dir=$daal4py_dir"
-if [[ count -eq 0 ]]; then
-    echo "run_test.sh must be in daal4py repository"
-    exit 1
-fi
-
-echo "Start testing ..."
 return_code=0
 
-python -c "import daal4py"
+if [ -z "${PYTHON}" ]; then
+    export PYTHON=python
+fi
+
+${PYTHON} -c "from sklearnex import patch_sklearn; patch_sklearn()"
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
@@ -45,24 +34,19 @@ if [[ ! $NO_DIST ]]; then
     return_code=$(($return_code + $?))
 fi
 
-echo "Unittest discover testing ..."
-python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
+${PYTHON} -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
 return_code=$(($return_code + $?))
 
-echo "Pytest of daal4py running ..."
 pytest --verbose --pyargs daal4py
 return_code=$(($return_code + $?))
 
-echo "Pytest of sklearnex running ..."
 pytest --verbose --pyargs sklearnex
 return_code=$(($return_code + $?))
 
-echo "Pytest of onedal running ..."
 pytest --verbose --pyargs onedal
 return_code=$(($return_code + $?))
 
-echo "Global patching test running ..."
-python ${daal4py_dir}/.ci/scripts/test_global_patch.py
+${PYTHON} ${daal4py_dir}/.ci/scripts/test_global_patch.py
 return_code=$(($return_code + $?))
 
 exit $return_code

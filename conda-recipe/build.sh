@@ -15,34 +15,24 @@
 # limitations under the License.
 #===============================================================================
 
-if [ "$PY3K" == "1" ]; then
-    ARGS=" --single-version-externally-managed --record=record.txt"
-else
-    ARGS="--old-and-unmanageable"
+if [ -z "${PYTHON}" ]; then
+    export PYTHON=python
 fi
 
-# if dpc++ vars path is specified
-if [ ! -z "${DPCPPROOT}" ]; then
-    source ${DPCPPROOT}/env/vars.sh
+if [ ! -z "${PKG_VERSION}" ]; then
+    export SKLEARNEX_VERSION=$PKG_VERSION
 fi
 
 if [ -z "${DALROOT}" ]; then
     export DALROOT=${PREFIX}
 fi
 
-if [ "$(uname)" == "Darwin" ]; then
-    export CC=gcc
-    export CXX=g++
+if [ -z "${MPIROOT}" ]; then
+    export MPIROOT=${PREFIX}
 fi
 
-if [ ! -z "${PKG_VERSION}" ]; then
-    export DAAL4PY_VERSION=$PKG_VERSION
+if [ ! -z "${DPCPPROOT}" ]; then
+    source ${DPCPPROOT}/env/vars.sh
 fi
 
-export MPIROOT=${PREFIX}
-
-if [ -z "${PYTHON}" ]; then
-    export PYTHON=python
-fi
-
-${PYTHON} setup.py install $ARGS
+${PYTHON} setup.py install --single-version-externally-managed --record record.txt
