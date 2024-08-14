@@ -15,7 +15,20 @@
 # limitations under the License.
 #===============================================================================
 
-daal4py_dir="$( cd "$( dirname "$( dirname "${BASH_SOURCE[0]}" )")" && pwd )"
+sklex_root="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+count=3
+while [[ count -ne 0 ]]; do
+    if [[ -d $sklex_root/.ci/ && -d $sklex_root/examples/ && -d $sklex_root/tests/ && -d $sklex_root/daal4py/sklearn ]]; then
+        break
+    fi
+    sklex_root="$( dirname "${sklex_root}" )"
+    count=$(($count - 1))
+done
+
+if [[ count -eq 0 ]]; then
+    echo "run_test.sh did not find required testing directories"
+    exit 1
+fi
 
 return_code=0
 
@@ -30,11 +43,11 @@ echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI unittest discover testing ..."
     mpirun --version
-    mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/tests -p test*spmd*.py
+    mpirun -n 4 python -m unittest discover -v -s ${sklex_root}/tests -p test*spmd*.py
     return_code=$(($return_code + $?))
 fi
 
-${PYTHON} -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
+${PYTHON} -m unittest discover -v -s ${sklex_root}/tests -p test*.py
 return_code=$(($return_code + $?))
 
 pytest --verbose --pyargs daal4py
@@ -46,7 +59,7 @@ return_code=$(($return_code + $?))
 pytest --verbose --pyargs onedal
 return_code=$(($return_code + $?))
 
-${PYTHON} ${daal4py_dir}/.ci/scripts/test_global_patch.py
+${PYTHON} ${sklex_root}/.ci/scripts/test_global_patch.py
 return_code=$(($return_code + $?))
 
 exit $return_code
