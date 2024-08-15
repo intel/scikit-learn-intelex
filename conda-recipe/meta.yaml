@@ -44,6 +44,7 @@ requirements:
     - make  # [linux]
     - {{ compiler('cxx') }}  # [linux64 or win]
     - {{ compiler('c') }}  # [linux64 or win]
+    # - {{ stdlib("c") }}  # [linux64 or win]
   host:
     - python
     - setuptools
