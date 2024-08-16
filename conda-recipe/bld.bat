@@ -20,16 +20,12 @@ IF DEFINED PKG_VERSION (set SKLEARNEX_VERSION=%PKG_VERSION%)
 IF NOT DEFINED DALROOT (set DALROOT=%PREFIX%)
 IF NOT DEFINED MPIROOT (set MPIROOT=%PREFIX%\Library)
 
-echo CC=%CC%
-echo CXX=%CXX%
-echo CMAKE_C_COMPILER=%CMAKE_C_COMPILER%
-echo CMAKE_CXX_COMPILER=%CMAKE_CXX_COMPILER%
-echo CC_FOR_BUILD=%CC_FOR_BUILD%
-echo CXX_FOR_BUILD=%CXX_FOR_BUILD%
-
 rem reset preferred compilers to avoid usage of icx/icpx by default in all cases
 set CC=cl.exe
 set CXX=cl.exe
+
+rem add path to compiler libs
+set LIB=%LIB%;%PREFIX%\Library\lib
 
 rem source compiler if DPCPPROOT is set outside of conda-build
 IF DEFINED DPCPPROOT (
