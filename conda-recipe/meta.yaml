@@ -42,7 +42,7 @@ build:
 requirements:
   build:
     - make  # [linux]
-    - ninja  # [win]
+    - m2-coreutils  # [win]
     - {{ compiler('cxx') }}  # [linux64 or win]
     - {{ compiler('c') }}  # [linux64 or win]
     - dpcpp_linux-64  # [linux64]

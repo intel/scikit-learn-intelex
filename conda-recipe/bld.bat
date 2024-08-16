@@ -24,9 +24,6 @@ rem reset preferred compilers to avoid usage of icx/icpx by default in all cases
 set CC=cl.exe
 set CXX=cl.exe
 
-rem add path to compiler libs
-set LIB=%LIB%;%PREFIX%\Library\lib
-
 rem source compiler if DPCPPROOT is set outside of conda-build
 IF DEFINED DPCPPROOT (
     echo "Sourcing DPCPPROOT"
