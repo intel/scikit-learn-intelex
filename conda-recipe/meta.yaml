@@ -43,7 +43,7 @@ requirements:
   build:
     - make  # [linux]
     - dpcpp_linux-64  # [linux64]
-    - dpcpp_win-64  # [win]
+    # - dpcpp_win-64  # [win]
     - {{ compiler('cxx') }}  # [linux64 or win]
     - {{ compiler('c') }}  # [linux64 or win]
     # conda-forge feedstock specific
@@ -58,14 +58,14 @@ requirements:
     - pybind11
     - numpy {{ numpy }}
     - mpich  # [not win]
-    - impi-devel  # [win]
+    # - impi-devel  # [win]
     # dal-devel pinning depends on the recipe location (repo or feedstock)
     - dal-devel
     # - dal-devel =={{ version }}
   run:
     - python
     - {{ pin_compatible('numpy') }}
-    - dpcpp-cpp-rt  # [not osx]
+    - dpcpp-cpp-rt  # [linux64]
     # dal pinning depends on the recipe location (repo or feedstock)
     - dal
     # - dal =={{ version }}
@@ -80,7 +80,7 @@ test:
     - pytest
     - pyyaml
     - mpich  # [not win]
-    - impi_rt  # [win]
+    # - impi_rt  # [win]
   source_files:
     - .ci
     - examples
