@@ -23,6 +23,8 @@ IF NOT DEFINED MPIROOT (set MPIROOT=%PREFIX%\Library)
 rem reset preferred compilers to avoid usage of icx/icpx by default in all cases
 set CC=cl.exe
 set CXX=cl.exe
+set "CMAKE_ARGS="
+set "BUILD_ARGS="
 
 rem source compiler if DPCPPROOT is set outside of conda-build
 IF DEFINED DPCPPROOT (
