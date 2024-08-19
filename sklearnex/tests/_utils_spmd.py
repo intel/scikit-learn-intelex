@@ -111,6 +111,13 @@ def _generate_clustering_data(
     return X_train, X_test
 
 
+def _generate_weights(n_samples, dtype=np.float64, random_state=42):
+    # Generates weights
+    gen = np.random.default_rng(random_state)
+    weights = gen.uniform(low=-0.3, high=+0.7, size=(n_samples)).astype(dtype)
+    return weights
+
+
 def _spmd_assert_allclose(spmd_result, batch_result, **kwargs):
     """Calls assert_allclose on spmd and batch results.
 
