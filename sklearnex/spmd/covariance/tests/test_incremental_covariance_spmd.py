@@ -59,6 +59,8 @@ def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered)
         ]
     )
 
+    dpt_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
+
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe
     )
@@ -67,12 +69,12 @@ def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered)
     spmd_result = IncrementalEmpiricalCovariance_SPMD(
         assume_centered=assume_centered
     ).fit(local_dpt_data)
-    batch_result = IncrementalEmpiricalCovariance(assume_centered=assume_centered).fit(
-        data
+    non_spmd_result = IncrementalEmpiricalCovariance(assume_centered=assume_centered).fit(
+        dpt_data
     )
 
-    assert_allclose(spmd_result.covariance_, batch_result.covariance_)
-    assert_allclose(spmd_result.location_, batch_result.location_)
+    assert_allclose(spmd_result.covariance_, non_spmd_result.covariance_)
+    assert_allclose(spmd_result.location_, non_spmd_result.location_)
 
 
 @pytest.mark.skipif(
@@ -108,6 +110,8 @@ def test_incremental_covariance_partial_fit_spmd_gold(
         ]
     )
 
+    dpt_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
+
     local_data = _get_local_tensor(data)
     split_local_data = np.array_split(local_data, num_blocks)
 
@@ -120,7 +124,7 @@ def test_incremental_covariance_partial_fit_spmd_gold(
         )
         inccov_spmd.partial_fit(local_dpt_data)
 
-    inccov.fit(data)
+    inccov.fit(dpt_data)
 
     assert_allclose(inccov_spmd.covariance_, inccov.covariance_)
     assert_allclose(inccov_spmd.location_, inccov.location_)
@@ -151,6 +155,8 @@ def test_incremental_covariance_partial_fit_spmd_synthetic(
     # Generate data and process into dpt
     data = _generate_statistic_data(n_samples, n_features)
 
+    dpt_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
+
     local_data = _get_local_tensor(data)
     split_local_data = np.array_split(local_data, num_blocks)
 
@@ -163,7 +169,7 @@ def test_incremental_covariance_partial_fit_spmd_synthetic(
         )
         inccov_spmd.partial_fit(local_dpt_data)
 
-    inccov.fit(data)
+    inccov.fit(dpt_data)
 
     assert_allclose(inccov_spmd.covariance_, inccov.covariance_)
     assert_allclose(inccov_spmd.location_, inccov.location_)
