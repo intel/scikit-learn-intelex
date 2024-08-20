@@ -46,7 +46,7 @@ Classification
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'gini'`
      - Multi-output and sparse data are not supported
    * - `KNeighborsClassifier`
@@ -87,7 +87,7 @@ Regression
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'mse'`
      - Multi-output and sparse data are not supported
    * - `KNeighborsRegressor`
@@ -248,7 +248,7 @@ Classification
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'gini'`
        - ``oob_score`` = `True`
        - ``sample_weight`` != `None`
@@ -284,7 +284,7 @@ Regression
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'mse'`
        - ``oob_score`` = `True`
        - ``sample_weight`` != `None`
@@ -399,7 +399,7 @@ Classification
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'gini'`
        - ``oob_score`` = `True`
        - ``sample_weight`` != `None`
@@ -436,7 +436,7 @@ Regression
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'mse'`
        - ``oob_score`` = `True`
        - ``sample_weight`` != `None`

@@ -37,8 +37,8 @@ available: https://github.com/intel/scikit-learn-intelex/blob/main/examples/skle
 
   mpirun -n 4 python linear_regression_spmd.py
 
-Note that additional mpirun arguments can be added as desired. SPMD-supported estimators are listed below 
-CPU and GPU sections of `algorithms support documentation <https://intel.github.io/scikit-learn-intelex/latest/oneapi-gpu.html#>`_.
+Note that additional mpirun arguments can be added as desired. SPMD-supported estimators are listed in the 
+`algorithms support documentation <https://intel.github.io/scikit-learn-intelex/latest/algorithms.html#spmd-support>`_.
 
 Additionally, daal4py offers some distributed functionality, see 
 `documentation <https://intelpython.github.io/daal4py/scaling.html>`_ for further details.
