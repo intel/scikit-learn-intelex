@@ -143,7 +143,7 @@ Clustering
        - ``algorithm`` not in [`'brute'`, `'auto'`]
      - Only dense data is supported
 
-Dimensionality reduction
+Dimensionality Reduction
 ************************
 
 .. list-table::
@@ -188,7 +188,7 @@ Nearest Neighbors
          all parameters except ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Sparse data is not supported
 
-Other tasks
+Other Tasks
 ***********
 
 .. list-table::
@@ -328,7 +328,7 @@ Clustering
        - ``algorithm`` not in [`'brute'`, `'auto'`]
      - Only dense data is supported
 
-Dimensionality reduction
+Dimensionality Reduction
 ************************
 
 .. list-table::
@@ -364,7 +364,7 @@ Nearest Neighbors
        - ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Only dense data is supported
 
-Other tasks
+Other Tasks
 ***********
 
 .. list-table::
@@ -480,7 +480,7 @@ Clustering
        - ``algorithm`` not in [`'brute'`, `'auto'`]
      - Only dense data is supported
 
-Dimensionality reduction
+Dimensionality Reduction
 ************************
 
 .. list-table::
@@ -517,7 +517,7 @@ Nearest Neighbors
        - ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Only dense data is supported
 
-Other tasks
+Other Tasks
 ***********
 
 .. list-table::
@@ -532,7 +532,7 @@ Other tasks
      - All parameters are supported
      - Only dense data is supported
 
-Scikit-learn tests
+Scikit-learn Tests
 ------------------
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
