@@ -284,11 +284,24 @@ if daal_check_version((2024, "P", 1)):
                 return self._onedal_cpu_fit(X, y, sample_weight)
 
             assert sample_weight is None
+            accept_sparse = daal_check_version((2024, "P", 600))
 
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(X, y, dtype=[np.float64, np.float32])
+                X, y = self._validate_data(
+                    X,
+                    y,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X, y = check_X_y(X, y, dtype=[np.float64, np.float32])
+                X, y = check_X_y(
+                    X,
+                    y,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
 
             self._initialize_onedal_estimator()
             try:
@@ -308,10 +321,22 @@ if daal_check_version((2024, "P", 1)):
                 return daal4py_predict(self, X, "computeClassLabels")
 
             check_is_fitted(self)
+            accept_sparse = daal_check_version((2024, "P", 600))
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+                X = self._validate_data(
+                    X,
+                    reset=False,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
+                X = check_array(
+                    X,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
 
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict(X, queue=queue)
@@ -321,10 +346,22 @@ if daal_check_version((2024, "P", 1)):
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
             check_is_fitted(self)
+            accept_sparse = daal_check_version((2024, "P", 600))
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+                X = self._validate_data(
+                    X,
+                    reset=False,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
+                X = check_array(
+                    X,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
 
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_proba(X, queue=queue)
@@ -334,10 +371,22 @@ if daal_check_version((2024, "P", 1)):
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
             check_is_fitted(self)
+            accept_sparse = daal_check_version((2024, "P", 600))
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+                X = self._validate_data(
+                    X,
+                    reset=False,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
+                X = check_array(
+                    X,
+                    accept_sparse=accept_sparse,
+                    accept_large_sparse=accept_sparse,
+                    dtype=[np.float64, np.float32],
+                )
 
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
