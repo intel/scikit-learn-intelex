@@ -39,6 +39,8 @@ if daal_check_version((2024, "P", 1)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
 
+    _sparsity_enabled = daal_check_version((2024, "P", 700))
+
     class BaseLogisticRegression(ABC):
         def _save_attributes(self):
             assert hasattr(self, "_onedal_estimator")
@@ -238,8 +240,7 @@ if daal_check_version((2024, "P", 1)):
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
                     (
-                        (not any([issparse(i) for i in data]))
-                        or daal_check_version((2024, "P", 600)),
+                        (not any([issparse(i) for i in data])) or _sparsity_enabled,
                         "Sparse input is not supported.",
                     ),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
@@ -284,22 +285,21 @@ if daal_check_version((2024, "P", 1)):
                 return self._onedal_cpu_fit(X, y, sample_weight)
 
             assert sample_weight is None
-            accept_sparse = daal_check_version((2024, "P", 600))
 
             if sklearn_check_version("1.0"):
                 X, y = self._validate_data(
                     X,
                     y,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
             else:
                 X, y = check_X_y(
                     X,
                     y,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
 
@@ -321,20 +321,19 @@ if daal_check_version((2024, "P", 1)):
                 return daal4py_predict(self, X, "computeClassLabels")
 
             check_is_fitted(self)
-            accept_sparse = daal_check_version((2024, "P", 600))
             if sklearn_check_version("1.0"):
                 X = self._validate_data(
                     X,
                     reset=False,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
             else:
                 X = check_array(
                     X,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
 
@@ -346,20 +345,19 @@ if daal_check_version((2024, "P", 1)):
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
             check_is_fitted(self)
-            accept_sparse = daal_check_version((2024, "P", 600))
             if sklearn_check_version("1.0"):
                 X = self._validate_data(
                     X,
                     reset=False,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
             else:
                 X = check_array(
                     X,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
 
@@ -371,20 +369,19 @@ if daal_check_version((2024, "P", 1)):
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
             check_is_fitted(self)
-            accept_sparse = daal_check_version((2024, "P", 600))
             if sklearn_check_version("1.0"):
                 X = self._validate_data(
                     X,
                     reset=False,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
             else:
                 X = check_array(
                     X,
-                    accept_sparse=accept_sparse,
-                    accept_large_sparse=accept_sparse,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
                     dtype=[np.float64, np.float32],
                 )
 

@@ -95,7 +95,7 @@ def test_sklearnex_binary_classification(dataframe, queue):
     assert accuracy_score(y_test, y_pred) > 0.95
 
 
-if daal_check_version((2024, "P", 600)):
+if daal_check_version((2024, "P", 700)):
 
     @pytest.mark.parametrize("queue", get_queues("gpu"))
     @pytest.mark.parametrize("dtype", [np.float32, np.float64])

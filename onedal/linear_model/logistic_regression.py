@@ -63,7 +63,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
-        sparsity_enabled = daal_check_version((2024, "P", 600))
+        sparsity_enabled = daal_check_version((2024, "P", 700))
         X, y = _check_X_y(
             X,
             y,
@@ -154,7 +154,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
     def _infer(self, X, module, queue):
         _check_is_fitted(self)
-        sparsity_enabled = daal_check_version((2024, "P", 600))
+        sparsity_enabled = daal_check_version((2024, "P", 700))
 
         X = _check_array(
             X,

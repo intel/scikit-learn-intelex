@@ -41,9 +41,9 @@ struct method2t {
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "dense_batch", ops, Float, method::dense_batch);
-        #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
+        #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
         ONEDAL_PARAM_DISPATCH_VALUE(method, "sparse", ops, Float, method::sparse);
-        #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240600
+        #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240700
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
