@@ -56,6 +56,7 @@ def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered)
             [0.0, 4.0, 16.0],
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
+            [0.0, 7.0, 128.0],
         ]
     )
 
@@ -107,6 +108,7 @@ def test_incremental_covariance_partial_fit_spmd_gold(
             [0.0, 4.0, 16.0],
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
+            [0.0, 7.0, 128.0],
         ]
     )
 
