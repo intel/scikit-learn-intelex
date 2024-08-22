@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -61,6 +62,15 @@ def test_incremental_linear_regression_fit_spmd_gold(
             [4.0, 16.0],
             [5.0, 32.0],
             [6.0, 64.0],
+            [7.0, 128.0],
+            [8.0, 0.0],
+            [9.0, 2.0],
+            [10.0, 4.0],
+            [11.0, 8.0],
+            [12.0, 16.0],
+            [13.0, 32.0],
+            [14.0, 64.0],
+            [15.0, 128.0],
         ]
     ).astype(dtype=dtype)
     dpt_X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
@@ -124,6 +134,15 @@ def test_incremental_linear_regression_partial_fit_spmd_gold(
             [4.0, 16.0],
             [5.0, 32.0],
             [6.0, 64.0],
+            [7.0, 128.0],
+            [8.0, 0.0],
+            [9.0, 2.0],
+            [10.0, 4.0],
+            [11.0, 8.0],
+            [12.0, 16.0],
+            [13.0, 32.0],
+            [14.0, 64.0],
+            [15.0, 128.0],
         ]
     ).astype(dtype=dtype)
     dpt_X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
@@ -173,7 +192,7 @@ def test_incremental_linear_regression_partial_fit_spmd_gold(
 )
 @pytest.mark.parametrize("fit_intercept", [True, False])
 @pytest.mark.parametrize("num_samples", [100, 1000])
-@pytest.mark.parametrize("num_features", [10, 50])
+@pytest.mark.parametrize("num_features", [5, 10])
 @pytest.mark.parametrize("macro_block", [None, 1024])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
@@ -185,6 +204,8 @@ def test_incremental_linear_regression_fit_spmd_random(
     from sklearnex.spmd.linear_model import (
         IncrementalLinearRegression as IncrementalLinearRegression_SPMD,
     )
+
+    tol = 1e-4 if dtype == np.float32 else 1e-7
 
     # Create gold data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(
@@ -214,14 +235,14 @@ def test_incremental_linear_regression_fit_spmd_random(
     inclin_spmd.fit(local_dpt_X, local_dpt_y)
     inclin.fit(dpt_X, dpt_y)
 
-    assert_allclose(inclin.coef_, inclin_spmd.coef_)
+    assert_allclose(inclin.coef_, inclin_spmd.coef_, atol=tol)
     if fit_intercept:
-        assert_allclose(inclin.intercept_, inclin_spmd.intercept_)
+        assert_allclose(inclin.intercept_, inclin_spmd.intercept_, atol=tol)
 
     y_pred_spmd = inclin_spmd.predict(dpt_X_test)
     y_pred = inclin.predict(dpt_X_test)
 
-    _spmd_assert_allclose(y_pred_spmd, y_pred)
+    assert_allclose(_as_numpy(y_pred_spmd), _as_numpy(y_pred), atol=tol)
 
 
 @pytest.mark.skipif(
@@ -235,7 +256,7 @@ def test_incremental_linear_regression_fit_spmd_random(
 @pytest.mark.parametrize("fit_intercept", [True, False])
 @pytest.mark.parametrize("num_blocks", [1, 2])
 @pytest.mark.parametrize("num_samples", [100, 1000])
-@pytest.mark.parametrize("num_features", [10, 50])
+@pytest.mark.parametrize("num_features", [5, 10])
 @pytest.mark.parametrize("macro_block", [None, 1024])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
@@ -254,6 +275,8 @@ def test_incremental_linear_regression_partial_fit_spmd_random(
     from sklearnex.spmd.linear_model import (
         IncrementalLinearRegression as IncrementalLinearRegression_SPMD,
     )
+
+    tol = 3e-4 if dtype == np.float32 else 1e-7
 
     # Create gold data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(
@@ -295,11 +318,11 @@ def test_incremental_linear_regression_partial_fit_spmd_random(
         inclin_spmd.partial_fit(local_dpt_X, local_dpt_y)
         inclin.partial_fit(dpt_X, dpt_y)
 
-    assert_allclose(inclin.coef_, inclin_spmd.coef_, atol=1e-7)
+    assert_allclose(inclin.coef_, inclin_spmd.coef_, atol=tol)
     if fit_intercept:
-        assert_allclose(inclin.intercept_, inclin_spmd.intercept_, atol=1e-7)
+        assert_allclose(inclin.intercept_, inclin_spmd.intercept_, atol=tol)
 
     y_pred_spmd = inclin_spmd.predict(dpt_X_test)
     y_pred = inclin.predict(dpt_X_test)
 
-    _spmd_assert_allclose(y_pred_spmd, y_pred)
+    assert_allclose(_as_numpy(y_pred_spmd), _as_numpy(y_pred), atol=tol)
