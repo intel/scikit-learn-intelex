@@ -99,7 +99,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
         if not hasattr(self, "_onedal_params"):
             dtype = get_dtype(X)
-            self._onedal_params = self._get_onedal_params(dtype)
+            self._onedal_params = self._get_onedal_params(False, dtype=dtype)
 
         X_table, weights_table = to_table(X, weights)
         self._partial_result = self._get_backend(

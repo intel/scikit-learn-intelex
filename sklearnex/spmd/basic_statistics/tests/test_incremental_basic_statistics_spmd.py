@@ -59,6 +59,7 @@ def test_incremental_basic_statistics_fit_spmd_gold(dataframe, queue, weighted, 
             [0.0, 4.0, 16.0],
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
+            [0.0, 7.0, 128.0],
         ]
     ).astype(dtype=dtype)
 
@@ -69,7 +70,7 @@ def test_incremental_basic_statistics_fit_spmd_gold(dataframe, queue, weighted, 
     )
 
     if weighted:
-        weights = np.array([0, 1, 2, 3, 4, 5, 6]).astype(dtype=dtype)
+        weights = np.array([0, 1, 2, 3, 4, 5, 6, 7]).astype(dtype=dtype)
         dpt_weights = _convert_to_dataframe(
             weights, sycl_queue=queue, target_df=dataframe
         )
@@ -124,6 +125,7 @@ def test_incremental_basic_statistics_partial_fit_spmd_gold(
             [0.0, 4.0, 16.0],
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
+            [0.0, 7.0, 128.0],
         ]
     )
     data = data.astype(dtype=dtype)
@@ -132,7 +134,7 @@ def test_incremental_basic_statistics_partial_fit_spmd_gold(
     split_local_data = np.array_split(local_data, num_blocks)
 
     if weighted:
-        weights = np.array([0, 1, 2, 3, 4, 5, 6])
+        weights = np.array([0, 1, 2, 3, 4, 5, 6, 7])
         dpt_weights = _convert_to_dataframe(
             weights, sycl_queue=queue, target_df=dataframe
         )
@@ -195,6 +197,7 @@ def test_incremental_basic_statistics_single_option_partial_fit_spmd_gold(
             [0.0, 4.0, 16.0],
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
+            [0.0, 7.0, 128.0],
         ]
     )
     data = data.astype(dtype=dtype)
@@ -203,7 +206,7 @@ def test_incremental_basic_statistics_single_option_partial_fit_spmd_gold(
     split_local_data = np.array_split(local_data, num_blocks)
 
     if weighted:
-        weights = np.array([0, 1, 2, 3, 4, 5, 6])
+        weights = np.array([0, 1, 2, 3, 4, 5, 6, 7])
         dpt_weights = _convert_to_dataframe(
             weights, sycl_queue=queue, target_df=dataframe
         )
@@ -257,14 +260,16 @@ def test_incremental_basic_statistics_partial_fit_spmd_synthetic(
         IncrementalBasicStatistics as IncrementalBasicStatistics_SPMD,
     )
 
+    tol = 2e-3 if dtype == np.float32 else 1e-7
+
     # Create gold data and process into dpt
-    data = _generate_statistic_data(n_samples, n_features).astype(dtype=dtype)
+    data = _generate_statistic_data(n_samples, n_features, dtype=dtype)
     local_data = _get_local_tensor(data)
     split_local_data = np.array_split(local_data, num_blocks)
     split_data = np.array_split(data, num_blocks)
 
     if weighted:
-        weights = _generate_weights(n_samples).astype(dtype=dtype)
+        weights = _generate_weights(n_samples, dtype=dtype)
         local_weights = _get_local_tensor(weights)
         split_local_weights = np.array_split(local_weights, num_blocks)
         split_weights = np.array_split(weights, num_blocks)
@@ -293,4 +298,6 @@ def test_incremental_basic_statistics_partial_fit_spmd_synthetic(
             incbs.partial_fit(dpt_data)
 
     for option in options_and_tests:
-        assert_allclose(getattr(incbs_spmd, option[0]), getattr(incbs, option[0]))
+        assert_allclose(
+            getattr(incbs_spmd, option[0]), getattr(incbs, option[0]), atol=tol
+        )
