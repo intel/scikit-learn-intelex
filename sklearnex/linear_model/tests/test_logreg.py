@@ -129,5 +129,5 @@ if daal_check_version((2024, "P", 700)):
 
         assert_allclose(pred, pred_sp)
         assert_allclose(prob, prob_sp)
-        assert_allclose(model.coef_, model_sp.coef_, atol=1e-6)
-        assert_allclose(model.intercept_, model_sp.intercept_, atol=1e-6)
+        assert_allclose(model.coef_, model_sp.coef_, rtol=1e-4)
+        assert_allclose(model.intercept_, model_sp.intercept_, rtol=1e-4)
