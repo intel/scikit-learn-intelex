@@ -52,7 +52,11 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.PYTHON_VERSION }}          
+          python-version: ${{ matrix.PYTHON_VERSION }}  
+      - name: test of gh cli in PRs
+        run: |
+          RUN_ID=`gh run list --json databaseId --status completed --jq .[0].databaseId`
+          echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
       - name: Get run ID of "Nightly-build" workflow
         id: get-run-id
         run: |
