@@ -85,7 +85,7 @@ sycl::queue get_queue_from_python(const py::object& syclobj) {
 }
 
 sycl::queue get_queue_by_filter_string(const std::string& filter) {
-    sycl::ext::oneapi::filter_selector selector{ filter };
+    filter_selector_wrapper selector{ filter };
     return sycl::queue{ selector };
 }
 
@@ -119,6 +119,13 @@ std::uint32_t get_device_id(const sycl::queue& queue) {
     else {
         throw std::runtime_error(unknown_device);
     }
+}
+
+std::size_t get_used_memory(const py::object& syclobj){
+    const auto& device =  get_queue_from_python(syclobj).get_device();
+    std::size_t total_memory = device.get_info<sycl::info::device::global_mem_size>();
+    std::size_t free_memory = device.get_info<sycl::ext::intel::info::device::free_memory>();
+    return total_memory - free_memory;
 }
 
 dp_policy_t make_dp_policy(std::uint32_t id) {

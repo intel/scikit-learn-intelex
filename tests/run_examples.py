@@ -27,6 +27,7 @@ from time import gmtime, strftime
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
+from onedal._device_offload import dpctl_available
 
 print("Starting examples validation")
 # First item is major version - 2021,
@@ -75,27 +76,17 @@ ex_log_dirs = [
     (jp(tests_rootdir, "daal4py"), jp(logdir, "daal4py")),
 ]
 
-available_devices = []
+available_devices = ["cpu"]
 
-try:
-    from daal4py.oneapi import sycl_context
+gpu_available = False
+if dpctl_available:
+    import dpctl
 
-    sycl_extention_available = True
-except ModuleNotFoundError:
-    sycl_extention_available = False
-print("Sycl extensions available: {}".format(sycl_extention_available))
+    if dpctl.has_gpu_devices():
+        gpu_available = True
+        available_devices.append("gpu")
 
-if sycl_extention_available:
-    try:
-        with sycl_context("gpu"):
-            gpu_available = True
-            available_devices.append("gpu")
-    except RuntimeError:
-        gpu_available = False
-    available_devices.append("cpu")
-    # validate that host and cpu devices avaialbe for logging reasons. Examples and
-    # vaidaton logic assumes that host and cpu devices are always available
-    print("Sycl gpu device: {}".format(gpu_available))
+print("GPU device available: {}".format(gpu_available))
 
 
 def check_version(rule, target):
@@ -149,8 +140,6 @@ req_version["knn_bf_classification_spmd.py"] = (2023, "P", 100)
 req_version["knn_bf_regression_spmd.py"] = (2023, "P", 100)
 req_version["linear_regression_spmd.py"] = (2023, "P", 100)
 req_version["logistic_regression_spmd.py"] = (2024, "P", 400)
-# Timeout on PVC, bumped the req version to deselect
-req_version["sycl/gradient_boosted_regression.py"] = (2024, "P", 600)
 
 req_device = defaultdict(lambda: [])
 req_device["basic_statistics_spmd.py"] = ["gpu"]
@@ -170,13 +159,11 @@ req_device["random_forest_classifier_dpctl.py"] = ["gpu"]
 req_device["random_forest_classifier_spmd.py"] = ["gpu"]
 req_device["random_forest_regressor_dpnp.py"] = ["gpu"]
 req_device["random_forest_regressor_spmd.py"] = ["gpu"]
-req_device["sycl/gradient_boosted_regression.py"] = ["gpu"]
 
 req_library = defaultdict(lambda: [])
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
-req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["incremental_basic_statistics_dpctl.py"] = ["dpctl"]
 req_library["incremental_linear_regression_dpctl.py"] = ["dpctl"]
 req_library["incremental_pca_dpctl.py"] = ["dpctl"]
@@ -193,25 +180,25 @@ req_library["random_forest_regressor_dpnp.py"] = ["dpnp"]
 req_library["random_forest_regressor_spmd.py"] = ["dpctl", "dpnp", "mpi4py"]
 
 req_os = defaultdict(lambda: [])
+req_os["basic_statistics_spmd.py"] = ["lnx"]
+req_os["covariance_spmd.py"] = ["lnx"]
+req_os["dbscan_spmd.py"] = ["lnx"]
+req_os["kmeans_spmd.py"] = ["lnx"]
+req_os["knn_bf_classification_dpnp.py"] = ["lnx"]
+req_os["knn_bf_classification_spmd.py"] = ["lnx"]
+req_os["knn_bf_regression_spmd.py"] = ["lnx"]
+req_os["linear_regression_spmd.py"] = ["lnx"]
+req_os["logistic_regression_spmd.py"] = ["lnx"]
+req_os["pca_spmd.py"] = ["lnx"]
+req_os["random_forest_classifier_dpctl.py"] = ["lnx"]
+req_os["random_forest_classifier_spmd.py"] = ["lnx"]
+req_os["random_forest_regressor_dpnp.py"] = ["lnx"]
+req_os["random_forest_regressor_spmd.py"] = ["lnx"]
 
 skiped_files = []
 
 
 def get_exe_cmd(ex, args):
-    if os.path.dirname(ex).endswith("sycl"):
-        if not sycl_extention_available:
-            return None
-        if not check_version(
-            req_version["sycl/" + os.path.basename(ex)], get_daal_version()
-        ):
-            return None
-        if not check_device(
-            req_device["sycl/" + os.path.basename(ex)], available_devices
-        ):
-            return None
-        if not check_os(req_os["sycl/" + os.path.basename(ex)], system_os):
-            return None
-
     if os.path.dirname(ex).endswith("daal4py") or os.path.dirname(ex).endswith("mb"):
         if args.nodaal4py:
             return None
@@ -228,6 +215,8 @@ def get_exe_cmd(ex, args):
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
         if not check_library(req_library[os.path.basename(ex)]):
+            return None
+        if not check_os(req_os[os.path.basename(ex)], system_os):
             return None
     if not args.nodist and ex.endswith("spmd.py"):
         if IS_WIN:

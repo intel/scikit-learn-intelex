@@ -21,18 +21,6 @@ from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.logistic_path import (
     LogisticRegression as LogisticRegression_daal4py,
 )
-from daal4py.sklearn.linear_model.logistic_path import daal4py_fit, daal4py_predict
-
-
-class BaseLogisticRegression(ABC):
-    def _save_attributes(self):
-        assert hasattr(self, "_onedal_estimator")
-        self.classes_ = self._onedal_estimator.classes_
-        self.coef_ = self._onedal_estimator.coef_
-        self.intercept_ = self._onedal_estimator.intercept_
-        self.n_features_in_ = self._onedal_estimator.n_features_in_
-        self.n_iter_ = self._onedal_estimator.n_iter_
-
 
 if daal_check_version((2024, "P", 1)):
     import numpy as np
@@ -40,16 +28,27 @@ if daal_check_version((2024, "P", 1)):
     from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
     from sklearn.metrics import accuracy_score
     from sklearn.utils.multiclass import type_of_target
-    from sklearn.utils.validation import check_X_y
+    from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
+    from daal4py.sklearn.linear_model.logistic_path import daal4py_fit, daal4py_predict
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
     from onedal.utils import _num_samples
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
-    from ..utils.validation import _assert_all_finite
+
+    _sparsity_enabled = daal_check_version((2024, "P", 700))
+
+    class BaseLogisticRegression(ABC):
+        def _save_attributes(self):
+            assert hasattr(self, "_onedal_estimator")
+            self.classes_ = self._onedal_estimator.classes_
+            self.coef_ = self._onedal_estimator.coef_
+            self.intercept_ = self._onedal_estimator.intercept_
+            self.n_features_in_ = self._onedal_estimator.n_features_in_
+            self.n_iter_ = self._onedal_estimator.n_iter_
 
     @control_n_jobs(
         decorated_methods=[
@@ -82,7 +81,7 @@ if daal_check_version((2024, "P", 1)):
             random_state=None,
             solver="lbfgs",
             max_iter=100,
-            multi_class="auto",
+            multi_class="deprecated" if sklearn_check_version("1.5") else "auto",
             verbose=0,
             warm_start=False,
             n_jobs=None,
@@ -109,8 +108,6 @@ if daal_check_version((2024, "P", 1)):
         _onedal_cpu_fit = daal4py_fit
 
         def fit(self, X, y, sample_weight=None):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=True)
             if sklearn_check_version("1.2"):
                 self._validate_params()
             dispatch(
@@ -128,8 +125,6 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict(self, X):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
                 "predict",
@@ -142,11 +137,9 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_proba(self, X):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
-                "predict",
+                "predict_proba",
                 {
                     "onedal": self.__class__._onedal_predict_proba,
                     "sklearn": sklearn_LogisticRegression.predict_proba,
@@ -156,11 +149,9 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_log_proba(self, X):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
-                "predict",
+                "predict_log_proba",
                 {
                     "onedal": self.__class__._onedal_predict_log_proba,
                     "sklearn": sklearn_LogisticRegression.predict_log_proba,
@@ -170,8 +161,6 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
-            if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
             return dispatch(
                 self,
                 "score",
@@ -189,17 +178,6 @@ if daal_check_version((2024, "P", 1)):
                 y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
             )
 
-        def _test_type_and_finiteness(self, X_in):
-            X = np.asarray(X_in)
-
-            if np.iscomplexobj(X):
-                return False
-            try:
-                _assert_all_finite(X)
-            except BaseException:
-                return False
-            return True
-
         def _onedal_gpu_fit_supported(self, method_name, *data):
             assert method_name == "fit"
             assert len(data) == 3
@@ -210,7 +188,12 @@ if daal_check_version((2024, "P", 1)):
                 f"sklearn.linear_model.{class_name}.fit"
             )
 
-            dal_ready = patching_status.and_conditions(
+            target_type = (
+                type_of_target(y, input_name="y")
+                if sklearn_check_version("1.1")
+                else type_of_target(y)
+            )
+            patching_status.and_conditions(
                 [
                     (self.penalty == "l2", "Only l2 penalty is supported."),
                     (self.dual == False, "dual=True is not supported."),
@@ -228,22 +211,10 @@ if daal_check_version((2024, "P", 1)):
                     (self.l1_ratio is None, "l1 ratio is not supported."),
                     (sample_weight is None, "Sample weight is not supported."),
                     (
-                        type_of_target(y) == "binary",
+                        target_type == "binary",
                         "Only binary classification is supported",
                     ),
                 ]
-            )
-
-            if not dal_ready:
-                return patching_status
-
-            if not patching_status.and_condition(
-                self._test_type_and_finiteness(X), "Input X is not supported."
-            ):
-                return patching_status
-
-            patching_status.and_condition(
-                self._test_type_and_finiteness(y), "Input y is not supported."
             )
 
             return patching_status
@@ -269,7 +240,7 @@ if daal_check_version((2024, "P", 1)):
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
                     (
-                        not any([issparse(i) for i in data]),
+                        (not any([issparse(i) for i in data])) or _sparsity_enabled,
                         "Sparse input is not supported.",
                     ),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
@@ -278,12 +249,6 @@ if daal_check_version((2024, "P", 1)):
                         "oneDAL model was not trained.",
                     ),
                 ]
-            )
-            if not dal_ready:
-                return patching_status
-
-            patching_status.and_condition(
-                self._test_type_and_finiteness(*data), "Input X is not supported."
             )
 
             return patching_status
@@ -315,24 +280,29 @@ if daal_check_version((2024, "P", 1)):
             }
             self._onedal_estimator = onedal_LogisticRegression(**onedal_params)
 
-        def _onedal_fit(self, X, y, sample_weight, queue=None):
+        def _onedal_fit(self, X, y, sample_weight=None, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return self._onedal_cpu_fit(X, y, sample_weight)
 
             assert sample_weight is None
 
-            check_params = {
-                "X": X,
-                "y": y,
-                "dtype": [np.float64, np.float32],
-                "accept_sparse": False,
-                "multi_output": False,
-                "force_all_finite": True,
-            }
-            if sklearn_check_version("1.2"):
-                X, y = self._validate_data(**check_params)
+            if sklearn_check_version("1.0"):
+                X, y = self._validate_data(
+                    X,
+                    y,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X, y = check_X_y(**check_params)
+                X, y = check_X_y(
+                    X,
+                    y,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
+
             self._initialize_onedal_estimator()
             try:
                 self._onedal_estimator.fit(X, y, queue=queue)
@@ -350,7 +320,23 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                X = self._validate_data(
+                    X,
+                    reset=False,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
+            else:
+                X = check_array(
+                    X,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
+
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict(X, queue=queue)
 
@@ -358,7 +344,23 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                X = self._validate_data(
+                    X,
+                    reset=False,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
+            else:
+                X = check_array(
+                    X,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
+
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_proba(X, queue=queue)
 
@@ -366,7 +368,23 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            check_is_fitted(self)
+            if sklearn_check_version("1.0"):
+                X = self._validate_data(
+                    X,
+                    reset=False,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
+            else:
+                X = check_array(
+                    X,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
+
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
 

@@ -34,7 +34,6 @@ from sklearn.utils.validation import (
 
 import daal4py
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
@@ -575,31 +574,24 @@ class KMeans(KMeans_original):
                 algorithm=algorithm,
             )
 
-    @support_usm_ndarray()
     def fit(self, X, y=None, sample_weight=None):
         return _fit(self, X, y=y, sample_weight=sample_weight)
 
     if sklearn_check_version("1.5"):
 
-        @support_usm_ndarray()
         def predict(self, X):
             return _predict(self, X)
 
     else:
 
-        @support_usm_ndarray()
         def predict(
             self, X, sample_weight="deprecated" if sklearn_check_version("1.3") else None
         ):
             return _predict(self, X, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def fit_predict(self, X, y=None, sample_weight=None):
         return super().fit_predict(X, y, sample_weight)
-
-    score = support_usm_ndarray()(KMeans_original.score)
 
     fit.__doc__ = KMeans_original.fit.__doc__
     predict.__doc__ = KMeans_original.predict.__doc__
     fit_predict.__doc__ = KMeans_original.fit_predict.__doc__
-    score.__doc__ = KMeans_original.score.__doc__

@@ -21,6 +21,8 @@ import numpy as np
 from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
+from ..utils import _is_csr
+
 try:
     import dpctl
     import dpctl.tensor as dpt
@@ -44,7 +46,9 @@ def convert_one_to_table(arg):
     if dpctl_available:
         if isinstance(arg, dpt.usm_ndarray):
             return _backend.dpctl_to_table(arg)
-    arg = make2d(arg)
+
+    if not _is_csr(arg):
+        arg = make2d(arg)
     return _backend.to_table(arg)
 
 

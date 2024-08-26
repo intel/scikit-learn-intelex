@@ -315,7 +315,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
 
         if self.oob_score:
             if isinstance(self, ClassifierMixin):
-                self.oob_score_ = from_table(train_result.oob_err_accuracy)[0, 0]
+                self.oob_score_ = from_table(train_result.oob_err_accuracy).item()
                 self.oob_decision_function_ = from_table(
                     train_result.oob_err_decision_function
                 )
@@ -327,7 +327,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
                         UserWarning,
                     )
             else:
-                self.oob_score_ = from_table(train_result.oob_err_r2)[0, 0]
+                self.oob_score_ = from_table(train_result.oob_err_r2).item()
                 self.oob_prediction_ = from_table(
                     train_result.oob_err_prediction
                 ).reshape(-1)

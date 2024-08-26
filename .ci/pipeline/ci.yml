@@ -24,6 +24,7 @@ trigger:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .github/Pull_Request_template.md
 
 pr:
   branches:
@@ -35,6 +36,7 @@ pr:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .github/Pull_Request_template.md
 
 variables:
   PYTHON: 'python'
@@ -60,8 +62,8 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.8_Sklearn1.0:
-        PYTHON_VERSION: '3.8'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
         SKLEARN_VERSION: '1.0'
       Python3.9_Sklearn1.1:
         PYTHON_VERSION: '3.9'
@@ -75,6 +77,9 @@ jobs:
       Python3.12_Sklearn1.4:
         PYTHON_VERSION: '3.12'
         SKLEARN_VERSION: '1.4'
+      Python3.12_Sklearn1.5:
+        PYTHON_VERSION: '3.12'
+        SKLEARN_VERSION: '1.5'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
@@ -84,8 +89,8 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.8_Sklearn1.0:
-        PYTHON_VERSION: '3.8'
+      Python3.9_Sklearn1.0:
+        PYTHON_VERSION: '3.9'
         SKLEARN_VERSION: '1.0'
       Python3.9_Sklearn1.1:
         PYTHON_VERSION: '3.9'
@@ -99,6 +104,9 @@ jobs:
       Python3.12_Sklearn1.4:
         PYTHON_VERSION: '3.12'
         SKLEARN_VERSION: '1.4'
+      Python3.12_Sklearn1.5:
+        PYTHON_VERSION: '3.12'
+        SKLEARN_VERSION: '1.5'
   pool:
     vmImage: 'windows-latest'
   steps:

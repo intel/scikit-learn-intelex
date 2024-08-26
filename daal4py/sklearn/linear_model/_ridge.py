@@ -25,7 +25,6 @@ from sklearn.utils import check_array, check_X_y
 
 import daal4py
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from .._utils import (
     PatchingConditionsChain,
@@ -49,11 +48,12 @@ def _daal4py_fit(self, X, y_):
 
     ridge_params = np.asarray(self.alpha, dtype=X.dtype)
     if ridge_params.size != 1 and ridge_params.size != y.shape[1]:
+        # incorrect order of parameters in the error message is intentional to match sklearn
         raise ValueError(
             "Number of targets and number of penalties do not correspond: "
             f"{ridge_params.size} != {y.shape[1]}"
         )
-    ridge_params = ridge_params.reshape((1, -1))
+    ridge_params = ridge_params.reshape((-1, 1))
 
     ridge_alg = daal4py.ridge_regression_training(
         fptype=_fptype,
@@ -61,6 +61,7 @@ def _daal4py_fit(self, X, y_):
         interceptFlag=(self.fit_intercept is True),
         ridgeParameters=ridge_params,
     )
+
     try:
         ridge_res = ridge_alg.compute(X, y)
     except RuntimeError:
@@ -101,13 +102,11 @@ def _daal4py_predict(self, X):
     return res
 
 
-def _fit_ridge(self, X, y, sample_weight=None):
+def _fit_ridge(self, _X, _y, sample_weight=None):
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
         self._normalize = _deprecate_normalize(
             self.normalize, default=False, estimator_name=self.__class__.__name__
         )
-    if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=True)
     if sklearn_check_version("1.2"):
         self._validate_params()
     elif sklearn_check_version("1.1"):
@@ -125,15 +124,27 @@ def _fit_ridge(self, X, y, sample_weight=None):
                 include_boundaries="left",
             )
 
-    X, y = check_X_y(
-        X,
-        y,
-        ["csr", "csc", "coo"],
-        dtype=[np.float64, np.float32],
-        multi_output=True,
-        y_numeric=True,
-    )
-    self.n_features_in_ = X.shape[1]
+    if sklearn_check_version("1.0"):
+        X, y = self._validate_data(
+            _X,
+            _y,
+            accept_sparse=["csr", "csc", "coo"],
+            dtype=[np.float64, np.float32],
+            multi_output=True,
+            y_numeric=True,
+            ensure_2d=True,
+        )
+    else:
+        X, y = check_X_y(
+            _X,
+            _y,
+            ["csr", "csc", "coo"],
+            dtype=[np.float64, np.float32],
+            multi_output=True,
+            y_numeric=True,
+        )
+        self.n_features_in_ = X.shape[1]
+
     self.sample_weight_ = sample_weight
     self.fit_shape_good_for_daal_ = True if X.shape[0] >= X.shape[1] else False
 
@@ -168,7 +179,7 @@ def _fit_ridge(self, X, y, sample_weight=None):
     if not _dal_ready:
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
+        return Ridge_original.fit(self, _X, _y, sample_weight=sample_weight)
     self.n_iter_ = None
     res = _daal4py_fit(self, X, y)
     if res is None:
@@ -177,17 +188,23 @@ def _fit_ridge(self, X, y, sample_weight=None):
         )
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(X, y, sample_weight=sample_weight)
+        return Ridge_original.fit(self, _X, _y, sample_weight=sample_weight)
     return res
 
 
-def _predict_ridge(self, X):
+def _predict_ridge(self, _X):
     if sklearn_check_version("1.0"):
-        self._check_feature_names(X, reset=False)
-
-    X = check_array(
-        X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
-    )
+        X = self._validate_data(
+            _X,
+            accept_sparse=["csr", "csc", "coo"],
+            dtype=[np.float64, np.float32],
+            reset=False,
+            ensure_2d=True,
+        )
+    else:
+        X = check_array(
+            _X, accept_sparse=["csr", "csc", "coo"], dtype=[np.float64, np.float32]
+        )
     good_shape_for_daal = (
         True if X.ndim <= 1 else True if X.shape[0] >= X.shape[1] else False
     )
@@ -221,7 +238,7 @@ def _predict_ridge(self, X):
     _patching_status.write_log()
 
     if not _dal_ready:
-        return self._decision_function(X)
+        return self._decision_function(_X)
     return _daal4py_predict(self, X)
 
 
@@ -298,11 +315,9 @@ class Ridge(Ridge_original, _BaseRidge):
             self.solver = solver
             self.random_state = random_state
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         return _fit_ridge(self, X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return _predict_ridge(self, X)
 

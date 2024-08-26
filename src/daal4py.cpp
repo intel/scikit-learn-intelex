@@ -23,6 +23,10 @@
 #include "npy4daal.h"
 #include "daal4py_defines.h"
 
+#if NPY_ABI_VERSION < 0x02000000
+  #define PyDataType_NAMES(descr) ((descr)->names)
+#endif
+
 // ************************************************************************************
 // ************************************************************************************
 // Numpy type conversion code, taken from numpy.i (SWIG typemap-code)
@@ -31,7 +35,7 @@
 
 #define is_array(a)           ((a) && PyArray_Check(a))
 #define array_type(a)         PyArray_TYPE((PyArrayObject *)a)
-#define array_is_behaved(a)   (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
+#define array_is_behaved_C(a)   (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
 #define array_is_behaved_F(a) (PyArray_ISFARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
 #define array_is_native(a)    (PyArray_ISNOTSWAPPED((PyArrayObject *)a))
 #define array_numdims(a)      PyArray_NDIM((PyArrayObject *)a)
@@ -202,11 +206,6 @@ static PyObject * _make_nda_from_csr(daal::data_management::NumericTablePtr * pt
     return NULL;
 }
 
-#ifdef _DPCPP_
-    #include "oneapi/oneapi_api.h"
-// Disable returning of sycl buffer from algorithms
-// static int __oneAPI_imp = import__oneapi();
-#endif
 // Convert a oneDAL NT to a numpy nd-array
 // tries to avoid copying the data, instead we try to share the memory with DAAL
 PyObject * make_nda(daal::data_management::NumericTablePtr * ptr)
@@ -312,7 +311,7 @@ static daal::data_management::NumericTablePtr _make_hnt(PyObject * nda)
     daal::data_management::NumericTablePtr ptr;
     PyArrayObject * array = reinterpret_cast<PyArrayObject *>(nda);
 
-    assert(is_array(nda) && array_is_behaved(array));
+    assert(is_array(nda) && array_is_behaved_C(array));
 
     if (array_numdims(array) == 2)
     {
@@ -352,7 +351,7 @@ static daal::data_management::NumericTablePtr _make_npynt(PyObject * nda)
     else if (array_numdims(nda) == 1)
     {
         PyArray_Descr * descr = PyArray_DESCR(array);
-        if (descr->names)
+        if (PyDataType_NAMES(descr))
         {
             // the given array is a structured numpy array.
             ptr = new NpyNumericTable<NpyStructHandler>(array);
@@ -411,7 +410,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
         { // we got a numpy array
             PyArrayObject * ary = reinterpret_cast<PyArrayObject *>(obj);
 
-            if (array_is_behaved(ary))
+            if (array_is_behaved_C(ary))
             {
 #define MAKENT_(_T) ptr = _make_hnt<_T>(obj)
                 SET_NPY_FEATURE(PyArray_DESCR(ary)->type, MAKENT_, throw std::invalid_argument("Found unsupported array type"));
@@ -488,7 +487,7 @@ daal::data_management::NumericTablePtr make_nt(PyObject * obj)
                         throw std::runtime_error(std::string("Found wrong dimensionality (") + std::to_string(PyArray_NDIM(ary)) + ") of array in list when constructing SOA table (must be 1d)");
                     }
 
-                    if (!array_is_behaved(ary))
+                    if (!array_is_behaved_C(ary))
                     {
                         throw std::runtime_error(std::string("Cannot operate on column: ") + std::to_string(i) + "  because it is non-contiguous. Please make it contiguous before passing it to daal4py\n");
                     }

@@ -16,7 +16,7 @@
 steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
-  - script: conda create -q -y -n CB -c conda-forge -c intel python=$(PYTHON_VERSION) intel::dal-devel impi-devel clang-format pyyaml
+  - script: conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel impi-devel clang-format pyyaml
     displayName: 'Create Anaconda environment'
   - script: |
       call activate CB
@@ -36,8 +36,7 @@ steps:
       set PREFIX=%CONDA_PREFIX%
       set PYTHON=python
       call conda-recipe\bld.bat
-      set DALROOT=%CONDA_PREFIX%
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
+      IF %ERRORLEVEL% neq 0 EXIT /b %ERRORLEVEL%
     displayName: 'Build daal4py/sklearnex'
   - script: |
       set PATH=C:\msys64\usr\bin;%PATH%

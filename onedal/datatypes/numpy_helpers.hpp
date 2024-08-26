@@ -65,7 +65,7 @@
         default: _EXCEPTION;                                 \
     };
 
-#define SET_NPY_FEATURE(_T, _FUNCT, _EXCEPTION) \
+#define SET_NPY_FEATURE(_T, _S, _FUNCT, _EXCEPTION) \
     switch (_T) {                               \
         case NPY_FLOAT:                         \
         case NPY_CFLOAT:                        \
@@ -91,24 +91,36 @@
             _FUNCT(std::uint32_t);              \
             break;                              \
         }                                       \
-        case NPY_LONGLTR:                       \
         case NPY_LONGLONGLTR:                   \
         case NPY_INT64: {                       \
             _FUNCT(std::int64_t);               \
             break;                              \
         }                                       \
-        case NPY_ULONGLTR:                      \
         case NPY_ULONGLONGLTR:                  \
         case NPY_UINT64: {                      \
             _FUNCT(std::uint64_t);              \
             break;                              \
         }                                       \
+        case NPY_LONGLTR: {\
+            if (_S == 4) {_FUNCT(std::int32_t);} \
+            else if (_S == 8)  {_FUNCT(std::int64_t);} \
+            else {_EXCEPTION;} \
+            break; \
+        } \
+        case NPY_ULONGLTR: {\
+            if (_S == 4) {_FUNCT(std::uint32_t);} \
+            else if (_S == 8)  {_FUNCT(std::uint64_t);} \
+            else {_EXCEPTION;} \
+            break; \
+        }\
         default: _EXCEPTION;                    \
     };
 
 #define is_array(a)         ((a) && PyArray_Check(a))
 #define array_type(a)       PyArray_TYPE((PyArrayObject *)a)
-#define array_is_behaved(a) (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
+#define array_type_sizeof(a) PyArray_ITEMSIZE((PyArrayObject *)a)
+#define array_is_behaved_C(a) \
+    (PyArray_ISCARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
 #define array_is_behaved_F(a) \
     (PyArray_ISFARRAY_RO((PyArrayObject *)a) && array_type(a) < NPY_OBJECT)
 #define array_is_native(a) (PyArray_ISNOTSWAPPED((PyArrayObject *)a))

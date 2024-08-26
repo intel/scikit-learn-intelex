@@ -61,8 +61,10 @@ jobs:
     vmImage: 'ubuntu-latest'
   steps:
   - script: |
+      conda config --append channels conda-forge
+      conda config --remove channels defaults
       conda update -y -q conda
-      conda create -y -q -n CB -c intel python=$(python.version) dal-devel impi-devel
+      conda create -y -q -n CB -c conda-forge python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
       bash .ci/scripts/describe_system.sh
@@ -80,7 +82,6 @@ jobs:
       conda activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py/sklearnex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh

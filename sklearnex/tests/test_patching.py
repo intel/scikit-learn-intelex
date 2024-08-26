@@ -43,6 +43,7 @@ from sklearnex.tests._utils import (
     SPECIAL_INSTANCES,
     UNPATCHED_FUNCTIONS,
     UNPATCHED_MODELS,
+    call_method,
     gen_dataset,
     gen_models_info,
 )
@@ -139,6 +140,9 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             ]:
                 pytest.skip(f"{estimator} does not support GPU queues")
 
+        if "NearestNeighbors" in estimator and "radius" in method:
+            pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+
         if estimator == "TSNE" and method == "fit_transform":
             pytest.skip("TSNE.fit_transform is too slow for common testing")
         elif (
@@ -148,30 +152,21 @@ def test_standard_estimator_patching(caplog, dataframe, queue, dtype, estimator,
             and dtype in [np.uint32, np.uint64]
         ):
             pytest.skip("Windows segmentation fault for Ridge.predict for unsigned ints")
-        elif estimator == "IncrementalLinearRegression" and dtype in [
-            np.int8,
-            np.int16,
-            np.int32,
-            np.int64,
-            np.uint8,
-            np.uint16,
-            np.uint32,
-            np.uint64,
-        ]:
+        elif estimator == "IncrementalLinearRegression" and np.issubdtype(
+            dtype, np.integer
+        ):
             pytest.skip(
                 "IncrementalLinearRegression fails on oneDAL side with int types because dataset is filled by zeroes"
             )
         elif method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
-        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
 
         if method:
-            if method != "score":
-                getattr(est, method)(X)
-            else:
-                est.score(X, y)
+            call_method(est, method, X, y)
+
     assert all(
         [
             "running accelerated version" in i.message
@@ -190,23 +185,24 @@ def test_special_estimator_patching(caplog, dataframe, queue, dtype, estimator, 
     with caplog.at_level(logging.WARNING, logger="sklearnex"):
         est = SPECIAL_INSTANCES[estimator]
 
-        # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
-        if dtype == np.float16 and queue and not queue.sycl_device.has_aspect_fp16:
-            pytest.skip("Hardware does not support fp16 SYCL testing")
-        elif dtype == np.float64 and queue and not queue.sycl_device.has_aspect_fp64:
-            pytest.skip("Hardware does not support fp64 SYCL testing")
+        if queue:
+            # Its not possible to get the dpnp/dpctl arrays to be in the proper dtype
+            if dtype == np.float16 and not queue.sycl_device.has_aspect_fp16:
+                pytest.skip("Hardware does not support fp16 SYCL testing")
+            elif dtype == np.float64 and not queue.sycl_device.has_aspect_fp64:
+                pytest.skip("Hardware does not support fp64 SYCL testing")
 
-        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)
+        if "NearestNeighbors" in estimator and "radius" in method:
+            pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+
+        X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
         est.fit(X, y)
 
         if method and not hasattr(est, method):
             pytest.skip(f"sklearn available_if prevents testing {estimator}.{method}")
 
         if method:
-            if method != "score":
-                getattr(est, method)(X)
-            else:
-                est.score(X, y)
+            call_method(est, method, X, y)
 
     assert all(
         [

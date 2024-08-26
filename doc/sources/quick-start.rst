@@ -197,7 +197,6 @@ To install |intelex|, run:
    :align: left
 
    * - OS / Python version
-     - Python 3.8
      - Python 3.9
      - Python 3.10
      - Python 3.11
@@ -207,9 +206,7 @@ To install |intelex|, run:
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
-     - [CPU, GPU]
    * - Windows* OS
-     - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
@@ -237,7 +234,6 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
          :align: left
 
          * - OS / Python version
-           - Python 3.8
            - Python 3.9
            - Python 3.10
            - Python 3.11
@@ -247,9 +243,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
            - [CPU]
            - [CPU]
            - [CPU]
-           - [CPU]
          * - Windows* OS
-           - [CPU]
            - [CPU]
            - [CPU]
            - [CPU]
@@ -262,14 +256,13 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
 
       To install, run::
 
-        conda install scikit-learn-intelex -c intel
+        conda install scikit-learn-intelex -c https://software.repos.intel.com/python/conda/
       
       .. list-table:: **Supported Configurations**
          :header-rows: 1
          :align: left
 
          * - OS / Python version
-           - Python 3.8
            - Python 3.9
            - Python 3.10
            - Python 3.11
@@ -279,9 +272,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
            - [CPU, GPU]
            - [CPU, GPU]
            - [CPU, GPU]
-           - [CPU, GPU]
          * - Windows* OS
-           - [CPU, GPU]
            - [CPU, GPU]
            - [CPU, GPU]
            - [CPU, GPU]
@@ -300,7 +291,6 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
          :align: left
 
          * - OS / Python version
-           - Python 3.8
            - Python 3.9
            - Python 3.10
            - Python 3.11
@@ -310,9 +300,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
            - [CPU]
            - [CPU]
            - [CPU]
-           - [CPU]
          * - Windows* OS
-           - [CPU]
            - [CPU]
            - [CPU]
            - [CPU]

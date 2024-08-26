@@ -45,7 +45,6 @@ from scipy.spatial import distance
 import daal4py
 from daal4py.sklearn.utils.validation import _daal_check_array
 
-from .._device_offload import support_usm_ndarray
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
 if sklearn_check_version("1.3"):
@@ -66,7 +65,6 @@ def _daal4py_correlation_distance_dense(X):
     return res.correlationDistance
 
 
-@support_usm_ndarray(freefunc=True)
 def pairwise_distances(
     X, Y=None, metric="euclidean", *, n_jobs=None, force_all_finite=True, **kwds
 ):

@@ -19,7 +19,6 @@
 from sklearn.neighbors import NearestNeighbors as BaseNearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args
 
-from .._device_offload import support_usm_ndarray
 from ._base import KNeighborsMixin, NeighborsBase, RadiusNeighborsMixin
 
 
@@ -50,7 +49,6 @@ class NearestNeighbors(KNeighborsMixin, RadiusNeighborsMixin, NeighborsBase):
             n_jobs=n_jobs,
         )
 
-    @support_usm_ndarray()
     def fit(self, X, y=None):
         return NeighborsBase._fit(self, X)
 
