@@ -1,6 +1,7 @@
 Cython==3.0.11
 Jinja2==3.1.4
-numpy==2.0.1
-pybind11==2.13.3
+numpy==2.0.1 ; python_version <= '3.9'
+numpy==2.1.0 ; python_version > '3.9'
+pybind11==2.13.5
 cmake==3.30.2
-setuptools==72.2.0
+setuptools==73.0.1
