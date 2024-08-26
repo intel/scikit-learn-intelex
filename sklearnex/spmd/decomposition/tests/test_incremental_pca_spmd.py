@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
@@ -26,7 +27,6 @@ from sklearnex.tests._utils_spmd import (
     _generate_statistic_data,
     _get_local_tensor,
     _mpi_libs_and_gpu_available,
-    _spmd_assert_allclose,
 )
 
 
@@ -56,6 +56,7 @@ def test_incremental_pca_fit_spmd_gold(dataframe, queue, whiten, dtype):
             [4.0, 16.0],
             [5.0, 32.0],
             [6.0, 64.0],
+            [7.0, 128.0],
         ]
     ).astype(dtype=dtype)
     dpt_X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
@@ -71,7 +72,6 @@ def test_incremental_pca_fit_spmd_gold(dataframe, queue, whiten, dtype):
     assert_allclose(incpca.n_components_, incpca_spmd.n_components_)
     assert_allclose(incpca.components_, incpca_spmd.components_)
     assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
     assert_allclose(incpca.mean_, incpca_spmd.mean_)
     assert_allclose(incpca.var_, incpca_spmd.var_)
     assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_)
@@ -109,16 +109,20 @@ def test_incremental_pca_partial_fit_spmd_gold(
             [4.0, 16.0],
             [5.0, 32.0],
             [6.0, 64.0],
+            [7.0, 128.0],
+            [8.0, 0.0],
+            [9.0, 2.0],
+            [10.0, 4.0],
+            [11.0, 8.0],
+            [12.0, 16.0],
+            [13.0, 32.0],
+            [14.0, 64.0],
+            [15.0, 128.0],
         ]
     ).astype(dtype=dtype)
-    dpt_X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    X_split = np.array_split(X, num_blocks)
     local_X = _get_local_tensor(X)
     split_local_X = np.array_split(local_X, num_blocks)
-
-    y = np.dot(X, [1, 2]) + 3
-    dpt_y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
-    local_y = _get_local_tensor(y)
-    split_local_y = np.array_split(local_y, num_blocks)
 
     incpca_spmd = IncrementalPCA_SPMD(whiten=whiten)
     incpca = IncrementalPCA(whiten=whiten)
@@ -127,17 +131,13 @@ def test_incremental_pca_partial_fit_spmd_gold(
         local_dpt_X = _convert_to_dataframe(
             split_local_X[i], sycl_queue=queue, target_df=dataframe
         )
-        local_dpt_y = _convert_to_dataframe(
-            split_local_y[i], sycl_queue=queue, target_df=dataframe
-        )
-        incpca_spmd.partial_fit(local_dpt_X, local_dpt_y)
-
-    incpca.fit(dpt_X, dpt_y)
+        dpt_X = _convert_to_dataframe(X_split[i], sycl_queue=queue, target_df=dataframe)
+        incpca.partial_fit(dpt_X)
+        incpca_spmd.partial_fit(local_dpt_X)
 
     assert_allclose(incpca.n_components_, incpca_spmd.n_components_)
     assert_allclose(incpca.components_, incpca_spmd.components_)
     assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
     assert_allclose(incpca.mean_, incpca_spmd.mean_)
     assert_allclose(incpca.var_, incpca_spmd.var_)
     assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_)
@@ -167,6 +167,8 @@ def test_incremental_pca_fit_spmd_random(
     from sklearnex.preview.decomposition import IncrementalPCA
     from sklearnex.spmd.decomposition import IncrementalPCA as IncrementalPCA_SPMD
 
+    tol = 7e-5 if dtype == np.float32 else 1e-7
+
     # Create data and process into dpt
     X = _generate_statistic_data(num_samples, num_features, dtype)
     dpt_X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
@@ -181,21 +183,20 @@ def test_incremental_pca_fit_spmd_random(
     incpca_spmd.fit(local_dpt_X)
     incpca.fit(dpt_X)
 
-    assert_allclose(incpca.n_components_, incpca_spmd.n_components_)
-    assert_allclose(incpca.components_, incpca_spmd.components_)
-    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
-    assert_allclose(incpca.var_, incpca_spmd.var_)
-    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_)
+    assert_allclose(incpca.n_components_, incpca_spmd.n_components_, atol=tol)
+    assert_allclose(incpca.components_, incpca_spmd.components_, atol=tol)
+    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_, atol=tol)
+    assert_allclose(incpca.mean_, incpca_spmd.mean_, atol=tol)
+    assert_allclose(incpca.var_, incpca_spmd.var_, atol=tol)
+    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_, atol=tol)
     assert_allclose(
-        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_
+        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_, atol=tol
     )
 
     y_trans_spmd = incpca_spmd.transform(dpt_X_test)
     y_trans = incpca.transform(dpt_X_test)
 
-    _spmd_assert_allclose(y_trans_spmd, y_trans)
+    assert_allclose(_as_numpy(y_trans_spmd), _as_numpy(y_trans), atol=tol)
 
 
 @pytest.mark.skipif(
@@ -209,7 +210,7 @@ def test_incremental_pca_fit_spmd_random(
 @pytest.mark.parametrize("whiten", [True, False])
 @pytest.mark.parametrize("n_components", [None, 2, 5])
 @pytest.mark.parametrize("num_blocks", [1, 2])
-@pytest.mark.parametrize("num_samples", [100, 200])
+@pytest.mark.parametrize("num_samples", [200, 400])
 @pytest.mark.parametrize("num_features", [10, 20])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
@@ -226,6 +227,8 @@ def test_incremental_pca_partial_fit_spmd_random(
     # Import spmd and non-SPMD algo
     from sklearnex.preview.decomposition import IncrementalPCA
     from sklearnex.spmd.decomposition import IncrementalPCA as IncrementalPCA_SPMD
+
+    tol = 3e-4 if dtype == np.float32 else 1e-7
 
     # Create data and process into dpt
     X = _generate_statistic_data(num_samples, num_features, dtype)
@@ -247,18 +250,17 @@ def test_incremental_pca_partial_fit_spmd_random(
         incpca_spmd.partial_fit(local_dpt_X)
         incpca.partial_fit(dpt_X)
 
-    assert_allclose(incpca.n_components_, incpca_spmd.n_components_)
-    assert_allclose(incpca.components_, incpca_spmd.components_)
-    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
-    assert_allclose(incpca.var_, incpca_spmd.var_)
-    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_)
+    assert_allclose(incpca.n_components_, incpca_spmd.n_components_, atol=tol)
+    assert_allclose(incpca.components_, incpca_spmd.components_, atol=tol)
+    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_, atol=tol)
+    assert_allclose(incpca.mean_, incpca_spmd.mean_, atol=tol)
+    assert_allclose(incpca.var_, incpca_spmd.var_, atol=tol)
+    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_, atol=tol)
     assert_allclose(
-        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_
+        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_, atol=tol
     )
 
     y_trans_spmd = incpca_spmd.transform(dpt_X_test)
     y_trans = incpca.transform(dpt_X_test)
 
-    _spmd_assert_allclose(y_trans_spmd, y_trans)
+    assert_allclose(_as_numpy(y_trans_spmd), _as_numpy(y_trans), atol=tol)

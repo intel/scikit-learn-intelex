@@ -61,7 +61,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         return self._onedal_transform(X, queue)
 
     def _onedal_partial_fit(self, X, check_input=True, queue=None):
-        first_pass = not hasattr(self, "components_")
+        first_pass = not hasattr(self, "_onedal_estimator")
 
         if check_input:
             if sklearn_check_version("1.0"):
@@ -78,10 +78,10 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         n_samples, n_features = X.shape
 
         if self.n_components is None:
-            if not hasattr(self, "components_"):
+            if not hasattr(self, "_components_shape"):
                 self.n_components_ = min(n_samples, n_features)
-            else:
-                self.n_components_ = self.components_.shape[0]
+                self._components_shape = self.n_components_
+
         elif not self.n_components <= n_features:
             raise ValueError(
                 "n_components=%r invalid for n_features=%d, need "
