@@ -27,6 +27,7 @@ from onedal.cluster import DBSCAN as onedal_DBSCAN
 
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
+from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
@@ -86,6 +87,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sklearn_check_version("1.0"):
             X = self._validate_data(X, force_all_finite=False)
+        xp, is_array_api_compliant = get_namespace(X)
 
         onedal_params = {
             "eps": self.eps,
@@ -99,7 +101,9 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         }
         self._onedal_estimator = self._onedal_dbscan(**onedal_params)
 
-        self._onedal_estimator.fit(X, y=y, sample_weight=sample_weight, queue=queue)
+        self._onedal_estimator._fit(
+            X, xp, is_array_api_compliant, y, sample_weight, queue=queue
+        )
         self._save_attributes()
 
     def _onedal_supported(self, method_name, *data):
@@ -173,6 +177,8 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
             if self.eps <= 0.0:
                 raise ValueError(f"eps == {self.eps}, must be > 0.0.")
 
+        # TODO:
+        # should be checked for Array API inputs.
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
         dispatch(
