@@ -20,6 +20,7 @@ if daal_check_version((2024, "P", 1)):
     import numpy as np
     import pytest
     from numpy.testing import assert_allclose, assert_array_equal
+    from scipy.sparse import csr_matrix
     from sklearn.datasets import load_breast_cancer, make_classification
     from sklearn.metrics import accuracy_score
     from sklearn.model_selection import train_test_split
@@ -64,3 +65,30 @@ if daal_check_version((2024, "P", 1)):
         result = model2.predict(X, queue=queue)
 
         assert_array_equal(expected, result)
+
+
+if daal_check_version((2024, "P", 700)):
+
+    @pytest.mark.parametrize("queue", get_queues("gpu"))
+    @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+    @pytest.mark.parametrize(
+        "dims", [(3007, 17, 0.05), (50000, 100, 0.01), (512, 10, 0.5)]
+    )
+    def test_csr(queue, dtype, dims):
+        n, p, density = dims
+        X, y = make_classification(n, p, random_state=42)
+        np.random.seed(2007 + n + p)
+        mask = np.random.binomial(1, density, (n, p))
+        X = X * mask
+        X_sp = csr_matrix(X)
+        model = LogisticRegression(fit_intercept=True, solver="newton-cg")
+        model.fit(X, y, queue=queue)
+        pred = model.predict(X, queue=queue)
+
+        model_sp = LogisticRegression(fit_intercept=True, solver="newton-cg")
+        model_sp.fit(X_sp, y, queue=queue)
+        pred_sp = model_sp.predict(X_sp, queue=queue)
+
+        assert_allclose(pred, pred_sp)
+        assert_allclose(model.coef_, model_sp.coef_)
+        assert_allclose(model.intercept_, model_sp.intercept_)

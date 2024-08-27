@@ -46,7 +46,7 @@ Classification
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'gini'`
      - Multi-output and sparse data are not supported
    * - `KNeighborsClassifier`
@@ -87,7 +87,7 @@ Regression
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'mse'`
      - Multi-output and sparse data are not supported
    * - `KNeighborsRegressor`
@@ -143,7 +143,7 @@ Clustering
        - ``algorithm`` not in [`'brute'`, `'auto'`]
      - Only dense data is supported
 
-Dimensionality reduction
+Dimensionality Reduction
 ************************
 
 .. list-table::
@@ -188,7 +188,7 @@ Nearest Neighbors
          all parameters except ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Sparse data is not supported
 
-Other tasks
+Other Tasks
 ***********
 
 .. list-table::
@@ -199,6 +199,9 @@ Other tasks
    * - Algorithm
      - Parameters
      - Data formats
+   * - `EmpiricalCovariance`
+     - All parameters are supported
+     - Only dense data is supported
    * - `train_test_split`
      - All parameters are supported
      - Only dense data is supported
@@ -245,7 +248,7 @@ Classification
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'gini'`
        - ``oob_score`` = `True`
        - ``sample_weight`` != `None`
@@ -281,7 +284,7 @@ Regression
      - All parameters are supported except:
 
        - ``warm_start`` = `True`
-       - ``cpp_alpha`` != `0`
+       - ``ccp_alpha`` != `0`
        - ``criterion`` != `'mse'`
        - ``oob_score`` = `True`
        - ``sample_weight`` != `None`
@@ -316,8 +319,7 @@ Clustering
 
        - ``precompute_distances``
        - ``sample_weight`` != `None`
-       
-       ``Init`` = `'k-means++'` fallbacks to CPU.
+       - ``Init`` = `'k-means++'` fallbacks to CPU.
      - Sparse data is not supported
    * - `DBSCAN`
      - All parameters are supported except:
@@ -326,7 +328,7 @@ Clustering
        - ``algorithm`` not in [`'brute'`, `'auto'`]
      - Only dense data is supported
 
-Dimensionality reduction
+Dimensionality Reduction
 ************************
 
 .. list-table::
@@ -362,7 +364,175 @@ Nearest Neighbors
        - ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Only dense data is supported
 
-Scikit-learn tests
+Other Tasks
+***********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters
+     - Data formats
+   * - `EmpiricalCovariance`
+     - All parameters are supported
+     - Only dense data is supported
+
+SPMD Support
+------------
+
+.. seealso:: :ref:`distributed`
+
+Classification
+**************
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters & Methods
+     - Data formats
+   * - `RandomForestClassifier`
+     - All parameters are supported except:
+
+       - ``warm_start`` = `True`
+       - ``ccp_alpha`` != `0`
+       - ``criterion`` != `'gini'`
+       - ``oob_score`` = `True`
+       - ``sample_weight`` != `None`
+     - Multi-output and sparse data are not supported
+   * - `KNeighborsClassifier`
+     - All parameters are supported except:
+
+       - ``algorithm`` != `'brute'`
+       - ``weights`` = `'callable'`
+       - ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
+       - ``predict_proba`` method not supported
+     - Only dense data is supported
+   * - `LogisticRegression`
+     - All parameters are supported except:
+
+       - ``solver`` != `'newton-cg'`
+       - ``class_weight`` != `None`
+       - ``sample_weight`` != `None`
+       - ``penalty`` != `'l2'`
+     - Only dense data is supported
+
+Regression
+**********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters & Methods
+     - Data formats
+   * - `RandomForestRegressor`
+     - All parameters are supported except:
+
+       - ``warm_start`` = `True`
+       - ``ccp_alpha`` != `0`
+       - ``criterion`` != `'mse'`
+       - ``oob_score`` = `True`
+       - ``sample_weight`` != `None`
+     - Multi-output and sparse data are not supported
+   * - `KNeighborsRegressor`
+     - All parameters are supported except:
+
+       - ``algorithm`` != `'brute'`
+       - ``weights`` = `'callable'`
+       - ``metric`` != `'euclidean'` or `'minkowski'` with ``p`` != `2`
+     - Only dense data is supported
+   * - `LinearRegression`
+     - All parameters are supported except:
+
+       - ``normalize`` != `False`
+       - ``sample_weight`` != `None`
+     - Only dense data is supported, `#observations` should be >= `#features`.
+
+Clustering
+**********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters & Methods
+     - Data formats
+   * - `KMeans`
+     - All parameters are supported except:
+
+       - ``precompute_distances``
+       - ``sample_weight`` != `None`
+       - ``Init`` = `'k-means++'` fallbacks to CPU.
+     - Sparse data is not supported
+   * - `DBSCAN`
+     - All parameters are supported except:
+
+       - ``metric`` != `'euclidean'`
+       - ``algorithm`` not in [`'brute'`, `'auto'`]
+     - Only dense data is supported
+
+Dimensionality Reduction
+************************
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters & Methods
+     - Data formats
+   * - `PCA`
+     - All parameters are supported except:
+     
+       - ``svd_solver`` not in [`'full'`, `'covariance_eigh'`]
+       - ``fit`` is the only method supported
+     - Sparse data is not supported
+
+Nearest Neighbors
+*****************
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters
+     - Data formats
+   * - `NearestNeighbors`
+     - All parameters are supported except:
+
+       - ``algorithm`` != `'brute'`
+       - ``weights`` = `'callable'`
+       - ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
+     - Only dense data is supported
+
+Other Tasks
+***********
+
+.. list-table::
+   :widths: 10 30 20
+   :header-rows: 1
+   :align: left
+
+   * - Algorithm
+     - Parameters
+     - Data formats
+   * - `EmpiricalCovariance`
+     - All parameters are supported
+     - Only dense data is supported
+
+Scikit-learn Tests
 ------------------
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
