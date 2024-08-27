@@ -80,18 +80,15 @@ def test_incremental_basic_statistics_fit_spmd_gold(dataframe, queue, weighted, 
 
     # ensure results of batch algo match spmd
 
-    if weighted:
-        incbs_spmd = IncrementalBasicStatistics_SPMD().fit(
-            local_dpt_data, sample_weight=local_dpt_weights
-        )
-        incbs = IncrementalBasicStatistics().fit(dpt_data, sample_weight=dpt_weights)
+    incbs_spmd = IncrementalBasicStatistics_SPMD().fit(
+        local_dpt_data, sample_weight=local_dpt_weights if weighted else None
+    )
+    incbs = IncrementalBasicStatistics().fit(
+        dpt_data, sample_weight=dpt_weights if weighted else None
+    )
 
-    else:
-        incbs_spmd = IncrementalBasicStatistics_SPMD().fit(local_dpt_data)
-        incbs = IncrementalBasicStatistics().fit(dpt_data)
-
-    for option in options_and_tests:
-        assert_allclose(getattr(incbs_spmd, option[0]), getattr(incbs, option[0]))
+    for option, _, _ in options_and_tests:
+        assert_allclose(getattr(incbs_spmd, option), getattr(incbs, option))
 
 
 @pytest.mark.skipif(
@@ -152,17 +149,14 @@ def test_incremental_basic_statistics_partial_fit_spmd_gold(
             local_dpt_weights = _convert_to_dataframe(
                 split_local_weights[i], sycl_queue=queue, target_df=dataframe
             )
-            incbs_spmd.partial_fit(local_dpt_data, sample_weight=local_dpt_weights)
-        else:
-            incbs_spmd.partial_fit(local_dpt_data)
+        incbs_spmd.partial_fit(
+            local_dpt_data, sample_weight=local_dpt_weights if weighted else None
+        )
 
-    if weighted:
-        incbs.fit(dpt_data, sample_weight=dpt_weights)
-    else:
-        incbs.fit(dpt_data)
+    incbs.fit(dpt_data, sample_weight=dpt_weights if weighted else None)
 
-    for option in options_and_tests:
-        assert_allclose(getattr(incbs_spmd, option[0]), getattr(incbs, option[0]))
+    for option, _, _ in options_and_tests:
+        assert_allclose(getattr(incbs_spmd, option), getattr(incbs, option))
 
 
 @pytest.mark.skipif(
@@ -225,14 +219,11 @@ def test_incremental_basic_statistics_single_option_partial_fit_spmd_gold(
             local_dpt_weights = _convert_to_dataframe(
                 split_local_weights[i], sycl_queue=queue, target_df=dataframe
             )
-            incbs_spmd.partial_fit(local_dpt_data, sample_weight=local_dpt_weights)
-        else:
-            incbs_spmd.partial_fit(local_dpt_data)
+        incbs_spmd.partial_fit(
+            local_dpt_data, sample_weight=local_dpt_weights if weighted else None
+        )
 
-    if weighted:
-        incbs.fit(dpt_data, sample_weight=dpt_weights)
-    else:
-        incbs.fit(dpt_data)
+    incbs.fit(dpt_data, sample_weight=dpt_weights if weighted else None)
 
     assert_allclose(getattr(incbs_spmd, option), getattr(incbs, option))
 
@@ -291,13 +282,10 @@ def test_incremental_basic_statistics_partial_fit_spmd_synthetic(
             dpt_weights = _convert_to_dataframe(
                 split_weights[i], sycl_queue=queue, target_df=dataframe
             )
-            incbs_spmd.partial_fit(local_dpt_data, sample_weight=local_dpt_weights)
-            incbs.partial_fit(dpt_data, sample_weight=dpt_weights)
-        else:
-            incbs_spmd.partial_fit(local_dpt_data)
-            incbs.partial_fit(dpt_data)
-
-    for option in options_and_tests:
-        assert_allclose(
-            getattr(incbs_spmd, option[0]), getattr(incbs, option[0]), atol=tol
+        incbs_spmd.partial_fit(
+            local_dpt_data, sample_weight=local_dpt_weights if weighted else None
         )
+        incbs.partial_fit(dpt_data, sample_weight=dpt_weights if weighted else None)
+
+    for option, _, _ in options_and_tests:
+        assert_allclose(getattr(incbs_spmd, option), getattr(incbs, option), atol=tol)
