@@ -214,7 +214,6 @@ class IncrementalRidge(BaseLinearRegression):
             self._params = self._get_onedal_params(self._dtype)
 
         y = np.asarray(y).astype(dtype=self._dtype)
-        self._y_ndim_1 = y.ndim == 1
 
         X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
 
