@@ -41,7 +41,6 @@ if "Windows" in platform.system():
         except FileNotFoundError:
             pass
 
-
     os.environ["PATH"] = path_to_libs + os.pathsep + os.environ["PATH"]
 
 try:
