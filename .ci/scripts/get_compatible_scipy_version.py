@@ -25,8 +25,8 @@ else:
     # It is written in a way to be `packaging` independent. This branch occurs
     # when a sklearn version is given to the script externally.
     def sklearn_check_version(ver):
-        ver = [int(i) if i != "" else 0 for i in ver.split(".")]
-        sk_ver = [int(i) if i != "" else 0 for i in str(argv[1]).split(".")]
+        ver = [int(i) if i != "" else 0 for i in ver.split(".")[:2]]
+        sk_ver = [int(i) if i != "" else 0 for i in str(argv[1]).split(".")[:2]]
         return sk_ver[0] > ver[0] or (sk_ver[0] == ver[0] and sk_ver[1] >= ver[1])
 
 

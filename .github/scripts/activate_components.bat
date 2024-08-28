@@ -19,8 +19,6 @@ rem %1 - dpcpp compiler version
 rem %2 - tbb version
 rem %3 - dpcpp activate flag
 
-set errorcode=0
-
 rem prepare vc
 call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
 rem prepare icx only if no parameter is given.
