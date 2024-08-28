@@ -212,6 +212,27 @@ back to the project source-code directory. That way, you can edit the source cod
 without reinstalling the package after a small change.
 * `--single-version-externally-managed` is an option for Python packages instructing the setup tools module to create a package the host's package manager can easily manage.
 
+## Build from Sources with `conda-build`
+
+Intel(R) Extension for Scikit-learn* is easily built from the sources using only one command and `conda-build` utility. 
+
+### Prerequisites for `conda-build`
+
+* any `conda` distribution (`miniforge` is preferrable)
+* `conda-build` and `conda-verify` installed in a conda environment
+* (Windows only) Microsoft Visual Studio* 2022
+* (optional) Intel(R) oneAPI DPC++/C++ Compiler
+
+In order to enable DPC++ interfaces support, you need to set `DPCPPROOT` environment variable pointing to DPC++/C++ Compiler distribution.
+
+### Build Intel(R) Extension for Scikit-learn with `conda-build`
+
+Create and verify `scikit-learn-intelex` conda package with next command executed from root of sklearnex repo:
+
+```bash
+conda build .
+```
+
 ## Next Steps
 
 - [Learn what patching is and how to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/latest/what-is-patching.html)
