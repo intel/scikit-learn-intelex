@@ -16,7 +16,6 @@
 
 from daal4py.sklearn._utils import get_dtype
 
-from ..._device_offload import support_usm_ndarray
 from ...basic_statistics import (
     IncrementalBasicStatistics as IncrementalBasicStatistics_nonSPMD,
 )
@@ -30,7 +29,6 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, IncrementalBasicStatistics_n
             IncrementalBasicStatistics_nonSPMD, self
         )._get_backend("basic_statistics", None, "partial_compute_result")
 
-    @support_usm_ndarray()
     def partial_fit(self, X, weights=None, queue=None):
         """
         Computes partial data for basic statistics
