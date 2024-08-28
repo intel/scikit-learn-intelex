@@ -72,7 +72,3 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, IncrementalBasicStatistics_n
             X_table,
             weights_table,
         )
-
-    @support_usm_ndarray()
-    def finalize_fit(self, queue=None):
-        return super().finalize_fit(queue=queue)
