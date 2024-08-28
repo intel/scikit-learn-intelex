@@ -57,7 +57,7 @@ jobs:
       pip install isort black[jupyter]==24.1.1
       isort --profile black --check . && black --check .
     displayName: 'Linting'
-- job: Linux_conda
+- job: LinuxCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
@@ -84,7 +84,7 @@ jobs:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
-- job: Windows_conda
+- job: WindowsCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
