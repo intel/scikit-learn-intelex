@@ -18,7 +18,6 @@ import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 
-from ..._device_offload import support_usm_ndarray
 from ...common.hyperparameters import get_hyperparameters
 from ...datatypes import _convert_to_supported, to_table
 from ...linear_model import (
@@ -34,7 +33,6 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, IncrementalLinearRegression
             IncrementalLinearRegression_nonSPMD, self
         )._get_backend("linear_model", "regression", "partial_train_result")
 
-    @support_usm_ndarray()
     def partial_fit(self, X, y, queue=None):
         """
         Computes partial data for linear regression
@@ -91,7 +89,3 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, IncrementalLinearRegression
             self._partial_result = module.partial_train(
                 policy, self._params, self._partial_result, X_table, y_table
             )
-
-    @support_usm_ndarray()
-    def finalize_fit(self, queue=None):
-        return super().finalize_fit(queue=queue)
