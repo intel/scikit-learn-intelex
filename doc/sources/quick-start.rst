@@ -79,13 +79,12 @@ This example shows how to patch Intel(R) extension for Scikit-Learn by modifing 
   :caption: Example: Drop-In Patching
    
     import numpy as np
-
     from sklearnex import patch_sklearn
     patch_sklearn()
 
     # You need to re-import scikit-learn algorithms after the patch
     from sklearn.cluster import KMeans
-
+  
     # The use of the original Scikit-learn is not changed
     X = np.array([[1,  2], [1,  4], [1,  0],
                 [10, 2], [10, 4], [10, 0]])
