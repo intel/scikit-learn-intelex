@@ -18,7 +18,6 @@ import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 
-from ..._device_offload import support_usm_ndarray
 from ...covariance import (
     IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_nonSPMD,
 )
@@ -35,7 +34,6 @@ class IncrementalEmpiricalCovariance(
             IncrementalEmpiricalCovariance_nonSPMD, self
         )._get_backend("covariance", None, "partial_compute_result")
 
-    @support_usm_ndarray()
     def partial_fit(self, X, y=None, queue=None):
         """
         Computes partial data for the covariance matrix
@@ -83,7 +81,3 @@ class IncrementalEmpiricalCovariance(
             self._partial_result,
             table_X,
         )
-
-    @support_usm_ndarray()
-    def finalize_fit(self, queue=None):
-        return super().finalize_fit(queue=queue)
