@@ -14,9 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-
-import numpy as np
-
 from daal4py.sklearn._utils import get_dtype
 
 from ...datatypes import _convert_to_supported, from_table, to_table
