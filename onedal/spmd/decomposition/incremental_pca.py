@@ -19,7 +19,6 @@ import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 
-from ..._device_offload import support_usm_ndarray
 from ...datatypes import _convert_to_supported, from_table, to_table
 from ...decomposition import IncrementalPCA as IncrementalPCA_nonSPMD
 from ...utils import _check_array
@@ -34,7 +33,6 @@ class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_nonSPMD):
         if hasattr(self, "components_"):
             del self.components_
 
-    @support_usm_ndarray()
     def partial_fit(self, X, queue):
         """Incremental fit with X. All of X is processed as a single batch.
 
@@ -117,7 +115,3 @@ class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_nonSPMD):
             "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
         )
         return from_table(result.transformed_data)
-
-    @support_usm_ndarray()
-    def finalize_fit(self, queue=None):
-        return super().finalize_fit(queue=queue)
