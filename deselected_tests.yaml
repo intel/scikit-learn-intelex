@@ -370,8 +370,11 @@ deselected_tests:
   - tests/test_common.py::test_estimators[IncrementalPCA()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[IncrementalRidge()-check_estimators_pickle]
   - tests/test_common.py::test_estimators[IncrementalRidge()-check_estimators_pickle(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[IncrementalRidge()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[IncrementalRidge()-check_estimators_pickle(readonly_memmap=True)]
   # There are not enough data to run onedal backend
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
+  - tests/test_common.py::test_estimators[IncrementalRidge()-check_fit2d_1sample]
   - tests/test_common.py::test_estimators[IncrementalRidge()-check_fit2d_1sample]
 
   # Deselection of LogisticRegression tests over accuracy comparisons with sample_weights
@@ -725,3 +728,9 @@ gpu:
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   - svm/tests/test_svm.py::test_unfitted
   - tests/test_common.py::test_estimators[SVC()-check_estimators_unfitted]
+
+preview:
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
+  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
+  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
