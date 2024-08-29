@@ -104,7 +104,7 @@ if daal_check_version((2023, "P", 200)):
             correct_count = self.n_clusters < sample_count
 
             is_data_supported = (
-                _is_csr(X) and daal_check_version((2024, "P", 600))
+                _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
 
             _acceptable_sample_weights = True
@@ -129,7 +129,7 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (
                         is_data_supported,
-                        "Supported data formats: Dense, CSR (oneDAL version >= 2024.6.0).",
+                        "Supported data formats: Dense, CSR (oneDAL version >= 2024.7.0).",
                     ),
                 ]
             )
@@ -177,7 +177,7 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_predict_supported(self, method_name, X, sample_weight=None):
             class_name = self.__class__.__name__
             is_data_supported = (
-                _is_csr(X) and daal_check_version((2024, "P", 600))
+                _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
             patching_status = PatchingConditionsChain(
                 f"sklearn.cluster.{class_name}.predict"
@@ -202,7 +202,7 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (
                         is_data_supported,
-                        "Supported data formats: Dense, CSR (oneDAL version >= 2024.6.0).",
+                        "Supported data formats: Dense, CSR (oneDAL version >= 2024.7.0).",
                     ),
                     (
                         _acceptable_sample_weights,
