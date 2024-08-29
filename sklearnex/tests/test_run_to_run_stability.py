@@ -122,7 +122,7 @@ SPARSE_INSTANCES = _sklearn_clone_dict(
             SVC(),
             *(
                 []
-                if not daal_check_version((2024, "P", 600))
+                if not daal_check_version((2024, "P", 700))
                 else [
                     KMeans(),
                     KMeans(init="random"),
