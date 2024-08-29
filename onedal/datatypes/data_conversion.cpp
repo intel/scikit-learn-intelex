@@ -237,7 +237,7 @@ template <int NpType, typename T = byte_t>
 static PyObject *convert_to_numpy_impl(const dal::array<T> &array,
                                        std::int64_t row_count,
                                        std::int64_t column_count = 0) {
-    int size_dims = column_count == 0 ? 1 : 2;
+    const int size_dims = column_count == 0 ? 1 : 2;
 
     npy_intp dims[2] = { static_cast<npy_intp>(row_count), static_cast<npy_intp>(column_count) };
     auto host_array = transfer_to_host(array);
