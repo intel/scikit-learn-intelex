@@ -25,7 +25,6 @@ from onedal.tests.utils._dataframes_support import (
 )
 from sklearnex.tests._utils_spmd import (
     _generate_statistic_data,
-    _generate_weights,
     _get_local_tensor,
     _mpi_libs_and_gpu_available,
 )
@@ -272,7 +271,7 @@ def test_incremental_basic_statistics_partial_fit_spmd_synthetic(
 
     if weighted:
         # Create weights array containing the weight for each sample in the data
-        weights = _generate_weights(n_samples, dtype=dtype)
+        weights = _generate_statistic_data(n_samples, dtype=dtype)
         local_weights = _get_local_tensor(weights)
         split_local_weights = np.array_split(local_weights, num_blocks)
         split_weights = np.array_split(weights, num_blocks)
