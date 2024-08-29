@@ -147,6 +147,7 @@ def get_patch_map_core(preview=False):
         from .linear_model import (
             IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
         )
+        from .linear_model import IncrementalRidge as IncrementalRidge_sklearnex
         from .linear_model import Lasso as Lasso_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
@@ -407,6 +408,19 @@ def get_patch_map_core(preview=False):
                 None,
             ]
         ]
+
+        if daal_check_version((2024, "P", 600)):
+            # IncrementalRidge
+            mapping["incrementalridge"] = [
+                [
+                    (
+                        linear_model_module,
+                        "IncrementalRidge",
+                        IncrementalRidge_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
 
         # Configs
         mapping["set_config"] = [

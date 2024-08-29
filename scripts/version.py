@@ -85,7 +85,7 @@ def get_onedal_shared_libs(dal_root):
         possible_aliases = [
             lib_name,
             f"lib{lib_name}.so.{major_bin_version}",
-            f"lib{lib_name}.{major_bin_version}.dylib"
+            f"lib{lib_name}.{major_bin_version}.dylib",
             f"{lib_name}.{major_bin_version}.dll",
         ]
         if any(find_library(alias) for alias in possible_aliases):
