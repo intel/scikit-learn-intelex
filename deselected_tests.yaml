@@ -383,6 +383,8 @@ deselected_tests:
   - model_selection/tests/test_classification_threshold.py::test_fit_and_score_over_thresholds_sample_weight >=1.5
   - model_selection/tests/test_classification_threshold.py::test_tuned_threshold_classifier_cv_zeros_sample_weights_equivalence >=1.5
 
+  # --------------------------------------------------------
+  # No need to test daal4py patching
 reduced_tests:
   - cluster/tests/test_affinity_propagation.py
   - cluster/tests/test_bicluster.py
@@ -729,8 +731,6 @@ gpu:
   - svm/tests/test_svm.py::test_unfitted
   - tests/test_common.py::test_estimators[SVC()-check_estimators_unfitted]
 
-preview:
-  - cluster/tests/test_k_means.py::test_kmeans_elkan_results
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[KMeans-dense] <1.2
-  - cluster/tests/test_k_means.py::test_unit_weights_vs_no_weights[42-KMeans-dense] >=1.2
-  - cluster/tests/test_k_means.py::test_predict_sample_weight_deprecation_warning[KMeans] >=1.3
+  # --------------------------------------------------------
+  # The following tests currently fail for preview namespace
+#preview:
