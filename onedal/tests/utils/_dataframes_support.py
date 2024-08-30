@@ -15,6 +15,7 @@
 # ===============================================================================
 
 import pytest
+import scipy.sparse as sp
 from sklearn import get_config
 
 try:
@@ -59,6 +60,34 @@ from onedal.tests.utils._device_selection import get_queues
 def get_dataframes_and_queues(
     dataframe_filter_="numpy,pandas,dpnp,dpctl", device_filter_="cpu,gpu"
 ):
+    """Get supported dataframes for testing.
+
+    This is meant to be used for testing purposes only.
+
+    Parameters
+    ----------
+    dataframe_filter_ : str, default="numpy,pandas,dpnp,dpctl"
+        Configure output pytest.params for the certain dataframe formats.
+    device_filter_ : str, default="cpu,gpu"
+        Configure output pytest.params with certain sycl queue for the dataframe,
+        where it is applicable.
+
+    Returns
+    -------
+    list[pytest.param]
+        The list of pytest params, included dataframe name (str),
+        sycl queue, if applicable for the test case, and test
+        case id (str).
+
+    Notes
+    -----
+        Do not use filters for the test cases disabling. Use `pytest.skip`
+        or `pytest.xfail` instead.
+
+    See Also
+    --------
+    _convert_to_dataframe : Converted input object to certain dataframe format.
+    """
     dataframes_and_queues = []
 
     if "numpy" in dataframe_filter_:
@@ -69,8 +98,9 @@ def get_dataframes_and_queues(
     def get_df_and_q(dataframe: str):
         df_and_q = []
         for queue in get_queues(device_filter_):
-            id = "{}-{}".format(dataframe, queue.id)
-            df_and_q.append(pytest.param(dataframe, queue.values[0], id=id))
+            if queue:
+                id = "{}-{}".format(dataframe, queue.id)
+                df_and_q.append(pytest.param(dataframe, queue.values[0], id=id))
         return df_and_q
 
     if dpctl_available and "dpctl" in dataframe_filter_:
@@ -90,10 +120,13 @@ def _as_numpy(obj, *args, **kwargs):
         return dpt.to_numpy(obj, *args, **kwargs)
     if isinstance(obj, pd.DataFrame) or isinstance(obj, pd.Series):
         return obj.to_array(*args, **kwargs)
+    if sp.issparse(obj):
+        return obj.toarray(*args, **kwargs)
     return np.asarray(obj, *args, **kwargs)
 
 
 def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs):
+    """Converted input object to certain dataframe format."""
     if target_df is None:
         return obj
     elif target_df == "numpy":

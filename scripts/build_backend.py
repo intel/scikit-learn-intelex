@@ -16,17 +16,19 @@
 # limitations under the License.
 # ===============================================================================
 
+import logging
 import multiprocessing
 import os
 import platform as plt
 import subprocess
 import sys
-from distutils import log
-from distutils.sysconfig import get_config_var, get_python_inc
 from math import floor
 from os.path import join as jp
+from sysconfig import get_config_var, get_paths
 
 import numpy as np
+
+logger = logging.getLogger("sklearnex")
 
 IS_WIN = False
 IS_MAC = False
@@ -40,103 +42,22 @@ elif sys.platform in ["win32", "cygwin"]:
     IS_WIN = True
 
 
-def build_cpp(
-    cc,
-    cxx,
-    sources,
-    targetprefix,
-    targetname,
-    targetsuffix,
-    libs,
-    libdirs,
-    includes,
-    eca,
-    ela,
-    defines,
-    installpath="",
-):
-    import shutil
-    import subprocess
-    from os.path import basename
-    from sysconfig import get_paths as gp
-
-    log.info(f"building cpp target {targetname}...")
-
-    include_dir_plat = ["-I" + incdir for incdir in includes]
-    if IS_WIN:
-        eca += ["/EHsc"]
-        lib_prefix = ""
-        lib_suffix = ".lib"
-        obj_ext = ".obj"
-        libdirs += [jp(gp()["data"], "libs")]
-        library_dir_plat = ["/link"] + [f"/LIBPATH:{libdir}" for libdir in libdirs]
-        additional_linker_opts = [
-            "/DLL",
-            f"/OUT:{targetprefix}{targetname}{targetsuffix}",
-        ]
-    else:
-        eca += ["-fPIC"]
-        ela += ["-shared"]
-        lib_prefix = "-l"
-        lib_suffix = ""
-        obj_ext = ".o"
-        library_dir_plat = ["-L" + libdir for libdir in libdirs]
-        additional_linker_opts = ["-o", f"{targetprefix}{targetname}{targetsuffix}"]
-    eca += ["-c"]
-    libs = [f"{lib_prefix}{str(item)}{lib_suffix}" for item in libs]
-
-    d4p_dir = os.getcwd()
-    build_dir = os.path.join(d4p_dir, f"build_{targetname}")
-
-    if os.path.exists(build_dir):
-        shutil.rmtree(build_dir)
-    os.mkdir(build_dir)
-    os.chdir(build_dir)
-
-    objfiles = [basename(f).replace(".cpp", obj_ext) for f in sources]
-    for i, cppfile in enumerate(sources):
-        if IS_WIN:
-            out = [f"/Fo{objfiles[i]}"]
-        else:
-            out = ["-o", objfiles[i]]
-        cmd = [cc] + include_dir_plat + eca + [f"{d4p_dir}/{cppfile}"] + out + defines
-        log.info(subprocess.list2cmdline(cmd))
-        subprocess.check_call(cmd)
-
-    if IS_WIN:
-        cmd = [cxx] + ela + objfiles + library_dir_plat + libs + additional_linker_opts
-    else:
-        cmd = [cxx] + objfiles + library_dir_plat + ela + libs + additional_linker_opts
-    log.info(subprocess.list2cmdline(cmd))
-    subprocess.check_call(cmd)
-    shutil.copy(
-        f"{targetprefix}{targetname}{targetsuffix}", os.path.join(d4p_dir, installpath)
-    )
-    if IS_WIN:
-        target_lib_suffix = targetsuffix.replace(".dll", ".lib")
-        shutil.copy(
-            f"{targetprefix}{targetname}{target_lib_suffix}",
-            os.path.join(d4p_dir, installpath),
-        )
-    os.chdir(d4p_dir)
-
-
 def custom_build_cmake_clib(
     iface, cxx=None, onedal_major_binary_version=1, no_dist=True, use_parameters_lib=True
 ):
     import pybind11
 
     root_dir = os.path.normpath(jp(os.path.dirname(__file__), ".."))
-    log.info(f"Project directory is: {root_dir}")
+    logger.info(f"Project directory is: {root_dir}")
 
     builder_directory = jp(root_dir, "scripts")
     abs_build_temp_path = jp(root_dir, "build", f"backend_{iface}")
     install_directory = jp(root_dir, "onedal")
-    log.info(f"Builder directory: {builder_directory}")
-    log.info(f"Install directory: {install_directory}")
+    logger.info(f"Builder directory: {builder_directory}")
+    logger.info(f"Install directory: {install_directory}")
 
     cmake_generator = "-GNinja" if IS_WIN else ""
-    python_include = get_python_inc()
+    python_include = get_paths()["include"]
     win_python_path_lib = os.path.abspath(jp(get_config_var("LIBDEST"), "..", "libs"))
     python_library_dir = win_python_path_lib if IS_WIN else get_config_var("LIBDIR")
     numpy_include = np.get_include()
@@ -151,7 +72,7 @@ def custom_build_cmake_clib(
 
     build_distribute = iface == "spmd_dpc" and not no_dist and IS_LIN
 
-    log.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
+    logger.info(f"Build DPCPP SPMD functionality: {str(build_distribute)}")
 
     if build_distribute:
         mpi_root = os.environ["MPIROOT"]
@@ -173,7 +94,7 @@ def custom_build_cmake_clib(
     plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
     arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
     use_parameters_arg = "yes" if use_parameters_lib else "no"
-    log.info(f"Build using parameters library: {use_parameters_arg}")
+    logger.info(f"Build using parameters library: {use_parameters_arg}")
 
     cmake_args = [
         "cmake",

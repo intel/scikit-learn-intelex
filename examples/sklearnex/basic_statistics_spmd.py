@@ -58,7 +58,7 @@ gtr_mean = np.mean(weighted_data, axis=0)
 gtr_std = np.std(weighted_data, axis=0)
 
 bss = BasicStatisticsSpmd(["mean", "standard_deviation"])
-res = bss.compute(dpt_data, dpt_weights)
+bss.fit(dpt_data, dpt_weights)
 
-print(f"Computed mean on rank {rank}:\n", res["mean"])
-print(f"Computed std on rank {rank}:\n", res["standard_deviation"])
+print(f"Computed mean on rank {rank}:\n", bss.mean)
+print(f"Computed std on rank {rank}:\n", bss.standard_deviation)

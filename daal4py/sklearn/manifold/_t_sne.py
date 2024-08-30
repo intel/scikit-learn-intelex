@@ -35,7 +35,6 @@ from daal4py.sklearn._utils import (
     sklearn_check_version,
 )
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from ..neighbors import NearestNeighbors
 
@@ -47,11 +46,9 @@ class TSNE(BaseTSNE):
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**BaseTSNE._parameter_constraints}
 
-    @support_usm_ndarray()
     def fit_transform(self, X, y=None):
         return super().fit_transform(X, y)
 
-    @support_usm_ndarray()
     def fit(self, X, y=None):
         return super().fit(X, y)
 

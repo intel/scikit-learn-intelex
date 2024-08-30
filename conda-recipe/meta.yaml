@@ -81,7 +81,6 @@ test:
         - python -m unittest discover -v -s tests -p test*.py
         - pytest --pyargs daal4py/sklearn/
         - python tests/run_examples.py
-        - python -m daal4py tests/daal4py/sycl/sklearn_sycl.py
 
 about:
     about:

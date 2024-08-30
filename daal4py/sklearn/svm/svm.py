@@ -16,8 +16,6 @@
 
 from __future__ import print_function
 
-import warnings
-
 import numpy as np
 import sklearn.svm._base as svm_base
 import sklearn.svm._classes as svm_classes
@@ -33,13 +31,6 @@ from sklearn.utils.validation import (
     check_consistent_length,
     check_is_fitted,
 )
-
-try:
-    from packaging.version import Version
-except ImportError:
-    from distutils.version import LooseVersion as Version
-
-from sklearn import __version__ as sklearn_version
 
 import daal4py
 
@@ -505,14 +496,10 @@ def fit(self, X, y, sample_weight=None):
                 cv = StratifiedKFold(
                     n_splits=n_splits, shuffle=True, random_state=self.random_state
                 )
-                if Version(sklearn_version) >= Version("0.24"):
-                    self.clf_prob = CalibratedClassifierCV(
-                        clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_splits
-                    )
-                else:
-                    self.clf_prob = CalibratedClassifierCV(
-                        clf_base, cv=cv, method="sigmoid"
-                    )
+                self.clf_prob = CalibratedClassifierCV(
+                    clf_base, ensemble=False, cv=cv, method="sigmoid", n_jobs=n_splits
+                )
+
                 self.clf_prob.fit(X, y, sample_weight)
             except ValueError:
                 clf_base = clf_base.fit(X, y, sample_weight)

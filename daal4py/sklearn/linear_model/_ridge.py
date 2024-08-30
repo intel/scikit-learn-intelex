@@ -25,7 +25,6 @@ from sklearn.utils import check_array, check_X_y
 
 import daal4py
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from .._utils import (
     PatchingConditionsChain,
@@ -49,11 +48,12 @@ def _daal4py_fit(self, X, y_):
 
     ridge_params = np.asarray(self.alpha, dtype=X.dtype)
     if ridge_params.size != 1 and ridge_params.size != y.shape[1]:
+        # incorrect order of parameters in the error message is intentional to match sklearn
         raise ValueError(
             "Number of targets and number of penalties do not correspond: "
             f"{ridge_params.size} != {y.shape[1]}"
         )
-    ridge_params = ridge_params.reshape((1, -1))
+    ridge_params = ridge_params.reshape((-1, 1))
 
     ridge_alg = daal4py.ridge_regression_training(
         fptype=_fptype,
@@ -61,6 +61,7 @@ def _daal4py_fit(self, X, y_):
         interceptFlag=(self.fit_intercept is True),
         ridgeParameters=ridge_params,
     )
+
     try:
         ridge_res = ridge_alg.compute(X, y)
     except RuntimeError:
@@ -178,7 +179,7 @@ def _fit_ridge(self, _X, _y, sample_weight=None):
     if not _dal_ready:
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(_X, _y, sample_weight=sample_weight)
+        return Ridge_original.fit(self, _X, _y, sample_weight=sample_weight)
     self.n_iter_ = None
     res = _daal4py_fit(self, X, y)
     if res is None:
@@ -187,7 +188,7 @@ def _fit_ridge(self, _X, _y, sample_weight=None):
         )
         if hasattr(self, "daal_model_"):
             del self.daal_model_
-        return super(Ridge, self).fit(_X, _y, sample_weight=sample_weight)
+        return Ridge_original.fit(self, _X, _y, sample_weight=sample_weight)
     return res
 
 
@@ -314,16 +315,11 @@ class Ridge(Ridge_original, _BaseRidge):
             self.solver = solver
             self.random_state = random_state
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         return _fit_ridge(self, X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return _predict_ridge(self, X)
 
-    score = support_usm_ndarray()(Ridge_original.score)
-
     fit.__doc__ = Ridge_original.fit.__doc__
     predict.__doc__ = Ridge_original.predict.__doc__
-    score.__doc__ = Ridge_original.score.__doc__

@@ -19,65 +19,13 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.basic_statistics import IncrementalBasicStatistics
+from onedal.basic_statistics.tests.test_basic_statistics import (
+    expected_max,
+    expected_mean,
+    expected_sum,
+    options_and_tests,
+)
 from onedal.tests.utils._device_selection import get_queues
-
-
-def expected_sum(X):
-    return np.sum(X, axis=0)
-
-
-def expected_max(X):
-    return np.max(X, axis=0)
-
-
-def expected_min(X):
-    return np.min(X, axis=0)
-
-
-def expected_mean(X):
-    return np.mean(X, axis=0)
-
-
-def expected_standard_deviation(X):
-    return np.std(X, axis=0)
-
-
-def expected_variance(X):
-    return np.var(X, axis=0)
-
-
-def expected_variation(X):
-    return expected_standard_deviation(X) / expected_mean(X)
-
-
-def expected_sum_squares(X):
-    return np.sum(np.square(X), axis=0)
-
-
-def expected_sum_squares_centered(X):
-    return np.sum(np.square(X - expected_mean(X)), axis=0)
-
-
-def expected_standard_deviation(X):
-    return np.sqrt(expected_variance(X))
-
-
-def expected_second_order_raw_moment(X):
-    return np.mean(np.square(X), axis=0)
-
-
-options_and_tests = [
-    ("sum", expected_sum, (3e-4, 1e-7)),
-    ("min", expected_min, (1e-7, 1e-7)),
-    ("max", expected_max, (1e-7, 1e-7)),
-    ("mean", expected_mean, (3e-7, 1e-7)),
-    ("variance", expected_variance, (2e-3, 2e-3)),
-    ("variation", expected_variation, (5e-2, 5e-2)),
-    ("sum_squares", expected_sum_squares, (2e-4, 1e-7)),
-    ("sum_squares_centered", expected_sum_squares_centered, (2e-4, 1e-7)),
-    ("standard_deviation", expected_standard_deviation, (2e-3, 2e-3)),
-    ("second_order_raw_moment", expected_second_order_raw_moment, (1e-6, 1e-7)),
-]
 
 
 @pytest.mark.parametrize("queue", get_queues())

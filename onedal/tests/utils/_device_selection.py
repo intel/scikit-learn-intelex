@@ -20,7 +20,26 @@ import pytest
 
 
 def get_queues(filter_="cpu,gpu"):
-    queues = []
+    """Get available dpctl.SycQueues for testing.
+
+    This is meant to be used for testing purposes only.
+
+    Parameters
+    ----------
+    filter_ : str, default="cpu,gpu"
+        Configure output list with available dpctl.SycQueues for testing.
+
+    Returns
+    -------
+    list[dpctl.SycQueue]
+        The list of dpctl.SycQueue.
+
+    Notes
+    -----
+        Do not use filters for the test cases disabling. Use `pytest.skip`
+        or `pytest.xfail` instead.
+    """
+    queues = [None] if "cpu" in filter_ else []
 
     try:
         import dpctl

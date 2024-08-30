@@ -4,9 +4,9 @@
 .circleci/                    @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
 
 # Docs
-*.md                          @maria-Petrova @napetrov @aepanchi @Alexsandruss
-doc/                          @maria-Petrova @napetrov @aepanchi @Alexsandruss
-requirements-doc.txt          @maria-Petrova @napetrov @aepanchi @Alexsandruss
+*.md                          @maria-Petrova @napetrov @bdmoore1 @Alexsandruss
+doc/                          @maria-Petrova @napetrov @bdmoore1 @Alexsandruss
+requirements-doc.txt          @maria-Petrova @napetrov @bdmoore1 @Alexsandruss
 
 # DPC++
 **/oneapi/                    @Alexsandruss @samir-nasibli
