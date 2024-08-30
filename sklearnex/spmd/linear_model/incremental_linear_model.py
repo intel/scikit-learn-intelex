@@ -20,9 +20,9 @@ from onedal.spmd.linear_model import (
 )
 
 from ...linear_model import (
-    IncrementalLinearRegression as IncrementalLinearRegression_nonSPMD,
+    IncrementalLinearRegression as IncrementalLinearRegression_base,
 )
 
 
-class IncrementalLinearRegression(IncrementalLinearRegression_nonSPMD):
+class IncrementalLinearRegression(IncrementalLinearRegression_base):
     _onedal_incremental_linear = staticmethod(onedalSPMD_IncrementalLinearRegression)
