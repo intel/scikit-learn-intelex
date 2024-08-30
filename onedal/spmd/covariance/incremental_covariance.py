@@ -58,8 +58,7 @@ class IncrementalEmpiricalCovariance(
         """
         X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
 
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
 
         policy = super(IncrementalEmpiricalCovariance_base, self)._get_policy(queue, X)
 
