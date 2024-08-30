@@ -152,7 +152,7 @@ def test_sklearnex_fit_on_random_data(
     is_gpu = queue is not None and queue.sycl_device.is_gpu
     if assume_centered and is_gpu and not daal_check_version((2024, "P", 800)):
         pytest.skip(
-            "Due to a bug on oneDAL side, means are  notset to zero when assume_centered=True"
+            "Due to a bug on oneDAL side, means are not set to zero when assume_centered=True"
         )
     from sklearnex.covariance import IncrementalEmpiricalCovariance
 
