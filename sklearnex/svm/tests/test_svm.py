@@ -25,12 +25,10 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_svc(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("SVC fit for the GPU sycl_queue is buggy.")
     from sklearnex.svm import SVC
 
     X = np.array([[-2, -1], [-1, -1], [-1, -2], [+1, +1], [+1, +2], [+2, +1]])
@@ -43,12 +41,10 @@ def test_sklearnex_import_svc(dataframe, queue):
     assert_allclose(_as_numpy(svc.support_), [1, 3])
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_nusvc(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("NuSVC fit for the GPU sycl_queue is buggy.")
     from sklearnex.svm import NuSVC
 
     X = np.array([[-2, -1], [-1, -1], [-1, -2], [+1, +1], [+1, +2], [+2, +1]])
@@ -63,12 +59,10 @@ def test_sklearnex_import_nusvc(dataframe, queue):
     assert_allclose(_as_numpy(svc.support_), [0, 1, 3, 4])
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_svr(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("SVR fit for the GPU sycl_queue is buggy.")
     from sklearnex.svm import SVR
 
     X = np.array([[-2, -1], [-1, -1], [-1, -2], [+1, +1], [+1, +2], [+2, +1]])
@@ -81,12 +75,10 @@ def test_sklearnex_import_svr(dataframe, queue):
     assert_allclose(_as_numpy(svc.support_), [1, 3])
 
 
-# TODO:
-# investigate failure for `dpnp.ndarrays` and `dpctl.tensors` on `GPU`
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="cpu")
-)
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_nusvr(dataframe, queue):
+    if queue and queue.sycl_device.is_gpu:
+        pytest.skip("NuSVR fit for the GPU sycl_queue is buggy.")
     from sklearnex.svm import NuSVR
 
     X = np.array([[-2, -1], [-1, -1], [-1, -2], [+1, +1], [+1, +2], [+2, +1]])

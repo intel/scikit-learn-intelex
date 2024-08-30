@@ -25,7 +25,6 @@ from sklearn.utils.validation import check_is_fitted
 
 import daal4py
 
-from .._device_offload import support_usm_ndarray
 from .._n_jobs_support import control_n_jobs
 from .._utils import PatchingConditionsChain, getFPType, sklearn_check_version
 
@@ -376,7 +375,6 @@ class PCA(PCA_original):
 
     if sklearn_check_version("1.3"):
 
-        @support_usm_ndarray()
         @_fit_context(prefer_skip_nested_validation=True)
         def fit(self, X, y=None):
             """Fit the model with X.
@@ -400,7 +398,6 @@ class PCA(PCA_original):
 
     else:
 
-        @support_usm_ndarray()
         def fit(self, X, y=None):
             """Fit the model with X.
 
@@ -431,7 +428,6 @@ class PCA(PCA_original):
             self._fit(X)
             return self
 
-    @support_usm_ndarray()
     def transform(self, X):
         """
         Apply dimensionality reduction to X.
@@ -466,7 +462,6 @@ class PCA(PCA_original):
             )
         return PCA_original.transform(self, X)
 
-    @support_usm_ndarray()
     def fit_transform(self, X, y=None):
         """
         Fit the model with X and apply the dimensionality reduction on X.

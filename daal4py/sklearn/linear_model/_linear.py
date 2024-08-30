@@ -19,7 +19,6 @@ from scipy import sparse as sp
 from sklearn.linear_model import LinearRegression as LinearRegression_original
 from sklearn.utils import check_array
 
-from .._device_offload import support_usm_ndarray
 from .._utils import sklearn_check_version
 from ..utils.base import _daal_validate_data
 from ..utils.validation import _daal_check_array
@@ -238,7 +237,6 @@ class LinearRegression(LinearRegression_original):
                 positive=positive,
             )
 
-    @support_usm_ndarray()
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
             self._normalize = _deprecate_normalize(
@@ -267,7 +265,6 @@ class LinearRegression(LinearRegression_original):
             return super(LinearRegression, self).fit(X, y=y, sample_weight=sample_weight)
         return _fit_linear(self, X, y, sample_weight=sample_weight)
 
-    @support_usm_ndarray()
     def predict(self, X):
         return _predict_linear(self, X)
 

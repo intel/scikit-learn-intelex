@@ -24,6 +24,7 @@ trigger:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .github/Pull_Request_template.md
 
 pr:
   branches:
@@ -35,6 +36,7 @@ pr:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .github/Pull_Request_template.md
 
 variables:
   PYTHON: 'python'
@@ -55,7 +57,7 @@ jobs:
       pip install isort black[jupyter]==24.1.1
       isort --profile black --check . && black --check .
     displayName: 'Linting'
-- job: Linux
+- job: LinuxCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
@@ -82,7 +84,7 @@ jobs:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
-- job: Windows
+- job: WindowsCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
   strategy:

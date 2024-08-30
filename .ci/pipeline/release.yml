@@ -45,7 +45,7 @@ jobs:
     displayName: 'Sklearn testing'
 - job: GeneratorConda
   steps:
-  - bash: python .ci/scripts/gen_release_jobs.py --channels intel conda-forge
+  - bash: python .ci/scripts/gen_release_jobs.py --channels conda-forge
     name: MatrixGen
 - job: ReleaseConda
   dependsOn: GeneratorConda
