@@ -117,9 +117,6 @@ class IncrementalPCA(BasePCA):
         y : Ignored
             Not used, present for API consistency by convention.
 
-        check_input : bool, default=True
-            Run check_array on X.
-
         Returns
         -------
         self : object
