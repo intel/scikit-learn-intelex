@@ -69,8 +69,7 @@ class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_base):
         else:
             self.n_components_ = self.n_components
 
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
 
         policy = super(IncrementalPCA_base, self)._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
