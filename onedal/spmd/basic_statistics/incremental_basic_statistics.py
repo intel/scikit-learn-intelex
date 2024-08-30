@@ -48,8 +48,7 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, IncrementalBasicStatistics_b
         self : object
             Returns the instance itself.
         """
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
         policy = super(IncrementalBasicStatistics_base, self)._get_policy(queue, X)
         X, weights = _convert_to_supported(policy, X, weights)
 

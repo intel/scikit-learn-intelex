@@ -92,8 +92,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
         policy = self._get_policy(queue, X)
         X, weights = _convert_to_supported(policy, X, weights)
 
