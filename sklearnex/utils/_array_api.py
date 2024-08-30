@@ -25,8 +25,6 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
 
 
-# TODO:
-# update it for supported versions of scikit-learn.
 def get_namespace(*arrays):
     """Get namespace of arrays.
 

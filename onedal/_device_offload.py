@@ -35,12 +35,11 @@ except ImportError:
 try:
     import dpnp
 
+    from .utils._array_api import _convert_to_dpnp
+
     dpnp_available = True
 except ImportError:
     dpnp_available = False
-
-if dpnp_available:
-    from .utils._array_api import _convert_to_dpnp
 
 
 class DummySyclQueue:
@@ -166,13 +165,13 @@ def _get_host_inputs(*args, **kwargs):
 
 
 def _extract_array_attr(*args, **kwargs):
-    """Extracts USM iface, array namespace and Hardware device
+    """Extracts USM iface, array namespace and hardware device
     the array data resides on.
 
     Returns
     -------
     usm_iface : Dict
-        SUA protocol dictionary describing the array.
+        Sycl USM Array (SUA) interface protocol dictionary describing the array.
     array_api : str
         The name of the Array API namespace.
     array_api_device : Array API device object
