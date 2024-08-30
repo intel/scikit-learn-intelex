@@ -16,8 +16,8 @@
 
 from onedal.spmd.decomposition import IncrementalPCA as onedalSPMD_IncrementalPCA
 
-from ...preview.decomposition import IncrementalPCA as IncrementalPCA_nonSPMD
+from ...preview.decomposition import IncrementalPCA as IncrementalPCA_base
 
 
-class IncrementalPCA(IncrementalPCA_nonSPMD):
+class IncrementalPCA(IncrementalPCA_base):
     _onedal_incremental_pca = staticmethod(onedalSPMD_IncrementalPCA)

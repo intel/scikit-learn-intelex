@@ -17,14 +17,14 @@
 from daal4py.sklearn._utils import get_dtype
 
 from ...datatypes import _convert_to_supported, from_table, to_table
-from ...decomposition import IncrementalPCA as IncrementalPCA_nonSPMD
+from ...decomposition import IncrementalPCA as IncrementalPCA_base
 from ...utils import _check_array
 from .._base import BaseEstimatorSPMD
 
 
-class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_nonSPMD):
+class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_base):
     def _reset(self):
-        self._partial_result = super(IncrementalPCA_nonSPMD, self)._get_backend(
+        self._partial_result = super(IncrementalPCA_base, self)._get_backend(
             "decomposition", "dim_reduction", "partial_train_result"
         )
         if hasattr(self, "components_"):
@@ -72,7 +72,7 @@ class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_nonSPMD):
         if not hasattr(self, "_queue"):
             self._queue = queue
 
-        policy = super(IncrementalPCA_nonSPMD, self)._get_policy(queue, X)
+        policy = super(IncrementalPCA_base, self)._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
 
         if not hasattr(self, "_dtype"):
@@ -80,7 +80,7 @@ class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_nonSPMD):
             self._params = self._get_onedal_params(X)
 
         X_table = to_table(X)
-        self._partial_result = super(IncrementalPCA_nonSPMD, self)._get_backend(
+        self._partial_result = super(IncrementalPCA_base, self)._get_backend(
             "decomposition",
             "dim_reduction",
             "partial_train",
@@ -92,7 +92,7 @@ class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_nonSPMD):
         return self
 
     def _create_model(self):
-        m = super(IncrementalPCA_nonSPMD, self)._get_backend(
+        m = super(IncrementalPCA_base, self)._get_backend(
             "decomposition", "dim_reduction", "model"
         )
         m.eigenvectors = to_table(self.components_)
@@ -103,12 +103,12 @@ class IncrementalPCA(BaseEstimatorSPMD, IncrementalPCA_nonSPMD):
         return m
 
     def predict(self, X, queue=None):
-        policy = super(IncrementalPCA_nonSPMD, self)._get_policy(queue, X)
+        policy = super(IncrementalPCA_base, self)._get_policy(queue, X)
         model = self._create_model()
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X, stage="predict")
 
-        result = super(IncrementalPCA_nonSPMD, self)._get_backend(
+        result = super(IncrementalPCA_base, self)._get_backend(
             "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
         )
         return from_table(result.transformed_data)
