@@ -44,8 +44,6 @@ if daal_check_version((2023, "P", 200)):
     @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
     class KMeans(sklearn_KMeans):
         __doc__ = sklearn_KMeans.__doc__
-        n_iter_, inertia_ = None, None
-        labels_, cluster_centers_ = None, None
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**sklearn_KMeans._parameter_constraints}
@@ -101,6 +99,10 @@ if daal_check_version((2023, "P", 200)):
             sample_count = _num_samples(X)
             self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd", "elkan"]
+            if self.algorithm == "elkan":
+                logging.getLogger("sklearnex").info(
+                    "oneDAL does not elkan, using lloyd algorithm instead."
+                )
             correct_count = self.n_clusters < sample_count
 
             is_data_supported = (
@@ -184,6 +186,10 @@ if daal_check_version((2023, "P", 200)):
             )
 
             supported_algs = ["auto", "full", "lloyd", "elkan"]
+            if self.algorithm == "elkan":
+                logging.getLogger("sklearnex").info(
+                    "oneDAL does not elkan, using lloyd algorithm instead."
+                )
 
             _acceptable_sample_weights = True
             if sample_weight is not None:

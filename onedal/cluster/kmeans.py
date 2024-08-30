@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import logging
 import warnings
 from abc import ABC
 
@@ -165,20 +166,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             "result_options": "" if result_options is None else result_options,
         }
 
-    def _get_params_and_input(self, X, is_csr, policy):
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
-        )
-        X = _convert_to_supported(policy, X)
-        dtype = get_dtype(X)
-        X_table = to_table(X)
-
-        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
-
-        params = self._get_onedal_params(is_csr, dtype)
-
-        return (params, X_table, dtype)
-
     def _init_centroids_onedal(
         self,
         X_table,
@@ -192,7 +179,11 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
         # Use host policy for KMeans init, only for csr data
         # as oneDAL KMeansInit for CSR data is not implemented on GPU
-        init_policy = self._get_policy(None, None) if is_csr else policy
+        if is_csr:
+            init_policy = self._get_policy(None, None)
+            logging.getLogger("sklearnex").info("Running Sparse KMeansInit on CPU")
+        else:
+            init_policy = policy
 
         if isinstance(init, str) and init == "k-means++":
             if not is_csr:
@@ -236,6 +227,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _init_centroids_sklearn(self, X, init, random_state, policy, dtype=np.float32):
         # For oneDAL versions < 2023.2 or callable init,
         # using the scikit-learn implementation
+        logging.getLogger("sklearnex").info("Computing KMeansInit with Stock sklearn")
         n_samples = X.shape[0]
 
         if isinstance(init, str) and init == "k-means++":
@@ -283,7 +275,16 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _fit(self, X, module, queue=None):
         policy = self._get_policy(queue, X)
         is_csr = _is_csr(X)
-        _, X_table, dtype = self._get_params_and_input(X, is_csr, policy)
+        X = _check_array(
+            X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
+        )
+        X = _convert_to_supported(policy, X)
+        dtype = get_dtype(X)
+        X_table = to_table(X)
+
+        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
+
+        params = self._get_onedal_params(is_csr, dtype)
 
         self.n_features_in_ = X_table.column_count
 
