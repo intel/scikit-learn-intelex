@@ -74,8 +74,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
         policy = self._get_policy(queue, X)
 
         X, y = _convert_to_supported(policy, X, y)
@@ -208,8 +207,7 @@ class IncrementalRidge(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
         policy = self._get_policy(queue, X)
 
         X, y = _convert_to_supported(policy, X, y)

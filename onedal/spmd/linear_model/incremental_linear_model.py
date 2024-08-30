@@ -58,8 +58,7 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, IncrementalLinearRegression
             "linear_model", "regression"
         )
 
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
         policy = super(IncrementalLinearRegression_base, self)._get_policy(queue, X)
 
         X, y = _convert_to_supported(policy, X, y)
