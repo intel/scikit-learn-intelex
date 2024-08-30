@@ -35,7 +35,12 @@ if "Windows" in platform.system():
             if os.path.exists(dal_root_redist):
                 os.add_dll_directory(dal_root_redist)
                 os.environ["PATH"] = dal_root_redist + os.pathsep + os.environ["PATH"]
-        os.add_dll_directory(path_to_libs)
+
+        try:
+            os.add_dll_directory(path_to_libs)
+        except FileNotFoundError:
+            pass
+
     os.environ["PATH"] = path_to_libs + os.pathsep + os.environ["PATH"]
 
 try:
