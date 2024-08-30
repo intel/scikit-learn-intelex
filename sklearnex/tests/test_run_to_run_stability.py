@@ -115,23 +115,16 @@ def _run_test(estimator, method, datasets):
                     )
 
 
-SPARSE_INSTANCES = _sklearn_clone_dict(
-    {
-        str(i): i
-        for i in [
-            SVC(),
-            *(
-                []
-                if not daal_check_version((2024, "P", 700))
-                else [
-                    KMeans(),
-                    KMeans(init="random"),
-                    KMeans(init="k-means++"),
-                ]
-            ),
+_sparse_instances = [SVC()]
+if not daal_check_version((2024, "P", 700)):  # Not testing for < 2024.7.0
+    _sparse_instances.extend(
+        [
+            KMeans(),
+            KMeans(init="random"),
+            KMeans(init="k-means++"),
         ]
-    }
-)
+    )
+SPARSE_INSTANCES = _sklearn_clone_dict({str(i): i for i in _sparse_instances})
 
 STABILITY_INSTANCES = _sklearn_clone_dict(
     {
