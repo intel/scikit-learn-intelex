@@ -78,8 +78,6 @@ def _get_sycl_namespace(*arrays):
         if hasattr(X, "__array_namespace__"):
             return sycl_type, X.__array_namespace__(), True
         elif dpnp_available and isinstance(X, dpnp.ndarray):
-            # TODO:
-            # convert it to dpctl.tensor with namespace.
             return sycl_type, dpnp, False
         else:
             raise ValueError(f"SYCL type not recognized: {sycl_type}")

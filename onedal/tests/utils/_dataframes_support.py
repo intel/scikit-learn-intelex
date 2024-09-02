@@ -40,9 +40,6 @@ try:
     # GPU-no-copy.
     import array_api_strict
 
-    # TODO:
-    # get this from onedal._config._get_config
-    # Run check if "array_api_dispatch" is configurable
     array_api_enabled = lambda: get_config()["array_api_dispatch"]
     array_api_enabled()
     array_api_modules = {"array_api": array_api_strict}
@@ -114,17 +111,11 @@ def get_dataframes_and_queues(
         and "array_api" in array_api_modules
         or array_api_enabled()
     ):
-        # TODO:
-        # Generally extend Array API testing with ability to add supported
-        # devices which are available at runtime.
         dataframes_and_queues.append(pytest.param("array_api", None, id="array_api"))
 
     return dataframes_and_queues
 
 
-# TODO:
-# generelize it with scikit-learn's _array_api module
-# `_convert_to_numpy` utility.
 def _as_numpy(obj, *args, **kwargs):
     """Converted input object to numpy.ndarray format."""
     if dpnp_available and isinstance(obj, dpnp.ndarray):
@@ -171,9 +162,6 @@ def _convert_to_dataframe(obj, sycl_queue=None, target_df=None, *args, **kwargs)
         # Array API input other than DPNP ndarray, DPCtl tensor or
         # Numpy ndarray.
 
-        # TODO:
-        # Generally extend Array API testing with ability to add supported
-        # devices which are available at runtime.
         xp = array_api_modules[target_df]
         return xp.asarray(obj)
 
