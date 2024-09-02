@@ -20,6 +20,7 @@ from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 200)):
 
+    import numbers
     import warnings
 
     import numpy as np
@@ -101,7 +102,7 @@ if daal_check_version((2023, "P", 200)):
             supported_algs = ["auto", "full", "lloyd", "elkan"]
             if self.algorithm == "elkan":
                 logging.getLogger("sklearnex").info(
-                    "oneDAL does not elkan, using lloyd algorithm instead."
+                    "oneDAL does not support 'elkan', using 'lloyd' algorithm instead."
                 )
             correct_count = self.n_clusters < sample_count
 
@@ -110,7 +111,7 @@ if daal_check_version((2023, "P", 200)):
             ) or not issparse(X)
 
             _acceptable_sample_weights = True
-            if sample_weight is not None:
+            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
                 sample_weight = _check_sample_weight(
                     sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
                 )
@@ -122,7 +123,7 @@ if daal_check_version((2023, "P", 200)):
                 [
                     (
                         self.algorithm in supported_algs,
-                        "Only lloyd algorithm is supported, elkan is computed using lloyd",
+                        "Only 'lloyd' algorithm is supported, 'elkan' is computed using lloyd",
                     ),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
@@ -163,11 +164,6 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            if sklearn_check_version("1.2"):
-                self._check_params_vs_input(X)
-            else:
-                self._check_params(X)
-
             self._n_features_out = self.n_clusters
 
             self._initialize_onedal_estimator()
@@ -188,11 +184,11 @@ if daal_check_version((2023, "P", 200)):
             supported_algs = ["auto", "full", "lloyd", "elkan"]
             if self.algorithm == "elkan":
                 logging.getLogger("sklearnex").info(
-                    "oneDAL does not elkan, using lloyd algorithm instead."
+                    "oneDAL does not support 'elkan', using 'lloyd' algorithm instead."
                 )
 
             _acceptable_sample_weights = True
-            if sample_weight is not None:
+            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
                 sample_weight = _check_sample_weight(
                     sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
                 )
@@ -204,7 +200,7 @@ if daal_check_version((2023, "P", 200)):
                 [
                     (
                         self.algorithm in supported_algs,
-                        "Only lloyd algorithm is supported, elkan is computed using lloyd.",
+                        "Only 'lloyd' algorithm is supported, 'elkan' is computed using lloyd.",
                     ),
                     (
                         is_data_supported,

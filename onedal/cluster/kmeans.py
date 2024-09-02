@@ -21,18 +21,13 @@ from abc import ABC
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
-from onedal import _backend
+from onedal import _backend, _is_spmd_backend
 from onedal.basic_statistics import BasicStatistics
 
-try:
+if _is_spmd_backend:
     from onedal.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
-except ImportError:
-    BasicStatistics_SPMD = None
 
-try:
-    from ..common._policy import _DataParallelInteropPolicy as dp_policy
-except ImportError:
-    dp_policy = None
+    from ..common._spmd_policy import _SPMDDataParallelInteropPolicy as spmd_policy
 
 if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
@@ -93,14 +88,10 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             return rtol
         dummy = to_table(None)
 
-        _is_host_policy = isinstance(policy, host_policy)
-        _is_dp_policy = dp_policy is not None and isinstance(policy, dp_policy)
-        if _is_host_policy or _is_dp_policy:
-            bs = BasicStatistics("variance")
-        elif BasicStatistics_SPMD is not None:
+        if _is_spmd_backend and isinstance(policy, spmd_policy):
             bs = BasicStatistics_SPMD("variance")
         else:
-            raise ImportError("Failed to import BasicStatistics from onedal.spmd")
+            bs = BasicStatistics("variance")
 
         res = bs._compute_raw(X_table, dummy, policy, dtype, is_csr)
         mean_var = from_table(res["variance"]).mean()
@@ -395,7 +386,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         result = module.infer(policy, params, self.model_, X_table)
 
-        if result_options:  # This is only set for score function
+        if (
+            result_options == "compute_exact_objective_function"
+        ):  # This is only set for score function
             return result.objective_function_value * (-1)
         else:
             return from_table(result.responses).ravel()
