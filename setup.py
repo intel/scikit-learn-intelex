@@ -327,29 +327,6 @@ def getpyexts():
     )
     exts.extend(cythonize(ext, nthreads=n_threads))
 
-    if dpcpp:
-        if IS_LIN or IS_MAC:
-            runtime_oneapi_dirs = ["$ORIGIN/oneapi"]
-        elif IS_WIN:
-            runtime_oneapi_dirs = []
-
-        ext = Extension(
-            "daal4py._oneapi",
-            [
-                os.path.abspath("src/oneapi/oneapi.pyx"),
-            ],
-            depends=["src/oneapi/oneapi.h", "src/oneapi/oneapi_backend.h"],
-            include_dirs=include_dir_plat + [np.get_include()],
-            extra_compile_args=eca,
-            extra_link_args=ela,
-            define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
-            libraries=["oneapi_backend"] + libraries_plat,
-            library_dirs=["daal4py/oneapi"] + ONEDAL_LIBDIRS,
-            runtime_library_dirs=runtime_oneapi_dirs,
-            language="c++",
-        )
-        exts.extend(cythonize(ext, nthreads=n_threads))
-
     if not no_dist:
         mpi_include_dir = include_dir_plat + [np.get_include()] + MPI_INCDIRS
         mpi_depens = glob.glob(jp(os.path.abspath("src"), "*.h"))
@@ -405,33 +382,6 @@ def gen_pyx(odir):
 gen_pyx(os.path.abspath("./build"))
 
 
-def build_oneapi_backend():
-    eca, ela, includes = get_build_options()
-    cc = "icx"
-    if IS_WIN:
-        cxx = "icx"
-    else:
-        cxx = "icpx"
-    eca = ["-fsycl"] + ["-fsycl-device-code-split=per_kernel"] + eca
-    ela = ["-fsycl"] + ["-fsycl-device-code-split=per_kernel"] + ela
-
-    return build_backend.build_cpp(
-        cc=cc,
-        cxx=cxx,
-        sources=["src/oneapi/oneapi_backend.cpp"],
-        targetname="oneapi_backend",
-        targetprefix="" if IS_WIN else "lib",
-        targetsuffix=".dll" if IS_WIN else ".so",
-        libs=get_libs("daal") + ["OpenCL", "onedal_sycl"],
-        libdirs=ONEDAL_LIBDIRS,
-        includes=includes,
-        eca=eca,
-        ela=ela,
-        defines=[],
-        installpath="daal4py/oneapi/",
-    )
-
-
 def get_onedal_py_libs():
     ext_suffix = get_config_vars("EXT_SUFFIX")[0]
     libs = [f"_onedal_py_host{ext_suffix}", f"_onedal_py_dpc{ext_suffix}"]
@@ -468,7 +418,6 @@ class custom_build:
                 use_parameters_lib=use_parameters_lib,
             )
         if dpcpp:
-            build_oneapi_backend()
             if is_onedal_iface:
                 build_backend.custom_build_cmake_clib(
                     iface="dpc",
@@ -532,7 +481,6 @@ with open("README.md", "r", encoding="utf8") as f:
 
 packages_with_tests = [
     "daal4py",
-    "daal4py.oneapi",
     "daal4py.mb",
     "daal4py.sklearn",
     "daal4py.sklearn.cluster",
@@ -648,11 +596,6 @@ setup(
     keywords=["machine learning", "scikit-learn", "data science", "data analytics"],
     packages=get_packages_with_tests(packages_with_tests),
     package_data={
-        "daal4py.oneapi": [
-            "liboneapi_backend.so",
-            "oneapi_backend.lib",
-            "oneapi_backend.dll",
-        ],
         "onedal": get_onedal_py_libs(),
     },
     ext_modules=getpyexts(),
