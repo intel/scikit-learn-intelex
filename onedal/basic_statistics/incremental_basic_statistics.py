@@ -19,6 +19,7 @@ import numpy as np
 from daal4py.sklearn._utils import get_dtype
 
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils import _check_array
 from .basic_statistics import BaseBasicStatistics
 
 
@@ -95,6 +96,12 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self._queue = queue
         policy = self._get_policy(queue, X)
         X, weights = _convert_to_supported(policy, X, weights)
+
+        X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=False)
+        if weights is not None:
+            weights = _check_array(
+                weights, dtype=[np.float64, np.float32], ensure_2d=False
+            )
 
         if not hasattr(self, "_onedal_params"):
             dtype = get_dtype(X)
