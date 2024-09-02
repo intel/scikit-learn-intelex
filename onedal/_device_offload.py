@@ -228,11 +228,7 @@ def support_array_api(freefunc=False, queue_param=True):
             ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-            if usm_iface is not None and (
-                hasattr(result, "__array_interface__")
-                or isinstance(result, Iterable)
-                and hasattr(result[0], "__array_interface__")
-            ):
+            if usm_iface is not None:
                 result = _copy_to_usm(data_queue, result)
                 if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
