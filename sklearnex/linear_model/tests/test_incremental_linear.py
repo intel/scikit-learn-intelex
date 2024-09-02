@@ -46,13 +46,13 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, fit_intercept, macro_block
     inclin.fit(X_df, y_df)
 
     y_pred = inclin.predict(X_df)
-    y_pred_as_numpy = _as_numpy(y_pred)
+    np_y_pred = _as_numpy(y_pred)
 
-    tol = 2e-6 if y_pred_as_numpy.dtype == np.float32 else 1e-7
+    tol = 2e-6 if dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [1], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, [0], atol=tol)
-    assert_allclose(y_pred_as_numpy, y, atol=tol)
+    assert_allclose(np_y_pred, y, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -85,15 +85,15 @@ def test_sklearnex_partial_fit_on_gold_data(
 
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_pred = inclin.predict(X_df)
-    y_pred_as_numpy = _as_numpy(y_pred)
+    np_y_pred = _as_numpy(y_pred)
 
     assert inclin.n_features_in_ == 1
-    tol = 2e-6 if y_pred_as_numpy.dtype == np.float32 else 1e-7
+    tol = 2e-6 if dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [[1]], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, 3, atol=tol)
 
-    assert_allclose(y_pred_as_numpy, y, atol=tol)
+    assert_allclose(np_y_pred, y, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -126,15 +126,15 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
 
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_pred = inclin.predict(X_df)
-    y_pred_as_numpy = _as_numpy(y_pred)
+    np_y_pred = _as_numpy(y_pred)
 
     assert inclin.n_features_in_ == 2
-    tol = 7e-6 if y_pred_as_numpy.dtype == np.float32 else 1e-7
+    tol = 7e-6 if dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [1.0, 2.0], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, 3.0, atol=tol)
 
-    assert_allclose(y_pred_as_numpy, y, atol=tol)
+    assert_allclose(np_y_pred, y, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
