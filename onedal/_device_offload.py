@@ -191,7 +191,6 @@ def _extract_array_attr(*args, **kwargs):
     array_api_device = None
     if array_api:
         array_api = array_api()
-    if array_api:
         array_api_device = firstarg.device
     return usm_iface, array_api, array_api_device
 
