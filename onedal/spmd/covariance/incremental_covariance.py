@@ -19,7 +19,7 @@ import numpy as np
 from daal4py.sklearn._utils import get_dtype
 
 from ...covariance import (
-    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_base,
+    IncrementalEmpiricalCovariance as base_IncrementalEmpiricalCovariance,
 )
 from ...datatypes import _convert_to_supported, to_table
 from ...utils import _check_array
@@ -27,11 +27,11 @@ from .._base import BaseEstimatorSPMD
 
 
 class IncrementalEmpiricalCovariance(
-    BaseEstimatorSPMD, IncrementalEmpiricalCovariance_base
+    BaseEstimatorSPMD, base_IncrementalEmpiricalCovariance
 ):
     def _reset(self):
         self._partial_result = super(
-            IncrementalEmpiricalCovariance_base, self
+            base_IncrementalEmpiricalCovariance, self
         )._get_backend("covariance", None, "partial_compute_result")
 
     def partial_fit(self, X, y=None, queue=None):
@@ -60,7 +60,7 @@ class IncrementalEmpiricalCovariance(
 
         self._queue = queue
 
-        policy = super(IncrementalEmpiricalCovariance_base, self)._get_policy(queue, X)
+        policy = super(base_IncrementalEmpiricalCovariance, self)._get_policy(queue, X)
 
         X = _convert_to_supported(policy, X)
 
@@ -70,7 +70,7 @@ class IncrementalEmpiricalCovariance(
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
         self._partial_result = super(
-            IncrementalEmpiricalCovariance_base, self
+            base_IncrementalEmpiricalCovariance, self
         )._get_backend(
             "covariance",
             None,

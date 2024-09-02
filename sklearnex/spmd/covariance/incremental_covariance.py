@@ -19,11 +19,11 @@ from onedal.spmd.covariance import (
 )
 
 from ...covariance import (
-    IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_base,
+    IncrementalEmpiricalCovariance as base_IncrementalEmpiricalCovariance,
 )
 
 
-class IncrementalEmpiricalCovariance(IncrementalEmpiricalCovariance_base):
+class IncrementalEmpiricalCovariance(base_IncrementalEmpiricalCovariance):
     _onedal_incremental_covariance = staticmethod(
         onedalSPMD_IncrementalEmpiricalCovariance
     )
