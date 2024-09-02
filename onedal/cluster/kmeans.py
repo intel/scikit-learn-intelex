@@ -20,7 +20,7 @@ from abc import ABC
 
 import numpy as np
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype, parse_dtype
+from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal import _backend, _is_spmd_backend
 from onedal.basic_statistics import BasicStatistics
 
@@ -39,7 +39,6 @@ from sklearn.utils import check_random_state
 
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
-from ..common._policy import _HostInteropPolicy as host_policy
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 
