@@ -74,9 +74,14 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
         patching_status.write_log(queue=q)
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == "sklearn":
-        if "array_api_dispatch" in get_config() and get_config()["array_api_dispatch"]:
-            # TODO:
-            # logs require update for this branch.
+        if (
+            "array_api_dispatch" in get_config()
+            and get_config()["array_api_dispatch"]
+            and "array_api_support" in obj._get_tags()
+            and obj._get_tags()["array_api_support"]
+        ):
+            # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
+            # then raw inputs are used for the fallback.
             patching_status.write_log()
             return branches[backend](obj, *args, **kwargs)
         else:
