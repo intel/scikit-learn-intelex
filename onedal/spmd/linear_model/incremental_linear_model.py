@@ -21,15 +21,15 @@ from daal4py.sklearn._utils import get_dtype
 from ...common.hyperparameters import get_hyperparameters
 from ...datatypes import _convert_to_supported, to_table
 from ...linear_model import (
-    IncrementalLinearRegression as IncrementalLinearRegression_base,
+    IncrementalLinearRegression as base_IncrementalLinearRegression,
 )
 from ...utils import _check_X_y, _num_features
 from .._base import BaseEstimatorSPMD
 
 
-class IncrementalLinearRegression(BaseEstimatorSPMD, IncrementalLinearRegression_base):
+class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegression):
     def _reset(self):
-        self._partial_result = super(IncrementalLinearRegression_base, self)._get_backend(
+        self._partial_result = super(base_IncrementalLinearRegression, self)._get_backend(
             "linear_model", "regression", "partial_train_result"
         )
 
@@ -54,12 +54,12 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, IncrementalLinearRegression
         self : object
             Returns the instance itself.
         """
-        module = super(IncrementalLinearRegression_base, self)._get_backend(
+        module = super(base_IncrementalLinearRegression, self)._get_backend(
             "linear_model", "regression"
         )
 
         self._queue = queue
-        policy = super(IncrementalLinearRegression_base, self)._get_policy(queue, X)
+        policy = super(base_IncrementalLinearRegression, self)._get_policy(queue, X)
 
         X, y = _convert_to_supported(policy, X, y)
 
