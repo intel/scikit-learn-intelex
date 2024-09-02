@@ -187,10 +187,10 @@ def _extract_array_attr(*args, **kwargs):
     # to have the same attributs.
     firstarg = allargs[0]
     usm_iface = getattr(firstarg, "__sycl_usm_array_interface__", None)
-    array_api = None
+    array_api = getattr(firstarg, "__array_namespace__", None)
     array_api_device = None
-    if hasattr(firstarg, "__array_namespace__"):
-        array_api = getattr(firstarg, "__array_namespace__", None)()
+    if array_api:
+        array_api = array_api()
     if array_api:
         array_api_device = firstarg.device
     return usm_iface, array_api, array_api_device
