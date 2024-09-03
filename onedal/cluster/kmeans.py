@@ -21,8 +21,11 @@ from abc import ABC
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal import _backend
+from onedal import _backend, _is_spmd_backend
 from onedal.basic_statistics import BasicStatistics
+
+if _is_spmd_backend:
+    from ..common._spmd_policy import _SPMDDataParallelInteropPolicy as spmd_policy
 
 if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
@@ -138,6 +141,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 stacklevel=2,
             )
             self._n_init = 1
+        assert self.algorithm == "lloyd"
 
     def _get_onedal_params(self, is_csr=False, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
@@ -267,7 +271,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         dtype = get_dtype(X)
         X_table = to_table(X)
 
-        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
+        if _is_spmd_backend and isinstance(policy, spmd_policy):
+            self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
 
         params = self._get_onedal_params(is_csr, dtype)
 
