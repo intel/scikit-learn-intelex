@@ -67,10 +67,11 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegre
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        y = np.asarray(y).astype(dtype=self._dtype)
-        self._y_ndim_1 = y.ndim == 1
+        y = np.asarray(y, dtype=self._dtype)
 
-        X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
+        X, y = _check_X_y(
+            X, y, dtype=[np.float64, np.float32], accept_2d_y=True, force_all_finite=False
+        )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)

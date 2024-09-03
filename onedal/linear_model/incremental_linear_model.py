@@ -83,10 +83,11 @@ class IncrementalLinearRegression(BaseLinearRegression):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        y = np.asarray(y).astype(dtype=self._dtype)
-        self._y_ndim_1 = y.ndim == 1
+        y = np.asarray(y, dtype=self._dtype)
 
-        X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
+        X, y = _check_X_y(
+            X, y, dtype=[np.float64, np.float32], accept_2d_y=True, force_all_finite=False
+        )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)
@@ -139,13 +140,9 @@ class IncrementalLinearRegression(BaseLinearRegression):
 
         packed_coefficients = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = (
-            packed_coefficients[:, 1:],
-            packed_coefficients[:, 0],
+            packed_coefficients[:, 1:].squeeze(),
+            packed_coefficients[:, 0].squeeze(),
         )
-
-        if self.coef_.shape[0] == 1 and self._y_ndim_1:
-            self.coef_ = self.coef_.ravel()
-            self.intercept_ = self.intercept_[0]
 
         return self
 
@@ -216,9 +213,11 @@ class IncrementalRidge(BaseLinearRegression):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        y = np.asarray(y).astype(dtype=self._dtype)
+        y = np.asarray(y, dtype=self._dtype)
 
-        X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
+        X, y = _check_X_y(
+            X, y, dtype=[np.float64, np.float32], accept_2d_y=True, force_all_finite=False
+        )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)

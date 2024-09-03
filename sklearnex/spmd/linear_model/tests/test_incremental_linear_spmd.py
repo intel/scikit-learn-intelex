@@ -71,8 +71,9 @@ def test_incremental_linear_regression_fit_spmd_gold(
             [13.0, 32.0],
             [14.0, 64.0],
             [15.0, 128.0],
-        ]
-    ).astype(dtype=dtype)
+        ],
+        dtype=dtype,
+    )
     dpt_X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     local_X = _get_local_tensor(X)
     local_dpt_X = _convert_to_dataframe(local_X, sycl_queue=queue, target_df=dataframe)
@@ -143,8 +144,9 @@ def test_incremental_linear_regression_partial_fit_spmd_gold(
             [13.0, 32.0],
             [14.0, 64.0],
             [15.0, 128.0],
-        ]
-    ).astype(dtype=dtype)
+        ],
+        dtype=dtype,
+    )
     dpt_X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     local_X = _get_local_tensor(X)
     split_local_X = np.array_split(local_X, num_blocks)
