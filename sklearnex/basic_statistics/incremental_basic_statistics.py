@@ -120,7 +120,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
-            f"sklearn.covariance.{self.__class__.__name__}.{method_name}"
+            f"sklearn.basic_statistics.{self.__class__.__name__}.{method_name}"
         )
         return patching_status
 
@@ -135,9 +135,9 @@ class IncrementalBasicStatistics(BaseEstimator):
         assert isinstance(onedal_options, str)
         return options
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
     def _onedal_partial_fit(self, X, sample_weight=None, queue=None):
@@ -171,7 +171,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             self._onedal_estimator = self._onedal_incremental_basic_statistics(
                 **onedal_params
             )
-        self._onedal_estimator.partial_fit(X, sample_weight, queue)
+        self._onedal_estimator.partial_fit(X, weights=sample_weight, queue=queue)
         self._need_to_finalize = True
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
@@ -203,7 +203,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
         self.n_features_in_ = X.shape[1]
 
-        self._onedal_finalize_fit()
+        self._onedal_finalize_fit(queue=queue)
 
         return self
 
