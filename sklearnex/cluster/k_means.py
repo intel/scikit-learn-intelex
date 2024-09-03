@@ -30,6 +30,7 @@ if daal_check_version((2023, "P", 200)):
     from sklearn.utils.validation import (
         _check_sample_weight,
         _deprecate_positional_args,
+        _is_arraylike_not_scalar,
         _num_samples,
         check_is_fitted,
     )
