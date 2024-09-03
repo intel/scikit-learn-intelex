@@ -38,8 +38,9 @@ from sklearnex.tests._utils_spmd import (
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
 @pytest.mark.parametrize("assume_centered", [True, False])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
-def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered):
+def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered, dtype):
     # Import spmd and batch algo
     from sklearnex.covariance import IncrementalEmpiricalCovariance
     from sklearnex.spmd.covariance import (
@@ -57,7 +58,8 @@ def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered)
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
             [0.0, 7.0, 128.0],
-        ]
+        ],
+        dtype=dtype,
     )
 
     dpt_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
@@ -88,9 +90,10 @@ def test_incremental_covariance_fit_spmd_gold(dataframe, queue, assume_centered)
 )
 @pytest.mark.parametrize("num_blocks", [1, 2])
 @pytest.mark.parametrize("assume_centered", [True, False])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_incremental_covariance_partial_fit_spmd_gold(
-    dataframe, queue, num_blocks, assume_centered
+    dataframe, queue, num_blocks, assume_centered, dtype
 ):
     # Import spmd and batch algo
     from sklearnex.covariance import IncrementalEmpiricalCovariance
@@ -109,7 +112,8 @@ def test_incremental_covariance_partial_fit_spmd_gold(
             [0.0, 5.0, 32.0],
             [0.0, 6.0, 64.0],
             [0.0, 7.0, 128.0],
-        ]
+        ],
+        dtype=dtype,
     )
 
     dpt_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
@@ -140,13 +144,14 @@ def test_incremental_covariance_partial_fit_spmd_gold(
 @pytest.mark.parametrize("n_features", [10, 100])
 @pytest.mark.parametrize("num_blocks", [1, 2])
 @pytest.mark.parametrize("assume_centered", [True, False])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
     "dataframe,queue",
     get_dataframes_and_queues(dataframe_filter_="dpnp,dpctl", device_filter_="gpu"),
 )
 @pytest.mark.mpi
 def test_incremental_covariance_partial_fit_spmd_synthetic(
-    n_samples, n_features, num_blocks, assume_centered, dataframe, queue
+    n_samples, n_features, num_blocks, assume_centered, dataframe, queue, dtype
 ):
     # Import spmd and batch algo
     from sklearnex.covariance import IncrementalEmpiricalCovariance
@@ -155,7 +160,7 @@ def test_incremental_covariance_partial_fit_spmd_synthetic(
     )
 
     # Generate data and process into dpt
-    data = _generate_statistic_data(n_samples, n_features)
+    data = _generate_statistic_data(n_samples, n_features, dtype=dtype)
 
     dpt_data = _convert_to_dataframe(data, sycl_queue=queue, target_df=dataframe)
 
@@ -173,5 +178,7 @@ def test_incremental_covariance_partial_fit_spmd_synthetic(
 
     inccov.fit(dpt_data)
 
-    assert_allclose(inccov_spmd.covariance_, inccov.covariance_)
-    assert_allclose(inccov_spmd.location_, inccov.location_)
+    tol = 1e-7
+
+    assert_allclose(inccov_spmd.covariance_, inccov.covariance_, atol=tol)
+    assert_allclose(inccov_spmd.location_, inccov.location_, atol=tol)

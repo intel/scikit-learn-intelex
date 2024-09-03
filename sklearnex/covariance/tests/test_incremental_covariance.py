@@ -39,7 +39,7 @@ from onedal.tests.utils._dataframes_support import (
 @pytest.mark.parametrize("assume_centered", [True, False])
 def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, dtype, assume_centered):
     is_gpu = queue is not None and queue.sycl_device.is_gpu
-    if assume_centered and is_gpu and not daal_check_version((2024, "P", 800)):
+    if assume_centered and is_gpu and not daal_check_version((2025, "P", 0)):
         pytest.skip(
             "Due to a bug on oneDAL side, means are not set to zero when assume_centered=True"
         )
@@ -150,7 +150,7 @@ def test_sklearnex_fit_on_random_data(
     dataframe, queue, num_batches, row_count, column_count, dtype, assume_centered
 ):
     is_gpu = queue is not None and queue.sycl_device.is_gpu
-    if assume_centered and is_gpu and not daal_check_version((2024, "P", 800)):
+    if assume_centered and is_gpu and not daal_check_version((2025, "P", 0)):
         pytest.skip(
             "Due to a bug on oneDAL side, means are not set to zero when assume_centered=True"
         )
