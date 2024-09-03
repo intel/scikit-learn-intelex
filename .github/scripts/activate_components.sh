@@ -1,5 +1,6 @@
-# ==============================================================================
-# Copyright 2023 Intel Corporation
+#!/bin/bash
+#===============================================================================
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+#===============================================================================
 
-from .basic_statistics import BasicStatistics
-from .incremental_basic_statistics import IncrementalBasicStatistics
-
-__all__ = ["BasicStatistics", "IncrementalBasicStatistics"]
+# if any parameter is given, then do not source the compiler
+if [ $# -eq 0 ]; then source /opt/intel/oneapi/compiler/latest/env/vars.sh; fi # prepare icpx
+source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+source ./__release_lnx/daal/latest/env/vars.sh # prepare oneDAL

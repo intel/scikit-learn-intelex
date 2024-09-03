@@ -206,9 +206,7 @@ To install |intelex|, run:
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
-     - [CPU, GPU]
    * - Windows* OS
-     - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
      - [CPU, GPU]
@@ -245,9 +243,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
            - [CPU]
            - [CPU]
            - [CPU]
-           - [CPU]
          * - Windows* OS
-           - [CPU]
            - [CPU]
            - [CPU]
            - [CPU]
@@ -276,9 +272,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
            - [CPU, GPU]
            - [CPU, GPU]
            - [CPU, GPU]
-           - [CPU, GPU]
          * - Windows* OS
-           - [CPU, GPU]
            - [CPU, GPU]
            - [CPU, GPU]
            - [CPU, GPU]
@@ -306,9 +300,7 @@ To prevent version conflicts, we recommend installing `scikit-learn-intelex` int
            - [CPU]
            - [CPU]
            - [CPU]
-           - [CPU]
          * - Windows* OS
-           - [CPU]
            - [CPU]
            - [CPU]
            - [CPU]

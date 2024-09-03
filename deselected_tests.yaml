@@ -51,13 +51,13 @@ deselected_tests:
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-brute]
   - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-brute]
 
-  # Same as above but for macOS only
-  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-auto] >=1.2 darwin
-  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-ball_tree] >=1.2 darwin
-  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-kd_tree] >=1.2 darwin
-  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-auto] >=1.2 darwin
-  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-ball_tree] >=1.2 darwin
-  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-kd_tree] >=1.2 darwin
+  # Same as above but for visual studio builds (previously a deselection for macOS)
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-auto] >=1.2 win32
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-ball_tree] >=1.2 win32
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[0.5-True-kd_tree] >=1.2 win32
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-auto] >=1.2 win32
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-ball_tree] >=1.2 win32
+  - neighbors/tests/test_lof.py::test_lof_dtype_equivalence[auto-True-kd_tree] >=1.2 win32
 
   # TODO: fix for Linear Regression failed to converge on macOS only
   - inspection/tests/test_partial_dependence.py::test_partial_dependence_easy_target[2-est0] >=0.23 darwin
@@ -380,8 +380,11 @@ deselected_tests:
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_estimators_pickle(readonly_memmap=True)]
   - tests/test_common.py::test_estimators[IncrementalPCA()-check_estimators_pickle]
   - tests/test_common.py::test_estimators[IncrementalPCA()-check_estimators_pickle(readonly_memmap=True)]
+  - tests/test_common.py::test_estimators[IncrementalRidge()-check_estimators_pickle]
+  - tests/test_common.py::test_estimators[IncrementalRidge()-check_estimators_pickle(readonly_memmap=True)]
   # There are not enough data to run onedal backend
   - tests/test_common.py::test_estimators[IncrementalLinearRegression()-check_fit2d_1sample]
+  - tests/test_common.py::test_estimators[IncrementalRidge()-check_fit2d_1sample]
 
   # Deselection of LogisticRegression tests over accuracy comparisons with sample_weights
   # and without.  Because scikit-learn-intelex does not support sample_weights, it's doing
