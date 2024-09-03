@@ -139,9 +139,32 @@ if daal_check_version((2023, "P", 200)):
 
             return patching_status
 
-        def fit(self, X, y=None, sample_weight=None):
+        def _validate_params(self):
             if sklearn_check_version("1.2"):
-                self._validate_params()
+                super()._validate_params()
+            else:
+                if self.n_init <= 0:
+                    raise ValueError(f"n_init should be > 0, got {self.n_init} instead.")
+                self._n_init = self.n_init
+                if self.max_iter <= 0:
+                    raise ValueError(
+                        f"max_iter should be > 0, got {self.max_iter} instead."
+                    )
+                if not (
+                    _is_arraylike_not_scalar(self.init)
+                    or callable(self.init)
+                    or (
+                        isinstance(self.init, str)
+                        and self.init in ["k-means++", "random"]
+                    )
+                ):
+                    raise ValueError(
+                        "init should be either 'k-means++', 'random', an array-like or a "
+                        f"callable, got '{self.init}' instead."
+                    )
+
+        def fit(self, X, y=None, sample_weight=None):
+            self._validate_params()
 
             dispatch(
                 self,
@@ -246,8 +269,7 @@ if daal_check_version((2023, "P", 200)):
 
             @wrap_output_data
             def predict(self, X):
-                if sklearn_check_version("1.2"):
-                    self._validate_params()
+                self._validate_params()
 
                 return dispatch(
                     self,
@@ -267,8 +289,7 @@ if daal_check_version((2023, "P", 200)):
                 X,
                 sample_weight="deprecated" if sklearn_check_version("1.3") else None,
             ):
-                if sklearn_check_version("1.2"):
-                    self._validate_params()
+                self._validate_params()
 
                 return dispatch(
                     self,
