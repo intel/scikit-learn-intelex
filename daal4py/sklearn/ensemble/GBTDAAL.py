@@ -193,7 +193,9 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         # Return the classifier
         return self
 
-    def _predict(self, X, resultsToEvaluate, pred_contrib=False, pred_interactions=False):
+    def _predict(
+        self, X, resultsToEvaluate, pred_contribs=False, pred_interactions=False
+    ):
         # Input validation
         if not self.allow_nan_:
             X = check_array(X, dtype=[np.single, np.double])
