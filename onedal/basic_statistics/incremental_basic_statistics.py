@@ -97,10 +97,15 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         policy = self._get_policy(queue, X)
         X, weights = _convert_to_supported(policy, X, weights)
 
-        X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=False)
+        X = _check_array(
+            X, dtype=[np.float64, np.float32], ensure_2d=False, force_all_finite=False
+        )
         if weights is not None:
             weights = _check_array(
-                weights, dtype=[np.float64, np.float32], ensure_2d=False
+                weights,
+                dtype=[np.float64, np.float32],
+                ensure_2d=False,
+                force_all_finite=False,
             )
 
         if not hasattr(self, "_onedal_params"):
