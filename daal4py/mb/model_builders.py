@@ -210,7 +210,7 @@ class GBTDAALBaseModel:
 
     # SHAP value support API change occurred in 2025.0 release
     # Check made at instantiation to minimize performance impact
-    if int(d4p._get__daal_link_version__[:4]) >= 2025:
+    if int(d4p._get__daal_link_version__()[:4]) >= 2025:
 
         def _daal_predict_classification(
             self,
