@@ -192,6 +192,7 @@ if daal_check_version((2023, "P", 200)):
             self._n_features_out = self.n_clusters
 
             self._initialize_onedal_estimator()
+            self._n_threads = _openmp_effective_n_threads()
             self._onedal_estimator.fit(X, queue=queue)
 
             self._save_attributes()
