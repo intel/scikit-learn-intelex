@@ -21,7 +21,6 @@ from typing import Literal, Optional
 import numpy as np
 
 import daal4py as d4p
-from daal4py.sklearn._utils import daal_check_version
 
 try:
     from pandas import DataFrame
@@ -211,7 +210,7 @@ class GBTDAALBaseModel:
 
     # SHAP value support API change occurred in 2025.0 release
     # Check made at instantiation to minimize performance impact
-    if daal_check_version((2025, "P", 0)):
+    if int(d4p._get__daal_link_version__[:4]) >= 2025:
 
         def _daal_predict_classification(
             self,
