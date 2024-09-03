@@ -48,11 +48,14 @@ except ImportError:
 
 
 shap_required_version = (2024, "P", 1)
+shap_api_change_version = (2025, "P", 0)
 shap_supported = daal_check_version(shap_required_version)
+shap_api_changed = daal_check_version(shap_api_change_version)
 shap_not_supported_str = (
     f"SHAP value calculation only supported for version {shap_required_version} or later"
 )
 shap_unavailable_str = "SHAP Python package not available"
+shap_api_change_str = "SHAP calculation requires 2025.0 API"
 cb_unavailable_str = "CatBoost not available"
 
 # CatBoost's SHAP value calculation seems to be buggy
@@ -390,6 +393,7 @@ class XGBoostClassificationModelBuilder_objective_logitraw(
         # accept an rtol of 1e-5
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
+    @unittest.skipUnless(shap_api_changed, reason=shap_api_change_str)
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
         with self.assertWarns(UserWarning):
@@ -407,6 +411,7 @@ class XGBoostClassificationModelBuilder_objective_logitraw(
         d4p_pred[:, -1] += 0.5
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-6)
 
+    @unittest.skipUnless(shap_api_changed, reason=shap_api_change_str)
     def test_model_predict_shap_interactions(self):
         booster = self.xgb_model.get_booster()
         with self.assertWarns(UserWarning):
