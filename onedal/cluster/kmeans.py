@@ -21,13 +21,8 @@ from abc import ABC
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal import _backend, _is_spmd_backend
+from onedal import _backend
 from onedal.basic_statistics import BasicStatistics
-
-if _is_spmd_backend:
-    from onedal.spmd.basic_statistics import BasicStatistics as BasicStatistics_SPMD
-
-    from ..common._spmd_policy import _SPMDDataParallelInteropPolicy as spmd_policy
 
 if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
@@ -81,16 +76,17 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
+    # Get appropriate backend (required for SPMD)
+    def _get_basic_statistics_backend(self, result_options):
+        return BasicStatistics(result_options)
+
     def _tolerance(self, X_table, rtol, is_csr, policy, dtype):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
         dummy = to_table(None)
 
-        if _is_spmd_backend and isinstance(policy, spmd_policy):
-            bs = BasicStatistics_SPMD("variance")
-        else:
-            bs = BasicStatistics("variance")
+        bs = self._get_basic_statistics_backend("variance")
 
         res = bs._compute_raw(X_table, dummy, policy, dtype, is_csr)
         mean_var = from_table(res["variance"]).mean()

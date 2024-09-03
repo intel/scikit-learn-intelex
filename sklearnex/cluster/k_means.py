@@ -164,11 +164,6 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            if sklearn_check_version("1.2"):
-                self._check_params_vs_input(X)
-            else:
-                self._check_params(X)
-
             self._n_features_out = self.n_clusters
 
             self._initialize_onedal_estimator()
