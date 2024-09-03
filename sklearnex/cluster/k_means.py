@@ -157,6 +157,29 @@ if daal_check_version((2023, "P", 200)):
 
             return self
 
+        def _validate_algorithm(self, X):
+            if self.algorithm not in ("lloyd", "elkan", "auto", "full"):
+                raise ValueError(
+                    "Algorithm must be either 'lloyd' or 'elkan', "
+                    f"got {self.algorithm} instead."
+                )
+
+            self._algorithm = self.algorithm
+            if self._algorithm == "elkan" and self.n_clusters == 1:
+                warnings.warn(
+                    "algorithm='elkan' doesn't make sense for a single "
+                    "cluster. Using 'lloyd' instead.",
+                    RuntimeWarning,
+                )
+                self._algorithm = "lloyd"
+            elif self._algorithm in ["auto", "full"] and sklearn_check_version("1.1"):
+                warnings.warn(
+                    f"algorithm='{self._algorithm}' is deprecated, it will be "
+                    "removed in 1.3. Using 'lloyd' instead.",
+                    FutureWarning,
+                )
+                self._algorithm = "lloyd"
+
         def _onedal_fit(self, X, _, sample_weight, queue=None):
             X = self._validate_data(
                 X,
@@ -164,13 +187,11 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            if not sklearn_check_version("1.2"):
-                self._check_params(X)
+            self._validate_algorithm(X)
 
             self._n_features_out = self.n_clusters
 
             self._initialize_onedal_estimator()
-            self._n_threads = _openmp_effective_n_threads()
             self._onedal_estimator.fit(X, queue=queue)
 
             self._save_attributes()
