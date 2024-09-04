@@ -107,9 +107,6 @@ class BasicStatistics(BaseEstimator):
         self._onedal_estimator.fit(X, sample_weight, queue)
         self._save_attributes()
 
-    def compute(self, data, weights=None, queue=None):
-        return self._onedal_estimator.compute(data, weights, queue)
-
     def fit(self, X, y=None, *, sample_weight=None):
         """Compute statistics with X, using minibatches of size batch_size.
 
