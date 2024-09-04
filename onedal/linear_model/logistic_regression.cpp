@@ -41,7 +41,10 @@ struct method2t {
 
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "dense_batch", ops, Float, method::dense_batch);
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::dense_batch);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "sparse", ops, Float, method::sparse);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >=20240700
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
@@ -115,14 +118,14 @@ auto get_onedal_result_options(const py::dict& params) {
 template <typename Float, typename Method, typename Task, typename Optimizer>
 struct descriptor_creator;
 
-template <typename Float, typename Optimizer>
+template <typename Float, typename Method, typename Optimizer>
 struct descriptor_creator<Float,
-                          dal::logistic_regression::method::dense_batch,
+                          Method,
                           dal::logistic_regression::task::classification,
                           Optimizer> {
     static auto get(bool intercept, double C) {
         return dal::logistic_regression::descriptor<Float,
-                                             dal::logistic_regression::method::dense_batch,
+                                             Method,
                                              dal::logistic_regression::task::classification>(intercept, C);
     }
 };

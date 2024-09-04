@@ -14,12 +14,13 @@
 # limitations under the License.
 # ===============================================================================
 
-from .incremental_linear_model import IncrementalLinearRegression
+from .incremental_linear_model import IncrementalLinearRegression, IncrementalRidge
 from .linear_model import LinearRegression, Ridge
 from .logistic_regression import LogisticRegression
 
 __all__ = [
     "IncrementalLinearRegression",
+    "IncrementalRidge",
     "LinearRegression",
     "LogisticRegression",
     "Ridge",
