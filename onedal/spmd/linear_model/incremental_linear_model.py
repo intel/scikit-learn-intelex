@@ -28,6 +28,12 @@ from .._base import BaseEstimatorSPMD
 
 
 class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegression):
+    """
+    Distributed incremental Linear Regression oneDAL implementation.
+
+    API is the same as for `onedal.linear_model.IncrementalLinearRegression`.
+    """
+
     def _reset(self):
         self._partial_result = super(base_IncrementalLinearRegression, self)._get_backend(
             "linear_model", "regression", "partial_train_result"

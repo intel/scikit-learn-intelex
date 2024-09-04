@@ -25,4 +25,11 @@ from ...linear_model import (
 
 
 class IncrementalLinearRegression(base_IncrementalLinearRegression):
+    """
+    Distributed incremental estimator for linear regression.
+    Allows to distributely train linear regression if data are splitted into batches.
+
+    API is the same as for `sklearnex.linear_model.IncrementalLinearRegression`.
+    """
+
     _onedal_incremental_linear = staticmethod(onedalSPMD_IncrementalLinearRegression)
