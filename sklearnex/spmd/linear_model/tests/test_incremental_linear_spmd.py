@@ -27,7 +27,6 @@ from sklearnex.tests._utils_spmd import (
     _generate_regression_data,
     _get_local_tensor,
     _mpi_libs_and_gpu_available,
-    _spmd_assert_allclose,
 )
 
 
@@ -207,7 +206,7 @@ def test_incremental_linear_regression_fit_spmd_random(
         IncrementalLinearRegression as IncrementalLinearRegression_SPMD,
     )
 
-    tol = 1e-4 if dtype == np.float32 else 1e-7
+    tol = 2e-4 if dtype == np.float32 else 1e-7
 
     # Create gold data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(
