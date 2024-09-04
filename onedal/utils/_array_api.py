@@ -47,11 +47,15 @@ if dpnp_available:
 
 
 def _asarray(data, xp, *args, **kwargs):
+    def _one_asarray(data, xp, *args, **kwargs):
+        if data is not None:
+            return xp.asarray(data, *args, **kwargs)
+
     if hasattr(data, "__array_namespace__"):
-        return xp.asarray(data, *args, **kwargs)
+        return _one_asarray(data, xp, *args, **kwargs)
     elif isinstance(data, Iterable):
         for i in range(len(data)):
-            data[i] = xp.asarray(data[i], *args, **kwargs)
+            data[i] = _one_asarray(data[i], xp, *args, **kwargs)
     return data
 
 

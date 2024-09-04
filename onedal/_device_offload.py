@@ -164,37 +164,6 @@ def _get_host_inputs(*args, **kwargs):
     return q, hostargs, hostkwargs
 
 
-def _extract_array_attr(*args, **kwargs):
-    """Extracts USM iface, array namespace and hardware device
-    the array data resides on.
-
-    Returns
-    -------
-    usm_iface : Dict
-        Sycl USM Array (SUA) interface protocol dictionary describing the array.
-    array_api : str
-        The name of the Array API namespace.
-    array_api_device : Array API device object
-        Hardware device the array data resides on.
-
-    """
-
-    allargs = (*args, *kwargs.values())
-    if len(allargs) == 0:
-        return None, None, None
-    # Getting first argument attr. For all sklearn-like functions
-    # all data provided in the first position. Other data arguments expected
-    # to have the same attributs.
-    firstarg = allargs[0]
-    usm_iface = getattr(firstarg, "__sycl_usm_array_interface__", None)
-    array_api = getattr(firstarg, "__array_namespace__", None)
-    array_api_device = None
-    if array_api:
-        array_api = array_api()
-        array_api_device = firstarg.device
-    return usm_iface, array_api, array_api_device
-
-
 def _run_on_device(func, obj=None, *args, **kwargs):
     if obj is not None:
         return func(obj, *args, **kwargs)
@@ -219,20 +188,24 @@ def support_array_api(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            usm_iface, input_array_api, input_array_api_device = _extract_array_attr(
-                *args, **kwargs
-            )
+            # TODO:
+            # refactor check the len.
+            data = (*args, *kwargs.values())
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if queue_param and not (
                 "queue" in hostkwargs and hostkwargs["queue"] is not None
             ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
+            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
             if usm_iface is not None:
                 result = _copy_to_usm(data_queue, result)
                 if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
-            elif input_array_api and not _is_numpy_namespace(input_array_api):
+                return result
+            input_array_api = getattr(data[0], "__array_namespace__", print)()
+            input_array_api_device = data[0].device if input_array_api else None
+            if input_array_api:
                 result = _asarray(result, input_array_api, device=input_array_api_device)
             return result
 
