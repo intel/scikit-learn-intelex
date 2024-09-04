@@ -56,11 +56,11 @@ def _asarray(data, xp, *args, **kwargs):
         if isinstance(data, tuple):
             result_data = []
             for i in range(len(data)):
-                result_data.append(xp.asarray(data[i], *args, **kwargs))
+                result_data.append(_asarray(data[i], xp, *args, **kwargs))
             data = tuple(result_data)
         else:
             for i in range(len(data)):
-                data[i] = xp.asarray(data[i], *args, **kwargs)
+                data[i] = _asarray(data[i], xp, *args, **kwargs)
     return data
 
 

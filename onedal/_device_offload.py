@@ -97,9 +97,7 @@ def _transfer_to_host(queue, *data):
     host_data = []
     for item in data:
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
-        array_api = getattr(item, "__array_namespace__", None)
-        if array_api:
-            array_api = array_api()
+        array_api = getattr(item, "__array_namespace__", print)()
         if usm_iface is not None:
             if not dpctl_available:
                 raise RuntimeError(
