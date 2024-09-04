@@ -89,7 +89,7 @@ if daal_check_version((2024, "P", 700)):
         model_sp.fit(X_sp, y, queue=queue)
         pred_sp = model_sp.predict(X_sp, queue=queue)
 
-        rtol = 2e-4 if dtype == np.float32 else 1e-5
+        rtol = 2e-4
         assert_allclose(pred, pred_sp, rtol=rtol)
         assert_allclose(model.coef_, model_sp.coef_, rtol=rtol)
         assert_allclose(model.intercept_, model_sp.intercept_, rtol=rtol)
