@@ -93,8 +93,8 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
 
 def wrap_output_data(func):
     """
-    Handles Array API input. Converts output of decorated function
-    to input Array API format on the same device.
+    Converts and moves the output arrays of the decorated function
+    to match the input array type and device.
     """
 
     @wraps(func)

@@ -188,8 +188,6 @@ def support_array_api(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            # TODO:
-            # refactor check the len.
             data = (*args, *kwargs.values())
             if len(data) == 0:
                 return _run_on_device(func, obj, *args, **kwargs)
