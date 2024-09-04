@@ -191,6 +191,8 @@ def support_array_api(freefunc=False, queue_param=True):
             # TODO:
             # refactor check the len.
             data = (*args, *kwargs.values())
+            if len(data) == 0:
+                return _run_on_device(func, obj, *args, **kwargs)
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if queue_param and not (
                 "queue" in hostkwargs and hostkwargs["queue"] is not None
@@ -200,7 +202,7 @@ def support_array_api(freefunc=False, queue_param=True):
             usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
             if usm_iface is not None:
                 result = _copy_to_usm(data_queue, result)
-                if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
+                if dpnp_available and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
                 return result
             input_array_api = getattr(data[0], "__array_namespace__", print)()

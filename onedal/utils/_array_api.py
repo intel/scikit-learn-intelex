@@ -38,6 +38,8 @@ if dpnp_available:
 
     def _convert_to_dpnp(array):
         """Converted input object to dpnp.ndarray format."""
+        # Will be removed and `onedal.utils._array_api._asarray` will be
+        # used instead after DPNP Array API enabling.
         if isinstance(array, usm_ndarray):
             return dpnp.array(array, copy=False)
         elif isinstance(array, Iterable):
@@ -47,15 +49,18 @@ if dpnp_available:
 
 
 def _asarray(data, xp, *args, **kwargs):
-    def _one_asarray(data, xp, *args, **kwargs):
-        if data is not None:
-            return xp.asarray(data, *args, **kwargs)
-
+    """Converted input object to array format of xp namespace provided."""
     if hasattr(data, "__array_namespace__"):
-        return _one_asarray(data, xp, *args, **kwargs)
+        return xp.asarray(data, xp, *args, **kwargs)
     elif isinstance(data, Iterable):
-        for i in range(len(data)):
-            data[i] = _one_asarray(data[i], xp, *args, **kwargs)
+        if isinstance(data, tuple):
+            result_data = []
+            for i in range(len(data)):
+                result_data.append(_asarray(data[i], xp, *args, **kwargs))
+            data = tuple(result_data)
+        else:
+            for i in range(len(data)):
+                data[i] = _asarray(data[i], xp, *args, **kwargs)
     return data
 
 
