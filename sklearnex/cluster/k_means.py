@@ -34,9 +34,6 @@ if daal_check_version((2023, "P", 200)):
         check_is_fitted,
     )
 
-    if sklearn_check_version("1.1"):
-        from sklearn.utils.validation import _is_arraylike_not_scalar
-
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
     from onedal.cluster import KMeans as onedal_KMeans
@@ -142,33 +139,9 @@ if daal_check_version((2023, "P", 200)):
 
             return patching_status
 
-        def _validate_params(self):
-            if sklearn_check_version("1.2"):
-                super()._validate_params()
-            else:
-                if self.n_init <= 0:
-                    raise ValueError(f"n_init should be > 0, got {self.n_init} instead.")
-                self._n_init = self.n_init
-                if self.max_iter <= 0:
-                    raise ValueError(
-                        f"max_iter should be > 0, got {self.max_iter} instead."
-                    )
-                if sklearn_check_version("1.1"):
-                    if not (
-                        _is_arraylike_not_scalar(self.init)
-                        or callable(self.init)
-                        or (
-                            isinstance(self.init, str)
-                            and self.init in ["k-means++", "random"]
-                        )
-                    ):
-                        raise ValueError(
-                            "init should be either 'k-means++', 'random', an array-like or a "
-                            f"callable, got '{self.init}' instead."
-                        )
-
         def fit(self, X, y=None, sample_weight=None):
-            self._validate_params()
+            if sklearn_check_version("1.2"):
+                self._validate_params()
 
             dispatch(
                 self,
@@ -184,29 +157,6 @@ if daal_check_version((2023, "P", 200)):
 
             return self
 
-        def _validate_algorithm(self, X):
-            if self.algorithm not in ("lloyd", "elkan", "auto", "full"):
-                raise ValueError(
-                    "Algorithm must be either 'lloyd' or 'elkan', "
-                    f"got {self.algorithm} instead."
-                )
-
-            self._algorithm = self.algorithm
-            if self._algorithm == "elkan" and self.n_clusters == 1:
-                warnings.warn(
-                    "algorithm='elkan' doesn't make sense for a single "
-                    "cluster. Using 'lloyd' instead.",
-                    RuntimeWarning,
-                )
-                self._algorithm = "lloyd"
-            elif self._algorithm in ["auto", "full"] and sklearn_check_version("1.1"):
-                warnings.warn(
-                    f"algorithm='{self._algorithm}' is deprecated, it will be "
-                    "removed in 1.3. Using 'lloyd' instead.",
-                    FutureWarning,
-                )
-                self._algorithm = "lloyd"
-
         def _onedal_fit(self, X, _, sample_weight, queue=None):
             X = self._validate_data(
                 X,
@@ -214,7 +164,10 @@ if daal_check_version((2023, "P", 200)):
                 dtype=[np.float64, np.float32],
             )
 
-            self._validate_algorithm(X)
+            if sklearn_check_version("1.2"):
+                self._check_params_vs_input(X)
+            else:
+                self._check_params(X)
 
             self._n_features_out = self.n_clusters
 
@@ -293,7 +246,8 @@ if daal_check_version((2023, "P", 200)):
                 X,
                 sample_weight="deprecated" if sklearn_check_version("1.3") else None,
             ):
-                self._validate_params()
+                if sklearn_check_version("1.2"):
+                    self._validate_params()
 
                 return dispatch(
                     self,
