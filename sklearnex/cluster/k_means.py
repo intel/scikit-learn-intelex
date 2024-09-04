@@ -30,10 +30,12 @@ if daal_check_version((2023, "P", 200)):
     from sklearn.utils.validation import (
         _check_sample_weight,
         _deprecate_positional_args,
-        _is_arraylike_not_scalar,
         _num_samples,
         check_is_fitted,
     )
+
+    if sklearn_check_version("1.1"):
+        from sklearn.utils.validation import _is_arraylike_not_scalar
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
@@ -151,18 +153,19 @@ if daal_check_version((2023, "P", 200)):
                     raise ValueError(
                         f"max_iter should be > 0, got {self.max_iter} instead."
                     )
-                if not (
-                    _is_arraylike_not_scalar(self.init)
-                    or callable(self.init)
-                    or (
-                        isinstance(self.init, str)
-                        and self.init in ["k-means++", "random"]
-                    )
-                ):
-                    raise ValueError(
-                        "init should be either 'k-means++', 'random', an array-like or a "
-                        f"callable, got '{self.init}' instead."
-                    )
+                if sklearn_check_version("1.1"):
+                    if not (
+                        _is_arraylike_not_scalar(self.init)
+                        or callable(self.init)
+                        or (
+                            isinstance(self.init, str)
+                            and self.init in ["k-means++", "random"]
+                        )
+                    ):
+                        raise ValueError(
+                            "init should be either 'k-means++', 'random', an array-like or a "
+                            f"callable, got '{self.init}' instead."
+                        )
 
         def fit(self, X, y=None, sample_weight=None):
             self._validate_params()
