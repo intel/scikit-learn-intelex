@@ -20,4 +20,11 @@ from ...preview.decomposition import IncrementalPCA as base_IncrementalPCA
 
 
 class IncrementalPCA(base_IncrementalPCA):
+    """
+    Distributed incremental estimator for PCA based on sklearnex implementation.
+    Allows to compute PCA distributely if data are splitted into batches.
+
+    API is the same as for `sklearnex.decomposition.IncrementalPCA`
+    """
+
     _onedal_incremental_pca = staticmethod(onedalSPMD_IncrementalPCA)

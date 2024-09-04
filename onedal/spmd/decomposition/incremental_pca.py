@@ -23,6 +23,13 @@ from .._base import BaseEstimatorSPMD
 
 
 class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
+    """
+    Distributed incremental estimator for PCA based on oneDAL implementation.
+    Allows to compute PCA distributely if data are splitted into batches.
+
+    API is the same as for `onedal.decomposition.IncrementalPCA`
+    """
+
     def _reset(self):
         self._partial_result = super(base_IncrementalPCA, self)._get_backend(
             "decomposition", "dim_reduction", "partial_train_result"
@@ -30,7 +37,7 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
         if hasattr(self, "components_"):
             del self.components_
 
-    def partial_fit(self, X, queue):
+    def partial_fit(self, X, y=None, queue=None):
         """Incremental fit with X. All of X is processed as a single batch.
 
         Parameters
