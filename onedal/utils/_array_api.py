@@ -51,7 +51,7 @@ if dpnp_available:
 def _asarray(data, xp, *args, **kwargs):
     """Converted input object to array format of xp namespace provided."""
     if hasattr(data, "__array_namespace__"):
-        return xp.asarray(data, xp, *args, **kwargs)
+        return xp.asarray(data, *args, **kwargs)
     elif isinstance(data, Iterable):
         if isinstance(data, tuple):
             result_data = []
