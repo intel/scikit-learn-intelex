@@ -194,9 +194,13 @@ def _check_X_y(
 
     if not accept_2d_y:
         y = _column_or_1d(y, warn=True)
+    else:
+        y = np.ascontiguousarray(y)
+
     if y_numeric and y.dtype.kind == "O":
         y = y.astype(np.float64)
-    _assert_all_finite(y)
+    if force_all_finite:
+        _assert_all_finite(y)
 
     lengths = [X.shape[0], y.shape[0]]
     uniques = np.unique(lengths)
