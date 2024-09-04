@@ -14,7 +14,24 @@
 # limitations under the License.
 # ==============================================================================
 
-from .covariance import EmpiricalCovariance
-from .incremental_covariance import IncrementalEmpiricalCovariance
+from onedal.spmd.covariance import (
+    IncrementalEmpiricalCovariance as onedalSPMD_IncrementalEmpiricalCovariance,
+)
 
-__all__ = ["EmpiricalCovariance", "IncrementalEmpiricalCovariance"]
+from ...covariance import (
+    IncrementalEmpiricalCovariance as base_IncrementalEmpiricalCovariance,
+)
+
+
+class IncrementalEmpiricalCovariance(base_IncrementalEmpiricalCovariance):
+    """
+    Incremental distributed estimator for covariance.
+    Allows to distributely compute empirical covariance estimated by maximum
+    likelihood method if data are splitted into batches.
+
+    API is the same as for `sklearnex.covariance.IncrementalEmpiricalCovariance`
+    """
+
+    _onedal_incremental_covariance = staticmethod(
+        onedalSPMD_IncrementalEmpiricalCovariance
+    )

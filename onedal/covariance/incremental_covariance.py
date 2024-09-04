@@ -15,8 +15,7 @@
 # ===============================================================================
 import numpy as np
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
-from onedal import _backend
+from daal4py.sklearn._utils import daal_check_version, get_dtype
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
@@ -86,10 +85,11 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         """
         X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
 
-        if not hasattr(self, "_policy"):
-            self._policy = self._get_policy(queue, X)
+        self._queue = queue
 
-        X = _convert_to_supported(self._policy, X)
+        policy = self._get_policy(queue, X)
+
+        X = _convert_to_supported(policy, X)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
@@ -100,7 +100,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             "covariance",
             None,
             "partial_compute",
-            self._policy,
+            policy,
             params,
             self._partial_result,
             table_X,
@@ -114,7 +114,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         Parameters
         ----------
         queue : dpctl.SyclQueue
-            Not used here, added for API conformance
+            If not None, use this queue for computations.
 
         Returns
         -------
@@ -122,11 +122,16 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             Returns the instance itself.
         """
         params = self._get_onedal_params(self._dtype)
+        if queue is not None:
+            policy = self._get_policy(queue)
+        else:
+            policy = self._get_policy(self._queue)
+
         result = self._get_backend(
             "covariance",
             None,
             "finalize_compute",
-            self._policy,
+            policy,
             params,
             self._partial_result,
         )
