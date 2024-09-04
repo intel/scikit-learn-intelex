@@ -20,6 +20,7 @@ steps:
       bash .ci/scripts/install_dpcpp.sh
     displayName: "dpcpp installation"
   - script: |
+      source /opt/intel/oneapi/compiler/latest/env/vars.sh
       bash .ci/scripts/describe_system.sh
     displayName: "System info"
   - script: |
