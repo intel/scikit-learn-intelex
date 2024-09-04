@@ -15,8 +15,8 @@
 # ===============================================================================
 
 from daal4py.sklearn.metrics import pairwise_distances
-from onedal._device_offload import support_array_api
+from onedal._device_offload import support_input_format
 
-pairwise_distances = support_array_api(freefunc=True, queue_param=False)(
+pairwise_distances = support_input_format(freefunc=True, queue_param=False)(
     pairwise_distances
 )

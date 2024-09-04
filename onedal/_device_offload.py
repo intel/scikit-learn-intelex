@@ -168,10 +168,10 @@ def _run_on_device(func, obj=None, *args, **kwargs):
     return func(*args, **kwargs)
 
 
-def support_array_api(freefunc=False, queue_param=True):
+def support_input_format(freefunc=False, queue_param=True):
     """
-    Handles Array API input. Converts output of decorated function
-    to input Array API format on the same device.
+    Converts and moves the output arrays of the decorated function
+    to match the input array type and device.
     Puts SYCLQueue from data to decorated function arguments.
 
     Parameters
