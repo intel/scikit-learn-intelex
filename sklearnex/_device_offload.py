@@ -108,9 +108,11 @@ def wrap_output_data(func):
                 if dpnp_available and isinstance(data[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
                 return result
-            input_array_api = getattr(data[0], "__array_namespace__", print)()
-            input_array_api_device = data[0].device if input_array_api else None
+            input_array_api = getattr(data[0], "__array_namespace__", None)
             if input_array_api:
+                input_array_api = input_array_api()
+                input_array_api_device = data[0].device
+                # input_array_api_device = input_array_api.device
                 result = _asarray(result, input_array_api, device=input_array_api_device)
         return result
 

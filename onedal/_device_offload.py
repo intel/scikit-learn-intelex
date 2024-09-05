@@ -97,7 +97,9 @@ def _transfer_to_host(queue, *data):
     host_data = []
     for item in data:
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
-        array_api = getattr(item, "__array_namespace__", print)()
+        array_api = getattr(item, "__array_namespace__", None)
+        if array_api:
+            array_api = array_api()
         if usm_iface is not None:
             if not dpctl_available:
                 raise RuntimeError(
@@ -201,9 +203,11 @@ def support_input_format(freefunc=False, queue_param=True):
                 if dpnp_available and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
                 return result
-            input_array_api = getattr(data[0], "__array_namespace__", print)()
-            input_array_api_device = data[0].device if input_array_api else None
+            input_array_api = getattr(data[0], "__array_namespace__", None)
             if input_array_api:
+                input_array_api = input_array_api()
+                input_array_api_device = data[0].device
+                # input_array_api_device = input_array_api.device
                 result = _asarray(result, input_array_api, device=input_array_api_device)
             return result
 
