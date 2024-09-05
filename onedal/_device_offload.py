@@ -207,7 +207,6 @@ def support_input_format(freefunc=False, queue_param=True):
             if input_array_api:
                 input_array_api = input_array_api()
                 input_array_api_device = data[0].device
-                # input_array_api_device = input_array_api.device
                 result = _asarray(result, input_array_api, device=input_array_api_device)
             return result
 
