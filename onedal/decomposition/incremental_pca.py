@@ -96,13 +96,14 @@ class IncrementalPCA(BasePCA):
         self.method = method
         self.is_deterministic = is_deterministic
         self.whiten = whiten
-        module = self._get_backend("decomposition", "dim_reduction")
-        self._partial_result = module.partial_train_result()
+        self._reset()
 
     def _reset(self):
-        module = self._get_backend("decomposition", "dim_reduction")
-        del self.components_
-        self._partial_result = module.partial_train_result()
+        self._partial_result = self._get_backend(
+            "decomposition", "dim_reduction", "partial_train_result"
+        )
+        if hasattr(self, "components_"):
+            del self.components_
 
     def partial_fit(self, X, queue):
         """Incremental fit with X. All of X is processed as a single batch.
@@ -115,9 +116,6 @@ class IncrementalPCA(BasePCA):
 
         y : Ignored
             Not used, present for API consistency by convention.
-
-        check_input : bool, default=True
-            Run check_array on X.
 
         Returns
         -------
@@ -143,20 +141,24 @@ class IncrementalPCA(BasePCA):
         else:
             self.n_components_ = self.n_components
 
-        module = self._get_backend("decomposition", "dim_reduction")
+        self._queue = queue
 
-        if not hasattr(self, "_policy"):
-            self._policy = self._get_policy(queue, X)
-
-        X = _convert_to_supported(self._policy, X)
+        policy = self._get_policy(queue, X)
+        X = _convert_to_supported(policy, X)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(X)
 
         X_table = to_table(X)
-        self._partial_result = module.partial_train(
-            self._policy, self._params, self._partial_result, X_table
+        self._partial_result = self._get_backend(
+            "decomposition",
+            "dim_reduction",
+            "partial_train",
+            policy,
+            self._params,
+            self._partial_result,
+            X_table,
         )
         return self
 
@@ -175,8 +177,18 @@ class IncrementalPCA(BasePCA):
         self : object
             Returns the instance itself.
         """
-        module = self._get_backend("decomposition", "dim_reduction")
-        result = module.finalize_train(self._policy, self._params, self._partial_result)
+        if queue is not None:
+            policy = self._get_policy(queue)
+        else:
+            policy = self._get_policy(self._queue)
+        result = self._get_backend(
+            "decomposition",
+            "dim_reduction",
+            "finalize_train",
+            policy,
+            self._params,
+            self._partial_result,
+        )
         self.mean_ = from_table(result.means).ravel()
         self.var_ = from_table(result.variances).ravel()
         self.components_ = from_table(result.eigenvectors)
