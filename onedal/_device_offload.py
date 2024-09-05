@@ -187,25 +187,24 @@ def support_input_format(freefunc=False, queue_param=True):
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
             data = (*args, *kwargs.values())
+            if len(data) == 0:
+                return _run_on_device(func, obj, *args, **kwargs)
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if queue_param and not (
                 "queue" in hostkwargs and hostkwargs["queue"] is not None
             ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-            if len(data) > 0:
-                usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
-                if usm_iface is not None:
-                    result = _copy_to_usm(data_queue, result)
-                    if dpnp_available and isinstance(args[0], dpnp.ndarray):
-                        result = _convert_to_dpnp(result)
-                    return result
-                input_array_api = getattr(data[0], "__array_namespace__", print)()
-                input_array_api_device = data[0].device if input_array_api else None
-                if input_array_api:
-                    result = _asarray(
-                        result, input_array_api, device=input_array_api_device
-                    )
+            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+            if usm_iface is not None:
+                result = _copy_to_usm(data_queue, result)
+                if dpnp_available and isinstance(args[0], dpnp.ndarray):
+                    result = _convert_to_dpnp(result)
+                return result
+            input_array_api = getattr(data[0], "__array_namespace__", print)()
+            input_array_api_device = data[0].device if input_array_api else None
+            if input_array_api:
+                result = _asarray(result, input_array_api, device=input_array_api_device)
             return result
 
         if freefunc:
