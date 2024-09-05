@@ -29,6 +29,16 @@ from sklearnex.tests._utils_spmd import (
     _mpi_libs_and_gpu_available,
 )
 
+attributes_to_compare = [
+    "n_components_",
+    "components_",
+    "singular_values_",
+    "mean_",
+    "var_",
+    "explained_variance_",
+    "explained_variance_ratio_",
+]
+
 
 @pytest.mark.skipif(
     not _mpi_libs_and_gpu_available,
@@ -70,15 +80,12 @@ def test_incremental_pca_fit_spmd_gold(dataframe, queue, whiten, dtype):
     incpca_spmd.fit(local_dpt_X)
     incpca.fit(dpt_X)
 
-    assert_allclose(incpca.n_components_, incpca_spmd.n_components_)
-    assert_allclose(incpca.components_, incpca_spmd.components_)
-    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
-    assert_allclose(incpca.var_, incpca_spmd.var_)
-    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_)
-    assert_allclose(
-        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_
-    )
+    for attribute in attributes_to_compare:
+        assert_allclose(
+            getattr(incpca, attribute),
+            getattr(incpca_spmd, attribute),
+            err_msg=f"{attribute} is incorrect",
+        )
 
 
 @pytest.mark.skipif(
@@ -137,15 +144,12 @@ def test_incremental_pca_partial_fit_spmd_gold(
         incpca.partial_fit(dpt_X)
         incpca_spmd.partial_fit(local_dpt_X)
 
-    assert_allclose(incpca.n_components_, incpca_spmd.n_components_)
-    assert_allclose(incpca.components_, incpca_spmd.components_)
-    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_)
-    assert_allclose(incpca.var_, incpca_spmd.var_)
-    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_)
-    assert_allclose(
-        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_
-    )
+    for attribute in attributes_to_compare:
+        assert_allclose(
+            getattr(incpca, attribute),
+            getattr(incpca_spmd, attribute),
+            err_msg=f"{attribute} is incorrect",
+        )
 
 
 @pytest.mark.skipif(
@@ -169,6 +173,7 @@ def test_incremental_pca_fit_spmd_random(
     from sklearnex.preview.decomposition import IncrementalPCA
     from sklearnex.spmd.decomposition import IncrementalPCA as IncrementalPCA_SPMD
 
+    # Increased test dataset size requires a higher tol setting in comparison to other tests
     tol = 7e-5 if dtype == np.float32 else 1e-7
 
     # Create data and process into dpt
@@ -185,15 +190,13 @@ def test_incremental_pca_fit_spmd_random(
     incpca_spmd.fit(local_dpt_X)
     incpca.fit(dpt_X)
 
-    assert_allclose(incpca.n_components_, incpca_spmd.n_components_, atol=tol)
-    assert_allclose(incpca.components_, incpca_spmd.components_, atol=tol)
-    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_, atol=tol)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_, atol=tol)
-    assert_allclose(incpca.var_, incpca_spmd.var_, atol=tol)
-    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_, atol=tol)
-    assert_allclose(
-        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_, atol=tol
-    )
+    for attribute in attributes_to_compare:
+        assert_allclose(
+            getattr(incpca, attribute),
+            getattr(incpca_spmd, attribute),
+            atol=tol,
+            err_msg=f"{attribute} is incorrect",
+        )
 
     y_trans_spmd = incpca_spmd.transform(dpt_X_test)
     y_trans = incpca.transform(dpt_X_test)
@@ -230,7 +233,6 @@ def test_incremental_pca_partial_fit_spmd_random(
     from sklearnex.preview.decomposition import IncrementalPCA
     from sklearnex.spmd.decomposition import IncrementalPCA as IncrementalPCA_SPMD
 
-    # Increased test dataset size requires a higher tol setting in comparison to other tests
     tol = 3e-4 if dtype == np.float32 else 1e-7
 
     # Create data and process into dpt
@@ -253,15 +255,13 @@ def test_incremental_pca_partial_fit_spmd_random(
         incpca_spmd.partial_fit(local_dpt_X)
         incpca.partial_fit(dpt_X)
 
-    assert_allclose(incpca.n_components_, incpca_spmd.n_components_, atol=tol)
-    assert_allclose(incpca.components_, incpca_spmd.components_, atol=tol)
-    assert_allclose(incpca.singular_values_, incpca_spmd.singular_values_, atol=tol)
-    assert_allclose(incpca.mean_, incpca_spmd.mean_, atol=tol)
-    assert_allclose(incpca.var_, incpca_spmd.var_, atol=tol)
-    assert_allclose(incpca.explained_variance_, incpca_spmd.explained_variance_, atol=tol)
-    assert_allclose(
-        incpca.explained_variance_ratio_, incpca_spmd.explained_variance_ratio_, atol=tol
-    )
+    for attribute in attributes_to_compare:
+        assert_allclose(
+            getattr(incpca, attribute),
+            getattr(incpca_spmd, attribute),
+            atol=tol,
+            err_msg=f"{attribute} is incorrect",
+        )
 
     y_trans_spmd = incpca_spmd.transform(dpt_X_test)
     y_trans = incpca.transform(dpt_X_test)
