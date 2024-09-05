@@ -96,27 +96,6 @@ class BasicStatistics(BaseBasicStatistics):
 
         return self
 
-    def compute(self, data, weights=None, queue=None):
-        warnings.warn(
-            "Method `compute` was deprecated in version 2024.7 and will be "
-            "removed in 2025.0. Use `fit` instead."
-        )
-
-        is_csr = _is_csr(data)
-
-        if data is not None:
-            data = _check_array(data, ensure_2d=False)
-        if weights is not None:
-            weights = _check_array(weights, ensure_2d=False)
-
-        policy = self._get_policy(queue, data, weights)
-        data, weights = _convert_to_supported(policy, data, weights)
-        data_table, weights_table = to_table(data, weights)
-        dtype = data.dtype
-        res = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
-
-        return {k: from_table(v).ravel() for k, v in res.items()}
-
     def _compute_raw(
         self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
     ):
