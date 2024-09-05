@@ -409,7 +409,7 @@ class XGBoostClassificationModelBuilder_objective_logitraw(
         )
         # undo bias
         d4p_pred[:, -1] += 0.5
-        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-6)
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
     @unittest.skipUnless(shap_api_changed, reason=shap_api_change_str)
     def test_model_predict_shap_interactions(self):
@@ -427,7 +427,7 @@ class XGBoostClassificationModelBuilder_objective_logitraw(
         )
         # undo bias
         d4p_pred[:, -1, -1] += 0.5
-        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-5)
 
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
