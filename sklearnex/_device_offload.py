@@ -100,19 +100,18 @@ def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         data = (*args, *kwargs.values())
-        if len(data) == 0:
-            return func(self, *args, **kwargs)
-        usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
         result = func(self, *args, **kwargs)
-        if usm_iface is not None:
-            result = _copy_to_usm(usm_iface["syclobj"], result)
-            if dpnp_available and isinstance(data[0], dpnp.ndarray):
-                result = _convert_to_dpnp(result)
-            return result
-        input_array_api = getattr(data[0], "__array_namespace__", print)()
-        input_array_api_device = data[0].device if input_array_api else None
-        if input_array_api:
-            result = _asarray(result, input_array_api, device=input_array_api_device)
+        if len(data) > 0:
+            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+            if usm_iface is not None:
+                result = _copy_to_usm(usm_iface["syclobj"], result)
+                if dpnp_available and isinstance(data[0], dpnp.ndarray):
+                    result = _convert_to_dpnp(result)
+                return result
+            input_array_api = getattr(data[0], "__array_namespace__", print)()
+            input_array_api_device = data[0].device if input_array_api else None
+            if input_array_api:
+                result = _asarray(result, input_array_api, device=input_array_api_device)
         return result
 
     return wrapper
