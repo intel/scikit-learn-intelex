@@ -62,7 +62,9 @@ def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
     else:
         assert "daal4py" in kmeans_dense.__module__
 
+
 if daal_check_version((2024, "P", 700)):
+
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
     @pytest.mark.parametrize("init", ["k-means++", "random"])
@@ -77,6 +79,7 @@ if daal_check_version((2024, "P", 700)):
         ).fit(X_sparse)
 
         assert "sklearnex" in kmeans_sparse.__module__
+
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
@@ -107,7 +110,9 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
     assert expected_inertia == kmeans.inertia_
     assert expected_n_iter == kmeans.n_iter_
 
+
 if daal_check_version((2024, "P", 700)):
+
     @pytest.mark.parametrize("queue", get_queues())
     @pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
     @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
