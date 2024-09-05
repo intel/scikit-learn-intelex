@@ -25,7 +25,7 @@ from .._base import BaseEstimatorSPMD
 class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
     """
     Distributed incremental estimator for PCA based on oneDAL implementation.
-    Allows to compute PCA distributely if data are splitted into batches.
+    Allows for distributed PCA computation if data is split into batches.
 
     API is the same as for `onedal.decomposition.IncrementalPCA`
     """
