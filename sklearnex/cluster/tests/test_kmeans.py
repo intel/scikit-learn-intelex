@@ -62,25 +62,21 @@ def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
     else:
         assert "daal4py" in kmeans_dense.__module__
 
+if daal_check_version((2024, "P", 700)):
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+    @pytest.mark.parametrize("init", ["k-means++", "random"])
+    def test_sklearnex_import_for_sparse_data(queue, algorithm, init):
+        from sklearnex.cluster import KMeans
 
-@pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-@pytest.mark.parametrize("init", ["k-means++", "random"])
-def test_sklearnex_import_for_sparse_data(queue, algorithm, init):
-    from sklearnex.cluster import KMeans
+        X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
+        X_sparse = csr_matrix(X_dense)
 
-    X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
-    X_sparse = csr_matrix(X_dense)
+        kmeans_sparse = KMeans(
+            n_clusters=3, random_state=0, algorithm=algorithm, init=init
+        ).fit(X_sparse)
 
-    kmeans_sparse = KMeans(
-        n_clusters=3, random_state=0, algorithm=algorithm, init=init
-    ).fit(X_sparse)
-
-    if daal_check_version((2024, "P", 700)):
         assert "sklearnex" in kmeans_sparse.__module__
-    else:
-        assert "sklearn." in kmeans_sparse.__module__
-
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
@@ -111,34 +107,34 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
     assert expected_inertia == kmeans.inertia_
     assert expected_n_iter == kmeans.n_iter_
 
-
-@pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-@pytest.mark.parametrize(
-    "dims", [(1000, 10, 0.95, 3), (50000, 100, 0.75, 10), (10000, 10, 0.8, 5)]
-)
-def test_dense_vs_sparse(queue, init, algorithm, dims):
-    from sklearnex.cluster import KMeans
-
-    # For higher level of sparsity (smaller density) the test will fail
-    # This is because random initialization of centroids may choose isolated initial centroids
-    n_samples, n_features, density, n_clusters = dims
-    X_dense = generate_dense_dataset(n_samples, n_features, density, n_clusters)
-    X_sparse = csr_matrix(X_dense)
-
-    if init == "arraylike":
-        np.random.seed(2024 + n_samples + n_features + n_clusters)
-        init = X_dense[np.random.choice(n_samples, size=n_clusters, replace=False)]
-
-    kmeans_dense = KMeans(
-        n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
-    ).fit(X_dense)
-    kmeans_sparse = KMeans(
-        n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
-    ).fit(X_sparse)
-
-    assert_allclose(
-        kmeans_dense.cluster_centers_,
-        kmeans_sparse.cluster_centers_,
+if daal_check_version((2024, "P", 700)):
+    @pytest.mark.parametrize("queue", get_queues())
+    @pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
+    @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+    @pytest.mark.parametrize(
+        "dims", [(1000, 10, 0.95, 3), (50000, 100, 0.75, 10), (10000, 10, 0.8, 5)]
     )
+    def test_dense_vs_sparse(queue, init, algorithm, dims):
+        from sklearnex.cluster import KMeans
+
+        # For higher level of sparsity (smaller density) the test will fail
+        # This is because random initialization of centroids may choose isolated ones
+        n_samples, n_features, density, n_clusters = dims
+        X_dense = generate_dense_dataset(n_samples, n_features, density, n_clusters)
+        X_sparse = csr_matrix(X_dense)
+
+        if init == "arraylike":
+            np.random.seed(2024 + n_samples + n_features + n_clusters)
+            init = X_dense[np.random.choice(n_samples, size=n_clusters, replace=False)]
+
+        kmeans_dense = KMeans(
+            n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
+        ).fit(X_dense)
+        kmeans_sparse = KMeans(
+            n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
+        ).fit(X_sparse)
+
+        assert_allclose(
+            kmeans_dense.cluster_centers_,
+            kmeans_sparse.cluster_centers_,
+        )

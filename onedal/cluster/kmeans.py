@@ -106,17 +106,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         self._tol = self._tolerance(X_table, self.tol, is_csr, policy, dtype)
 
         self._n_init = self.n_init
-        if self._n_init == "warn":
-            warnings.warn(
-                (
-                    "The default value of `n_init` will change from "
-                    f"{default_n_init} to 'auto' in 1.4. Set the value of `n_init`"
-                    " explicitly to suppress the warning"
-                ),
-                FutureWarning,
-                stacklevel=2,
-            )
-            self._n_init = default_n_init
         if self._n_init == "auto":
             if isinstance(self.init, str) and self.init == "k-means++":
                 self._n_init = 1
