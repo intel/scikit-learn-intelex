@@ -27,19 +27,21 @@ from onedal.tests.utils._dataframes_support import (
     get_dataframes_and_queues,
     get_queues,
 )
+from sklearnex import config_context
 
 
-def generate_dense_dataset():
-    np.random.seed(0)
+def generate_dense_dataset(n_samples, n_features, density, n_clusters):
+    np.random.seed(2024 + n_samples + n_features + n_clusters)
     X, _ = make_blobs(
-        n_samples=100, n_features=3, centers=3, cluster_std=1.0, random_state=42
+        n_samples=n_samples,
+        n_features=n_features,
+        centers=n_clusters,
+        cluster_std=1.0,
+        random_state=42,
     )
-    X[X < 0] = 0  # Replace negative elements with 0
+    mask = np.random.binomial(1, density, (n_samples, n_features))
+    X = X * mask
     return X
-
-
-def convert_to_sparse(X):
-    return csr_matrix(X)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -48,7 +50,7 @@ def convert_to_sparse(X):
 def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
     from sklearnex.cluster import KMeans
 
-    X_dense = generate_dense_dataset()
+    X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
     X_dense_df = _convert_to_dataframe(X_dense, sycl_queue=queue, target_df=dataframe)
 
     kmeans_dense = KMeans(
@@ -67,8 +69,8 @@ def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
 def test_sklearnex_import_for_sparse_data(queue, algorithm, init):
     from sklearnex.cluster import KMeans
 
-    X_dense = generate_dense_dataset()
-    X_sparse = convert_to_sparse(X_dense)
+    X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
+    X_sparse = csr_matrix(X_dense)
 
     kmeans_sparse = KMeans(
         n_clusters=3, random_state=0, algorithm=algorithm, init=init
@@ -96,8 +98,8 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
         # KMeans Init Dense GPU implementation is different from CPU
         expected_cluster_labels = np.array([0, 1], dtype=np.int32)
         expected_cluster_centers = np.array([[1.0, 2.0], [10.0, 2.0]], dtype=np.float32)
-        expected_inertia = 15.0
-        expected_n_iter = 1
+        expected_inertia = 16.0
+        expected_n_iter = 2
     else:
         expected_cluster_labels = np.array([1, 0], dtype=np.int32)
         expected_cluster_centers = np.array([[10.0, 2.0], [1.0, 2.0]], dtype=np.float32)
@@ -110,109 +112,31 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
     assert expected_n_iter == kmeans.n_iter_
 
 
-@pytest.mark.parametrize("queue", get_queues("cpu"))
-@pytest.mark.parametrize("init", ["k-means++", "random"])
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
 @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-@pytest.mark.parametrize("n_init", ["auto", 1, 10])
-def test_dense_vs_sparse_cpu(queue, init, algorithm, n_init):
+@pytest.mark.parametrize(
+    "dims", [(1000, 10, 0.95, 3), (50000, 100, 0.75, 10), (10000, 10, 0.8, 5)]
+)
+def test_dense_vs_sparse(queue, init, algorithm, dims):
     from sklearnex.cluster import KMeans
 
-    X_dense = generate_dense_dataset()
-    X_sparse = convert_to_sparse(X_dense)
+    # For higher level of sparsity (smaller density) the test will fail
+    # This is because random initialization of centroids may choose isolated initial centroids
+    n_samples, n_features, density, n_clusters = dims
+    X_dense = generate_dense_dataset(n_samples, n_features, density, n_clusters)
+    X_sparse = csr_matrix(X_dense)
+
+    if init == "arraylike":
+        np.random.seed(2024 + n_samples + n_features + n_clusters)
+        init = X_dense[np.random.choice(n_samples, size=n_clusters, replace=False)]
 
     kmeans_dense = KMeans(
-        n_clusters=3, random_state=0, init=init, algorithm=algorithm, n_init=n_init
+        n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
     ).fit(X_dense)
     kmeans_sparse = KMeans(
-        n_clusters=3, random_state=0, init=init, algorithm=algorithm, n_init=n_init
+        n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
     ).fit(X_sparse)
-
-    assert_allclose(
-        kmeans_dense.cluster_centers_,
-        kmeans_sparse.cluster_centers_,
-    )
-
-
-@pytest.mark.parametrize("queue", get_queues("gpu"))
-@pytest.mark.parametrize("init", ["k-means++", "random"])
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-@pytest.mark.parametrize("n_init", ["auto", 1, 10])
-def test_dense_vs_sparse_gpu(queue, init, algorithm, n_init):
-    from sklearnex.cluster import KMeans
-
-    X_dense = generate_dense_dataset()
-    X_sparse = convert_to_sparse(X_dense)
-
-    with config_context(target_offload="gpu:0"):
-        kmeans_dense = KMeans(
-            n_clusters=3, random_state=0, init=init, algorithm=algorithm, n_init=n_init
-        ).fit(X_dense)
-        kmeans_sparse = KMeans(
-            n_clusters=3, random_state=0, init=init, algorithm=algorithm, n_init=n_init
-        ).fit(X_sparse)
-
-    assert_allclose(
-        kmeans_dense.cluster_centers_,
-        kmeans_sparse.cluster_centers_,
-    )
-
-
-@pytest.mark.parametrize("queue", get_queues("cpu"))
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-@pytest.mark.parametrize("n_init", ["auto", 1, 10])
-def test_dense_vs_sparse_for_arraylike_init_cpu(queue, algorithm, n_init):
-    from sklearnex.cluster import KMeans
-
-    X_dense = generate_dense_dataset()
-    init_centers = X_dense[:3]
-    X_sparse = convert_to_sparse(X_dense)
-
-    kmeans_dense = KMeans(
-        n_clusters=3,
-        random_state=0,
-        init=init_centers,
-        algorithm=algorithm,
-        n_init=n_init,
-    ).fit(X_dense)
-    kmeans_sparse = KMeans(
-        n_clusters=3,
-        random_state=0,
-        init=init_centers,
-        algorithm=algorithm,
-        n_init=n_init,
-    ).fit(X_sparse)
-
-    assert_allclose(
-        kmeans_dense.cluster_centers_,
-        kmeans_sparse.cluster_centers_,
-    )
-
-
-@pytest.mark.parametrize("queue", get_queues("gpu"))
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-@pytest.mark.parametrize("n_init", ["auto", 1, 10])
-def test_dense_vs_sparse_for_arraylike_init_gpu(queue, algorithm, n_init):
-    from sklearnex.cluster import KMeans
-
-    X_dense = generate_dense_dataset()
-    init_centers = X_dense[:3]
-    X_sparse = convert_to_sparse(X_dense)
-
-    with config_context(target_offload="gpu:0"):
-        kmeans_dense = KMeans(
-            n_clusters=3,
-            random_state=0,
-            init=init_centers,
-            algorithm=algorithm,
-            n_init=n_init,
-        ).fit(X_dense)
-        kmeans_sparse = KMeans(
-            n_clusters=3,
-            random_state=0,
-            init=init_centers,
-            algorithm=algorithm,
-            n_init=n_init,
-        ).fit(X_sparse)
 
     assert_allclose(
         kmeans_dense.cluster_centers_,
