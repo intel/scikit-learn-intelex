@@ -208,7 +208,7 @@ def test_incremental_linear_regression_fit_spmd_random(
 
     tol = 2e-4 if dtype == np.float32 else 1e-7
 
-    # Create gold data and process into dpt
+    # Generate random data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(
         num_samples, num_features, dtype
     )
@@ -279,7 +279,7 @@ def test_incremental_linear_regression_partial_fit_spmd_random(
 
     tol = 3e-4 if dtype == np.float32 else 1e-7
 
-    # Create gold data and process into dpt
+    # Generate random data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(
         num_samples, num_features, dtype, 573
     )
