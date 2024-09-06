@@ -285,7 +285,7 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
-        if not shap_api_changed:    
+        if not shap_api_changed:
             with self.assertRaises(NotImplementedError):
                 m.predict(self.X_test, pred_contribs=True)
         elif self.n_classes > 2:
