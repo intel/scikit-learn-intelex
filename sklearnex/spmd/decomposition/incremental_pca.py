@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,17 @@
 # limitations under the License.
 # ==============================================================================
 
-from .incremental_linear_model import IncrementalLinearRegression
-from .linear_model import LinearRegression
-from .logistic_regression import LogisticRegression
+from onedal.spmd.decomposition import IncrementalPCA as onedalSPMD_IncrementalPCA
 
-__all__ = ["IncrementalLinearRegression", "LinearRegression", "LogisticRegression"]
+from ...preview.decomposition import IncrementalPCA as base_IncrementalPCA
+
+
+class IncrementalPCA(base_IncrementalPCA):
+    """
+    Distributed incremental estimator for PCA based on sklearnex implementation.
+    Allows for distributed PCA computation if data is split into batches.
+
+    API is the same as for `sklearnex.decomposition.IncrementalPCA`
+    """
+
+    _onedal_incremental_pca = staticmethod(onedalSPMD_IncrementalPCA)
