@@ -204,70 +204,68 @@ class GBTDAALBaseModel:
                 ).format(type(self).__name__)
             )
 
-        return self._daal_predict_classification(
-            X, fptype, resultsToEvaluate, pred_contribs, pred_interactions
+        # Prediction
+        try:
+            return self._predict_classification_with_results_to_compute(
+                X, fptype, resultsToEvaluate, pred_contribs, pred_interactions
+            )
+        except TypeError as e:
+            if "unexpected keyword argument 'resultsToCompute'" in str(e):
+                if pred_contribs or pred_interactions:
+                    # SHAP values requested, but not supported by this version
+                    raise TypeError(
+                        f"{'pred_contribs' if pred_contribs else 'pred_interactions'} not supported by this version of daalp4y"
+                    ) from e
+            else:
+                # unknown type error
+                raise
+
+        # fallback to calculation without `resultsToCompute`
+        predict_algo = d4p.gbt_classification_prediction(
+            nClasses=self.n_classes_,
+            fptype=fptype,
+            resultsToEvaluate=resultsToEvaluate,
         )
+        predict_result = predict_algo.compute(X, self.daal_model_)
 
-    # SHAP value support API change occurred in 2025.0 release
-    # Check made at instantiation to minimize performance impact
-    if int(d4p._get__daal_link_version__()[:4]) >= 2025:
+        if resultsToEvaluate == "computeClassLabels":
+            return predict_result.prediction.ravel().astype(np.int64, copy=False)
+        else:
+            return predict_result.probabilities
 
-        def _daal_predict_classification(
-            self,
-            X,
-            fptype,
-            resultsToEvaluate,
-            pred_contribs=False,
-            pred_interactions=False,
-        ):
-            """Assume daal4py supports the resultsToCompute kwarg"""
-            resultsToCompute = ""
-            if pred_contribs:
-                resultsToCompute = "shapContributions"
-            elif pred_interactions:
-                resultsToCompute = "shapInteractions"
+    def _predict_classification_with_results_to_compute(
+        self,
+        X,
+        fptype,
+        resultsToEvaluate,
+        pred_contribs=False,
+        pred_interactions=False,
+    ):
+        """Assume daal4py supports the resultsToCompute kwarg"""
+        resultsToCompute = ""
+        if pred_contribs:
+            resultsToCompute = "shapContributions"
+        elif pred_interactions:
+            resultsToCompute = "shapInteractions"
 
-            predict_algo = d4p.gbt_classification_prediction(
-                nClasses=self.n_classes_,
-                fptype=fptype,
-                resultsToCompute=resultsToCompute,
-                resultsToEvaluate=resultsToEvaluate,
+        predict_algo = d4p.gbt_classification_prediction(
+            nClasses=self.n_classes_,
+            fptype=fptype,
+            resultsToCompute=resultsToCompute,
+            resultsToEvaluate=resultsToEvaluate,
+        )
+        predict_result = predict_algo.compute(X, self.daal_model_)
+
+        if pred_contribs:
+            return predict_result.prediction.ravel().reshape((-1, X.shape[1] + 1))
+        elif pred_interactions:
+            return predict_result.prediction.ravel().reshape(
+                (-1, X.shape[1] + 1, X.shape[1] + 1)
             )
-            predict_result = predict_algo.compute(X, self.daal_model_)
-
-            if pred_contribs:
-                return predict_result.prediction.ravel().reshape((-1, X.shape[1] + 1))
-            elif pred_interactions:
-                return predict_result.prediction.ravel().reshape(
-                    (-1, X.shape[1] + 1, X.shape[1] + 1)
-                )
-            elif resultsToEvaluate == "computeClassLabels":
-                return predict_result.prediction.ravel().astype(np.int64, copy=False)
-            else:
-                return predict_result.probabilities
-
-    else:
-
-        def _daal_predict_classification(
-            self,
-            X,
-            fptype,
-            resultsToEvaluate,
-            pred_contribs=False,
-            pred_interactions=False,
-        ):
-
-            predict_algo = d4p.gbt_classification_prediction(
-                nClasses=self.n_classes_,
-                fptype=fptype,
-                resultsToEvaluate=resultsToEvaluate,
-            )
-            predict_result = predict_algo.compute(X, self.daal_model_)
-
-            if resultsToEvaluate == "computeClassLabels":
-                return predict_result.prediction.ravel().astype(np.int64, copy=False)
-            else:
-                return predict_result.probabilities
+        elif resultsToEvaluate == "computeClassLabels":
+            return predict_result.prediction.ravel().astype(np.int64, copy=False)
+        else:
+            return predict_result.probabilities
 
     def _predict_regression(
         self, X, fptype, pred_contribs=False, pred_interactions=False
