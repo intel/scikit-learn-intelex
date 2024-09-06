@@ -200,7 +200,7 @@ def test_sklearnex_partial_fit_on_gold_data(dataframe, queue, whiten, num_blocks
 
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     transformed_data = incpca.transform(X_df)
-    check_pca_on_gold_data(incpca, dtype, whiten, _as_numpy(transformed_data))
+    check_pca_on_gold_data(incpca, dtype, whiten, transformed_data)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -217,7 +217,7 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, whiten, num_blocks, dtype)
     incpca.fit(X_df)
     transformed_data = incpca.transform(X_df)
 
-    check_pca_on_gold_data(incpca, dtype, whiten, _as_numpy(transformed_data))
+    check_pca_on_gold_data(incpca, dtype, whiten, transformed_data)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -235,7 +235,7 @@ def test_sklearnex_fit_transform_on_gold_data(
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     transformed_data = incpca.fit_transform(X_df)
 
-    check_pca_on_gold_data(incpca, dtype, whiten, _as_numpy(transformed_data))
+    check_pca_on_gold_data(incpca, dtype, whiten, transformed_data)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -263,4 +263,4 @@ def test_sklearnex_partial_fit_on_random_data(
 
     X_df = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     transformed_data = incpca.transform(X_df)
-    check_pca(incpca, dtype, whiten, X, _as_numpy(transformed_data))
+    check_pca(incpca, dtype, whiten, X, transformed_data)
