@@ -48,6 +48,8 @@ def generate_dense_dataset(n_samples, n_features, density, n_clusters):
 @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
 @pytest.mark.parametrize("init", ["k-means++", "random"])
 def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
+    if not sklearn_check_version("1.1") and algorithm == "lloyd":
+        pytest.skip("lloyd requires sklearn>=1.1.")
     from sklearnex.cluster import KMeans
 
     X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
