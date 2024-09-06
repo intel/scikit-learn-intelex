@@ -43,13 +43,13 @@ class IncrementalLinearRegression(BaseLinearRegression):
     """
 
     def __init__(self, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
-        module = self._get_backend("linear_model", "regression")
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
-        self._partial_result = module.partial_train_result()
+        self._reset()
 
     def _reset(self):
-        module = self._get_backend("linear_model", "regression")
-        self._partial_result = module.partial_train_result()
+        self._partial_result = self._get_backend(
+            "linear_model", "regression", "partial_train_result"
+        )
 
     def partial_fit(self, X, y, queue=None):
         """
@@ -74,26 +74,27 @@ class IncrementalLinearRegression(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
-        if not hasattr(self, "_policy"):
-            self._policy = self._get_policy(queue, X)
+        self._queue = queue
+        policy = self._get_policy(queue, X)
 
-        X, y = _convert_to_supported(self._policy, X, y)
+        X, y = _convert_to_supported(policy, X, y)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        y = np.asarray(y).astype(dtype=self._dtype)
-        self._y_ndim_1 = y.ndim == 1
+        y = np.asarray(y, dtype=self._dtype)
 
-        X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
+        X, y = _check_X_y(
+            X, y, dtype=[np.float64, np.float32], accept_2d_y=True, force_all_finite=False
+        )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             self._partial_result = module.partial_train(
-                self._policy,
+                policy,
                 self._params,
                 hparams.backend,
                 self._partial_result,
@@ -102,7 +103,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
             )
         else:
             self._partial_result = module.partial_train(
-                self._policy, self._params, self._partial_result, X_table, y_table
+                policy, self._params, self._partial_result, X_table, y_table
             )
 
     def finalize_fit(self, queue=None):
@@ -113,35 +114,35 @@ class IncrementalLinearRegression(BaseLinearRegression):
         Parameters
         ----------
         queue : dpctl.SyclQueue
-            Not used here, added for API conformance
+            If not None, use this queue for computations.
 
         Returns
         -------
         self : object
             Returns the instance itself.
         """
+
+        if queue is not None:
+            policy = self._get_policy(queue)
+        else:
+            policy = self._get_policy(self._queue)
+
         module = self._get_backend("linear_model", "regression")
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             result = module.finalize_train(
-                self._policy, self._params, hparams.backend, self._partial_result
+                policy, self._params, hparams.backend, self._partial_result
             )
         else:
-            result = module.finalize_train(
-                self._policy, self._params, self._partial_result
-            )
+            result = module.finalize_train(policy, self._params, self._partial_result)
 
         self._onedal_model = result.model
 
         packed_coefficients = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = (
-            packed_coefficients[:, 1:],
-            packed_coefficients[:, 0],
+            packed_coefficients[:, 1:].squeeze(),
+            packed_coefficients[:, 0].squeeze(),
         )
-
-        if self.coef_.shape[0] == 1 and self._y_ndim_1:
-            self.coef_ = self.coef_.ravel()
-            self.intercept_ = self.intercept_[0]
 
         return self
 
@@ -203,8 +204,7 @@ class IncrementalRidge(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
-        if not hasattr(self, "_queue"):
-            self._queue = queue
+        self._queue = queue
         policy = self._get_policy(queue, X)
 
         X, y = _convert_to_supported(policy, X, y)
@@ -213,9 +213,11 @@ class IncrementalRidge(BaseLinearRegression):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        y = np.asarray(y).astype(dtype=self._dtype)
+        y = np.asarray(y, dtype=self._dtype)
 
-        X, y = _check_X_y(X, y, dtype=[np.float64, np.float32], accept_2d_y=True)
+        X, y = _check_X_y(
+            X, y, dtype=[np.float64, np.float32], accept_2d_y=True, force_all_finite=False
+        )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)
