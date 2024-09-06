@@ -214,10 +214,18 @@ class GBTDAALBaseModel:
                 if pred_contribs or pred_interactions:
                     # SHAP values requested, but not supported by this version
                     raise TypeError(
-                        f"{'pred_contribs' if pred_contribs else 'pred_interactions'} not supported by this version of daalp4y"
+                        f"{'pred_contribs' if pred_contribs else 'pred_interactions'} not supported by this version of daal4py"
                     ) from e
             else:
                 # unknown type error
+                raise
+        except RuntimeError as e:
+            if "Method is not implemented" in str(e):
+                if pred_contribs or pred_interactions:
+                    raise NotImplementedError(
+                        f"{'pred_contribs' if pred_contribs else 'pred_interactions'} is not implemented for classification models"
+                    )
+            else:
                 raise
 
         # fallback to calculation without `resultsToCompute`
