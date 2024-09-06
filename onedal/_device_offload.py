@@ -198,14 +198,14 @@ def support_input_format(freefunc=False, queue_param=True):
             ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
+            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+            if usm_iface is not None:
+                result = _copy_to_usm(data_queue, result)
+                if dpnp_available and isinstance(args[0], dpnp.ndarray):
+                    result = _convert_to_dpnp(result)
+                return result
             config = get_config()
             if not ("transform_output" in config and config["transform_output"]):
-                usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
-                if usm_iface is not None:
-                    result = _copy_to_usm(data_queue, result)
-                    if dpnp_available and isinstance(args[0], dpnp.ndarray):
-                        result = _convert_to_dpnp(result)
-                    return result
                 input_array_api = getattr(data[0], "__array_namespace__", None)
                 if input_array_api:
                     input_array_api = input_array_api()
