@@ -102,14 +102,14 @@ def wrap_output_data(func):
         result = func(self, *args, **kwargs)
         data = (*args, *kwargs.values())
         if len(data) > 0:
-            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
-            if usm_iface is not None:
-                result = _copy_to_usm(usm_iface["syclobj"], result)
-                if dpnp_available and isinstance(data[0], dpnp.ndarray):
-                    result = _convert_to_dpnp(result)
-                return result
             config = get_config()
             if not ("transform_output" in config and config["transform_output"]):
+                usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+                if usm_iface is not None:
+                    result = _copy_to_usm(usm_iface["syclobj"], result)
+                    if dpnp_available and isinstance(data[0], dpnp.ndarray):
+                        result = _convert_to_dpnp(result)
+                    return result
                 input_array_api = getattr(data[0], "__array_namespace__", None)
                 if input_array_api:
                     input_array_api = input_array_api()
