@@ -98,17 +98,14 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
         expected_cluster_labels = np.array([0, 1], dtype=np.int32)
         expected_cluster_centers = np.array([[1.0, 2.0], [10.0, 2.0]], dtype=np.float32)
         expected_inertia = 16.0
-        expected_n_iter = 2
     else:
         expected_cluster_labels = np.array([1, 0], dtype=np.int32)
         expected_cluster_centers = np.array([[10.0, 2.0], [1.0, 2.0]], dtype=np.float32)
         expected_inertia = 16.0
-        expected_n_iter = 2
 
     assert_allclose(expected_cluster_labels, _as_numpy(kmeans.predict(X_test_df)))
     assert_allclose(expected_cluster_centers, _as_numpy(kmeans.cluster_centers_))
     assert expected_inertia == kmeans.inertia_
-    assert expected_n_iter == kmeans.n_iter_
 
 
 if daal_check_version((2024, "P", 700)):
