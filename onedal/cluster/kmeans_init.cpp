@@ -43,10 +43,6 @@ struct method2t {
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "random_dense", ops, Float, method::random_dense);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_dense", ops, Float, method::plus_plus_dense);
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "random_csr", ops, Float, method::random_csr);
-        ONEDAL_PARAM_DISPATCH_VALUE(method, "plus_plus_csr", ops, Float, method::plus_plus_csr);
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240700
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
@@ -57,10 +53,13 @@ template <typename Float, typename Method, typename Task>
 struct descriptor_creator;
 
 template <typename Float>
-struct descriptor_creator<Float, dal::kmeans_init::method::dense, dal::kmeans_init::task::init> {
+struct descriptor_creator<Float,
+                          dal::kmeans_init::method::dense,
+                          dal::kmeans_init::task::init> {
     static auto get() {
-        return dal::kmeans_init::
-            descriptor<Float, dal::kmeans_init::method::dense, dal::kmeans_init::task::init>{};
+        return dal::kmeans_init::descriptor<Float,
+                                            dal::kmeans_init::method::dense,
+                                            dal::kmeans_init::task::init>{};
     }
 };
 
@@ -86,29 +85,6 @@ struct descriptor_creator<Float,
     }
 };
 
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
-template <typename Float>
-struct descriptor_creator<Float,
-                          dal::kmeans_init::method::random_csr,
-                          dal::kmeans_init::task::init> {
-    static auto get() {
-        return dal::kmeans_init::
-            descriptor<Float, dal::kmeans_init::method::random_csr, dal::kmeans_init::task::init>{};
-    }
-};
-
-template <typename Float>
-struct descriptor_creator<Float,
-                          dal::kmeans_init::method::plus_plus_csr,
-                          dal::kmeans_init::task::init> {
-    static auto get() {
-        return dal::kmeans_init::descriptor<Float,
-                                            dal::kmeans_init::method::plus_plus_csr,
-                                            dal::kmeans_init::task::init>{};
-    }
-};
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240700
-
 struct params2desc {
     template <typename Float, typename Method, typename Task>
     auto operator()(const py::dict& params) {
@@ -117,7 +93,7 @@ struct params2desc {
         const auto cluster_count = params["cluster_count"].cast<std::int64_t>();
 
         auto desc = descriptor_creator<Float, Method, Task>::get() //
-                        .set_cluster_count(cluster_count);
+                                .set_cluster_count(cluster_count);
 
         if constexpr (!std::is_same_v<Method, dal::kmeans_init::method::dense>) {
             const auto seed = params["seed"].cast<std::int64_t>();
@@ -128,12 +104,7 @@ struct params2desc {
             const auto local_trials_count = params["local_trials_count"].cast<std::int64_t>();
             desc.set_local_trials_count(local_trials_count);
         }
-#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
-        if constexpr (std::is_same_v<Method, dal::kmeans_init::method::plus_plus_csr>) {
-            const auto local_trials_count = params["local_trials_count"].cast<std::int64_t>();
-            desc.set_local_trials_count(local_trials_count);
-        }
-#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION>=20240700
+
         return desc;
     }
 };
@@ -145,13 +116,16 @@ template <typename Policy>
 struct init_compute_ops_dispatcher<Policy, dal::kmeans_init::task::init> {
     void operator()(py::module_& m) {
         using Task = dal::kmeans_init::task::init;
-        m.def("compute", [](const Policy& policy, const py::dict& params, const table& data) {
-            using namespace dal::kmeans_init;
-            using input_t = compute_input<Task>;
+        m.def("compute",
+              [](const Policy& policy,
+                 const py::dict& params,
+                 const table& data) {
+                  using namespace dal::kmeans_init;
+                  using input_t = compute_input<Task>;
 
-            compute_ops ops(policy, input_t{ data }, params2desc{});
-            return fptype2t{ method2t{ Task{}, ops } }(params);
-        });
+                  compute_ops ops(policy, input_t{ data }, params2desc{});
+                  return fptype2t{ method2t{ Task{}, ops } }(params);
+              });
     }
 };
 

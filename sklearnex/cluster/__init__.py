@@ -17,4 +17,4 @@
 from .dbscan import DBSCAN
 from .k_means import KMeans
 
-__all__ = ["DBSCAN", "KMeans"]
+__all__ = ["KMeans", "DBSCAN"]

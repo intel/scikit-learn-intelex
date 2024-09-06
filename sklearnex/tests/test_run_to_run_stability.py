@@ -40,7 +40,6 @@ from sklearn.datasets import (
 )
 
 import daal4py as d4p
-from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import _as_numpy, get_dataframes_and_queues
 from sklearnex.cluster import DBSCAN, KMeans
 from sklearnex.decomposition import PCA
@@ -115,16 +114,16 @@ def _run_test(estimator, method, datasets):
                     )
 
 
-_sparse_instances = [SVC()]
-if daal_check_version((2024, "P", 700)):  # Test for > 2024.7.0
-    _sparse_instances.extend(
-        [
+SPARSE_INSTANCES = _sklearn_clone_dict(
+    {
+        str(i): i
+        for i in [
+            SVC(),
             KMeans(),
             KMeans(init="random"),
-            KMeans(init="k-means++"),
         ]
-    )
-SPARSE_INSTANCES = _sklearn_clone_dict({str(i): i for i in _sparse_instances})
+    }
+)
 
 STABILITY_INSTANCES = _sklearn_clone_dict(
     {
