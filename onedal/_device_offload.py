@@ -19,6 +19,7 @@ from collections.abc import Iterable
 from functools import wraps
 
 import numpy as np
+from sklearn import get_config
 
 from ._config import _get_config
 from .utils._array_api import _asarray, _is_numpy_namespace
@@ -203,11 +204,15 @@ def support_input_format(freefunc=False, queue_param=True):
                 if dpnp_available and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
                 return result
-            input_array_api = getattr(data[0], "__array_namespace__", None)
-            if input_array_api:
-                input_array_api = input_array_api()
-                input_array_api_device = data[0].device
-                result = _asarray(result, input_array_api, device=input_array_api_device)
+            config = get_config()
+            if not ("transform_output" in config and config["transform_output"]):
+                input_array_api = getattr(data[0], "__array_namespace__", None)
+                if input_array_api:
+                    input_array_api = input_array_api()
+                    input_array_api_device = data[0].device
+                    result = _asarray(
+                        result, input_array_api, device=input_array_api_device
+                    )
             return result
 
         if freefunc:
