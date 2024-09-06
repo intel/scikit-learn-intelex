@@ -122,8 +122,7 @@ if daal_check_version((2024, "P", 700)):
     def test_dense_vs_sparse(queue, init, algorithm, dims):
         from sklearnex.cluster import KMeans
 
-        # For higher level of sparsity (smaller density) the test will fail
-        # This is because random initialization of centroids may choose isolated ones
+        # For higher level of sparsity (smaller density) the test may fail
         n_samples, n_features, density, n_clusters = dims
         X_dense = generate_dense_dataset(n_samples, n_features, density, n_clusters)
         X_sparse = csr_matrix(X_dense)
