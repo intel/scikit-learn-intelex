@@ -20,7 +20,7 @@ from numpy.testing import assert_allclose
 from scipy.sparse import csr_matrix
 from sklearn.datasets import make_blobs
 
-from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
@@ -63,27 +63,32 @@ def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
         assert "daal4py" in kmeans_dense.__module__
 
 
-if daal_check_version((2024, "P", 700)):
+@pytest.mark.skipif(
+    not daal_check_version((2024, "P", 700)),
+    reason="Sparse data requires oneDAL>=2024.7.0",
+)
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+@pytest.mark.parametrize("init", ["k-means++", "random"])
+def test_sklearnex_import_for_sparse_data(queue, algorithm, init):
+    from sklearnex.cluster import KMeans
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-    @pytest.mark.parametrize("init", ["k-means++", "random"])
-    def test_sklearnex_import_for_sparse_data(queue, algorithm, init):
-        from sklearnex.cluster import KMeans
+    X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
+    X_sparse = csr_matrix(X_dense)
 
-        X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
-        X_sparse = csr_matrix(X_dense)
+    kmeans_sparse = KMeans(
+        n_clusters=3, random_state=0, algorithm=algorithm, init=init
+    ).fit(X_sparse)
 
-        kmeans_sparse = KMeans(
-            n_clusters=3, random_state=0, algorithm=algorithm, init=init
-        ).fit(X_sparse)
-
-        assert "sklearnex" in kmeans_sparse.__module__
+    assert "sklearnex" in kmeans_sparse.__module__
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
 def test_results_on_dense_gold_data(dataframe, queue, algorithm):
+    if not sklearn_check_version("1.1") and algorithm == "lloyd":
+        pytest.skip("lloyd requires sklearn>=1.1.")
+
     from sklearnex.cluster import KMeans
 
     X_train = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
@@ -108,34 +113,36 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
     assert expected_inertia == kmeans.inertia_
 
 
-if daal_check_version((2024, "P", 700)):
+@pytest.mark.skipif(
+    not daal_check_version((2024, "P", 700)),
+    reason="Sparse data requires oneDAL>=2024.7.0",
+)
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
+@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+@pytest.mark.parametrize(
+    "dims", [(1000, 10, 0.95, 3), (50000, 100, 0.75, 10), (10000, 10, 0.8, 5)]
+)
+def test_dense_vs_sparse(queue, init, algorithm, dims):
+    from sklearnex.cluster import KMeans
 
-    @pytest.mark.parametrize("queue", get_queues())
-    @pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
-    @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
-    @pytest.mark.parametrize(
-        "dims", [(1000, 10, 0.95, 3), (50000, 100, 0.75, 10), (10000, 10, 0.8, 5)]
+    # For higher level of sparsity (smaller density) the test may fail
+    n_samples, n_features, density, n_clusters = dims
+    X_dense = generate_dense_dataset(n_samples, n_features, density, n_clusters)
+    X_sparse = csr_matrix(X_dense)
+
+    if init == "arraylike":
+        np.random.seed(2024 + n_samples + n_features + n_clusters)
+        init = X_dense[np.random.choice(n_samples, size=n_clusters, replace=False)]
+
+    kmeans_dense = KMeans(
+        n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
+    ).fit(X_dense)
+    kmeans_sparse = KMeans(
+        n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
+    ).fit(X_sparse)
+
+    assert_allclose(
+        kmeans_dense.cluster_centers_,
+        kmeans_sparse.cluster_centers_,
     )
-    def test_dense_vs_sparse(queue, init, algorithm, dims):
-        from sklearnex.cluster import KMeans
-
-        # For higher level of sparsity (smaller density) the test may fail
-        n_samples, n_features, density, n_clusters = dims
-        X_dense = generate_dense_dataset(n_samples, n_features, density, n_clusters)
-        X_sparse = csr_matrix(X_dense)
-
-        if init == "arraylike":
-            np.random.seed(2024 + n_samples + n_features + n_clusters)
-            init = X_dense[np.random.choice(n_samples, size=n_clusters, replace=False)]
-
-        kmeans_dense = KMeans(
-            n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
-        ).fit(X_dense)
-        kmeans_sparse = KMeans(
-            n_clusters=n_clusters, random_state=0, init=init, algorithm=algorithm
-        ).fit(X_sparse)
-
-        assert_allclose(
-            kmeans_dense.cluster_centers_,
-            kmeans_sparse.cluster_centers_,
-        )
