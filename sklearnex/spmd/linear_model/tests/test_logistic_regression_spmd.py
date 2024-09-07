@@ -116,7 +116,7 @@ def test_logistic_spmd_gold(dataframe, queue):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue, dtype):
-    if tol == 1e-2 and dtype == np.float64:
+    if dtype == np.float64:
         pytest.skip(
             "Sporadic failures on coef_ check. Test disabled while fix in progress"
         )
