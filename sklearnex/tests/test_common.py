@@ -20,7 +20,7 @@ import pkgutil
 from glob import glob
 
 import pytest
-import sklearn.utils.discovery
+from sklearn.utils import all_estimators
 
 from sklearnex.tests._utils import PATCHED_MODELS, SPECIAL_INSTANCES
 
@@ -76,15 +76,11 @@ def _sklearnex_walk(func):
 
 def test_all_estimators_covered(monkeypatch):
     monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
-    # remove preview from search
-    monkeypatch.setattr(
-        sklearn.utils.discovery,
-        "_MODULE_TO_IGNORE",
-        sklearn.utils.discovery._MODULE_TO_IGNORE | {"preview"},
-    )
-    estimators = sklearn.utils.discovery.all_estimators()
+    estimators = all_estimators()
     print(estimators)
-    for i in estimators:
-        assert i in PATCHED_MODELS or any(
-            [issubclass(est, i) for est in PATCHED_MODELS.values()]
-        ), f"{i} not included"
+    for name, obj in estimators:
+        # do nothing if defined in preview
+        if "preview" not in obj.__module__:
+            assert name in PATCHED_MODELS or any(
+                [issubclass(est, obj) for est in PATCHED_MODELS.values()]
+            ), f"{name} not included"

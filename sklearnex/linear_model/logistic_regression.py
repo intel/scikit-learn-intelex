@@ -19,7 +19,7 @@ from abc import ABC
 
 from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.logistic_path import (
-    LogisticRegression as LogisticRegression_daal4py,
+    LogisticRegression as _daal4py_LogisticRegression,
 )
 
 if daal_check_version((2024, "P", 1)):
@@ -395,7 +395,7 @@ if daal_check_version((2024, "P", 1)):
         score.__doc__ = _sklearn_LogisticRegression.score.__doc__
 
 else:
-    LogisticRegression = LogisticRegression_daal4py
+    LogisticRegression = _daal4py_LogisticRegression
 
     logging.warning(
         "Sklearnex LogisticRegression requires oneDAL version >= 2024.0.1 "
