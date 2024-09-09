@@ -14,10 +14,20 @@
 # limitations under the License.
 # ==============================================================================
 
+import logging
 import os
 from glob import glob
 
 import pytest
+import sklearn.utils.validation
+
+import daal4py.utils.validation
+from sklearnex.tests._utils import (
+    PATCHED_MODELS,
+    call_method,
+    gen_dataset,
+    gen_models_info,
+)
 
 ALLOWED_LOCATIONS = [
     "_config.py",
@@ -52,3 +62,20 @@ def test_target_offload_ban():
 
     output = "\n".join(output)
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
+
+
+def debug_function(func, logger, *args, **kwargs):
+    """This wraps a function to make it verbose for analysis,
+    it will print the name of the function and its location to
+    the specified logger at debug level. This should use an
+    alternate logger (not sklearnex) to avoid interaction with
+    other logging functionality"""
+    if logger == "sklearnex":
+        raise ValueError("sklearnex logger is protected")
+    log = logging.getLogger(logger)
+
+    def wrapped_func(*args, **kwargs):
+        log.debug(".".join(func.__module__, __name__))
+        return func(*args, **kwargs)
+
+    return wrapped_func
