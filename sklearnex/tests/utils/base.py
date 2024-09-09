@@ -106,7 +106,7 @@ mixin_map = [
 ]
 
 
-class _sklearn_clone_dict(dict):
+class sklearn_clone_dict(dict):
     """Special dict type for returning state-free sklearn/sklearnex estimators
     with the same parameters"""
 

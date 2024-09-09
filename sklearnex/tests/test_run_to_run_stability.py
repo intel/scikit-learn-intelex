@@ -21,14 +21,6 @@ from numbers import Number
 
 import numpy as np
 import pytest
-from _utils import (
-    PATCHED_MODELS,
-    SPECIAL_INSTANCES,
-    _sklearn_clone_dict,
-    call_method,
-    gen_dataset,
-    gen_models_info,
-)
 from numpy.testing import assert_allclose
 from scipy import sparse
 from sklearn.datasets import (
@@ -52,6 +44,14 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC
+from sklearnex.tests.utils import (
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    call_method,
+    gen_dataset,
+    gen_models_info,
+    sklearn_clone_dict,
+)
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
@@ -124,9 +124,9 @@ if daal_check_version((2024, "P", 700)):  # Test for > 2024.7.0
             KMeans(init="k-means++"),
         ]
     )
-SPARSE_INSTANCES = _sklearn_clone_dict({str(i): i for i in _sparse_instances})
+SPARSE_INSTANCES = sklearn_clone_dict({str(i): i for i in _sparse_instances})
 
-STABILITY_INSTANCES = _sklearn_clone_dict(
+STABILITY_INSTANCES = sklearn_clone_dict(
     {
         str(i): i
         for i in [
