@@ -100,7 +100,7 @@ def wrap_output_data(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         result = func(self, *args, **kwargs)
-        if len(args) == 0 and len(kwargs) == 0:
+        if not (len(args) == 0 and len(kwargs) == 0):
             data = (*args, *kwargs.values())
             usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
             if usm_iface is not None:
