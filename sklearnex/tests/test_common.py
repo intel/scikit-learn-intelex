@@ -65,9 +65,9 @@ def _sklearnex_walk(*args, **kwargs):
     folders specifically"""
     if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
         kwargs["prefix"] = "sklearnex."
-    if "root" in kwargs:
+    if "path" in kwargs:
         # force root to sklearnex
-        root = [str(pathlib.Path(__file__).parent.parent)]
+        path = [str(pathlib.Path(__file__).parent.parent)]
     return walk_packages_orig(*args, **kwargs)
 
 
