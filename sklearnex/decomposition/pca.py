@@ -45,11 +45,11 @@ if daal_check_version((2024, "P", 100)):
     from onedal.decomposition import PCA as onedal_PCA
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
-    class PCA(sklearn_PCA):
-        __doc__ = sklearn_PCA.__doc__
+    class PCA(_sklearn_PCA):
+        __doc__ = _sklearn_PCA.__doc__
 
         if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
+            _parameter_constraints: dict = {**_sklearn_PCA._parameter_constraints}
             # "onedal_svd" solver uses oneDAL's PCA-SVD algorithm
             # and required for testing purposes to fully enable it in future.
             # "covariance_eigh" solver is added for ability to explicitly request
@@ -127,7 +127,7 @@ if daal_check_version((2024, "P", 100)):
                 "fit",
                 {
                     "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_PCA._fit,
+                    "sklearn": _sklearn_PCA._fit,
                 },
                 X,
             )
@@ -169,7 +169,7 @@ if daal_check_version((2024, "P", 100)):
                 "transform",
                 {
                     "onedal": self.__class__._onedal_transform,
-                    "sklearn": sklearn_PCA.transform,
+                    "sklearn": _sklearn_PCA.transform,
                 },
                 X,
             )
@@ -401,10 +401,10 @@ if daal_check_version((2024, "P", 100)):
                     )
                 )
 
-        fit.__doc__ = sklearn_PCA.fit.__doc__
-        transform.__doc__ = sklearn_PCA.transform.__doc__
-        fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
-        inverse_transform.__doc__ = sklearn_PCA.inverse_transform.__doc__
+        fit.__doc__ = _sklearn_PCA.fit.__doc__
+        transform.__doc__ = _sklearn_PCA.transform.__doc__
+        fit_transform.__doc__ = _sklearn_PCA.fit_transform.__doc__
+        inverse_transform.__doc__ = _sklearn_PCA.inverse_transform.__doc__
 
 else:
     from daal4py.sklearn.decomposition import PCA

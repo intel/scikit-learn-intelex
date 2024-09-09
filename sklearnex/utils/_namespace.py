@@ -21,7 +21,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from .._device_offload import dpnp_available
 
 if sklearn_check_version("1.2"):
-    from sklearn.utils._array_api import get_namespace as _sklearn_get_namespace
+    from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
 
 if dpnp_available:
     import dpnp

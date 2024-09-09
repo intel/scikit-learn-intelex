@@ -64,7 +64,7 @@ class KNeighborsDispatchingBase:
             elif p == np.inf:
                 self.effective_metric_ = "chebyshev"
 
-        if not isinstance(X, (KDTree, BallTree, sklearn_NeighborsBase)):
+        if not isinstance(X, (KDTree, BallTree, _sklearn_NeighborsBase)):
             self._fit_X = _check_array(
                 X, dtype=[np.float64, np.float32], accept_sparse=True
             )
@@ -97,7 +97,7 @@ class KNeighborsDispatchingBase:
             delattr(self, "_onedal_estimator")
         # To cover test case when we pass patched
         # estimator as an input for other estimator
-        if isinstance(X, sklearn_NeighborsBase):
+        if isinstance(X, _sklearn_NeighborsBase):
             self._fit_X = X._fit_X
             self._tree = X._tree
             self._fit_method = X._fit_method
@@ -155,7 +155,7 @@ class KNeighborsDispatchingBase:
             return patching_status
 
         if not patching_status.and_condition(
-            not isinstance(data[0], (KDTree, BallTree, sklearn_NeighborsBase)),
+            not isinstance(data[0], (KDTree, BallTree, _sklearn_NeighborsBase)),
             f"Input type {type(data[0])} is not supported.",
         ):
             return patching_status
