@@ -69,7 +69,10 @@ def _sklearnex_walk(func):
         if "path" in kwargs:
             # force root to sklearnex
             kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
-        return func(*args, **kwargs)
+        for walk in func(*args, **kwargs):
+            # Do not allow spmd to be checked
+            if "spmd" not in walk[1]:
+                yield walk
 
     return wrap
 
