@@ -64,7 +64,7 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
-def debug_function(func, logger, *args, **kwargs):
+def debug_function(name, func, logger, *args, **kwargs):
     """This wraps a function to make it verbose for analysis,
     it will print the name of the function and its location to
     the specified logger at debug level. This should use an
@@ -75,7 +75,7 @@ def debug_function(func, logger, *args, **kwargs):
     log = logging.getLogger(logger)
 
     def wrapped_func(*args, **kwargs):
-        log.debug(".".join(func.__module__, __name__))
+        log.debug(name + " " + ".".join(func.__module__, __name__))
         return func(*args, **kwargs)
 
     return wrapped_func
@@ -84,3 +84,7 @@ def debug_function(func, logger, *args, **kwargs):
 class LogEstimator(object):
     """ wrap sklearnex estimator to test for operational
     design conformance by logging"""
+
+    def test_validate_params():
+
+    def test_finite_checking():
