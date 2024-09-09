@@ -18,7 +18,6 @@ import os
 import pathlib
 import pkgutil
 from glob import glob
-from pkgutil import walk_packages as walk_packages_orig
 
 import pytest
 from sklearn.utils import all_estimators
@@ -60,19 +59,21 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
-def _sklearnex_walk(*args, **kwargs):
+def _sklearnex_walk(func):
     """this replaces checks on pkgutils to look in sklearnex
     folders specifically"""
-    if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
-        kwargs["prefix"] = "sklearnex."
-    if "path" in kwargs:
-        # force root to sklearnex
-        kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
-    return walk_packages_orig(*args, **kwargs)
+    def wrap(*args, **kwargs)
+        if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
+            kwargs["prefix"] = "sklearnex."
+        if "path" in kwargs:
+            # force root to sklearnex
+            kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
+        return func(*args, **kwargs)
+    return wrap
 
 
 def test_all_estimators_covered(monkeypatch):
-    monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk)
+    monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
     estimators = all_estimators()
     print(estimators)
     for i in estimators:
