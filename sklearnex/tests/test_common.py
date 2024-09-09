@@ -20,7 +20,7 @@ import pkgutil
 from glob import glob
 
 import pytest
-from sklearn.utils import all_estimators
+import sklearn.utils.discovery import all_estimators
 
 from sklearnex.tests._utils import PATCHED_MODELS, SPECIAL_INSTANCES
 
@@ -62,7 +62,7 @@ def test_target_offload_ban():
 def _sklearnex_walk(func):
     """this replaces checks on pkgutils to look in sklearnex
     folders specifically"""
-    def wrap(*args, **kwargs)
+    def wrap(*args, **kwargs):
         if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
             kwargs["prefix"] = "sklearnex."
         if "path" in kwargs:
