@@ -17,6 +17,7 @@
 import os
 import pathlib
 import pkgutil
+from pkgutil import walk_packages as walk_packages_orig
 from glob import glob
 
 import pytest
@@ -67,7 +68,7 @@ def _sklearnex_walk(*args, **kwargs):
     if "root" in kwargs:
         # force root to sklearnex
         root = [str(pathlib.Path(__file__).parent.parent)]
-    return pkgutil.walk_packages(*args, **kwargs)
+    return walk_packages_orig(*args, **kwargs)
 
 
 def test_all_estimators_covered(monkeypatch):
