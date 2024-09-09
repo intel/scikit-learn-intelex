@@ -81,6 +81,6 @@ def test_all_estimators_covered(monkeypatch):
     for name, obj in estimators:
         # do nothing if defined in preview
         if "preview" not in obj.__module__:
-            assert name in PATCHED_MODELS or any(
-                [issubclass(est, obj) for est in PATCHED_MODELS.values()]
+            assert any([issubclass(est, obj) for est in PATCHED_MODELS.values()]) or any(
+                [issubclass(est, obj.__class__) in SPECIAL_INSTANCES.values()]
             ), f"{name} not included"
