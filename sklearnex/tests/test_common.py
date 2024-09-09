@@ -66,7 +66,7 @@ def _sklearnex_walk(*args, **kwargs):
         kwargs["prefix"] = "sklearnex."
     if "root" in kwargs:
         # force root to sklearnex
-        root = [str(Path(__file__).parent.parent)]
+        root = [str(pathlib.Path(__file__).parent.parent)]
     return pkgutil.walk_packages(*args, **kwargs)
 
 
