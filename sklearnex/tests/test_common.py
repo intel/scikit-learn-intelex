@@ -19,8 +19,10 @@ import pathlib
 import pkgutil
 from glob import glob
 
+import all_estimators
+import import
 import pytest
-import sklearn.utils.discovery import all_estimators
+import sklearn.utils.discovery
 
 from sklearnex.tests._utils import PATCHED_MODELS, SPECIAL_INSTANCES
 
