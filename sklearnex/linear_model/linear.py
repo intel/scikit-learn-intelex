@@ -19,7 +19,7 @@ from abc import ABC
 
 import numpy as np
 from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs

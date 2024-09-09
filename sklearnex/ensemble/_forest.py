@@ -21,12 +21,12 @@ from abc import ABC
 import numpy as np
 from scipy import sparse as sp
 from sklearn.base import clone
-from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifier
-from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
-from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
-from sklearn.ensemble import RandomForestRegressor as sklearn_RandomForestRegressor
-from sklearn.ensemble._forest import ForestClassifier as sklearn_ForestClassifier
-from sklearn.ensemble._forest import ForestRegressor as sklearn_ForestRegressor
+from sklearn.ensemble import ExtraTreesClassifier as _sklearn_ExtraTreesClassifier
+from sklearn.ensemble import ExtraTreesRegressor as _sklearn_ExtraTreesRegressor
+from sklearn.ensemble import RandomForestClassifier as _sklearn_RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor as _sklearn_RandomForestRegressor
+from sklearn.ensemble._forest import ForestClassifier as _sklearn_ForestClassifier
+from sklearn.ensemble._forest import ForestRegressor as _sklearn_ForestRegressor
 from sklearn.ensemble._forest import _get_n_samples_bootstrap
 from sklearn.exceptions import DataConversionWarning
 from sklearn.metrics import accuracy_score, r2_score

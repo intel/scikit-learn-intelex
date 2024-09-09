@@ -18,7 +18,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.neighbors._classification import (
     KNeighborsClassifier as _sklearn_KNeighborsClassifier,
 )
-from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
+from sklearn.neighbors._unsupervised import NearestNeighbors as _sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs

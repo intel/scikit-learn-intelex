@@ -40,7 +40,7 @@ if daal_check_version((2024, "P", 100)):
     if sklearn_check_version("1.2"):
         from sklearn.utils._param_validation import StrOptions
 
-    from sklearn.decomposition import PCA as sklearn_PCA
+    from sklearn.decomposition import PCA as _sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
 

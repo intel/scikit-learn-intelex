@@ -516,7 +516,7 @@ def unpatch_sklearn(name=None, global_unpatch=False):
 
 
 def sklearn_is_patched(name=None, return_map=False):
-    from daal4py.sklearn import sklearn_is_patched as sklearn_is_patched_orig
+    from daal4py.sklearn import sklearn_is_patched as _sklearn_is_patched_orig
 
     if isinstance(name, list):
         if return_map:

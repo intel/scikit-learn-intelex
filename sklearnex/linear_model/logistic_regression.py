@@ -25,7 +25,7 @@ from daal4py.sklearn.linear_model.logistic_path import (
 if daal_check_version((2024, "P", 1)):
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
+    from sklearn.linear_model import LogisticRegression as _sklearn_LogisticRegression
     from sklearn.metrics import accuracy_score
     from sklearn.utils.multiclass import type_of_target
     from sklearn.utils.validation import check_array, check_is_fitted, check_X_y

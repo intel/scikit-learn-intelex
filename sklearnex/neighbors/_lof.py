@@ -17,7 +17,7 @@
 import warnings
 
 import numpy as np
-from sklearn.neighbors import LocalOutlierFactor as sklearn_LocalOutlierFactor
+from sklearn.neighbors import LocalOutlierFactor as _sklearn_LocalOutlierFactor
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
