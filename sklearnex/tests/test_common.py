@@ -22,7 +22,7 @@ from glob import glob
 import pytest
 from sklearn.utils import all_estimators
 
-from sklearnex.tests.utils import PATCHED_MODELS, SPECIAL_INSTANCES
+from sklearnex.tests._utils import PATCHED_MODELS, SPECIAL_INSTANCES
 
 ALLOWED_LOCATIONS = [
     "_config.py",
