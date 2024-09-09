@@ -18,7 +18,7 @@ import warnings
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.utils import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -34,12 +34,12 @@ from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
 @control_n_jobs(decorated_methods=["fit", "mahalanobis"])
-class EmpiricalCovariance(sklearn_EmpiricalCovariance):
-    __doc__ = sklearn_EmpiricalCovariance.__doc__
+class EmpiricalCovariance(_sklearn_EmpiricalCovariance):
+    __doc__ = _sklearn_EmpiricalCovariance.__doc__
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
-            **sklearn_EmpiricalCovariance._parameter_constraints,
+            **_sklearn_EmpiricalCovariance._parameter_constraints,
         }
 
     def _save_attributes(self):
@@ -100,7 +100,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_EmpiricalCovariance.fit,
+                "sklearn": _sklearn_EmpiricalCovariance.fit,
             },
             X,
         )
@@ -124,10 +124,10 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
 
         return np.reshape(dist, (len(X),)) ** 2
 
-    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
-    score = wrap_output_data(sklearn_EmpiricalCovariance.score)
+    error_norm = wrap_output_data(_sklearn_EmpiricalCovariance.error_norm)
+    score = wrap_output_data(_sklearn_EmpiricalCovariance.score)
 
-    fit.__doc__ = sklearn_EmpiricalCovariance.fit.__doc__
-    mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis
-    error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
-    score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__
+    fit.__doc__ = _sklearn_EmpiricalCovariance.fit.__doc__
+    mahalanobis.__doc__ = _sklearn_EmpiricalCovariance.mahalanobis
+    error_norm.__doc__ = _sklearn_EmpiricalCovariance.error_norm.__doc__
+    score.__doc__ = _sklearn_EmpiricalCovariance.score.__doc__

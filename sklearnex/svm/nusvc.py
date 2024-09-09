@@ -17,7 +17,7 @@
 import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
-from sklearn.svm import NuSVC as sklearn_NuSVC
+from sklearn.svm import NuSVC as _sklearn_NuSVC
 from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -36,11 +36,11 @@ from onedal.svm import NuSVC as onedal_NuSVC
 @control_n_jobs(
     decorated_methods=["fit", "predict", "_predict_proba", "decision_function", "score"]
 )
-class NuSVC(sklearn_NuSVC, BaseSVC):
-    __doc__ = sklearn_NuSVC.__doc__
+class NuSVC(_sklearn_NuSVC, BaseSVC):
+    __doc__ = _sklearn_NuSVC.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**sklearn_NuSVC._parameter_constraints}
+        _parameter_constraints: dict = {**_sklearn_NuSVC._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(
@@ -101,7 +101,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_NuSVC.fit,
+                "sklearn": _sklearn_NuSVC.fit,
             },
             X,
             y,
@@ -119,7 +119,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_NuSVC.predict,
+                "sklearn": _sklearn_NuSVC.predict,
             },
             X,
         )
@@ -133,7 +133,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_NuSVC.score,
+                "sklearn": _sklearn_NuSVC.score,
             },
             X,
             y,
@@ -142,7 +142,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     if sklearn_check_version("1.0"):
 
-        @available_if(sklearn_NuSVC._check_proba)
+        @available_if(_sklearn_NuSVC._check_proba)
         def predict_proba(self, X):
             """
             Compute probabilities of possible outcomes for samples in X.
@@ -172,7 +172,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             """
             return self._predict_proba(X)
 
-        @available_if(sklearn_NuSVC._check_proba)
+        @available_if(_sklearn_NuSVC._check_proba)
         def predict_log_proba(self, X):
             """Compute log probabilities of possible outcomes for samples in X.
 
@@ -215,16 +215,16 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             xp, _ = get_namespace(X)
             return xp.log(self.predict_proba(X))
 
-        predict_proba.__doc__ = sklearn_NuSVC.predict_proba.__doc__
+        predict_proba.__doc__ = _sklearn_NuSVC.predict_proba.__doc__
 
     @wrap_output_data
     def _predict_proba(self, X):
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=False)
         sklearn_pred_proba = (
-            sklearn_NuSVC.predict_proba
+            _sklearn_NuSVC.predict_proba
             if sklearn_check_version("1.0")
-            else sklearn_NuSVC._predict_proba
+            else _sklearn_NuSVC._predict_proba
         )
 
         return dispatch(
@@ -246,12 +246,12 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             "decision_function",
             {
                 "onedal": self.__class__._onedal_decision_function,
-                "sklearn": sklearn_NuSVC.decision_function,
+                "sklearn": _sklearn_NuSVC.decision_function,
             },
             X,
         )
 
-    decision_function.__doc__ = sklearn_NuSVC.decision_function.__doc__
+    decision_function.__doc__ = _sklearn_NuSVC.decision_function.__doc__
 
     def _get_sample_weight(self, X, y, sample_weight=None):
         sample_weight = super()._get_sample_weight(X, y, sample_weight)
@@ -326,7 +326,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
-    fit.__doc__ = sklearn_NuSVC.fit.__doc__
-    predict.__doc__ = sklearn_NuSVC.predict.__doc__
-    decision_function.__doc__ = sklearn_NuSVC.decision_function.__doc__
-    score.__doc__ = sklearn_NuSVC.score.__doc__
+    fit.__doc__ = _sklearn_NuSVC.fit.__doc__
+    predict.__doc__ = _sklearn_NuSVC.predict.__doc__
+    decision_function.__doc__ = _sklearn_NuSVC.decision_function.__doc__
+    score.__doc__ = _sklearn_NuSVC.score.__doc__

@@ -20,7 +20,7 @@ import warnings
 import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator, clone
-from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
 from sklearn.utils.validation import _num_features
@@ -98,8 +98,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             "copy": ["boolean"],
         }
 
-    get_precision = sklearn_EmpiricalCovariance.get_precision
-    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
+    get_precision = _sklearn_EmpiricalCovariance.get_precision
+    error_norm = wrap_output_data(_sklearn_EmpiricalCovariance.error_norm)
 
     def __init__(
         self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True
@@ -363,6 +363,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
-    mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
-    error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
-    score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__
+    mahalanobis.__doc__ = _sklearn_EmpiricalCovariance.mahalanobis.__doc__
+    error_norm.__doc__ = _sklearn_EmpiricalCovariance.error_norm.__doc__
+    score.__doc__ = _sklearn_EmpiricalCovariance.score.__doc__

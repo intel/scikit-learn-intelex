@@ -16,9 +16,8 @@
 
 from sklearn.metrics import r2_score
 from sklearn.neighbors._regression import (
-    KNeighborsRegressor as sklearn_KNeighborsRegressor,
+    KNeighborsRegressor as _sklearn_KNeighborsRegressor,
 )
-from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -30,11 +29,11 @@ from .common import KNeighborsDispatchingBase
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
-class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor):
-    __doc__ = sklearn_KNeighborsRegressor.__doc__
+class KNeighborsRegressor(KNeighborsDispatchingBase, _sklearn_KNeighborsRegressor):
+    __doc__ = _sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
-            **sklearn_KNeighborsRegressor._parameter_constraints
+            **_sklearn_KNeighborsRegressor._parameter_constraints
         }
 
     if sklearn_check_version("1.0"):
@@ -96,7 +95,7 @@ class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_KNeighborsRegressor.fit,
+                "sklearn": _sklearn_KNeighborsRegressor.fit,
             },
             X,
             y,
@@ -113,7 +112,7 @@ class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_KNeighborsRegressor.predict,
+                "sklearn": _sklearn_KNeighborsRegressor.predict,
             },
             X,
         )
@@ -128,7 +127,7 @@ class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_KNeighborsRegressor.score,
+                "sklearn": _sklearn_KNeighborsRegressor.score,
             },
             X,
             y,
@@ -145,7 +144,7 @@ class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor
             "kneighbors",
             {
                 "onedal": self.__class__._onedal_kneighbors,
-                "sklearn": sklearn_KNeighborsRegressor.kneighbors,
+                "sklearn": _sklearn_KNeighborsRegressor.kneighbors,
             },
             X,
             n_neighbors=n_neighbors,
@@ -197,7 +196,7 @@ class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor
         self._fit_method = self._onedal_estimator._fit_method
         self._tree = self._onedal_estimator._tree
 
-    fit.__doc__ = sklearn_KNeighborsRegressor.__doc__
-    predict.__doc__ = sklearn_KNeighborsRegressor.predict.__doc__
-    kneighbors.__doc__ = sklearn_KNeighborsRegressor.kneighbors.__doc__
-    score.__doc__ = sklearn_KNeighborsRegressor.score.__doc__
+    fit.__doc__ = _sklearn_KNeighborsRegressor.__doc__
+    predict.__doc__ = _sklearn_KNeighborsRegressor.predict.__doc__
+    kneighbors.__doc__ = _sklearn_KNeighborsRegressor.kneighbors.__doc__
+    score.__doc__ = _sklearn_KNeighborsRegressor.score.__doc__
