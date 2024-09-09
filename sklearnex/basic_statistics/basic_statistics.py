@@ -62,17 +62,17 @@ class BasicStatistics(BaseEstimator):
     """
 
     def __init__(self, result_options="all"):
-        self.options = result_options
+        self.result_options = result_options
 
     _onedal_basic_statistics = staticmethod(onedal_BasicStatistics)
 
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
 
-        if self.options == "all":
+        if self.result_options == "all":
             result_options = onedal_BasicStatistics.get_all_result_options()
         else:
-            result_options = self.options
+            result_options = self.result_options
 
         if isinstance(result_options, str):
             setattr(self, result_options, getattr(self._onedal_estimator, result_options))
@@ -99,7 +99,7 @@ class BasicStatistics(BaseEstimator):
             sample_weight = _check_sample_weight(sample_weight, X)
 
         onedal_params = {
-            "result_options": self.options,
+            "result_options": self.result_options,
         }
 
         if not hasattr(self, "_onedal_estimator"):
