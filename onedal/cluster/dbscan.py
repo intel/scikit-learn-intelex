@@ -61,21 +61,35 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         X = check_array(X, accept_sparse="csr", dtype=[xp.float64, xp.float32])
         sample_weight = make2d(sample_weight) if sample_weight is not None else None
         X = make2d(X)
+        if xp:
+            X_device = X.device
 
+        # TODO:
+        # revice once again the flow.
         types = [xp.float32, xp.float64]
         if get_dtype(X) not in types:
             X = X.astype(xp.float64)
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(policy, X, xp)
+        sample_weight = (
+            _convert_to_supported(policy, sample_weight, xp)
+            if sample_weight is not None
+            else None
+        )
         dtype = get_dtype(X)
         params = self._get_onedal_params(xp, dtype)
         result = self._get_backend("dbscan", "clustering", None).compute(
-            policy, params, to_table(X), to_table(sample_weight)
+            policy, params, to_table(X, xp), to_table(sample_weight, xp)
         )
 
-        self.labels_ = from_table(result.responses).reshape(-1)
+        self.labels_ = from_table(
+            result.responses, xp=xp, queue=queue, array_api_device=X_device
+        ).reshape(-1)
         if result.core_observation_indices is not None:
             self.core_sample_indices_ = from_table(
-                result.core_observation_indices
+                result.core_observation_indices,
+                xp=xp,
+                queue=queue,
+                array_api_device=X_device,
             ).reshape(-1)
         else:
             self.core_sample_indices_ = xp.array([], dtype=xp.int32)

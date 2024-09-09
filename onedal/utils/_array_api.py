@@ -18,6 +18,8 @@
 
 from collections.abc import Iterable
 
+import numpy as np
+
 try:
     from dpctl.tensor import usm_ndarray
 
@@ -89,3 +91,25 @@ def _get_sycl_namespace(*arrays):
             raise ValueError(f"SYCL type not recognized: {sycl_type}")
 
     return sycl_type, None, False
+
+
+def get_namespace(*arrays):
+    """Get namespace of arrays.
+    TBD.
+    Parameters
+    ----------
+    *arrays : array objects
+        Array objects.
+    Returns
+    -------
+    namespace : module
+        Namespace shared by array objects.
+    is_array_api : bool
+        True of the arrays are containers that implement the Array API spec.
+    """
+    sycl_type, xp, is_array_api_compliant = _get_sycl_namespace(*arrays)
+
+    if sycl_type:
+        return xp, is_array_api_compliant
+    else:
+        return np, True

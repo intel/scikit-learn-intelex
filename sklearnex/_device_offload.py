@@ -61,6 +61,40 @@ def _get_backend(obj, queue, method_name, *data):
     raise RuntimeError("Device support is not implemented")
 
 
+# def dispatch_with_array_api(obj, method_name, branches, xp, is_array_api_compliant, *args, **kwargs):
+def dispatch_with_array_api(
+    obj, method_name, branches, xp, is_array_api_compliant, *args, **kwargs
+):
+    q = _get_global_queue()
+    # if "array_api_support_sklearnex" in obj._get_tags() and obj._get_tags()["array_api_support_sklearnex"]:
+
+    backend, q, patching_status = _get_backend(obj, q, method_name, *args)
+
+    if backend == "onedal":
+        patching_status.write_log(queue=q)
+        return branches[backend](obj, *args, **kwargs, queue=q)
+    if backend == "sklearn":
+        if (
+            "array_api_dispatch" in get_config()
+            and get_config()["array_api_dispatch"]
+            and "array_api_support" in obj._get_tags()
+            and obj._get_tags()["array_api_support"]
+        ):
+            # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
+            # then raw inputs are used for the fallback.
+            patching_status.write_log()
+            return branches[backend](obj, *args, **kwargs)
+        else:
+            patching_status.write_log()
+            _, hostargs = _transfer_to_host(q, *args)
+            _, hostvalues = _transfer_to_host(q, *kwargs.values())
+            hostkwargs = dict(zip(kwargs.keys(), hostvalues))
+            return branches[backend](obj, *hostargs, **hostkwargs)
+    raise RuntimeError(
+        f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
+    )
+
+
 def dispatch(obj, method_name, branches, *args, **kwargs):
     q = _get_global_queue()
     q, hostargs = _transfer_to_host(q, *args)

@@ -25,7 +25,7 @@ from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
-from .._device_offload import dispatch
+from .._device_offload import dispatch, dispatch_with_array_api
 from .._utils import PatchingConditionsChain
 from ..utils._array_api import get_namespace
 
@@ -181,7 +181,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         # should be checked for Array API inputs.
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
-        dispatch(
+        dispatch_with_array_api(
             self,
             "fit",
             {
@@ -194,5 +194,8 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
         )
 
         return self
+
+    def _more_tags(self):
+        return {"array_api_support_sklearnex": True}
 
     fit.__doc__ = sklearn_DBSCAN.fit.__doc__
