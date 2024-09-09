@@ -79,3 +79,8 @@ def debug_function(func, logger, *args, **kwargs):
         return func(*args, **kwargs)
 
     return wrapped_func
+
+
+class LogEstimator(object):
+    """ wrap sklearnex estimator to test for operational
+    design conformance by logging"""
