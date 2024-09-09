@@ -45,7 +45,9 @@ class LinearRegression(_sklearn_LinearRegression):
     __doc__ = _sklearn_LinearRegression.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**_sklearn_LinearRegression._parameter_constraints}
+        _parameter_constraints: dict = {
+            **_sklearn_LinearRegression._parameter_constraints
+        }
 
         def __init__(
             self,

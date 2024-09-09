@@ -29,7 +29,9 @@ from .common import KNeighborsDispatchingBase
 class NearestNeighbors(KNeighborsDispatchingBase, _sklearn_NearestNeighbors):
     __doc__ = _sklearn_NearestNeighbors.__doc__
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**_sklearn_NearestNeighbors._parameter_constraints}
+        _parameter_constraints: dict = {
+            **_sklearn_NearestNeighbors._parameter_constraints
+        }
 
     @_deprecate_positional_args
     def __init__(
