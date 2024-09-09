@@ -15,9 +15,14 @@
 # ==============================================================================
 
 import os
+import pathlib
+import pkgutil
 from glob import glob
 
 import pytest
+from sklearn.utils import all_estimators
+
+from sklearnex.tests.utils import PATCHED_MODELS, SPECIAL_INSTANCES
 
 ALLOWED_LOCATIONS = [
     "_config.py",
@@ -52,3 +57,22 @@ def test_target_offload_ban():
 
     output = "\n".join(output)
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
+
+
+def _sklearnex_walk(*args, **kwargs):
+    """this replaces checks on pkgutils to look in sklearnex
+    folders specifically"""
+    if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
+        kwargs["prefix"] = "sklearnex."
+    if "root" in kwargs:
+        # force root to sklearnex
+        root = [str(Path(__file__).parent.parent)]
+    return pkgutil.walk_packages(*args, **kwargs)
+
+
+def test_all_estimators_covered(monkeypatch):
+    monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk)
+    estimators = all_estimators()
+    print(estimators)
+    for i in estimators:
+        assert i in PATCHED_MODELS
