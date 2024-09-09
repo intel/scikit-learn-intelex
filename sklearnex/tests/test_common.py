@@ -80,7 +80,7 @@ def test_all_estimators_covered(monkeypatch):
     monkeypatch.setattr(
         sklearn.utils.discovery,
         "_MODULE_TO_IGNORE",
-        sklearn.utils.discovery._MODULE_TO_IGNORE + ["preview"],
+        sklearn.utils.discovery._MODULE_TO_IGNORE | {"preview"},
     )
     estimators = sklearn.utils.discovery.all_estimators()
     print(estimators)
