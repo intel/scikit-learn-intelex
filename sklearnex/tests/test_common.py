@@ -19,8 +19,6 @@ import pathlib
 import pkgutil
 from glob import glob
 
-import all_estimators
-import import
 import pytest
 import sklearn.utils.discovery
 
@@ -64,6 +62,7 @@ def test_target_offload_ban():
 def _sklearnex_walk(func):
     """this replaces checks on pkgutils to look in sklearnex
     folders specifically"""
+
     def wrap(*args, **kwargs):
         if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
             kwargs["prefix"] = "sklearnex."
@@ -71,12 +70,21 @@ def _sklearnex_walk(func):
             # force root to sklearnex
             kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
         return func(*args, **kwargs)
+
     return wrap
 
 
 def test_all_estimators_covered(monkeypatch):
     monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
-    estimators = all_estimators()
+    # remove preview from search
+    monkeypatch.setattr(
+        sklearn.utils.discovery,
+        "_MODULE_TO_IGNORE",
+        sklearn.utils.discovery._MODULE_TO_IGNORE + ["preview"],
+    )
+    estimators = sklearn.utils.discovery.all_estimators()
     print(estimators)
     for i in estimators:
-        assert i in PATCHED_MODELS or any([issubclass(est, i) for est in PATCHED_MODELS.values()]), f"{i} not included"
+        assert i in PATCHED_MODELS or any(
+            [issubclass(est, i) for est in PATCHED_MODELS.values()]
+        ), f"{i} not included"
