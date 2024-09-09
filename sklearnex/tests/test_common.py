@@ -17,8 +17,8 @@
 import os
 import pathlib
 import pkgutil
-from pkgutil import walk_packages as walk_packages_orig
 from glob import glob
+from pkgutil import walk_packages as walk_packages_orig
 
 import pytest
 from sklearn.utils import all_estimators
@@ -67,7 +67,7 @@ def _sklearnex_walk(*args, **kwargs):
         kwargs["prefix"] = "sklearnex."
     if "path" in kwargs:
         # force root to sklearnex
-        path = [str(pathlib.Path(__file__).parent.parent)]
+        kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
     return walk_packages_orig(*args, **kwargs)
 
 
