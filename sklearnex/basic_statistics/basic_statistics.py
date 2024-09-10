@@ -160,7 +160,7 @@ class BasicStatistics(BaseEstimator):
             self._onedal_estimator = self._onedal_basic_statistics(**onedal_params)
         self._onedal_estimator.fit(X, sample_weight, queue)
         self._save_attributes()
-        self.n_features_in_ = X.shape[1]
+        self.n_features_in_ = X.shape[1] if len(X.shape) > 1 else 1
 
     def fit(self, X, y=None, *, sample_weight=None):
         """Calculate statistics of X.
