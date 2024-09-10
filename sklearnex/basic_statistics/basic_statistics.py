@@ -71,7 +71,7 @@ class BasicStatistics(BaseEstimator):
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
 
-        if self.options == "all":
+        if self.result_options == "all":
             result_options = onedal_BasicStatistics.get_all_result_options()
         else:
             result_options = self.result_options
