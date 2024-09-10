@@ -29,7 +29,6 @@ if daal_check_version((2023, "P", 200)):
     from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
     from sklearn.utils.validation import (
         _check_sample_weight,
-        _deprecate_positional_args,
         _num_samples,
         check_is_fitted,
     )
