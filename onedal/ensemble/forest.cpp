@@ -164,7 +164,6 @@ struct params2desc {
         using namespace decision_forest;
 
         constexpr bool is_cls = std::is_same_v<Task, task::classification>;
-        constexpr bool is_reg = std::is_same_v<Task, task::regression>;
 
         auto desc = descriptor<Float, Method, Task>{}
                         .set_observations_per_tree_fraction(

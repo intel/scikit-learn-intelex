@@ -72,6 +72,7 @@ auto get_onedal_result_options(const py::dict& params) {
         }
     }
     catch (std::regex_error& e) {
+        (void)e;
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
 
@@ -85,8 +86,14 @@ struct params2desc {
 
         const auto intercept = params["intercept"].cast<bool>();
 
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
+        const auto alpha = params["alpha"].cast<double>();
+        auto desc = linear_regression::descriptor<Float, Method, Task>(intercept, alpha)
+            .set_result_options(get_onedal_result_options(params));
+#else
         auto desc = linear_regression::descriptor<Float, Method, Task>(intercept)
             .set_result_options(get_onedal_result_options(params));
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240600
         return desc;
     }
 };
@@ -297,6 +304,7 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_finalize_train_ops, sub, policy_spmd, task_list);
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);

@@ -19,9 +19,11 @@ import warnings
 
 import numpy as np
 from scipy import linalg
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, clone
 from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
+from sklearn.utils.validation import _num_features
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
@@ -33,6 +35,7 @@ from sklearnex import config_context
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, register_hyperparameters
 from ..metrics import pairwise_distances
+from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
@@ -97,7 +100,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     get_precision = sklearn_EmpiricalCovariance.get_precision
     error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
-    score = wrap_output_data(sklearn_EmpiricalCovariance.score)
 
     def __init__(
         self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True
@@ -113,9 +115,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         )
         return patching_status
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
         if not daal_check_version((2024, "P", 400)) and self.assume_centered:
@@ -190,11 +192,48 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             else:
                 self.n_samples_seen_ += X.shape[0]
 
-            self._onedal_estimator.partial_fit(X, queue)
+            self._onedal_estimator.partial_fit(X, queue=queue)
         finally:
             self._need_to_finalize = True
 
         return self
+
+    @wrap_output_data
+    def score(self, X_test, y=None):
+        xp, _ = get_namespace(X_test)
+
+        location = self.location_
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(
+                X_test,
+                dtype=[np.float64, np.float32],
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X_test,
+                dtype=[np.float64, np.float32],
+            )
+
+        if "numpy" not in xp.__name__:
+            location = xp.asarray(location, device=X_test.device)
+            # depending on the sklearn version, check_array
+            # and validate_data will return only numpy arrays
+            # which will break dpnp/dpctl support. If the
+            # array namespace isn't from numpy and the data
+            # is now a numpy array, it has been validated and
+            # the original can be used.
+            if isinstance(X, np.ndarray):
+                X = X_test
+
+        est = clone(self)
+        est.set_params(**{"assume_centered": True})
+
+        # test_cov is a numpy array, but calculated on device
+        test_cov = est.fit(X - location).covariance_
+        res = log_likelihood(test_cov, self.get_precision())
+
+        return res
 
     def partial_fit(self, X, y=None, check_input=True):
         """
@@ -287,26 +326,39 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue, check_input=False)
 
-        self._onedal_finalize_fit()
+        self._onedal_finalize_fit(queue=queue)
 
         return self
 
     # expose sklearnex pairwise_distances if mahalanobis distance eventually supported
-    @wrap_output_data
     def mahalanobis(self, X):
         if sklearn_check_version("1.0"):
-            self._validate_data(X, reset=False, copy=self.copy)
-        else:
-            check_array(X, copy=self.copy)
+            self._check_feature_names(X, reset=False)
 
+        xp, _ = get_namespace(X)
         precision = self.get_precision()
-        with config_context(assume_finite=True):
-            # compute mahalanobis distances
-            dist = pairwise_distances(
-                X, self.location_[np.newaxis, :], metric="mahalanobis", VI=precision
-            )
+        # compute mahalanobis distances
+        # pairwise_distances will check n_features (via n_feature matching with
+        # self.location_) , and will check for finiteness via check array
+        # check_feature_names will match _validate_data functionally
+        location = self.location_[np.newaxis, :]
+        if "numpy" not in xp.__name__:
+            # Guarantee that inputs to pairwise_distances match in type and location
+            location = xp.asarray(location, device=X.device)
 
-        return np.reshape(dist, (len(X),)) ** 2
+        try:
+            dist = pairwise_distances(X, location, metric="mahalanobis", VI=precision)
+        except ValueError as e:
+            # Throw the expected sklearn error in an n_feature length violation
+            if "Incompatible dimension for X and Y matrices: X.shape[1] ==" in str(e):
+                raise ValueError(
+                    f"X has {_num_features(X)} features, but {self.__class__.__name__} "
+                    f"is expecting {self.n_features_in_} features as input."
+                )
+            else:
+                raise e
+
+        return (xp.reshape(dist, (-1,))) ** 2
 
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported

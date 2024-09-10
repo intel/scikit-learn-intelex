@@ -32,8 +32,6 @@ auto get_distance_descriptor(const pybind11::dict& params) {
     using method_t = typename Distance::method_t;
     using task_t = typename Distance::task_t;
     using minkowski_desc_t = minkowski_distance::descriptor<float_t, method_t, task_t>;
-    using chebyshev_desc_t = chebyshev_distance::descriptor<float_t, method_t, task_t>;
-    using cosine_desc_t = cosine_distance::descriptor<float_t, method_t, task_t>;
 
     auto distance = Distance{};
     if constexpr (std::is_same_v<Distance, minkowski_desc_t>) {

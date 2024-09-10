@@ -20,6 +20,7 @@ steps:
       bash .ci/scripts/install_dpcpp.sh
     displayName: "dpcpp installation"
   - script: |
+      source /opt/intel/oneapi/compiler/latest/env/vars.sh
       bash .ci/scripts/describe_system.sh
     displayName: "System info"
   - script: |
@@ -40,7 +41,6 @@ steps:
       conda activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record_sklearnex.txt
     displayName: "Build daal4py/sklearnex"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh

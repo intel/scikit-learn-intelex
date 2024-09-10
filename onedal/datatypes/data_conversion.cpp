@@ -80,8 +80,11 @@ inline dal::homogen_table convert_to_homogen_impl(PyArrayObject *np_data) {
         // TODO: check safe cast from int to std::int64_t
         column_count = static_cast<std::int64_t>(array_size(np_data, 1));
     }
+    // If both array_is_behaved_C(np_data) and array_is_behaved_F(np_data) are true 
+    // (for example, if the array has only one column), then row-major layout will be chosen
+    // which is default on oneDAL side.
     const auto layout =
-        array_is_behaved_F(np_data) ? dal::data_layout::column_major : dal::data_layout::row_major;
+        array_is_behaved_C(np_data) ? dal::data_layout::row_major : dal::data_layout::column_major;
     auto res_table = dal::homogen_table(data_pointer,
                                         row_count,
                                         column_count,
@@ -152,7 +155,7 @@ dal::table convert_to_table(PyObject *obj) {
     }
     if (is_array(obj)) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
-        if (array_is_behaved(ary) || array_is_behaved_F(ary)) {
+        if (array_is_behaved_C(ary) || array_is_behaved_F(ary)) {
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ary);
             SET_NPY_FEATURE(array_type(ary),
                             array_type_sizeof(ary),
@@ -234,7 +237,7 @@ template <int NpType, typename T = byte_t>
 static PyObject *convert_to_numpy_impl(const dal::array<T> &array,
                                        std::int64_t row_count,
                                        std::int64_t column_count = 0) {
-    const std::int64_t size_dims = column_count == 0 ? 1 : 2;
+    const int size_dims = column_count == 0 ? 1 : 2;
 
     npy_intp dims[2] = { static_cast<npy_intp>(row_count), static_cast<npy_intp>(column_count) };
     auto host_array = transfer_to_host(array);

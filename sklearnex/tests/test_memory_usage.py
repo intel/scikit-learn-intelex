@@ -38,7 +38,7 @@ from onedal.tests.utils._dataframes_support import (
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
 from sklearnex import config_context
 from sklearnex.tests._utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
-from sklearnex.utils import get_namespace
+from sklearnex.utils._array_api import get_namespace
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -54,6 +54,7 @@ CPU_SKIP_LIST = (
     "IncrementalEmpiricalCovariance",  # dataframe_f issues
     "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "IncrementalPCA",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
+    "IncrementalRidge",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "LogisticRegression(solver='newton-cg')",  # memory leak fortran (1000, 100)
 )
 

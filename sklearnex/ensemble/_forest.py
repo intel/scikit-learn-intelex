@@ -38,7 +38,12 @@ from sklearn.tree import (
 )
 from sklearn.tree._tree import Tree
 from sklearn.utils import check_random_state, deprecated
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import (
+    _check_sample_weight,
+    check_array,
+    check_is_fitted,
+    check_X_y,
+)
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import (
@@ -52,10 +57,10 @@ from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassif
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
-from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
+from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
@@ -70,7 +75,7 @@ class BaseForest(ABC):
         X, y = self._validate_data(
             X,
             y,
-            multi_output=False,
+            multi_output=True,
             accept_sparse=False,
             dtype=[np.float64, np.float32],
             force_all_finite=False,
@@ -78,7 +83,7 @@ class BaseForest(ABC):
         )
 
         if sample_weight is not None:
-            sample_weight = self.check_sample_weight(sample_weight, X)
+            sample_weight = _check_sample_weight(sample_weight, X)
 
         if y.ndim == 2 and y.shape[1] == 1:
             warnings.warn(
@@ -288,38 +293,6 @@ class BaseForest(ABC):
             raise ValueError(
                 "min_bin_size must be integral number but was " "%r" % self.min_bin_size
             )
-
-    def check_sample_weight(self, sample_weight, X, dtype=None):
-        n_samples = _num_samples(X)
-
-        if dtype is not None and dtype not in [np.float32, np.float64]:
-            dtype = np.float64
-
-        if sample_weight is None:
-            sample_weight = np.ones(n_samples, dtype=dtype)
-        elif isinstance(sample_weight, numbers.Number):
-            sample_weight = np.full(n_samples, sample_weight, dtype=dtype)
-        else:
-            if dtype is None:
-                dtype = [np.float64, np.float32]
-            sample_weight = check_array(
-                sample_weight,
-                accept_sparse=False,
-                ensure_2d=False,
-                dtype=dtype,
-                order="C",
-                force_all_finite=False,
-            )
-            if sample_weight.ndim != 1:
-                raise ValueError("Sample weights must be 1D array or scalar")
-
-            if sample_weight.shape != (n_samples,):
-                raise ValueError(
-                    "sample_weight.shape == {}, expected {}!".format(
-                        sample_weight.shape, (n_samples,)
-                    )
-                )
-        return sample_weight
 
     @property
     def estimators_(self):

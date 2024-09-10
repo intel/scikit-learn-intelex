@@ -23,10 +23,10 @@ from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
-from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
+from ..utils._array_api import get_namespace
 from ._common import BaseSVC
 
 if sklearn_check_version("1.0"):
@@ -85,6 +85,17 @@ class SVC(sklearn_SVC, BaseSVC):
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
+        elif self.C <= 0:
+            # else if added to correct issues with
+            # sklearn tests:
+            # svm/tests/test_sparse.py::test_error
+            # svm/tests/test_svm.py::test_bad_input
+            # for sklearn versions < 1.2 (i.e. without
+            # validate_params parameter checking)
+            # Without this, a segmentation fault with
+            # Windows fatal exception: access violation
+            # occurs
+            raise ValueError("C <= 0")
         if sklearn_check_version("1.0"):
             self._check_feature_names(X, reset=True)
         dispatch(
