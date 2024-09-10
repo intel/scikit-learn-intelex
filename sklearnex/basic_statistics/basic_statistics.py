@@ -62,7 +62,7 @@ class BasicStatistics(BaseEstimator):
     """
 
     def __init__(self, result_options="all"):
-        self.options = result_options
+        self.result_options = result_options
 
     _onedal_basic_statistics = staticmethod(onedal_BasicStatistics)
 
@@ -72,14 +72,29 @@ class BasicStatistics(BaseEstimator):
         if self.options == "all":
             result_options = onedal_BasicStatistics.get_all_result_options()
         else:
-            result_options = self.options
+            result_options = self.result_options
 
         if isinstance(result_options, str):
-            setattr(self, result_options, getattr(self._onedal_estimator, result_options))
+            setattr(self, result_options + "_", getattr(self._onedal_estimator, result_options))
         elif isinstance(result_options, list):
             for option in result_options:
-                setattr(self, option, getattr(self._onedal_estimator, option))
+                setattr(self, option + "_", getattr(self._onedal_estimator, option))
 
+    def __getattr__(self, attr):
+        result_options = self.__dict__["result_options"]
+        is_deprecated_attr = (
+            isinstance(result_options, str) and (attr == result_options)
+        ) or (isinstance(result_options, list) and (attr in result_options))
+        if is_deprecated_attr:
+            warnings.warn("Result attributes without a trailing underscore were deprecated in version 2025.1 and will be removed in 2026.0")
+            attr += "_"
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{attr}'"
+        )
+    
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
             f"sklearnex.basic_statistics.{self.__class__.__name__}.{method_name}"
@@ -99,7 +114,7 @@ class BasicStatistics(BaseEstimator):
             sample_weight = _check_sample_weight(sample_weight, X)
 
         onedal_params = {
-            "result_options": self.options,
+            "result_options": self.result_options,
         }
 
         if not hasattr(self, "_onedal_estimator"):
