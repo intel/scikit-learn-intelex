@@ -20,6 +20,7 @@ from collections.abc import Iterable
 
 import numpy as np
 
+
 try:
     from dpctl.tensor import usm_ndarray
 
