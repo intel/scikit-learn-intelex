@@ -78,6 +78,11 @@ def _sklearnex_walk(func):
 
 
 def test_all_estimators_covered(monkeypatch):
+    """check that all estimators defined in sklearnex are available in either the
+    patch map or covered in special testing via SPECIAL_INSTANCES. The estimator
+    must inherit sklearn's BaseEstimator and must not have a leading underscore.
+    The sklearnex.spmd and sklearnex.preview packages are not tested.
+    """
     monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
     estimators = all_estimators()
     print(estimators)
