@@ -98,9 +98,7 @@ def _transfer_to_host(queue, *data):
     host_data = []
     for item in data:
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
-        array_api = getattr(item, "__array_namespace__", None)
-        if array_api:
-            array_api = array_api()
+        array_api = getattr(item, "__array_namespace__", lambda: None)()
         if usm_iface is not None:
             if not dpctl_available:
                 raise RuntimeError(
@@ -189,9 +187,9 @@ def support_input_format(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            data = (*args, *kwargs.values())
-            if len(data) == 0:
+            if len(args) == 0 and len(kwargs) == 0:
                 return _run_on_device(func, obj, *args, **kwargs)
+            data = (*args, *kwargs.values())
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if queue_param and not (
                 "queue" in hostkwargs and hostkwargs["queue"] is not None
@@ -206,9 +204,8 @@ def support_input_format(freefunc=False, queue_param=True):
                 return result
             config = get_config()
             if not ("transform_output" in config and config["transform_output"]):
-                input_array_api = getattr(data[0], "__array_namespace__", None)
+                input_array_api = getattr(data[0], "__array_namespace__", lambda: None)()
                 if input_array_api:
-                    input_array_api = input_array_api()
                     input_array_api_device = data[0].device
                     result = _asarray(
                         result, input_array_api, device=input_array_api_device
