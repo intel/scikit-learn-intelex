@@ -388,7 +388,7 @@ def test_fit_all_option_on_random_data(
 def test_warning():
     basicstat = IncrementalBasicStatistics("all")
     # Only 2d inputs supported into IncrementalBasicStatistics
-    data = np.array([[0.], [1.]])
+    data = np.array([[0.0], [1.0]])
 
     basicstat.fit(data)
     for i in basicstat._onedal_estimator.get_all_result_options():
