@@ -28,6 +28,9 @@ from onedal.basic_statistics import BasicStatistics as onedal_BasicStatistics
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 
+if sklearn_check_version("1.2"):
+    from sklearn.utils._param_validation import StrOptions
+
 
 @control_n_jobs(decorated_methods=["fit"])
 class BasicStatistics(BaseEstimator):
@@ -67,6 +70,28 @@ class BasicStatistics(BaseEstimator):
         self.result_options = result_options
 
     _onedal_basic_statistics = staticmethod(onedal_BasicStatistics)
+
+    if sklearn_check_version("1.2"):
+        _parameter_constraints: dict = {
+            "result_options": [
+                StrOptions(
+                    {
+                        "all",
+                        "min",
+                        "max",
+                        "sum",
+                        "mean",
+                        "variance",
+                        "variation",
+                        "sum_squares",
+                        "standard_deviation",
+                        "sum_squares_centered",
+                        "second_order_raw_moment",
+                    }
+                ),
+                list,
+            ],
+        }
 
     def _save_attributes(self):
         assert hasattr(self, "_onedal_estimator")
@@ -116,6 +141,9 @@ class BasicStatistics(BaseEstimator):
     _onedal_gpu_supported = _onedal_supported
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+
         if sklearn_check_version("1.0"):
             X = self._validate_data(X, dtype=[np.float64, np.float32], ensure_2d=False)
         else:
@@ -132,9 +160,10 @@ class BasicStatistics(BaseEstimator):
             self._onedal_estimator = self._onedal_basic_statistics(**onedal_params)
         self._onedal_estimator.fit(X, sample_weight, queue)
         self._save_attributes()
+        self.n_features_in_ = X.shape[1]
 
     def fit(self, X, y=None, *, sample_weight=None):
-        """Compute statistics with X, using minibatches of size batch_size.
+        """Calculate statistics of X.
 
         Parameters
         ----------
