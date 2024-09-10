@@ -31,6 +31,7 @@ def pytest_configure(config):
         "markers", "mpi: mark test to require MPI for distributed testing"
     )
 
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_call(item):
     # setup logger to check for sklearn fallback
