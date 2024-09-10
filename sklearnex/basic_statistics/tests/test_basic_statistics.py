@@ -16,6 +16,7 @@
 
 import numpy as np
 import pytest
+from daal4py.sklearn._utils import daal_check_version
 from numpy.testing import assert_allclose
 
 from onedal.basic_statistics.tests.test_basic_statistics import (
