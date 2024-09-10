@@ -143,11 +143,12 @@ def get_traced_memory(queue=None):
 
 
 def take(x, index, axis=0, queue=None):
-    xp, array_api = get_namespace(x)
-    if array_api:
-        return xp.take(x, xp.asarray(index, device=queue), axis=axis)
-    else:
-        return x.take(index, axis=axis)
+    with config_context(array_api_dispatch=True):
+        xp, array_api = get_namespace(x)
+        if array_api:
+            return xp.take(x, xp.asarray(index, device=queue), axis=axis)
+        else:
+            return x.take(index, axis=axis)
 
 
 def split_train_inference(kf, x, y, estimator, queue=None):

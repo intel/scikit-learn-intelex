@@ -16,10 +16,19 @@
 
 """Tools to support array_api."""
 
+try:
+    import array_api_compat
+
+    array_api_available = True
+except ImportError:
+    array_api_available = False
+
 import numpy as np
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils._array_api import _get_sycl_namespace
+
+from .._config import get_config
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
@@ -76,7 +85,12 @@ def get_namespace(*arrays):
 
     if sycl_type:
         return xp, is_array_api_compliant
-    elif sklearn_check_version("1.2"):
+    elif sklearn_check_version("1.2") and get_config()["array_api_dispatch"]:
         return sklearn_get_namespace(*arrays)
+    elif array_api_available:
+        namespace, is_array_api_compliant = array_api_compat.get_namespace(*arrays), True
+        return namespace, is_array_api_compliant
+    # TODO:
+    # should be removed.
     else:
-        return np, False
+        np, False
