@@ -73,6 +73,7 @@ def _sklearnex_walk(func):
             # Do not allow spmd to be yielded
             if "spmd" not in pkginfo.name.split("."):
                 yield pkginfo
+
     return wrap
 
 
