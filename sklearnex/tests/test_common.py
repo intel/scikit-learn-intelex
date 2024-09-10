@@ -60,7 +60,7 @@ def test_target_offload_ban():
 
 
 def _sklearnex_walk(func):
-    """this replaces checks on pkgutils to look in sklearnex
+    """this replaces checks on pkgutils to look through sklearnex
     folders specifically"""
 
     def wrap(*args, **kwargs):
@@ -69,11 +69,10 @@ def _sklearnex_walk(func):
         if "path" in kwargs:
             # force root to sklearnex
             kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
-        for walk in func(*args, **kwargs):
-            # Do not allow spmd to be checked
-            if "spmd" not in walk[1]:
-                yield walk
-
+        for pkginfo in func(*args, **kwargs):
+            # Do not allow spmd to be yielded
+            if "spmd" not in pkginfo.name.split("."):
+                yield pkginfo
     return wrap
 
 
