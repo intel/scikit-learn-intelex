@@ -199,7 +199,7 @@ def support_input_format(freefunc=False, queue_param=True):
             usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
             if usm_iface is not None:
                 result = _copy_to_usm(data_queue, result)
-                if dpnp_available and isinstance(args[0], dpnp.ndarray):
+                if dpnp_available and isinstance(data[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
                 return result
             config = get_config()
