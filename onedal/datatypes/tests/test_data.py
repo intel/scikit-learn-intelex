@@ -22,14 +22,13 @@ from onedal import _backend
 from onedal.datatypes import from_table, to_table
 from onedal.primitives import linear_kernel
 from onedal.tests.utils._device_selection import get_queues
+from onedal.utils._dppy_available import is_dpctl_available
 
-try:
+dpctl_available = is_dpctl_available("0.14")
+
+if dpctl_available:
     import dpctl
     import dpctl.tensor as dpt
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
 
 
 def _test_input_format_c_contiguous_numpy(queue, dtype):

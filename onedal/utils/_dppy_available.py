@@ -16,18 +16,31 @@
 
 """Check availability of DPPY imports in one place"""
 
-try:
-    from dpctl import SyclQueue
-    from dpctl.memory import MemoryUSMDevice, as_usm_memory
-    from dpctl.tensor import usm_ndarray
 
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
+def is_dpctl_available(version=None):
+    try:
+        import dpctl
+        import dpctl.tensor as dpt
 
-try:
-    import dpnp
+        dpctl_available = True
+    except ImportError:
+        dpctl_available = False
+    if dpctl_available and version:
+        dpctl_available = dpctl.__version__ >= version
+    return dpctl_available
 
-    dpnp_available = True
-except ImportError:
-    dpnp_available = False
+
+def is_dpnp_available(version=None):
+    try:
+        import dpnp
+
+        dpnp_available = True
+    except ImportError:
+        dpnp_available = False
+    if dpnp_available and version:
+        dpnp_available = dpctl.__version__ >= version
+    return dpnp_available
+
+
+dpctl_available = is_dpctl_available()
+dpctl_available = is_dpnp_available()

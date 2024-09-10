@@ -18,6 +18,8 @@ import functools
 
 import pytest
 
+from ...utils._dppy_available import dpctl_available
+
 
 def get_queues(filter_="cpu,gpu"):
     """Get available dpctl.SycQueues for testing.
@@ -62,9 +64,7 @@ def get_memory_usm():
 
 
 def is_dpctl_available(targets=None):
-    try:
-        import dpctl
-
+    if dpctl_available:
         if targets is None:
             return True
         for device in targets:
@@ -73,8 +73,7 @@ def is_dpctl_available(targets=None):
             if device == "gpu" and not dpctl.has_gpu_devices():
                 return False
         return True
-    except ImportError:
-        return False
+    return False
 
 
 def device_type_to_str(queue):

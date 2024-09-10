@@ -18,20 +18,10 @@
 
 from collections.abc import Iterable
 
-try:
+from ._dppy_available import dpctl_available, dpnp_available
+
+if dpctl_available:
     from dpctl.tensor import usm_ndarray
-
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
-
-try:
-    import dpnp
-
-    dpnp_available = True
-except ImportError:
-    dpnp_available = False
-
 
 if dpnp_available:
     import dpnp
