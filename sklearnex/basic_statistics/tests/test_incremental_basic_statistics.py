@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics.tests.test_basic_statistics import (
     expected_max,
     expected_mean,
