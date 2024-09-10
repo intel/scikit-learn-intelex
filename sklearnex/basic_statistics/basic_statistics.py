@@ -87,7 +87,10 @@ class BasicStatistics(BaseEstimator):
                 setattr(self, option + "_", getattr(self._onedal_estimator, option))
 
     def __getattr__(self, attr):
-        result_options = self.__dict__["result_options"]
+        if self.result_options == "all":
+            result_options = onedal_BasicStatistics.get_all_result_options()
+        else:
+            result_options = self.result_options
         is_deprecated_attr = (
             isinstance(result_options, str) and (attr == result_options)
         ) or (isinstance(result_options, list) and (attr in result_options))
