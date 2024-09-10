@@ -17,7 +17,8 @@
 """Check availability of DPPY imports in one place"""
 
 
-def is_dpctl_available(version=None):
+def is_dpctl_available(version=""):
+    """Checks availability of DPCtl package"""
     try:
         import dpctl
         import dpctl.tensor as dpt
@@ -25,20 +26,21 @@ def is_dpctl_available(version=None):
         dpctl_available = True
     except ImportError:
         dpctl_available = False
-    if dpctl_available and version:
+    if dpctl_available and not version == "":
         dpctl_available = dpctl.__version__ >= version
     return dpctl_available
 
 
-def is_dpnp_available(version=None):
+def is_dpnp_available(version=""):
+    """Checks availability of DPNP package"""
     try:
         import dpnp
 
         dpnp_available = True
     except ImportError:
         dpnp_available = False
-    if dpnp_available and version:
-        dpnp_available = dpctl.__version__ >= version
+    if dpnp_available and not version == "":
+        dpnp_available = dpnp.__version__ >= version
     return dpnp_available
 
 
