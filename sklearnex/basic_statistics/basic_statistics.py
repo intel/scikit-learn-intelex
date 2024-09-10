@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
+
 import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
@@ -75,7 +77,11 @@ class BasicStatistics(BaseEstimator):
             result_options = self.result_options
 
         if isinstance(result_options, str):
-            setattr(self, result_options + "_", getattr(self._onedal_estimator, result_options))
+            setattr(
+                self,
+                result_options + "_",
+                getattr(self._onedal_estimator, result_options),
+            )
         elif isinstance(result_options, list):
             for option in result_options:
                 setattr(self, option + "_", getattr(self._onedal_estimator, option))
@@ -86,7 +92,9 @@ class BasicStatistics(BaseEstimator):
             isinstance(result_options, str) and (attr == result_options)
         ) or (isinstance(result_options, list) and (attr in result_options))
         if is_deprecated_attr:
-            warnings.warn("Result attributes without a trailing underscore were deprecated in version 2025.1 and will be removed in 2026.0")
+            warnings.warn(
+                "Result attributes without a trailing underscore were deprecated in version 2025.1 and will be removed in 2026.0"
+            )
             attr += "_"
         if attr in self.__dict__:
             return self.__dict__[attr]
@@ -94,7 +102,7 @@ class BasicStatistics(BaseEstimator):
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
-    
+
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
             f"sklearnex.basic_statistics.{self.__class__.__name__}.{method_name}"
