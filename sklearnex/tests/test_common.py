@@ -14,16 +14,18 @@
 # limitations under the License.
 # ==============================================================================
 
-import logging
 import os
+import trace
 from glob import glob
 
+import numpy as np
+import scipy
 import pytest
 import sklearn.utils.validation
 
-import daal4py.utils.validation
 from sklearnex.tests._utils import (
     PATCHED_MODELS,
+    SPECIAL_INSTANCES,
     call_method,
     gen_dataset,
     gen_models_info,
@@ -64,27 +66,49 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
-def debug_function(name, func, logger, *args, **kwargs):
-    """This wraps a function to make it verbose for analysis,
-    it will print the name of the function and its location to
-    the specified logger at debug level. This should use an
-    alternate logger (not sklearnex) to avoid interaction with
-    other logging functionality"""
-    if logger == "sklearnex":
-        raise ValueError("sklearnex logger is protected")
-    log = logging.getLogger(logger)
+@pytest.fixture
+def estimator_trace(estimator, method, cache, capsys):
+    key = "-".join((str(estimator), method))
+    text = cache.get(key, None)
+    if text is None:
 
-    def wrapped_func(*args, **kwargs):
-        log.debug(name + " " + ".".join(func.__module__, __name__))
-        return func(*args, **kwargs)
+        # get estimator
+        try:
+            est = PATCHED_MODELS[estimator]()
+        except IndexError:
+            est = SPECIAL_INSTANCES[estimator]
 
-    return wrapped_func
+        # get dataset
+        [X, y] = gen_dataset(est)
+        # fit dataset if method does not contain 'fit'
+        if "fit" not in method:
+            est.fit(X, y)
+
+        # initialize tracer
+        tracer = trace.Trace(count=0, trace=1, ignoremods=(np, scipy, pytest))
+        # call trace on method with dataset
+        tracer.runfunc(call_method, est, method, X, y)
+
+        # collect trace for analysis
+        text = capsys.readouterr().out
+        cache.set(key, text)
+
+    return text
 
 
-class LogEstimator(object):
-    """ wrap sklearnex estimator to test for operational
-    design conformance by logging"""
+def assert_finite_in_onedal(text, estimator, method):
+    print("hello")
+    print(estimator, method)
+    print(text)
+    assert False
 
-    def test_validate_params():
 
-    def test_finite_checking():
+DESIGN_RULES = [
+    assert_finite_in_onedal,
+]
+
+
+@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
+@pytest.mark.parametrize("design_pattern", DESIGN_RULES, indirect=True)
+def test_estimator(estimator, method, design_pattern, estimator_trace):
+    design_pattern(estimator_trace, estimator, method)
