@@ -110,7 +110,9 @@ if daal_check_version((2023, "P", 200)):
             ) or not issparse(X)
 
             _acceptable_sample_weights = True
-            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
+            if (sample_weight is not None) and (
+                not isinstance(sample_weight, numbers.Number)
+            ):
                 sample_weight = _check_sample_weight(
                     sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
                 )
@@ -194,6 +196,16 @@ if daal_check_version((2023, "P", 200)):
                     "oneDAL does not support 'elkan', using 'lloyd' algorithm instead."
                 )
 
+            _acceptable_sample_weights = True
+            if not sklearn_check_version("1.5"):
+                if (sample_weight is not None) and (
+                    not isinstance(sample_weight, numbers.Number)
+                ):
+                    sample_weight = _check_sample_weight(
+                        sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
+                    )
+                    _acceptable_sample_weights = np.all(sample_weight == 1)
+
             patching_status.and_conditions(
                 [
                     (
@@ -205,8 +217,8 @@ if daal_check_version((2023, "P", 200)):
                         "Supported data formats: Dense, CSR (oneDAL version >= 2024.7.0).",
                     ),
                     (
-                        sample_weight is None,
-                        "oneDAL doesn't support sample_weight.",
+                        _acceptable_sample_weights,
+                        "oneDAL doesn't support sample_weight. Acceptable options are None, constant, or array of ones.",
                     ),
                 ]
             )
