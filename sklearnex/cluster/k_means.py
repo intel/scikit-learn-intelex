@@ -20,7 +20,6 @@ from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 200)):
 
-    import numbers
     import warnings
 
     import numpy as np
@@ -109,15 +108,6 @@ if daal_check_version((2023, "P", 200)):
                 _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
 
-            _acceptable_sample_weights = True
-            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
-                sample_weight = _check_sample_weight(
-                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
-                )
-                _acceptable_sample_weights = np.allclose(
-                    sample_weight, np.ones_like(sample_weight)
-                )
-
             patching_status.and_conditions(
                 [
                     (
@@ -126,8 +116,8 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
-                        _acceptable_sample_weights,
-                        "oneDAL doesn't support sample_weight, either None or ones are acceptable",
+                        sample_weight is None,
+                        "oneDAL doesn't support sample_weight.",
                     ),
                     (
                         is_data_supported,
@@ -161,6 +151,9 @@ if daal_check_version((2023, "P", 200)):
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
+                order="C",
+                copy=self.copy_x,
+                accept_large_sparse=False,
             )
 
             if sklearn_check_version("1.2"):
@@ -193,15 +186,6 @@ if daal_check_version((2023, "P", 200)):
                     "oneDAL does not support 'elkan', using 'lloyd' algorithm instead."
                 )
 
-            _acceptable_sample_weights = True
-            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
-                sample_weight = _check_sample_weight(
-                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
-                )
-                _acceptable_sample_weights = np.allclose(
-                    sample_weight, np.ones_like(sample_weight)
-                )
-
             patching_status.and_conditions(
                 [
                     (
@@ -213,8 +197,8 @@ if daal_check_version((2023, "P", 200)):
                         "Supported data formats: Dense, CSR (oneDAL version >= 2024.7.0).",
                     ),
                     (
-                        _acceptable_sample_weights,
-                        "oneDAL doesn't support sample_weight, None or ones are acceptable",
+                        sample_weight is None,
+                        "oneDAL doesn't support sample_weight.",
                     ),
                 ]
             )
@@ -262,18 +246,10 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
-                X,
-                accept_sparse="csr",
-                reset=False,
-                dtype=[np.float64, np.float32],
-            )
+            X = self._check_test_data(X)
 
             if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
-                if isinstance(sample_weight, str) and sample_weight == "deprecated":
-                    sample_weight = None
-
-                if sample_weight is not None:
+                if not (isinstance(sample_weight, str) and sample_weight == "deprecated"):
                     warnings.warn(
                         "'sample_weight' was deprecated in version 1.3 and "
                         "will be removed in 1.5.",
@@ -326,18 +302,10 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_score(self, X, y, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
-                X,
-                accept_sparse="csr",
-                reset=False,
-                dtype=[np.float64, np.float32],
-            )
+            X = self._check_test_data(X)
 
             if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
-                if isinstance(sample_weight, str) and sample_weight == "deprecated":
-                    sample_weight = None
-
-                if sample_weight is not None:
+                if not (isinstance(sample_weight, str) and sample_weight == "deprecated"):
                     warnings.warn(
                         "'sample_weight' was deprecated in version 1.3 and "
                         "will be removed in 1.5.",
