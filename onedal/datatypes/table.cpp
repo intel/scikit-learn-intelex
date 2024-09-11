@@ -17,9 +17,9 @@
 #include "oneapi/dal/table/common.hpp"
 #include "oneapi/dal/table/homogen.hpp"
 
-#ifdef ONEDAL_DPCTL_INTEGRATION
+#ifdef ONEDAL_DATA_PARALLEL
 #include "onedal/datatypes/data_conversion_dpctl.hpp"
-#endif // ONEDAL_DPCTL_INTEGRATION
+#endif // ONEDAL_DATA_PARALLEL
 
 #include "onedal/datatypes/data_conversion.hpp"
 #include "onedal/datatypes/numpy_helpers.hpp"
@@ -73,9 +73,9 @@ ONEDAL_PY_INIT_MODULE(table) {
         return py::make_tuple(row_count, column_count);
     });
 
-#ifdef ONEDAL_DPCTL_INTEGRATION
+#ifdef ONEDAL_DATA_PARALLEL
     define_sycl_usm_array_property(table_obj);
-#endif // ONEDAL_DPCTL_INTEGRATION
+#endif // ONEDAL_DATA_PARALLEL
 
     m.def("to_table", [](py::object obj) {
         auto* obj_ptr = obj.ptr();
@@ -87,11 +87,11 @@ ONEDAL_PY_INIT_MODULE(table) {
         return obj_ptr;
     });
 
-#ifdef ONEDAL_DPCTL_INTEGRATION
+#ifdef ONEDAL_DATA_PARALLEL
     m.def("dpctl_to_table", [](py::object obj) {
         return convert_from_dptensor(obj);
     });
-#endif // ONEDAL_DPCTL_INTEGRATION
+#endif // ONEDAL_DATA_PARALLEL
 }
 
 } // namespace oneapi::dal::python

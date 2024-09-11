@@ -14,22 +14,34 @@
 * limitations under the License.
 *******************************************************************************/
 
-#ifdef ONEDAL_DPCTL_INTEGRATION
+#ifdef ONEDAL_DATA_PARALLEL
 #define NO_IMPORT_ARRAY
 
+#include <array>
 #include <stdexcept>
 #include <utility>
 #include <string>
+#include <sycl/sycl.hpp>
 
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
-#include "onedal/datatypes/data_conversion_dpctl.hpp"
+#include "onedal/datatypes/data_conversion_sua_iface.hpp"
 #include "onedal/datatypes/numpy_helpers.hpp"
 
-#include "dpctl4pybind11.hpp"
 
 namespace oneapi::dal::python {
+
+// TODO:
+// will be moved into sua interop.
+struct sua_iface {
+    dal::data_type dtype;
+    py::ssize_t offset = 0ul;
+    std::shared_ptr<sycl::queue> queue; // from __sycl_usm_array_interface__["syclobj"]._get_capsule()
+    std::array<py::ssize_t, dim> shape;
+    std::array<py::ssize_t, dim> strides;
+    std::pair<std::uintptr_t, bool> data;
+};
 
 void report_problem_from_dptensor(const char* clarification) {
     constexpr const char* const base_message = "Unable to convert from dptensor";
@@ -39,7 +51,7 @@ void report_problem_from_dptensor(const char* clarification) {
     throw std::invalid_argument{ message };
 }
 
-std::int64_t get_and_check_dptensor_ndim(const dpctl::tensor::usm_ndarray& tensor) {
+std::int64_t get_and_check_dptensor_ndim(const sua_iface& tensor) {
     constexpr const char* const err_message = ": only 1D & 2D tensors are allowed";
 
     const auto ndim = dal::detail::integral_cast<std::int64_t>(tensor.get_ndim());
@@ -48,7 +60,7 @@ std::int64_t get_and_check_dptensor_ndim(const dpctl::tensor::usm_ndarray& tenso
     return ndim;
 }
 
-auto get_dptensor_shape(const dpctl::tensor::usm_ndarray& tensor) {
+auto get_dptensor_shape(const sua_iface& tensor) {
     const auto ndim = get_and_check_dptensor_ndim(tensor);
     std::int64_t row_count, col_count;
     if (ndim == 1l) {
@@ -63,7 +75,7 @@ auto get_dptensor_shape(const dpctl::tensor::usm_ndarray& tensor) {
     return std::make_pair(row_count, col_count);
 }
 
-auto get_dptensor_layout(const dpctl::tensor::usm_ndarray& tensor) {
+auto get_dptensor_layout(const sua_iface& tensor) {
     const auto ndim = get_and_check_dptensor_ndim(tensor);
     const bool is_c_cont = tensor.is_c_contiguous();
     const bool is_f_cont = tensor.is_f_contiguous();
@@ -81,8 +93,8 @@ auto get_dptensor_layout(const dpctl::tensor::usm_ndarray& tensor) {
 }
 
 template <typename Type>
-dal::table convert_to_homogen_impl(py::object obj, dpctl::tensor::usm_ndarray& tensor) {
-    const dpctl::tensor::usm_ndarray* const ptr = &tensor;
+dal::table convert_to_homogen_impl(py::object obj, sua_iface& tensor) {
+    const sua_iface* const ptr = &tensor;
     const auto deleter = [obj](const Type*) {
         obj.dec_ref();
     };
@@ -104,15 +116,15 @@ dal::table convert_to_homogen_impl(py::object obj, dpctl::tensor::usm_ndarray& t
     return res;
 }
 
-dal::table convert_from_dptensor(py::object obj) {
-    auto tensor = pybind11::cast<dpctl::tensor::usm_ndarray>(obj);
+dal::table convert_from_dptensor(py::dict sua_dict) {
+    auto tensor = pybind11::cast<sua_iface>(sua_dict);
 
     const auto type = tensor.get_typenum();
 
     dal::table res{};
 
 #define MAKE_HOMOGEN_TABLE(CType) \
-    res = convert_to_homogen_impl<CType>(obj, tensor);
+    res = convert_to_homogen_impl<CType>(sua_dict, tensor);
 
     SET_NPY_FEATURE(type,
                     MAKE_HOMOGEN_TABLE, //
@@ -132,7 +144,7 @@ void report_problem_to_dptensor(const char* clarification) {
 }
 
 // TODO:
-// return type.
+// refactor and make common for both numpy and sua return type.
 std::string get_npy_typestr(const dal::data_type dtype) {
     switch (dtype) {
         case dal::data_type::float32: {
@@ -222,4 +234,4 @@ void define_sycl_usm_array_property(py::class_<dal::table>& table_obj) {
 
 } // namespace oneapi::dal::python
 
-#endif // ONEDAL_DPCTL_INTEGRATION
+#endif // ONEDAL_DATA_PARALLEL
