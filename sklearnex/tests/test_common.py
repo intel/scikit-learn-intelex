@@ -125,25 +125,21 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 
 
 def assert_all_finite_onedal(text, estimator, method):
+    # skip if a daal4py estimator
+
     # find the number of inputs into the object
 
     # find call_method
 
     # acquire what data is set to
 
-    #
-
-    # if fit in method, give it additional checks
-
     # if fit check for __init__ and onedal
+
     # collected all _assert_all_finite calls
 
-    # stop when to_table observed
     text = "funcname: _assert_all_finite"
 
-    # regex _assert_all_finite and find line numbers
-
-    # verify that the onedal
+    # verify that the number is greater than the number of inputs
 
     print(estimator, method)
     print(text)
