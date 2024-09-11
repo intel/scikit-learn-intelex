@@ -63,10 +63,10 @@ def get_memory_usm():
         return []
 
 
-def is_dpctl_available(targets=None):
+def is_dpctl_device_available(targets):
     if dpctl_available:
-        if targets is None:
-            return True
+        import dpctl
+
         for device in targets:
             if device == "cpu" and not dpctl.has_cpu_devices():
                 return False

@@ -22,8 +22,9 @@ from onedal.tests.utils._device_selection import (
     device_type_to_str,
     get_memory_usm,
     get_queues,
-    is_dpctl_available,
+    is_dpctl_device_available,
 )
+from onedal.utils._dppy_available import dpctl_available
 
 
 @pytest.mark.parametrize("queue", get_queues())
@@ -43,7 +44,7 @@ def test_with_numpy_data(queue):
     assert _get_policy(queue, X, y).get_device_name() == device_name
 
 
-@pytest.mark.skipif(not is_dpctl_available(), reason="depends on dpctl")
+@pytest.mark.skipif(not dpctl_available, reason="depends on dpctl")
 @pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
 @pytest.mark.parametrize("memtype", get_memory_usm())
 def test_with_usm_ndarray_data(queue, memtype):
@@ -61,7 +62,7 @@ def test_with_usm_ndarray_data(queue, memtype):
 
 
 @pytest.mark.skipif(
-    not is_dpctl_available(["cpu", "gpu"]), reason="test uses multiple devices"
+    not is_dpctl_device_available(["cpu", "gpu"]), reason="test uses multiple devices"
 )
 @pytest.mark.parametrize("memtype", get_memory_usm())
 def test_queue_parameter_with_usm_ndarray(memtype):

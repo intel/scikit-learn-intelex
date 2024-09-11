@@ -35,7 +35,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
+from onedal.tests.utils._device_selection import get_queues, is_dpctl_device_available
 from sklearnex import config_context
 from sklearnex.tests._utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from sklearnex.utils._array_api import get_namespace
@@ -275,7 +275,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
 
 
 @pytest.mark.skipif(
-    os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_available("gpu"),
+    os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_device_available("gpu"),
     reason="SYCL device memory leak check requires the level zero sysman",
 )
 @pytest.mark.parametrize("queue", get_queues("gpu"))
