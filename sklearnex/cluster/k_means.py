@@ -256,7 +256,10 @@ if daal_check_version((2023, "P", 200)):
             X = self._check_test_data(X)
 
             if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
-                if not (isinstance(sample_weight, str) and sample_weight == "deprecated"):
+                if isinstance(sample_weight, str) and sample_weight == "deprecated":
+                    sample_weight = None
+
+                if sample_weight is not None:
                     warnings.warn(
                         "'sample_weight' was deprecated in version 1.3 and "
                         "will be removed in 1.5.",
@@ -312,7 +315,10 @@ if daal_check_version((2023, "P", 200)):
             X = self._check_test_data(X)
 
             if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
-                if not (isinstance(sample_weight, str) and sample_weight == "deprecated"):
+                if isinstance(sample_weight, str) and sample_weight == "deprecated":
+                    sample_weight = None
+
+                if sample_weight is not None:
                     warnings.warn(
                         "'sample_weight' was deprecated in version 1.3 and "
                         "will be removed in 1.5.",
