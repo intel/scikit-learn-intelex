@@ -16,11 +16,11 @@
 
 from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
 
-from ..._device_offload import support_input_format
+from ..._device_offload import support_usm_ndarray
 from .._base import BaseEstimatorSPMD
 
 
 class EmpiricalCovariance(BaseEstimatorSPMD, EmpiricalCovariance_Batch):
-    @support_input_format()
+    @support_usm_ndarray()
     def fit(self, X, y=None, queue=None):
         return super().fit(X, queue=queue)

@@ -23,10 +23,10 @@ from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
+from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
-from ..utils._array_api import get_namespace
 from ._common import BaseSVC
 
 if sklearn_check_version("1.0"):

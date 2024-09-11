@@ -14,15 +14,17 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Tools to support array_api."""
-
 import numpy as np
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal.utils._array_api import _get_sycl_namespace
+
+from .._device_offload import dpnp_available
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
+
+if dpnp_available:
+    import dpnp
 
 
 def get_namespace(*arrays):
@@ -72,10 +74,23 @@ def get_namespace(*arrays):
         True of the arrays are containers that implement the Array API spec.
     """
 
-    sycl_type, xp, is_array_api_compliant = _get_sycl_namespace(*arrays)
+    # sycl support designed to work regardless of array_api_dispatch sklearn global value
+    sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
+
+    if len(sycl_type) > 1:
+        raise ValueError(f"Multiple SYCL types for array inputs: {sycl_type}")
 
     if sycl_type:
-        return xp, is_array_api_compliant
+
+        (X,) = sycl_type.values()
+
+        if hasattr(X, "__array_namespace__"):
+            return X.__array_namespace__(), True
+        elif dpnp_available and isinstance(X, dpnp.ndarray):
+            return dpnp, False
+        else:
+            raise ValueError(f"SYCL type not recognized: {sycl_type}")
+
     elif sklearn_check_version("1.2"):
         return sklearn_get_namespace(*arrays)
     else:

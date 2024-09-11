@@ -22,11 +22,11 @@ from onedal._device_offload import (
     _transfer_to_host,
     dpnp_available,
 )
-from onedal.utils._array_api import _asarray, _is_numpy_namespace
 
 if dpnp_available:
     import dpnp
-    from onedal.utils._array_api import _convert_to_dpnp
+    from onedal._device_offload import _convert_to_dpnp
+
 
 from ._config import get_config
 
@@ -73,49 +73,26 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
         patching_status.write_log(queue=q)
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == "sklearn":
-        if (
-            "array_api_dispatch" in get_config()
-            and get_config()["array_api_dispatch"]
-            and "array_api_support" in obj._get_tags()
-            and obj._get_tags()["array_api_support"]
-        ):
-            # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
-            # then raw inputs are used for the fallback.
-            patching_status.write_log()
-            return branches[backend](obj, *args, **kwargs)
-        else:
-            patching_status.write_log()
-            return branches[backend](obj, *hostargs, **hostkwargs)
+        patching_status.write_log()
+        return branches[backend](obj, *hostargs, **hostkwargs)
     raise RuntimeError(
         f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
     )
 
 
 def wrap_output_data(func):
-    """
-    Converts and moves the output arrays of the decorated function
-    to match the input array type and device.
-    """
-
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        result = func(self, *args, **kwargs)
-        if not (len(args) == 0 and len(kwargs) == 0):
-            data = (*args, *kwargs.values())
+        data = (*args, *kwargs.values())
+        if len(data) == 0:
+            usm_iface = None
+        else:
             usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
-            if usm_iface is not None:
-                result = _copy_to_usm(usm_iface["syclobj"], result)
-                if dpnp_available and isinstance(data[0], dpnp.ndarray):
-                    result = _convert_to_dpnp(result)
-                return result
-            config = get_config()
-            if not ("transform_output" in config and config["transform_output"]):
-                input_array_api = getattr(data[0], "__array_namespace__", lambda: None)()
-                if input_array_api:
-                    input_array_api_device = data[0].device
-                    result = _asarray(
-                        result, input_array_api, device=input_array_api_device
-                    )
+        result = func(self, *args, **kwargs)
+        if usm_iface is not None:
+            result = _copy_to_usm(usm_iface["syclobj"], result)
+            if dpnp_available and isinstance(data[0], dpnp.ndarray):
+                result = _convert_to_dpnp(result)
         return result
 
     return wrapper

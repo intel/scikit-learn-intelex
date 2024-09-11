@@ -57,10 +57,10 @@ from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassif
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
+from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
-from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval

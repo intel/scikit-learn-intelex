@@ -19,10 +19,8 @@ from collections.abc import Iterable
 from functools import wraps
 
 import numpy as np
-from sklearn import get_config
 
 from ._config import _get_config
-from .utils._array_api import _asarray, _is_numpy_namespace
 
 try:
     from dpctl import SyclQueue
@@ -35,8 +33,6 @@ except ImportError:
 
 try:
     import dpnp
-
-    from .utils._array_api import _convert_to_dpnp
 
     dpnp_available = True
 except ImportError:
@@ -98,7 +94,6 @@ def _transfer_to_host(queue, *data):
     host_data = []
     for item in data:
         usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
-        array_api = getattr(item, "__array_namespace__", lambda: None)()
         if usm_iface is not None:
             if not dpctl_available:
                 raise RuntimeError(
@@ -125,11 +120,6 @@ def _transfer_to_host(queue, *data):
                 order=order,
             )
             has_usm_data = True
-        elif array_api and not _is_numpy_namespace(array_api):
-            # `copy`` param for the `asarray`` is not setted.
-            # The object is copied only if needed.
-            item = np.asarray(item)
-            has_host_data = True
         else:
             has_host_data = True
 
@@ -163,17 +153,34 @@ def _get_host_inputs(*args, **kwargs):
     return q, hostargs, hostkwargs
 
 
+def _extract_usm_iface(*args, **kwargs):
+    allargs = (*args, *kwargs.values())
+    if len(allargs) == 0:
+        return None
+    return getattr(allargs[0], "__sycl_usm_array_interface__", None)
+
+
 def _run_on_device(func, obj=None, *args, **kwargs):
     if obj is not None:
         return func(obj, *args, **kwargs)
     return func(*args, **kwargs)
 
 
-def support_input_format(freefunc=False, queue_param=True):
+if dpnp_available:
+
+    def _convert_to_dpnp(array):
+        if isinstance(array, usm_ndarray):
+            return dpnp.array(array, copy=False)
+        elif isinstance(array, Iterable):
+            for i in range(len(array)):
+                array[i] = _convert_to_dpnp(array[i])
+        return array
+
+
+def support_usm_ndarray(freefunc=False, queue_param=True):
     """
-    Converts and moves the output arrays of the decorated function
-    to match the input array type and device.
-    Puts SYCLQueue from data to decorated function arguments.
+    Handles USMArray input. Puts SYCLQueue from data to decorated function arguments.
+    Converts output of decorated function to dpctl.tensor/dpnp.ndarray if input was of this type.
 
     Parameters
     ----------
@@ -187,29 +194,17 @@ def support_input_format(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            if len(args) == 0 and len(kwargs) == 0:
-                return _run_on_device(func, obj, *args, **kwargs)
-            data = (*args, *kwargs.values())
+            usm_iface = _extract_usm_iface(*args, **kwargs)
             data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             if queue_param and not (
                 "queue" in hostkwargs and hostkwargs["queue"] is not None
             ):
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
-            if usm_iface is not None:
+            if usm_iface is not None and hasattr(result, "__array_interface__"):
                 result = _copy_to_usm(data_queue, result)
-                if dpnp_available and isinstance(data[0], dpnp.ndarray):
+                if dpnp_available and len(args) > 0 and isinstance(args[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
-                return result
-            config = get_config()
-            if not ("transform_output" in config and config["transform_output"]):
-                input_array_api = getattr(data[0], "__array_namespace__", lambda: None)()
-                if input_array_api:
-                    input_array_api_device = data[0].device
-                    result = _asarray(
-                        result, input_array_api, device=input_array_api_device
-                    )
             return result
 
         if freefunc:

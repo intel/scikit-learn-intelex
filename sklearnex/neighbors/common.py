@@ -28,7 +28,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _num_features, _num_samples
 
 from .._utils import PatchingConditionsChain
-from ..utils._array_api import get_namespace
+from ..utils import get_namespace
 
 
 class KNeighborsDispatchingBase:

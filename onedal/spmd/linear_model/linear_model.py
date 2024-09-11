@@ -16,15 +16,15 @@
 
 from onedal.linear_model import LinearRegression as LinearRegression_Batch
 
-from ..._device_offload import support_input_format
+from ..._device_offload import support_usm_ndarray
 from .._base import BaseEstimatorSPMD
 
 
 class LinearRegression(BaseEstimatorSPMD, LinearRegression_Batch):
-    @support_input_format()
+    @support_usm_ndarray()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
 
-    @support_input_format()
+    @support_usm_ndarray()
     def predict(self, X, queue=None):
         return super().predict(X, queue=queue)
