@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import os
+import sys
 import trace
 from glob import glob
 
@@ -66,12 +67,32 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
-@pytest.fixture
-def estimator_trace(estimator, method, cache, capsys):
-    key = "-".join((str(estimator), method))
-    text = cache.get(key, None)
-    if text is None:
+def _whitelist_to_blacklist():
+    """block all standard library, builting or site packages which are not
+    related to sklearn, daal4py, onedal or sklearnex"""
 
+    whitelist = ["sklearn", "sklearnex", "onedal", "daal4py"]
+    blacklist = []
+    for path in sys.path:
+        try:
+            if "site-packages" in path or "dist-packages" in path:
+                blacklist += [f.path for f in os.scandir(path) if f.name not in whitelist]
+            else:
+                blacklist += [path]
+        except FileNotFoundError:
+            pass
+    return blacklist
+
+
+_TRACE_BLOCK_LIST = _whitelist_to_blacklist()
+
+
+@pytest.fixture
+def estimator_trace(estimator, method, cache, capsys, monkeypatch):
+    """generate data only once, and only if the key doesn't match"""
+    key = "-".join((str(estimator), method))
+    flag = cache.get("key", "") != key
+    if flag:
         # get estimator
         try:
             est = PATCHED_MODELS[estimator]()
@@ -79,36 +100,62 @@ def estimator_trace(estimator, method, cache, capsys):
             est = SPECIAL_INSTANCES[estimator]
 
         # get dataset
-        [X, y] = gen_dataset(est)
+        X, y = gen_dataset(est)[0]
         # fit dataset if method does not contain 'fit'
         if "fit" not in method:
             est.fit(X, y)
 
-        # initialize tracer
-        tracer = trace.Trace(count=0, trace=1, ignoremods=(np, scipy, pytest))
+        # initialize tracer to have a more verbose module naming
+        # this impacts ignoremods, but it is not used.
+        monkeypatch.setattr(trace, "_modname", lambda x: x)
+        tracer = trace.Trace(
+            count=0,
+            trace=1,
+            ignoredirs=_TRACE_BLOCK_LIST,
+        )
         # call trace on method with dataset
         tracer.runfunc(call_method, est, method, X, y)
 
         # collect trace for analysis
         text = capsys.readouterr().out
-        cache.set(key, text)
+        cache.set("key", key)
+        cache.set("text", text)
 
-    return text
+    return cache.get("text", "")
 
 
-def assert_finite_in_onedal(text, estimator, method):
-    print("hello")
+def assert_all_finite_onedal(text, estimator, method):
+    # find the number of inputs into the object
+
+    # find call_method
+
+    # acquire what data is set to
+
+    #
+
+    # if fit in method, give it additional checks
+
+    # if fit check for __init__ and onedal
+    # collected all _assert_all_finite calls
+
+    # stop when to_table observed
+    text = "funcname: _assert_all_finite"
+
+    # regex _assert_all_finite and find line numbers
+
+    # verify that the onedal
+
     print(estimator, method)
     print(text)
     assert False
 
 
 DESIGN_RULES = [
-    assert_finite_in_onedal,
+    assert_all_finite_onedal,
 ]
 
 
+@pytest.mark.parametrize("design_pattern", DESIGN_RULES)
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
-@pytest.mark.parametrize("design_pattern", DESIGN_RULES, indirect=True)
 def test_estimator(estimator, method, design_pattern, estimator_trace):
     design_pattern(estimator_trace, estimator, method)
