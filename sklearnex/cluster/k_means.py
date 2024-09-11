@@ -112,6 +112,8 @@ if daal_check_version((2023, "P", 200)):
             _acceptable_sample_weights = sample_weight is None or isinstance(
                 sample_weight, numbers.Number
             )
+            if isinstance(sample_weight, np.ndarray):
+                _acceptable_sample_weights = np.all(sample_weight == 1)
 
             patching_status.and_conditions(
                 [
