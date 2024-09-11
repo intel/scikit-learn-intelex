@@ -45,4 +45,4 @@ def is_dpnp_available(version=""):
 
 
 dpctl_available = is_dpctl_available()
-dpctl_available = is_dpnp_available()
+dpnp_available = is_dpnp_available()
