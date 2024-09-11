@@ -20,6 +20,7 @@ from daal4py.sklearn._utils import daal_check_version
 
 if daal_check_version((2023, "P", 200)):
 
+    import numbers
     import warnings
 
     import numpy as np
@@ -108,6 +109,10 @@ if daal_check_version((2023, "P", 200)):
                 _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
 
+            _acceptable_sample_weights = sample_weight is None or isinstance(
+                sample_weight, numbers.Number
+            )
+
             patching_status.and_conditions(
                 [
                     (
@@ -116,8 +121,8 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
-                        sample_weight is None,
-                        "oneDAL doesn't support sample_weight.",
+                        _acceptable_sample_weights,
+                        "oneDAL doesn't support sample_weight, None or equal weights are accepted.",
                     ),
                     (
                         is_data_supported,
