@@ -253,7 +253,12 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._check_test_data(X)
+            X = self._validate_data(
+                X,
+                accept_sparse="csr",
+                reset=False,
+                dtype=[np.float64, np.float32],
+            )
 
             if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
                 if isinstance(sample_weight, str) and sample_weight == "deprecated":
@@ -312,7 +317,12 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_score(self, X, y, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._check_test_data(X)
+            X = self._validate_data(
+                X,
+                accept_sparse="csr",
+                reset=False,
+                dtype=[np.float64, np.float32],
+            )
 
             if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
                 if isinstance(sample_weight, str) and sample_weight == "deprecated":
