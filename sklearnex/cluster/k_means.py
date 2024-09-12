@@ -109,7 +109,7 @@ if daal_check_version((2023, "P", 200)):
                 _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
 
-            _acceptable_sample_weights = self._validate_sample_weight(sample_weight)
+            _acceptable_sample_weights = self._validate_sample_weight(sample_weight, X)
 
             patching_status.and_conditions(
                 [
@@ -172,7 +172,7 @@ if daal_check_version((2023, "P", 200)):
 
             self._save_attributes()
 
-        def _validate_sample_weight(self, sample_weight):
+        def _validate_sample_weight(self, sample_weight, X):
             if sample_weight is None:
                 return True
             elif isinstance(sample_weight, numbers.Number):
@@ -207,7 +207,7 @@ if daal_check_version((2023, "P", 200)):
 
             _acceptable_sample_weights = True
             if not sklearn_check_version("1.5"):
-                _acceptable_sample_weights = self._validate_sample_weight(sample_weight)
+                _acceptable_sample_weights = self._validate_sample_weight(sample_weight, X)
 
             patching_status.and_conditions(
                 [
