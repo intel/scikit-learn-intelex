@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import os
+import re
 import sys
 import trace
 from glob import glob
@@ -24,6 +25,7 @@ import scipy
 import pytest
 import sklearn.utils.validation
 
+import onedal
 from sklearnex.tests._utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
@@ -87,8 +89,24 @@ def _whitelist_to_blacklist():
 _TRACE_BLOCK_LIST = _whitelist_to_blacklist()
 
 
+def handoff_to_onedal(func):
+    def test_test_test(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return test_test_test
+
+
 @pytest.fixture
-def estimator_trace(estimator, method, cache, capsys, monkeypatch):
+def patch_backend(monkeypatch):
+    for name, module in vars(onedal._backend).items():
+        if "table" not in name and "policy" not in name and not name.startswith("_"):
+            for fname, func in vars(module).items():
+                if not fname.startswith("_") and callable(func):
+                    monkeypatch.setattr(module, fname, handoff_to_onedal(func))
+
+
+@pytest.fixture
+def estimator_trace(estimator, method, cache, capsys, monkeypatch, patch_backend):
     """generate data only once, and only if the key doesn't match"""
     key = "-".join((str(estimator), method))
     flag = cache.get("key", "") != key
@@ -118,21 +136,26 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 
         # collect trace for analysis
         text = capsys.readouterr().out
+        regex = (
+            r"(?<=funcname: )\S*(?=\n)"  # needed due to differences in module structure
+        )
+
         cache.set("key", key)
-        cache.set("text", text)
+        cache.set("text", [re.findall(regex, text), text.split("\n --- modulename: ")])
 
     return cache.get("text", "")
 
 
 def assert_all_finite_onedal(text, estimator, method):
     # skip if a daal4py estimator
-    if (estimator in PATCHED_MODELS and PATCHED_MODELS[estimator].__module__.beginswith("daal4py")) or
-    estimator in SPECIAL_INSTANCES and SPECIAL_INSTANCES[estimator].__module__.beginswith("daal4py"):
+    if (
+        estimator in PATCHED_MODELS
+        and PATCHED_MODELS[estimator].__module__.startswith("daal4py")
+    ) or (
+        estimator in SPECIAL_INSTANCES
+        and SPECIAL_INSTANCES[estimator].__module__.startswith("daal4py")
+    ):
         pytest.skip("daal4py estimators are not subject to sklearnex design rules")
-
-    # find the number of inputs into the object
-
-    # find call_method
 
     # acquire what data is set to
 
@@ -140,12 +163,11 @@ def assert_all_finite_onedal(text, estimator, method):
 
     # collected all _assert_all_finite calls
 
-    text = "funcname: _assert_all_finite"
-
     # verify that the number is greater than the number of inputs
+    print("_assert_all_finites: " + str(text[0].count("_assert_all_finite")))
 
     print(estimator, method)
-    print(text)
+
     assert False
 
 
