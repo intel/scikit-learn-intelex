@@ -207,7 +207,9 @@ if daal_check_version((2023, "P", 200)):
 
             _acceptable_sample_weights = True
             if not sklearn_check_version("1.5"):
-                _acceptable_sample_weights = self._validate_sample_weight(sample_weight, X)
+                _acceptable_sample_weights = self._validate_sample_weight(
+                    sample_weight, X
+                )
 
             patching_status.and_conditions(
                 [
