@@ -25,7 +25,6 @@ import scipy
 import pytest
 import sklearn.utils.validation
 
-import onedal
 from sklearnex.tests._utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
@@ -97,16 +96,7 @@ def handoff_to_onedal(func):
 
 
 @pytest.fixture
-def patch_backend(monkeypatch):
-    for name, module in vars(onedal._backend).items():
-        if "table" not in name and "policy" not in name and not name.startswith("_"):
-            for fname, func in vars(module).items():
-                if not fname.startswith("_") and callable(func):
-                    monkeypatch.setattr(module, fname, handoff_to_onedal(func))
-
-
-@pytest.fixture
-def estimator_trace(estimator, method, cache, capsys, monkeypatch, patch_backend):
+def estimator_trace(estimator, method, cache, capsys, monkeypatch):
     """generate data only once, and only if the key doesn't match"""
     key = "-".join((str(estimator), method))
     flag = cache.get("key", "") != key
@@ -136,12 +126,20 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch, patch_backend
 
         # collect trace for analysis
         text = capsys.readouterr().out
-        regex = (
+        regex_func = (
             r"(?<=funcname: )\S*(?=\n)"  # needed due to differences in module structure
         )
+        regex_mod = r"(?<=--- modulename: )\S*(?=\.py)"  # needed due to differences in module structure
 
         cache.set("key", key)
-        cache.set("text", [re.findall(regex, text), text.split("\n --- modulename: ")])
+        cache.set(
+            "text",
+            [
+                re.findall(regex_func, text),
+                text.split("\n --- modulename: "),
+                re.findall(regex_mod, text),
+            ],
+        )
 
     return cache.get("text", "")
 
@@ -157,6 +155,8 @@ def assert_all_finite_onedal(text, estimator, method):
     ):
         pytest.skip("daal4py estimators are not subject to sklearnex design rules")
 
+    # find where "onedal_estimator." is first called, if not then it fell back to sklearn
+
     # acquire what data is set to
 
     # if fit check for __init__ and onedal
@@ -164,11 +164,20 @@ def assert_all_finite_onedal(text, estimator, method):
     # collected all _assert_all_finite calls
 
     # verify that the number is greater than the number of inputs
-    print("_assert_all_finites: " + str(text[0].count("_assert_all_finite")))
+    try:
+        idx = len(text[0]) - 1 - text[0][::-1].index("to_table")
+    except ValueError:
+        pytest.skip("onedal backend not used in this function")
+    
+    table_count = text[0].count("to_table")
+    print(f"to_table: {idx} {table_count}")
+
+    finite_count = text[0][:idx].count("_assert_all_finite")
+    print(f"_assert_all_finites: {finite_count}")
 
     print(estimator, method)
 
-    assert False
+    assert finite_count == table_count
 
 
 DESIGN_RULES = [
