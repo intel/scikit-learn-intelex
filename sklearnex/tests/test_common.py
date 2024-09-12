@@ -126,6 +126,9 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 
 def assert_all_finite_onedal(text, estimator, method):
     # skip if a daal4py estimator
+    if (estimator in PATCHED_MODELS and PATCHED_MODELS[estimator].__module__.beginswith("daal4py")) or
+    estimator in SPECIAL_INSTANCES and SPECIAL_INSTANCES[estimator].__module__.beginswith("daal4py"):
+        pytest.skip("daal4py estimators are not subject to sklearnex design rules")
 
     # find the number of inputs into the object
 
