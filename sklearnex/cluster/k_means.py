@@ -180,7 +180,7 @@ if daal_check_version((2023, "P", 200)):
             else:
                 sample_weight = _check_sample_weight(
                     sample_weight,
-                    self._validate_data(X),
+                    X,
                     dtype=X.dtype if hasattr(X, "dtype") else None,
                 )
                 if np.all(sample_weight == sample_weight[0]):
