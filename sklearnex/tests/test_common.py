@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+from collections import namedtuple
+import importlib
 import os
 import re
 import sys
@@ -68,31 +70,33 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
+_TRACE_ALLOW_DICT = {
+    i: os.path.dirname(importlib.util.find_spec(i).origin)
+    for i in ["sklearn", "sklearnex", "onedal", "daal4py"]
+}
+
+
 def _whitelist_to_blacklist():
     """block all standard library, builting or site packages which are not
     related to sklearn, daal4py, onedal or sklearnex"""
 
-    whitelist = ["sklearn", "sklearnex", "onedal", "daal4py"]
     blacklist = []
     for path in sys.path:
         try:
-            if "site-packages" in path or "dist-packages" in path:
-                blacklist += [f.path for f in os.scandir(path) if f.name not in whitelist]
+            if any([path in i for i in _TRACE_ALLOW_DICT.values()]):
+                blacklist += [
+                    f.path
+                    for f in os.scandir(path)
+                    if f.name not in _TRACE_ALLOW_DICT.keys()
+                ]
             else:
                 blacklist += [path]
         except FileNotFoundError:
-            pass
+            blacklist += [path]
     return blacklist
 
 
 _TRACE_BLOCK_LIST = _whitelist_to_blacklist()
-
-
-def handoff_to_onedal(func):
-    def test_test_test(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    return test_test_test
 
 
 @pytest.fixture
@@ -126,18 +130,23 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 
         # collect trace for analysis
         text = capsys.readouterr().out
+        for modulename, file in _TRACE_ALLOW_DICT.items():
+            text = text.replace(file, modulename)
         regex_func = (
             r"(?<=funcname: )\S*(?=\n)"  # needed due to differences in module structure
         )
         regex_mod = r"(?<=--- modulename: )\S*(?=\.py)"  # needed due to differences in module structure
+
+        regex_callingline = r"(.*?)(?:=?\r|\n).*?(?:funcname: ).*"
 
         cache.set("key", key)
         cache.set(
             "text",
             [
                 re.findall(regex_func, text),
-                text.split("\n --- modulename: "),
-                re.findall(regex_mod, text),
+                text,
+                [i.replace(os.sep, ".") for i in re.findall(regex_mod, text)],
+                [""] + re.findall(regex_callingline, text)
             ],
         )
 
@@ -155,28 +164,23 @@ def assert_all_finite_onedal(text, estimator, method):
     ):
         pytest.skip("daal4py estimators are not subject to sklearnex design rules")
 
-    # find where "onedal_estimator." is first called, if not then it fell back to sklearn
-
-    # acquire what data is set to
-
-    # if fit check for __init__ and onedal
-
-    # collected all _assert_all_finite calls
-
-    # verify that the number is greater than the number of inputs
     try:
         idx = len(text[0]) - 1 - text[0][::-1].index("to_table")
     except ValueError:
         pytest.skip("onedal backend not used in this function")
-    
+
     table_count = text[0].count("to_table")
     print(f"to_table: {idx} {table_count}")
 
     finite_count = text[0][:idx].count("_assert_all_finite")
+
     print(f"_assert_all_finites: {finite_count}")
+    print(text[0][:idx].count("_assert_all_finite"))
+    print(text[1].rsplit("to_table", 1)[0].count("_sklearn_assert_all_finite("))
+    print(text[3][:idx])
+    # print(text[1].rsplit("to_table", 1)[0])
 
     print(estimator, method)
-
     assert finite_count == table_count
 
 
