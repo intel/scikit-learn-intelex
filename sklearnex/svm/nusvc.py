@@ -18,7 +18,7 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
 from sklearn.svm import NuSVC as sklearn_NuSVC
-from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.utils.validation import _deprecate_positional_args, check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -112,8 +112,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict",
@@ -126,8 +124,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "score",
@@ -219,8 +215,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def _predict_proba(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         sklearn_pred_proba = (
             sklearn_NuSVC.predict_proba
             if sklearn_check_version("1.0")
@@ -239,8 +233,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "decision_function",
@@ -302,6 +294,22 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
+        if sklearn_check_version("1.0"):
+            self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
+
         return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_predict_proba(self, X, queue=None):
@@ -319,6 +327,22 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             return self.clf_prob.predict_proba(X)
 
     def _onedal_decision_function(self, X, queue=None):
+        if sklearn_check_version("1.0"):
+            self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
+
         return self._onedal_estimator.decision_function(X, queue=queue)
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):

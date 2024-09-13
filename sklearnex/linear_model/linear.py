@@ -21,6 +21,7 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -227,7 +228,7 @@ class LinearRegression(sklearn_LinearRegression):
             "y_numeric": True,
             "multi_output": True,
         }
-        if sklearn_check_version("1.2"):
+        if sklearn_check_version("1.0"):
             X, y = self._validate_data(**check_params)
         else:
             X, y = check_X_y(**check_params)
@@ -255,9 +256,10 @@ class LinearRegression(sklearn_LinearRegression):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+            X = self._validate_data(X, accept_sparse=False, reset=False)
+        else:
+            X = check_array(X, accept_sparse=False)
 
-        X = self._validate_data(X, accept_sparse=False, reset=False)
         if not hasattr(self, "_onedal_estimator"):
             self._initialize_onedal_estimator()
             self._onedal_estimator.coef_ = self.coef_

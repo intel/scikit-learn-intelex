@@ -14,8 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
+
 from sklearn.svm import NuSVR as sklearn_NuSVR
-from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.utils.validation import _deprecate_positional_args, check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -93,8 +95,6 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict",
@@ -107,8 +107,6 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "score",
@@ -141,6 +139,21 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
+        if sklearn_check_version("1.0"):
+            X = self._validate_data(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+                reset = False
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
         return self._onedal_estimator.predict(X, queue=queue)
 
     fit.__doc__ = sklearn_NuSVR.fit.__doc__

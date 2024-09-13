@@ -607,21 +607,7 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
         # TODO:
         # _check_proba()
         # self._check_proba()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-        if hasattr(self, "n_features_in_"):
-            try:
-                num_features = _num_features(X)
-            except TypeError:
-                num_features = _num_samples(X)
-            if num_features != self.n_features_in_:
-                raise ValueError(
-                    (
-                        f"X has {num_features} features, "
-                        f"but {self.__class__.__name__} is expecting "
-                        f"{self.n_features_in_} features as input"
-                    )
-                )
+
         return dispatch(
             self,
             "predict_proba",
@@ -810,6 +796,19 @@ class ForestClassifier(sklearn_ForestClassifier, BaseForest):
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
             )  # Warning, order of dtype matters
+            if hasattr(self, "n_features_in_"):
+                try:
+                    num_features = _num_features(X)
+                except TypeError:
+                    num_features = _num_samples(X)
+                if num_features != self.n_features_in_:
+                    raise ValueError(
+                        (
+                            f"X has {num_features} features, "
+                            f"but {self.__class__.__name__} is expecting "
+                            f"{self.n_features_in_} features as input"
+                        )
+                    )
             self._check_n_features(X, reset=False)
 
         res = self._onedal_estimator.predict(X, queue=queue)

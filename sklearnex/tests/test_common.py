@@ -44,6 +44,8 @@ ALLOWED_LOCATIONS = [
     "svm" + os.sep + "_common.py",
 ]
 
+_DESIGN_RULE_VIOLATIONS = ["IncrementalEmpiricalCovariance-score-call_validate_data"] #  must call clone of itself
+
 
 def test_target_offload_ban():
     """This test blocks the use of target_offload in
@@ -138,7 +140,7 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
         )
         regex_mod = r"(?<=--- modulename: )\S*(?=\.py)"  # needed due to differences in module structure
 
-        regex_callingline = r"(.*?)(?:=?\r|\n).*?(?:funcname: ).*"
+        regex_callingline = r"(?<=\n)\S.*(?=\n --- modulename: )"
 
         cache.set("key", key)
         cache.set(
@@ -165,17 +167,26 @@ def call_validate_data(text, estimator, method):
     ):
         pytest.skip("daal4py estimators are not subject to sklearnex design rules")
 
-    if "to_table" not in text[0]:
+    try:
+        idx = len(text[0]) - 1 - text[0][::-1].index("to_table")
+    except ValueError:
         pytest.skip("onedal backend not used in this function")
+    print(text[0])
 
-    count = 1 if "fit" not in method else 2
+    count = 1 if not method.startswith("fit") else 2
     validate_data = "validate_data" if sklearn_check_version("1.6") else "_validate_data"
-    assert (
-        text[0].count(validate_data) == count
-    ), f"sklearn's f{validate_data} should be called"
-    assert (
-        text[0].count("_check_n_features") == count
-    ), f"estimator should validate n_features_in_"
+    try:
+        assert (
+            text[0][:idx].count(validate_data) == count
+        ), f"sklearn's {validate_data} should be called"
+        assert (
+            text[0][:idx].count("_check_feature_names") == count
+        ), "estimator should check feature names in validate_data"
+    except AssertionError:
+        if "-".join([estimator, method, "call_validate_data"]) in _DESIGN_RULE_VIOLATIONS:
+            pytest.xfail("Allowed violation of design rules")
+        else:
+            raise
 
 
 DESIGN_RULES = []
