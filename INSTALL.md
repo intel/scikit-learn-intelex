@@ -196,6 +196,14 @@ The build-process (using setup.py) happens in 4 stages:
    python setup.py develop --no-deps
    ```
 
+- To build the python module without installing it:
+
+   ```bash
+   cd <checkout-dir>
+   python setup.py build_ext --inplace --force
+   python setup.py build
+   ```
+
 Where: 
 
 * Keys `--single-version-externally-managed` and `--no-deps` are required to not download daal4py after the installation of Intel(R) Extension for Scikit-learn. 
