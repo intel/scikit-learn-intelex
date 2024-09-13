@@ -157,6 +157,8 @@ def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False):
 
         if estimator in PATCHED_MODELS:
             est = PATCHED_MODELS[estimator]
+        elif estimator in SPECIAL_INSTANCES:
+            est = SPECIAL_INSTANCES[estimator].__class__
         elif isinstance(algorithms[estimator], BaseEstimator):
             est = algorithms[estimator].__class__
         else:

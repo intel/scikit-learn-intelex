@@ -47,6 +47,8 @@ ALLOWED_LOCATIONS = [
 _DESIGN_RULE_VIOLATIONS = [
     "PCA-fit_transform-call_validate_data",  #  calls both "fit" and "transform"
     "IncrementalEmpiricalCovariance-score-call_validate_data",  #  must call clone of itself
+    "SVC(probability=True)-fit-call_validate_data", #  SVC fit can use sklearn estimator
+    "NuSVC(probability=True)-fit-call_validate_data", #  NuSVC fit can use sklearn estimator
 ]
 
 
@@ -114,7 +116,7 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
         # get estimator
         try:
             est = PATCHED_MODELS[estimator]()
-        except IndexError:
+        except KeyError:
             est = SPECIAL_INSTANCES[estimator]
 
         # get dataset
@@ -199,6 +201,9 @@ if sklearn_check_version("1.0"):
 
 
 @pytest.mark.parametrize("design_pattern", DESIGN_RULES)
-@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS, fit=True))
+@pytest.mark.parametrize(
+    "estimator, method",
+    gen_models_info({**PATCHED_MODELS, **SPECIAL_INSTANCES}, fit=True),
+)
 def test_estimator(estimator, method, design_pattern, estimator_trace):
     design_pattern(estimator_trace, estimator, method)
