@@ -14,19 +14,20 @@
 # limitations under the License.
 # ==============================================================================
 
-from collections import namedtuple
 import importlib
 import os
 import re
 import sys
 import trace
+from collections import namedtuple
 from glob import glob
 
 import numpy as np
-import scipy
 import pytest
+import scipy
 import sklearn.utils.validation
 
+from daal4py.sklearn._utils import sklearn_check_version
 from sklearnex.tests._utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
@@ -146,14 +147,14 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
                 re.findall(regex_func, text),
                 text,
                 [i.replace(os.sep, ".") for i in re.findall(regex_mod, text)],
-                [""] + re.findall(regex_callingline, text)
+                [""] + re.findall(regex_callingline, text),
             ],
         )
 
     return cache.get("text", "")
 
 
-def assert_all_finite_onedal(text, estimator, method):
+def call_validate_data(text, estimator, method):
     # skip if a daal4py estimator
     if (
         estimator in PATCHED_MODELS
@@ -164,29 +165,23 @@ def assert_all_finite_onedal(text, estimator, method):
     ):
         pytest.skip("daal4py estimators are not subject to sklearnex design rules")
 
-    try:
-        idx = len(text[0]) - 1 - text[0][::-1].index("to_table")
-    except ValueError:
+    if "to_table" not in text[0]:
         pytest.skip("onedal backend not used in this function")
 
-    table_count = text[0].count("to_table")
-    print(f"to_table: {idx} {table_count}")
-
-    finite_count = text[0][:idx].count("_assert_all_finite")
-
-    print(f"_assert_all_finites: {finite_count}")
-    print(text[0][:idx].count("_assert_all_finite"))
-    print(text[1].rsplit("to_table", 1)[0].count("_sklearn_assert_all_finite("))
-    print(text[3][:idx])
-    # print(text[1].rsplit("to_table", 1)[0])
-
-    print(estimator, method)
-    assert finite_count == table_count
+    count = 1 if "fit" not in method else 2
+    validate_data = "validate_data" if sklearn_check_version("1.6") else "_validate_data"
+    assert (
+        text[0].count(validate_data) == count
+    ), f"sklearn's f{validate_data} should be called"
+    assert (
+        text[0].count("_check_n_features") == count
+    ), f"estimator should validate n_features_in_"
 
 
-DESIGN_RULES = [
-    assert_all_finite_onedal,
-]
+DESIGN_RULES = []
+
+if sklearn_check_version("1.0"):
+    DESIGN_RULES += [call_validate_data]
 
 
 @pytest.mark.parametrize("design_pattern", DESIGN_RULES)
