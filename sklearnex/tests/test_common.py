@@ -44,7 +44,10 @@ ALLOWED_LOCATIONS = [
     "svm" + os.sep + "_common.py",
 ]
 
-_DESIGN_RULE_VIOLATIONS = ["IncrementalEmpiricalCovariance-score-call_validate_data"] #  must call clone of itself
+_DESIGN_RULE_VIOLATIONS = [
+    "PCA-fit_transform-call_validate_data",  #  calls both "fit" and "transform"
+    "IncrementalEmpiricalCovariance-score-call_validate_data",  #  must call clone of itself
+]
 
 
 def test_target_offload_ban():
@@ -173,7 +176,7 @@ def call_validate_data(text, estimator, method):
         pytest.skip("onedal backend not used in this function")
     print(text[0])
 
-    count = 1 if not method.startswith("fit") else 2
+    count = 1
     validate_data = "validate_data" if sklearn_check_version("1.6") else "_validate_data"
     try:
         assert (

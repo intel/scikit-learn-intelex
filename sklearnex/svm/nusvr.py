@@ -15,7 +15,6 @@
 # ==============================================================================
 
 import numpy as np
-
 from sklearn.svm import NuSVR as sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args, check_array
 
@@ -145,7 +144,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
                 accept_sparse="csr",
-                reset = False
+                reset=False,
             )
         else:
             X = check_array(

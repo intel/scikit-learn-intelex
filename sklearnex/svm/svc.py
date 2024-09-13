@@ -330,7 +330,7 @@ class SVC(sklearn_SVC, BaseSVC):
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
                 accept_sparse="csr",
-                reset = False
+                reset=False,
             )
         else:
             X = check_array(
@@ -362,7 +362,7 @@ class SVC(sklearn_SVC, BaseSVC):
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
                 accept_sparse="csr",
-                reset = False
+                reset=False,
             )
         else:
             X = check_array(
