@@ -303,6 +303,7 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
+                ensure_2d=False,
                 accept_sparse="csr",
                 reset=False,
             )
