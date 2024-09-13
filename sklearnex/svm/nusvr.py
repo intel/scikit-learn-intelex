@@ -31,7 +31,6 @@ elif sklearn_check_version("1.0"):
     validate_data = BaseSVR._validate_data
 
 
-
 @control_n_jobs(decorated_methods=["fit", "predict"])
 class NuSVR(sklearn_NuSVR, BaseSVR):
     __doc__ = sklearn_NuSVR.__doc__
@@ -143,7 +142,8 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,

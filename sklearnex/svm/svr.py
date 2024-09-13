@@ -143,7 +143,8 @@ class SVR(sklearn_SVR, BaseSVR):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,

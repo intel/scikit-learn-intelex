@@ -45,7 +45,6 @@ elif sklearn_check_version("1.0"):
     validate_data = sklearn_LinearRegression._validate_data
 
 
-
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
 @control_n_jobs(decorated_methods=["fit", "predict"])
 class LinearRegression(sklearn_LinearRegression):
@@ -233,7 +232,7 @@ class LinearRegression(sklearn_LinearRegression):
             "multi_output": True,
         }
         if sklearn_check_version("1.0"):
-            X, y = self._validate_data(**check_params)
+            X, y = validate_data(self, **check_params)
         else:
             X, y = check_X_y(**check_params)
 
@@ -260,7 +259,7 @@ class LinearRegression(sklearn_LinearRegression):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            X = validate_data(self, X, accept_sparse=False, reset=False)
         else:
             X = check_array(X, accept_sparse=False)
 

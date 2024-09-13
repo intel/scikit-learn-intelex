@@ -32,12 +32,10 @@ if sklearn_check_version("1.0"):
 
 from onedal.svm import NuSVC as onedal_NuSVC
 
-
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 elif sklearn_check_version("1.0"):
     validate_data = BaseSVC._validate_data
-
 
 
 @control_n_jobs(
@@ -300,7 +298,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            self._validate_data(
+            validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
@@ -333,7 +332,8 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
 
     def _onedal_decision_function(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            self._validate_data(
+            validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,

@@ -168,7 +168,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 self._validate_params()
 
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     dtype=[np.float64, np.float32],
                     reset=first_pass,
@@ -209,7 +210,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         location = self.location_
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X_test,
                 dtype=[np.float64, np.float32],
                 reset=False,
@@ -311,8 +313,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         # finite check occurs on onedal side
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                copy=self.copy,
+                force_all_finite=False,
             )
         else:
             X = check_array(

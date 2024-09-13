@@ -132,7 +132,7 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            X = validate_data(self, X, accept_sparse=False, reset=False)
 
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
@@ -152,7 +152,8 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
 
         if check_input:
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(
+                X, y = validate_data(
+                    self,
                     X,
                     y,
                     dtype=[np.float64, np.float32],
@@ -195,7 +196,8 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
+            X, y = validate_data(
+                self,
                 X,
                 y,
                 dtype=[np.float64, np.float32],

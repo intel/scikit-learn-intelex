@@ -96,7 +96,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("0.23"):
-            X = self._validate_data(X, force_all_finite=False)
+            X = validate_data(self, X, force_all_finite=False)
         else:
             X = check_array(X, force_all_finite=False)
 
@@ -116,7 +116,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     @wrap_output_data
     def mahalanobis(self, X):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, reset=False)
+            X = validate_data(self, X, reset=False)
         else:
             X = check_array(X)
 

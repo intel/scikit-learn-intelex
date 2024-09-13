@@ -149,7 +149,8 @@ class IncrementalBasicStatistics(BaseEstimator):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 reset=first_pass,
@@ -181,7 +182,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32])
+            X = validate_data(self, X, dtype=[np.float64, np.float32])
         else:
             X = check_array(X, dtype=[np.float64, np.float32])
 

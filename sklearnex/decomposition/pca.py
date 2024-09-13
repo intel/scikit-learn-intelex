@@ -49,7 +49,6 @@ if daal_check_version((2024, "P", 100)):
     elif sklearn_check_version("1.0"):
         validate_data = sklearn_PCA._validate_data
 
-
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
         __doc__ = sklearn_PCA.__doc__
@@ -139,7 +138,8 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_fit(self, X, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 ensure_2d=True,
@@ -183,7 +183,8 @@ if daal_check_version((2024, "P", 100)):
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     dtype=[np.float64, np.float32],
                     reset=False,

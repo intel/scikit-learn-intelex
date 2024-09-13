@@ -156,7 +156,8 @@ class BaseSVM(BaseEstimator, ABC):
         # using onedal _check_X_y to insure X and y are contiguous
         # finite check occurs in onedal estimator
         if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
+            X, y = validate_data(
+                self,
                 X,
                 y,
                 dtype=[np.float64, np.float32],

@@ -292,7 +292,8 @@ if daal_check_version((2024, "P", 1)):
             assert sample_weight is None
 
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(
+                X, y = validate_data(
+                    self,
                     X,
                     y,
                     accept_sparse=_sparsity_enabled,
@@ -327,7 +328,8 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     reset=False,
                     accept_sparse=_sparsity_enabled,
@@ -351,7 +353,8 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     reset=False,
                     accept_sparse=_sparsity_enabled,
@@ -375,7 +378,8 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     reset=False,
                     accept_sparse=_sparsity_enabled,

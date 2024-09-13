@@ -163,7 +163,8 @@ if daal_check_version((2023, "P", 200)):
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
@@ -268,7 +269,8 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,
@@ -332,7 +334,8 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_score(self, X, y, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,
