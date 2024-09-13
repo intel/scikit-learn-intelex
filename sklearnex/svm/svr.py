@@ -25,6 +25,11 @@ from onedal.svm import SVR as onedal_SVR
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVR
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = BaseSVR._validate_data
+
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
 class SVR(sklearn_SVR, BaseSVR):
@@ -77,8 +82,6 @@ class SVR(sklearn_SVR, BaseSVR):
             # Windows fatal exception: access violation
             # occurs
             raise ValueError("C <= 0")
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         dispatch(
             self,
             "fit",

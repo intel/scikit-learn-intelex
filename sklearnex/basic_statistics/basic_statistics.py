@@ -26,6 +26,11 @@ from onedal.basic_statistics import BasicStatistics as onedal_BasicStatistics
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = BaseEstimator._validate_data
+
 
 @control_n_jobs(decorated_methods=["fit"])
 class BasicStatistics(BaseEstimator):

@@ -31,6 +31,10 @@ from .._utils import PatchingConditionsChain
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = sklearn_DBSCAN._validate_data
 
 class BaseDBSCAN(ABC):
     def _onedal_dbscan(self, **onedal_params):

@@ -34,6 +34,11 @@ if sklearn_check_version("1.0"):
 
 from onedal.svm import SVC as onedal_SVC
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = BaseSVC._validate_data
+
 
 @control_n_jobs(
     decorated_methods=["fit", "predict", "_predict_proba", "decision_function", "score"]
@@ -96,8 +101,6 @@ class SVC(sklearn_SVC, BaseSVC):
             # Windows fatal exception: access violation
             # occurs
             raise ValueError("C <= 0")
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         dispatch(
             self,
             "fit",

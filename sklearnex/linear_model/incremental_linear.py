@@ -32,6 +32,11 @@ from onedal.linear_model import (
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = BaseEstimator._validate_data
+
 from onedal.common.hyperparameters import get_hyperparameters
 
 from .._device_offload import dispatch, wrap_output_data

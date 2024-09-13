@@ -28,6 +28,11 @@ from sklearnex.neighbors.common import KNeighborsDispatchingBase
 from sklearnex.neighbors.knn_unsupervised import NearestNeighbors
 from sklearnex.utils import get_namespace
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = sklearn_LocalOutlierFactor._validate_data
+
 
 @control_n_jobs(decorated_methods=["fit", "_kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):

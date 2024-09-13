@@ -24,6 +24,11 @@ from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = sklearn_NearestNeighbors._validate_data
+
 
 @control_n_jobs(decorated_methods=["fit", "kneighbors"])
 class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):

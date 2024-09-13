@@ -39,6 +39,11 @@ if daal_check_version((2024, "P", 1)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
 
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    elif sklearn_check_version("1.0"):
+        validate_data = sklearn_LogisticRegression._validate_data
+
     _sparsity_enabled = daal_check_version((2024, "P", 700))
 
     class BaseLogisticRegression(ABC):

@@ -199,6 +199,6 @@ if sklearn_check_version("1.0"):
 
 
 @pytest.mark.parametrize("design_pattern", DESIGN_RULES)
-@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
+@pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS, fit=True))
 def test_estimator(estimator, method, design_pattern, estimator_trace):
     design_pattern(estimator_trace, estimator, method)

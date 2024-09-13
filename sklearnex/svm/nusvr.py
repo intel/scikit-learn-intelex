@@ -25,6 +25,12 @@ from onedal.svm import NuSVR as onedal_NuSVR
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVR
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = BaseSVR._validate_data
+
+
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
 class NuSVR(sklearn_NuSVR, BaseSVR):
@@ -77,8 +83,6 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             # Windows fatal exception: access violation
             # occurs
             raise ValueError("nu <= 0 or nu > 1")
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         dispatch(
             self,
             "fit",

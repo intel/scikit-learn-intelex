@@ -20,7 +20,7 @@ from abc import ABC
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.base import clone
+from sklearn.base import BaseEstimator, clone
 from sklearn.ensemble import ExtraTreesClassifier as sklearn_ExtraTreesClassifier
 from sklearn.ensemble import ExtraTreesRegressor as sklearn_ExtraTreesRegressor
 from sklearn.ensemble import RandomForestClassifier as sklearn_RandomForestClassifier
@@ -66,6 +66,11 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 if sklearn_check_version("1.4"):
     from daal4py.sklearn.utils import _assert_all_finite
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = BaseEstimator._validate_data
 
 
 class BaseForest(ABC):

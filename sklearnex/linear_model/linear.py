@@ -39,6 +39,12 @@ from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
 from onedal.utils import _num_features, _num_samples
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = sklearn_LinearRegression._validate_data
+
+
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
 @control_n_jobs(decorated_methods=["fit", "predict"])
@@ -81,8 +87,6 @@ class LinearRegression(sklearn_LinearRegression):
             )
 
     def fit(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         if sklearn_check_version("1.2"):
             self._validate_params()
 

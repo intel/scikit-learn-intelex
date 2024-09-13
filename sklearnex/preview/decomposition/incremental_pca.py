@@ -26,6 +26,12 @@ from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain
 
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = sklearn_IncrementalPCA._validate_data
+
+
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "transform", "_onedal_finalize_fit"]
 )

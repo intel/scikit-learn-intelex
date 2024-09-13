@@ -134,7 +134,7 @@ SPECIAL_INSTANCES = _sklearn_clone_dict(
 )
 
 
-def gen_models_info(algorithms, required_inputs=["X", "y"]):
+def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False):
     """Generate estimator-attribute pairs for pytest test collection.
 
     Parameters
@@ -167,7 +167,8 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
         # remove private methods
         candidates = set([attr for attr in candidates if not attr.startswith("_")])
         # required to enable other methods
-        candidates = candidates - {"fit"}
+        if not fit:
+            candidates = candidates - {"fit"}
 
         # allow only callable methods with any of the required inputs
         if required_inputs:
@@ -224,7 +225,7 @@ def call_method(estimator, method, X, y, **kwargs):
             if X.shape[1] != estimator.n_components_
             else (X,)
         )
-    elif method not in ["score", "partial_fit", "path"]:
+    elif method not in ["score", "partial_fit", "path", "fit"]:
         data = (X,)
     else:
         data = (X, y)

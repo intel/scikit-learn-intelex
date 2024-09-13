@@ -33,6 +33,13 @@ if sklearn_check_version("1.0"):
 from onedal.svm import NuSVC as onedal_NuSVC
 
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+elif sklearn_check_version("1.0"):
+    validate_data = BaseSVC._validate_data
+
+
+
 @control_n_jobs(
     decorated_methods=["fit", "predict", "_predict_proba", "decision_function", "score"]
 )
@@ -94,8 +101,6 @@ class NuSVC(sklearn_NuSVC, BaseSVC):
             # Windows fatal exception: access violation
             # occurs
             raise ValueError("nu <= 0 or nu > 1")
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         dispatch(
             self,
             "fit",
