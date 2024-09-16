@@ -107,23 +107,6 @@ def _whitelist_to_blacklist():
 _TRACE_BLOCK_LIST = _whitelist_to_blacklist()
 
 
-def wrapper(func):
-    def onedal_flag(*args, **kwargs):
-        return func(*args, **kwargs)
-
-    return onedal_flag
-
-
-def wrap_onedal(monkeypatch, obj):
-    for name, module in vars(obj).items():
-        try:
-            if "policy" not in name and not name.startswith("_"):
-                for funcname, func in vars(module).items():
-                    monkeypatch.setattr(module, funcname, wrapper(func))
-        except TypeError:
-            monkeypatch.setattr(onedal._backend, name, wrapper(module))
-
-
 @pytest.fixture
 def estimator_trace(estimator, method, cache, capsys, monkeypatch):
     """Generate a trace of all function calls in calling estimator.method with cache.
@@ -226,8 +209,6 @@ def call_validate_data(text, estimator, method):
             pytest.xfail("Allowed violation of design rules")
         else:
             raise
-    print(text[0])
-    assert False
 
 
 DESIGN_RULES = []
