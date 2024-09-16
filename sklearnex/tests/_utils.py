@@ -147,6 +147,9 @@ def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False):
         non-BaseEstimator attributes).  Only one must be present, None
         signifies taking all non-private attribues, callable or not.
 
+    fit: bool (default False)
+        Include "fit" method as an estimator-attribute pair
+
     Returns
     -------
     list of 2-element tuples: (estimator, string)
