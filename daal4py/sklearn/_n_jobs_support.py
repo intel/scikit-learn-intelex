@@ -76,7 +76,7 @@ def _run_with_n_jobs(method):
     """
 
     @wraps(method)
-    def method_wrapper(self, *args, **kwargs):
+    def n_jobs_wrapper(self, *args, **kwargs):
         # threading parallel backend branch
         if not isinstance(threading.current_thread(), threading._MainThread):
             warn(
@@ -130,7 +130,7 @@ def _run_with_n_jobs(method):
             set_n_threads(old_n_threads)
         return result
 
-    return method_wrapper
+    return n_jobs_wrapper
 
 
 def control_n_jobs(decorated_methods: list = []):

@@ -47,7 +47,7 @@ if daal_check_version((2023, "P", 200)):
     elif sklearn_check_version("1.0"):
         validate_data = sklearn_KMeans._validate_data
 
-    @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
+    @control_n_jobs(decorated_methods=["fit", "fit_transform", "predict", "score"])
     class KMeans(sklearn_KMeans):
         __doc__ = sklearn_KMeans.__doc__
 

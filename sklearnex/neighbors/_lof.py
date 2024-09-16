@@ -34,7 +34,7 @@ elif sklearn_check_version("1.0"):
     validate_data = sklearn_LocalOutlierFactor._validate_data
 
 
-@control_n_jobs(decorated_methods=["fit", "_kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "kneighbors", "_kneighbors"])
 class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     __doc__ = (
         sklearn_LocalOutlierFactor.__doc__

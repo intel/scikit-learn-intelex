@@ -41,7 +41,7 @@ elif sklearn_check_version("1.0"):
 
 
 @control_n_jobs(
-    decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
+    decorated_methods=["fit", "partial_fit", "predict", "score", "_onedal_finalize_fit"]
 )
 class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
     """
