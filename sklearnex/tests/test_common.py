@@ -106,10 +106,6 @@ def _whitelist_to_blacklist():
 
 _TRACE_BLOCK_LIST = _whitelist_to_blacklist()
 
-SklearnexTrace = namedtuple(
-    "SklearnexTrace", ["funcs", "text", "modules", "callinglines"]
-)
-
 
 @pytest.fixture
 def estimator_trace(estimator, method, cache, capsys, monkeypatch):
@@ -131,8 +127,13 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 
     Returns
     -------
-    namedtuple SklearnexTrace: [funcs, text, modules, callinglines]
-        Returns a namedtuple of the trace containg text and important attrs.
+    dict: [calledfuncs, tracetext, modules, callinglines]
+        Returns a list of important attributes of the trace.
+        calledfuncs is the list of called functions, tracetext is the
+        total text output of the trace as a string, modules are the
+        module locations  of the called functions (must be from daal4py,
+        onedal, sklearn, or sklearnex), and callinglines is the line
+        which calls the function in calledfuncs
     """
     key = "-".join((str(estimator), method))
     flag = cache.get("key", "") != key
@@ -174,19 +175,20 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
         cache.set("key", key)
         cache.set(
             "text",
-            SklearnexTrace(
+            [
                 re.findall(regex_func, text),
                 text,
                 [i.replace(os.sep, ".") for i in re.findall(regex_mod, text)],
                 [""] + re.findall(regex_callingline, text),
-            ),
+            ],
         )
 
-    return cache.get("text", "")
+    return cache.get("text", None)
 
 
 def call_validate_data(text, estimator, method):
-    """ test tha validate_data is called once before offloading to oneDAL"""
+    """test that the sklearn function/attribute validate_data is
+    called once before offloading to oneDAL in sklearnex"""
     # skip if a daal4py estimator
     if (
         estimator in PATCHED_MODELS
@@ -199,12 +201,11 @@ def call_validate_data(text, estimator, method):
 
     try:
         # get last to_table call showing end of oneDAL input portion of code
-        idx = len(text.funcs) - 1 - text.funcs[::-1].index("to_table")
-        validfuncs = text.funcs[:idx]
+        idx = len(text[0]) - 1 - text[0][::-1].index("to_table")
+        validfuncs = text[0][:idx]
     except ValueError:
         pytest.skip("onedal backend not used in this function")
 
-    print(validfuncs)
     validate_data = "validate_data" if sklearn_check_version("1.6") else "_validate_data"
     try:
         assert (
