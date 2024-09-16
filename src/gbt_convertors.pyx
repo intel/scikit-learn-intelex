@@ -257,10 +257,11 @@ class TreeList(list):
         # since XGBoost doesn't control numeric limits of integer features.
         # For correct conversion we manulally replace feature types from 'int'->'float;
         feature_types = booster.feature_types
-        for i in range(len(feature_types)):
-            if feature_types[i] == "int":
-                feature_types[i] = "float"
-        booster.feature_types = feature_types
+        if feature_types:
+            for i in range(len(feature_types)):
+                if feature_types[i] == "int":
+                    feature_types[i] = "float"
+            booster.feature_types = feature_types
 
         tl = TreeList()
         dump = booster.get_dump(dump_format="json", with_stats=True)
