@@ -107,6 +107,23 @@ def _whitelist_to_blacklist():
 _TRACE_BLOCK_LIST = _whitelist_to_blacklist()
 
 
+def wrapper(func):
+    def onedal_flag(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return onedal_flag
+
+
+def wrap_onedal(monkeypatch, obj):
+    for name, module in vars(obj).items():
+        try:
+            if "policy" not in name and not name.startswith("_"):
+                for funcname, func in vars(module).items():
+                    monkeypatch.setattr(module, funcname, wrapper(func))
+        except TypeError:
+            monkeypatch.setattr(onedal._backend, name, wrapper(module))
+
+
 @pytest.fixture
 def estimator_trace(estimator, method, cache, capsys, monkeypatch):
     """Generate a trace of all function calls in calling estimator.method with cache.
@@ -189,16 +206,6 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 def call_validate_data(text, estimator, method):
     """test that the sklearn function/attribute validate_data is
     called once before offloading to oneDAL in sklearnex"""
-    # skip if a daal4py estimator
-    if (
-        estimator in PATCHED_MODELS
-        and PATCHED_MODELS[estimator].__module__.startswith("daal4py")
-    ) or (
-        estimator in SPECIAL_INSTANCES
-        and SPECIAL_INSTANCES[estimator].__module__.startswith("daal4py")
-    ):
-        pytest.skip("daal4py estimators are not subject to sklearnex design rules")
-
     try:
         # get last to_table call showing end of oneDAL input portion of code
         idx = len(text[0]) - 1 - text[0][::-1].index("to_table")
@@ -219,6 +226,8 @@ def call_validate_data(text, estimator, method):
             pytest.xfail("Allowed violation of design rules")
         else:
             raise
+    print(text[0])
+    assert False
 
 
 DESIGN_RULES = []
@@ -230,7 +239,8 @@ if sklearn_check_version("1.0"):
 @pytest.mark.parametrize("design_pattern", DESIGN_RULES)
 @pytest.mark.parametrize(
     "estimator, method",
-    gen_models_info({**PATCHED_MODELS, **SPECIAL_INSTANCES}, fit=True),
+    gen_models_info({**PATCHED_MODELS, **SPECIAL_INSTANCES}, fit=True, daal4py=False),
 )
 def test_estimator(estimator, method, design_pattern, estimator_trace):
+    # These tests only apply to sklearnex estimators
     design_pattern(estimator_trace, estimator, method)

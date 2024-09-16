@@ -134,7 +134,7 @@ SPECIAL_INSTANCES = _sklearn_clone_dict(
 )
 
 
-def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False):
+def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False, daal4py=True):
     """Generate estimator-attribute pairs for pytest test collection.
 
     Parameters
@@ -149,6 +149,9 @@ def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False):
 
     fit: bool (default False)
         Include "fit" method as an estimator-attribute pair
+
+    daal4py: bool (default True)
+        Include daal4py estimators in estimator-attribute list
 
     Returns
     -------
@@ -166,6 +169,9 @@ def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False):
             est = algorithms[estimator].__class__
         else:
             raise KeyError(f"Unrecognized sklearnex estimator: {estimator}")
+
+        if not daal4py and est.__module__.startswith("daal4py"):
+            continue
 
         # remove BaseEstimator methods (get_params, set_params)
         candidates = set(dir(est)) - set(dir(BaseEstimator))
