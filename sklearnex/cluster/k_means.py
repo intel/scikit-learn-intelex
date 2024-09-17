@@ -194,7 +194,7 @@ if daal_check_version((2023, "P", 200)):
                 _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
             patching_status = PatchingConditionsChain(
-                f"sklearn.cluster.{class_name}.predict"
+                f"sklearn.cluster.{class_name}.{method_name}"
             )
 
             # algorithm "auto" has been deprecated since 1.1,
