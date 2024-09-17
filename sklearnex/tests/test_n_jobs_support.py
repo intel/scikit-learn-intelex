@@ -44,7 +44,7 @@ def _get_estimator_instance(estimator):
 
 
 def _check_n_jobs_entry_in_logs(records, function_name, n_jobs):
-    expected_n_jobs = n_jobs if n_jobs and n_jobs > 0 else cpu_count() + 1 + n_jobs
+    expected_n_jobs = max(n_jobs, n_jobs % (cpu_count() + 1)) if n_jobs else cpu_count()
     for rec in records:
         if f"{function_name}: setting {expected_n_jobs} threads" in rec:
             return True
