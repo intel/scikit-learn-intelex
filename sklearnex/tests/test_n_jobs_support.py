@@ -20,6 +20,7 @@ from multiprocessing import cpu_count
 
 import pytest
 from sklearn.datasets import make_classification
+from sklearn.exceptions import NotFittedError
 
 from sklearnex.tests._utils import (
     PATCHED_MODELS,
@@ -90,13 +91,17 @@ def test_n_jobs_support(estimator, n_jobs, caplog):
 
     for method_name in est._n_jobs_supported_onedal_methods:
         # do not call fit again, handle sklearn's available_if wrapper
-        if method_name == "fit" or not hasattr(est, method_name):
-            continue
-        elif estimator == "NearestNeighbors" and "radius" in method_name:
+        if method_name == "fit" or (
+            estimator == "NearestNeighbors" and "radius" in method_name
+        ):
             # radius_neighbors and radius_neighbors_graph violate sklearn fallback guard
             # but use sklearnex interally, additional development must be done to those
             # functions to bring them to design compliance.
             continue
+        try:
+            call_method(est, method_name, _X, _Y)
+        except (NotFittedError, AttributeError) as e:
+            # handle sklearns available_if wrapper
+            continue
 
-        call_method(est, method_name, _X, _Y)
         assert _check_n_jobs_entry_in_logs(caplog, method_name, n_jobs)
