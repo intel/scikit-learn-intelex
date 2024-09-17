@@ -1,4 +1,4 @@
-# build artefacts test
+# build artefacts
 *.so
 *.egg
 *.pyc
