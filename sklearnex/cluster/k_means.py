@@ -194,7 +194,7 @@ if daal_check_version((2023, "P", 200)):
                 else:
                     return False
 
-        def _onedal_predict_supported(self, method_name, X, y=None, sample_weight=None):
+        def _onedal_predict_supported(self, method_name, *data):
             class_name = self.__class__.__name__
             is_data_supported = (
                 _is_csr(X) and daal_check_version((2024, "P", 700))
@@ -202,6 +202,11 @@ if daal_check_version((2023, "P", 200)):
             patching_status = PatchingConditionsChain(
                 f"sklearn.cluster.{class_name}.{method_name}"
             )
+            
+            if method_name == "predict"
+                X, sample_weight = data
+            else:
+                X, y, sample_weight = data
 
             # algorithm "auto" has been deprecated since 1.1,
             # algorithm "full" has been replaced by "lloyd"
@@ -271,7 +276,7 @@ if daal_check_version((2023, "P", 200)):
                         "sklearn": sklearn_KMeans.predict,
                     },
                     X,
-                    sample_weight=sample_weight,
+                    sample_weight,
                 )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
@@ -335,8 +340,8 @@ if daal_check_version((2023, "P", 200)):
                     "sklearn": sklearn_KMeans.score,
                 },
                 X,
-                y=y,
-                sample_weight=sample_weight,
+                y,
+                sample_weight,
             )
 
         def _onedal_score(self, X, y=None, sample_weight=None, queue=None):
