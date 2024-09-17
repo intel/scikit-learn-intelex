@@ -88,7 +88,7 @@ def test_n_jobs_support(estimator, n_jobs, caplog):
     est.fit(_X, _Y)
     assert _check_n_jobs_entry_in_logs(caplog, "fit", n_jobs)
 
-    for method_name in estimator_instance._n_jobs_supported_onedal_methods:
+    for method_name in est._n_jobs_supported_onedal_methods:
         # do not call fit again, handle sklearn's available_if wrapper
         if method_name == "fit" or not hasattr(est, method_name):
             continue
