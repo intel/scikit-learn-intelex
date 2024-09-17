@@ -92,7 +92,7 @@ def test_n_jobs_support(estimator, n_jobs, caplog):
     for method_name in est._n_jobs_supported_onedal_methods:
         # do not call fit again, handle sklearn's available_if wrapper
         if method_name == "fit" or (
-            estimator == "NearestNeighbors" and "radius" in method_name
+            "NearestNeighbors" in estimator and "radius" in method_name
         ):
             # radius_neighbors and radius_neighbors_graph violate sklearn fallback guard
             # but use sklearnex interally, additional development must be done to those
