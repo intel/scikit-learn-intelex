@@ -463,7 +463,7 @@ gpu:
   - ensemble/tests/test_weight_boosting.py
   # Fails
   - cluster/tests/test_dbscan.py::test_weighted_dbscan
-  - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-0.01-dense-blobs]
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-0.01-sparse-normal
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-1e-100-sparse-normal]
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-1e-100-sparse-blobs]
   - model_selection/tests/test_search.py::test_unsupervised_grid_search
