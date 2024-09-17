@@ -232,9 +232,7 @@ def call_method(estimator, method, X, y, **kwargs):
 
     func = getattr(estimator, method)
     argdict = inspect.signature(func).parameters
-    argnum = len(
-        [i for i in argdict if argdict[i].default == inspect.Parameter.empty]
-    )
+    argnum = len([i for i in argdict if argdict[i].default == inspect.Parameter.empty])
 
     if method == "inverse_transform":
         # PCA's inverse_transform takes (n_samples, n_components)
