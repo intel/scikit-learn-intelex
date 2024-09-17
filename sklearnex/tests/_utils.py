@@ -229,6 +229,13 @@ def call_method(estimator, method, X, y, **kwargs):
     return value from estimator.method
     """
     # useful for repository wide testing
+
+    func = getattr(estimator, method)
+    argdict = inspect.signature(func).parameters
+    argnum = len(
+        [i for i in argdict if argdict[i].default == inspect.Parameter.empty]
+    )
+
     if method == "inverse_transform":
         # PCA's inverse_transform takes (n_samples, n_components)
         data = (
@@ -236,11 +243,10 @@ def call_method(estimator, method, X, y, **kwargs):
             if X.shape[1] != estimator.n_components_
             else (X,)
         )
-    elif method not in ["score", "partial_fit", "path", "fit"]:
-        data = (X,)
     else:
-        data = (X, y)
-    return getattr(estimator, method)(*data, **kwargs)
+        data = (X, y)[:argnum]
+
+    return func(*data, **kwargs)
 
 
 def _gen_dataset_type(est):
