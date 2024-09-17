@@ -41,7 +41,7 @@ if daal_check_version((2023, "P", 200)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
-    @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
+    @control_n_jobs(decorated_methods=["fit", "fit_transform", "predict", "score"])
     class KMeans(sklearn_KMeans):
         __doc__ = sklearn_KMeans.__doc__
 
@@ -188,7 +188,7 @@ if daal_check_version((2023, "P", 200)):
                 else:
                     return False
 
-        def _onedal_predict_supported(self, method_name, X, sample_weight=None):
+        def _onedal_predict_supported(self, method_name, *data):
             class_name = self.__class__.__name__
             is_data_supported = (
                 _is_csr(X) and daal_check_version((2024, "P", 700))
@@ -197,6 +197,11 @@ if daal_check_version((2023, "P", 200)):
                 f"sklearn.cluster.{class_name}.{method_name}"
             )
 
+            if method_name == "predict":
+                X, sample_weight = data
+            else:
+                X, y, sample_weight = data
+            
             # algorithm "auto" has been deprecated since 1.1,
             # algorithm "full" has been replaced by "lloyd"
             supported_algs = ["auto", "full", "lloyd", "elkan"]
@@ -265,7 +270,7 @@ if daal_check_version((2023, "P", 200)):
                         "sklearn": sklearn_KMeans.predict,
                     },
                     X,
-                    sample_weight=sample_weight,
+                    sample_weight,
                 )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
@@ -329,7 +334,7 @@ if daal_check_version((2023, "P", 200)):
                 },
                 X,
                 y,
-                sample_weight=sample_weight,
+                sample_weight,
             )
 
         def _onedal_score(self, X, y, sample_weight=None, queue=None):
