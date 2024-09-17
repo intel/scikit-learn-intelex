@@ -15,7 +15,7 @@
 # ==============================================================================
 
 from functools import partial
-from inspect import getattr_static, isclass, signature
+from inspect import Parameter, getattr_static, isclass, signature
 
 import numpy as np
 from scipy import sparse as sp
@@ -231,8 +231,8 @@ def call_method(estimator, method, X, y, **kwargs):
     # useful for repository wide testing
 
     func = getattr(estimator, method)
-    argdict = inspect.signature(func).parameters
-    argnum = len([i for i in argdict if argdict[i].default == inspect.Parameter.empty])
+    argdict = signature(func).parameters
+    argnum = len([i for i in argdict if argdict[i].default == Parameter.empty])
 
     if method == "inverse_transform":
         # PCA's inverse_transform takes (n_samples, n_components)
