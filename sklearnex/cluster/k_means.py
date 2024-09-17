@@ -190,9 +190,6 @@ if daal_check_version((2023, "P", 200)):
 
         def _onedal_predict_supported(self, method_name, *data):
             class_name = self.__class__.__name__
-            is_data_supported = (
-                _is_csr(X) and daal_check_version((2024, "P", 700))
-            ) or not issparse(X)
             patching_status = PatchingConditionsChain(
                 f"sklearn.cluster.{class_name}.{method_name}"
             )
@@ -201,6 +198,10 @@ if daal_check_version((2023, "P", 200)):
                 X, sample_weight = data
             else:
                 X, y, sample_weight = data
+
+            is_data_supported = (
+                _is_csr(X) and daal_check_version((2024, "P", 700))
+            ) or not issparse(X)
 
             # algorithm "auto" has been deprecated since 1.1,
             # algorithm "full" has been replaced by "lloyd"
