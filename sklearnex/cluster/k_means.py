@@ -201,7 +201,7 @@ if daal_check_version((2023, "P", 200)):
                 X, sample_weight = data
             else:
                 X, y, sample_weight = data
-            
+
             # algorithm "auto" has been deprecated since 1.1,
             # algorithm "full" has been replaced by "lloyd"
             supported_algs = ["auto", "full", "lloyd", "elkan"]
