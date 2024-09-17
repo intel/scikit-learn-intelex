@@ -71,8 +71,9 @@ if __name__ == "__main__":
 
     pytest_params = ["-ra", "--disable-warnings"]
 
-    if not args.quiet:
-        pytest_params.append("-q")
+    # Ignoring quiet flag now.
+    # if not args.quiet:
+    #     pytest_params.append("-q")
 
     if not args.no_intel_optimized:
         from sklearnex import patch_sklearn
@@ -80,6 +81,8 @@ if __name__ == "__main__":
         patch_sklearn()
 
     if args.device == "gpu":
+        # Adding explicitly verbose for GPU testing
+        pytest_params.append("-vv")
         from sklearnex._config import config_context
 
         with config_context(target_offload=args.device, allow_fallback_to_host=False):
