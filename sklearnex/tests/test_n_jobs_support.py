@@ -43,13 +43,11 @@ def _get_estimator_instance(estimator):
     return est
 
 
-def _check_n_jobs_entry_in_logs(caplog, function_name, n_jobs):
-    for rec in caplog.records:
-        if function_name in rec.message and "threads" in rec.message:
-            expected_n_jobs = n_jobs if n_jobs > 0 else cpu_count() + 1 + n_jobs
-            logging.info(f"{function_name}: setting {expected_n_jobs} threads")
-            if f"{function_name}: setting {expected_n_jobs} threads" in rec.message:
-                return True
+def _check_n_jobs_entry_in_logs(records, function_name, n_jobs):
+    expected_n_jobs = n_jobs if n_jobs and n_jobs > 0 else cpu_count() + 1 + n_jobs
+    for rec in records:
+        if f"{function_name}: setting {expected_n_jobs} threads" in rec:
+            return True
     # False if n_jobs is set and not found in logs
     return n_jobs is None
 
@@ -75,6 +73,7 @@ def test_n_jobs_method_decoration(estimator):
 @pytest.mark.parametrize("estimator", {**PATCHED_MODELS, **SPECIAL_INSTANCES}.keys())
 @pytest.mark.parametrize("n_jobs", [None, -1, 1, 2])
 def test_n_jobs_support(estimator, n_jobs, caplog):
+
     est = _get_estimator_instance(estimator)
     caplog.set_level(logging.DEBUG, logger="sklearnex")
 
@@ -87,7 +86,8 @@ def test_n_jobs_support(estimator, n_jobs, caplog):
     # check `n_jobs` log entry for supported methods
     # `fit` call is required before other methods
     est.fit(_X, _Y)
-    assert _check_n_jobs_entry_in_logs(caplog, "fit", n_jobs)
+    messages = [msg.message for msg in caplog.records]
+    assert _check_n_jobs_entry_in_logs(messages, "fit", n_jobs)
 
     for method_name in est._n_jobs_supported_onedal_methods:
         # do not call fit again, handle sklearn's available_if wrapper
@@ -104,4 +104,5 @@ def test_n_jobs_support(estimator, n_jobs, caplog):
             # handle sklearns available_if wrapper
             continue
 
-        assert _check_n_jobs_entry_in_logs(caplog, method_name, n_jobs)
+        messages = [msg.message for msg in caplog.records]
+        assert _check_n_jobs_entry_in_logs(messages, method_name, n_jobs)
