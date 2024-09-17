@@ -202,8 +202,8 @@ if daal_check_version((2023, "P", 200)):
             patching_status = PatchingConditionsChain(
                 f"sklearn.cluster.{class_name}.{method_name}"
             )
-            
-            if method_name == "predict"
+
+            if method_name == "predict":
                 X, sample_weight = data
             else:
                 X, y, sample_weight = data
