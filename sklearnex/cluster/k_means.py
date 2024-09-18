@@ -41,6 +41,11 @@ if daal_check_version((2023, "P", 200)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    elif sklearn_check_version("1.0"):
+        validate_data = sklearn_KMeans._validate_data
+
     @control_n_jobs(decorated_methods=["fit", "fit_transform", "predict", "score"])
     class KMeans(sklearn_KMeans):
         __doc__ = sklearn_KMeans.__doc__
@@ -150,7 +155,8 @@ if daal_check_version((2023, "P", 200)):
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
@@ -175,7 +181,9 @@ if daal_check_version((2023, "P", 200)):
         def _validate_sample_weight(self, sample_weight, X):
             if sample_weight is None:
                 return True
-            elif isinstance(sample_weight, numbers.Number):
+            elif isinstance(sample_weight, numbers.Number) or isintance(
+                sample_weight, str
+            ):
                 return True
             else:
                 sample_weight = _check_sample_weight(
@@ -190,6 +198,7 @@ if daal_check_version((2023, "P", 200)):
 
         def _onedal_predict_supported(self, method_name, *data):
             class_name = self.__class__.__name__
+
             patching_status = PatchingConditionsChain(
                 f"sklearn.cluster.{class_name}.{method_name}"
             )
@@ -277,7 +286,8 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,
@@ -338,10 +348,11 @@ if daal_check_version((2023, "P", 200)):
                 sample_weight,
             )
 
-        def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        def _onedal_score(self, X, y=None, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,
