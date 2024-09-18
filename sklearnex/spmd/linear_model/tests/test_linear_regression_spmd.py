@@ -22,7 +22,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex.tests._utils_spmd import (
+from sklearnex.tests.utils.spmd import (
     _generate_regression_data,
     _get_local_tensor,
     _mpi_libs_and_gpu_available,
