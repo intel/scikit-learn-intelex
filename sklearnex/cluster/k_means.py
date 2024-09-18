@@ -181,7 +181,7 @@ if daal_check_version((2023, "P", 200)):
         def _validate_sample_weight(self, sample_weight, X):
             if sample_weight is None:
                 return True
-            elif isinstance(sample_weight, numbers.Number) or isintance(
+            elif isinstance(sample_weight, numbers.Number) or isinstance(
                 sample_weight, str
             ):
                 return True
