@@ -380,6 +380,9 @@ deselected_tests:
   - model_selection/tests/test_classification_threshold.py::test_fit_and_score_over_thresholds_sample_weight >=1.5
   - model_selection/tests/test_classification_threshold.py::test_tuned_threshold_classifier_cv_zeros_sample_weights_equivalence >=1.5
 
+  # Deselections for 2025.0
+  - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:

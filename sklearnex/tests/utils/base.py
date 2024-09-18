@@ -107,7 +107,7 @@ mixin_map = [
 ]
 
 
-class _sklearn_clone_dict(dict):
+class sklearn_clone_dict(dict):
     """Special dict type for returning state-free sklearn/sklearnex estimators
     with the same parameters"""
 
@@ -119,7 +119,7 @@ class _sklearn_clone_dict(dict):
 # could be because of supported non-default parameters, blocked support via sklearn's
 # 'available_if' decorator, or not being a native sklearn estimator (i.e. those not in
 # the default PATCHED_MODELS dictionary)
-SPECIAL_INSTANCES = _sklearn_clone_dict(
+SPECIAL_INSTANCES = sklearn_clone_dict(
     {
         str(i): i
         for i in [

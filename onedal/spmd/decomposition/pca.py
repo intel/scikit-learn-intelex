@@ -16,11 +16,11 @@
 
 from onedal.decomposition.pca import PCA as PCABatch
 
-from ..._device_offload import support_usm_ndarray
+from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
 
 
 class PCA(BaseEstimatorSPMD, PCABatch):
-    @support_usm_ndarray()
+    @support_input_format()
     def fit(self, X, y=None, queue=None):
         return super().fit(X, queue=queue)

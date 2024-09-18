@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,28 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.linear_model import LinearRegression as LinearRegression_Batch
+from .base import (
+    DTYPES,
+    PATCHED_FUNCTIONS,
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    UNPATCHED_FUNCTIONS,
+    UNPATCHED_MODELS,
+    call_method,
+    gen_dataset,
+    gen_models_info,
+    sklearn_clone_dict,
+)
 
-from ..._device_offload import support_input_format
-from .._base import BaseEstimatorSPMD
-
-
-class LinearRegression(BaseEstimatorSPMD, LinearRegression_Batch):
-    @support_input_format()
-    def fit(self, X, y, queue=None):
-        return super().fit(X, y, queue=queue)
-
-    @support_input_format()
-    def predict(self, X, queue=None):
-        return super().predict(X, queue=queue)
+__all__ = [
+    "DTYPES",
+    "PATCHED_FUNCTIONS",
+    "PATCHED_MODELS",
+    "UNPATCHED_FUNCTIONS",
+    "UNPATCHED_MODELS",
+    "SPECIAL_INSTANCES",
+    "call_method",
+    "gen_models_info",
+    "gen_dataset",
+    "sklearn_clone_dict",
+]
