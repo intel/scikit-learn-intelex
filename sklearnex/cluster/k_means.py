@@ -203,10 +203,8 @@ if daal_check_version((2023, "P", 200)):
                 f"sklearn.cluster.{class_name}.{method_name}"
             )
 
-            if method_name == "predict":
-                X, sample_weight = data
-            else:
-                X, y, sample_weight = data
+            X = data[0]
+            sample_weight = data[-1] if len(data) > 1 else None
 
             is_data_supported = (
                 _is_csr(X) and daal_check_version((2024, "P", 700))
