@@ -596,6 +596,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
             return predict_alg(**params).compute(X, model)
 
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
         backend = (
