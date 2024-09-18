@@ -600,7 +600,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         X = _convert_to_supported(policy, X)
         backend = (
             self._get_backend("neighbors", "regression", None)
-            if gpu_device
+            if queue is not None and queue.sycl_device.is_gpu:
             else self._get_backend("neighbors", "search", None)
         )
 
