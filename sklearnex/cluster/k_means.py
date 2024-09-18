@@ -272,6 +272,17 @@ if daal_check_version((2023, "P", 200)):
                 if sklearn_check_version("1.2"):
                     self._validate_params()
 
+                if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
+                    if isinstance(sample_weight, str) and sample_weight == "deprecated":
+                        sample_weight = None
+
+                    if sample_weight is not None:
+                        warnings.warn(
+                            "'sample_weight' was deprecated in version 1.3 and "
+                            "will be removed in 1.5.",
+                            FutureWarning,
+                        )
+
                 return dispatch(
                     self,
                     "predict",
@@ -293,17 +304,6 @@ if daal_check_version((2023, "P", 200)):
                 reset=False,
                 dtype=[np.float64, np.float32],
             )
-
-            if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
-                if isinstance(sample_weight, str) and sample_weight == "deprecated":
-                    sample_weight = None
-
-                if sample_weight is not None:
-                    warnings.warn(
-                        "'sample_weight' was deprecated in version 1.3 and "
-                        "will be removed in 1.5.",
-                        FutureWarning,
-                    )
 
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
