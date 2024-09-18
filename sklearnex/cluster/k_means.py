@@ -272,7 +272,7 @@ if daal_check_version((2023, "P", 200)):
                 if sklearn_check_version("1.2"):
                     self._validate_params()
 
-                if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
+                if sklearn_check_version("1.3"):
                     if isinstance(sample_weight, str) and sample_weight == "deprecated":
                         sample_weight = None
 
