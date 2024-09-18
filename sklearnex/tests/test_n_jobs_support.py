@@ -22,7 +22,7 @@ import pytest
 from sklearn.datasets import make_classification
 from sklearn.exceptions import NotFittedError
 
-from sklearnex.tests._utils import (
+from sklearnex.tests.utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     call_method,
