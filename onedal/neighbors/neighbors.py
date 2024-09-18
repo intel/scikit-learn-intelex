@@ -434,9 +434,9 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
     def _onedal_predict(self, model, X, params, queue):
         if type(self._onedal_model) is kdtree_knn_classification_model:
-            return bf_knn_classification_prediction(**params).compute(X, model)      
+            return kdtree_knn_classification_prediction(**params).compute(X, model)      
         elif type(self._onedal_model) is bf_knn_classification_model:
-            return kdtree_knn_classification_prediction(**params).compute(X, model)
+            return bf_knn_classification_prediction(**params).compute(X, model)
 
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
@@ -590,9 +590,9 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
     def _onedal_predict(self, model, X, params, queue):
         if type(model) is kdtree_knn_classification_model:
-            return bf_knn_classification_prediction(**params).compute(X, model)      
+            return kdtree_knn_classification_prediction(**params).compute(X, model)      
         elif type(model) is bf_knn_classification_model:
-            return kdtree_knn_classification_prediction(**params).compute(X, model)
+            return bf_knn_classification_prediction(**params).compute(X, model)
 
             return predict_alg(**params).compute(X, model)
 
@@ -737,9 +737,9 @@ class NearestNeighbors(NeighborsBase):
 
     def _onedal_predict(self, model, X, params, queue):
         if type(self._onedal_model) is kdtree_knn_classification_model:
-            return bf_knn_classification_prediction(**params).compute(X, model)      
+            return kdtree_knn_classification_prediction(**params).compute(X, model)      
         elif type(self._onedal_model) is bf_knn_classification_model:
-            return kdtree_knn_classification_prediction(**params).compute(X, model)
+            return bf_knn_classification_prediction(**params).compute(X, model)
 
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
