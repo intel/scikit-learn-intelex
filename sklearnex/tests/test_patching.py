@@ -36,7 +36,7 @@ from onedal.tests.utils._dataframes_support import (
 from sklearnex import is_patched_instance
 from sklearnex.dispatcher import _is_preview_enabled
 from sklearnex.metrics import pairwise_distances, roc_auc_score
-from sklearnex.tests._utils import (
+from sklearnex.tests.utils import (
     DTYPES,
     PATCHED_FUNCTIONS,
     PATCHED_MODELS,
