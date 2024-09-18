@@ -38,7 +38,7 @@ from onedal.tests.utils._dataframes_support import (
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
 from sklearnex import config_context
 from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
-from sklearnex.utils import get_namespace
+from sklearnex.utils._array_api import get_namespace
 
 if _is_dpc_backend:
     from onedal import _backend
