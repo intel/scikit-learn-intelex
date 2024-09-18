@@ -28,7 +28,7 @@ import scipy
 import sklearn.utils.validation
 
 from daal4py.sklearn._utils import sklearn_check_version
-from sklearnex.tests._utils import (
+from sklearnex.tests.utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     call_method,
