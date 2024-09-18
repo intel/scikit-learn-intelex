@@ -109,14 +109,7 @@ if daal_check_version((2023, "P", 200)):
                 _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
 
-            _acceptable_sample_weights = True
-            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
-                sample_weight = _check_sample_weight(
-                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
-                )
-                _acceptable_sample_weights = np.allclose(
-                    sample_weight, np.ones_like(sample_weight)
-                )
+            _acceptable_sample_weights = self._validate_sample_weight(sample_weight, X)
 
             patching_status.and_conditions(
                 [
@@ -127,7 +120,7 @@ if daal_check_version((2023, "P", 200)):
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
                         _acceptable_sample_weights,
-                        "oneDAL doesn't support sample_weight, either None or ones are acceptable",
+                        "oneDAL doesn't support sample_weight. Accepted options are None, constant, or equal weights.",
                     ),
                     (
                         is_data_supported,
@@ -161,6 +154,9 @@ if daal_check_version((2023, "P", 200)):
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
+                order="C",
+                copy=self.copy_x,
+                accept_large_sparse=False,
             )
 
             if sklearn_check_version("1.2"):
@@ -175,6 +171,22 @@ if daal_check_version((2023, "P", 200)):
             self._onedal_estimator.fit(X, queue=queue)
 
             self._save_attributes()
+
+        def _validate_sample_weight(self, sample_weight, X):
+            if sample_weight is None:
+                return True
+            elif isinstance(sample_weight, numbers.Number):
+                return True
+            else:
+                sample_weight = _check_sample_weight(
+                    sample_weight,
+                    X,
+                    dtype=X.dtype if hasattr(X, "dtype") else None,
+                )
+                if np.all(sample_weight == sample_weight[0]):
+                    return True
+                else:
+                    return False
 
         def _onedal_predict_supported(self, method_name, X, sample_weight=None):
             class_name = self.__class__.__name__
@@ -194,12 +206,9 @@ if daal_check_version((2023, "P", 200)):
                 )
 
             _acceptable_sample_weights = True
-            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
-                sample_weight = _check_sample_weight(
-                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
-                )
-                _acceptable_sample_weights = np.allclose(
-                    sample_weight, np.ones_like(sample_weight)
+            if not sklearn_check_version("1.5"):
+                _acceptable_sample_weights = self._validate_sample_weight(
+                    sample_weight, X
                 )
 
             patching_status.and_conditions(
@@ -214,7 +223,7 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (
                         _acceptable_sample_weights,
-                        "oneDAL doesn't support sample_weight, None or ones are acceptable",
+                        "oneDAL doesn't support sample_weight. Acceptable options are None, constant, or equal weights.",
                     ),
                 ]
             )
