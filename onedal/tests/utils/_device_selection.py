@@ -18,7 +18,7 @@ import functools
 
 import pytest
 
-from ...utils._dppy_available import dpctl_available
+from ...utils._dp_helpers import dpctl_available
 
 
 def get_queues(filter_="cpu,gpu"):

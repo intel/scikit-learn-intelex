@@ -24,7 +24,7 @@ from onedal.tests.utils._device_selection import (
     get_queues,
     is_dpctl_device_available,
 )
-from onedal.utils._dppy_available import dpctl_available
+from onedal.utils._dp_helpers import dpctl_available
 
 
 @pytest.mark.parametrize("queue", get_queues())

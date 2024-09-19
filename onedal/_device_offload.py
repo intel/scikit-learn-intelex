@@ -23,7 +23,7 @@ from sklearn import get_config
 
 from ._config import _get_config
 from .utils._array_api import _asarray, _is_numpy_namespace
-from .utils._dppy_available import dpctl_available, dpnp_available
+from .utils._dp_helpers import dpctl_available, dpnp_available
 
 if dpctl_available:
     from dpctl import SyclQueue

@@ -14,10 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Check availability of DPPY imports in one place"""
+"""Utilities for Data Parallel libs, such as DPNP, DPCtl"""
+
+from daal4py.sklearn._utils import _package_check_version
 
 
-def is_dpctl_available(version=""):
+def is_dpctl_available(version=None):
     """Checks availability of DPCtl package"""
     try:
         import dpctl
@@ -26,12 +28,12 @@ def is_dpctl_available(version=""):
         dpctl_available = True
     except ImportError:
         dpctl_available = False
-    if dpctl_available and not version == "":
-        dpctl_available = dpctl.__version__ >= version
+    if dpctl_available and version is not None:
+        dpctl_available = _package_check_version(version, dpctl.__version__)
     return dpctl_available
 
 
-def is_dpnp_available(version=""):
+def is_dpnp_available(version=None):
     """Checks availability of DPNP package"""
     try:
         import dpnp
@@ -39,8 +41,8 @@ def is_dpnp_available(version=""):
         dpnp_available = True
     except ImportError:
         dpnp_available = False
-    if dpnp_available and not version == "":
-        dpnp_available = dpnp.__version__ >= version
+    if dpnp_available and version is not None:
+        dpnp_available = _package_check_version(version, dpnp.__version__)
     return dpnp_available
 
 

@@ -18,7 +18,7 @@
 
 from collections.abc import Iterable
 
-from ._dppy_available import dpctl_available, dpnp_available
+from ._dp_helpers import dpctl_available, dpnp_available
 
 if dpctl_available:
     from dpctl.tensor import usm_ndarray

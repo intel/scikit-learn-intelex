@@ -92,15 +92,19 @@ def daal_check_version(
     return False
 
 
-@functools.lru_cache(maxsize=256, typed=False)
-def sklearn_check_version(ver):
-    if hasattr(Version(ver), "base_version"):
-        base_sklearn_version = Version(sklearn_version).base_version
-        res = bool(Version(base_sklearn_version) >= Version(ver))
+def _package_check_version(version_to_check, available_version):
+    if hasattr(Version(version_to_check), "base_version"):
+        base_package_version = Version(available_version).base_version
+        res = bool(Version(base_package_version) >= Version(version_to_check))
     else:
         # packaging module not available
-        res = bool(Version(sklearn_version) >= Version(ver))
+        res = bool(Version(available_version) >= Version(version_to_check))
     return res
+
+
+@functools.lru_cache(maxsize=256, typed=False)
+def sklearn_check_version(ver):
+    return _package_check_version(ver, sklearn_version)
 
 
 def parse_dtype(dt):
