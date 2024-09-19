@@ -20,12 +20,12 @@ from numbers import Integral
 import numpy as np
 
 from daal4py import (
+    bf_knn_classification_model,
     bf_knn_classification_prediction,
     bf_knn_classification_training,
+    kdtree_knn_classification_model,
     kdtree_knn_classification_prediction,
     kdtree_knn_classification_training,
-    bf_knn_classification_model,
-    kdtree_knn_classification_model,
 )
 
 from ..common._base import BaseEstimator
