@@ -30,7 +30,10 @@ DaalVersionTuple = Tuple[int, str, int]
 
 import logging
 
-from packaging.version import Version
+try:
+    from packaging.version import Version
+except ImportError:
+    from distutils.version import LooseVersion as Version
 
 try:
     from pandas import DataFrame
