@@ -320,7 +320,10 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             self._fit_method, self.n_samples_fit_, n_features
         )
 
-        if type(self._onedal_model) is kdtree_knn_classification_model or type(self._onedal_model) is bf_knn_classification_model:
+        if (
+            type(self._onedal_model) is kdtree_knn_classification_model
+            or type(self._onedal_model) is bf_knn_classification_model
+        ):
             params = super()._get_daal_params(X, n_neighbors=n_neighbors)
             prediction_results = self._onedal_predict(
                 self._onedal_model, X, params, queue=queue
@@ -434,7 +437,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
     def _onedal_predict(self, model, X, params, queue):
         if type(self._onedal_model) is kdtree_knn_classification_model:
-            return kdtree_knn_classification_prediction(**params).compute(X, model)      
+            return kdtree_knn_classification_prediction(**params).compute(X, model)
         elif type(self._onedal_model) is bf_knn_classification_model:
             return bf_knn_classification_prediction(**params).compute(X, model)
 
@@ -481,7 +484,10 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
         self._validate_n_classes()
 
-        if type(onedal_model) is kdtree_knn_classification_model or type(onedal_model) is bf_knn_classification_model:
+        if (
+            type(onedal_model) is kdtree_knn_classification_model
+            or type(onedal_model) is bf_knn_classification_model
+        ):
             params = self._get_daal_params(X)
             prediction_result = self._onedal_predict(onedal_model, X, params, queue=queue)
             responses = prediction_result.prediction
@@ -489,7 +495,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             params = self._get_onedal_params(X)
             prediction_result = self._onedal_predict(onedal_model, X, params, queue=queue)
             responses = from_table(prediction_result.responses)
-            
+
         result = self.classes_.take(np.asarray(responses.ravel(), dtype=np.intp))
         return result
 
@@ -590,7 +596,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
     def _onedal_predict(self, model, X, params, queue):
         if type(model) is kdtree_knn_classification_model:
-            return kdtree_knn_classification_prediction(**params).compute(X, model)      
+            return kdtree_knn_classification_prediction(**params).compute(X, model)
         elif type(model) is bf_knn_classification_model:
             return bf_knn_classification_prediction(**params).compute(X, model)
 
@@ -738,7 +744,7 @@ class NearestNeighbors(NeighborsBase):
 
     def _onedal_predict(self, model, X, params, queue):
         if type(self._onedal_model) is kdtree_knn_classification_model:
-            return kdtree_knn_classification_prediction(**params).compute(X, model)      
+            return kdtree_knn_classification_prediction(**params).compute(X, model)
         elif type(self._onedal_model) is bf_knn_classification_model:
             return bf_knn_classification_prediction(**params).compute(X, model)
 
