@@ -248,7 +248,7 @@ jobs:
           call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
           set PYTHON=python
           cd ..
-          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex
+          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\
       - name: Sklearn testing
         shell: cmd
         run: |
