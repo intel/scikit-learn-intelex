@@ -231,7 +231,7 @@ class XGBoostRegressionModelBuilder_base_score100(XGBoostRegressionModelBuilder)
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder(unittest.TestCase):
-    def getConversionWarningIsExpected(self):
+    def get_conversion_warning_is_expected(self):
         if (
             self.xgb_model._estimator_type == "classifier"
             and self.xgb_model.objective == "binary:logitraw"
@@ -241,7 +241,7 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
             return False
 
     @contextlib.contextmanager
-    def conditionalAssertWarns(self, warning):
+    def conditional_assert_warns(self, warning):
         if warning is not None:
             with self.assertWarns(warning) as ctx:
                 try:
@@ -282,8 +282,10 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         cls.xgb_model.fit(X, y)
 
     def test_model_conversion(self):
-        expected_warning = UserWarning if self.getConversionWarningIsExpected() else None
-        with self.conditionalAssertWarns(expected_warning):
+        expected_warning = (
+            UserWarning if self.get_conversion_warning_is_expected() else None
+        )
+        with self.conditional_assert_warns(expected_warning):
             m = d4p.mb.convert_model(self.xgb_model.get_booster())
         self.assertEqual(m.model_type, "xgboost")
         self.assertEqual(m.n_classes_, self.n_classes)
@@ -291,8 +293,10 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         self.assertFalse(m._is_regression)
 
     def test_model_predict(self):
-        expected_warning = UserWarning if self.getConversionWarningIsExpected() else None
-        with self.conditionalAssertWarns(expected_warning):
+        expected_warning = (
+            UserWarning if self.get_conversion_warning_is_expected() else None
+        )
+        with self.conditional_assert_warns(expected_warning):
             m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_test)
         xgboost_pred = self.xgb_model.predict(self.X_test)
@@ -308,8 +312,10 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
     def test_missing_value_support(self):
-        expected_warning = UserWarning if self.getConversionWarningIsExpected() else None
-        with self.conditionalAssertWarns(expected_warning):
+        expected_warning = (
+            UserWarning if self.get_conversion_warning_is_expected() else None
+        )
+        with self.conditional_assert_warns(expected_warning):
             m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_nan)
         xgboost_pred = self.xgb_model.predict(self.X_nan)
