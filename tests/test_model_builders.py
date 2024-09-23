@@ -14,7 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import contextlib
 import unittest
+import warnings
 from datetime import datetime
 
 import lightgbm as lgbm
@@ -229,6 +231,31 @@ class XGBoostRegressionModelBuilder_base_score100(XGBoostRegressionModelBuilder)
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder(unittest.TestCase):
+    def getConversionWarningIsExpected(self):
+        if (
+            self.xgb_model._estimator_type == "classifier"
+            and self.xgb_model.objective == "binary:logitraw"
+        ):
+            return True
+        else:
+            return False
+
+    @contextlib.contextmanager
+    def conditionalAssertWarns(self, warning):
+        if warning is not None:
+            with self.assertWarns(warning) as ctx:
+                try:
+                    yield [ctx]
+                finally:
+                    pass
+        else:
+            with warnings.catch_warnings() as ctx:
+                warnings.simplefilter("error")
+                try:
+                    yield [ctx]
+                finally:
+                    pass
+
     @classmethod
     def setUpClass(cls, base_score=0.5, n_classes=2, objective="binary:logistic"):
         n_features = 15
@@ -255,14 +282,18 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         cls.xgb_model.fit(X, y)
 
     def test_model_conversion(self):
-        m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        expected_warning = UserWarning if self.getConversionWarningIsExpected() else None
+        with self.conditionalAssertWarns(expected_warning):
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
         self.assertEqual(m.model_type, "xgboost")
         self.assertEqual(m.n_classes_, self.n_classes)
         self.assertEqual(m.n_features_in_, 15)
         self.assertFalse(m._is_regression)
 
     def test_model_predict(self):
-        m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        expected_warning = UserWarning if self.getConversionWarningIsExpected() else None
+        with self.conditionalAssertWarns(expected_warning):
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_test)
         xgboost_pred = self.xgb_model.predict(self.X_test)
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-7)
@@ -277,7 +308,9 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
     def test_missing_value_support(self):
-        m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        expected_warning = UserWarning if self.getConversionWarningIsExpected() else None
+        with self.conditionalAssertWarns(expected_warning):
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_nan)
         xgboost_pred = self.xgb_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-7)
@@ -456,9 +489,12 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
             "learning_rage": 0.05,
             "metric": {"l2", "l1"},
             "verbose": -1,
-            "n_estimators": 1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
+        cls.lgbm_model = lgbm.train(
+            params,
+            train_set=lgbm.Dataset(X_train, y_train),
+            num_boost_round=1,
+        )
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
@@ -513,7 +549,6 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
         X_train = np.concatenate([cls.X_nan, X])
         y_train = np.concatenate([[0, 0], y])
         params = {
-            "n_estimators": 10,
             "task": "train",
             "boosting": "gbdt",
             "objective": "multiclass",
@@ -521,7 +556,11 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
             "num_class": 3,
             "verbose": -1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
+        cls.lgbm_model = lgbm.train(
+            params,
+            train_set=lgbm.Dataset(X_train, y_train),
+            num_boost_round=10,
+        )
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
@@ -576,7 +615,6 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
         X_train = np.concatenate([cls.X_nan, X])
         y_train = np.concatenate([[0, 0], y])
         params = {
-            "n_estimators": 10,
             "task": "train",
             "boosting": "gbdt",
             "objective": "binary",
@@ -584,7 +622,11 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
             "num_leaves": 4,
             "verbose": -1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
+        cls.lgbm_model = lgbm.train(
+            params,
+            train_set=lgbm.Dataset(X_train, y_train),
+            num_boost_round=10,
+        )
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
