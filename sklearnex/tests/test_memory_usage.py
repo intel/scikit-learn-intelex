@@ -31,6 +31,7 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
 from onedal import _is_dpc_backend
+from onedal._device_offload import dpctl_available
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -122,6 +123,28 @@ data_shapes = [
 EXTRA_MEMORY_THRESHOLD = 0.15
 N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
+
+
+if dpctl_available:
+    from onedal.datatypes import from_table, to_table
+
+    class DummyEstimatorWithSUAConversions(BaseEstimator):
+
+        # __name__ = 'DummyEstimatorWithSUAConversions'
+
+        def fit(self, X, y=None):
+            X_table = to_table(X)
+            y_table = to_table(y)
+            return self
+
+        def predict(self, X):
+            X_table = to_table(X)
+            returned_X = from_table(X_table)
+            return returned_X
+
+    DUMMY_ESTIMATOR_WITH_SUA_CONVERSIONS = {
+        "DummyEstimatorWithSUAConversions": DummyEstimatorWithSUAConversions
+    }
 
 
 def gen_clsf_data(n_samples, n_features):
@@ -289,3 +312,26 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 
     with config_context(target_offload=queue):
         _kfold_function_template(GPU_ESTIMATORS[estimator], None, data_shape, queue, func)
+
+
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu, gpu")
+)
+@pytest.mark.parametrize("estimator", DUMMY_ESTIMATOR_WITH_SUA_CONVERSIONS.keys())
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("data_shape", data_shapes)
+def test_sua_interop_memory_leaks(estimator, dataframe, queue, order, data_shape):
+    func = ORDER_DICT[order]
+
+    if queue.sycl_device.is_gpu and (
+        os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_available("gpu")
+    ):
+        pytest.skip("SYCL device memory leak check requires the level zero sysman")
+
+    _kfold_function_template(
+        DUMMY_ESTIMATOR_WITH_SUA_CONVERSIONS[estimator],
+        dataframe,
+        data_shape,
+        queue,
+        func,
+    )
