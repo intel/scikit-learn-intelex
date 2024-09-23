@@ -19,17 +19,20 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal import _backend
+from onedal._device_offload import dpctl_available, dpnp_available
 from onedal.datatypes import from_table, to_table
 from onedal.primitives import linear_kernel
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from onedal.tests.utils._device_selection import get_queues
 
-try:
-    import dpctl
+if dpctl_available:
     import dpctl.tensor as dpt
 
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
+if dpnp_available:
+    import dpnp
 
 
 def _test_input_format_c_contiguous_numpy(queue, dtype):
@@ -167,69 +170,48 @@ def test_conversion_to_table(dtype):
     _test_conversion_to_table(dtype)
 
 
-# TODO:
-# Currently `dpctl_to_table` is not used in onedal estimators.
-# The test will be enabled after future data management update, that brings
-# re-impl of conversions between onedal tables and usm ndarrays.
-@pytest.mark.skip(
-    reason="Currently removed. Will be enabled after data management update"
-)
-@pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
-@pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
-@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
-def test_input_format_c_contiguous_dpctl(queue, dtype):
-    rng = np.random.RandomState(0)
-    x_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
-
-    x_numpy = np.asanyarray(x_default, dtype=dtype, order="C")
-    x_dpt = dpt.asarray(x_numpy, usm_type="device", sycl_queue=queue)
-    # assert not x_dpt.flags.fnc
-    assert isinstance(x_dpt, dpt.usm_ndarray)
-
-    x_table = _backend.dpctl_to_table(x_dpt)
-    assert hasattr(x_table, "__sycl_usm_array_interface__")
-    x_dpt_from_table = dpt.asarray(x_table)
+def _check_attributes_for_zero_copy(original_dp_tensor, dp_tensor_from_table, order):
+    # dpctl.tensor is the dpnp.ndarrays's core tensor structure along
+    # with advanced device management. Convert dpnp to dpctl.tensor with zero copy
+    if dpnp_available and isinstance(original_dp_tensor, dpnp.ndarray):
+        # Now DPCtl tensors
+        original_dp_tensor = original_dp_tensor.get_array()
+        dp_tensor_from_table = dp_tensor_from_table.get_array()
 
     assert (
-        x_dpt.__sycl_usm_array_interface__["data"][0]
-        == x_dpt_from_table.__sycl_usm_array_interface__["data"][0]
+        original_dp_tensor.__sycl_usm_array_interface__["data"][0]
+        == dp_tensor_from_table.__sycl_usm_array_interface__["data"][0]
     )
-    assert x_dpt.shape == x_dpt_from_table.shape
-    assert x_dpt.strides == x_dpt_from_table.strides
-    assert x_dpt.dtype == x_dpt_from_table.dtype
-    assert x_dpt.flags.c_contiguous
-    assert x_dpt_from_table.flags.c_contiguous
+    assert original_dp_tensor.shape == dp_tensor_from_table.shape
+    assert original_dp_tensor.strides == dp_tensor_from_table.strides
+    assert original_dp_tensor.dtype == dp_tensor_from_table.dtype
+    if order == "F":
+        assert original_dp_tensor.flags.f_contiguous
+        assert dp_tensor_from_table.flags.f_contiguous
+    else:
+        assert original_dp_tensor.flags.c_contiguous
+        assert dp_tensor_from_table.flags.c_contiguous
+    assert original_dp_tensor.flags == dp_tensor_from_table.flags
+    assert original_dp_tensor.sycl_queue == dp_tensor_from_table.sycl_queue
 
 
-# TODO:
-# Currently `dpctl_to_table` is not used in onedal estimators.
-# The test will be enabled after future data management update, that brings
-# re-impl of conversions between onedal tables and usm ndarrays.
-@pytest.mark.skip(
-    reason="Currently removed. Will be enabled after data management update"
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu, gpu")
 )
-@pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
-@pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
+@pytest.mark.parametrize("order", ["C", "F"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
-def test_input_format_f_contiguous_dpctl(queue, dtype):
+def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
     rng = np.random.RandomState(0)
-    x_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
+    X_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
 
-    x_numpy = np.asanyarray(x_default, dtype=dtype, order="F")
-    x_dpt = dpt.asarray(x_numpy, usm_type="device", sycl_queue=queue)
-    # assert not x_dpt.flags.fnc
-    assert isinstance(x_dpt, dpt.usm_ndarray)
+    X_numpy = np.asanyarray(X_default, dtype=dtype, order=order)
 
-    x_table = _backend.dpctl_to_table(x_dpt)
-    assert hasattr(x_table, "__sycl_usm_array_interface__")
-    x_dpt_from_table = dpt.asarray(x_table)
+    X_dp = _convert_to_dataframe(X_numpy, sycl_queue=queue, target_df=dataframe)
 
-    assert (
-        x_dpt.__sycl_usm_array_interface__["data"][0]
-        == x_dpt_from_table.__sycl_usm_array_interface__["data"][0]
-    )
-    assert x_dpt.shape == x_dpt_from_table.shape
-    assert x_dpt.strides == x_dpt_from_table.strides
-    assert x_dpt.dtype == x_dpt_from_table.dtype
-    assert x_dpt.flags.f_contiguous
-    assert x_dpt_from_table.flags.f_contiguous
+    X_table = to_table(X_dp)
+
+    assert hasattr(X_table, "__sycl_usm_array_interface__")
+
+    X_dp_from_table = from_table(X_table)
+
+    _check_attributes_for_zero_copy(X_dp, X_dp_from_table, order)
