@@ -33,7 +33,7 @@ from ..._utils import PatchingConditionsChain, register_hyperparameters
 
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
-elif sklearn_check_version("1.0"):
+else:
     validate_data = sklearn_EmpiricalCovariance._validate_data
 
 

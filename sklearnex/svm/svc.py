@@ -36,7 +36,7 @@ from onedal.svm import SVC as onedal_SVC
 
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
-elif sklearn_check_version("1.0"):
+else:
     validate_data = BaseSVC._validate_data
 
 

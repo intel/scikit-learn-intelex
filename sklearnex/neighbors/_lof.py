@@ -31,7 +31,7 @@ from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
-elif sklearn_check_version("1.0"):
+else:
     validate_data = sklearn_LocalOutlierFactor._validate_data
 
 

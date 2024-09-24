@@ -27,7 +27,7 @@ from ._common import BaseSVR
 
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
-elif sklearn_check_version("1.0"):
+else:
     validate_data = BaseSVR._validate_data
 
 

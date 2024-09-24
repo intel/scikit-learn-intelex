@@ -41,7 +41,7 @@ if daal_check_version((2024, "P", 1)):
 
     if sklearn_check_version("1.6"):
         from sklearn.utils.validation import validate_data
-    elif sklearn_check_version("1.0"):
+    else:
         validate_data = sklearn_LogisticRegression._validate_data
 
     _sparsity_enabled = daal_check_version((2024, "P", 700))
