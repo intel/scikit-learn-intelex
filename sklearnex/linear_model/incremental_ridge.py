@@ -34,6 +34,11 @@ from onedal.linear_model import IncrementalRidge as onedal_IncrementalRidge
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
@@ -127,7 +132,7 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, accept_sparse=False, reset=False)
+            X = validate_data(self, X, accept_sparse=False, reset=False)
 
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
@@ -147,7 +152,8 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
 
         if check_input:
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(
+                X, y = validate_data(
+                    self,
                     X,
                     y,
                     dtype=[np.float64, np.float32],
@@ -190,7 +196,8 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
+            X, y = validate_data(
+                self,
                 X,
                 y,
                 dtype=[np.float64, np.float32],
