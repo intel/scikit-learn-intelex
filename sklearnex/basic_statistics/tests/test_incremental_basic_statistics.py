@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics.tests.test_basic_statistics import (
     expected_max,
     expected_mean,
@@ -382,3 +383,22 @@ def test_fit_all_option_on_random_data(
             gtr = function(X)
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, atol=tol)
+
+
+def test_warning():
+    basicstat = IncrementalBasicStatistics("all")
+    # Only 2d inputs supported into IncrementalBasicStatistics
+    data = np.array([[0.0], [1.0]])
+
+    basicstat.fit(data)
+    for i in basicstat._onedal_estimator.get_all_result_options():
+        with pytest.warns(
+            UserWarning,
+            match="Result attributes without a trailing underscore were deprecated in version 2025.1 and will be removed in 2026.0",
+        ) as warn_record:
+            getattr(basicstat, i)
+
+        if daal_check_version((2026, "P", 0)):
+            assert len(warn_record) == 0, i
+        else:
+            assert len(warn_record) == 1, i
