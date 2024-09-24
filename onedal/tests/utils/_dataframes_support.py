@@ -19,7 +19,7 @@ import scipy.sparse as sp
 
 from sklearnex import get_config
 
-from ...utils._dp_helpers import dpctl_available, dpnp_available
+from ...utils._dpep_helpers import dpctl_available, dpnp_available
 
 if dpctl_available:
     import dpctl.tensor as dpt

@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Utilities for Data Parallel libs, such as DPNP, DPCtl"""
+"""Utilities for Data Parallel Extensions libs, such as DPNP, DPCtl"""
 
 from daal4py.sklearn._utils import _package_check_version
 

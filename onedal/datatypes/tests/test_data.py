@@ -22,7 +22,7 @@ from onedal import _backend
 from onedal.datatypes import from_table, to_table
 from onedal.primitives import linear_kernel
 from onedal.tests.utils._device_selection import get_queues
-from onedal.utils._dp_helpers import is_dpctl_available
+from onedal.utils._dpep_helpers import is_dpctl_available
 
 dpctl_available = is_dpctl_available("0.14")
 

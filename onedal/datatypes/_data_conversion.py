@@ -22,7 +22,7 @@ from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
 from ..utils import _is_csr
-from ..utils._dp_helpers import is_dpctl_available
+from ..utils._dpep_helpers import is_dpctl_available
 
 dpctl_available = is_dpctl_available("0.14")
 
