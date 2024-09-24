@@ -27,6 +27,9 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "allow_sklearn_fallback: mark test to not check for sklearnex usage"
     )
+    config.addinivalue_line(
+        "markers", "mpi: mark test to require MPI for distributed testing"
+    )
 
 
 @pytest.hookimpl(hookwrapper=True)
