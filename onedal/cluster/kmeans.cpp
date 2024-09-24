@@ -38,6 +38,9 @@ struct method2t {
         const auto method = params["method"].cast<std::string>();
         ONEDAL_PARAM_DISPATCH_VALUE(method, "by_default", ops, Float, method::by_default);
         ONEDAL_PARAM_DISPATCH_VALUE(method, "lloyd_dense", ops, Float, method::lloyd_dense);
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
+        ONEDAL_PARAM_DISPATCH_VALUE(method, "lloyd_csr", ops, Float, method::lloyd_csr);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(method);
     }
 
@@ -47,14 +50,10 @@ struct method2t {
 template <typename Float, typename Method, typename Task>
 struct descriptor_creator {};
 
-template <typename Float>
-struct descriptor_creator<Float,
-                          dal::kmeans::method::by_default,
-                          dal::kmeans::task::clustering > {
+template <typename Float, typename Method>
+struct descriptor_creator<Float, Method, dal::kmeans::task::clustering> {
     static auto get() {
-        return dal::kmeans::descriptor<Float,
-                                  dal::kmeans::method::by_default,
-                                  dal::kmeans::task::clustering>{};
+        return dal::kmeans::descriptor<Float, Method, dal::kmeans::task::clustering>{};
     }
 };
 
@@ -65,10 +64,15 @@ struct params2desc {
 
         auto desc = descriptor_creator<Float, Method, Task>::get();
 
-        desc.set_cluster_count( params["cluster_count"].cast<std::int64_t>() );
-        desc.set_accuracy_threshold( params["accuracy_threshold"].cast<Float>() );
-        desc.set_max_iteration_count( params["max_iteration_count"].cast<std::int64_t>() );
-
+        desc.set_cluster_count(params["cluster_count"].cast<std::int64_t>());
+        desc.set_accuracy_threshold(params["accuracy_threshold"].cast<Float>());
+        desc.set_max_iteration_count(params["max_iteration_count"].cast<std::int64_t>());
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240200
+        auto result_options = params["result_options"].cast<std::string>();
+        if (result_options == "compute_exact_objective_function") {
+            desc.set_result_options(result_options::compute_exact_objective_function);
+        }
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240200
         return desc;
     }
 };
@@ -153,7 +157,8 @@ void init_infer_result(py::module_& m) {
 
     auto cls = py::class_<result_t>(m, "infer_result")
                    .def(py::init())
-                   .DEF_ONEDAL_PY_PROPERTY(responses, result_t);
+                   .DEF_ONEDAL_PY_PROPERTY(responses, result_t)
+                   .DEF_ONEDAL_PY_PROPERTY(objective_function_value, result_t);
 }
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_model);
@@ -173,10 +178,10 @@ ONEDAL_PY_INIT_MODULE(kmeans) {
     auto sub = m.def_submodule("kmeans");
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
-    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
-        ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
-        ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
-    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+#if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
+    ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
+#endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20230200
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
