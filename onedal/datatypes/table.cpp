@@ -18,7 +18,7 @@
 #include "oneapi/dal/table/homogen.hpp"
 
 #ifdef ONEDAL_DATA_PARALLEL
-#include "onedal/datatypes/data_conversion_dpctl.hpp"
+#include "onedal/datatypes/data_conversion_sua_iface.hpp"
 #endif // ONEDAL_DATA_PARALLEL
 
 #include "onedal/datatypes/data_conversion.hpp"
@@ -88,8 +88,8 @@ ONEDAL_PY_INIT_MODULE(table) {
     });
 
 #ifdef ONEDAL_DATA_PARALLEL
-    m.def("dpctl_to_table", [](py::object obj) {
-        return convert_from_dptensor(obj);
+    m.def("sua_iface_to_table", [](py::object obj) {
+        return convert_from_sua_iface(obj);
     });
 #endif // ONEDAL_DATA_PARALLEL
 }

@@ -27,7 +27,7 @@ namespace oneapi::dal::python {
 
 namespace py = pybind11;
 
-dal::table convert_from_dptensor(py::dict sua_dict);
+dal::table convert_from_sua_iface(py::object obj);
 py::dict construct_sua_iface(const dal::table& input);
 
 void define_sycl_usm_array_property(py::class_<dal::table>& t);
