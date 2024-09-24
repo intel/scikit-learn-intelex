@@ -215,3 +215,7 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
     X_dp_from_table = from_table(X_table)
 
     _check_attributes_for_zero_copy(X_dp, X_dp_from_table, order)
+
+
+# TODO:
+# def test_wrong_inputs_for_sua_iface_conversion
