@@ -21,6 +21,7 @@ import threading
 _default_global_config = {
     "target_offload": "auto",
     "allow_fallback_to_host": False,
+    "_dpnp_output": False,
 }
 
 _threadlocal = threading.local()
@@ -51,3 +52,9 @@ def _get_config(copy=True):
     if copy:
         onedal_config = onedal_config.copy()
     return onedal_config
+
+
+def _set_config(_dpnp_output=False):
+    if _dpnp_output:
+        onedal_config = _get_onedal_threadlocal_config()
+        onedal_config["_dpnp_output"] = _dpnp_output

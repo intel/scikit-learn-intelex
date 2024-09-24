@@ -21,15 +21,15 @@ import numpy as np
 from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
+from .._config import _get_config, _set_config
+from .._device_offload import dpctl_available, dpnp_available
 from ..utils import _is_csr
 
-try:
-    import dpctl
+if dpctl_available:
     import dpctl.tensor as dpt
 
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
+if dpnp_available:
+    import dpnp
 
 
 def _apply_and_pass(func, *args):
@@ -39,13 +39,40 @@ def _apply_and_pass(func, *args):
 
 
 def from_table(*args):
-    return _apply_and_pass(_backend.from_table, *args)
+    return _apply_and_pass(convert_one_from_table, *args)
 
 
+# TODO:
+# add warnings if no dpc backend.
+# TODO:
+# sparse for sua data.
+def convert_one_from_table(table):
+    usm_iface = (
+        getattr(table, "__sycl_usm_array_interface__", None) if _is_dpc_backend else None
+    )
+    if usm_iface and dpctl_available:
+        result = dpt.asarray(table)
+        if dpnp_available and _get_config()["_dpnp_output"]:
+            result = dpnp.asarray(result)
+        return result
+
+    if not _is_csr(arg):
+        arg = make2d(arg)
+    return _backend.to_table(arg)
+
+
+# TODO:
+# add warnings if no dpc backend.
+# TODO:
+# sparse for sua data.
 def convert_one_to_table(arg):
-    if dpctl_available:
-        if isinstance(arg, dpt.usm_ndarray):
-            return _backend.dpctl_to_table(arg)
+    usm_iface = (
+        getattr(arg, "__sycl_usm_array_interface__", None) if _is_dpc_backend else None
+    )
+    if usm_iface:
+        if dpnp_available and isinstance(arg, dpnp.ndarray):
+            _set_config(_dpnp_output=True)
+        return _backend.sua_iface_to_table(arg)
 
     if not _is_csr(arg):
         arg = make2d(arg)
