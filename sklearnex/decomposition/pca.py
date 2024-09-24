@@ -46,7 +46,7 @@ if daal_check_version((2024, "P", 100)):
 
     if sklearn_check_version("1.6"):
         from sklearn.utils.validation import validate_data
-    elif sklearn_check_version("1.0"):
+    else:
         validate_data = sklearn_PCA._validate_data
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])

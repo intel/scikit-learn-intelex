@@ -34,7 +34,7 @@ if sklearn_check_version("1.2"):
 
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
-elif sklearn_check_version("1.0"):
+else:
     validate_data = BaseEstimator._validate_data
 
 from onedal.common.hyperparameters import get_hyperparameters
