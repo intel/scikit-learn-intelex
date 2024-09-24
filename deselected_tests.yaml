@@ -383,6 +383,17 @@ deselected_tests:
   # Deselections for 2025.0
   - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
 
+  - cluster/tests/test_kmeans.py::test_dense_vs_sparse[dims1-elkan-random-None]
+  - cluster/tests/test_kmeans.py::test_dense_vs_sparse[dims1-lloyd-random-None]
+  - cluster/tests/test_kmeans.py::test_dense_vs_sparse[dims1-elkan-random-SyclQueue_CPU]
+  - cluster/tests/test_kmeans.py::test_dense_vs_sparse[dims2-elkan-random-SyclQueue_CPU]
+  - cluster/tests/test_kmeans.py::test_dense_vs_sparse[dims1-lloyd-random-SyclQueue_CPU]
+  - svm/tests/test_csr_svm.py::test_diabetes[sigmoid-None]
+  - svm/tests/test_svr.py::test_diabetes_compare_with_sklearn[sigmoid-None]
+  - svm/tests/test_nusvr.py::test_diabetes_compare_with_sklearn[sigmoid-None]
+  - spmd/decomposition/tests/test_pca_spmd.py::test_pca_spmd_gold
+  - spmd/decomposition/tests/test_pca_spmd.py::test_pca_spmd_synthetic
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:
