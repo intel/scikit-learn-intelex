@@ -72,6 +72,7 @@ auto get_onedal_result_options(const py::dict& params) {
         }
     }
     catch (std::regex_error& e) {
+        (void)e;
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_option);
     }
 
@@ -303,6 +304,7 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_finalize_train_ops, sub, policy_spmd, task_list);
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
