@@ -38,7 +38,7 @@ build:
   script_env:
   - DPCPPROOT
   - DALROOT
-  - NO_DIST =1  # [win]
+  - NO_DIST=1  # [win]
 
 requirements:
   build:
