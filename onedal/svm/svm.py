@@ -286,7 +286,7 @@ class BaseSVM(metaclass=ABCMeta):
     def _decision_function(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=False, accept_sparse="csr"
+            X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse="csr"
         )
         _check_n_features(self, X, False)
 
