@@ -47,18 +47,10 @@ def from_table(*args):
 # TODO:
 # sparse for sua data.
 def convert_one_from_table(table):
-    usm_iface = (
-        getattr(table, "__sycl_usm_array_interface__", None) if _is_dpc_backend else None
-    )
-    if usm_iface and dpctl_available:
-        result = dpt.asarray(table)
-        if dpnp_available and _get_config()["_dpnp_output"]:
-            result = dpnp.asarray(result)
-        return result
-
-    if not _is_csr(arg):
-        arg = make2d(arg)
-    return _backend.to_table(arg)
+    result = _backend.from_table(table)
+    if dpnp_available and _get_config()["_dpnp_output"]:
+        result = dpnp.asarray(result)
+    return result
 
 
 # TODO:
