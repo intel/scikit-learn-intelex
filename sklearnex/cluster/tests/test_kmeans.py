@@ -119,9 +119,6 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
     not daal_check_version((2024, "P", 700)),
     reason="Sparse data requires oneDAL>=2024.7.0",
 )
-
-
-
 @pytest.mark.parametrize("queue", get_queues())
 # TODO: investigate failures in init="random" after migration to oneMKL
 # @pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
