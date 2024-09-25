@@ -28,7 +28,7 @@ from ..._utils import PatchingConditionsChain
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = sklearn_IncrementalPCA._validate_data
+    validate_data = _sklearn_IncrementalPCA._validate_data
 
 
 @control_n_jobs(

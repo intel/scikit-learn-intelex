@@ -34,7 +34,7 @@ from ..._utils import PatchingConditionsChain, register_hyperparameters
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = sklearn_EmpiricalCovariance._validate_data
+    validate_data = _sklearn_EmpiricalCovariance._validate_data
 
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})

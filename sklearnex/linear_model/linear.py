@@ -42,7 +42,7 @@ from onedal.utils import _num_features, _num_samples
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = sklearn_LinearRegression._validate_data
+    validate_data = _sklearn_LinearRegression._validate_data
 
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})

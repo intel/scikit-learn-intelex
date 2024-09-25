@@ -34,7 +34,7 @@ if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = sklearn_DBSCAN._validate_data
+    validate_data = _sklearn_DBSCAN._validate_data
 
 
 class BaseDBSCAN(ABC):

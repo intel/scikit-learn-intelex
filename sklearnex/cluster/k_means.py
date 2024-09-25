@@ -44,7 +44,7 @@ if daal_check_version((2023, "P", 200)):
     if sklearn_check_version("1.6"):
         from sklearn.utils.validation import validate_data
     else:
-        validate_data = sklearn_KMeans._validate_data
+        validate_data = _sklearn_KMeans._validate_data
 
     @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
     class KMeans(_sklearn_KMeans):
