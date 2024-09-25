@@ -40,6 +40,11 @@ from ..utils._array_api import get_namespace
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 
 @control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
 class IncrementalEmpiricalCovariance(BaseEstimator):
@@ -163,7 +168,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 self._validate_params()
 
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     dtype=[np.float64, np.float32],
                     reset=first_pass,
@@ -204,7 +210,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         location = self.location_
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X_test,
                 dtype=[np.float64, np.float32],
                 reset=False,
@@ -306,8 +313,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         # finite check occurs on onedal side
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                copy=self.copy,
+                force_all_finite=False,
             )
         else:
             X = check_array(

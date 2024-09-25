@@ -20,7 +20,7 @@ from abc import ABC
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.base import clone
+from sklearn.base import BaseEstimator, clone
 from sklearn.ensemble import ExtraTreesClassifier as _sklearn_ExtraTreesClassifier
 from sklearn.ensemble import ExtraTreesRegressor as _sklearn_ExtraTreesRegressor
 from sklearn.ensemble import RandomForestClassifier as _sklearn_RandomForestClassifier
@@ -67,12 +67,18 @@ if sklearn_check_version("1.2"):
 if sklearn_check_version("1.4"):
     from daal4py.sklearn.utils import _assert_all_finite
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 
 class BaseForest(ABC):
     _onedal_factory = None
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        X, y = self._validate_data(
+        X, y = validate_data(
+            self,
             X,
             y,
             multi_output=True,
@@ -607,21 +613,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         # TODO:
         # _check_proba()
         # self._check_proba()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
-        if hasattr(self, "n_features_in_"):
-            try:
-                num_features = _num_features(X)
-            except TypeError:
-                num_features = _num_samples(X)
-            if num_features != self.n_features_in_:
-                raise ValueError(
-                    (
-                        f"X has {num_features} features, "
-                        f"but {self.__class__.__name__} is expecting "
-                        f"{self.n_features_in_} features as input"
-                    )
-                )
+
         return dispatch(
             self,
             "predict_proba",
@@ -797,7 +789,8 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
@@ -810,6 +803,19 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
             )  # Warning, order of dtype matters
+            if hasattr(self, "n_features_in_"):
+                try:
+                    num_features = _num_features(X)
+                except TypeError:
+                    num_features = _num_samples(X)
+                if num_features != self.n_features_in_:
+                    raise ValueError(
+                        (
+                            f"X has {num_features} features, "
+                            f"but {self.__class__.__name__} is expecting "
+                            f"{self.n_features_in_} features as input"
+                        )
+                    )
             self._check_n_features(X, reset=False)
 
         res = self._onedal_estimator.predict(X, queue=queue)
@@ -819,7 +825,8 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,
@@ -1123,7 +1130,8 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
         check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 force_all_finite=False,

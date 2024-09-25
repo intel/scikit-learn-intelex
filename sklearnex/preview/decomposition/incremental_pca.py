@@ -25,6 +25,11 @@ from onedal.decomposition import IncrementalPCA as onedal_IncrementalPCA
 from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_IncrementalPCA._validate_data
+
 
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "transform", "_onedal_finalize_fit"]
@@ -65,8 +70,8 @@ class IncrementalPCA(_sklearn_IncrementalPCA):
 
         if check_input:
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
-                    X, dtype=[np.float64, np.float32], reset=first_pass
+                X = validate_data(
+                    self, X, dtype=[np.float64, np.float32], reset=first_pass
                 )
             else:
                 X = check_array(
@@ -119,7 +124,7 @@ class IncrementalPCA(_sklearn_IncrementalPCA):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
+            X = validate_data(self, X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
             X = check_array(
                 X,

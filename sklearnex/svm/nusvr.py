@@ -14,8 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import numpy as np
 from sklearn.svm import NuSVR as _sklearn_NuSVR
-from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.utils.validation import _deprecate_positional_args, check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -23,6 +24,11 @@ from onedal.svm import NuSVR as onedal_NuSVR
 
 from .._device_offload import dispatch, wrap_output_data
 from ._common import BaseSVR
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseSVR._validate_data
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
@@ -76,8 +82,6 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
             # Windows fatal exception: access violation
             # occurs
             raise ValueError("nu <= 0 or nu > 1")
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         dispatch(
             self,
             "fit",
@@ -93,8 +97,6 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict",
@@ -107,8 +109,6 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "score",
@@ -141,6 +141,22 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
+        if sklearn_check_version("1.0"):
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
         return self._onedal_estimator.predict(X, queue=queue)
 
     fit.__doc__ = _sklearn_NuSVR.fit.__doc__

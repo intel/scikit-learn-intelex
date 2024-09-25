@@ -41,6 +41,11 @@ if daal_check_version((2023, "P", 200)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = sklearn_KMeans._validate_data
+
     @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
     class KMeans(_sklearn_KMeans):
         __doc__ = _sklearn_KMeans.__doc__
@@ -150,7 +155,8 @@ if daal_check_version((2023, "P", 200)):
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
@@ -271,7 +277,8 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,
@@ -335,7 +342,8 @@ if daal_check_version((2023, "P", 200)):
         def _onedal_score(self, X, y, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,

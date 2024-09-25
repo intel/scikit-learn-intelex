@@ -28,6 +28,11 @@ from onedal.neighbors import KNeighborsClassifier as onedal_KNeighborsClassifier
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_KNeighborsClassifier._validate_data
+
 
 @control_n_jobs(
     decorated_methods=["fit", "predict", "predict_proba", "kneighbors", "score"]
