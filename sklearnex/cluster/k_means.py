@@ -47,8 +47,8 @@ if daal_check_version((2023, "P", 200)):
         validate_data = _sklearn_KMeans._validate_data
 
     @control_n_jobs(decorated_methods=["fit", "fit_transform", "predict", "score"])
-    class KMeans(sklearn_KMeans):
-        __doc__ = sklearn_KMeans.__doc__
+    class KMeans(_sklearn_KMeans):
+        __doc__ = _sklearn_KMeans.__doc__
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {**_sklearn_KMeans._parameter_constraints}
