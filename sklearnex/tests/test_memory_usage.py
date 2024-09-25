@@ -23,7 +23,6 @@ import warnings
 from inspect import isclass
 
 import numpy as np
-import pandas as pd
 import pytest
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, clone

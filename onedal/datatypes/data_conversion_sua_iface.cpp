@@ -21,17 +21,26 @@
 #include <string>
 #include <utility>
 
+#include "oneapi/dal/common.hpp"
+#include "oneapi/dal/detail/common.hpp"
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
 #include "onedal/common/policy_common.hpp"
 #include "onedal/datatypes/data_conversion_sua_iface.hpp"
-#include "onedal/datatypes/numpy_helpers.hpp"
+#include "onedal/datatypes/dtype_conversions.hpp"
+#include "onedal/datatypes/dtype_dispatcher.hpp"
 
 // TODO:
 // add description for the sua_iface dict.
 
 namespace oneapi::dal::python {
+
+/// sua utils 
+dal::data_type get_sua_dtype(const py::dict& sua) {
+    auto dtype = sua["typestr"].cast<std::string>();
+    return convert_sua_to_dal_type(std::move(dtype));
+}
 
 py::dict get_sua_interface(const py::object& obj) {
     constexpr const char name[] = "__sycl_usm_array_interface__";
@@ -64,17 +73,6 @@ py::tuple get_sua_shape(const py::dict& sua) {
     return shape;
 }
 
-py::tuple get_sua_strides(const py::dict& sua) {
-    py::tuple strides = sua["strides"].cast<py::tuple>();
-    return strides;
-}
-
-std::int64_t get_sua_ndim(const py::dict& sua) {
-    py::tuple shape = get_sua_shape(sua);
-    const py::ssize_t raw_ndim = shape.size();
-    return detail::integral_cast<std::int64_t>(raw_ndim);
-}
-
 void report_problem_for_sua_iface(const char* clarification) {
     constexpr const char* const base_message = "Unable to convert from SUA interface.";
 
@@ -83,18 +81,17 @@ void report_problem_for_sua_iface(const char* clarification) {
     throw std::invalid_argument{ message };
 }
 
-// TODO:
-// update and reuse.
-// std::int64_t get_and_check_sua_iface_ndim(const py::dict sua_dict& sua_dict) {
-//     constexpr const char* const err_message = ": only 1D & 2D tensors are allowed";
-//
-//     const auto ndim = dal::detail::integral_cast<std::int64_t>(tensor.get_ndim());
-//     if ((ndim != 1) && (ndim != 2))
-//         report_problem_for_sua_iface(err_message);
-//     return ndim;
-// }
+std::int64_t get_and_check_sua_iface_ndim(const py::dict& sua_dict) {
+    constexpr const char* const err_message = ": only 1D & 2D tensors are allowed";
+    py::tuple shape = get_sua_shape(sua_dict);
+    const py::ssize_t raw_ndim = shape.size();
+    const auto ndim = detail::integral_cast<std::int64_t>(raw_ndim);
+    if ((ndim != 1l) && (ndim != 2l))
+        report_problem_for_sua_iface(err_message);
+    return ndim;
+}
 
-auto get_sua_iface_shape(const py::dict sua_dict, const std::int64_t ndim) {
+auto get_sua_iface_shape_by_values(const py::dict sua_dict, const std::int64_t ndim) {
     std::int64_t row_count, col_count;
     auto shape = sua_dict["shape"].cast<py::tuple>();
     if (ndim == 1l) {
@@ -108,65 +105,40 @@ auto get_sua_iface_shape(const py::dict sua_dict, const std::int64_t ndim) {
     return std::make_pair(row_count, col_count);
 }
 
-auto get_sua_iface_strides(const py::dict sua_dict) {
-    std::int64_t row_count, col_count;
-    auto strides = sua_dict["strides"].cast<py::tuple>();
-    if (raw_strides.is_none()) {
-        return utils::get_c_strides(shape);
-    }
-    else {
-        auto t = raw_strides.cast<py::tuple>();
-        return utils::convert_tuple<dim>(t);
-    }
-    return std::make_pair(row_count, col_count);
-}
-
-template <std::size_t dim>
-inline auto get_strides(const py::dict& sua, const std::array<std::int64_t, dim>& shape) {
-    const auto raw_strides = sua["strides"];
-    if (raw_strides.is_none()) {
-        return utils::get_c_strides(shape);
-    }
-    else {
-        auto t = raw_strides.cast<py::tuple>();
-        return utils::convert_tuple<dim>(t);
-    }
-}
-
-// TODO:
-// check conditions.
-// auto get_sua_iface_layout(const std::int64_t ndim, const bool is_c_cont, const bool is_f_cont) {
-//
-//     if (ndim == 1l) {
-//         //if (!is_c_cont || !is_f_cont) report_problem_for_sua_iface(
-//         //    ": 1D array should be contiguous both as C-order and F-order");
-//         return dal::data_layout::row_major;
-//     }
-//     else {
-//         //if (!is_c_cont || !is_f_cont) report_problem_for_sua_iface(
-//         //    ": 2D array should be contiguous at least by one axis");
-//         return is_c_cont ? dal::data_layout::row_major : dal::data_layout::column_major;
-//     }
-// }
-
 dal::data_layout get_sua_iface_layout(const py::dict& sua_dict,
                                       const std::int64_t& r_count,
                                       const std::int64_t& c_count) {
-    const auto raw_strides = sua["strides"];
-
-    using shape_t = std::decay_t<decltype(r_count)>;
-    using stride_t = std::decay_t<decltype(r_strides)>;
-    constexpr auto one = static_cast<shape_t>(1);
-    static_assert(std::is_same_v<shape_t, stride_t>);
-
-    if (r_strides == c_count && c_strides == one) {
+    const auto raw_strides = sua_dict["strides"];
+    if (raw_strides.is_none()) {
+        // None to indicate a C-style contiguous array.
         return dal::data_layout::row_major;
     }
-    else if (r_strides == one && c_strides == r_count) {
-        return dal::data_layout::column_major;
+    auto strides_tuple = raw_strides.cast<py::tuple>();
+
+    auto strides_len = py::len(strides_tuple);
+
+    if (strides_len == 1l) {
+        return dal::data_layout::row_major;
+    }
+    else if (strides_len == 2l) {
+        auto r_strides = strides_tuple[0l].cast<std::int64_t>();
+        auto c_strides = strides_tuple[1l].cast<std::int64_t>();
+        using shape_t = std::decay_t<decltype(r_count)>;
+        using stride_t = std::decay_t<decltype(r_strides)>;
+        constexpr auto one = static_cast<shape_t>(1);
+        static_assert(std::is_same_v<shape_t, stride_t>);
+        if (r_strides == c_count && c_strides == one) {
+            return dal::data_layout::row_major;
+        }
+        else if (r_strides == one && c_strides == r_count) {
+            return dal::data_layout::column_major;
+        }
+        else {
+            throw std::runtime_error("Wrong strides");
+        }
     }
     else {
-        throw std::runtime_error("Wrong strides");
+        throw std::runtime_error("Unsupporterd data shape.`");
     }
 }
 
@@ -177,19 +149,19 @@ dal::table convert_to_homogen_impl(py::object obj) {
     const auto deleter = [obj](const Type*) {
         obj.dec_ref();
     };
-    const auto ndim = get_sua_ndim(sua_iface_dict); // get_and_check_sua_iface_ndim
+
+    const auto ndim = get_and_check_sua_iface_ndim(sua_iface_dict);
 
     const auto [r_count, c_count] =
-        get_sua_iface_shape(sua_iface_dict, ndim); // remove get_sua_shape(sua_iface_dict);
-    const auto strides = get_sua_strides(sua_iface_dict);
-    // TODO:
-    // re-impl.
+        get_sua_iface_shape_by_values(sua_iface_dict, ndim);
+
     const auto layout = get_sua_iface_layout(sua_iface_dict, r_count, c_count);
 
     const auto* const ptr = reinterpret_cast<const Type*>(get_sua_ptr(sua_iface_dict));
     auto syclobj = sua_iface_dict["syclobj"].cast<py::object>();
     const auto queue = get_queue_from_python(syclobj);
 
+    // TODO:
     // if (is_readonly) {
     //     //
     // }
@@ -211,19 +183,16 @@ dal::table convert_to_homogen_impl(py::object obj) {
 }
 
 dal::table convert_from_sua_iface(py::object obj) {
-    // TODO:
-    // hardcoded.
-    // const auto type = get_typenum(iface["typestr"]);
-    const auto type = NPY_DOUBLE;
+    auto sua_iface_dict = get_sua_interface(obj);
+    const auto type = get_sua_dtype(sua_iface_dict);
 
     dal::table res{};
 
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(obj);
 
-    SET_NPY_FEATURE(type,
-                    8, // ~
-                    MAKE_HOMOGEN_TABLE,
-                    report_problem_for_sua_iface(": unknown data type"));
+    SET_DAL_TYPE_FROM_DAL_TYPE(type,
+                               MAKE_HOMOGEN_TABLE, //
+                               report_problem_for_sua_iface(": unknown data type"));
 
 #undef MAKE_HOMOGEN_TABLE
 
@@ -239,7 +208,7 @@ void report_problem_to_sua_iface(const char* clarification) {
 }
 
 // TODO:
-// re-impl this.
+// re-use convert_dal_to_sua_type instead.
 std::string get_npy_typestr(const dal::data_type dtype) {
     switch (dtype) {
         case dal::data_type::float32: {
