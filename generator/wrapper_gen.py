@@ -1019,9 +1019,13 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         self.c_ptr = mk_{{algo}}(
             {{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}}
         )
+        current_locals = locals()
+        ordered_input_args = '''
+            {{params_all|fmt('{}', 'name', sep=' ')|indent(0)}}
+        '''.strip().split()
         self._params = tuple(
-            v for k, v in locals().items()
-            if k != "self"
+            current_locals[arg]
+            for arg in ordered_input_args
         )
 
     def __reduce__(self):
