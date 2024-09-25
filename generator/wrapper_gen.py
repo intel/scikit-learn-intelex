@@ -1003,6 +1003,8 @@ cdef extern from "daal4py_cpp.h":
 
 # this is our actual algorithm class for Python
 cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
+    cdef tuple _params
+
     '''
     {{algo}}
     {{params_all|fmt('{}', 'sphinx', sep='\n')|indent(4)}}
@@ -1017,6 +1019,13 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         self.c_ptr = mk_{{algo}}(
             {{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}}
         )
+        self._params = tuple(
+            v for k, v in locals().items()
+            if k != "self"
+        )
+
+    def __reduce__(self):
+        return (self.__class__, self._params)
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
