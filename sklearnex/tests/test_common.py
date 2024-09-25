@@ -223,6 +223,7 @@ def n_jobs_check(text, estimator, method):
 
 DESIGN_RULES = [n_jobs_check]
 
+
 if sklearn_check_version("1.0"):
     DESIGN_RULES += [call_validate_data]
 
