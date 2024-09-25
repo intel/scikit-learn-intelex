@@ -26,8 +26,8 @@ from glob import glob
 import numpy as np
 import pytest
 import scipy
-from sklearn.utils import all_estimators
 import sklearn.utils.validation
+from sklearn.utils import all_estimators
 
 from daal4py.sklearn._utils import sklearn_check_version
 from sklearnex.tests.utils import (
