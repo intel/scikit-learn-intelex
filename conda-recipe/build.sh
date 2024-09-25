@@ -27,7 +27,7 @@ if [ -z "${DALROOT}" ]; then
     export DALROOT=${PREFIX}
 fi
 
-if [ -z "${MPIROOT}" ]; then
+if [ -z "${MPIROOT}" ] && [ -z "${NO_DIST}" ]; then
     export MPIROOT=${PREFIX}
 fi
 # reset preferred compilers to avoid usage of icx/icpx by default in all cases
