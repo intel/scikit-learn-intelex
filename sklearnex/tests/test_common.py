@@ -84,11 +84,16 @@ def test_all_estimators_covered(monkeypatch):
     The sklearnex.spmd and sklearnex.preview packages are not tested.
     """
     monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
-    estimators = all_estimators()
-    print(estimators)
+    estimators = all_estimators()  # list of tuples
+    uncovered_estimators = []
     for name, obj in estimators:
         # do nothing if defined in preview
-        if "preview" not in obj.__module__:
-            assert any([issubclass(est, obj) for est in PATCHED_MODELS.values()]) or any(
-                [issubclass(est.__class__, obj) for est in SPECIAL_INSTANCES.values()]
-            ), f"{name} not included"
+        if "preview" not in obj.__module__ and not (
+            any([issubclass(est, obj) for est in PATCHED_MODELS.values()])
+            or any([issubclass(est.__class__, obj) for est in SPECIAL_INSTANCES.values()])
+        ):
+            uncovered_estimators += [".".join([obj.__module__, name])]
+
+    assert (
+        uncovered_estimators == []
+    ), f"{uncovered_estimators} are currently not included"
