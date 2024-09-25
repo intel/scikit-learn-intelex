@@ -120,15 +120,16 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
     reason="Sparse data requires oneDAL>=2024.7.0",
 )
 @pytest.mark.parametrize("queue", get_queues())
-# TODO: investigate failures in init="random" after migration to oneMKL
-# @pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
-@pytest.mark.parametrize("init", ["k-means++", "arraylike"])
+@pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
 @pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
 @pytest.mark.parametrize(
     "dims", [(1000, 10, 0.95, 3), (50000, 100, 0.75, 10), (10000, 10, 0.8, 5)]
 )
 def test_dense_vs_sparse(queue, init, algorithm, dims):
     from sklearnex.cluster import KMeans
+
+    if init == "random":
+        pytest.skip("random initialization in sparse K-means is buggy.")
 
     # For higher level of sparsity (smaller density) the test may fail
     n_samples, n_features, density, n_clusters = dims

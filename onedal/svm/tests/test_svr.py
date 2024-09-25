@@ -122,10 +122,10 @@ def _test_diabetes_compare_with_sklearn(queue, kernel):
 
 @pass_if_not_implemented_for_gpu(reason="svr is not implemented")
 @pytest.mark.parametrize("queue", get_queues())
-# TODO: investigate failures in kernel="sigmoid" after migration to oneMKL
-# @pytest.mark.parametrize("kernel", ["linear", "rbf", "poly", "sigmoid"])
-@pytest.mark.parametrize("kernel", ["linear", "rbf", "poly"])
+@pytest.mark.parametrize("kernel", ["linear", "rbf", "poly", "sigmoid"])
 def test_diabetes_compare_with_sklearn(queue, kernel):
+    if kernel == "sigmoid":
+        pytest.skip("Sparse sigmoid kernel function is buggy.")
     _test_diabetes_compare_with_sklearn(queue, kernel)
 
 
