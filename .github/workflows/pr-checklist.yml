@@ -20,6 +20,9 @@ on:
   pull_request:
     types: [opened, edited, synchronize]
 
+permissions:
+  pull-requests: write
+
 jobs:
   checklist:
     runs-on: ubuntu-24.04
@@ -41,8 +44,6 @@ jobs:
     - name: Check if PR is not draft
       id: is-not-draft
       run: |
-        echo "DRAFT: ${{ steps.pr.outputs.draft }}"
-        echo "BODY: ${{ steps.pr.outputs.body }}"
         if [ "${{ steps.pr.outputs.draft }}" = "true" ]; then
           echo "PR is in draft state. Exiting."
           exit 0
