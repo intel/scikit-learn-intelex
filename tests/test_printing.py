@@ -23,7 +23,7 @@ import daal4py
 
 
 class Test(unittest.TestCase):
-    def test_printing(self):
+    def test_qr_printing(self):
         rng = np.random.default_rng(seed=123)
         X = rng.standard_normal(size=(10, 5))
         qr_algorithm = daal4py.qr()
