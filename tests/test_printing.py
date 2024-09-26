@@ -28,5 +28,8 @@ class Test(unittest.TestCase):
         X = rng.standard_normal(size=(10, 5))
         qr_algorithm = daal4py.qr()
         qr_result = qr_algorithm.compute(X)
-        assert "matrixQ" in qr_result.__str__()
-        assert "matrixQ" in qr_result.__repr__()
+        qr_result_str, qr_result_repr = qr_result.__str__(), qr_result.__repr__()
+        assert "matrixQ" in qr_result_str
+        assert "matrixR" in qr_result_str
+        assert "matrixQ" in qr_result_repr 
+        assert "matrixR" in qr_result_repr 
