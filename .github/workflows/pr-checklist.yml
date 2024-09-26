@@ -36,17 +36,13 @@ jobs:
             repo: context.repo.repo,
             pull_number: context.payload.pull_request.number
           });
-          console.log(pr_desc);
-          console.log(pr_desc.data.body);
-          console.log(pr_desc.data.draft);
-          return {
-            body: pr_desc.data.body,
-            draft: pr_desc.data.draft
-          };
+          core.setOutput('body', pr_desc.data.body)
+          core.setOutput('draft', pr_desc.data.draft)
     - name: Check if PR is not draft
       id: is-not-draft
       run: |
-        echo "${{ steps.pr.outputs }}"
+        echo "DRAFT: ${{ steps.pr.outputs.draft }}"
+        echo "BODY: ${{ steps.pr.outputs.body }}"
         if [ "${{ steps.pr.outputs.draft }}" = "true" ]; then
           echo "PR is in draft state. Exiting."
           exit 0
