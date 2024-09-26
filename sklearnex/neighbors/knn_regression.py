@@ -34,7 +34,7 @@ else:
     validate_data = sklearn_KNeighborsRegressor._validate_data
 
 
-@control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "predict", "kneighbors", "score"])
 class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor):
     __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):

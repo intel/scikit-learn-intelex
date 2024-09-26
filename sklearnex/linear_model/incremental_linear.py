@@ -50,7 +50,7 @@ from .._utils import PatchingConditionsChain, register_hyperparameters
     }
 )
 @control_n_jobs(
-    decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
+    decorated_methods=["fit", "partial_fit", "predict", "score", "_onedal_finalize_fit"]
 )
 class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimator):
     """
