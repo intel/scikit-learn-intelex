@@ -31,5 +31,5 @@ class Test(unittest.TestCase):
         qr_result_str, qr_result_repr = qr_result.__str__(), qr_result.__repr__()
         assert "matrixQ" in qr_result_str
         assert "matrixR" in qr_result_str
-        assert "matrixQ" in qr_result_repr 
-        assert "matrixR" in qr_result_repr 
+        assert "matrixQ" in qr_result_repr
+        assert "matrixR" in qr_result_repr
