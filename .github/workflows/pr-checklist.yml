@@ -42,7 +42,7 @@ jobs:
       id: checkboxes
       run: |
         DESCRIPTION="${{ steps.pr.outputs.body }}"
-        UNCHECKED=$(echo "$DESCRIPTION" | grep -c '\[ \]')
+        UNCHECKED=$(echo "$DESCRIPTION" | grep -c '\[ \]' || true)
         echo "unchecked=$UNCHECKED" >> $GITHUB_OUTPUT
     - name: Fail if not all checkboxes are checked and PR is not draft
       if: ${{ (steps.pr.outputs.draft == 'false') && (steps.checkboxes.outputs.unchecked != '0') }}
