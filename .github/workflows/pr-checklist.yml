@@ -54,7 +54,7 @@ jobs:
         DESCRIPTION="${{ steps.pr.outputs.body }}"
         UNCHECKED=$(echo "$DESCRIPTION" | grep -c '\[ \]')
         echo "Unchecked checkboxes: $UNCHECKED"
-        echo "unchecked=$UNCHECKED" >> $GITHUB_STATE
+        echo "unchecked=$UNCHECKED" >> $GITHUB_OUTPUT
     - name: Move PR to draft if not all checkboxes are checked
       if: steps.checkboxes.outputs.unchecked != '0'
       uses: actions/github-script@v7
