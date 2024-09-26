@@ -46,6 +46,7 @@ jobs:
     - name: Check if PR is not draft
       id: is-not-draft
       run: |
+        echo "${{ steps.pr.outputs }}"
         if [ "${{ steps.pr.outputs.draft }}" = "true" ]; then
           echo "PR is in draft state. Exiting."
           exit 0
