@@ -189,7 +189,6 @@ ONEDAL_PY_INIT_MODULE(covariance) {
             ONEDAL_PY_INSTANTIATE(init_compute_hyperparameters, sub, task::compute);
         #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     #endif
-
 }
 
 } // namespace oneapi::dal::python
