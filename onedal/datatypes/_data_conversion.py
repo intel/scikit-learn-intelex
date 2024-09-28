@@ -21,7 +21,6 @@ import numpy as np
 from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
-from .._config import _get_config, _set_config
 from .._device_offload import dpctl_available, dpnp_available
 from ..utils import _is_csr
 
@@ -32,38 +31,36 @@ if dpnp_available:
     import dpnp
 
 
-def _apply_and_pass(func, *args):
+def _apply_and_pass(func, *args, **kwargs):
     if len(args) == 1:
-        return func(args[0])
-    return tuple(map(func, args))
+        return func(args[0], **kwargs)
+    return tuple(map(func, args, kwargs))
 
 
-def from_table(*args):
-    return _apply_and_pass(convert_one_from_table, *args)
-
-
-# TODO:
-# add warnings if no dpc backend.
-# TODO:
-# sparse for sua data.
-def convert_one_from_table(table):
-    result = _backend.from_table(table)
-    if dpnp_available and _get_config()["_dpnp_output"]:
-        result = dpnp.asarray(result)
-    return result
+def from_table(*args, sua_iface=None, xp=None):
+    return _apply_and_pass(convert_one_from_table, *args, sua_iface=sua_iface, xp=xp)
 
 
 # TODO:
 # add warnings if no dpc backend.
 # TODO:
 # sparse for sua data.
-def convert_one_to_table(arg):
-    usm_iface = (
-        getattr(arg, "__sycl_usm_array_interface__", None) if _is_dpc_backend else None
-    )
-    if usm_iface:
-        if dpnp_available and isinstance(arg, dpnp.ndarray):
-            _set_config(_dpnp_output=True)
+# TODO:
+# update it for each of the datafrmae format.
+def convert_one_from_table(table, sua_iface=None, xp=None):
+    # Currently only `__sycl_usm_array_interface__` protocol used to
+    # convert into dpnp/dpctl tensors.
+    if sua_iface:
+        return xp.asarray(table)
+    return _backend.from_table(table)
+
+
+# TODO:
+# add warnings if no dpc backend.
+# TODO:
+# sparse for sua data.
+def convert_one_to_table(arg, sua_iface=None):
+    if sua_iface and _is_dpc_backend:
         return _backend.sua_iface_to_table(arg)
 
     if not _is_csr(arg):
@@ -71,8 +68,8 @@ def convert_one_to_table(arg):
     return _backend.to_table(arg)
 
 
-def to_table(*args):
-    return _apply_and_pass(convert_one_to_table, *args)
+def to_table(*args, sua_iface=None):
+    return _apply_and_pass(convert_one_to_table, *args, sua_iface=sua_iface)
 
 
 if _is_dpc_backend:

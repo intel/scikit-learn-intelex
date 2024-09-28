@@ -27,6 +27,7 @@ from onedal.tests.utils._dataframes_support import (
     get_dataframes_and_queues,
 )
 from onedal.tests.utils._device_selection import get_queues
+from onedal.utils._array_api import _get_sycl_namespace
 
 if dpctl_available:
     import dpctl.tensor as dpt
@@ -208,11 +209,13 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
 
     X_dp = _convert_to_dataframe(X_numpy, sycl_queue=queue, target_df=dataframe)
 
-    X_table = to_table(X_dp)
+    sua_iface, X_dp_namespace, _ = _get_sycl_namespace(X_dp)
+
+    X_table = to_table(X_dp, sua_iface=sua_iface)
 
     assert hasattr(X_table, "__sycl_usm_array_interface__")
 
-    X_dp_from_table = from_table(X_table)
+    X_dp_from_table = from_table(X_table, sua_iface=sua_iface, xp=X_dp_namespace)
 
     _check_attributes_for_zero_copy(X_dp, X_dp_from_table, order)
 

@@ -36,6 +36,7 @@ from onedal.tests.utils._dataframes_support import (
     get_dataframes_and_queues,
 )
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
+from onedal.utils._array_api import _get_sycl_namespace
 from sklearnex import config_context
 from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from sklearnex.utils._array_api import get_namespace
@@ -127,22 +128,24 @@ ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 if dpctl_available:
     from onedal.datatypes import from_table, to_table
 
-    class DummyEstimatorWithSUAConversions(BaseEstimator):
+    class DummyEstimatorWithTableConversions(BaseEstimator):
 
-        # __name__ = 'DummyEstimatorWithSUAConversions'
+        # __name__ = 'DummyEstimatorWithTableConversions'
 
         def fit(self, X, y=None):
-            X_table = to_table(X)
-            y_table = to_table(y)
+            _, sua_iface, _ = _get_sycl_namespace(X)
+            X_table = to_table(X, sua_iface=sua_iface)
+            y_table = to_table(y, sua_iface=sua_iface)
             return self
 
         def predict(self, X):
-            X_table = to_table(X)
-            returned_X = from_table(X_table)
+            xp, sua_iface, _ = _get_sycl_namespace(X)
+            X_table = to_table(X, sua_iface=sua_iface)
+            returned_X = from_table(X_table, sua_iface=sua_iface, xp=xp)
             return returned_X
 
-    DUMMY_ESTIMATOR_WITH_SUA_CONVERSIONS = {
-        "DummyEstimatorWithSUAConversions": DummyEstimatorWithSUAConversions
+    DUMMY_ESTIMATOR_WITH_TABLE_CONVERSIONS = {
+        "DummyEstimatorWithTableConversions": DummyEstimatorWithTableConversions
     }
 
 
@@ -206,11 +209,14 @@ def split_train_inference(kf, x, y, estimator, queue=None):
     return mem_tracks
 
 
-def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
+def _kfold_function_template(
+    estimator, dataframe, data_shape, queue=None, func=None, get_data_func=None
+):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
+    get_data_func = get_data_func if get_data_func else gen_clsf_data
+    X, y, data_memory_size = get_data_func(n_samples, n_features)
     kf = KFold(n_splits=N_SPLITS)
     if func:
         X = func(X)
@@ -314,12 +320,12 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 
 
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu, gpu")
+    "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
 )
-@pytest.mark.parametrize("estimator", DUMMY_ESTIMATOR_WITH_SUA_CONVERSIONS.keys())
+@pytest.mark.parametrize("estimator", DUMMY_ESTIMATOR_WITH_TABLE_CONVERSIONS.keys())
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
-def test_sua_interop_memory_leaks(estimator, dataframe, queue, order, data_shape):
+def test_table_conversions_memory_leaks(estimator, dataframe, queue, order, data_shape):
     func = ORDER_DICT[order]
 
     if queue.sycl_device.is_gpu and (
@@ -328,7 +334,7 @@ def test_sua_interop_memory_leaks(estimator, dataframe, queue, order, data_shape
         pytest.skip("SYCL device memory leak check requires the level zero sysman")
 
     _kfold_function_template(
-        DUMMY_ESTIMATOR_WITH_SUA_CONVERSIONS[estimator],
+        DUMMY_ESTIMATOR_WITH_TABLE_CONVERSIONS[estimator],
         dataframe,
         data_shape,
         queue,
