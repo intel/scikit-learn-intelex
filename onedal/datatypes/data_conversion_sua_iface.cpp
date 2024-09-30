@@ -207,30 +207,6 @@ void report_problem_to_sua_iface(const char* clarification) {
     throw std::runtime_error{ message };
 }
 
-// TODO:
-// re-use convert_dal_to_sua_type instead.
-std::string get_npy_typestr(const dal::data_type dtype) {
-    switch (dtype) {
-        case dal::data_type::float32: {
-            return "<f4";
-            break;
-        }
-        case dal::data_type::float64: {
-            return "<f8";
-            break;
-        }
-        case dal::data_type::int32: {
-            return "<i4";
-            break;
-        }
-        case dal::data_type::int64: {
-            return "<i8";
-            break;
-        }
-        default: report_problem_to_sua_iface(": unknown data type");
-    };
-}
-
 py::tuple get_npy_strides(const dal::data_layout& data_layout,
                           npy_intp row_count,
                           npy_intp column_count) {
@@ -301,7 +277,7 @@ py::dict construct_sua_iface(const dal::table& input) {
     iface["strides"] = get_npy_strides(data_layout, row_count, column_count);
     // dpctl supports only version 1.
     iface["version"] = 1;
-    iface["typestr"] = get_npy_typestr(dtype);
+    iface["typestr"] = convert_dal_to_sua_type(dtype);
     iface["syclobj"] = pack_queue(queue);
 
     return iface;

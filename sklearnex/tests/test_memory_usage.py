@@ -326,6 +326,10 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
         _kfold_function_template(GPU_ESTIMATORS[estimator], None, data_shape, queue, func)
 
 
+@pytest.mark.skipif(
+    dpctl_available,
+    reason="dpctl.tensor is required for testing.",
+)
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
 )
