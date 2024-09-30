@@ -42,8 +42,9 @@ jobs:
           core.setOutput('draft', pr_desc.data.draft)
     - name: Check if all checkboxes are checked
       id: checkboxes
+      env:
+        DESCRIPTION: ${{ steps.pr.outputs.body }}
       run: |
-        DESCRIPTION="${{ steps.pr.outputs.body }}"
         UNCHECKED=$(echo "$DESCRIPTION" | grep -c '\[ \]' || true)
         echo "unchecked=$UNCHECKED" >> $GITHUB_OUTPUT
     - name: Fail if not all checkboxes are checked and PR is not draft
