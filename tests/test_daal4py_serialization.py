@@ -23,7 +23,7 @@ import daal4py
 
 
 class Test(unittest.TestCase):
-    def test_serialization_of_algorithms(self):
+    def test_serialization_of_qr(self):
         obj_original = daal4py.qr(fptype="float")
         obj_deserialized = pickle.loads(pickle.dumps(obj_original))
 
@@ -34,3 +34,15 @@ class Test(unittest.TestCase):
         Q_deserialized = obj_deserialized.compute(X).matrixQ
         np.testing.assert_almost_equal(Q_orig, Q_deserialized)
         assert Q_orig.dtype == Q_deserialized.dtype
+
+    def test_serialization_of_kmeans(self):
+        obj_original = daal4py.kmeans_init(nClusters=4)
+        obj_deserialized = pickle.loads(pickle.dumps(obj_original))
+
+        rng = np.random.default_rng(seed=123)
+        X = rng.standard_normal(size=(100, 20))
+
+        np.testing.assert_almost_equal(
+            obj_original.compute(X).centroids,
+            obj_deserialized.compute(X).centroids,
+        )
