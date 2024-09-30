@@ -31,14 +31,10 @@ if dpnp_available:
     import dpnp
 
 
-def _apply_and_pass(func, *args, **kwargs):
+def _apply_and_pass(func, *args):
     if len(args) == 1:
-        return func(args[0], **kwargs)
-    return tuple(map(func, args, kwargs))
-
-
-def from_table(*args, sua_iface=None, xp=None):
-    return _apply_and_pass(convert_one_from_table, *args, sua_iface=sua_iface, xp=xp)
+        return func(args[0])
+    return tuple(map(func, args))
 
 
 # TODO:
@@ -47,6 +43,8 @@ def from_table(*args, sua_iface=None, xp=None):
 # sparse for sua data.
 # TODO:
 # update it for each of the datafrmae format.
+# TODO:
+# update func use with args and kwargs with _apply_and_pass.
 def convert_one_from_table(table, sua_iface=None, xp=None):
     # Currently only `__sycl_usm_array_interface__` protocol used to
     # convert into dpnp/dpctl tensors.
@@ -68,8 +66,12 @@ def convert_one_to_table(arg, sua_iface=None):
     return _backend.to_table(arg)
 
 
-def to_table(*args, sua_iface=None):
-    return _apply_and_pass(convert_one_to_table, *args, sua_iface=sua_iface)
+def from_table(*args):
+    return _apply_and_pass(convert_one_from_table, *args)
+
+
+def to_table(*args):
+    return _apply_and_pass(convert_one_to_table, *args)
 
 
 if _is_dpc_backend:

@@ -126,22 +126,27 @@ ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
 if dpctl_available:
-    from onedal.datatypes import from_table, to_table
+    # TODO:
+    # use  from_table, to_table.
+    from onedal.datatypes._data_conversion import (
+        convert_one_from_table,
+        convert_one_to_table,
+    )
 
     class DummyEstimatorWithTableConversions(BaseEstimator):
 
         # __name__ = 'DummyEstimatorWithTableConversions'
 
         def fit(self, X, y=None):
-            _, sua_iface, _ = _get_sycl_namespace(X)
-            X_table = to_table(X, sua_iface=sua_iface)
-            y_table = to_table(y, sua_iface=sua_iface)
+            sua_iface, _, _ = _get_sycl_namespace(X)
+            X_table = convert_one_to_table(X, sua_iface=sua_iface)
+            y_table = convert_one_to_table(y, sua_iface=sua_iface)
             return self
 
         def predict(self, X):
-            xp, sua_iface, _ = _get_sycl_namespace(X)
-            X_table = to_table(X, sua_iface=sua_iface)
-            returned_X = from_table(X_table, sua_iface=sua_iface, xp=xp)
+            sua_iface, xp, _ = _get_sycl_namespace(X)
+            X_table = convert_one_to_table(X, sua_iface=sua_iface)
+            returned_X = convert_one_from_table(X_table, sua_iface=sua_iface, xp=xp)
             return returned_X
 
     DUMMY_ESTIMATOR_WITH_TABLE_CONVERSIONS = {
@@ -209,14 +214,16 @@ def split_train_inference(kf, x, y, estimator, queue=None):
     return mem_tracks
 
 
-def _kfold_function_template(
-    estimator, dataframe, data_shape, queue=None, func=None, get_data_func=None
-):
+# TODO:
+# def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None, get_data_func=None):
+# add custom get_data_func.
+def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    get_data_func = get_data_func if get_data_func else gen_clsf_data
-    X, y, data_memory_size = get_data_func(n_samples, n_features)
+    # get_data_func = get_data_func if get_data_func else gen_clsf_data
+    # X, y, data_memory_size = get_data_func(n_samples, n_features)
+    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
     kf = KFold(n_splits=N_SPLITS)
     if func:
         X = func(X)

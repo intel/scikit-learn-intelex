@@ -21,6 +21,10 @@ from numpy.testing import assert_allclose
 from onedal import _backend
 from onedal._device_offload import dpctl_available, dpnp_available
 from onedal.datatypes import from_table, to_table
+
+# TODO:
+# re-impl and used from_table, to_table instead.
+from onedal.datatypes._data_conversion import convert_one_from_table, convert_one_to_table
 from onedal.primitives import linear_kernel
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -211,11 +215,13 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
 
     sua_iface, X_dp_namespace, _ = _get_sycl_namespace(X_dp)
 
-    X_table = to_table(X_dp, sua_iface=sua_iface)
+    X_table = convert_one_to_table(X_dp, sua_iface=sua_iface)
 
     assert hasattr(X_table, "__sycl_usm_array_interface__")
 
-    X_dp_from_table = from_table(X_table, sua_iface=sua_iface, xp=X_dp_namespace)
+    X_dp_from_table = convert_one_from_table(
+        X_table, sua_iface=sua_iface, xp=X_dp_namespace
+    )
 
     _check_attributes_for_zero_copy(X_dp, X_dp_from_table, order)
 
