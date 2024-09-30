@@ -125,6 +125,7 @@ N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
+DUMMY_ESTIMATOR = {}
 if dpctl_available:
     # TODO:
     # use  from_table, to_table.
@@ -149,9 +150,9 @@ if dpctl_available:
             returned_X = convert_one_from_table(X_table, sua_iface=sua_iface, xp=xp)
             return returned_X
 
-    DUMMY_ESTIMATOR_WITH_TABLE_CONVERSIONS = {
-        "DummyEstimatorWithTableConversions": DummyEstimatorWithTableConversions
-    }
+    DUMMY_ESTIMATOR["DummyEstimatorWithTableConversions"] = (
+        DummyEstimatorWithTableConversions
+    )
 
 
 def gen_clsf_data(n_samples, n_features):
@@ -333,7 +334,7 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
 )
-@pytest.mark.parametrize("estimator", DUMMY_ESTIMATOR_WITH_TABLE_CONVERSIONS.keys())
+@pytest.mark.parametrize("estimator", DUMMY_ESTIMATOR.keys())
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_table_conversions_memory_leaks(estimator, dataframe, queue, order, data_shape):
@@ -345,7 +346,7 @@ def test_table_conversions_memory_leaks(estimator, dataframe, queue, order, data
         pytest.skip("SYCL device memory leak check requires the level zero sysman")
 
     _kfold_function_template(
-        DUMMY_ESTIMATOR_WITH_TABLE_CONVERSIONS[estimator],
+        DUMMY_ESTIMATOR[estimator],
         dataframe,
         data_shape,
         queue,
