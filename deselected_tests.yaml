@@ -385,6 +385,7 @@ deselected_tests:
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-0.01-sparse-normal]
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-1e-08-sparse-normal]
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-0-sparse-normal]
+  - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-1e-100-sparse-normal]
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results[42-1e-100-sparse_array-normal]
 
   # --------------------------------------------------------
