@@ -14,13 +14,19 @@
 # limitations under the License.
 # ===============================================================================
 
-from onedal._device_offload import dpnp_available
+from onedal._device_offload import dpctl_available, dpnp_available
 
 if dpnp_available:
     import dpnp
 
+if dpctl_available:
+    from dpctl.tensor import usm_ndarray
+
 
 def _assert_tensor_attr(actual, desired, order):
+    is_usm_tensor = lambda x: isinstance(x, dpnp.ndarray) or isinstance(x, usm_ndarray)
+    assert is_usm_tensor(actual)
+    assert is_usm_tensor(desired)
     # dpctl.tensor is the dpnp.ndarrays's core tensor structure along
     # with advanced device management. Convert dpnp to dpctl.tensor with zero copy.
     get_tensor = lambda x: (
