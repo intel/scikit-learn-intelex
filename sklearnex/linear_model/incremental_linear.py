@@ -32,6 +32,11 @@ from onedal.linear_model import (
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 from onedal.common.hyperparameters import get_hyperparameters
 
 from .._device_offload import dispatch, wrap_output_data
@@ -45,7 +50,7 @@ from .._utils import PatchingConditionsChain, register_hyperparameters
     }
 )
 @control_n_jobs(
-    decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
+    decorated_methods=["fit", "partial_fit", "predict", "score", "_onedal_finalize_fit"]
 )
 class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimator):
     """
@@ -131,7 +136,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
@@ -147,7 +153,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
             self._onedal_finalize_fit()
-        return self._onedal_estimator.predict(X, queue)
+        return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return r2_score(
@@ -162,7 +168,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         if check_input:
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(
+                X, y = validate_data(
+                    self,
                     X,
                     y,
                     dtype=[np.float64, np.float32],
@@ -194,17 +201,17 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         onedal_params = {"fit_intercept": self.fit_intercept, "copy_X": self.copy_X}
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_linear(**onedal_params)
-        self._onedal_estimator.partial_fit(X, y, queue)
+        self._onedal_estimator.partial_fit(X, y, queue=queue)
         self._need_to_finalize = True
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
         is_underdetermined = self.n_samples_seen_ < self.n_features_in_ + int(
             self.fit_intercept
         )
         if is_underdetermined:
             raise ValueError("Not enough samples to finalize")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
     def _onedal_fit(self, X, y, queue=None):
@@ -212,7 +219,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
+            X, y = validate_data(
+                self,
                 X,
                 y,
                 dtype=[np.float64, np.float32],
@@ -263,8 +271,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 "Only one sample available. You may want to reshape your data array"
             )
 
-        self._onedal_finalize_fit()
-
+        self._onedal_finalize_fit(queue=queue)
         return self
 
     def get_intercept_(self):

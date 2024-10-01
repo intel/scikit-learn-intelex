@@ -31,6 +31,11 @@ from sklearnex.metrics import pairwise_distances
 from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain, register_hyperparameters
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_EmpiricalCovariance._validate_data
+
 
 @register_hyperparameters({"fit": get_hyperparameters("covariance", "compute")})
 @control_n_jobs(decorated_methods=["fit", "mahalanobis"])
@@ -91,7 +96,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
         if sklearn_check_version("1.2"):
             self._validate_params()
         if sklearn_check_version("0.23"):
-            X = self._validate_data(X, force_all_finite=False)
+            X = validate_data(self, X, force_all_finite=False)
         else:
             X = check_array(X, force_all_finite=False)
 
@@ -111,7 +116,7 @@ class EmpiricalCovariance(sklearn_EmpiricalCovariance):
     @wrap_output_data
     def mahalanobis(self, X):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, reset=False)
+            X = validate_data(self, X, reset=False)
         else:
             X = check_array(X)
 

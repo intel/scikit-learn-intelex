@@ -14,7 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import contextlib
 import unittest
+import warnings
 from datetime import datetime
 
 import lightgbm as lgbm
@@ -48,11 +50,14 @@ except ImportError:
 
 
 shap_required_version = (2024, "P", 1)
+shap_api_change_version = (2025, "P", 0)
 shap_supported = daal_check_version(shap_required_version)
+shap_api_changed = daal_check_version(shap_api_change_version)
 shap_not_supported_str = (
     f"SHAP value calculation only supported for version {shap_required_version} or later"
 )
 shap_unavailable_str = "SHAP Python package not available"
+shap_api_change_str = "SHAP calculation requires 2025.0 API"
 cb_unavailable_str = "CatBoost not available"
 
 # CatBoost's SHAP value calculation seems to be buggy
@@ -208,7 +213,7 @@ class XGBoostRegressionModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-6)
 
 
-# duplicate all tests for bae_score=0.0
+# duplicate all tests for base_score=0.0
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostRegressionModelBuilder_base_score0(XGBoostRegressionModelBuilder):
     @classmethod
@@ -216,7 +221,7 @@ class XGBoostRegressionModelBuilder_base_score0(XGBoostRegressionModelBuilder):
         XGBoostRegressionModelBuilder.setUpClass(0)
 
 
-# duplicate all tests for bae_score=100
+# duplicate all tests for base_score=100
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostRegressionModelBuilder_base_score100(XGBoostRegressionModelBuilder):
     @classmethod
@@ -226,6 +231,31 @@ class XGBoostRegressionModelBuilder_base_score100(XGBoostRegressionModelBuilder)
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder(unittest.TestCase):
+    def get_conversion_warning_is_expected(self):
+        if (
+            self.xgb_model._estimator_type == "classifier"
+            and self.xgb_model.objective == "binary:logitraw"
+        ):
+            return True
+        else:
+            return False
+
+    @contextlib.contextmanager
+    def conditional_assert_warns(self, warning):
+        if warning is not None:
+            with self.assertWarns(warning) as ctx:
+                try:
+                    yield [ctx]
+                finally:
+                    pass
+        else:
+            with warnings.catch_warnings() as ctx:
+                warnings.simplefilter("error")
+                try:
+                    yield [ctx]
+                finally:
+                    pass
+
     @classmethod
     def setUpClass(cls, base_score=0.5, n_classes=2, objective="binary:logistic"):
         n_features = 15
@@ -235,7 +265,7 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
             n_samples=500,
             n_classes=n_classes,
             n_features=n_features,
-            n_informative=10,
+            n_informative=(2 * n_features) // 3,
             random_state=42,
         )
         cls.X_test = X[:2, :]
@@ -252,14 +282,22 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         cls.xgb_model.fit(X, y)
 
     def test_model_conversion(self):
-        m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        expected_warning = (
+            UserWarning if self.get_conversion_warning_is_expected() else None
+        )
+        with self.conditional_assert_warns(expected_warning):
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
         self.assertEqual(m.model_type, "xgboost")
         self.assertEqual(m.n_classes_, self.n_classes)
         self.assertEqual(m.n_features_in_, 15)
         self.assertFalse(m._is_regression)
 
     def test_model_predict(self):
-        m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        expected_warning = (
+            UserWarning if self.get_conversion_warning_is_expected() else None
+        )
+        with self.conditional_assert_warns(expected_warning):
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_test)
         xgboost_pred = self.xgb_model.predict(self.X_test)
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-7)
@@ -274,7 +312,11 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
     def test_missing_value_support(self):
-        m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        expected_warning = (
+            UserWarning if self.get_conversion_warning_is_expected() else None
+        )
+        with self.conditional_assert_warns(expected_warning):
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
         d4p_pred = m.predict(self.X_nan)
         xgboost_pred = self.xgb_model.predict(self.X_nan)
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-7)
@@ -282,17 +324,51 @@ class XGBoostClassificationModelBuilder(unittest.TestCase):
     def test_model_predict_shap_contribs(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
-        with self.assertRaises(NotImplementedError):
-            m.predict(self.X_test, pred_contribs=True)
+        if not shap_api_changed:
+            with self.assertRaises(NotImplementedError):
+                m.predict(self.X_test, pred_contribs=True)
+        elif self.n_classes > 2:
+            with self.assertRaisesRegex(
+                RuntimeError, "Multiclass classification SHAP values not supported"
+            ):
+                m.predict(self.X_test, pred_contribs=True)
+        else:
+            d4p_pred = m.predict(self.X_test, pred_contribs=True)
+            xgboost_pred = booster.predict(
+                xgb.DMatrix(self.X_test),
+                pred_contribs=True,
+                approx_contribs=False,
+                validate_features=False,
+            )
+            np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
     def test_model_predict_shap_interactions(self):
         booster = self.xgb_model.get_booster()
         m = d4p.mb.convert_model(booster)
-        with self.assertRaises(NotImplementedError):
-            m.predict(self.X_test, pred_contribs=True)
+        if not shap_api_changed:
+            with self.assertRaises(NotImplementedError):
+                m.predict(self.X_test, pred_contribs=True)
+        elif self.n_classes > 2:
+            with self.assertRaisesRegex(
+                RuntimeError, "Multiclass classification SHAP values not supported"
+            ):
+                m.predict(self.X_test, pred_interactions=True)
+        else:
+            d4p_pred = m.predict(self.X_test, pred_interactions=True)
+            xgboost_pred = booster.predict(
+                xgb.DMatrix(self.X_test),
+                pred_interactions=True,
+                approx_contribs=False,
+                validate_features=False,
+            )
+            # hitting floating precision limits for classification where class probabilities
+            # are between 0 and 1
+            # we need to accept large relative differences, as long as the absolute difference
+            # remains small (<1e-6)
+            np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-2, atol=1e-6)
 
 
-# duplicate all tests for bae_score=0.3
+# duplicate all tests for base_score=0.3
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelBuilder):
     @classmethod
@@ -300,7 +376,7 @@ class XGBoostClassificationModelBuilder_base_score03(XGBoostClassificationModelB
         XGBoostClassificationModelBuilder.setUpClass(base_score=0.3)
 
 
-# duplicate all tests for bae_score=0.7
+# duplicate all tests for base_score=0.7
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class XGBoostClassificationModelBuilder_base_score07(XGBoostClassificationModelBuilder):
     @classmethod
@@ -328,6 +404,16 @@ class XGBoostClassificationModelBuilder_n_classes5_base_score03(
 class XGBoostClassificationModelBuilder_objective_logitraw(
     XGBoostClassificationModelBuilder
 ):
+    """
+    Caveat: logitraw is not per se supported in daal4py because we always
+
+                 1. apply the bias
+                 2. normalize to probabilities ("activation") using sigmoid
+                   (exception: SHAP values, the scores defining phi_ij are the raw class scores)
+
+    However, by undoing the activation and bias we can still compare if the original probas and SHAP values are aligned.
+    """
+
     @classmethod
     def setUpClass(cls):
         XGBoostClassificationModelBuilder.setUpClass(
@@ -352,6 +438,42 @@ class XGBoostClassificationModelBuilder_objective_logitraw(
         # accept an rtol of 1e-5
         np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=1e-5)
 
+    @unittest.skipUnless(shap_api_changed, reason=shap_api_change_str)
+    def test_model_predict_shap_contribs(self):
+        booster = self.xgb_model.get_booster()
+        with self.assertWarns(UserWarning):
+            # expect a warning that logitraw behaves differently and/or
+            # that base_score is ignored / fixed to 0.5
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        d4p_pred = m.predict(self.X_test, pred_contribs=True)
+        xgboost_pred = booster.predict(
+            xgb.DMatrix(self.X_test),
+            pred_contribs=True,
+            approx_contribs=False,
+            validate_features=False,
+        )
+        # undo bias
+        d4p_pred[:, -1] += 0.5
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-6)
+
+    @unittest.skipUnless(shap_api_changed, reason=shap_api_change_str)
+    def test_model_predict_shap_interactions(self):
+        booster = self.xgb_model.get_booster()
+        with self.assertWarns(UserWarning):
+            # expect a warning that logitraw behaves differently and/or
+            # that base_score is ignored / fixed to 0.5
+            m = d4p.mb.convert_model(self.xgb_model.get_booster())
+        d4p_pred = m.predict(self.X_test, pred_interactions=True)
+        xgboost_pred = booster.predict(
+            xgb.DMatrix(self.X_test),
+            pred_interactions=True,
+            approx_contribs=False,
+            validate_features=False,
+        )
+        # undo bias
+        d4p_pred[:, -1, -1] += 0.5
+        np.testing.assert_allclose(d4p_pred, xgboost_pred, rtol=5e-5)
+
 
 @unittest.skipUnless(shap_supported, reason=shap_not_supported_str)
 class LightGBMRegressionModelBuilder(unittest.TestCase):
@@ -373,9 +495,12 @@ class LightGBMRegressionModelBuilder(unittest.TestCase):
             "learning_rage": 0.05,
             "metric": {"l2", "l1"},
             "verbose": -1,
-            "n_estimators": 1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
+        cls.lgbm_model = lgbm.train(
+            params,
+            train_set=lgbm.Dataset(X_train, y_train),
+            num_boost_round=1,
+        )
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
@@ -430,7 +555,6 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
         X_train = np.concatenate([cls.X_nan, X])
         y_train = np.concatenate([[0, 0], y])
         params = {
-            "n_estimators": 10,
             "task": "train",
             "boosting": "gbdt",
             "objective": "multiclass",
@@ -438,7 +562,11 @@ class LightGBMClassificationModelBuilder(unittest.TestCase):
             "num_class": 3,
             "verbose": -1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
+        cls.lgbm_model = lgbm.train(
+            params,
+            train_set=lgbm.Dataset(X_train, y_train),
+            num_boost_round=10,
+        )
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)
@@ -493,7 +621,6 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
         X_train = np.concatenate([cls.X_nan, X])
         y_train = np.concatenate([[0, 0], y])
         params = {
-            "n_estimators": 10,
             "task": "train",
             "boosting": "gbdt",
             "objective": "binary",
@@ -501,7 +628,11 @@ class LightGBMClassificationModelBuilder_binaryClassification(unittest.TestCase)
             "num_leaves": 4,
             "verbose": -1,
         }
-        cls.lgbm_model = lgbm.train(params, train_set=lgbm.Dataset(X_train, y_train))
+        cls.lgbm_model = lgbm.train(
+            params,
+            train_set=lgbm.Dataset(X_train, y_train),
+            num_boost_round=10,
+        )
 
     def test_model_conversion(self):
         m = d4p.mb.convert_model(self.lgbm_model)

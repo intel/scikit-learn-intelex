@@ -40,6 +40,11 @@ if daal_check_version((2024, "P", 600)):
     from ..._device_offload import dispatch, wrap_output_data
     from ..._utils import PatchingConditionsChain
 
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = sklearn_Ridge._validate_data
+
     def _is_numeric_scalar(value):
         """
         Determines if the provided value is a numeric scalar.
@@ -330,7 +335,7 @@ if daal_check_version((2024, "P", 600)):
                 "multi_output": True,
             }
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(**check_params)
+                X, y = validate_data(self, **check_params)
             else:
                 X, y = check_X_y(**check_params)
 
@@ -356,7 +361,7 @@ if daal_check_version((2024, "P", 600)):
 
         def _onedal_predict(self, X, queue=None):
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, accept_sparse=False, reset=False)
+                X = validate_data(self, X, accept_sparse=False, reset=False)
 
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
@@ -408,11 +413,11 @@ if daal_check_version((2024, "P", 600)):
 
 else:
     from daal4py.sklearn.linear_model._ridge import Ridge
-    from onedal._device_offload import support_usm_ndarray
+    from onedal._device_offload import support_input_format
 
-    Ridge.fit = support_usm_ndarray(queue_param=False)(Ridge.fit)
-    Ridge.predict = support_usm_ndarray(queue_param=False)(Ridge.predict)
-    Ridge.score = support_usm_ndarray(queue_param=False)(Ridge.score)
+    Ridge.fit = support_input_format(queue_param=False)(Ridge.fit)
+    Ridge.predict = support_input_format(queue_param=False)(Ridge.predict)
+    Ridge.score = support_input_format(queue_param=False)(Ridge.score)
 
     logging.warning(
         "Preview Ridge requires oneDAL version >= 2024.6 but it was not found"

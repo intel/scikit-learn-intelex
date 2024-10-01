@@ -304,6 +304,7 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_spmd, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_spmd, task_list);
+    ONEDAL_PY_INSTANTIATE(init_finalize_train_ops, sub, policy_spmd, task_list);
 #else // ONEDAL_DATA_PARALLEL_SPMD
     ONEDAL_PY_INSTANTIATE(init_train_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_infer_ops, sub, policy_list, task_list);
@@ -317,7 +318,6 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
     ONEDAL_PY_INSTANTIATE(init_train_hyperparameters, sub, task_list);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 #endif // ONEDAL_DATA_PARALLEL_SPMD
-
 }
 
 ONEDAL_PY_TYPE2STR(dal::linear_regression::task::regression, "regression");

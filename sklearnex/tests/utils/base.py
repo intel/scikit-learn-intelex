@@ -15,7 +15,7 @@
 # ==============================================================================
 
 from functools import partial
-from inspect import getattr_static, isclass, signature
+from inspect import Parameter, getattr_static, isclass, signature
 
 import numpy as np
 from scipy import sparse as sp
@@ -106,7 +106,7 @@ mixin_map = [
 ]
 
 
-class _sklearn_clone_dict(dict):
+class sklearn_clone_dict(dict):
     """Special dict type for returning state-free sklearn/sklearnex estimators
     with the same parameters"""
 
@@ -118,7 +118,7 @@ class _sklearn_clone_dict(dict):
 # could be because of supported non-default parameters, blocked support via sklearn's
 # 'available_if' decorator, or not being a native sklearn estimator (i.e. those not in
 # the default PATCHED_MODELS dictionary)
-SPECIAL_INSTANCES = _sklearn_clone_dict(
+SPECIAL_INSTANCES = sklearn_clone_dict(
     {
         str(i): i
         for i in [
@@ -134,7 +134,7 @@ SPECIAL_INSTANCES = _sklearn_clone_dict(
 )
 
 
-def gen_models_info(algorithms, required_inputs=["X", "y"]):
+def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False, daal4py=True):
     """Generate estimator-attribute pairs for pytest test collection.
 
     Parameters
@@ -147,6 +147,12 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
         non-BaseEstimator attributes).  Only one must be present, None
         signifies taking all non-private attribues, callable or not.
 
+    fit: bool (default False)
+        Include "fit" method as an estimator-attribute pair
+
+    daal4py: bool (default True)
+        Include daal4py estimators in estimator-attribute list
+
     Returns
     -------
     list of 2-element tuples: (estimator, string)
@@ -157,17 +163,23 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
 
         if estimator in PATCHED_MODELS:
             est = PATCHED_MODELS[estimator]
+        elif estimator in SPECIAL_INSTANCES:
+            est = SPECIAL_INSTANCES[estimator].__class__
         elif isinstance(algorithms[estimator], BaseEstimator):
             est = algorithms[estimator].__class__
         else:
             raise KeyError(f"Unrecognized sklearnex estimator: {estimator}")
+
+        if not daal4py and est.__module__.startswith("daal4py"):
+            continue
 
         # remove BaseEstimator methods (get_params, set_params)
         candidates = set(dir(est)) - set(dir(BaseEstimator))
         # remove private methods
         candidates = set([attr for attr in candidates if not attr.startswith("_")])
         # required to enable other methods
-        candidates = candidates - {"fit"}
+        if not fit:
+            candidates = candidates - {"fit"}
 
         # allow only callable methods with any of the required inputs
         if required_inputs:
@@ -217,6 +229,13 @@ def call_method(estimator, method, X, y, **kwargs):
     return value from estimator.method
     """
     # useful for repository wide testing
+
+    func = getattr(estimator, method)
+    argdict = signature(func).parameters
+    argnum = len(
+        [i for i in argdict if argdict[i].default == Parameter.empty or i in ["X", "y"]]
+    )
+
     if method == "inverse_transform":
         # PCA's inverse_transform takes (n_samples, n_components)
         data = (
@@ -224,11 +243,10 @@ def call_method(estimator, method, X, y, **kwargs):
             if X.shape[1] != estimator.n_components_
             else (X,)
         )
-    elif method not in ["score", "partial_fit", "path"]:
-        data = (X,)
     else:
-        data = (X, y)
-    return getattr(estimator, method)(*data, **kwargs)
+        data = (X, y)[:argnum]
+
+    return func(*data, **kwargs)
 
 
 def _gen_dataset_type(est):

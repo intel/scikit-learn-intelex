@@ -80,7 +80,6 @@ class Test(unittest.TestCase):
         X = np.random.randn(13024 * 3, 16)
         df = pd.DataFrame(X[1::3, 1:])
         ps = pd.Series(X[1::3, 0])
-        print(ps.to_numpy().flags)
         self.verify_on_linear_regression(df, ps)
 
     def test_contiguous_heterogeneous(self):

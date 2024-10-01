@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +14,22 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = ["covariance", "decomposition", "linear_model"]
+import re
+import unittest
+
+import numpy as np
+
+import daal4py
+
+
+class Test(unittest.TestCase):
+    def test_qr_printing(self):
+        rng = np.random.default_rng(seed=123)
+        X = rng.standard_normal(size=(10, 5))
+        qr_algorithm = daal4py.qr()
+        qr_result = qr_algorithm.compute(X)
+        qr_result_str, qr_result_repr = qr_result.__str__(), qr_result.__repr__()
+        assert "matrixQ" in qr_result_str
+        assert "matrixR" in qr_result_str
+        assert "matrixQ" in qr_result_repr
+        assert "matrixR" in qr_result_repr

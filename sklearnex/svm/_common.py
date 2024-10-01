@@ -31,6 +31,11 @@ from onedal.utils import _check_array, _check_X_y, _column_or_1d
 from .._config import config_context, get_config
 from .._utils import PatchingConditionsChain
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 
 def get_dual_coef(self):
     return self.dual_coef_
@@ -150,13 +155,23 @@ class BaseSVM(BaseEstimator, ABC):
                 )
         # using onedal _check_X_y to insure X and y are contiguous
         # finite check occurs in onedal estimator
-        X, y = _check_X_y(
-            X,
-            y,
-            dtype=[np.float64, np.float32],
-            force_all_finite=False,
-            accept_sparse="csr",
-        )
+        if sklearn_check_version("1.0"):
+            X, y = validate_data(
+                self,
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
+        else:
+            X, y = _check_X_y(
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
         y = self._validate_targets(y)
         sample_weight = self._get_sample_weight(X, y, sample_weight)
         return X, y, sample_weight
