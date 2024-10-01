@@ -30,7 +30,6 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import KFold
 
 from onedal import _is_dpc_backend
-from onedal._device_offload import dpctl_available
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -126,7 +125,7 @@ ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
 DUMMY_ESTIMATOR = {}
-if dpctl_available:
+if _is_dpc_backend:
     # TODO:
     # use  from_table, to_table.
     from onedal.datatypes._data_conversion import (
@@ -328,8 +327,8 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 
 
 @pytest.mark.skipif(
-    dpctl_available,
-    reason="dpctl.tensor is required for testing.",
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
 )
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
