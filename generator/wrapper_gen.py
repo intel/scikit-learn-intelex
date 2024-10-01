@@ -374,7 +374,7 @@ cdef class {{flatname}}:
     def __init__(self, int64_t ptr=0):
         self.c_ptr = <{{class_type|flat}}>ptr
 
-    def __str__(self):
+    def __repr__(self):
         return _str(self, [{% for m in enum_gets+named_gets %}'{{m[1]}}',{% endfor %}])
 {% for m in enum_gets+named_gets %}
 {% set rtype = m[2]|d2cy(False) if m in enum_gets else m[0]|d2cy(False) %}
@@ -1003,6 +1003,8 @@ cdef extern from "daal4py_cpp.h":
 
 # this is our actual algorithm class for Python
 cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
+    cdef tuple _params
+
     '''
     {{algo}}
     {{params_all|fmt('{}', 'sphinx', sep='\n')|indent(4)}}
@@ -1017,6 +1019,17 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         self.c_ptr = mk_{{algo}}(
             {{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}}
         )
+        current_locals = locals()
+        ordered_input_args = '''
+            {{params_all|fmt('{}', 'name', sep=' ')|indent(0)}}
+        '''.strip().split()
+        self._params = tuple(
+            current_locals[arg]
+            for arg in ordered_input_args
+        )
+
+    def __reduce__(self):
+        return (self.__class__, self._params)
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)

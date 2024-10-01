@@ -41,7 +41,12 @@ if daal_check_version((2023, "P", 200)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
 
-    @control_n_jobs(decorated_methods=["fit", "predict", "transform", "fit_transform"])
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = sklearn_KMeans._validate_data
+
+    @control_n_jobs(decorated_methods=["fit", "fit_transform", "predict", "score"])
     class KMeans(sklearn_KMeans):
         __doc__ = sklearn_KMeans.__doc__
 
@@ -109,14 +114,7 @@ if daal_check_version((2023, "P", 200)):
                 _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
 
-            _acceptable_sample_weights = True
-            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
-                sample_weight = _check_sample_weight(
-                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
-                )
-                _acceptable_sample_weights = np.allclose(
-                    sample_weight, np.ones_like(sample_weight)
-                )
+            _acceptable_sample_weights = self._validate_sample_weight(sample_weight, X)
 
             patching_status.and_conditions(
                 [
@@ -127,7 +125,7 @@ if daal_check_version((2023, "P", 200)):
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
                         _acceptable_sample_weights,
-                        "oneDAL doesn't support sample_weight, either None or ones are acceptable",
+                        "oneDAL doesn't support sample_weight. Accepted options are None, constant, or equal weights.",
                     ),
                     (
                         is_data_supported,
@@ -157,10 +155,14 @@ if daal_check_version((2023, "P", 200)):
             return self
 
         def _onedal_fit(self, X, _, sample_weight, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 dtype=[np.float64, np.float32],
+                order="C",
+                copy=self.copy_x,
+                accept_large_sparse=False,
             )
 
             if sklearn_check_version("1.2"):
@@ -176,14 +178,37 @@ if daal_check_version((2023, "P", 200)):
 
             self._save_attributes()
 
-        def _onedal_predict_supported(self, method_name, X, sample_weight=None):
+        def _validate_sample_weight(self, sample_weight, X):
+            if sample_weight is None:
+                return True
+            elif isinstance(sample_weight, numbers.Number) or isinstance(
+                sample_weight, str
+            ):
+                return True
+            else:
+                sample_weight = _check_sample_weight(
+                    sample_weight,
+                    X,
+                    dtype=X.dtype if hasattr(X, "dtype") else None,
+                )
+                if np.all(sample_weight == sample_weight[0]):
+                    return True
+                else:
+                    return False
+
+        def _onedal_predict_supported(self, method_name, *data):
             class_name = self.__class__.__name__
+
+            patching_status = PatchingConditionsChain(
+                f"sklearn.cluster.{class_name}.{method_name}"
+            )
+
+            X = data[0]
+            sample_weight = data[-1] if len(data) > 1 else None
+
             is_data_supported = (
                 _is_csr(X) and daal_check_version((2024, "P", 700))
             ) or not issparse(X)
-            patching_status = PatchingConditionsChain(
-                f"sklearn.cluster.{class_name}.predict"
-            )
 
             # algorithm "auto" has been deprecated since 1.1,
             # algorithm "full" has been replaced by "lloyd"
@@ -194,12 +219,9 @@ if daal_check_version((2023, "P", 200)):
                 )
 
             _acceptable_sample_weights = True
-            if sample_weight is not None or not isinstance(sample_weight, numbers.Number):
-                sample_weight = _check_sample_weight(
-                    sample_weight, X, dtype=X.dtype if hasattr(X, "dtype") else None
-                )
-                _acceptable_sample_weights = np.allclose(
-                    sample_weight, np.ones_like(sample_weight)
+            if not sklearn_check_version("1.5"):
+                _acceptable_sample_weights = self._validate_sample_weight(
+                    sample_weight, X
                 )
 
             patching_status.and_conditions(
@@ -214,7 +236,7 @@ if daal_check_version((2023, "P", 200)):
                     ),
                     (
                         _acceptable_sample_weights,
-                        "oneDAL doesn't support sample_weight, None or ones are acceptable",
+                        "oneDAL doesn't support sample_weight. Acceptable options are None, constant, or equal weights.",
                     ),
                 ]
             )
@@ -248,6 +270,17 @@ if daal_check_version((2023, "P", 200)):
                 if sklearn_check_version("1.2"):
                     self._validate_params()
 
+                if sklearn_check_version("1.3"):
+                    if isinstance(sample_weight, str) and sample_weight == "deprecated":
+                        sample_weight = None
+
+                    if sample_weight is not None:
+                        warnings.warn(
+                            "'sample_weight' was deprecated in version 1.3 and "
+                            "will be removed in 1.5.",
+                            FutureWarning,
+                        )
+
                 return dispatch(
                     self,
                     "predict",
@@ -256,29 +289,19 @@ if daal_check_version((2023, "P", 200)):
                         "sklearn": sklearn_KMeans.predict,
                     },
                     X,
-                    sample_weight=sample_weight,
+                    sample_weight,
                 )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,
                 dtype=[np.float64, np.float32],
             )
-
-            if not sklearn_check_version("1.5") and sklearn_check_version("1.3"):
-                if isinstance(sample_weight, str) and sample_weight == "deprecated":
-                    sample_weight = None
-
-                if sample_weight is not None:
-                    warnings.warn(
-                        "'sample_weight' was deprecated in version 1.3 and "
-                        "will be removed in 1.5.",
-                        FutureWarning,
-                    )
 
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
@@ -320,13 +343,14 @@ if daal_check_version((2023, "P", 200)):
                 },
                 X,
                 y,
-                sample_weight=sample_weight,
+                sample_weight,
             )
 
-        def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        def _onedal_score(self, X, y=None, sample_weight=None, queue=None):
             check_is_fitted(self)
 
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 accept_sparse="csr",
                 reset=False,

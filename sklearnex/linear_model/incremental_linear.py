@@ -32,6 +32,11 @@ from onedal.linear_model import (
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 from onedal.common.hyperparameters import get_hyperparameters
 
 from .._device_offload import dispatch, wrap_output_data
@@ -45,7 +50,7 @@ from .._utils import PatchingConditionsChain, register_hyperparameters
     }
 )
 @control_n_jobs(
-    decorated_methods=["fit", "partial_fit", "predict", "_onedal_finalize_fit"]
+    decorated_methods=["fit", "partial_fit", "predict", "score", "_onedal_finalize_fit"]
 )
 class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimator):
     """
@@ -131,7 +136,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 copy=self.copy_X,
@@ -162,7 +168,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
         if check_input:
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(
+                X, y = validate_data(
+                    self,
                     X,
                     y,
                     dtype=[np.float64, np.float32],
@@ -212,7 +219,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X, y = self._validate_data(
+            X, y = validate_data(
+                self,
                 X,
                 y,
                 dtype=[np.float64, np.float32],

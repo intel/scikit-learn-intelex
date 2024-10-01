@@ -28,8 +28,13 @@ from onedal.neighbors import KNeighborsRegressor as onedal_KNeighborsRegressor
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_KNeighborsRegressor._validate_data
 
-@control_n_jobs(decorated_methods=["fit", "predict", "kneighbors"])
+
+@control_n_jobs(decorated_methods=["fit", "predict", "kneighbors", "score"])
 class KNeighborsRegressor(KNeighborsDispatchingBase, sklearn_KNeighborsRegressor):
     __doc__ = sklearn_KNeighborsRegressor.__doc__
     if sklearn_check_version("1.2"):

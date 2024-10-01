@@ -318,7 +318,6 @@ ONEDAL_PY_INIT_MODULE(linear_model) {
     ONEDAL_PY_INSTANTIATE(init_train_hyperparameters, sub, task_list);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
 #endif // ONEDAL_DATA_PARALLEL_SPMD
-
 }
 
 ONEDAL_PY_TYPE2STR(dal::linear_regression::task::regression, "regression");

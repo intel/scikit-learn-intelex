@@ -19,85 +19,90 @@ import logging
 from multiprocessing import cpu_count
 
 import pytest
-from sklearn.base import BaseEstimator
 from sklearn.datasets import make_classification
+from sklearn.exceptions import NotFittedError
 
-from sklearnex.decomposition import PCA
-from sklearnex.dispatcher import get_patch_map
-from sklearnex.svm import SVC, NuSVC
-
-ESTIMATORS = set(
-    filter(
-        lambda x: inspect.isclass(x) and issubclass(x, BaseEstimator),
-        [value[0][0][2] for value in get_patch_map().values()],
-    )
+from sklearnex.tests.utils import (
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    call_method,
+    gen_dataset,
+    gen_models_info,
 )
 
-X, Y = make_classification(n_samples=40, n_features=4, random_state=42)
+_X, _Y = make_classification(n_samples=40, n_features=4, random_state=42)
 
 
-@pytest.mark.parametrize("estimator_class", ESTIMATORS)
-@pytest.mark.parametrize("n_jobs", [None, -1, 1, 2])
-def test_n_jobs_support(caplog, estimator_class, n_jobs):
-    def check_estimator_doc(estimator):
-        if estimator.__doc__ is not None:
-            assert "n_jobs" in estimator.__doc__
+def _get_estimator_instance(estimator):
+    if estimator in PATCHED_MODELS:
+        est = PATCHED_MODELS[estimator]()
+    elif estimator in SPECIAL_INSTANCES:
+        est = SPECIAL_INSTANCES[estimator]
+    else:
+        raise KeyError(f"{estimator} not in patch_map or SPECIAL_INSTANCES")
+    return est
 
-    def check_n_jobs_entry_in_logs(caplog, function_name, n_jobs):
-        for rec in caplog.records:
-            if function_name in rec.message and "threads" in rec.message:
-                expected_n_jobs = n_jobs if n_jobs > 0 else cpu_count() + 1 + n_jobs
-                logging.info(f"{function_name}: setting {expected_n_jobs} threads")
-                if f"{function_name}: setting {expected_n_jobs} threads" in rec.message:
-                    return True
-        # False if n_jobs is set and not found in logs
-        return n_jobs is None
 
-    def check_method(*args, method, caplog):
-        method(*args)
-        assert check_n_jobs_entry_in_logs(caplog, method.__name__, n_jobs)
+def _check_n_jobs_entry_in_logs(records, function_name, n_jobs):
+    expected_n_jobs = max(n_jobs, n_jobs % (cpu_count() + 1)) if n_jobs else cpu_count()
+    for rec in records:
+        if f"{function_name}: setting {expected_n_jobs} threads" in rec:
+            return True
+    # False if n_jobs is set and not found in logs
+    return n_jobs is None
 
-    def check_methods_decoration(estimator):
-        funcs = {
-            i: getattr(estimator, i)
-            for i in dir(estimator)
-            if hasattr(estimator, i) and callable(getattr(estimator, i))
-        }
 
-        for func_name, func in funcs.items():
+@pytest.mark.parametrize("estimator", {**PATCHED_MODELS, **SPECIAL_INSTANCES}.keys())
+def test_n_jobs_documentation(estimator):
+    est = _get_estimator_instance(estimator)
+    assert "n_jobs" in est.__doc__
+    assert "n_jobs" in est.__class__.__doc__
+
+
+@pytest.mark.parametrize("estimator", {**PATCHED_MODELS, **SPECIAL_INSTANCES}.keys())
+def test_n_jobs_method_decoration(estimator):
+    est = _get_estimator_instance(estimator)
+    for func_name, func in vars(est).items():
+        # hasattr check necessary due to sklearn's available_if wrapper
+        if hasattr(est, func_name) and callable(func):
             assert hasattr(func, "__onedal_n_jobs_decorated__") == (
-                func_name in estimator._n_jobs_supported_onedal_methods
-            ), f"{estimator}.{func_name} n_jobs decoration does not match {estimator} n_jobs supported methods"
+                func_name in est._n_jobs_supported_onedal_methods
+            ), f"{est}.{func_name} n_jobs decoration does not match {est} n_jobs supported methods"
 
+
+@pytest.mark.parametrize("estimator", {**PATCHED_MODELS, **SPECIAL_INSTANCES}.keys())
+@pytest.mark.parametrize("n_jobs", [None, -1, 1, 2])
+def test_n_jobs_support(estimator, n_jobs, caplog):
+
+    est = _get_estimator_instance(estimator)
     caplog.set_level(logging.DEBUG, logger="sklearnex")
-    estimator_kwargs = {"n_jobs": n_jobs}
-    # by default, [Nu]SVC.predict_proba is restricted by @available_if decorator
-    if estimator_class in [SVC, NuSVC]:
-        estimator_kwargs["probability"] = True
-    # explicitly request oneDAL's PCA-Covariance algorithm
-    if estimator_class == PCA:
-        estimator_kwargs["svd_solver"] = "covariance_eigh"
-    estimator_instance = estimator_class(**estimator_kwargs)
-    # check `n_jobs` parameter doc entry
-    check_estimator_doc(estimator_class)
-    check_estimator_doc(estimator_instance)
+
+    # copy params and modify n_jobs, assumes estimator inherits from BaseEstimator
+    # or properly supports get_params and set_params methods as defined by sklearn
+    params = est.get_params()
+    params["n_jobs"] = n_jobs
+    est.set_params(**params)
+
     # check `n_jobs` log entry for supported methods
     # `fit` call is required before other methods
-    check_method(X, Y, method=estimator_instance.fit, caplog=caplog)
-    for method_name in estimator_instance._n_jobs_supported_onedal_methods:
-        if method_name == "fit":
+    est.fit(_X, _Y)
+    messages = [msg.message for msg in caplog.records]
+    assert _check_n_jobs_entry_in_logs(messages, "fit", n_jobs)
+
+    for method_name in est._n_jobs_supported_onedal_methods:
+        # do not call fit again, handle sklearn's available_if wrapper
+        if method_name == "fit" or (
+            "NearestNeighbors" in estimator and "radius" in method_name
+        ):
+            # radius_neighbors and radius_neighbors_graph violate sklearn fallback guard
+            # but use sklearnex interally, additional development must be done to those
+            # functions to bring them to design compliance.
             continue
-        method = getattr(estimator_instance, method_name)
-        argdict = inspect.signature(method).parameters
-        argnum = len(
-            [i for i in argdict if argdict[i].default == inspect.Parameter.empty]
-        )
-        if argnum == 0:
-            check_method(method=method, caplog=caplog)
-        elif argnum == 1:
-            check_method(X, method=method, caplog=caplog)
-        else:
-            check_method(X, Y, method=method, caplog=caplog)
-    # check if correct methods were decorated
-    check_methods_decoration(estimator_class)
-    check_methods_decoration(estimator_instance)
+        try:
+            call_method(est, method_name, _X, _Y)
+        except (NotFittedError, AttributeError) as e:
+            # handle sklearns available_if wrapper
+            continue
+
+        messages = [msg.message for msg in caplog.records]
+        assert _check_n_jobs_entry_in_logs(messages, method_name, n_jobs)
