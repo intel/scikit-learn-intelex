@@ -82,7 +82,7 @@ if _is_dpc_backend:
             result_responses_table = result.responses
             sua_iface, xp, _ = _get_sycl_namespace(X)
             result_responses_df = convert_one_from_table(
-                result.responses, sua_iface=sua_iface, xp=xp
+                result_responses_table, sua_iface=sua_iface, xp=xp
             )
             return X_table, result_responses_table, result_responses_df
 

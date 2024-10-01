@@ -51,25 +51,30 @@ dal::table convert_to_homogen_impl(py::object obj) {
     const auto* const ptr = reinterpret_cast<const Type*>(get_sua_ptr(sua_iface_dict));
     auto syclobj = sua_iface_dict["syclobj"].cast<py::object>();
     const auto queue = get_queue_from_python(syclobj);
+    bool is_readonly = is_sua_readonly(sua_iface_dict);
 
-    // TODO:
-    // if (is_readonly) {
-    //     //
-    // }
-    // else {
-    //     // auto* const mut_ptr = const_cast<Type*>(ptr);
-    // }
+    dal::table res{};
 
-    auto res = dal::homogen_table(queue,
-                                  ptr,
-                                  r_count,
-                                  c_count, //
-                                  deleter,
-                                  std::vector<sycl::event>{},
-                                  layout);
-
+    if (is_readonly) {
+        res = dal::homogen_table(queue,
+                                 ptr,
+                                 r_count,
+                                 c_count,
+                                 deleter,
+                                 std::vector<sycl::event>{},
+                                 layout);
+    }
+    else {
+        auto* const mut_ptr = const_cast<Type*>(ptr);
+        res = dal::homogen_table(queue,
+                                 mut_ptr,
+                                 r_count,
+                                 c_count,
+                                 deleter,
+                                 std::vector<sycl::event>{},
+                                 layout);
+    }
     obj.inc_ref();
-
     return res;
 }
 
