@@ -76,6 +76,7 @@ auto get_onedal_result_options(const py::dict& params) {
         }
     }
     catch (std::regex_error& e) {
+        (void)e;
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(result_options);
     }
 
@@ -148,7 +149,6 @@ ONEDAL_PY_INIT_MODULE(dbscan) {
     ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
     ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
 #endif // ONEDAL_DATA_PARALLEL_SPMD
-
 }
 
 } // namespace oneapi::dal::python

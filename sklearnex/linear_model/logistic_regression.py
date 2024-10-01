@@ -39,6 +39,13 @@ if daal_check_version((2024, "P", 1)):
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
 
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = sklearn_LogisticRegression._validate_data
+
+    _sparsity_enabled = daal_check_version((2024, "P", 700))
+
     class BaseLogisticRegression(ABC):
         def _save_attributes(self):
             assert hasattr(self, "_onedal_estimator")
@@ -238,7 +245,7 @@ if daal_check_version((2024, "P", 1)):
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
                     (
-                        not any([issparse(i) for i in data]),
+                        (not any([issparse(i) for i in data])) or _sparsity_enabled,
                         "Sparse input is not supported.",
                     ),
                     (not model_is_sparse, "Sparse coefficients are not supported."),
@@ -285,9 +292,22 @@ if daal_check_version((2024, "P", 1)):
             assert sample_weight is None
 
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(X, y, dtype=[np.float64, np.float32])
+                X, y = validate_data(
+                    self,
+                    X,
+                    y,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X, y = check_X_y(X, y, dtype=[np.float64, np.float32])
+                X, y = check_X_y(
+                    X,
+                    y,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
 
             self._initialize_onedal_estimator()
             try:
@@ -308,9 +328,21 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+                X = validate_data(
+                    self,
+                    X,
+                    reset=False,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
+                X = check_array(
+                    X,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
 
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict(X, queue=queue)
@@ -321,9 +353,21 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+                X = validate_data(
+                    self,
+                    X,
+                    reset=False,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
+                X = check_array(
+                    X,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
 
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_proba(X, queue=queue)
@@ -334,9 +378,21 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, reset=False, dtype=[np.float64, np.float32])
+                X = validate_data(
+                    self,
+                    X,
+                    reset=False,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
             else:
-                X = check_array(X, dtype=[np.float64, np.float32])
+                X = check_array(
+                    X,
+                    accept_sparse=_sparsity_enabled,
+                    accept_large_sparse=_sparsity_enabled,
+                    dtype=[np.float64, np.float32],
+                )
 
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)

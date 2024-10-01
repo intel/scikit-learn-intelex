@@ -32,6 +32,12 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
 
 import numbers
+import warnings
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
 
 
 @control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
@@ -120,7 +126,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
-            f"sklearn.covariance.{self.__class__.__name__}.{method_name}"
+            f"sklearn.basic_statistics.{self.__class__.__name__}.{method_name}"
         )
         return patching_status
 
@@ -135,16 +141,17 @@ class IncrementalBasicStatistics(BaseEstimator):
         assert isinstance(onedal_options, str)
         return options
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
     def _onedal_partial_fit(self, X, sample_weight=None, queue=None):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 reset=first_pass,
@@ -171,12 +178,15 @@ class IncrementalBasicStatistics(BaseEstimator):
             self._onedal_estimator = self._onedal_incremental_basic_statistics(
                 **onedal_params
             )
-        self._onedal_estimator.partial_fit(X, sample_weight, queue)
+        self._onedal_estimator.partial_fit(X, weights=sample_weight, queue=queue)
         self._need_to_finalize = True
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32])
+            X = validate_data(self, X, dtype=[np.float64, np.float32])
         else:
             X = check_array(X, dtype=[np.float64, np.float32])
 
@@ -198,24 +208,26 @@ class IncrementalBasicStatistics(BaseEstimator):
             weights_batch = sample_weight[batch] if sample_weight is not None else None
             self._onedal_partial_fit(X_batch, weights_batch, queue=queue)
 
-        if sklearn_check_version("1.2"):
-            self._validate_params()
-
         self.n_features_in_ = X.shape[1]
 
-        self._onedal_finalize_fit()
+        self._onedal_finalize_fit(queue=queue)
 
         return self
 
     def __getattr__(self, attr):
         result_options = self.__dict__["result_options"]
+        sattr = attr.removesuffix("_")
         is_statistic_attr = (
-            isinstance(result_options, str) and (attr == result_options)
-        ) or (isinstance(result_options, list) and (attr in result_options))
+            isinstance(result_options, str) and (sattr == result_options)
+        ) or (isinstance(result_options, list) and (sattr in result_options))
         if is_statistic_attr:
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
-            return getattr(self._onedal_estimator, attr)
+            if sattr == attr:
+                warnings.warn(
+                    "Result attributes without a trailing underscore were deprecated in version 2025.1 and will be removed in 2026.0"
+                )
+            return getattr(self._onedal_estimator, sattr)
         if attr in self.__dict__:
             return self.__dict__[attr]
 
@@ -256,7 +268,7 @@ class IncrementalBasicStatistics(BaseEstimator):
         return self
 
     def fit(self, X, y=None, sample_weight=None):
-        """Compute statistics with X, using minibatches of size batch_size.
+        """Calculate statistics of X using minibatches of size batch_size.
 
         Parameters
         ----------

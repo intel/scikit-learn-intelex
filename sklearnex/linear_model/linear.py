@@ -21,6 +21,7 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -38,9 +39,14 @@ from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
 from onedal.utils import _num_features, _num_samples
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_LinearRegression._validate_data
+
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
-@control_n_jobs(decorated_methods=["fit", "predict"])
+@control_n_jobs(decorated_methods=["fit", "predict", "score"])
 class LinearRegression(sklearn_LinearRegression):
     __doc__ = sklearn_LinearRegression.__doc__
 
@@ -80,8 +86,6 @@ class LinearRegression(sklearn_LinearRegression):
             )
 
     def fit(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         if sklearn_check_version("1.2"):
             self._validate_params()
 
@@ -227,8 +231,8 @@ class LinearRegression(sklearn_LinearRegression):
             "y_numeric": True,
             "multi_output": True,
         }
-        if sklearn_check_version("1.2"):
-            X, y = self._validate_data(**check_params)
+        if sklearn_check_version("1.0"):
+            X, y = validate_data(self, **check_params)
         else:
             X, y = check_X_y(**check_params)
 
@@ -255,9 +259,10 @@ class LinearRegression(sklearn_LinearRegression):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+            X = validate_data(self, X, accept_sparse=False, reset=False)
+        else:
+            X = check_array(X, accept_sparse=False)
 
-        X = self._validate_data(X, accept_sparse=False, reset=False)
         if not hasattr(self, "_onedal_estimator"):
             self._initialize_onedal_estimator()
             self._onedal_estimator.coef_ = self.coef_

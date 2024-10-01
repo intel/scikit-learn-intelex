@@ -21,14 +21,6 @@ from numbers import Number
 
 import numpy as np
 import pytest
-from _utils import (
-    PATCHED_MODELS,
-    SPECIAL_INSTANCES,
-    _sklearn_clone_dict,
-    call_method,
-    gen_dataset,
-    gen_models_info,
-)
 from numpy.testing import assert_allclose
 from scipy import sparse
 from sklearn.datasets import (
@@ -40,6 +32,7 @@ from sklearn.datasets import (
 )
 
 import daal4py as d4p
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import _as_numpy, get_dataframes_and_queues
 from sklearnex.cluster import DBSCAN, KMeans
 from sklearnex.decomposition import PCA
@@ -51,6 +44,14 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC
+from sklearnex.tests.utils import (
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    call_method,
+    gen_dataset,
+    gen_models_info,
+    sklearn_clone_dict,
+)
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
@@ -114,18 +115,18 @@ def _run_test(estimator, method, datasets):
                     )
 
 
-SPARSE_INSTANCES = _sklearn_clone_dict(
-    {
-        str(i): i
-        for i in [
-            SVC(),
+_sparse_instances = [SVC()]
+if daal_check_version((2024, "P", 700)):  # Test for > 2024.7.0
+    _sparse_instances.extend(
+        [
             KMeans(),
             KMeans(init="random"),
+            KMeans(init="k-means++"),
         ]
-    }
-)
+    )
+SPARSE_INSTANCES = sklearn_clone_dict({str(i): i for i in _sparse_instances})
 
-STABILITY_INSTANCES = _sklearn_clone_dict(
+STABILITY_INSTANCES = sklearn_clone_dict(
     {
         str(i): i
         for i in [
@@ -144,7 +145,7 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 )
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
@@ -172,7 +173,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
 
 
 @pytest.mark.allow_sklearn_fallback
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_stability(estimator, method, dataframe, queue):
     if queue is None and estimator in ["LogisticRegression(solver='newton-cg')"]:
@@ -196,7 +197,7 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
     _run_test(est, method, datasets)
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
@@ -220,7 +221,7 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
     _run_test(est, method, datasets)
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
 def test_other_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:

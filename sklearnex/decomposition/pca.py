@@ -25,14 +25,14 @@ if daal_check_version((2024, "P", 100)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.utils.validation import check_is_fitted
+    from sklearn.utils.validation import check_array, check_is_fitted
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
-    from ..utils import get_namespace
+    from ..utils._array_api import get_namespace
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
@@ -43,6 +43,11 @@ if daal_check_version((2024, "P", 100)):
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
+
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = sklearn_PCA._validate_data
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
@@ -133,7 +138,8 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_fit(self, X, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 ensure_2d=True,
@@ -177,12 +183,17 @@ if daal_check_version((2024, "P", 100)):
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                reset=False,
-            )
+                X = validate_data(
+                    self,
+                    X,
+                    dtype=[np.float64, np.float32],
+                    reset=False,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                )
             self._validate_n_features_in_after_fitting(X)
 
             return self._onedal_estimator.predict(X, queue=queue)

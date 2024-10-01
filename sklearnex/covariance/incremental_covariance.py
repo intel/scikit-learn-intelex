@@ -35,10 +35,15 @@ from sklearnex import config_context
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, register_hyperparameters
 from ..metrics import pairwise_distances
-from ..utils import get_namespace
+from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
 
 
 @control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
@@ -115,9 +120,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
         )
         return patching_status
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
         if not daal_check_version((2024, "P", 400)) and self.assume_centered:
@@ -163,7 +168,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 self._validate_params()
 
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     dtype=[np.float64, np.float32],
                     reset=first_pass,
@@ -192,7 +198,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             else:
                 self.n_samples_seen_ += X.shape[0]
 
-            self._onedal_estimator.partial_fit(X, queue)
+            self._onedal_estimator.partial_fit(X, queue=queue)
         finally:
             self._need_to_finalize = True
 
@@ -204,7 +210,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         location = self.location_
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X_test,
                 dtype=[np.float64, np.float32],
                 reset=False,
@@ -306,8 +313,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         # finite check occurs on onedal side
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                copy=self.copy,
+                force_all_finite=False,
             )
         else:
             X = check_array(
@@ -326,7 +337,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue, check_input=False)
 
-        self._onedal_finalize_fit()
+        self._onedal_finalize_fit(queue=queue)
 
         return self
 

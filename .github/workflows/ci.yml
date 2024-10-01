@@ -1,0 +1,264 @@
+#===============================================================================
+# Copyright 2024 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#===============================================================================
+
+name: CI
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  TBB_VERSION: 2021.13
+  DPCPP_VERSION: 2024.2
+  DPCTL_VERSION: 0.17.0
+  DPNP_VERSION: 0.15.0
+  DPCTL_PY_VERSIONS: '3.9\|3.11'
+
+jobs:
+  sklearn_lnx:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - PYTHON_VERSION: "3.9"
+            SKLEARN_VERSION: "1.1"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.2"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.3"
+    name: LinuxNightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}  
+      - name: Get run ID of "Nightly-build" workflow
+        id: get-run-id
+        run: |
+          OTHER_REPO="oneapi-src/oneDAL"
+          WF_NAME="Nightly-build"
+          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --status completed --jq .[0].databaseId`
+          echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
+          echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Download oneDAL build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: __release_lnx
+          github-token: ${{ github.token }}
+          repository: oneapi-src/oneDAL
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: ./__release_lnx
+      - name: Set Environment Variables
+        id: set-env
+        run: |
+          # Disable SPMD testing
+          echo "NO_DIST=1" >> "$GITHUB_ENV"
+          # Determine dpctl support
+          DPCFLAG="0"
+          if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
+          echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
+      - name: apt-get
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+      - name: dpcpp installation
+        run: bash .ci/scripts/install_dpcpp.sh
+      - name: describe system
+        run: bash .ci/scripts/describe_system.sh
+      - name: Install develop requirements
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r dependencies-dev
+          pip list
+      - name: Build daal4py/sklearnex
+        run: |
+          source venv/bin/activate
+          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
+          python setup.py install --single-version-externally-managed --record=record.txt
+      - name: Install testing requirements
+        run: |
+          source venv/bin/activate
+          source .github/scripts/activate_components.sh
+          bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
+          pip install --upgrade -r requirements-test.txt
+          pip install $(python .ci/scripts/get_compatible_scipy_version.py ${{ matrix.SKLEARN_VERSION }}) pyyaml
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}; fi
+          pip list
+      - name: Sklearnex testing
+        run: |
+          source venv/bin/activate
+          source .github/scripts/activate_components.sh
+          cd .ci
+          ../conda-recipe/run_test.sh
+      - name: Sklearn testing
+        run: |
+          source venv/bin/activate
+          source .github/scripts/activate_components.sh
+          bash .ci/scripts/run_sklearn_tests.sh
+      - name: Sklearn testing [preview]
+        run: |
+          source venv/bin/activate
+          source .github/scripts/activate_components.sh
+          export SKLEARNEX_PREVIEW='YES'
+          bash .ci/scripts/run_sklearn_tests.sh
+
+  sklearn_win:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - PYTHON_VERSION: "3.9"
+            SKLEARN_VERSION: "1.1"
+          - PYTHON_VERSION: "3.10"
+            SKLEARN_VERSION: "1.2"
+          - PYTHON_VERSION: "3.11"
+            SKLEARN_VERSION: "1.3"
+    name: WindowsNightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
+    runs-on: windows-2022
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.PYTHON_VERSION }}
+      - name: Get run ID of "Nightly-build" workflow
+        id: get-run-id
+        shell: bash
+        run: |
+          OTHER_REPO="oneapi-src/oneDAL"
+          WF_NAME="Nightly-build"
+          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --status completed --jq .[0].databaseId`
+          echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
+          echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Download oneDAL build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: __release_win
+          github-token: ${{ github.token }}
+          repository: oneapi-src/oneDAL
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: .\__release_win
+      - name: Download DPCPP compiler artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: icx_compiler
+          github-token: ${{ github.token }}
+          repository: oneapi-src/oneDAL
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: .
+      - name: Unzip Compiler
+        shell: cmd
+        run: |
+          tar -xvzf icx.zip
+          echo "Unzip complete"
+      - name: Set Environment Variables
+        id: set-env
+        shell: bash
+        run: |
+          echo "C:\msys64\usr\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\bin;" >> $GITHUB_PATH
+          # Disable SPMD testing
+          echo "NO_DIST=1" >> "$GITHUB_ENV"
+          # Determine dpctl support
+          DPCFLAG="0"
+          if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
+          echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
+      - name: Download Intel OpenCL CPU Runtime artifact
+        if: ${{ steps.set-env.outputs.DPCFLAG == '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: opencl_rt_installer
+          github-token: ${{ github.token }}
+          repository: oneapi-src/oneDAL
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: .
+      - name: Install Intel OpenCL CPU Runtime
+        if: ${{ steps.set-env.outputs.DPCFLAG == '' }}
+        run: |
+          Start-Process msiexec -ArgumentList "/i opencl_rt.msi /qn" -Wait
+          echo "Installed Intel OpenCL CPU Runtime"
+      - name: Install dependencies
+        shell: cmd
+        run: |
+          python -m venv venv
+          call .\venv\Scripts\activate.bat
+          pip install --upgrade setuptools
+          pip install cpufeature clang-format pyyaml
+          pip install -r dependencies-dev
+      - name: System info 
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          call .\dpcpp\compiler\${{ env.DPCPP_VERSION }}\env\vars.bat
+          call .\dpcpp\compiler\${{ env.DPCPP_VERSION }}\bin\sycl-ls.exe
+          bash .ci/scripts/describe_system.sh
+      - name: Build daal4py/sklearnex
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          set PREFIX=.
+          set PYTHON=python
+          call .\conda-recipe\bld.bat
+      - name: Install testing requirements
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
+          pip install --upgrade -r requirements-test.txt
+          for /f "delims=" %%c in ('python .ci\scripts\get_compatible_scipy_version.py ${{ matrix.SKLEARN_VERSION }}') do set SCIPY_VERSION=%%c
+          pip install %SCIPY_VERSION%
+          if "${{ steps.set-env.outputs.DPCFLAG }}"=="" pip install dpctl==${{ env.DPCTL_VERSION }} dpnp==${{ env.DPNP_VERSION }}
+          pip list
+      - name: Sklearnex testing
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          set PYTHON=python
+          cd ..
+          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex
+      - name: Sklearn testing
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          bash .ci/scripts/run_sklearn_tests.sh
+      - name: Sklearn testing [preview]
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          set SKLEARNEX_PREVIEW=YES
+          bash .ci/scripts/run_sklearn_tests.sh

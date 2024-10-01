@@ -18,7 +18,7 @@ from onedal.cluster import KMeans as KMeans_Batch
 from onedal.cluster import KMeansInit as KMeansInit_Batch
 from onedal.spmd.basic_statistics import BasicStatistics
 
-from ..._device_offload import support_usm_ndarray
+from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
 
 
@@ -37,15 +37,15 @@ class KMeans(BaseEstimatorSPMD, KMeans_Batch):
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
-    @support_usm_ndarray()
+    @support_input_format()
     def fit(self, X, y=None, queue=None):
         return super().fit(X, queue=queue)
 
-    @support_usm_ndarray()
+    @support_input_format()
     def predict(self, X, queue=None):
         return super().predict(X, queue=queue)
 
-    @support_usm_ndarray()
+    @support_input_format()
     def fit_predict(self, X, y=None, queue=None):
         return super().fit_predict(X, queue=queue)
 

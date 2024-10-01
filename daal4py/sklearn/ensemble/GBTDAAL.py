@@ -193,7 +193,9 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
         # Return the classifier
         return self
 
-    def _predict(self, X, resultsToEvaluate):
+    def _predict(
+        self, X, resultsToEvaluate, pred_contribs=False, pred_interactions=False
+    ):
         # Input validation
         if not self.allow_nan_:
             X = check_array(X, dtype=[np.single, np.double])
@@ -208,17 +210,21 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
             return np.full(X.shape[0], self.classes_[0])
 
         fptype = getFPType(X)
-        predict_result = self._predict_classification(X, fptype, resultsToEvaluate)
+        predict_result = self._predict_classification(
+            X, fptype, resultsToEvaluate, pred_contribs, pred_interactions
+        )
 
-        if resultsToEvaluate == "computeClassLabels":
+        if resultsToEvaluate == "computeClassLabels" and not (
+            pred_contribs or pred_interactions
+        ):
             # Decode labels
             le = preprocessing.LabelEncoder()
             le.classes_ = self.classes_
             return le.inverse_transform(predict_result)
         return predict_result
 
-    def predict(self, X):
-        return self._predict(X, "computeClassLabels")
+    def predict(self, X, pred_contribs=False, pred_interactions=False):
+        return self._predict(X, "computeClassLabels", pred_contribs, pred_interactions)
 
     def predict_proba(self, X):
         return self._predict(X, "computeClassProbabilities")

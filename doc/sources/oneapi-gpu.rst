@@ -38,9 +38,9 @@ DPC++ compiler runtime can be installed either from PyPI or Anaconda:
 
      pip install dpcpp-cpp-rt
 
-- Install from Anaconda::
+- Install using Conda via the Intel repository::
 
-     conda install dpcpp_cpp_rt -c intel
+     conda install dpcpp_cpp_rt -c https://software.repos.intel.com/python/conda/
 
 Device offloading
 -----------------
