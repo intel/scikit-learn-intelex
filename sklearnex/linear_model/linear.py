@@ -21,13 +21,13 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
-from ..utils.validation import _assert_all_finite
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
@@ -39,9 +39,14 @@ from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
 from onedal.utils import _num_features, _num_samples
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_LinearRegression._validate_data
+
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
-@control_n_jobs(decorated_methods=["fit", "predict"])
+@control_n_jobs(decorated_methods=["fit", "predict", "score"])
 class LinearRegression(sklearn_LinearRegression):
     __doc__ = sklearn_LinearRegression.__doc__
 
@@ -81,8 +86,6 @@ class LinearRegression(sklearn_LinearRegression):
             )
 
     def fit(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         if sklearn_check_version("1.2"):
             self._validate_params()
 
@@ -138,19 +141,6 @@ class LinearRegression(sklearn_LinearRegression):
             sample_weight=sample_weight,
         )
 
-    def _test_type_and_finiteness(self, X_in):
-        X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
-
-        dtype = X.dtype
-        if "complex" in str(type(dtype)):
-            return False
-
-        try:
-            _assert_all_finite(X)
-        except BaseException:
-            return False
-        return True
-
     def _onedal_fit_supported(self, method_name, *data):
         assert method_name == "fit"
         assert len(data) == 3
@@ -174,7 +164,7 @@ class LinearRegression(sklearn_LinearRegression):
         # Check if equations are well defined
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
 
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (sample_weight is None, "Sample weight is not supported."),
                 (
@@ -193,17 +183,6 @@ class LinearRegression(sklearn_LinearRegression):
                 ),
             ]
         )
-        if not dal_ready:
-            return patching_status
-
-        if not patching_status.and_condition(
-            self._test_type_and_finiteness(X), "Input X is not supported."
-        ):
-            return patching_status
-
-        patching_status.and_condition(
-            self._test_type_and_finiteness(y), "Input y is not supported."
-        )
 
         return patching_status
 
@@ -217,18 +196,12 @@ class LinearRegression(sklearn_LinearRegression):
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
         )
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (n_samples > 0, "Number of samples is less than 1."),
                 (not issparse(data[0]), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
             ]
-        )
-        if not dal_ready:
-            return patching_status
-
-        patching_status.and_condition(
-            self._test_type_and_finiteness(data[0]), "Input X is not supported."
         )
 
         return patching_status
@@ -257,10 +230,9 @@ class LinearRegression(sklearn_LinearRegression):
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
             "multi_output": True,
-            "force_all_finite": False,
         }
-        if sklearn_check_version("1.2"):
-            X, y = self._validate_data(**check_params)
+        if sklearn_check_version("1.0"):
+            X, y = validate_data(self, **check_params)
         else:
             X, y = check_X_y(**check_params)
 
@@ -287,9 +259,10 @@ class LinearRegression(sklearn_LinearRegression):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+            X = validate_data(self, X, accept_sparse=False, reset=False)
+        else:
+            X = check_array(X, accept_sparse=False)
 
-        X = self._validate_data(X, accept_sparse=False, reset=False)
         if not hasattr(self, "_onedal_estimator"):
             self._initialize_onedal_estimator()
             self._onedal_estimator.coef_ = self.coef_

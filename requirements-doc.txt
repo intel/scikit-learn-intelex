@@ -1,11 +1,11 @@
 alabaster==0.7.13
 async-generator==1.10
-attrs==23.2.0
+attrs==24.1.0
 Babel==2.14.0
 backcall==0.2.0
 beautifulsoup4==4.12.3
 bleach==6.1.0
-certifi==2024.2.2
+certifi==2024.7.4
 charset-normalizer==3.3.2
 click==8.1.7
 decorator==5.1.1
@@ -58,12 +58,12 @@ sphinx_copybutton==0.5.2
 sphinx-notfound-page==1.0.0
 sphinx-tabs==3.4.5
 sphinx_rtd_theme==2.0.0
-sphinxcontrib-applehelp==1.0.4
-sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-applehelp==2.0.0
+sphinxcontrib-devhelp==2.0.0
 sphinxcontrib-htmlhelp==2.0.1
 sphinxcontrib-jsmath==1.0.1
-sphinxcontrib-qthelp==1.0.3
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-qthelp==2.0.0
+sphinxcontrib-serializinghtml==2.0.0
 testpath==0.6.0
 tornado==6.4.1
 traitlets==5.14.1
@@ -71,5 +71,5 @@ typing-extensions==4.9.0
 urllib3==2.2.2
 wcwidth==0.2.13
 webencodings==0.5.1
-zipp==3.17.0
+zipp==3.19.1
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability

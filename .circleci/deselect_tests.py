@@ -19,19 +19,18 @@
 import argparse
 import os.path
 import sys
+import warnings
 
-from yaml import FullLoader
-from yaml import load as yaml_load
+import sklearn
 
 try:
     from packaging.version import Version
 except ImportError:
     from distutils.version import LooseVersion as Version
 
-import warnings
-
-import sklearn
 from sklearn import __version__ as sklearn_version
+from yaml import FullLoader
+from yaml import load as yaml_load
 
 
 def evaluate_cond(cond, v):
@@ -129,7 +128,7 @@ def create_pytest_switches(
         pytest_switches = []
         for test_name in filtered_deselection:
             if test_name:
-                pytest_switches.extend(["--deselect", base_dir + test_name])
+                pytest_switches.extend(["--deselect=" + base_dir + test_name])
     return pytest_switches
 
 

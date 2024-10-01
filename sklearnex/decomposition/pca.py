@@ -25,13 +25,14 @@ if daal_check_version((2024, "P", 100)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.utils.validation import check_is_fitted
+    from sklearn.utils.validation import check_array, check_is_fitted
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
+    from ..utils._array_api import get_namespace
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
@@ -42,7 +43,11 @@ if daal_check_version((2024, "P", 100)):
     from sklearn.decomposition import PCA as sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
-    from sklearnex.utils import get_namespace
+
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = sklearn_PCA._validate_data
 
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
     class PCA(sklearn_PCA):
@@ -133,7 +138,8 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_fit(self, X, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 ensure_2d=True,
@@ -177,12 +183,17 @@ if daal_check_version((2024, "P", 100)):
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                reset=False,
-            )
+                X = validate_data(
+                    self,
+                    X,
+                    dtype=[np.float64, np.float32],
+                    reset=False,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                )
             self._validate_n_features_in_after_fitting(X)
 
             return self._onedal_estimator.predict(X, queue=queue)
@@ -209,6 +220,29 @@ if daal_check_version((2024, "P", 100)):
             else:
                 # Scikit-learn PCA["covariance_eigh"] was fit
                 return self._transform(X_fit, xp, x_is_centered=x_is_centered)
+
+        @wrap_output_data
+        def inverse_transform(self, X):
+            xp, _ = get_namespace(X)
+
+            mean = self.mean_
+            if self.whiten:
+                components = (
+                    xp.sqrt(self.explained_variance_[:, np.newaxis]) * self.components_
+                )
+            else:
+                components = self.components_
+
+            if "numpy" not in xp.__name__:
+                # DPCtl and dpnp require inputs to be on the same device for
+                # matrix multiplication and division. The type and location
+                # of the components and mean are dependent on the sklearn
+                # version, this makes sure it is of the same type and on the
+                # same device as the data (compute follows data).
+                components = xp.asarray(components, device=X.device)
+                mean = xp.asarray(mean, device=X.device)
+
+            return X @ components + mean
 
         def _onedal_supported(self, method_name, X):
             class_name = self.__class__.__name__
@@ -381,6 +415,7 @@ if daal_check_version((2024, "P", 100)):
         fit.__doc__ = sklearn_PCA.fit.__doc__
         transform.__doc__ = sklearn_PCA.transform.__doc__
         fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
+        inverse_transform.__doc__ = sklearn_PCA.inverse_transform.__doc__
 
 else:
     from daal4py.sklearn.decomposition import PCA

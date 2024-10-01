@@ -28,12 +28,12 @@ from daal4py import _get__daal_link_version__ as dv
 
 DaalVersionTuple = Tuple[int, str, int]
 
+import logging
+
 try:
     from packaging.version import Version
 except ImportError:
     from distutils.version import LooseVersion as Version
-
-import logging
 
 try:
     from pandas import DataFrame
@@ -42,17 +42,6 @@ try:
     pandas_is_imported = True
 except (ImportError, ModuleNotFoundError):
     pandas_is_imported = False
-
-try:
-    from daal4py.oneapi import is_in_sycl_ctxt as is_in_ctx
-
-    ctx_imported = True
-except (ImportError, ModuleNotFoundError):
-    ctx_imported = False
-
-oneapi_is_available = "daal4py.oneapi" in sys.modules
-if oneapi_is_available:
-    from daal4py.oneapi import _get_device_name_sycl_ctxt
 
 
 def set_idp_sklearn_verbose():
@@ -145,19 +134,7 @@ def make2d(X):
 
 def get_patch_message(s):
     if s == "daal":
-        message = "running accelerated version on "
-        if oneapi_is_available:
-            dev = _get_device_name_sycl_ctxt()
-            if dev == "cpu" or dev is None:
-                message += "CPU"
-            elif dev == "gpu":
-                message += "GPU"
-            else:
-                raise ValueError(
-                    f"Unexpected device name {dev}." " Supported types are cpu and gpu"
-                )
-        else:
-            message += "CPU"
+        message = "running accelerated version on CPU"
 
     elif s == "sklearn":
         message = "fallback to original Scikit-learn"
@@ -169,13 +146,6 @@ def get_patch_message(s):
             f" 'sklearn_after_daal', got {s}"
         )
     return message
-
-
-def is_in_sycl_ctxt():
-    if ctx_imported:
-        return is_in_ctx()
-    else:
-        return False
 
 
 def is_DataFrame(X):

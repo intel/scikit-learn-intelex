@@ -274,36 +274,6 @@ def daal_tsne_gradient_descent(init, p, size_iter, params, results, dtype=0):
                             data_or_file(<PyObject*>size_iter),
                             data_or_file(<PyObject*>params),
                             data_or_file(<PyObject*>results), dtype)
-
-
-def _execute_with_context(func):
-    def exec_func(*args, **keyArgs):
-        if 'daal4py.oneapi' in sys.modules:
-            import daal4py.oneapi as d4p_oneapi
-            devname = d4p_oneapi._get_device_name_sycl_ctxt()
-            ctxparams = d4p_oneapi._get_sycl_ctxt_params()
-
-            if devname == 'gpu' and ctxparams.get('host_offload_on_fail', False):
-                import logging
-                classname = func.__qualname__.split('.')[0]
-                try:
-                    res = func(*args, **keyArgs)
-                    logging.info(f"{classname} successfully run on gpu")
-                    return res
-                except RuntimeError as e:
-                    logging.info(f"{classname} failed to run on gpu. Fallback to host")
-                    gpu_ctx = d4p_oneapi._get_sycl_ctxt()
-                    host_ctx = d4p_oneapi.sycl_execution_context('host')
-                    try:
-                        host_ctx.apply()
-                        res = func(*args, **keyArgs)
-                    finally:
-                        del host_ctx
-                        gpu_ctx.apply()
-                    return res
-
-        return func(*args, **keyArgs)
-    return exec_func
 """
 
 ###############################################################################
@@ -404,7 +374,7 @@ cdef class {{flatname}}:
     def __init__(self, int64_t ptr=0):
         self.c_ptr = <{{class_type|flat}}>ptr
 
-    def __str__(self):
+    def __repr__(self):
         return _str(self, [{% for m in enum_gets+named_gets %}'{{m[1]}}',{% endfor %}])
 {% for m in enum_gets+named_gets %}
 {% set rtype = m[2]|d2cy(False) if m in enum_gets else m[0]|d2cy(False) %}
@@ -1033,6 +1003,8 @@ cdef extern from "daal4py_cpp.h":
 
 # this is our actual algorithm class for Python
 cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
+    cdef tuple _params
+
     '''
     {{algo}}
     {{params_all|fmt('{}', 'sphinx', sep='\n')|indent(4)}}
@@ -1047,6 +1019,17 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
         self.c_ptr = mk_{{algo}}(
             {{params_all|fmt('{}', 'arg_cyext', sep=',\n')|indent(25+(algo|length))}}
         )
+        current_locals = locals()
+        ordered_input_args = '''
+            {{params_all|fmt('{}', 'name', sep=' ')|indent(0)}}
+        '''.strip().split()
+        self._params = tuple(
+            current_locals[arg]
+            for arg in ordered_input_args
+        )
+
+    def __reduce__(self):
+        return (self.__class__, self._params)
 
 {% if not iface[0] %}
     # the C++ manager__iface__ (de-templatized)
@@ -1057,7 +1040,6 @@ cdef class {{algo}}{{'('+iface[0]|lower+'__iface__)' if iface[0] else ''}}:
 
 {% set cytype = result_map.class_type.replace('Ptr', '')|d2cy(False)|lower %}
     # compute simply forwards to the C++ de-templatized manager__iface__::compute
-    @_execute_with_context
     def _compute(self,
                  {{input_args|fmt('{}', 'decl_dflt_cy', sep=',\n')|indent(17)}},
                  setup=False):

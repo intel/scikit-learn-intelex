@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 from abc import ABC
 from numbers import Number, Real
 
@@ -29,6 +30,11 @@ from onedal.utils import _check_array, _check_X_y, _column_or_1d
 
 from .._config import config_context, get_config
 from .._utils import PatchingConditionsChain
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
 
 
 def get_dual_coef(self):
@@ -149,13 +155,23 @@ class BaseSVM(BaseEstimator, ABC):
                 )
         # using onedal _check_X_y to insure X and y are contiguous
         # finite check occurs in onedal estimator
-        X, y = _check_X_y(
-            X,
-            y,
-            dtype=[np.float64, np.float32],
-            force_all_finite=False,
-            accept_sparse="csr",
-        )
+        if sklearn_check_version("1.0"):
+            X, y = validate_data(
+                self,
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
+        else:
+            X, y = _check_X_y(
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
         y = self._validate_targets(y)
         sample_weight = self._get_sample_weight(X, y, sample_weight)
         return X, y, sample_weight
@@ -230,6 +246,16 @@ class BaseSVC(BaseSVM):
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
         # TODO: rewrite this method when probabilities output is implemented in oneDAL
+
+        # LibSVM uses the random seed to control cross-validation for probability generation
+        # CalibratedClassifierCV with "prefit" does not use an RNG nor a seed. This may
+        # impact users without their knowledge, so display a warning.
+        if self.random_state is not None:
+            warnings.warn(
+                "random_state does not influence oneDAL SVM results",
+                RuntimeWarning,
+            )
+
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"

@@ -24,9 +24,14 @@ from onedal.neighbors import NearestNeighbors as onedal_NearestNeighbors
 from .._device_offload import dispatch, wrap_output_data
 from .common import KNeighborsDispatchingBase
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_NearestNeighbors._validate_data
 
-@control_n_jobs(decorated_methods=["fit", "kneighbors"])
-class NearestNeighbors(sklearn_NearestNeighbors, KNeighborsDispatchingBase):
+
+@control_n_jobs(decorated_methods=["fit", "kneighbors", "radius_neighbors"])
+class NearestNeighbors(KNeighborsDispatchingBase, sklearn_NearestNeighbors):
     __doc__ = sklearn_NearestNeighbors.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**sklearn_NearestNeighbors._parameter_constraints}
@@ -88,19 +93,40 @@ class NearestNeighbors(sklearn_NearestNeighbors, KNeighborsDispatchingBase):
     def radius_neighbors(
         self, X=None, radius=None, return_distance=True, sort_results=False
     ):
-        _onedal_estimator = getattr(self, "_onedal_estimator", None)
-
         if (
-            _onedal_estimator is not None
+            hasattr(self, "_onedal_estimator")
             or getattr(self, "_tree", 0) is None
             and self._fit_method == "kd_tree"
         ):
             sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
-        result = sklearn_NearestNeighbors.radius_neighbors(
-            self, X, radius, return_distance, sort_results
+        return dispatch(
+            self,
+            "radius_neighbors",
+            {
+                "onedal": None,
+                "sklearn": sklearn_NearestNeighbors.radius_neighbors,
+            },
+            X,
+            radius=radius,
+            return_distance=return_distance,
+            sort_results=sort_results,
         )
 
-        return result
+    def radius_neighbors_graph(
+        self, X=None, radius=None, mode="connectivity", sort_results=False
+    ):
+        return dispatch(
+            self,
+            "radius_neighbors_graph",
+            {
+                "onedal": None,
+                "sklearn": sklearn_NearestNeighbors.radius_neighbors_graph,
+            },
+            X,
+            radius=radius,
+            mode=mode,
+            sort_results=sort_results,
+        )
 
     def _onedal_fit(self, X, y=None, queue=None):
         onedal_params = {
@@ -144,3 +170,6 @@ class NearestNeighbors(sklearn_NearestNeighbors, KNeighborsDispatchingBase):
     fit.__doc__ = sklearn_NearestNeighbors.__doc__
     kneighbors.__doc__ = sklearn_NearestNeighbors.kneighbors.__doc__
     radius_neighbors.__doc__ = sklearn_NearestNeighbors.radius_neighbors.__doc__
+    radius_neighbors_graph.__doc__ = (
+        sklearn_NearestNeighbors.radius_neighbors_graph.__doc__
+    )

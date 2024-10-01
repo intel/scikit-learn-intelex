@@ -48,25 +48,17 @@ def get_patch_map_core(preview=False):
             import sklearn.decomposition as decomposition_module
 
             # Preview classes for patching
-            from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
             from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
+            from .preview.linear_model import Ridge as Ridge_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
             # when preview is used, setting the mapping element[1] to None
             # should NOT be done. This may lose track of the unpatched
             # sklearn estimator or function.
-            # KMeans
-            cluster_module, _, _ = mapping["kmeans"][0][0]
-            sklearn_obj = mapping["kmeans"][0][1]
-            mapping.pop("kmeans")
-            mapping["kmeans"] = [
-                [(cluster_module, "KMeans", KMeans_sklearnex), sklearn_obj]
-            ]
-
             # Covariance
             mapping["empiricalcovariance"] = [
                 [
@@ -90,6 +82,15 @@ def get_patch_map_core(preview=False):
                     None,
                 ]
             ]
+
+            # Ridge
+            linear_model_module, _, _ = mapping["ridge"][0][0]
+            sklearn_obj = mapping["ridge"][0][1]
+            mapping.pop("ridge")
+            mapping["ridge"] = [
+                [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
+            ]
+
         return mapping
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
@@ -133,6 +134,7 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .cluster import KMeans as KMeans_sklearnex
         from .covariance import (
             IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
         )
@@ -145,6 +147,7 @@ def get_patch_map_core(preview=False):
         from .linear_model import (
             IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
         )
+        from .linear_model import IncrementalRidge as IncrementalRidge_sklearnex
         from .linear_model import Lasso as Lasso_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
@@ -165,6 +168,10 @@ def get_patch_map_core(preview=False):
         # DBSCAN
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
+
+        # KMeans
+        mapping.pop("kmeans")
+        mapping["kmeans"] = [[(cluster_module, "KMeans", KMeans_sklearnex), None]]
 
         # PCA
         mapping.pop("pca")
@@ -401,6 +408,19 @@ def get_patch_map_core(preview=False):
                 None,
             ]
         ]
+
+        if daal_check_version((2024, "P", 600)):
+            # IncrementalRidge
+            mapping["incrementalridge"] = [
+                [
+                    (
+                        linear_model_module,
+                        "IncrementalRidge",
+                        IncrementalRidge_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
 
         # Configs
         mapping["set_config"] = [

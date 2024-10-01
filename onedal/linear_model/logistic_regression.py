@@ -29,6 +29,7 @@ from ..utils import (
     _check_array,
     _check_n_features,
     _check_X_y,
+    _is_csr,
     _num_features,
     _type_of_target,
 )
@@ -44,11 +45,11 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         self.max_iter = max_iter
         self.algorithm = algorithm
 
-    def _get_onedal_params(self, dtype=np.float32):
+    def _get_onedal_params(self, is_csr, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
         return {
             "fptype": "float" if dtype == np.float32 else "double",
-            "method": self.algorithm,
+            "method": "sparse" if is_csr else self.algorithm,
             "intercept": self.fit_intercept,
             "tol": self.tol,
             "max_iter": self.max_iter,
@@ -62,14 +63,16 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         }
 
     def _fit(self, X, y, module, queue):
+        sparsity_enabled = daal_check_version((2024, "P", 700))
         X, y = _check_X_y(
             X,
             y,
-            accept_sparse=False,
+            accept_sparse=sparsity_enabled,
             force_all_finite=True,
             accept_2d_y=False,
             dtype=[np.float64, np.float32],
         )
+        is_csr = _is_csr(X)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
@@ -81,7 +84,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
         policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
-        params = self._get_onedal_params(get_dtype(X))
+        params = self._get_onedal_params(is_csr, get_dtype(X))
         X_table, y_table = to_table(X, y)
 
         result = module.train(policy, params, X_table, y_table)
@@ -151,10 +154,17 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
     def _infer(self, X, module, queue):
         _check_is_fitted(self)
+        sparsity_enabled = daal_check_version((2024, "P", 700))
 
         X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=True, ensure_2d=False
+            X,
+            dtype=[np.float64, np.float32],
+            accept_sparse=sparsity_enabled,
+            force_all_finite=True,
+            ensure_2d=False,
+            accept_large_sparse=sparsity_enabled,
         )
+        is_csr = _is_csr(X)
         _check_n_features(self, X, False)
 
         X = make2d(X)
@@ -166,7 +176,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
             model = self._create_model(module, policy)
 
         X = _convert_to_supported(policy, X)
-        params = self._get_onedal_params(get_dtype(X))
+        params = self._get_onedal_params(is_csr, get_dtype(X))
 
         X_table = to_table(X)
         result = module.infer(policy, params, model, X_table)

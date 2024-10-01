@@ -14,19 +14,18 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 from abc import ABCMeta, abstractmethod
-from numbers import Number
 
 import numpy as np
-
-from onedal import _backend
 
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
+from ..utils.validation import _check_array
 
 
-class BaseBasicStatistics(metaclass=ABCMeta):
+class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, result_options, algorithm):
         self.options = result_options
@@ -63,59 +62,46 @@ class BaseBasicStatistics(metaclass=ABCMeta):
             "result_option": options,
         }
 
-    def _compute_raw(
-        self, data_table, weights_table, module, policy, dtype=np.float32, is_csr=False
-    ):
-        params = self._get_onedal_params(is_csr, dtype)
 
-        result = module.train(policy, params, data_table, weights_table)
-
-        options = self._get_result_options(self.options)
-        options = options.split("|")
-
-        return {opt: getattr(result, opt) for opt in options}
-
-    def _compute(self, data, weights, module, queue):
-        policy = self._get_policy(queue, data, weights)
-
-        is_csr = _is_csr(data)
-        if not (data is None) and not is_csr:
-            data = np.asarray(data)
-
-        if not (weights is None):
-            weights = np.asarray(weights)
-
-        data, weights = _convert_to_supported(policy, data, weights)
-
-        data_table, weights_table = to_table(data, weights)
-
-        dtype = data.dtype
-        res = self._compute_raw(data_table, weights_table, module, policy, dtype, is_csr)
-
-        return {k: from_table(v).ravel() for k, v in res.items()}
-
-
-class BasicStatistics(BaseEstimator, BaseBasicStatistics):
+class BasicStatistics(BaseBasicStatistics):
     """
     Basic Statistics oneDAL implementation.
     """
 
-    def __init__(self, result_options="all", *, algorithm="by_default", **kwargs):
+    def __init__(self, result_options="all", algorithm="by_default"):
         super().__init__(result_options, algorithm)
 
-    def compute(self, data, weights=None, queue=None):
-        return super()._compute(
-            data, weights, self._get_backend("basic_statistics", "compute", None), queue
-        )
+    def fit(self, data, sample_weight=None, queue=None):
+        policy = self._get_policy(queue, data, sample_weight)
 
-    def compute_raw(
+        is_csr = _is_csr(data)
+
+        if data is not None and not is_csr:
+            data = _check_array(data, ensure_2d=False)
+        if sample_weight is not None:
+            sample_weight = _check_array(sample_weight, ensure_2d=False)
+
+        data, sample_weight = _convert_to_supported(policy, data, sample_weight)
+        is_single_dim = data.ndim == 1
+        data_table, weights_table = to_table(data, sample_weight)
+
+        dtype = data.dtype
+        raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
+        for opt, raw_value in raw_result.items():
+            value = from_table(raw_value).ravel()
+            if is_single_dim:
+                setattr(self, opt, value[0])
+            else:
+                setattr(self, opt, value)
+
+        return self
+
+    def _compute_raw(
         self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
     ):
-        return super()._compute_raw(
-            data_table,
-            weights_table,
-            self._get_backend("basic_statistics", "compute", None),
-            policy,
-            dtype,
-            is_csr,
-        )
+        module = self._get_backend("basic_statistics")
+        params = self._get_onedal_params(is_csr, dtype)
+        result = module.compute(policy, params, data_table, weights_table)
+        options = self._get_result_options(self.options).split("|")
+
+        return {opt: getattr(result, opt) for opt in options}
