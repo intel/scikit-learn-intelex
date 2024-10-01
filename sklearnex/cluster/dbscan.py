@@ -32,6 +32,11 @@ from ..utils._array_api import get_namespace
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = sklearn_DBSCAN._validate_data
+
 
 class BaseDBSCAN(ABC):
     def _onedal_dbscan(self, **onedal_params):
@@ -86,7 +91,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, force_all_finite=False)
+            X = validate_data(self, X, force_all_finite=False)
         xp, is_array_api_compliant = get_namespace(X)
 
         onedal_params = {

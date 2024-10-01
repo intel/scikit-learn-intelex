@@ -34,6 +34,11 @@ if sklearn_check_version("1.2"):
 import numbers
 import warnings
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 
 @control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
 class IncrementalBasicStatistics(BaseEstimator):
@@ -145,7 +150,8 @@ class IncrementalBasicStatistics(BaseEstimator):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 reset=first_pass,
@@ -180,7 +186,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32])
+            X = validate_data(self, X, dtype=[np.float64, np.float32])
         else:
             X = check_array(X, dtype=[np.float64, np.float32])
 
