@@ -14,26 +14,28 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
-
-#include <unordered_map>
+#include <cstdint>
 
 namespace oneapi::dal::python {
 
-template <typename Key, typename Value>
-inline auto inverse_map(const std::unordered_map<Key, Value>& input)
-                                -> std::unordered_map<Value, Key> {
-    const auto b_count = input.bucket_count();
-    std::unordered_map<Value, Key> output(b_count);
+union endian_checker {
+    std::uint64_t blob;
+    std::uint8_t arr[8];
+};
 
-    for (const auto& [key, value] : input) {
-        output.emplace(value, key);
-    }
-
-    return output;
+bool is_little_endian_impl() {
+    constexpr std::uint64_t one = 0xfful;
+    constexpr endian_checker checker{ one };
+    return static_cast<bool>(checker.arr[0]);
 }
 
-bool is_big_endian();
-bool is_little_endian();
+bool is_little_endian() {
+    static const bool value = is_little_endian_impl();
+    return value;
+}
 
-} // namespace oneapi::dal
+bool is_big_endian() {
+    return !is_little_endian();
+}
+
+} // namespace oneapi::dal::python

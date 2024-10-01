@@ -21,9 +21,9 @@
 #include "oneapi/dal/common.hpp"
 #include "oneapi/dal/detail/common.hpp"
 
-#include "onedal/datatypes/common.hpp"
-#include "onedal/datatypes/dtype_conversions.hpp"
-#include "onedal/datatypes/dtype_dispatcher.hpp"
+#include "onedal/datatypes/utils/common.hpp"
+#include "onedal/datatypes/utils/dtype_conversions.hpp"
+#include "onedal/datatypes/utils/dtype_dispatcher.hpp"
 
 namespace oneapi::dal::python {
 
