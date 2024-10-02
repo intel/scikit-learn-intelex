@@ -351,11 +351,7 @@ DTYPES = [
 def _get_processor_info():
     proc = ""
     if platform.system() == "Linux":
-        proc = (
-            subprocess.check_output("cat /proc/cpuinfo", shell=True)
-            .strip()
-            .decode("utf-8")
-        )
+        proc = subprocess.check_output(["cat", "/proc/cpuinfo"]).strip().decode("utf-8")
     elif platform.system() == "Windows":
         proc = platform.processor()
     elif platform.system() == "Darwin":
