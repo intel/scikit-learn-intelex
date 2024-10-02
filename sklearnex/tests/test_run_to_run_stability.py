@@ -160,7 +160,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
-        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
+        pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
@@ -194,7 +194,7 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
-        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
+        pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     est = SPECIAL_INSTANCES[estimator]
 
@@ -224,7 +224,7 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
-        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
+        pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     est = SPARSE_INSTANCES[estimator]
 
@@ -254,7 +254,7 @@ def test_other_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
-        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
+        pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     est = STABILITY_INSTANCES[estimator]
 
