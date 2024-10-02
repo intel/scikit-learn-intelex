@@ -160,6 +160,8 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
+        if daal_check_version((2025, "P", 200)):
+            pytest.fail("Re-verify failure of algorithms in 2025.2 oneDAL")
         pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     if "NearestNeighbors" in estimator and "radius" in method:
@@ -194,6 +196,8 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
+        if daal_check_version((2025, "P", 200)):
+            pytest.fail("Re-verify failure of algorithms in 2025.2 oneDAL")
         pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     est = SPECIAL_INSTANCES[estimator]
@@ -228,6 +232,8 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
+        if daal_check_version((2025, "P", 200)):
+            pytest.fail("Re-verify failure of algorithms in 2025.2 oneDAL")
         pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     est = SPARSE_INSTANCES[estimator]
@@ -258,6 +264,8 @@ def test_other_estimator_stability(estimator, method, dataframe, queue):
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
+        if daal_check_version((2025, "P", 200)):
+            pytest.fail("Re-verify failure of algorithms in 2025.2 oneDAL")
         pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
 
     est = STABILITY_INSTANCES[estimator]
