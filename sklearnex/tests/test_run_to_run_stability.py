@@ -45,13 +45,13 @@ from sklearnex.neighbors import (
 )
 from sklearnex.svm import SVC
 from sklearnex.tests.utils import (
+    _IS_INTEL,
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     call_method,
     gen_dataset,
     gen_models_info,
     sklearn_clone_dict,
-    _IS_INTEL,
 )
 
 # to reproduce errors even in CI
@@ -155,7 +155,11 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in {estimator}.score")
     if estimator in ["IncrementalEmpiricalCovariance"] and method == "mahalanobis":
         pytest.skip("allowed fallback to sklearn occurs")
-    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+    if (
+        not _IS_INTEL
+        and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
+        and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
+    ):
         pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
 
     if "NearestNeighbors" in estimator and "radius" in method:
@@ -185,7 +189,11 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in KMeans.score")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
-    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+    if (
+        not _IS_INTEL
+        and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
+        and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
+    ):
         pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
 
     est = SPECIAL_INSTANCES[estimator]
@@ -205,11 +213,17 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
-    if "KMeans" in estimator and method in "score",  and queue == None:
+    if "KMeans" in estimator and method in "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.{method}")
+    if not daal_check_version((2025, "P", 0)) and "KMeans" in estimator and queue == None:
+        pytest.skip(f"variation observed in KMeans.{method} in 2024.7 oneDAL")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
-    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+    if (
+        not _IS_INTEL
+        and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
+        and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
+    ):
         pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
 
     est = SPARSE_INSTANCES[estimator]
@@ -235,9 +249,12 @@ def test_other_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in KMeans.score")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
-    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+    if (
+        not _IS_INTEL
+        and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
+        and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
+    ):
         pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
-
 
     est = STABILITY_INSTANCES[estimator]
 
