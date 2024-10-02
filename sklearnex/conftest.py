@@ -16,11 +16,13 @@
 
 import io
 import logging
+import warnings
 
 import pytest
 
 from daal4py.sklearn._utils import sklearn_check_version
 from sklearnex import config_context, patch_sklearn, unpatch_sklearn
+from sklearnex.tests.utils import _IS_INTEL, _NONINTEL_DESELECTIONS
 
 
 def pytest_configure(config):
@@ -58,6 +60,16 @@ def pytest_runtest_call(item):
             )
     else:
         yield
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_collection_modifyitems(config, items):
+    """This deselects some tests which occur in GitHub Actions runners for 2024.2"""
+    if not _IS_INTEL:
+        print("\nNon-GenuineIntel hardware recognized, some tests deselected")
+        nonintel_deselects = [i for i in items if i.name in _NONINTEL_DESELECTIONS]
+        config.hook.pytest_deselected(items=nonintel_deselects)
+    yield
 
 
 @pytest.fixture

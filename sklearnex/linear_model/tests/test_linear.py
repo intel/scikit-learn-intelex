@@ -29,6 +29,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from sklearnex.tests.utils import _IS_INTEL
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -56,7 +57,9 @@ def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
     assert "sklearnex" in linreg.__module__
     assert linreg.n_features_in_ == 2
 
-    tol = 2e-5 if _as_numpy(linreg.coef_).dtype == np.float32 else 1e-7
+    tol = 1e-7
+    if _as_numpy(linreg.coef_).dtype == np.float32:
+        tol = 1e-5 if _IS_INTEL else 2e-5
     assert_allclose(_as_numpy(linreg.intercept_), 3.0, rtol=tol)
     assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
 

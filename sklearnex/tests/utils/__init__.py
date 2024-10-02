@@ -25,6 +25,8 @@ from .base import (
     gen_dataset,
     gen_models_info,
     sklearn_clone_dict,
+    _get_processor_info,
+    _NONINTEL_DESELECTIONS,
 )
 
 __all__ = [
@@ -39,3 +41,5 @@ __all__ = [
     "gen_dataset",
     "sklearn_clone_dict",
 ]
+
+_IS_INTEL = "GenuineIntel" in _get_processor_info()
