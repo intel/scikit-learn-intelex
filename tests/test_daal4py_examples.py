@@ -73,7 +73,7 @@ class Config:
     result_attribute: Union[str, Callable[..., Any]] = ""
     required_version: Optional[Tuple[Any, ...]] = None
     req_libs: List[str] = field(default_factory=list)
-    timeout_cpu_seconds: int = 120
+    timeout_cpu_seconds: int = 170
     suspended_on: Optional[Tuple[int, int, int]] = None
     suspended_for_n_days: int = 30
 
