@@ -70,7 +70,7 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             (deselected if item.name in _NONINTEL_DESELECTIONS else selected).append(item)
         items[:] = selected
-        config.hook.pytest_deselected(items=nonintel_deselects)
+        config.hook.pytest_deselected(items=deselected)
     yield
 
 
