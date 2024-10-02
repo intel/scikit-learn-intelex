@@ -133,7 +133,7 @@ def test_dense_vs_sparse(queue, init, algorithm, dims):
     from sklearnex.cluster import KMeans
 
     if init == "random" or (not _IS_INTEL and init == "k-means++"):
-        pytest.skip(f"{init} initialization for sparse K-means are non-conformant.")
+        pytest.skip(f"{init} initialization for sparse K-means is non-conformant.")
 
     # For higher level of sparsity (smaller density) the test may fail
     n_samples, n_features, density, n_clusters = dims
