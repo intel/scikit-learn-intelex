@@ -15,7 +15,6 @@
 # ==============================================================================
 
 from .base import (
-    _NONINTEL_DESELECTIONS,
     DTYPES,
     PATCHED_FUNCTIONS,
     PATCHED_MODELS,

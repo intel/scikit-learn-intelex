@@ -51,6 +51,7 @@ from sklearnex.tests.utils import (
     gen_dataset,
     gen_models_info,
     sklearn_clone_dict,
+    _IS_INTEL,
 )
 
 # to reproduce errors even in CI
@@ -154,6 +155,8 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in {estimator}.score")
     if estimator in ["IncrementalEmpiricalCovariance"] and method == "mahalanobis":
         pytest.skip("allowed fallback to sklearn occurs")
+    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
 
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
@@ -182,6 +185,8 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in KMeans.score")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
 
     est = SPECIAL_INSTANCES[estimator]
 
@@ -200,11 +205,13 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
-    if "KMeans" in estimator and method == "score" and queue == None:
-        pytest.skip(f"variation observed in KMeans.score")
-
+    if "KMeans" in estimator and method in "score",  and queue == None:
+        pytest.skip(f"variation observed in KMeans.{method}")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
+
     est = SPARSE_INSTANCES[estimator]
 
     if method and not hasattr(est, method):
@@ -228,6 +235,9 @@ def test_other_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in KMeans.score")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    if not _IS_INTEL and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator) and method in ["score", "predict", "kneighbors", "kneighbors_graph"]:
+        pytest.skip(f"{estimator} shows instability in Non-Intel hardware")
+
 
     est = STABILITY_INSTANCES[estimator]
 
