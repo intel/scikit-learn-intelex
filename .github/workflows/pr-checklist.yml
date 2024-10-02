@@ -20,6 +20,10 @@ on:
   pull_request:
     types: [opened, edited, synchronize]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   checklist:
     name: Close all checkboxes before moving from draft
