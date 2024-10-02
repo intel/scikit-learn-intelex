@@ -66,7 +66,12 @@ def pytest_collection_modifyitems(config, items):
     """This deselects some tests which occur in GitHub Actions runners for 2024.2"""
     if not _IS_INTEL:
         print("\nNon-GenuineIntel hardware recognized, some tests deselected")
-        nonintel_deselects = [i for i in items if i.name in _NONINTEL_DESELECTIONS]
+        selected, nonintel_deselects = [], []
+        for item in items:
+            (selected, nonintel_deselects)[item.name in _NONINTEL_DESELECTIONS].append(
+                item
+            )
+        items[:] = selected
         config.hook.pytest_deselected(items=nonintel_deselects)
     yield
 
