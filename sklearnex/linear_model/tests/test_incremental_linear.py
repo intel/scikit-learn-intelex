@@ -132,7 +132,7 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
     assert inclin.n_features_in_ == 2
     tol = 1e-7
     if dtype == np.float32:
-        tol = 1e-5 if _IS_INTEL else 2e-5
+        tol = 7e-6 if _IS_INTEL else 2e-5
 
     assert_allclose(inclin.coef_, [1.0, 2.0], atol=tol)
     if fit_intercept:
