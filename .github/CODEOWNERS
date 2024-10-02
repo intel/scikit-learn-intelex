@@ -6,7 +6,7 @@
 # Docs
 *.md                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss
 doc/                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss
-requirements-doc.txt          @maria-Petrova @napetrov @emmwalsh @Alexsandruss
+requirements-doc.txt          @emmwalsh @Alexsandruss
 
 # DPC++
 **/oneapi/                    @Alexsandruss @samir-nasibli
