@@ -14,10 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
-from functools import partial
-from inspect import Parameter, getattr_static, isclass, signature
 import platform
 import subprocess
+from functools import partial
+from inspect import Parameter, getattr_static, isclass, signature
 
 import numpy as np
 from scipy import sparse as sp

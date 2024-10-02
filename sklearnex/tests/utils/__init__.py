@@ -15,18 +15,18 @@
 # ==============================================================================
 
 from .base import (
+    _NONINTEL_DESELECTIONS,
     DTYPES,
     PATCHED_FUNCTIONS,
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     UNPATCHED_FUNCTIONS,
     UNPATCHED_MODELS,
+    _get_processor_info,
     call_method,
     gen_dataset,
     gen_models_info,
     sklearn_clone_dict,
-    _get_processor_info,
-    _NONINTEL_DESELECTIONS,
 )
 
 __all__ = [
