@@ -109,7 +109,6 @@ class LinearRegression(sklearn_LinearRegression):
 
     @wrap_output_data
     def predict(self, X):
-
         if not hasattr(self, "coef_"):
             msg = (
                 "This %(name)s instance is not fitted yet. Call 'fit' with "
@@ -161,9 +160,6 @@ class LinearRegression(sklearn_LinearRegression):
         n_samples = _num_samples(X)
         n_features = _num_features(X, fallback_1d=True)
 
-        # Check if equations are well defined
-        is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
-
         patching_status.and_conditions(
             [
                 (sample_weight is None, "Sample weight is not supported."),
@@ -175,11 +171,6 @@ class LinearRegression(sklearn_LinearRegression):
                 (
                     not positive_is_set,
                     "Forced positive coefficients are not supported.",
-                ),
-                (
-                    not is_underdetermined,
-                    "The shape of X (fitting) does not satisfy oneDAL requirements:"
-                    "Number of features + 1 >= number of samples.",
                 ),
             ]
         )

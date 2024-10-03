@@ -17,6 +17,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from scipy.linalg import lstsq
 from sklearn.datasets import make_regression
 
 from daal4py.sklearn._utils import daal_check_version
@@ -34,15 +35,23 @@ from onedal.tests.utils._dataframes_support import (
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("macro_block", [None, 1024])
-def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
+@pytest.mark.parametrize("overdetermined", [False, True])
+@pytest.mark.parametrize("multi_output", [False, True])
+def test_sklearnex_import_linear(
+    dataframe, queue, dtype, macro_block, overdetermined, multi_output
+):
     from sklearnex.linear_model import LinearRegression
 
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    X = X.astype(dtype=dtype)
-    y = y.astype(dtype=dtype)
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    rng = np.random.default_rng(seed=123)
+    X = rng.standard_normal(size=(10, 20) if overdetermined else (20, 5))
+    y = rng.standard_normal(size=(X.shape[0], 3) if multi_output else X.shape[0])
+
+    Xi = np.c_[X, np.ones((X.shape[0], 1))]
+    expected_coefs = lstsq(Xi, y)[0]
+    expected_intercept = expected_coefs[-1]
+    expected_coefs = expected_coefs[: X.shape[1]]
+    if multi_output:
+        expected_coefs = expected_coefs.T
 
     linreg = LinearRegression()
     if daal_check_version((2024, "P", 0)) and macro_block is not None:
@@ -50,15 +59,18 @@ def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 
+    X = X.astype(dtype=dtype)
+    y = y.astype(dtype=dtype)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg.fit(X, y)
 
     assert hasattr(linreg, "_onedal_estimator")
     assert "sklearnex" in linreg.__module__
-    assert linreg.n_features_in_ == 2
 
-    tol = 1e-5 if _as_numpy(linreg.coef_).dtype == np.float32 else 1e-7
-    assert_allclose(_as_numpy(linreg.intercept_), 3.0, rtol=tol)
-    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
+    rtol = 1e-3 if dtype == np.float32 else 1e-5
+    assert_allclose(_as_numpy(linreg.coef_), expected_coefs, rtol=rtol)
+    assert_allclose(_as_numpy(linreg.intercept_), expected_intercept, rtol=rtol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
