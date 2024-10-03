@@ -1,0 +1,11 @@
+[
+    {
+        "name": "2024.3 (latest)",
+        "version": "2024.3",
+        "url": "https:///intel.github.io/scikit-learn-intelex/2024.3/"
+    },
+    {
+        "version": "2023.2",
+        "url": "https:///intel.github.io/scikit-learn-intelex/2023.2/"
+    }
+]

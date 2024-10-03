@@ -27,6 +27,6 @@ mkdir $SAMPLES_DIR
 cd ..
 cp examples/notebooks/*.ipynb doc/$SAMPLES_DIR
 
-# build the documentation
-cd doc
-make html
+# to build the docs locally, uncomment the following lines
+# cd doc
+# make html
