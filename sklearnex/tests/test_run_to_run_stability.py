@@ -157,7 +157,6 @@ def _skip_neighbors(estimator, method):
         pytest.skip(f"{estimator} shows instability on non-Intel(R) hardware")
 
 
-
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
