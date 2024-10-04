@@ -153,8 +153,9 @@ def _skip_neighbors(estimator, method):
         and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
     ):
         if daal_check_version((2025, "P", 200)):
-            pytest.fail("Re-verify failure of algorithms in 2025.2 oneDAL")
-        pytest.skip(f"{estimator} shows instability on Non-Intel hardware")
+            pytest.fail("Re-verify failure of algorithms in oneDAL 2025.2")
+        pytest.skip(f"{estimator} shows instability on non-Intel(R) hardware")
+
 
 
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
