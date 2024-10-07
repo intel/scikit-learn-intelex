@@ -243,8 +243,8 @@ def n_jobs_check(text, estimator, method):
     )
     n_jobs_count = text[0].count("n_jobs_wrapper")
 
-    assert (
-        False
+    assert bool(count) == bool(
+        n_jobs_count
     ), f"count {text[0].count('to_table')} - {text[0].count('_get_backend')}  - n_jobs {n_jobs_count} verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
 
 
