@@ -39,7 +39,7 @@ IF DEFINED TBBROOT (
     call "%TBBROOT%\env\vars.bat" || set exitcode=1
 )
 
-set PYTHONPATH=%1\tests;%PYTHONPATH%
+set PYTHONPATH=%PYTHONPATH%;%1\tests
 %PYTHON% -m pytest --verbose --pyargs -s %1\tests || set exitcode=1
 
 pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
