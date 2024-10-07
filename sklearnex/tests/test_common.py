@@ -230,7 +230,17 @@ def call_validate_data(text, estimator, method):
 
 def n_jobs_check(text, estimator, method):
     """verify the n_jobs is being set if '_get_backend' or 'to_table' is called"""
-    count = max([text[0].count(name) for name in ["to_table", "_get_backend"]])
+    # remove the _get_backend function from sklearnex from considered _get_backend
+    count = max(
+        text[0].count("to_table"),
+        len(
+            [
+                i
+                for i in range(len(text[0]))
+                if text[0][i] == "_get_backend" and "sklearnex" not in text[2][i]
+            ]
+        ),
+    )
     n_jobs_count = text[0].count("n_jobs_wrapper")
 
     assert (
