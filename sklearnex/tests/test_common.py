@@ -95,8 +95,7 @@ def _whitelist_to_blacklist():
         try:
             return os.path.commonpath(inp)
         except ValueError:
-            # if on a separate drive, give the system root
-            return os.sep
+            return ""
 
     blacklist = []
     for path in sys.path:
