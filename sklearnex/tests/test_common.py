@@ -94,18 +94,18 @@ def _whitelist_to_blacklist():
     for path in sys.path:
         fpath = os.path.realpath(os.path.expanduser(path))
         try:
-            if any([os.path.commonpath((i, fpath)) == fpath for i in _TRACE_ALLOW_LIST]):
+            if any([os.path.commonpath([i, fpath]) == fpath for i in _TRACE_ALLOW_LIST]):
                 for f in os.scandir(fpath):
                     temppath = os.path.realpath(os.path.expanduser(f.path))
                     if all(
                         [
-                            os.path.commonpath(i, temppath) != temppath
+                            os.path.commonpath([i, temppath]) not in [i, temppath]
                             for i in _TRACE_ALLOW_LIST
                         ]
                     ):
                         blacklist += [temppath]
             # only add to blacklist if not a parent directory
-            elif all([os.path.commonpath(i, fpath) != i for i in _TRACE_ALLOW_LIST]):
+            elif all([os.path.commonpath([i, fpath]) != i for i in _TRACE_ALLOW_LIST]):
                 blacklist += [fpath]
         except FileNotFoundError:
             blacklist += [fpath]
