@@ -235,7 +235,7 @@ def n_jobs_check(text, estimator, method):
 
     assert (
         False
-    ), f"count {count} - n_jobs {n_jobs_count} verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
+    ), f"count {text[0].count('to_table')} - {text[0].count('_get_backend')}  - n_jobs {n_jobs_count} verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
 
 
 DESIGN_RULES = [n_jobs_check]
