@@ -258,18 +258,14 @@ def call_validate_data(text, estimator, method):
         pytest.skip("onedal backend not used in this function")
 
     validate_data = "validate_data" if sklearn_check_version("1.6") else "_validate_data"
-    try:
-        assert (
-            validfuncs.count(validate_data) == 1
-        ), f"sklearn's {validate_data} should be called"
-        assert (
-            validfuncs.count("_check_feature_names") == 1
-        ), "estimator should check feature names in validate_data"
-    except AssertionError:
-        if "-".join([estimator, method, "call_validate_data"]) in _DESIGN_RULE_VIOLATIONS:
-            pytest.xfail("Allowed violation of design rules")
-        else:
-            raise
+
+    assert (
+        validfuncs.count(validate_data) == 1
+    ), f"sklearn's {validate_data} should be called"
+    assert (
+        validfuncs.count("_check_feature_names") == 1
+    ), "estimator should check feature names in validate_data"
+
 
 
 def n_jobs_check(text, estimator, method):
@@ -306,4 +302,10 @@ if sklearn_check_version("1.0"):
 )
 def test_estimator(estimator, method, design_pattern, estimator_trace):
     # These tests only apply to sklearnex estimators
-    design_pattern(estimator_trace, estimator, method)
+    try:
+        design_pattern(estimator_trace, estimator, method)
+    except AssertionError:
+        if "-".join([estimator, method, design_pattern.__name__]) in _DESIGN_RULE_VIOLATIONS:
+            pytest.xfail("Allowed violation of design rules")
+        else:
+            raise
