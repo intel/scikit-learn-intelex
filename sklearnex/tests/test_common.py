@@ -267,7 +267,6 @@ def call_validate_data(text, estimator, method):
     ), "estimator should check feature names in validate_data"
 
 
-
 def n_jobs_check(text, estimator, method):
     """verify the n_jobs is being set if '_get_backend' or 'to_table' is called"""
     # remove the _get_backend function from sklearnex from considered _get_backend
@@ -305,7 +304,10 @@ def test_estimator(estimator, method, design_pattern, estimator_trace):
     try:
         design_pattern(estimator_trace, estimator, method)
     except AssertionError:
-        if "-".join([estimator, method, design_pattern.__name__]) in _DESIGN_RULE_VIOLATIONS:
+        if (
+            "-".join([estimator, method, design_pattern.__name__])
+            in _DESIGN_RULE_VIOLATIONS
+        ):
             pytest.xfail("Allowed violation of design rules")
         else:
             raise
