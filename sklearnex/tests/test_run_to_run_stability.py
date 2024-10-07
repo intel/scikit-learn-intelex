@@ -45,6 +45,7 @@ from sklearnex.neighbors import (
 )
 from sklearnex.svm import SVC
 from sklearnex.tests.utils import (
+    _IS_INTEL,
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
     call_method,
@@ -145,6 +146,17 @@ STABILITY_INSTANCES = sklearn_clone_dict(
 )
 
 
+def _skip_neighbors(estimator, method):
+    if (
+        not _IS_INTEL
+        and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
+        and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
+    ):
+        if daal_check_version((2025, "P", 200)):
+            pytest.fail("Re-verify failure of algorithms in oneDAL 2025.2")
+        pytest.skip(f"{estimator} shows instability on non-Intel(R) hardware")
+
+
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
@@ -154,6 +166,7 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in {estimator}.score")
     if estimator in ["IncrementalEmpiricalCovariance"] and method == "mahalanobis":
         pytest.skip("allowed fallback to sklearn occurs")
+    _skip_neighbors(estimator, method)
 
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
@@ -182,6 +195,7 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in KMeans.score")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    _skip_neighbors(estimator, method)
 
     est = SPECIAL_INSTANCES[estimator]
 
@@ -200,11 +214,18 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
-    if "KMeans" in estimator and method == "score" and queue == None:
-        pytest.skip(f"variation observed in KMeans.score")
-
+    if "KMeans" in estimator and method in "score" and queue == None:
+        pytest.skip(f"variation observed in KMeans.{method}")
+    if (
+        not daal_check_version((2025, "P", 0))
+        and "KMeans()" in estimator
+        and queue == None
+    ):
+        pytest.skip(f"variation observed in KMeans.{method} in 2024.7 oneDAL")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    _skip_neighbors(estimator, method)
+
     est = SPARSE_INSTANCES[estimator]
 
     if method and not hasattr(est, method):
@@ -228,6 +249,7 @@ def test_other_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"variation observed in KMeans.score")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    _skip_neighbors(estimator, method)
 
     est = STABILITY_INSTANCES[estimator]
 

@@ -31,7 +31,7 @@ else:
     validate_data = BaseSVR._validate_data
 
 
-@control_n_jobs(decorated_methods=["fit", "predict"])
+@control_n_jobs(decorated_methods=["fit", "predict", "score"])
 class NuSVR(sklearn_NuSVR, BaseSVR):
     __doc__ = sklearn_NuSVR.__doc__
 
