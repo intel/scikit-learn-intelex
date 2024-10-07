@@ -40,6 +40,9 @@ from onedal.tests.utils._dataframes_support import (
 def test_sklearnex_import_linear(
     dataframe, queue, dtype, macro_block, overdetermined, multi_output
 ):
+    if (overdetermined or multi_output) and not daal_check_version((2025, "P", 1)):
+        pytest.skip()
+
     from sklearnex.linear_model import LinearRegression
 
     rng = np.random.default_rng(seed=123)

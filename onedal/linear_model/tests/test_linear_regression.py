@@ -21,6 +21,7 @@ from sklearn.datasets import load_diabetes
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 
+from daal4py.sklearn._utils import daal_check_version
 from onedal.linear_model import LinearRegression
 from onedal.tests.utils._device_selection import get_queues
 
@@ -152,6 +153,10 @@ def test_reconstruct_model(queue, dtype):
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("fit_intercept", [False, True])
+@pytest.mark.skipif(
+    not daal_check_version((2025, "P", 1)),
+    reason="Functionality introduced in later versions",
+)
 def test_overdetermined_system(queue, dtype, fit_intercept):
     gen = np.random.default_rng(seed=123)
     X = gen.standard_normal(size=(10, 20))
@@ -174,6 +179,10 @@ def test_overdetermined_system(queue, dtype, fit_intercept):
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("fit_intercept", [False, True])
+@pytest.mark.skipif(
+    not daal_check_version((2025, "P", 1)),
+    reason="Functionality introduced in later versions",
+)
 def test_singular_matrix(queue, dtype, fit_intercept):
     gen = np.random.default_rng(seed=123)
     X = gen.standard_normal(size=(20, 4))
@@ -198,6 +207,10 @@ def test_singular_matrix(queue, dtype, fit_intercept):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("fit_intercept", [False, True])
 @pytest.mark.parametrize("problem_type", ["regular", "overdetermined", "singular"])
+@pytest.mark.skipif(
+    not daal_check_version((2025, "P", 1)),
+    reason="Functionality introduced in later versions",
+)
 def test_multioutput_regression(queue, dtype, fit_intercept, problem_type):
     gen = np.random.default_rng(seed=123)
     if problem_type == "regular":
