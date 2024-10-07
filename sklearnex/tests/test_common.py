@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-import importlib
+import importlib.util
 import os
 import re
 import sys
@@ -78,10 +78,10 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
-_TRACE_ALLOW_DICT = {
-    i: os.path.dirname(importlib.util.find_spec(i).origin)
+_TRACE_ALLOW_LIST = [
+    os.path.dirname(importlib.util.find_spec(i).origin)
     for i in ["sklearn", "sklearnex", "onedal", "daal4py"]
-}
+]
 
 
 def _whitelist_to_blacklist():
@@ -91,13 +91,14 @@ def _whitelist_to_blacklist():
     blacklist = []
     for path in sys.path:
         try:
-            if any([path in i for i in _TRACE_ALLOW_DICT.values()]):
+            if any([path in i for i in _TRACE_ALLOW_LIST]):
                 blacklist += [
                     f.path
                     for f in os.scandir(path)
-                    if f.name not in _TRACE_ALLOW_DICT.keys()
+                    if not any([(f.path in i or i in f.path) for i in _TRACE_ALLOW_LIST])
                 ]
-            else:
+            # only add to blacklist if not a parent directory
+            elif not any([i in path for i in _TRACE_ALLOW_LIST]):
                 blacklist += [path]
         except FileNotFoundError:
             blacklist += [path]
