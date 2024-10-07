@@ -40,7 +40,7 @@ IF DEFINED TBBROOT (
 )
 
 set PYTHONPATH=%1\tests;%PYTHONPATH%
-%PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
+%PYTHON% -m pytest --verbose --pyargs -s %1\tests || set exitcode=1
 
 pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
 pytest --verbose --pyargs sklearnex || set exitcode=1

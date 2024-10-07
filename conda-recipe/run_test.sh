@@ -41,13 +41,13 @@ echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI pytest run of legacy unittest ..."
     mpirun --version
-    PYTHONPATH="${daal4py_dir}/tests:${PYTHONPATH}" mpirun -n 4 python -m pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py
+    PYTHONPATH="${daal4py_dir}/tests:${PYTHONPATH}" mpirun -n 4 pytest --verbose --pyargs -s ${daal4py_dir}/tests/test*spmd*.py
     return_code=$(($return_code + $?))
 fi
 
 echo "Pytest run of legacy unittest ..."
 echo ${daal4py_dir}
-PYTHONPATH="${daal4py_dir}/tests:${PYTHONPATH}" python -m pytest --verbose -s ${daal4py_dir}/tests
+PYTHONPATH="${daal4py_dir}/tests:${PYTHONPATH}" pytest --verbose --pyargs -s ${daal4py_dir}/tests
 return_code=$(($return_code + $?))
 
 echo "Pytest of daal4py running ..."
