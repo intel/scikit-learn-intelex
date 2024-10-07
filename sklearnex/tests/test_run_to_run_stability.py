@@ -193,6 +193,8 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
         pytest.skip(f"stability not guaranteed for {estimator}")
     if "KMeans" in estimator and method == "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.score")
+    if estimator == "BasicStatistics" and queue == None:
+        pytest.skip(f"BasicStatistics not deterministic")
     if "NearestNeighbors" in estimator and "radius" in method:
         pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
     _skip_neighbors(estimator, method)
