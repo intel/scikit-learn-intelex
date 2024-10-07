@@ -79,7 +79,9 @@ def test_target_offload_ban():
 
 
 _TRACE_ALLOW_LIST = [
-    os.path.realpath(os.path.expanduser(os.path.dirname(importlib.util.find_spec(i).origin)))
+    os.path.realpath(
+        os.path.expanduser(os.path.dirname(importlib.util.find_spec(i).origin))
+    )
     for i in ["sklearn", "sklearnex", "onedal", "daal4py"]
 ]
 
@@ -95,10 +97,15 @@ def _whitelist_to_blacklist():
             if any([os.path.commonpath((i, fpath)) == fpath for i in _TRACE_ALLOW_LIST]):
                 for f in os.scandir(fpath):
                     temppath = os.path.realpath(os.path.expanduser(f.path))
-                    if all([os.path.commonpath(i, temppath) != temppath for i in _TRACE_ALLOW_LIST]):
+                    if all(
+                        [
+                            os.path.commonpath(i, temppath) != temppath
+                            for i in _TRACE_ALLOW_LIST
+                        ]
+                    ):
                         blacklist += [temppath]
             # only add to blacklist if not a parent directory
-            elif all([os.path.commonpath(i, fpath)) != i for i in _TRACE_ALLOW_LIST]):
+            elif all([os.path.commonpath(i, fpath) != i for i in _TRACE_ALLOW_LIST]):
                 blacklist += [fpath]
         except FileNotFoundError:
             blacklist += [fpath]
