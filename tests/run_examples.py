@@ -16,6 +16,7 @@
 # ==============================================================================
 
 import argparse
+import json
 import os
 import platform as plt
 import struct
@@ -23,7 +24,7 @@ import subprocess
 import sys
 from collections import defaultdict
 from os.path import join as jp
-from time import gmtime, strftime
+from time import gmtime, strftime, time
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
@@ -64,6 +65,7 @@ arch_dir = plt.machine()
 plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
 arch_dir = plt_dict[arch_dir] if arch_dir in plt_dict else arch_dir
 assert 8 * struct.calcsize("P") in [32, 64]
+json_log_file_name = "log.json"
 
 if 8 * struct.calcsize("P") == 32:
     logdir = jp(runner_dir, "_results", "ia32")
@@ -200,6 +202,15 @@ req_os["random_forest_regressor_spmd.py"] = ["lnx"]
 skiped_files = []
 
 
+def append_to_json_file(json_lst, file_name):
+    if os.path.isfile(file_name):
+        with open(file_name, "r") as json_file:
+            current_json_lst = json.load(json_file)
+        json_lst = json_lst + current_json_lst
+    with open(file_name, "w") as json_file:
+        json.dump(json_lst, json_file)
+
+
 def get_exe_cmd(ex, args):
     if os.path.dirname(ex).endswith("daal4py") or os.path.dirname(ex).endswith("mb"):
         if args.nodaal4py:
@@ -231,12 +242,25 @@ def get_exe_cmd(ex, args):
 def run(exdir, logdir, args):
     success = 0
     n = 0
+    json_logs = list()
     if not os.path.exists(logdir):
         os.makedirs(logdir)
+
+    name_suffix_from_args = ""
+    for arg, argv in args.__dict__.items():
+        if argv:
+            name_suffix_from_args += "_" + arg
+    test_type = "unclassified"
+    if "daal4py" in logdir:
+        test_type = "daal4py"
+    elif "sklearnex" in logdir:
+        test_type = "sklearnex"
+
     for dirpath, dirnames, filenames in os.walk(exdir):
         for script in filenames:
             if script.endswith(".py") and script not in ["__init__.py"]:
                 n += 1
+                json_log_name = script.replace(".py", "") + name_suffix_from_args
                 if script in skiped_files:
                     success += 1
                     print("\n##### " + jp(dirpath, script))
@@ -245,6 +269,11 @@ def run(exdir, logdir, args):
                         + "\tKNOWN BUG IN EXAMPLES\t"
                         + script
                     )
+                    json_log_entry = {
+                        "name": json_log_name,
+                        "result": "skipped",
+                        "reason": "known bug in examples",
+                    }
                 else:
                     logfn = jp(logdir, script.replace(".py", ".res"))
                     with open(logfn, "w") as logfile:
@@ -252,6 +281,9 @@ def run(exdir, logdir, args):
                         execute_string = get_exe_cmd(jp(dirpath, script), args)
                         if execute_string:
                             os.chdir(dirpath)
+                            executed_successfully = False
+                            failure_reason = None
+                            time_start = time()
                             try:
                                 proc = subprocess.Popen(
                                     (
@@ -264,27 +296,46 @@ def run(exdir, logdir, args):
                                     shell=False,
                                 )
                                 out = proc.communicate(timeout=execution_timeout)[0]
+                                executed_successfully = proc.returncode == os.EX_OK
+                                if not executed_successfully:
+                                    failure_reason = out.decode()
                             except subprocess.TimeoutExpired:
                                 proc.kill()
                                 out = proc.communicate()[0]
                                 print("Process has timed out: " + str(execute_string))
+                                failure_reason = "timeout"
+                            time_end = time()
                             logfile.write(out.decode("ascii"))
                             if proc.returncode:
-                                print(out)
+                                print(out.decode())
                                 print(
                                     strftime("%H:%M:%S", gmtime()) + "\tFAILED"
                                     "\t" + script + "\twith errno"
                                     "\t" + str(proc.returncode)
                                 )
+                                failure_reason = out.decode()
                             else:
                                 success += 1
                                 print(
                                     strftime("%H:%M:%S", gmtime()) + "\t"
                                     "PASSED\t" + script
                                 )
+                            json_log_entry = {
+                                "name": json_log_name,
+                                "result": "passed" if executed_successfully else "failed",
+                                "duration": time_end - time_start,
+                            } | (
+                                {"reason": failure_reason}
+                                if not executed_successfully
+                                else {}
+                            )
                         else:
                             success += 1
                             print(strftime("%H:%M:%S", gmtime()) + "\tSKIPPED\t" + script)
+                            json_log_entry = {"name": json_log_name, "result": "skipped"}
+            json_log_entry = json_log_entry | {"type": test_type}
+            json_logs.append(json_log_entry)
+    append_to_json_file(json_logs, jp(logdir, json_log_file_name))
     return success, n
 
 
@@ -294,6 +345,10 @@ def run_all(args):
 
     success = 0
     num = 0
+    for _, ldir in ex_log_dirs:
+        json_log_file_name_ex = jp(ldir, json_log_file_name)
+        if os.path.isfile(json_log_file_name_ex):
+            os.remove(json_log_file_name_ex)
     for edir, ldir in ex_log_dirs:
         s, n = run(edir, ldir, args)
         success += s
