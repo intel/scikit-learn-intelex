@@ -39,7 +39,8 @@ IF DEFINED TBBROOT (
     call "%TBBROOT%\env\vars.bat" || set exitcode=1
 )
 
-%PYTHON% -m unittest discover -v -s %1\tests -p test*.py || set exitcode=1
+set PYTHONPATH=%1\tests;%PYTHONPATH%
+%PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
 
 pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
 pytest --verbose --pyargs sklearnex || set exitcode=1
