@@ -20,6 +20,9 @@ on:
   pull_request:
     types: [opened, edited, synchronize]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}
   cancel-in-progress: true
@@ -44,6 +47,7 @@ jobs:
           });
           core.setOutput('body', pr_desc.data.body)
           core.setOutput('draft', pr_desc.data.draft)
+          core.setOutput('author', pr_desc.data.user.login)
     - name: Check if all checkboxes are checked
       id: checkboxes
       env:
@@ -52,7 +56,7 @@ jobs:
         UNCHECKED=$(echo "$DESCRIPTION" | grep -c '\[ \]' || true)
         echo "unchecked=$UNCHECKED" >> $GITHUB_OUTPUT
     - name: Fail if not all checkboxes are checked and PR is not draft
-      if: ${{ (steps.pr.outputs.draft == 'false') && (steps.checkboxes.outputs.unchecked != '0') }}
+      if: ${{ (steps.pr.outputs.draft == 'false') && (steps.checkboxes.outputs.unchecked != '0') && (steps.pr.outputs.author != 'renovate') }}
       run: |
         echo "Unchecked checkboxes: ${{ steps.checkboxes.outputs.unchecked }}"
         exit 1
