@@ -56,11 +56,13 @@ _DESIGN_RULE_VIOLATIONS = [
     "LogisticRegression-predict_proba-n_jobs_check",  # uses daal4py for cpu in sklearnex
     "KNeighborsClassifier-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier-fit-n_jobs_check",  # uses daal4py for cpu in onedal
+    "KNeighborsClassifier-score-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier-predict-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier-predict_proba-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor-fit-n_jobs_check",  # uses daal4py for cpu in onedal
+    "KNeighborsRegressor-score-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor-predict-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
     "NearestNeighbors-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
@@ -73,11 +75,13 @@ _DESIGN_RULE_VIOLATIONS = [
     "LocalOutlierFactor-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier(algorithm='brute')-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier(algorithm='brute')-fit-n_jobs_check",  # uses daal4py for cpu in onedal
+    "KNeighborsClassifier(algorithm='brute')-score-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier(algorithm='brute')-predict-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier(algorithm='brute')-predict_proba-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsClassifier(algorithm='brute')-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor(algorithm='brute')-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor(algorithm='brute')-fit-n_jobs_check",  # uses daal4py for cpu in onedal
+    "KNeighborsRegressor(algorithm='brute')-score-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor(algorithm='brute')-predict-n_jobs_check",  # uses daal4py for cpu in onedal
     "KNeighborsRegressor(algorithm='brute')-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
     "NearestNeighbors(algorithm='brute')-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
