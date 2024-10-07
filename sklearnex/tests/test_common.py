@@ -78,12 +78,12 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
-_TRACE_ALLOW_LIST = [
-    os.path.realpath(
+_TRACE_ALLOW_DICT = {
+    i: os.path.realpath(
         os.path.expanduser(os.path.dirname(importlib.util.find_spec(i).origin))
     )
     for i in ["sklearn", "sklearnex", "onedal", "daal4py"]
-]
+}
 
 
 def _whitelist_to_blacklist():
@@ -94,18 +94,25 @@ def _whitelist_to_blacklist():
     for path in sys.path:
         fpath = os.path.realpath(os.path.expanduser(path))
         try:
-            if any([os.path.commonpath([i, fpath]) == fpath for i in _TRACE_ALLOW_LIST]):
+            if any(
+                [
+                    os.path.commonpath([i, fpath]) == fpath
+                    for i in _TRACE_ALLOW_DICT.values()
+                ]
+            ):
                 for f in os.scandir(fpath):
                     temppath = os.path.realpath(os.path.expanduser(f.path))
                     if all(
                         [
                             os.path.commonpath([i, temppath]) not in [i, temppath]
-                            for i in _TRACE_ALLOW_LIST
+                            for i in _TRACE_ALLOW_DICT.values()
                         ]
                     ):
                         blacklist += [temppath]
             # only add to blacklist if not a parent directory
-            elif all([os.path.commonpath([i, fpath]) != i for i in _TRACE_ALLOW_LIST]):
+            elif all(
+                [os.path.commonpath([i, fpath]) != i for i in _TRACE_ALLOW_DICT.values()]
+            ):
                 blacklist += [fpath]
         except FileNotFoundError:
             blacklist += [fpath]
