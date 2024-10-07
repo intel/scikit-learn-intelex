@@ -87,7 +87,7 @@ _TRACE_ALLOW_DICT = {
 
 
 def _whitelist_to_blacklist():
-    """block all standard library, builting or site packages which are not
+    """block all standard library, building or site packages which are not
     related to sklearn, daal4py, onedal or sklearnex"""
 
     def _commonpath(inp):
@@ -233,8 +233,8 @@ def n_jobs_check(text, estimator, method):
     count = max([text[0].count(name) for name in ["to_table", "_get_backend"]])
     n_jobs_count = text[0].count("n_jobs_wrapper")
 
-    assert bool(count) == bool(
-        n_jobs_count
+    assert (
+        count == n_jobs_count
     ), f"verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
 
 
