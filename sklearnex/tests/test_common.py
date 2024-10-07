@@ -253,7 +253,18 @@ def call_validate_data(text, estimator, method):
             raise
 
 
-DESIGN_RULES = []
+def n_jobs_check(text, estimator, method):
+    """verify the n_jobs is being set if '_get_backend' or 'to_table' is called"""
+    count = max([text[0].count(name) for name in ["to_table", "_get_backend"]])
+    n_jobs_count = text[0].count("n_jobs_wrapper")
+
+    assert bool(count) == bool(
+        n_jobs_count
+    ), f"verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
+
+
+DESIGN_RULES = [n_jobs_check]
+
 
 if sklearn_check_version("1.0"):
     DESIGN_RULES += [call_validate_data]

@@ -30,7 +30,7 @@ else:
     validate_data = _sklearn_NearestNeighbors._validate_data
 
 
-@control_n_jobs(decorated_methods=["fit", "kneighbors"])
+@control_n_jobs(decorated_methods=["fit", "kneighbors", "radius_neighbors"])
 class NearestNeighbors(KNeighborsDispatchingBase, _sklearn_NearestNeighbors):
     __doc__ = _sklearn_NearestNeighbors.__doc__
     if sklearn_check_version("1.2"):

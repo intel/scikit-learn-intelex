@@ -14,8 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+import platform
+import subprocess
 from functools import partial
-from inspect import getattr_static, isclass, signature
+from inspect import Parameter, getattr_static, isclass, signature
 
 import numpy as np
 from scipy import sparse as sp
@@ -232,6 +234,13 @@ def call_method(estimator, method, X, y, **kwargs):
     return value from estimator.method
     """
     # useful for repository wide testing
+
+    func = getattr(estimator, method)
+    argdict = signature(func).parameters
+    argnum = len(
+        [i for i in argdict if argdict[i].default == Parameter.empty or i in ["X", "y"]]
+    )
+
     if method == "inverse_transform":
         # PCA's inverse_transform takes (n_samples, n_components)
         data = (
@@ -239,11 +248,10 @@ def call_method(estimator, method, X, y, **kwargs):
             if X.shape[1] != estimator.n_components_
             else (X,)
         )
-    elif method not in ["score", "partial_fit", "path", "fit"]:
-        data = (X,)
     else:
-        data = (X, y)
-    return getattr(estimator, method)(*data, **kwargs)
+        data = (X, y)[:argnum]
+
+    return func(*data, **kwargs)
 
 
 def _gen_dataset_type(est):
@@ -341,3 +349,23 @@ DTYPES = [
     np.uint32,
     np.uint64,
 ]
+
+
+def _get_processor_info():
+    proc = ""
+    if platform.system() == "Linux":
+        proc = (
+            subprocess.check_output(["/usr/bin/cat", "/proc/cpuinfo"])
+            .strip()
+            .decode("utf-8")
+        )
+    elif platform.system() == "Windows":
+        proc = platform.processor()
+    elif platform.system() == "Darwin":
+        proc = (
+            subprocess.check_output(["/usr/bin/sysctl", "-n", "machdep.cpu.brand_string"])
+            .strip()
+            .decode("utf-8")
+        )
+
+    return proc

@@ -14,31 +14,22 @@
 # limitations under the License.
 # ==============================================================================
 
-from .base import (
-    DTYPES,
-    PATCHED_FUNCTIONS,
-    PATCHED_MODELS,
-    SPECIAL_INSTANCES,
-    UNPATCHED_FUNCTIONS,
-    UNPATCHED_MODELS,
-    _get_processor_info,
-    call_method,
-    gen_dataset,
-    gen_models_info,
-    sklearn_clone_dict,
-)
+import re
+import unittest
 
-__all__ = [
-    "DTYPES",
-    "PATCHED_FUNCTIONS",
-    "PATCHED_MODELS",
-    "UNPATCHED_FUNCTIONS",
-    "UNPATCHED_MODELS",
-    "SPECIAL_INSTANCES",
-    "call_method",
-    "gen_models_info",
-    "gen_dataset",
-    "sklearn_clone_dict",
-]
+import numpy as np
 
-_IS_INTEL = "GenuineIntel" in _get_processor_info()
+import daal4py
+
+
+class Test(unittest.TestCase):
+    def test_qr_printing(self):
+        rng = np.random.default_rng(seed=123)
+        X = rng.standard_normal(size=(10, 5))
+        qr_algorithm = daal4py.qr()
+        qr_result = qr_algorithm.compute(X)
+        qr_result_str, qr_result_repr = qr_result.__str__(), qr_result.__repr__()
+        assert "matrixQ" in qr_result_str
+        assert "matrixR" in qr_result_str
+        assert "matrixQ" in qr_result_repr
+        assert "matrixR" in qr_result_repr

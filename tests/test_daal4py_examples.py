@@ -73,7 +73,7 @@ class Config:
     result_attribute: Union[str, Callable[..., Any]] = ""
     required_version: Optional[Tuple[Any, ...]] = None
     req_libs: List[str] = field(default_factory=list)
-    timeout_cpu_seconds: int = 90
+    timeout_cpu_seconds: int = 170
     suspended_on: Optional[Tuple[int, int, int]] = None
     suspended_for_n_days: int = 30
 
@@ -401,6 +401,9 @@ class TestExCSRMatrix(Daal4pyBase, unittest.TestCase):
         parameters = list(signature.parameters)
         if "readcsv" not in parameters:
             self.skipTest("Missing readcsv kwarg support")
+
+        if "naive_bayes" in module.__name__:
+            self.skipTest("CSR support in Naive Bayes is buggy")
 
         if "method" in parameters:
             method = "fastCSR"

@@ -46,7 +46,7 @@ else:
 
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
-@control_n_jobs(decorated_methods=["fit", "predict"])
+@control_n_jobs(decorated_methods=["fit", "predict", "score"])
 class LinearRegression(_sklearn_LinearRegression):
     __doc__ = _sklearn_LinearRegression.__doc__
 
