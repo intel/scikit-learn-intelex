@@ -30,6 +30,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from sklearnex.tests.utils import _IS_INTEL
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())

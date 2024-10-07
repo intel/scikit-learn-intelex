@@ -102,8 +102,8 @@ if daal_check_version((2023, "P", 200)):
             patching_status = PatchingConditionsChain(f"sklearn.cluster.{class_name}.fit")
 
             sample_count = _num_samples(X)
-            self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd", "elkan"]
+
             if self.algorithm == "elkan":
                 logging.getLogger("sklearnex").info(
                     "oneDAL does not support 'elkan', using 'lloyd' algorithm instead."
