@@ -24,7 +24,7 @@ from sklearn.metrics import r2_score
 from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
@@ -109,7 +109,6 @@ class LinearRegression(sklearn_LinearRegression):
 
     @wrap_output_data
     def predict(self, X):
-
         if not hasattr(self, "coef_"):
             msg = (
                 "This %(name)s instance is not fitted yet. Call 'fit' with "
@@ -161,8 +160,11 @@ class LinearRegression(sklearn_LinearRegression):
         n_samples = _num_samples(X)
         n_features = _num_features(X, fallback_1d=True)
 
-        # Check if equations are well defined
+        # Note: support for some variants was either introduced later on,
+        # or had bugs in some uncommon cases in older versions.
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+        is_multi_output = len(y.shape) > 1 and y.shape[1] > 1
+        supports_all_variants = daal_check_version((2025, "P", 1))
 
         patching_status.and_conditions(
             [
@@ -177,9 +179,13 @@ class LinearRegression(sklearn_LinearRegression):
                     "Forced positive coefficients are not supported.",
                 ),
                 (
-                    not is_underdetermined,
+                    not (is_underdetermined and not supports_all_variants),
                     "The shape of X (fitting) does not satisfy oneDAL requirements:"
                     "Number of features + 1 >= number of samples.",
+                ),
+                (
+                    not (is_multi_output and not supports_all_variants),
+                    "Multi-output regression is not supported.",
                 ),
             ]
         )
@@ -223,13 +229,14 @@ class LinearRegression(sklearn_LinearRegression):
     def _onedal_fit(self, X, y, sample_weight, queue=None):
         assert sample_weight is None
 
+        supports_multi_output = daal_check_version((2025, "P", 1))
         check_params = {
             "X": X,
             "y": y,
             "dtype": [np.float64, np.float32],
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
-            "multi_output": True,
+            "multi_output": supports_multi_output,
         }
         if sklearn_check_version("1.0"):
             X, y = validate_data(self, **check_params)
