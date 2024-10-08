@@ -192,11 +192,12 @@ def test_multiple_options_on_random_sparse_data(
     seed = 77
     random_state = 42
     gen = np.random.default_rng(seed)
-    X_dense, _ = make_blobs(
+    X, _ = make_blobs(
         n_samples=row_count, n_features=column_count, random_state=random_state
     )
     density = 0.05
-    X_sparse = csr_matrix(X_dense * (np.random.rand(*X_dense.shape) < density))
+    X_sparse = csr_matrix(X * (np.random.rand(*X.shape) < density))
+    X_dense = X_sparse.toarray()
 
     if weighted:
         weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
