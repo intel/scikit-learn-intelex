@@ -18,7 +18,7 @@ name: Check PR Checklist
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened, edited, synchronize, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
