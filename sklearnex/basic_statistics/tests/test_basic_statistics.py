@@ -17,6 +17,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from scipy.sparse import csr_matrix
 from sklearn.datasets import make_blobs
 
 from daal4py.sklearn._utils import daal_check_version
