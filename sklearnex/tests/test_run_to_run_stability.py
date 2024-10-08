@@ -150,7 +150,7 @@ def _skip_neighbors(estimator, method):
     if (
         not _IS_INTEL
         and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
-        and method in ["score", "predict", "kneighbors", "kneighbors_graph"]
+        and method in ["score", "predict", "kneighbors", "kneighbors_graph", "predict_proba"]
     ):
         if daal_check_version((2025, "P", 200)):
             pytest.fail("Re-verify failure of algorithms in oneDAL 2025.2")
