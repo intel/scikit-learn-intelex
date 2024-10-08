@@ -37,6 +37,11 @@ return_code=0
 python -c "import daal4py"
 return_code=$(($return_code + $?))
 
+echo "Pytest run of legacy unittest ..."
+echo ${daal4py_dir}
+pytest --verbose --pyargs -s ${daal4py_dir}/tests
+return_code=$(($return_code + $?))
+
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI pytest run of legacy unittest ..."
@@ -44,11 +49,6 @@ if [[ ! $NO_DIST ]]; then
     mpirun -n 4 pytest --verbose --pyargs -s ${daal4py_dir}/tests/test*spmd*.py
     return_code=$(($return_code + $?))
 fi
-
-echo "Pytest run of legacy unittest ..."
-echo ${daal4py_dir}
-pytest --verbose --pyargs -s ${daal4py_dir}/tests
-return_code=$(($return_code + $?))
 
 echo "Pytest of daal4py running ..."
 pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn
