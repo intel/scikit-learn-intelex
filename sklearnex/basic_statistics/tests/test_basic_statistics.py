@@ -178,6 +178,51 @@ def test_multiple_options_on_random_data(
     assert_allclose(gtr_sum, res_sum, atol=tol)
 
 
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("row_count", [100, 1000])
+@pytest.mark.parametrize("column_count", [10, 100])
+@pytest.mark.parametrize("weighted", [True, False])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_multiple_options_on_random_sparse_data(
+    queue, row_count, column_count, weighted, dtype
+):
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X_dense, _ = make_blobs(n_samples=row_count, n_features=column_count, random_state=random_state)
+    density = 0.05
+    X_sparse = csr_matrix(X_dense * (np.random.rand(*X_dense.shape) < density))
+    
+    if weighted:
+        weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
+        weights = weights.astype(dtype=dtype)
+    basicstat = BasicStatistics(result_options=["mean", "max", "sum"])
+
+    if weighted:
+        result = basicstat.fit(X_sparse, sample_weight=weights)
+    else:
+        result = basicstat.fit(X_sparse)
+
+    res_mean, res_max, res_sum = result.mean, result.max, result.sum
+    if weighted:
+        weighted_data = np.diag(weights) @ X_dense
+        gtr_mean, gtr_max, gtr_sum = (
+            expected_mean(weighted_data),
+            expected_max(weighted_data),
+            expected_sum(weighted_data),
+        )
+    else:
+        gtr_mean, gtr_max, gtr_sum = (
+            expected_mean(X_dense),
+            expected_max(X_dense),
+            expected_sum(X_dense),
+        )
+
+    tol = 5e-4 if res_mean.dtype == np.float32 else 1e-7
+    assert_allclose(gtr_mean, res_mean, atol=tol)
+    assert_allclose(gtr_max, res_max, atol=tol)
+    assert_allclose(gtr_sum, res_sum, atol=tol)
+
+
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
