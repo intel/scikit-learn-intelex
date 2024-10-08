@@ -28,6 +28,7 @@ from onedal.basic_statistics.tests.test_basic_statistics import (
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
+    get_queues,
 )
 from sklearnex.basic_statistics import BasicStatistics
 
