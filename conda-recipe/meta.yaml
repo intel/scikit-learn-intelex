@@ -76,10 +76,9 @@ test:
         - daal4py/sklearn
     commands:
         - python -c "import daal4py"
-        - PYTHONPATH="${PYTHONPATH}:tests" mpirun -n 4 pytest --pyargs --verbose -s tests/test*spmd*.py # [not win]
-        - set PYTHONPATH=%PYTHONPATH%;tests && mpiexec -localonly -n 4 pytest --pyargs --verbose -s tests/test*spmd*.py # [win]
-        - PYTHONPATH="${PYTHONPATH}:tests" pytest --pyargs --verbose -s tests # [not win]
-        - set PYTHONPATH=%PYTHONPATH%;tests && python -m pytest --verbose -s tests # [win]
+        - mpirun -n 4 pytest --pyargs --verbose -s tests/test*spmd*.py # [not win]
+        - mpiexec -localonly -n 4 pytest --pyargs --verbose -s tests/test*spmd*.py # [win]
+        - pytest --pyargs --verbose -s tests
         - pytest --pyargs daal4py/sklearn/
         - python tests/run_examples.py
 
