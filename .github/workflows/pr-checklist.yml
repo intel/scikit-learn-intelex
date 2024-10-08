@@ -48,6 +48,7 @@ jobs:
           core.setOutput('body', pr_desc.data.body)
           core.setOutput('draft', pr_desc.data.draft)
           core.setOutput('author', pr_desc.data.user.login)
+          console.log(pr_desc.data)
     - name: Check if all checkboxes are checked
       id: checkboxes
       env:
