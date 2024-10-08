@@ -126,10 +126,12 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
+def _fullpath(path):
+    return os.path.realpath(os.path.expanduser(path))
+
+
 _TRACE_ALLOW_DICT = {
-    i: os.path.realpath(
-        os.path.expanduser(os.path.dirname(importlib.util.find_spec(i).origin))
-    )
+    i: _fullpath(os.path.dirname(importlib.util.find_spec(i).origin))
     for i in ["sklearn", "sklearnex", "onedal", "daal4py"]
 }
 
@@ -147,7 +149,7 @@ def _whitelist_to_blacklist():
 
     blacklist = []
     for path in sys.path:
-        fpath = os.path.realpath(os.path.expanduser(path))
+        fpath = _fullpath(path)
         try:
             # if candidate path is a parent directory to any directory in the whitelist
             if any(
@@ -157,7 +159,7 @@ def _whitelist_to_blacklist():
                 # they should not have a common path that is either the whitelist path
                 # or the sub-path (meaning one is a parent directory of the either)
                 for f in os.scandir(fpath):
-                    temppath = os.path.realpath(os.path.expanduser(f.path))
+                    temppath = _fullpath(f.path)
                     if all(
                         [
                             _commonpath([i, temppath]) not in [i, temppath]
@@ -221,7 +223,7 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 
         # initialize tracer to have a more verbose module naming
         # this impacts ignoremods, but it is not used.
-        monkeypatch.setattr(trace, "_modname", lambda x: x)
+        monkeypatch.setattr(trace, "_modname", _fullpath)
         tracer = trace.Trace(
             count=0,
             trace=1,
