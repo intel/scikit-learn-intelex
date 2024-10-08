@@ -135,7 +135,7 @@ _TRACE_ALLOW_DICT = {
 
 
 def _whitelist_to_blacklist():
-    """block all standard library, building or site packages which are not
+    """block all standard library, built-in or site packages which are not
     related to sklearn, daal4py, onedal or sklearnex"""
 
     def _commonpath(inp):
@@ -149,9 +149,13 @@ def _whitelist_to_blacklist():
     for path in sys.path:
         fpath = os.path.realpath(os.path.expanduser(path))
         try:
+            # if candidate path is a parent directory to any directory in the whitelist
             if any(
                 [_commonpath([i, fpath]) == fpath for i in _TRACE_ALLOW_DICT.values()]
             ):
+                # find all sub-paths which are not in the whitelist and block them
+                # they should not have a common path that is either the whitelist path
+                # or the sub-path (meaning one is a parent directory of the either)
                 for f in os.scandir(fpath):
                     temppath = os.path.realpath(os.path.expanduser(f.path))
                     if all(
@@ -161,7 +165,7 @@ def _whitelist_to_blacklist():
                         ]
                     ):
                         blacklist += [temppath]
-            # only add to blacklist if not a parent directory
+            # add path to blacklist if not a sub path of anything in the whitelist
             elif all([_commonpath([i, fpath]) != i for i in _TRACE_ALLOW_DICT.values()]):
                 blacklist += [fpath]
         except FileNotFoundError:
