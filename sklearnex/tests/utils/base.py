@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import platform
+import subprocess
 from functools import partial
 from inspect import Parameter, getattr_static, isclass, signature
 
@@ -344,3 +346,23 @@ DTYPES = [
     np.uint32,
     np.uint64,
 ]
+
+
+def _get_processor_info():
+    proc = ""
+    if platform.system() == "Linux":
+        proc = (
+            subprocess.check_output(["/usr/bin/cat", "/proc/cpuinfo"])
+            .strip()
+            .decode("utf-8")
+        )
+    elif platform.system() == "Windows":
+        proc = platform.processor()
+    elif platform.system() == "Darwin":
+        proc = (
+            subprocess.check_output(["/usr/bin/sysctl", "-n", "machdep.cpu.brand_string"])
+            .strip()
+            .decode("utf-8")
+        )
+
+    return proc
