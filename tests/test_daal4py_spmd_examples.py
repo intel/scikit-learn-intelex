@@ -19,10 +19,7 @@ import unittest
 from pathlib import Path
 
 import numpy as np
-
-import daal4py as d4p
-
-from .test_daal4py_examples import (
+from test_daal4py_examples import (
     Base,
     Config,
     batch_data_path,
@@ -32,6 +29,8 @@ from .test_daal4py_examples import (
     low_order_moms_getter,
     readcsv,
 )
+
+import daal4py as d4p
 
 # the examples are supposed to be executed in parallel with mpirun
 try:
