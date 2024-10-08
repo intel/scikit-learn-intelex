@@ -44,60 +44,60 @@ ALLOWED_LOCATIONS = [
     "svm" + os.sep + "_common.py",
 ]
 
-_DESIGN_RULE_VIOLATIONS = [
-    "PCA-fit_transform-call_validate_data",  #  calls both "fit" and "transform"
-    "IncrementalEmpiricalCovariance-score-call_validate_data",  #  must call clone of itself
-    "SVC(probability=True)-fit-call_validate_data",  #  SVC fit can use sklearn estimator
-    "NuSVC(probability=True)-fit-call_validate_data",  #  NuSVC fit can use sklearn estimator
-    "LogisticRegression-score-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression-fit-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression-predict-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression-predict_log_proba-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression-predict_proba-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "KNeighborsClassifier-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier-score-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier-predict-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier-predict_proba-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor-score-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor-predict-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors-radius_neighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors-radius_neighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "LocalOutlierFactor-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "LocalOutlierFactor-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "LocalOutlierFactor-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier(algorithm='brute')-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier(algorithm='brute')-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier(algorithm='brute')-score-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier(algorithm='brute')-predict-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier(algorithm='brute')-predict_proba-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsClassifier(algorithm='brute')-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor(algorithm='brute')-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor(algorithm='brute')-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor(algorithm='brute')-score-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor(algorithm='brute')-predict-n_jobs_check",  # uses daal4py for cpu in onedal
-    "KNeighborsRegressor(algorithm='brute')-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors(algorithm='brute')-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors(algorithm='brute')-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors(algorithm='brute')-radius_neighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors(algorithm='brute')-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "NearestNeighbors(algorithm='brute')-radius_neighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "LocalOutlierFactor(novelty=True)-fit-n_jobs_check",  # uses daal4py for cpu in onedal
-    "LocalOutlierFactor(novelty=True)-kneighbors-n_jobs_check",  # uses daal4py for cpu in onedal
-    "LocalOutlierFactor(novelty=True)-kneighbors_graph-n_jobs_check",  # uses daal4py for cpu in onedal
-    "LogisticRegression(solver='newton-cg')-score-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression(solver='newton-cg')-fit-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression(solver='newton-cg')-predict-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression(solver='newton-cg')-predict_log_proba-n_jobs_check",  # uses daal4py for cpu in sklearnex
-    "LogisticRegression(solver='newton-cg')-predict_proba-n_jobs_check",  # uses daal4py for cpu in sklearnex
-]
+_DESIGN_RULE_VIOLATIONS = {
+    "PCA-fit_transform-call_validate_data": "calls both 'fit' and 'transform'",
+    "IncrementalEmpiricalCovariance-score-call_validate_data": "must call clone of itself",
+    "SVC(probability=True)-fit-call_validate_data": "SVC fit can use sklearn estimator",
+    "NuSVC(probability=True)-fit-call_validate_data": "NuSVC fit can use sklearn estimator",
+    "LogisticRegression-score-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-fit-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-predict-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-predict_log_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-predict_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "KNeighborsClassifier-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-predict_proba-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-radius_neighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-radius_neighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-predict_proba-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-radius_neighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-radius_neighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor(novelty=True)-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor(novelty=True)-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor(novelty=True)-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LogisticRegression(solver='newton-cg')-score-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-fit-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-predict-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-predict_log_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-predict_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+}
 
 
 def test_target_offload_ban():
@@ -312,10 +312,8 @@ def test_estimator(estimator, method, design_pattern, estimator_trace):
     try:
         design_pattern(estimator_trace, estimator, method)
     except AssertionError:
-        if (
-            "-".join([estimator, method, design_pattern.__name__])
-            in _DESIGN_RULE_VIOLATIONS
-        ):
-            pytest.xfail("Allowed violation of design rules")
+        key = "-".join([estimator, method, design_pattern.__name__])
+        if key in _DESIGN_RULE_VIOLATIONS:
+            pytest.xfail(_DESIGN_RULE_VIOLATIONS[key])
         else:
             raise
