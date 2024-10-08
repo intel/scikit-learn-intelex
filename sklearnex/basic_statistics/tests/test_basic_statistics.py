@@ -189,6 +189,7 @@ def test_multiple_options_on_random_sparse_data(
     queue, row_count, column_count, weighted, dtype
 ):
     seed = 77
+    random_state = 42
     gen = np.random.default_rng(seed)
     X_dense, _ = make_blobs(
         n_samples=row_count, n_features=column_count, random_state=random_state
