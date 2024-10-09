@@ -49,7 +49,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue):
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_rf_regression(dataframe, queue):
     if queue and queue.sycl_device.is_gpu:
-        pytest.skip("RF regressor predict for the GPU sycl_queue is buggy.")
+        pytest.xfail("RF regressor predict for the GPU sycl_queue is buggy.")
     from sklearnex.ensemble import RandomForestRegressor
 
     X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
@@ -71,7 +71,7 @@ def test_sklearnex_import_rf_regression(dataframe, queue):
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_et_classifier(dataframe, queue):
     if queue and queue.sycl_device.is_gpu:
-        pytest.skip("ET classifier predict for the GPU sycl_queue is buggy.")
+        pytest.xfail("ET classifier predict for the GPU sycl_queue is buggy.")
     from sklearnex.ensemble import ExtraTreesClassifier
 
     X, y = make_classification(
@@ -94,7 +94,7 @@ def test_sklearnex_import_et_classifier(dataframe, queue):
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_et_regression(dataframe, queue):
     if queue and queue.sycl_device.is_gpu:
-        pytest.skip("ET regressor predict for the GPU sycl_queue is buggy.")
+        pytest.xfail("ET regressor predict for the GPU sycl_queue is buggy.")
     from sklearnex.ensemble import ExtraTreesRegressor
 
     X, y = make_regression(n_features=1, random_state=0, shuffle=False)
