@@ -209,6 +209,7 @@ def test_whitened_toy_score(dataframe, queue):
     assert_allclose(expected_result, result, atol=1e-6)
 
 
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     import pickle

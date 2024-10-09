@@ -73,7 +73,8 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         and the dispatching policy can't be serialized, the computation is finalized
         here and the policy is not saved in serialized data.
         """
-        self.finalize_fit()
+        if self._need_to_finalize:
+            self.finalize_fit()
         data = self.__dict__.copy()
 
         tables_to_save = ["partial_n_rows", "partial_crossproduct", "partial_sums"]
@@ -181,7 +182,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             n_rows = self._partial_result.partial_n_rows
             self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
 
-            self.location_ = from_table(result.means).ravel()
+        self.location_ = from_table(result.means).ravel()
 
         self._need_to_finalize = False
 
