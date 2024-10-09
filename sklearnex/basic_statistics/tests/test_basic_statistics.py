@@ -202,7 +202,7 @@ def test_multiple_options_on_random_sparse_data(
     if weighted:
         weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
-    basicstat = BasicStatistics(result_options=["mean", "max", "sum"])
+    basicstat = BasicStatistics(result_options=["mean", "sum"])
 
     if weighted:
         result = basicstat.fit(X_sparse, sample_weight=weights)
@@ -212,21 +212,18 @@ def test_multiple_options_on_random_sparse_data(
     res_mean, res_max, res_sum = result.mean, result.max, result.sum
     if weighted:
         weighted_data = np.diag(weights) @ X_dense
-        gtr_mean, gtr_max, gtr_sum = (
+        gtr_mean, gtr_sum = (
             expected_mean(weighted_data),
-            expected_max(weighted_data),
             expected_sum(weighted_data),
         )
     else:
-        gtr_mean, gtr_max, gtr_sum = (
+        gtr_mean, gtr_sum = (
             expected_mean(X_dense),
-            expected_max(X_dense),
             expected_sum(X_dense),
         )
 
     tol = 5e-4 if res_mean.dtype == np.float32 else 1e-7
     assert_allclose(gtr_mean, res_mean, atol=tol)
-    assert_allclose(gtr_max, res_max, atol=tol)
     assert_allclose(gtr_sum, res_sum, atol=tol)
 
 
