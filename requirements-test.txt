@@ -13,4 +13,3 @@ catboost==1.2.7 ; python_version < '3.11' # TODO: Remove 3.11 condition when cat
 shap==0.46.0
 array-api-compat==1.9
 array-api-strict==2.0.1
-array-api-compat==1.8.0
