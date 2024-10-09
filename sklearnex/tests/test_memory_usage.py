@@ -143,11 +143,12 @@ def get_traced_memory(queue=None):
 
 
 def take(x, index, axis=0, queue=None):
-    xp, array_api = get_namespace(x)
-    if array_api:
-        return xp.take(x, xp.asarray(index, device=queue), axis=axis)
-    else:
-        return x.take(index, axis=axis)
+    with config_context(array_api_dispatch=True):
+        xp, array_api = get_namespace(x)
+        if array_api:
+            return xp.take(x, xp.asarray(index, device=queue), axis=axis)
+        else:
+            return x.take(index, axis=axis)
 
 
 def split_train_inference(kf, x, y, estimator, queue=None):
@@ -260,7 +261,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
 
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl", "cpu")
+    "dataframe,queue", get_dataframes_and_queues("numpy,pandas,dpctl,array_api", "cpu")
 )
 @pytest.mark.parametrize("estimator", CPU_ESTIMATORS.keys())
 @pytest.mark.parametrize("data_shape", data_shapes)
