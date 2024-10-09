@@ -73,8 +73,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         and the dispatching policy can't be serialized, the computation is finalized
         here and the policy is not saved in serialized data.
         """
-        if self._need_to_finalize:
-            self.finalize_fit()
+        self.finalize_fit()
         data = self.__dict__.copy()
 
         tables_to_save = ["partial_n_rows", "partial_crossproduct", "partial_sums"]
@@ -83,7 +82,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             for table_name in tables_to_save
         }
         data["_partial_result"] = partial_result_data
-        data.pop("_policy", None)
+        data.pop("_queue", None)
 
         return data
 
@@ -162,28 +161,29 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self : object
             Returns the instance itself.
         """
-        params = self._get_onedal_params(self._dtype)
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
+        if self._need_to_finalize:
+            params = self._get_onedal_params(self._dtype)
+            if queue is not None:
+                policy = self._get_policy(queue)
+            else:
+                policy = self._get_policy(self._queue)
 
-        result = self._get_backend(
-            "covariance",
-            None,
-            "finalize_compute",
-            policy,
-            params,
-            self._partial_result,
-        )
-        if daal_check_version((2024, "P", 1)) or (not self.bias):
-            self.covariance_ = from_table(result.cov_matrix)
-        else:
-            n_rows = self._partial_result.partial_n_rows
-            self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
+            result = self._get_backend(
+                "covariance",
+                None,
+                "finalize_compute",
+                policy,
+                params,
+                self._partial_result,
+            )
+            if daal_check_version((2024, "P", 1)) or (not self.bias):
+                self.covariance_ = from_table(result.cov_matrix)
+            else:
+                n_rows = self._partial_result.partial_n_rows
+                self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
 
-        self.location_ = from_table(result.means).ravel()
+            self.location_ = from_table(result.means).ravel()
 
-        self._need_to_finalize = False
+            self._need_to_finalize = False
 
         return self
