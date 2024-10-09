@@ -209,7 +209,7 @@ def test_multiple_options_on_random_sparse_data(
     else:
         result = basicstat.fit(X_sparse)
 
-    res_mean, res_max, res_sum = result.mean, result.max, result.sum
+    res_mean, res_sum = result.mean, result.sum
     if weighted:
         weighted_data = np.diag(weights) @ X_dense
         gtr_mean, gtr_sum = (
