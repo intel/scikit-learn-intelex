@@ -77,12 +77,12 @@ jobs:
     displayName: "Conda update"
   - script: |
       conda create -y -q -n build-env python=$(PYTHON_VERSION) conda-build conda-verify
-    displayName: "Conda install"
+    displayName: "Conda create"
   - script: |
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate build-env
-      conda build .
+      conda build . --python $(PYTHON_VERSION)
     displayName: "Conda build"
 - job: WindowsCondaRecipe
   dependsOn: Lint
@@ -103,10 +103,10 @@ jobs:
     displayName: "Conda update"
   - script: |
       conda create -y -q -n build-env python=$(PYTHON_VERSION) conda-build conda-verify
-    displayName: "Conda install"
+    displayName: "Conda create"
   - script: |
       call activate build-env
-      conda build .
+      conda build . --python $(PYTHON_VERSION)
     displayName: "Conda build"
 - job: LinuxCondaEnv
   dependsOn: Lint
