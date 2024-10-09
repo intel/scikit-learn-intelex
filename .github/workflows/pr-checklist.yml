@@ -47,7 +47,7 @@ jobs:
           });
           core.setOutput('body', pr_desc.data.body)
           core.setOutput('draft', pr_desc.data.draft)
-          core.setOutput('author', pr_desc.data.user.login)
+          core.setOutput('author_type', pr_desc.data.user.type)
     - name: Check if all checkboxes are checked
       id: checkboxes
       env:
@@ -55,8 +55,8 @@ jobs:
       run: |
         UNCHECKED=$(echo "$DESCRIPTION" | grep -c '\[ \]' || true)
         echo "unchecked=$UNCHECKED" >> $GITHUB_OUTPUT
-    - name: Fail if not all checkboxes are checked and PR is not draft
-      if: ${{ (steps.pr.outputs.draft == 'false') && (steps.checkboxes.outputs.unchecked != '0') && (steps.pr.outputs.author != 'renovate') }}
+    - name: Fail if not all checkboxes are checked, PR is not draft and author is not a bot
+      if: ${{ (steps.pr.outputs.draft == 'false') && (steps.checkboxes.outputs.unchecked != '0') && (steps.pr.outputs.author_type != 'Bot') }}
       run: |
         echo "Unchecked checkboxes: ${{ steps.checkboxes.outputs.unchecked }}"
         exit 1
