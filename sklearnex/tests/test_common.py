@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-import importlib
+import importlib.util
 import os
 import re
 import sys
@@ -44,12 +44,60 @@ ALLOWED_LOCATIONS = [
     "svm" + os.sep + "_common.py",
 ]
 
-_DESIGN_RULE_VIOLATIONS = [
-    "PCA-fit_transform-call_validate_data",  #  calls both "fit" and "transform"
-    "IncrementalEmpiricalCovariance-score-call_validate_data",  #  must call clone of itself
-    "SVC(probability=True)-fit-call_validate_data",  #  SVC fit can use sklearn estimator
-    "NuSVC(probability=True)-fit-call_validate_data",  #  NuSVC fit can use sklearn estimator
-]
+_DESIGN_RULE_VIOLATIONS = {
+    "PCA-fit_transform-call_validate_data": "calls both 'fit' and 'transform'",
+    "IncrementalEmpiricalCovariance-score-call_validate_data": "must call clone of itself",
+    "SVC(probability=True)-fit-call_validate_data": "SVC fit can use sklearn estimator",
+    "NuSVC(probability=True)-fit-call_validate_data": "NuSVC fit can use sklearn estimator",
+    "LogisticRegression-score-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-fit-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-predict-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-predict_log_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression-predict_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "KNeighborsClassifier-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-predict_proba-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-radius_neighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors-radius_neighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-predict_proba-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsClassifier(algorithm='brute')-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-score-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-predict-n_jobs_check": "uses daal4py for cpu in onedal",
+    "KNeighborsRegressor(algorithm='brute')-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-radius_neighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "NearestNeighbors(algorithm='brute')-radius_neighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor(novelty=True)-fit-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor(novelty=True)-kneighbors-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LocalOutlierFactor(novelty=True)-kneighbors_graph-n_jobs_check": "uses daal4py for cpu in onedal",
+    "LogisticRegression(solver='newton-cg')-score-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-fit-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-predict-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-predict_log_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+    "LogisticRegression(solver='newton-cg')-predict_proba-n_jobs_check": "uses daal4py for cpu in sklearnex",
+}
 
 
 def test_target_offload_ban():
@@ -78,29 +126,52 @@ def test_target_offload_ban():
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
 
 
+def _fullpath(path):
+    return os.path.realpath(os.path.expanduser(path))
+
+
 _TRACE_ALLOW_DICT = {
-    i: os.path.dirname(importlib.util.find_spec(i).origin)
+    i: _fullpath(os.path.dirname(importlib.util.find_spec(i).origin))
     for i in ["sklearn", "sklearnex", "onedal", "daal4py"]
 }
 
 
 def _whitelist_to_blacklist():
-    """block all standard library, builting or site packages which are not
+    """block all standard library, built-in or site packages which are not
     related to sklearn, daal4py, onedal or sklearnex"""
+
+    def _commonpath(inp):
+        # ValueError generated by os.path.commonpath when it is on a separate drive
+        try:
+            return os.path.commonpath(inp)
+        except ValueError:
+            return ""
 
     blacklist = []
     for path in sys.path:
+        fpath = _fullpath(path)
         try:
-            if any([path in i for i in _TRACE_ALLOW_DICT.values()]):
-                blacklist += [
-                    f.path
-                    for f in os.scandir(path)
-                    if f.name not in _TRACE_ALLOW_DICT.keys()
-                ]
-            else:
-                blacklist += [path]
+            # if candidate path is a parent directory to any directory in the whitelist
+            if any(
+                [_commonpath([i, fpath]) == fpath for i in _TRACE_ALLOW_DICT.values()]
+            ):
+                # find all sub-paths which are not in the whitelist and block them
+                # they should not have a common path that is either the whitelist path
+                # or the sub-path (meaning one is a parent directory of the either)
+                for f in os.scandir(fpath):
+                    temppath = _fullpath(f.path)
+                    if all(
+                        [
+                            _commonpath([i, temppath]) not in [i, temppath]
+                            for i in _TRACE_ALLOW_DICT.values()
+                        ]
+                    ):
+                        blacklist += [temppath]
+            # add path to blacklist if not a sub path of anything in the whitelist
+            elif all([_commonpath([i, fpath]) != i for i in _TRACE_ALLOW_DICT.values()]):
+                blacklist += [fpath]
         except FileNotFoundError:
-            blacklist += [path]
+            blacklist += [fpath]
     return blacklist
 
 
@@ -152,7 +223,7 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
 
         # initialize tracer to have a more verbose module naming
         # this impacts ignoremods, but it is not used.
-        monkeypatch.setattr(trace, "_modname", lambda x: x)
+        monkeypatch.setattr(trace, "_modname", _fullpath)
         tracer = trace.Trace(
             count=0,
             trace=1,
@@ -197,23 +268,28 @@ def call_validate_data(text, estimator, method):
         pytest.skip("onedal backend not used in this function")
 
     validate_data = "validate_data" if sklearn_check_version("1.6") else "_validate_data"
-    try:
-        assert (
-            validfuncs.count(validate_data) == 1
-        ), f"sklearn's {validate_data} should be called"
-        assert (
-            validfuncs.count("_check_feature_names") == 1
-        ), "estimator should check feature names in validate_data"
-    except AssertionError:
-        if "-".join([estimator, method, "call_validate_data"]) in _DESIGN_RULE_VIOLATIONS:
-            pytest.xfail("Allowed violation of design rules")
-        else:
-            raise
+
+    assert (
+        validfuncs.count(validate_data) == 1
+    ), f"sklearn's {validate_data} should be called"
+    assert (
+        validfuncs.count("_check_feature_names") == 1
+    ), "estimator should check feature names in validate_data"
 
 
 def n_jobs_check(text, estimator, method):
     """verify the n_jobs is being set if '_get_backend' or 'to_table' is called"""
-    count = max([text[0].count(name) for name in ["to_table", "_get_backend"]])
+    # remove the _get_backend function from sklearnex from considered _get_backend
+    count = max(
+        text[0].count("to_table"),
+        len(
+            [
+                i
+                for i in range(len(text[0]))
+                if text[0][i] == "_get_backend" and "sklearnex" not in text[2][i]
+            ]
+        ),
+    )
     n_jobs_count = text[0].count("n_jobs_wrapper")
 
     assert bool(count) == bool(
@@ -235,4 +311,11 @@ if sklearn_check_version("1.0"):
 )
 def test_estimator(estimator, method, design_pattern, estimator_trace):
     # These tests only apply to sklearnex estimators
-    design_pattern(estimator_trace, estimator, method)
+    try:
+        design_pattern(estimator_trace, estimator, method)
+    except AssertionError:
+        key = "-".join([estimator, method, design_pattern.__name__])
+        if key in _DESIGN_RULE_VIOLATIONS:
+            pytest.xfail(_DESIGN_RULE_VIOLATIONS[key])
+        else:
+            raise
