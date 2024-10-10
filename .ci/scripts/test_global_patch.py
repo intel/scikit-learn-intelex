@@ -101,7 +101,7 @@ def test_unpatching_all_from_command_line(patch_all_from_command_line):
 
 
 @pytest.fixture
-def patch_svc_from_function(request):
+def patch_svc_from_function():
     from sklearnex import patch_sklearn, unpatch_sklearn
 
     patch_sklearn(name=["svc"], global_patch=True)
@@ -133,7 +133,7 @@ def test_unpatching_svc_from_function(patch_svc_from_function):
 
 
 @pytest.fixture
-def patch_all_from_function(request):
+def patch_all_from_function():
     from sklearnex import patch_sklearn, unpatch_sklearn
 
     patch_sklearn(global_patch=True)
