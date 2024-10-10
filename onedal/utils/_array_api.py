@@ -73,19 +73,19 @@ def _get_sycl_namespace(*arrays):
     """Get namespace of sycl arrays."""
 
     # sycl support designed to work regardless of array_api_dispatch sklearn global value
-    sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
+    sua_iface = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
 
-    if len(sycl_type) > 1:
-        raise ValueError(f"Multiple SYCL types for array inputs: {sycl_type}")
+    if len(sua_iface) > 1:
+        raise ValueError(f"Multiple SYCL types for array inputs: {sua_iface}")
 
-    if sycl_type:
-        (X,) = sycl_type.values()
+    if sua_iface:
+        (X,) = sua_iface.values()
 
         if hasattr(X, "__array_namespace__"):
-            return sycl_type, X.__array_namespace__(), True
+            return sua_iface, X.__array_namespace__(), True
         elif dpnp_available and isinstance(X, dpnp.ndarray):
-            return sycl_type, dpnp, False
+            return sua_iface, dpnp, False
         else:
-            raise ValueError(f"SYCL type not recognized: {sycl_type}")
+            raise ValueError(f"SYCL type not recognized: {sua_iface}")
 
-    return sycl_type, None, False
+    return sua_iface, None, False
