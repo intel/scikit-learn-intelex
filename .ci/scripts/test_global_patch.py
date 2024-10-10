@@ -22,20 +22,18 @@ import pytest
 
 
 @pytest.fixture
-def patch_svc_from_command_line(request):
+def patch_svc_from_command_line():
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "patch_sklearn", "-a", "svc"]
     )
     assert not err_code
 
-    def unpatch_from_cmd():
-        err_code = subprocess.call(
-            [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
-        )
-        assert not err_code
+    yield
 
-    request.addfinalizer(unpatch_from_cmd)
-    return
+    err_code = subprocess.call(
+        [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
+    )
+    assert not err_code
 
 
 def test_patching_svc_from_command_line(patch_svc_from_command_line):
@@ -71,11 +69,9 @@ def patch_svc_from_function(request):
 
     patch_sklearn(name=["svc"], global_patch=True)
 
-    def unpatch_from_fn():
-        unpatch_sklearn(global_unpatch=True)
+    yield
 
-    request.addfinalizer(unpatch_from_fn)
-    return
+    unpatch_sklearn(global_unpatch=True)
 
 
 def test_patching_svc_from_function(patch_svc_from_function):
