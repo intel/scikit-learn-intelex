@@ -21,48 +21,32 @@ import unittest
 
 import pytest
 
-from daal4py.sklearn._utils import get_daal_version
-
 test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
 examples_path = os.path.join(os.path.dirname(test_path), "examples", "sklearnex")
 
-print("Testing examples_sklearnex")
-# First item is major version - 2021,
-# second is minor+patch - 0110,
-# third item is status - B
-sklearnex_version = get_daal_version()
-print("oneDAL version:", sklearnex_version)
 
+@pytest.mark.parametrize(
+    "file",
+    [
+        f
+        for f in os.listdir(examples_path)
+        if f.endswith(".py") and "spmd" not in f and "dpnp" not in f and "dpctl" not in f
+    ],
+)
+def test_generator(file):
+    # Run the script and capture its exit code
+    process = subprocess.run(
+        [sys.executable, os.path.join(examples_path, file)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )  # nosec
+    exit_code = process.returncode
 
-class TestsklearnexExamples(unittest.TestCase):
-    """Class for testing sklernex examples"""
-
-    @pytest.mark.parametrize(
-        "file",
-        [
-            f
-            for f in os.listdir(examples_path)
-            if f.endswith(".py")
-            and "spmd" not in f
-            and "dpnp" not in f
-            and "dpctl" not in f
-        ],
-    )
-    def test_generator(file):
-        def testit(self):
-            # Run the script and capture its exit code
-            process = subprocess.run(
-                [sys.executable, os.path.join(examples_path, file)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )  # nosec
-            exit_code = process.returncode
-
-            # Assert that the exit code is 0
-            self.assertEqual(
-                exit_code,
-                0,
-                msg=f"Example has failed, the example's output:\n{process.stdout.decode()}\n{process.stderr.decode()}",
-            )
+    # Assert that the exit code is 0
+    if exit_code:
+        pytest.fail(
+            pytrace=False,
+            reason=f"Example has failed, the example's output:\n{process.stdout.decode()}\n{process.stderr.decode()}",
+        )
