@@ -58,8 +58,7 @@ requirements:
     - jinja2
     - pybind11
     - numpy {{ numpy }}
-    - mpich  # [not win]
-    # - impi-devel  # [win]
+    - impi-devel  # [not win]
     # dal-devel pinning depends on the recipe location (repo or feedstock)
     - dal-devel
     # - dal-devel =={{ version }}
@@ -80,8 +79,7 @@ test:
     - catboost
     - pytest
     - pyyaml
-    - mpich  # [not win]
-    # - impi_rt  # [win]
+    - impi_rt  # [not win]
   source_files:
     - .ci
     - examples
