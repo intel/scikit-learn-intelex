@@ -15,6 +15,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import os
 import subprocess
 import sys
 
@@ -26,14 +27,14 @@ def patch_svc_from_command_line():
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "patch_sklearn", "-a", "svc"]
     )
-    assert not err_code
+    assert err_code == os.EX_OK
 
     yield
 
     err_code = subprocess.call(
-        [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
+        [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn", "-a", "svc"]
     )
-    assert not err_code
+    assert err_code == os.EX_OK
 
 
 def test_patching_svc_from_command_line(patch_svc_from_command_line):
@@ -49,7 +50,7 @@ def test_unpatching_svc_from_command_line(patch_svc_from_command_line):
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
     )
-    assert not err_code
+    assert err_code == os.EX_OK
     from sklearnex import unpatch_sklearn
 
     unpatch_sklearn()
@@ -64,6 +65,42 @@ def test_unpatching_svc_from_command_line(patch_svc_from_command_line):
 
 
 @pytest.fixture
+def patch_all_from_command_line():
+    err_code = subprocess.call([sys.executable, "-m", "sklearnex.glob", "patch_sklearn"])
+    assert err_code == os.EX_OK
+
+    yield
+
+    err_code = subprocess.call(
+        [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
+    )
+    assert err_code == os.EX_OK
+
+
+def test_patching_all_from_command_line(patch_all_from_command_line):
+    from sklearn.svm import SVC, SVR
+
+    assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith("sklearnex")
+    assert SVR.__module__.startswith("daal4py") or SVR.__module__.startswith("sklearnex")
+
+
+def test_unpatching_all_from_command_line(patch_all_from_command_line):
+    err_code = subprocess.call(
+        [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
+    )
+    assert err_code == os.EX_OK
+    from sklearnex import unpatch_sklearn
+
+    unpatch_sklearn()
+    from sklearn.svm import SVC, SVR
+
+    assert not SVC.__module__.startswith("daal4py")
+    assert not SVC.__module__.startswith("sklearnex")
+    assert not SVR.__module__.startswith("daal4py")
+    assert not SVR.__module__.startswith("sklearnex")
+
+
+@pytest.fixture
 def patch_svc_from_function(request):
     from sklearnex import patch_sklearn, unpatch_sklearn
 
@@ -71,7 +108,7 @@ def patch_svc_from_function(request):
 
     yield
 
-    unpatch_sklearn(global_unpatch=True)
+    unpatch_sklearn(name=["svc"], global_unpatch=True)
 
 
 def test_patching_svc_from_function(patch_svc_from_function):
@@ -89,9 +126,37 @@ def test_unpatching_svc_from_function(patch_svc_from_function):
     unpatch_sklearn(global_unpatch=True)
     from sklearn.svm import SVC, SVR
 
-    assert not SVC.__module__.startswith("daal4py") and not SVC.__module__.startswith(
-        "sklearnex"
-    )
-    assert not SVR.__module__.startswith("daal4py") and not SVR.__module__.startswith(
-        "sklearnex"
-    )
+    assert not SVC.__module__.startswith("daal4py")
+    assert not SVC.__module__.startswith("sklearnex")
+    assert not SVR.__module__.startswith("daal4py")
+    assert not SVR.__module__.startswith("sklearnex")
+
+
+@pytest.fixture
+def patch_all_from_function(request):
+    from sklearnex import patch_sklearn, unpatch_sklearn
+
+    patch_sklearn(global_patch=True)
+
+    yield
+
+    unpatch_sklearn(global_unpatch=True)
+
+
+def test_patching_svc_from_function(patch_all_from_function):
+    from sklearn.svm import SVC, SVR
+
+    assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith("sklearnex")
+    assert SVR.__module__.startswith("daal4py") or SVR.__module__.startswith("sklearnex")
+
+
+def test_unpatching_all_from_function(patch_all_from_function):
+    from sklearnex import unpatch_sklearn
+
+    unpatch_sklearn(global_unpatch=True)
+    from sklearn.svm import SVC, SVR
+
+    assert not SVC.__module__.startswith("daal4py")
+    assert not SVC.__module__.startswith("sklearnex")
+    assert not SVR.__module__.startswith("daal4py")
+    assert not SVR.__module__.startswith("sklearnex")
