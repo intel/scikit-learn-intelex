@@ -54,19 +54,15 @@ def _assert_tensor_attr(actual, desired, order):
     assert actual.usm_data._pointer == desired.usm_data._pointer
 
 
-# TODO:
-# remove skip_syclobj and skip_data_1 params.
-# def _assert_sua_iface_fields(actual, desired):
-def _assert_sua_iface_fields(actual, desired, skip_syclobj=False, skip_data_1=False):
+def _assert_sua_iface_fields(
+    actual, desired, skip_syclobj=False, skip_data_0=False, skip_data_1=False
+):
     assert hasattr(actual, "__sycl_usm_array_interface__")
     assert hasattr(desired, "__sycl_usm_array_interface__")
     actual_sua_iface = actual.__sycl_usm_array_interface__
     desired_sua_iface = desired.__sycl_usm_array_interface__
-    # TODO:
-    # do value checks by the dict keys in for.
-    assert actual_sua_iface["data"][0] == desired_sua_iface["data"][0]
-    # TODO:
-    # remove this condition/param.
+    if not skip_data_0:
+        assert actual_sua_iface["data"][0] == desired_sua_iface["data"][0]
     if not skip_data_1:
         assert actual_sua_iface["data"][1] == desired_sua_iface["data"][1]
     assert actual_sua_iface["shape"] == desired_sua_iface["shape"]

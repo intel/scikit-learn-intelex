@@ -112,10 +112,14 @@ py::dict construct_sua_iface(const dal::table& input) {
     py::list data_entry(2);
 
     auto bytes_array = dal::detail::get_original_data(homogen_input);
-    if (!bytes_array.get_queue().has_value()) {
-        report_problem_to_sua_iface(": table has no queue");
-    }
-    auto queue = std::make_shared<sycl::queue>(bytes_array.get_queue().value());
+    auto has_queue = bytes_array.get_queue().has_value();
+    // OneDAL returns tables without sycl context for CPU sycl queue inputs, that
+    // breaks the compute-follows-data execution.
+    // Currently not throwing runtime exception and __sycl_usm_array_interface__["syclobj"] None asigned
+    // if no Sycl queue to allow workaround on python side.
+    // if (!has_queue) {
+    //     report_problem_to_sua_iface(": table has no queue");
+    // }
 
     const bool is_mutable = bytes_array.has_mutable_data();
 
@@ -131,7 +135,13 @@ py::dict construct_sua_iface(const dal::table& input) {
     // dpctl supports only version 1.
     iface["version"] = 1;
     iface["typestr"] = convert_dal_to_sua_type(dtype);
-    iface["syclobj"] = pack_queue(queue);
+    if (!has_queue) {
+        iface["syclobj"] = py::none();
+    }
+    else {
+        iface["syclobj"] =
+            pack_queue(std::make_shared<sycl::queue>(bytes_array.get_queue().value()));
+    }
 
     return iface;
 }

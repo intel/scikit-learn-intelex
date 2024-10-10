@@ -45,19 +45,34 @@ def _apply_and_pass(func, *args):
 # update it for each of the datafrmae format.
 # TODO:
 # update func use with args and kwargs with _apply_and_pass.
-def convert_one_from_table(table, sua_iface=None, xp=None):
+def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
     # Currently only `__sycl_usm_array_interface__` protocol used to
     # convert into dpnp/dpctl tensors.
     if sua_iface:
-        xp_name = xp.__name__
-        if dpnp_available and xp_name == "dpnp":
-            # By default DPNP ndarray created with a copy.
-            # TODO:
-            # investigate why dpnp.array(table, copy=False) doesn't work.
-            # Work around with using dpctl.tensor.asarray.
-            return xp.array(dpt.asarray(table), copy=False)
+        if (
+            sycl_queue
+            and sycl_queue.sycl_device.is_cpu
+            and table.__sycl_usm_array_interface__["syclobj"] is None
+        ):
+            # OneDAL returns tables with None sycl queue for CPU sycl queue inputs.
+            # This workaround is necessary for the functional preservation
+            # of the compute-follows-data execution.
+            # Host tables first converted into numpy.narrays and then to array from xp
+            # namespace.
+            return xp.asarray(
+                _backend.from_table(table), usm_type="device", sycl_queue=sycl_queue
+            )
         else:
-            return xp.asarray(table)
+            xp_name = xp.__name__
+            if dpnp_available and xp_name == "dpnp":
+                # By default DPNP ndarray created with a copy.
+                # TODO:
+                # investigate why dpnp.array(table, copy=False) doesn't work.
+                # Work around with using dpctl.tensor.asarray.
+                return xp.array(dpt.asarray(table), copy=False)
+            else:
+                return xp.asarray(table)
+
     return _backend.from_table(table)
 
 

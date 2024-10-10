@@ -82,7 +82,10 @@ if _is_dpc_backend:
             result_responses_table = result.responses
             sua_iface, xp, _ = _get_sycl_namespace(X)
             result_responses_df = convert_one_from_table(
-                result_responses_table, sua_iface=sua_iface, xp=xp
+                result_responses_table,
+                sua_iface=sua_iface,
+                sycl_queue=X.sycl_queue,
+                xp=xp,
             )
             return X_table, result_responses_table, result_responses_df
 
@@ -252,7 +255,7 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
     _assert_sua_iface_fields(X_dp, X_table, skip_syclobj=True)
 
     X_dp_from_table = convert_one_from_table(
-        X_table, sua_iface=sua_iface, xp=X_dp_namespace
+        X_table, sycl_queue=queue, sua_iface=sua_iface, xp=X_dp_namespace
     )
     # TODO:
     # investigate in the same PR skip_syclobj WO.
@@ -272,11 +275,6 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_table_conversions(dataframe, queue, order, data_shape):
-    # TODO:
-    # Description for the test.
-    if queue.sycl_device.is_cpu:
-        pytest.skip("OneDAL returns None sycl queue for CPU sycl queue inputs.")
-
     n_samples, n_features = data_shape
     X, y = make_blobs(
         n_samples=n_samples, centers=3, n_features=n_features, random_state=0
@@ -298,7 +296,11 @@ def test_table_conversions(dataframe, queue, order, data_shape):
     # TODO:
     # investigate in the same PR skip_syclobj and skip_data_1 WO.
     _assert_sua_iface_fields(
-        result_responses_df, result_responses_table, skip_syclobj=True, skip_data_1=True
+        result_responses_df,
+        result_responses_table,
+        skip_syclobj=True,
+        skip_data_0=True,
+        skip_data_1=True,
     )
     assert X.sycl_queue == result_responses_df.sycl_queue
     if order == "F":
