@@ -43,8 +43,7 @@ def test_sklearn_example(file):
     )  # nosec
     exit_code = process.returncode
 
-    # Assert that the exit code is 0
-    if exit_code:
+    if exit_code != os.EX_OK:
         pytest.fail(
             pytrace=False,
             reason=f"Example has failed, the example's output:\n{process.stdout.decode()}\n{process.stderr.decode()}",
