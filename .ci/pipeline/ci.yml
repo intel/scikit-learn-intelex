@@ -57,6 +57,57 @@ jobs:
       pip install isort black[jupyter]==24.1.1
       isort --profile black --check . && black --check .
     displayName: 'Linting'
+- job: LinuxCondaRecipe
+  dependsOn: Lint
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Python3.11:
+        PYTHON_VERSION: '3.11'
+  pool:
+    vmImage: 'ubuntu-22.04'
+  steps:
+  - script: |
+      bash .ci/scripts/install_dpcpp.sh
+    displayName: "dpcpp installation"
+  - script: |
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+      conda update -y -q --all
+    displayName: "Conda update"
+  - script: |
+      conda create -y -q -n build-env python=$(PYTHON_VERSION) conda-build conda-verify
+    displayName: "Conda create"
+  - script: |
+      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate build-env
+      conda build . --python $(PYTHON_VERSION)
+    displayName: "Conda build"
+- job: WindowsCondaRecipe
+  dependsOn: Lint
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Python3.11:
+        PYTHON_VERSION: '3.11'
+  pool:
+    vmImage: 'windows-2022'
+  steps:
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+  - script: |
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+      conda update -y -q --all
+    displayName: "Conda update"
+  - script: |
+      conda create -y -q -n build-env python=$(PYTHON_VERSION) conda-build conda-verify
+    displayName: "Conda create"
+  - script: |
+      call activate build-env
+      conda build . --python $(PYTHON_VERSION)
+    displayName: "Conda build"
 - job: LinuxCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
@@ -108,6 +159,6 @@ jobs:
         PYTHON_VERSION: '3.12'
         SKLEARN_VERSION: '1.5'
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
   steps:
   - template: build-and-test-win.yml
