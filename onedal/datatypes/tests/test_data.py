@@ -236,10 +236,6 @@ def test_conversion_to_table(dtype):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
 def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
     # TODO:
-    # investigate in the same PR.
-    if dataframe in "dpnp":
-        pytest.skip("Some bug with Sycl.Queue for DPNP inputs.")
-    # TODO:
     # add description to the test.
     rng = np.random.RandomState(0)
     X_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
@@ -280,10 +276,6 @@ def test_table_conversions(dataframe, queue, order, data_shape):
     # Description for the test.
     if queue.sycl_device.is_cpu:
         pytest.skip("OneDAL returns None sycl queue for CPU sycl queue inputs.")
-    # TODO:
-    # investigate in the same PR.
-    if dataframe in "dpnp":
-        pytest.skip("Some bug with Sycl.Queue for DPNP inputs.")
 
     n_samples, n_features = data_shape
     X, y = make_blobs(

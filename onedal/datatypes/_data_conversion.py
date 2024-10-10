@@ -49,7 +49,15 @@ def convert_one_from_table(table, sua_iface=None, xp=None):
     # Currently only `__sycl_usm_array_interface__` protocol used to
     # convert into dpnp/dpctl tensors.
     if sua_iface:
-        return xp.asarray(table)
+        xp_name = xp.__name__
+        if dpnp_available and xp_name == "dpnp":
+            # By default DPNP ndarray created with a copy.
+            # TODO:
+            # investigate why dpnp.array(table, copy=False) doesn't work.
+            # Work around with using dpctl.tensor.asarray.
+            return xp.array(dpt.asarray(table), copy=False)
+        else:
+            return xp.asarray(table)
     return _backend.from_table(table)
 
 
