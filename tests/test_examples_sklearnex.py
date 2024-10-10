@@ -33,7 +33,7 @@ examples_path = os.path.join(os.path.dirname(test_path), "examples", "sklearnex"
         if f.endswith(".py") and "spmd" not in f and "dpnp" not in f and "dpctl" not in f
     ],
 )
-def test_generator(file):
+def test_sklearn_example(file):
     # Run the script and capture its exit code
     process = subprocess.run(
         [sys.executable, os.path.join(examples_path, file)],
