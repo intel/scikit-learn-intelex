@@ -36,18 +36,20 @@ EX_OK = os.EX_OK if hasattr(os, "EX_OK") else 0
 
 
 @pytest.fixture
-def patch_svc_from_command_line():
+def patch_svc_from_command_line(request):
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "patch_sklearn", "-a", "svc"]
     )
     assert err_code == EX_OK
 
-    yield
+    def finalizer():
+        err_code = subprocess.call(
+            [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn", "-a", "svc"]
+        )
+        assert err_code == EX_OK
 
-    err_code = subprocess.call(
-        [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn", "-a", "svc"]
-    )
-    assert err_code == EX_OK
+    request.addfinalizer(finalizer)
+    return
 
 
 def test_patching_svc_from_command_line(patch_svc_from_command_line):
@@ -78,14 +80,16 @@ def test_unpatching_svc_from_command_line(patch_svc_from_command_line):
 
 
 @pytest.fixture
-def patch_svc_from_function():
+def patch_svc_from_function(request):
     from sklearnex import patch_sklearn, unpatch_sklearn
 
     patch_sklearn(name=["svc"], global_patch=True)
 
-    yield
+    def finalizer():
+        unpatch_sklearn(name=["svc"], global_unpatch=True)
 
-    unpatch_sklearn(name=["svc"], global_unpatch=True)
+    request.addfinalizer(finalizer)
+    return
 
 
 def test_patching_svc_from_function(patch_svc_from_function):
@@ -110,14 +114,16 @@ def test_unpatching_svc_from_function(patch_svc_from_function):
 
 
 @pytest.fixture
-def patch_all_from_function():
+def patch_all_from_function(request):
     from sklearnex import patch_sklearn, unpatch_sklearn
 
     patch_sklearn(global_patch=True)
 
-    yield
+    def finalizer():
+        unpatch_sklearn(global_unpatch=True)
 
-    unpatch_sklearn(global_unpatch=True)
+    request.addfinalizer(finalizer)
+    return
 
 
 def test_patching_svc_from_function(patch_all_from_function):
