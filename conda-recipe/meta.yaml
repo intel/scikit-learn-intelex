@@ -76,8 +76,8 @@ test:
         - daal4py/sklearn
     commands:
         - python -c "import daal4py"
-        - mpirun -n 4 pytest --pyargs --verbose -s tests/test*spmd*.py # [not win]
-        - mpiexec -localonly -n 4 pytest --pyargs --verbose -s tests/test*spmd*.py # [win]
+        - mpirun -n 4 pytest --verbose -s tests/test*spmd*.py # [not win]
+        - mpiexec -localonly -n 4 pytest --verbose -s tests/test*spmd*.py # [win]
         - pytest --pyargs --verbose -s tests
         - pytest --pyargs daal4py/sklearn/
         - python tests/run_examples.py

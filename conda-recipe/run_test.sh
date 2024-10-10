@@ -39,14 +39,14 @@ return_code=$(($return_code + $?))
 
 echo "Pytest run of legacy unittest ..."
 echo ${daal4py_dir}
-pytest --verbose --pyargs -s ${daal4py_dir}/tests
+pytest --verbose -s ${daal4py_dir}/tests
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI pytest run of legacy unittest ..."
     mpirun --version
-    mpirun -n 4 pytest --verbose --pyargs -s ${daal4py_dir}/tests/test*spmd*.py
+    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py
     return_code=$(($return_code + $?))
 fi
 
@@ -63,7 +63,7 @@ pytest --verbose --pyargs ${daal4py_dir}/onedal
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
-pytest --verbose --pyargs -s ${daal4py_dir}/.ci/scripts/test_global_patch.py
+pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py
 return_code=$(($return_code + $?))
 
 exit $return_code
