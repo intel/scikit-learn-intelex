@@ -73,7 +73,7 @@ py::tuple get_sua_shape(const py::dict& sua) {
 }
 
 void report_problem_for_sua_iface(const char* clarification) {
-    constexpr const char* const base_message = "Unable to convert from SUA interface.";
+    constexpr const char* const base_message = "Unable to convert from SUA interface";
 
     std::string message{ base_message };
     message += std::string{ clarification };
@@ -143,7 +143,7 @@ dal::data_layout get_sua_iface_layout(const py::dict& sua_dict,
 }
 
 void report_problem_to_sua_iface(const char* clarification) {
-    constexpr const char* const base_message = "Unable to convert to SUA interface.";
+    constexpr const char* const base_message = "Unable to convert to SUA interface";
 
     std::string message{ base_message };
     message += std::string{ clarification };

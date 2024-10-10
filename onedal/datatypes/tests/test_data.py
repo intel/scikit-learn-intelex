@@ -52,6 +52,11 @@ data_shapes = [
     pytest.param((2000, 50), id="(2000, 50)"),
 ]
 
+unsupported_data_shapes = [
+    pytest.param((2, 3, 4), id="(2, 3, 4)"),
+    pytest.param((2, 3, 4, 5), id="(2, 3, 4, 5)"),
+]
+
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
@@ -335,5 +340,50 @@ def test_table_conversions(dataframe, queue, order, data_shape):
     )
 
 
-# TODO:
-# def test_wrong_inputs_for_sua_iface_conversion
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
+)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
+)
+@pytest.mark.parametrize("data_shape", unsupported_data_shapes)
+def test_sua_iface_interop_invalid_shape(dataframe, queue, data_shape):
+    X = np.zeros(data_shape)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    sua_iface, _, _ = _get_sycl_namespace(X)
+
+    expected_err_msg = (
+        "Unable to convert from SUA interface: only 1D & 2D tensors are allowed"
+    )
+    with pytest.raises(ValueError, match=expected_err_msg):
+        convert_one_to_table(X, sua_iface=sua_iface)
+
+
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
+)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
+)
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        pytest.param(np.uint16, id=np.dtype(np.uint16).name),
+        pytest.param(np.uint32, id=np.dtype(np.uint32).name),
+        pytest.param(np.uint64, id=np.dtype(np.uint64).name),
+    ],
+)
+def test_sua_iface_interop_unsupported_dtypes(dataframe, queue, dtype):
+    # sua iface interobility supported only for OneDAL supported dtypes
+    # for input data: int32, int64, float32, float64.
+    # Checking some common dtypes supported by dpctl, dpnp for exception
+    # raise.
+    X = np.zeros((10, 20), dtype=dtype)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    sua_iface, _, _ = _get_sycl_namespace(X)
+
+    expected_err_msg = "Unable to convert from SUA interface: unknown data type"
+    with pytest.raises(ValueError, match=expected_err_msg):
+        convert_one_to_table(X, sua_iface=sua_iface)
