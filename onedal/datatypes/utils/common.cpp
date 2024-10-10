@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2023 Intel Corporation
+* Copyright 2024 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -14,22 +14,28 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma once
-
-#define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
-
-#include <pybind11/pybind11.h>
-#include <numpy/arrayobject.h>
-
-#include "oneapi/dal/table/common.hpp"
+#include <cstdint>
 
 namespace oneapi::dal::python {
 
-namespace py = pybind11;
+union endian_checker {
+    std::uint64_t blob;
+    std::uint8_t arr[8];
+};
 
-dal::table convert_from_dptensor(py::object obj);
-py::dict construct_sua_iface(const dal::table& input);
+bool is_little_endian_impl() {
+    constexpr std::uint64_t one = 0xfful;
+    constexpr endian_checker checker{ one };
+    return static_cast<bool>(checker.arr[0]);
+}
 
-void define_sycl_usm_array_property(py::class_<dal::table>& t);
+bool is_little_endian() {
+    static const bool value = is_little_endian_impl();
+    return value;
+}
+
+bool is_big_endian() {
+    return !is_little_endian();
+}
 
 } // namespace oneapi::dal::python

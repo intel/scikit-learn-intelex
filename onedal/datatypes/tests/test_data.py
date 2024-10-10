@@ -17,19 +17,79 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from sklearn.datasets import make_blobs
 
-from onedal import _backend
+from onedal import _backend, _is_dpc_backend
+from onedal._device_offload import dpctl_available, dpnp_available
 from onedal.datatypes import from_table, to_table
-from onedal.primitives import linear_kernel
-from onedal.tests.utils._device_selection import get_queues
 
-try:
-    import dpctl
+# TODO:
+# re-impl and use from_table, to_table instead.
+from onedal.datatypes._data_conversion import convert_one_from_table, convert_one_to_table
+from onedal.datatypes.tests.common import _assert_sua_iface_fields, _assert_tensor_attr
+from onedal.primitives import linear_kernel
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
+from onedal.tests.utils._device_selection import get_queues
+from onedal.utils._array_api import _get_sycl_namespace
+
+if dpctl_available:
     import dpctl.tensor as dpt
 
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
+if dpnp_available:
+    import dpnp
+
+
+data_shapes = [
+    pytest.param((1000, 100), id="(1000, 100)"),
+    pytest.param((2000, 50), id="(2000, 50)"),
+]
+
+ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
+
+
+if _is_dpc_backend:
+    from daal4py.sklearn._utils import get_dtype
+    from onedal.cluster.dbscan import BaseDBSCAN
+    from onedal.common._policy import _get_policy
+
+    # TODO:
+    # use  from_table, to_table.
+    from onedal.datatypes._data_conversion import (
+        convert_one_from_table,
+        convert_one_to_table,
+    )
+
+    class DummyEstimatorWithTableConversions:
+
+        def fit(self, X, y=None):
+            policy = _get_policy(X.sycl_queue, None)
+            bs_DBSCAN = BaseDBSCAN()
+            types = [np.float32, np.float64]
+            if get_dtype(X) not in types:
+                X = X.astype(np.float64)
+            dtype = get_dtype(X)
+            params = bs_DBSCAN._get_onedal_params(dtype)
+            X_table = convert_one_to_table(X, True)
+            # TODO:
+            # check other candidates for the dummy base OneDAL func.
+            # OneDAL backend func is needed to check result table checks.
+            result = _backend.dbscan.clustering.compute(
+                policy, params, X_table, convert_one_to_table(None)
+            )
+            result_responses_table = result.responses
+            sua_iface, xp, _ = _get_sycl_namespace(X)
+            result_responses_df = convert_one_from_table(
+                result_responses_table, sua_iface=sua_iface, xp=xp
+            )
+            return X_table, result_responses_table, result_responses_df
+
+else:
+
+    class DummyEstimatorWithTableConversions:
+        pass
 
 
 def _test_input_format_c_contiguous_numpy(queue, dtype):
@@ -168,68 +228,88 @@ def test_conversion_to_table(dtype):
 
 
 # TODO:
-# Currently `dpctl_to_table` is not used in onedal estimators.
-# The test will be enabled after future data management update, that brings
-# re-impl of conversions between onedal tables and usm ndarrays.
-@pytest.mark.skip(
-    reason="Currently removed. Will be enabled after data management update"
+# rename test suit.
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu, gpu")
 )
-@pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
-@pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
+@pytest.mark.parametrize("order", ["C", "F"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
-def test_input_format_c_contiguous_dpctl(queue, dtype):
+def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
+    # TODO:
+    # add description to the test.
     rng = np.random.RandomState(0)
-    x_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
+    X_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
 
-    x_numpy = np.asanyarray(x_default, dtype=dtype, order="C")
-    x_dpt = dpt.asarray(x_numpy, usm_type="device", sycl_queue=queue)
-    # assert not x_dpt.flags.fnc
-    assert isinstance(x_dpt, dpt.usm_ndarray)
+    X_np = np.asanyarray(X_default, dtype=dtype, order=order)
 
-    x_table = _backend.dpctl_to_table(x_dpt)
-    assert hasattr(x_table, "__sycl_usm_array_interface__")
-    x_dpt_from_table = dpt.asarray(x_table)
+    X_dp = _convert_to_dataframe(X_np, sycl_queue=queue, target_df=dataframe)
 
-    assert (
-        x_dpt.__sycl_usm_array_interface__["data"][0]
-        == x_dpt_from_table.__sycl_usm_array_interface__["data"][0]
+    sua_iface, X_dp_namespace, _ = _get_sycl_namespace(X_dp)
+
+    X_table = convert_one_to_table(X_dp, sua_iface=sua_iface)
+    # TODO:
+    # investigate in the same PR skip_syclobj WO.
+    _assert_sua_iface_fields(X_dp, X_table, skip_syclobj=True)
+
+    X_dp_from_table = convert_one_from_table(
+        X_table, sua_iface=sua_iface, xp=X_dp_namespace
     )
-    assert x_dpt.shape == x_dpt_from_table.shape
-    assert x_dpt.strides == x_dpt_from_table.strides
-    assert x_dpt.dtype == x_dpt_from_table.dtype
-    assert x_dpt.flags.c_contiguous
-    assert x_dpt_from_table.flags.c_contiguous
+    # TODO:
+    # investigate in the same PR skip_syclobj WO.
+    _assert_sua_iface_fields(X_table, X_dp_from_table, skip_syclobj=True)
+    _assert_tensor_attr(X_dp, X_dp_from_table, order)
 
 
 # TODO:
-# Currently `dpctl_to_table` is not used in onedal estimators.
-# The test will be enabled after future data management update, that brings
-# re-impl of conversions between onedal tables and usm ndarrays.
-@pytest.mark.skip(
-    reason="Currently removed. Will be enabled after data management update"
+# rename test suit.
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
 )
-@pytest.mark.skipif(not dpctl_available, reason="requires dpctl>=0.14")
-@pytest.mark.parametrize("queue", get_queues("cpu,gpu"))
-@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
-def test_input_format_f_contiguous_dpctl(queue, dtype):
-    rng = np.random.RandomState(0)
-    x_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
+)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("data_shape", data_shapes)
+def test_table_conversions(dataframe, queue, order, data_shape):
+    # TODO:
+    # Description for the test.
+    if queue.sycl_device.is_cpu:
+        pytest.skip("OneDAL returns None sycl queue for CPU sycl queue inputs.")
 
-    x_numpy = np.asanyarray(x_default, dtype=dtype, order="F")
-    x_dpt = dpt.asarray(x_numpy, usm_type="device", sycl_queue=queue)
-    # assert not x_dpt.flags.fnc
-    assert isinstance(x_dpt, dpt.usm_ndarray)
-
-    x_table = _backend.dpctl_to_table(x_dpt)
-    assert hasattr(x_table, "__sycl_usm_array_interface__")
-    x_dpt_from_table = dpt.asarray(x_table)
-
-    assert (
-        x_dpt.__sycl_usm_array_interface__["data"][0]
-        == x_dpt_from_table.__sycl_usm_array_interface__["data"][0]
+    n_samples, n_features = data_shape
+    X, y = make_blobs(
+        n_samples=n_samples, centers=3, n_features=n_features, random_state=0
     )
-    assert x_dpt.shape == x_dpt_from_table.shape
-    assert x_dpt.strides == x_dpt_from_table.strides
-    assert x_dpt.dtype == x_dpt_from_table.dtype
-    assert x_dpt.flags.f_contiguous
-    assert x_dpt_from_table.flags.f_contiguous
+
+    X = ORDER_DICT[order](X)
+
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    alg = DummyEstimatorWithTableConversions()
+    X_table, result_responses_table, result_responses_df = alg.fit(X)
+
+    assert hasattr(X_table, "__sycl_usm_array_interface__")
+    assert hasattr(result_responses_table, "__sycl_usm_array_interface__")
+    assert hasattr(result_responses_df, "__sycl_usm_array_interface__")
+    assert hasattr(X, "__sycl_usm_array_interface__")
+    # TODO:
+    # investigate in the same PR skip_syclobj and skip_data_1 WO.
+    _assert_sua_iface_fields(X, X_table, skip_syclobj=True, skip_data_1=True)
+    # TODO:
+    # investigate in the same PR skip_syclobj and skip_data_1 WO.
+    _assert_sua_iface_fields(
+        result_responses_df, result_responses_table, skip_syclobj=True, skip_data_1=True
+    )
+    assert X.sycl_queue == result_responses_df.sycl_queue
+    if order == "F":
+        assert X.flags.f_contiguous == result_responses_df.flags.f_contiguous
+    else:
+        assert X.flags.c_contiguous == result_responses_df.flags.c_contiguous
+    # 1D output expected to have the same c_contiguous and f_contiguous flag values.
+    assert (
+        result_responses_df.flags.c_contiguous == result_responses_df.flags.f_contiguous
+    )
+
+
+# TODO:
+# def test_wrong_inputs_for_sua_iface_conversion

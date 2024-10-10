@@ -21,15 +21,14 @@ import numpy as np
 from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
+from .._device_offload import dpctl_available, dpnp_available
 from ..utils import _is_csr
 
-try:
-    import dpctl
+if dpctl_available:
     import dpctl.tensor as dpt
 
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
+if dpnp_available:
+    import dpnp
 
 
 def _apply_and_pass(func, *args):
@@ -38,18 +37,45 @@ def _apply_and_pass(func, *args):
     return tuple(map(func, args))
 
 
-def from_table(*args):
-    return _apply_and_pass(_backend.from_table, *args)
+# TODO:
+# add warnings if no dpc backend.
+# TODO:
+# sparse for sua data.
+# TODO:
+# update it for each of the datafrmae format.
+# TODO:
+# update func use with args and kwargs with _apply_and_pass.
+def convert_one_from_table(table, sua_iface=None, xp=None):
+    # Currently only `__sycl_usm_array_interface__` protocol used to
+    # convert into dpnp/dpctl tensors.
+    if sua_iface:
+        xp_name = xp.__name__
+        if dpnp_available and xp_name == "dpnp":
+            # By default DPNP ndarray created with a copy.
+            # TODO:
+            # investigate why dpnp.array(table, copy=False) doesn't work.
+            # Work around with using dpctl.tensor.asarray.
+            return xp.array(dpt.asarray(table), copy=False)
+        else:
+            return xp.asarray(table)
+    return _backend.from_table(table)
 
 
-def convert_one_to_table(arg):
-    if dpctl_available:
-        if isinstance(arg, dpt.usm_ndarray):
-            return _backend.dpctl_to_table(arg)
+# TODO:
+# add warnings if no dpc backend.
+# TODO:
+# sparse for sua data.
+def convert_one_to_table(arg, sua_iface=None):
+    if sua_iface and _is_dpc_backend:
+        return _backend.sua_iface_to_table(arg)
 
     if not _is_csr(arg):
         arg = make2d(arg)
     return _backend.to_table(arg)
+
+
+def from_table(*args):
+    return _apply_and_pass(convert_one_from_table, *args)
 
 
 def to_table(*args):
