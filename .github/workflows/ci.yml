@@ -23,6 +23,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
 env:
   TBB_VERSION: 2021.13
   DPCPP_VERSION: 2024.2
@@ -215,8 +219,8 @@ jobs:
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
-          call .\dpcpp\compiler\${{ env.DPCPP_VERSION }}\env\vars.bat
-          call .\dpcpp\compiler\${{ env.DPCPP_VERSION }}\bin\sycl-ls.exe
+          call .\oneapi\compiler\${{ env.DPCPP_VERSION }}\env\vars.bat
+          call .\oneapi\compiler\${{ env.DPCPP_VERSION }}\bin\sycl-ls.exe
           bash .ci/scripts/describe_system.sh
       - name: Build daal4py/sklearnex
         shell: cmd
