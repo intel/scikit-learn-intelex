@@ -20,7 +20,14 @@ if dpnp_available:
     import dpnp
 
 if dpctl_available:
+    import dpctl
     from dpctl.tensor import usm_ndarray
+
+    def _get_sycl_queue(syclobj):
+        if hasattr(syclobj, "_get_capsule"):
+            return dpctl.SyclQueue(syclobj._get_capsule())
+        else:
+            return dpctl.SyclQueue(syclobj)
 
 
 def _assert_tensor_attr(actual, desired, order):
@@ -73,7 +80,7 @@ def _assert_sua_iface_fields(
         assert actual_sua_iface["strides"] == desired_sua_iface["strides"]
     assert actual_sua_iface["version"] == desired_sua_iface["version"]
     assert actual_sua_iface["typestr"] == desired_sua_iface["typestr"]
-    if not skip_syclobj:
-        # TODO:
-        # comment and the conditions to check values.
-        assert actual_sua_iface["syclobj"]._get_capsule() == desired_sua_iface["syclobj"]
+    if not skip_syclobj and dpctl_available:
+        actual_sycl_queue = _get_sycl_queue(actual_sua_iface["syclobj"])
+        desired_sycl_queue = _get_sycl_queue(desired_sua_iface["syclobj"])
+        assert actual_sycl_queue == desired_sycl_queue

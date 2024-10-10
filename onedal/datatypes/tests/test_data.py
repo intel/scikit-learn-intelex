@@ -250,16 +250,12 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
     sua_iface, X_dp_namespace, _ = _get_sycl_namespace(X_dp)
 
     X_table = convert_one_to_table(X_dp, sua_iface=sua_iface)
-    # TODO:
-    # investigate in the same PR skip_syclobj WO.
-    _assert_sua_iface_fields(X_dp, X_table, skip_syclobj=True)
+    _assert_sua_iface_fields(X_dp, X_table)
 
     X_dp_from_table = convert_one_from_table(
         X_table, sycl_queue=queue, sua_iface=sua_iface, xp=X_dp_namespace
     )
-    # TODO:
-    # investigate in the same PR skip_syclobj WO.
-    _assert_sua_iface_fields(X_table, X_dp_from_table, skip_syclobj=True)
+    _assert_sua_iface_fields(X_table, X_dp_from_table)
     _assert_tensor_attr(X_dp, X_dp_from_table, order)
 
 
@@ -290,17 +286,25 @@ def test_table_conversions(dataframe, queue, order, data_shape):
     assert hasattr(result_responses_table, "__sycl_usm_array_interface__")
     assert hasattr(result_responses_df, "__sycl_usm_array_interface__")
     assert hasattr(X, "__sycl_usm_array_interface__")
+    _assert_sua_iface_fields(X, X_table)
+
+    # Work around for saving compute-follows-data execution
+    # for CPU sycl context requires cause additional memory
+    # allocation using the same queue.
+    skip_data_0 = True if queue.sycl_device.is_cpu else False
+    # Onedal return table's syclobj is empty for CPU inputs.
+    skip_syclobj = True if queue.sycl_device.is_cpu else False
     # TODO:
-    # investigate in the same PR skip_syclobj and skip_data_1 WO.
-    _assert_sua_iface_fields(X, X_table, skip_syclobj=True, skip_data_1=True)
-    # TODO:
-    # investigate in the same PR skip_syclobj and skip_data_1 WO.
+    # investigate why __sycl_usm_array_interface__["data"][1] is changed
+    # after conversion from onedal table to sua array.
+    # Test is not turned off because of this. Only check is skipped.
+    skip_data_1 = True
     _assert_sua_iface_fields(
         result_responses_df,
         result_responses_table,
-        skip_syclobj=True,
-        skip_data_0=True,
-        skip_data_1=True,
+        skip_data_0=skip_data_0,
+        skip_data_1=skip_data_1,
+        skip_syclobj=skip_syclobj,
     )
     assert X.sycl_queue == result_responses_df.sycl_queue
     if order == "F":
