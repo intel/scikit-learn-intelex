@@ -38,7 +38,7 @@ def patch_svc_from_command_line(request):
     return
 
 
-def test_patching_svc_from_command_line(patch_from_command_line):
+def test_patching_svc_from_command_line(patch_svc_from_command_line):
     from sklearn.svm import SVC, SVR
 
     assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith("sklearnex")
@@ -47,7 +47,7 @@ def test_patching_svc_from_command_line(patch_from_command_line):
     )
 
 
-def test_unpatching_svc_from_command_line(patch_from_command_line):
+def test_unpatching_svc_from_command_line(patch_svc_from_command_line):
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
     )
@@ -78,7 +78,7 @@ def patch_svc_from_function(request):
     return
 
 
-def test_patching_svc_from_function(patch_from_function):
+def test_patching_svc_from_function(patch_svc_from_function):
     from sklearn.svm import SVC, SVR
 
     assert SVC.__module__.startswith("daal4py") or SVC.__module__.startswith("sklearnex")
@@ -87,7 +87,7 @@ def test_patching_svc_from_function(patch_from_function):
     )
 
 
-def test_unpatching_svc_from_function(patch_from_function):
+def test_unpatching_svc_from_function(patch_svc_from_function):
     from sklearnex import unpatch_sklearn
 
     unpatch_sklearn(global_unpatch=True)
