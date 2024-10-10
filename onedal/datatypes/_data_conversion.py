@@ -22,14 +22,13 @@ from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
 from ..utils import _is_csr
+from ..utils._dpep_helpers import is_dpctl_available
 
-try:
+dpctl_available = is_dpctl_available("0.14")
+
+if dpctl_available:
     import dpctl
     import dpctl.tensor as dpt
-
-    dpctl_available = dpctl.__version__ >= "0.14"
-except ImportError:
-    dpctl_available = False
 
 
 def _apply_and_pass(func, *args):

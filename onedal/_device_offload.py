@@ -23,24 +23,17 @@ from sklearn import get_config
 
 from ._config import _get_config
 from .utils._array_api import _asarray, _is_numpy_namespace
+from .utils._dpep_helpers import dpctl_available, dpnp_available
 
-try:
+if dpctl_available:
     from dpctl import SyclQueue
     from dpctl.memory import MemoryUSMDevice, as_usm_memory
     from dpctl.tensor import usm_ndarray
 
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
-
-try:
+if dpnp_available:
     import dpnp
 
     from .utils._array_api import _convert_to_dpnp
-
-    dpnp_available = True
-except ImportError:
-    dpnp_available = False
 
 
 class DummySyclQueue:
