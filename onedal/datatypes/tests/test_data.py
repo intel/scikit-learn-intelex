@@ -26,7 +26,12 @@ from onedal.datatypes import from_table, to_table
 # TODO:
 # re-impl and use from_table, to_table instead.
 from onedal.datatypes._data_conversion import convert_one_from_table, convert_one_to_table
-from onedal.datatypes.tests.common import _assert_sua_iface_fields, _assert_tensor_attr
+
+if dpctl_available:
+    from onedal.datatypes.tests.common import (
+        _assert_sua_iface_fields,
+        _assert_tensor_attr,
+    )
 from onedal.primitives import linear_kernel
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -230,16 +235,23 @@ def test_conversion_to_table(dtype):
     _test_conversion_to_table(dtype)
 
 
-# TODO:
-# rename test suit.
+@pytest.mark.skipif(
+    not dpctl_available,
+    reason="dpctl is required for checks.",
+)
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
+)
 @pytest.mark.parametrize(
     "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu, gpu")
 )
 @pytest.mark.parametrize("order", ["C", "F"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
 def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
-    # TODO:
-    # add description to the test.
+    """Checking that values ​​representing USM allocations `__sycl_usm_array_interface__`
+    are preserved during conversion to onedal table.
+    """
     rng = np.random.RandomState(0)
     X_default = np.array(5 * rng.random_sample((10, 59)), dtype=dtype)
 
@@ -259,8 +271,10 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
     _assert_tensor_attr(X_dp, X_dp_from_table, order)
 
 
-# TODO:
-# rename test suit.
+@pytest.mark.skipif(
+    not dpctl_available,
+    reason="dpctl is required for checks.",
+)
 @pytest.mark.skipif(
     not _is_dpc_backend,
     reason="__sycl_usm_array_interface__ support requires DPC backend.",
@@ -271,6 +285,10 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
 def test_table_conversions(dataframe, queue, order, data_shape):
+    """Checking that values ​​representing USM allocations `__sycl_usm_array_interface__`
+    are preserved during conversion to onedal table and from onedal table to
+    sycl usm array dataformat.
+    """
     n_samples, n_features = data_shape
     X, y = make_blobs(
         n_samples=n_samples, centers=3, n_features=n_features, random_state=0
