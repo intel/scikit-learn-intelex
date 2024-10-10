@@ -21,6 +21,10 @@ import sys
 
 import pytest
 
+# This is a workaround for older versions of Python on Windows
+# which didn't have it as part of the built-in 'os' module.
+EX_OK = os.EX_OK if hasattr(os, "EX_OK") else 0
+
 # Note: from the structure of this file, one might thing of adding a test
 # along the lines of 'test_patching_all_from_command_line'. There is however
 # an issue in that, after the first time a scikit-learn module is imported,
@@ -36,14 +40,14 @@ def patch_svc_from_command_line():
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "patch_sklearn", "-a", "svc"]
     )
-    assert err_code == os.EX_OK
+    assert err_code == EX_OK
 
     yield
 
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn", "-a", "svc"]
     )
-    assert err_code == os.EX_OK
+    assert err_code == EX_OK
 
 
 def test_patching_svc_from_command_line(patch_svc_from_command_line):
@@ -59,7 +63,7 @@ def test_unpatching_svc_from_command_line(patch_svc_from_command_line):
     err_code = subprocess.call(
         [sys.executable, "-m", "sklearnex.glob", "unpatch_sklearn"]
     )
-    assert err_code == os.EX_OK
+    assert err_code == EX_OK
     from sklearnex import unpatch_sklearn
 
     unpatch_sklearn()

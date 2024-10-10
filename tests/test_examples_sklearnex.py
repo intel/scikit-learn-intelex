@@ -24,6 +24,10 @@ test_path = os.path.abspath(os.path.dirname(__file__))
 unittest_data_path = os.path.join(test_path, "unittest_data")
 examples_path = os.path.join(os.path.dirname(test_path), "examples", "sklearnex")
 
+# This is a workaround for older versions of Python on Windows
+# which didn't have it as part of the built-in 'os' module.
+EX_OK = os.EX_OK if hasattr(os, "EX_OK") else 0
+
 
 @pytest.mark.parametrize(
     "file",
@@ -43,7 +47,7 @@ def test_sklearn_example(file):
     )  # nosec
     exit_code = process.returncode
 
-    if exit_code != os.EX_OK:
+    if exit_code != EX_OK:
         pytest.fail(
             pytrace=False,
             reason=f"Example has failed, the example's output:\n{process.stdout.decode()}\n{process.stderr.decode()}",
