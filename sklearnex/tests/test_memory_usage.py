@@ -126,25 +126,21 @@ ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 DUMMY_ESTIMATOR = {}
 if _is_dpc_backend:
-    # TODO:
-    # use  from_table, to_table.
-    from onedal.datatypes._data_conversion import (
-        convert_one_from_table,
-        convert_one_to_table,
-    )
+
+    from onedal.datatypes._data_conversion import from_table, to_table
 
     class DummyEstimatorWithTableConversions(BaseEstimator):
 
         def fit(self, X, y=None):
             sua_iface, _, _ = _get_sycl_namespace(X)
-            X_table = convert_one_to_table(X, sua_iface=sua_iface)
-            y_table = convert_one_to_table(y, sua_iface=sua_iface)
+            X_table = to_table(X, sua_iface=sua_iface)
+            y_table = to_table(y, sua_iface=sua_iface)
             return self
 
         def predict(self, X):
             sua_iface, xp, _ = _get_sycl_namespace(X)
-            X_table = convert_one_to_table(X, sua_iface=sua_iface)
-            returned_X = convert_one_from_table(
+            X_table = to_table(X, sua_iface=sua_iface)
+            returned_X = from_table(
                 X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
             )
             return returned_X
