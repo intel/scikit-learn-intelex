@@ -342,7 +342,7 @@ def n_jobs_check(text, estimator, method):
 def runtime_property_check(text, estimator, method):
     """use of Python's 'property' should not be used at runtime, only at class instantiation"""
     assert (
-        len(re.findall("property(", text[1])) == 0
+        len(re.findall(r"property\(", text[1])) == 0
     ), f"{estimator}.{method} should only use 'property' at instantiation"
 
 
