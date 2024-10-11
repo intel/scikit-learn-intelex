@@ -31,9 +31,6 @@
 #include "onedal/datatypes/utils/dtype_conversions.hpp"
 #include "onedal/datatypes/utils/dtype_dispatcher.hpp"
 
-// TODO:
-// add description for the sua_iface dict.
-
 namespace oneapi::dal::python {
 
 dal::data_type get_sua_dtype(const py::dict& sua);
@@ -48,8 +45,6 @@ bool is_sua_readonly(const py::dict& sua);
 
 py::tuple get_sua_shape(const py::dict& sua);
 
-// TODO:
-// rename and update.
 void report_problem_for_sua_iface(const char* clarification);
 
 std::int64_t get_and_check_sua_iface_ndim(const py::dict& sua_dict);

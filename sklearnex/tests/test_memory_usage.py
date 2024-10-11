@@ -214,15 +214,10 @@ def split_train_inference(kf, x, y, estimator, queue=None):
     return mem_tracks
 
 
-# TODO:
-# def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None, get_data_func=None):
-# add custom get_data_func.
 def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    # get_data_func = get_data_func if get_data_func else gen_clsf_data
-    # X, y, data_memory_size = get_data_func(n_samples, n_features)
     X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
     kf = KFold(n_splits=N_SPLITS)
     if func:

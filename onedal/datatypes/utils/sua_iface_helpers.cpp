@@ -31,8 +31,26 @@
 #include "onedal/datatypes/utils/dtype_conversions.hpp"
 #include "onedal/datatypes/utils/dtype_dispatcher.hpp"
 
-// TODO:
-// add description for the sua_iface dict.
+/* __sycl_usm_array_interface__
+ *
+ * Python object representing USM allocations.
+ * To enable native extensions to pass the memory allocated by a native
+ * SYCL library to SYCL-aware Python extension without making a copy,
+ * the class must provide `__sycl_usm_array_interface__`
+ * attribute which returns a Python dictionary with the following fields:
+ *
+ *   shape: tuple of int
+ *   typestr: string
+ *   typedescr: a list of tuples
+ *   data: (int, bool)
+ *   strides: tuple of int
+ *   offset: int
+ *   version: int
+ *   syclobj: dpctl.SyclQueue or dpctl.SyclContext object
+ *
+ * For more informations please follow <https://intelpython.github.io/dpctl/latest/
+ * api_reference/dpctl/sycl_usm_array_interface.html#sycl-usm-array-interface-attribute>
+*/
 
 namespace oneapi::dal::python {
 
