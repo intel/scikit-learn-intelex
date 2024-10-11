@@ -34,6 +34,10 @@ EX_OK = os.EX_OK if hasattr(os, "EX_OK") else 0
 # either. This also makes this first command-line fixture and tests that use
 # it not entirely idempotent, given that they need to import sklearn modules.
 
+# Note 2: don't try to change these into 'yield' fixtures, because otherwise
+# some test runners on windows which use multi-processing will throw errors
+# about the fixtures not being serializable.
+
 
 @pytest.fixture
 def patch_svc_from_command_line(request):
