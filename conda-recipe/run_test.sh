@@ -31,9 +31,9 @@ if [[ count -eq 0 ]]; then
     exit 1
 fi
 
-COV_CMD = "--no-cov"
+COV_CMD=(--no-cov)
 if [[ "$COVERAGE" == "true" ]]; then
-COV_CMD = "--cov-config='$daal4py_dir/.coveragerc' --cov-report="
+COV_CMD=(--cov-config '$daal4py_dir/.coveragerc' --cov-report=)
 fi
 
 echo "Start testing ..."
@@ -55,15 +55,15 @@ python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
 return_code=$(($return_code + $?))
 
 echo "Pytest of daal4py running ..."
-pytest --verbose --${daal4py_dir}/daal4py/sklearn $COV_CMD
+pytest --verbose --${daal4py_dir}/daal4py/sklearn "${COV_CMD[@]}"
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
-pytest --verbose --pyargs sklearnex $COV_CMD
+pytest --verbose --pyargs sklearnex "${COV_CMD[@]}"
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs onedal $COV_CMD
+pytest --verbose --pyargs onedal 
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
