@@ -154,7 +154,10 @@ def test_class_trailing_underscore_ban(monkeypatch):
     for name, obj in estimators:
         if "preview" not in obj.__module__ and "daal4py" not in obj.__module__:
             assert all(
-                [i.startswith("_") or not i.endswith("_") for i in dir(obj)]
+                [
+                    hasattr(obj, i) and (i.startswith("_") or not i.endswith("_"))
+                    for i in dir(obj)
+                ]
             ), f"{name} contains class attributes which have a trailing underscore but no leading one"
 
 
