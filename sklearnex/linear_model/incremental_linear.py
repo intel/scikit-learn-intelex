@@ -306,7 +306,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 f"'{self.__class__.__name__}' object has no attribute 'coef_'"
             )
 
-    @property.setter
+    @coef_.setter
     def coef_(self, value):
         self.__dict__["coef_"] = value
         if hasattr(self, "_onedal_estimator"):
