@@ -339,7 +339,24 @@ def n_jobs_check(text, estimator, method):
     ), f"verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
 
 
-DESIGN_RULES = [n_jobs_check]
+def fitted_check(text, estimator, method):
+    """The estimator should verify that it has been fitted for any non fit* method"""
+    # remove the _get_backend function from sklearnex from considered _get_backend
+    if "fit" in method:
+        pytest.skip(f"{method} fits the estimator and is exempt from fitted_check")
+    
+    count = len(
+            [
+                i
+                for i in range(len(text[0]))
+                if text[0][i] == "check_is_fitted" and "sklearn" in text[2][i]
+            ]
+        )
+
+    assert bool(count), f"sklearn's 'check_is_fitted' should be used in {estimator}.{method}"
+
+
+DESIGN_RULES = [n_jobs_check, fitted_check]
 
 
 if sklearn_check_version("1.0"):
