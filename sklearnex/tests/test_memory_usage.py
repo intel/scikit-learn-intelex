@@ -135,8 +135,6 @@ if _is_dpc_backend:
 
     class DummyEstimatorWithTableConversions(BaseEstimator):
 
-        # __name__ = 'DummyEstimatorWithTableConversions'
-
         def fit(self, X, y=None):
             sua_iface, _, _ = _get_sycl_namespace(X)
             X_table = convert_one_to_table(X, sua_iface=sua_iface)
@@ -146,7 +144,9 @@ if _is_dpc_backend:
         def predict(self, X):
             sua_iface, xp, _ = _get_sycl_namespace(X)
             X_table = convert_one_to_table(X, sua_iface=sua_iface)
-            returned_X = convert_one_from_table(X_table, sua_iface=sua_iface, xp=xp)
+            returned_X = convert_one_from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
             return returned_X
 
     DUMMY_ESTIMATOR["DummyEstimatorWithTableConversions"] = (

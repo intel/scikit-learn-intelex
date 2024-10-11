@@ -83,6 +83,7 @@ if _is_dpc_backend:
             dtype = get_dtype(X)
             params = bs_DBSCAN._get_onedal_params(dtype)
             X_table = convert_one_to_table(X, True)
+            # TODO:
             # check other candidates for the dummy base OneDAL func.
             # OneDAL backend func is needed to check result table checks.
             result = _backend.dbscan.clustering.compute(
