@@ -55,7 +55,7 @@ python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
 return_code=$(($return_code + $?))
 
 echo "Pytest of daal4py running ..."
-pytest --verbose --${daal4py_dir}/daal4py/sklearn "${COV_ARGS[@]}"
+pytest --verbose ${daal4py_dir}/daal4py/sklearn "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
