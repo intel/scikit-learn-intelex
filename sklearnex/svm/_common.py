@@ -36,6 +36,7 @@ if sklearn_check_version("1.6"):
 else:
     validate_data = BaseEstimator._validate_data
 
+
 class BaseSVM(BaseEstimator, ABC):
 
     @property
@@ -308,7 +309,7 @@ class BaseSVR(BaseSVM):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.fit_status_ = 0
-        self.dual_coef_ = self._onedal_estimator.dual_coef_
+        self._dual_coef_ = self._onedal_estimator.dual_coef_
         self.shape_fit_ = self._onedal_estimator.shape_fit_
         self.support_ = self._onedal_estimator.support_
 
@@ -318,9 +319,6 @@ class BaseSVR(BaseSVM):
         self._gamma = self._onedal_estimator._gamma
         self._probA = None
         self._probB = None
-
-        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-        self.intercept_ = property(get_intercept, set_intercept)
 
         self._is_in_fit = True
         self._dual_coef_ = self.dual_coef_
