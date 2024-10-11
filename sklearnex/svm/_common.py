@@ -51,6 +51,10 @@ class BaseSVM(BaseEstimator, ABC):
             if hasattr(self._onedal_estimator, "_onedal_model"):
                 del self._onedal_estimator._onedal_model
 
+    @_dual_coef.deleter
+    def _dual_coef_(self):
+        del self._dualcoef_
+
     @property
     def intercept_(self):
         return self._icept_
@@ -62,6 +66,10 @@ class BaseSVM(BaseEstimator, ABC):
             self._onedal_estimator.intercept_ = value
             if hasattr(self._onedal_estimator, "_onedal_model"):
                 del self._onedal_estimator._onedal_model
+
+    @intercept_.deleter
+    def intercept_(self):
+        del self._icept_
 
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
