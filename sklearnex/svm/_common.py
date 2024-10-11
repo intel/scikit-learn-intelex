@@ -41,11 +41,11 @@ class BaseSVM(BaseEstimator, ABC):
 
     @property
     def _dual_coef_(self):
-        return self.dual_coef_
+        return self._dualcoef_
 
     @_dual_coef_.setter
     def _dual_coef_(self, value):
-        self.dual_coef_ = value
+        self._dualcoef_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.dual_coef_ = value
             if hasattr(self._onedal_estimator, "_onedal_model"):
@@ -53,11 +53,11 @@ class BaseSVM(BaseEstimator, ABC):
 
     @property
     def intercept_(self):
-        return self._intercept_
+        return self._icept_
 
     @intercept_.setter
     def intercept_(self, value):
-        self._intercept_ = value
+        self._icept_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             if hasattr(self._onedal_estimator, "_onedal_model"):
@@ -285,7 +285,7 @@ class BaseSVC(BaseSVM):
             self.class_weight_ = self._onedal_estimator.class_weight_
         self.support_ = self._onedal_estimator.support_
 
-        self._intercept_ = self._onedal_estimator.intercept_
+        self._icept_ = self._onedal_estimator.intercept_
         self._n_support = self._onedal_estimator._n_support
         self._sparse = False
         self._gamma = self._onedal_estimator._gamma
@@ -296,6 +296,8 @@ class BaseSVC(BaseSVM):
         else:
             self._probA = np.empty(0)
             self._probB = np.empty(0)
+
+        self._dualcoef_ = self.dual_coef_
 
         if sklearn_check_version("1.1"):
             length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
@@ -311,7 +313,7 @@ class BaseSVR(BaseSVM):
         self.shape_fit_ = self._onedal_estimator.shape_fit_
         self.support_ = self._onedal_estimator.support_
 
-        self._intercept_ = self._onedal_estimator.intercept_
+        self._icept_ = self._onedal_estimator.intercept_
         self._n_support = [self.support_vectors_.shape[0]]
         self._sparse = False
         self._gamma = self._onedal_estimator._gamma
@@ -320,6 +322,8 @@ class BaseSVR(BaseSVM):
 
         if sklearn_check_version("1.1"):
             self.n_iter_ = self._onedal_estimator.n_iter_
+
+        self._dualcoef_ = self.dual_coef_
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return r2_score(
