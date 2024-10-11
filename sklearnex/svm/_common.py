@@ -51,7 +51,7 @@ class BaseSVM(BaseEstimator, ABC):
             if hasattr(self._onedal_estimator, "_onedal_model"):
                 del self._onedal_estimator._onedal_model
 
-    @_dual_coef.deleter
+    @_dual_coef_.deleter
     def _dual_coef_(self):
         del self._dualcoef_
 
