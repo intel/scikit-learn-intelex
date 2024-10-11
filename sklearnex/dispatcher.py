@@ -44,6 +44,7 @@ def get_patch_map_core(preview=False):
         mapping = get_patch_map_core().copy()
 
         if _is_new_patching_available():
+            import sklearn.cluster as cluster_module
             import sklearn.covariance as covariance_module
             import sklearn.decomposition as decomposition_module
 
