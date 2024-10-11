@@ -17,7 +17,7 @@
 import warnings
 
 import numpy as np
-from fromonedal.utils import _is_csr
+from onedal.utils import _is_csr
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
