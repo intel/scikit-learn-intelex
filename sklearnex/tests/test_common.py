@@ -344,16 +344,18 @@ def fitted_check(text, estimator, method):
     # remove the _get_backend function from sklearnex from considered _get_backend
     if "fit" in method:
         pytest.skip(f"{method} fits the estimator and is exempt from fitted_check")
-    
-    count = len(
-            [
-                i
-                for i in range(len(text[0]))
-                if text[0][i] == "check_is_fitted" and "sklearn" in text[2][i]
-            ]
-        )
 
-    assert bool(count), f"sklearn's 'check_is_fitted' should be used in {estimator}.{method}"
+    count = len(
+        [
+            i
+            for i in range(len(text[0]))
+            if text[0][i] == "check_is_fitted" and "sklearn" in text[2][i]
+        ]
+    )
+
+    assert bool(
+        count
+    ), f"sklearn's 'check_is_fitted' should be used in {estimator}.{method}"
 
 
 DESIGN_RULES = [n_jobs_check, fitted_check]
