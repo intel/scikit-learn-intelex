@@ -40,20 +40,20 @@ else:
 class BaseSVM(BaseEstimator, ABC):
 
     @property
-    def dual_coef_(self):
-        return self._dual_coef_
+    def _dual_coef_(self):
+        return self._dualcoef_
 
-    @dual_coef_.setter
-    def dual_coef_(self, value):
-        self._dual_coef_ = value
+    @_dual_coef_.setter
+    def _dual_coef_(self, value):
+        self._dualcoef_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.dual_coef_ = value
             if not self._is_in_fit:
                 del self._onedal_estimator._onedal_model
 
-    @dual_coef_.deleter
-    def dual_coef_(self):
-        del self._dual_coef_
+    @_dual_coef_.deleter
+    def _dual_coef_(self):
+        del self._dualcoef_
 
     @property
     def intercept_(self):
@@ -286,7 +286,7 @@ class BaseSVC(BaseSVM):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.fit_status_ = 0
-        self._dual_coef_ = self._onedal_estimator.dual_coef_
+        self.dual_coef_ = self._onedal_estimator.dual_coef_
         self.shape_fit_ = self._onedal_estimator.class_weight_
         self.classes_ = self._onedal_estimator.classes_
         if isinstance(self, ClassifierMixin) or not sklearn_check_version("1.2"):
@@ -305,6 +305,7 @@ class BaseSVC(BaseSVM):
             self._probA = np.empty(0)
             self._probB = np.empty(0)
 
+        self._dualcoef_ = self.dual_coef_
         self._is_in_fit = False
 
         if sklearn_check_version("1.1"):
@@ -317,7 +318,7 @@ class BaseSVR(BaseSVM):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self.fit_status_ = 0
-        self._dual_coef_ = self._onedal_estimator.dual_coef_
+        self.dual_coef_ = self._onedal_estimator.dual_coef_
         self.shape_fit_ = self._onedal_estimator.shape_fit_
         self.support_ = self._onedal_estimator.support_
 
@@ -328,9 +329,7 @@ class BaseSVR(BaseSVM):
         self._probA = None
         self._probB = None
 
-        self._is_in_fit = True
-        self._dual_coef_ = self.dual_coef_
-        self.intercept_ = self._intercept_
+        self._dualcoef_ = self.dual_coef_
         self._is_in_fit = False
 
         if sklearn_check_version("1.1"):
