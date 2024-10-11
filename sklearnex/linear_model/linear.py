@@ -298,7 +298,7 @@ class LinearRegression(_sklearn_LinearRegression):
         return self._intercept_
 
     @intercept_.setter
-    def set_intercept_(self, value):
+    def intercept_(self, value):
         self._intercept_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
