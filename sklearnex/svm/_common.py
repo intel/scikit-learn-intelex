@@ -41,11 +41,11 @@ class BaseSVM(BaseEstimator, ABC):
 
     @property
     def _dual_coef_(self):
-        return self._dualcoef_
+        return self.dual_coef_
 
     @_dual_coef_.setter
     def _dual_coef_(self, value):
-        self._dualcoef_ = value
+        self.dual_coef_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.dual_coef_ = value
             if hasattr(self._onedal_estimator, "_onedal_model"):
@@ -53,7 +53,7 @@ class BaseSVM(BaseEstimator, ABC):
 
     @_dual_coef_.deleter
     def _dual_coef_(self):
-        del self._dualcoef_
+        del self.dual_coef_
 
     @property
     def intercept_(self):
@@ -305,8 +305,6 @@ class BaseSVC(BaseSVM):
             self._probA = np.empty(0)
             self._probB = np.empty(0)
 
-        self._dualcoef_ = self.dual_coef_
-
         if sklearn_check_version("1.1"):
             length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
             self.n_iter_ = np.full((length,), self._onedal_estimator.n_iter_)
@@ -327,8 +325,6 @@ class BaseSVR(BaseSVM):
         self._gamma = self._onedal_estimator._gamma
         self._probA = None
         self._probB = None
-
-        self._dualcoef_ = self.dual_coef_
 
         if sklearn_check_version("1.1"):
             self.n_iter_ = self._onedal_estimator.n_iter_
