@@ -274,7 +274,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         self._onedal_finalize_fit(queue=queue)
         return self
 
-    def get_intercept_(self):
+    @property
+    def intercept_(self):
         if hasattr(self, "_onedal_estimator"):
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
@@ -285,13 +286,16 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 f"'{self.__class__.__name__}' object has no attribute 'intercept_'"
             )
 
-    def set_intercept_(self, value):
+    @intercept_.setter
+    def intercept_(self, value):
         self.__dict__["intercept_"] = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             del self._onedal_estimator._onedal_model
 
-    def get_coef_(self):
+
+    @property
+    def coef_(self):
         if hasattr(self, "_onedal_estimator"):
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
@@ -302,14 +306,13 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 f"'{self.__class__.__name__}' object has no attribute 'coef_'"
             )
 
-    def set_coef_(self, value):
+    @property.setter
+    def coef_(self, value):
         self.__dict__["coef_"] = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.coef_ = value
             del self._onedal_estimator._onedal_model
 
-    coef_ = property(get_coef_, set_coef_)
-    intercept_ = property(get_intercept_, set_intercept_)
 
     def partial_fit(self, X, y, check_input=True):
         """
