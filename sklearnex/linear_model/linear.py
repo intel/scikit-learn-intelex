@@ -289,6 +289,10 @@ class LinearRegression(_sklearn_LinearRegression):
             self._onedal_estimator.coef_ = value
             del self._onedal_estimator._onedal_model
 
+    @coef_.deleter
+    def coef_(self):
+        del self._coef_
+
     @property
     def intercept_(self):
         return self._intercept_
@@ -299,6 +303,10 @@ class LinearRegression(_sklearn_LinearRegression):
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             del self._onedal_estimator._onedal_model
+
+    @intercept_.deleter
+    def intercept_(self):
+        del self._intercept_
 
     def _save_attributes(self):
         self.n_features_in_ = self._onedal_estimator.n_features_in_
