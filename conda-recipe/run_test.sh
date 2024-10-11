@@ -33,7 +33,7 @@ fi
 
 COV_CMD = "--no-cov"
 if [[ "$COVERAGE" == "true" ]]; then
-COV_CMD = "--cov-config='$daal4py_dir/.coveragerc' --cov --cov-report="
+COV_CMD = "--cov-config='$daal4py_dir/.coveragerc' --cov-report="
 fi
 
 echo "Start testing ..."
