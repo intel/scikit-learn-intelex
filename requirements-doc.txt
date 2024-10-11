@@ -24,7 +24,7 @@ jsonschema==4.21.1
 jupyter-client==8.6.0
 jupyter-core==5.7.1
 jupyterlab-pygments==0.3.0
-MarkupSafe==2.1.4
+MarkupSafe==3.0.1
 mistune==3.0.2
 nbclient==0.9.0
 nbconvert==7.14.2
