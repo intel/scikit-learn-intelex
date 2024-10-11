@@ -157,8 +157,8 @@ def test_class_trailing_underscore_ban(monkeypatch):
             # to error if queried and the estimator is not fitted
             assert all(
                 [
-                    not isinstance(getattr(obj, i), property)
-                    and (i.startswith("_") or not i.endswith("_"))
+                    isinstance(getattr(obj, i), property)
+                    or (i.startswith("_") or not i.endswith("_"))
                     for i in dir(obj)
                 ]
             ), f"{name} contains class attributes which have a trailing underscore but no leading one"
