@@ -17,6 +17,7 @@
 import warnings
 
 import numpy as np
+from fromonedal.utils import _is_csr
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
 from sklearn.utils.validation import _check_sample_weight
@@ -139,6 +140,16 @@ class BasicStatistics(BaseEstimator):
     def _onedal_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
             f"sklearnex.basic_statistics.{self.__class__.__name__}.{method_name}"
+        )
+
+        X, sample_weight = data[0], data[1]
+        patching_status.and_conditions(
+            [
+                (
+                    _is_csr(X) and sample_weight is not None,
+                    "sample_weight is not supported for CSR data format.",
+                ),
+            ]
         )
         return patching_status
 

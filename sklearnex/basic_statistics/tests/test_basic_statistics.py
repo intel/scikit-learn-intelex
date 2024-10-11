@@ -24,7 +24,14 @@ from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics.tests.test_basic_statistics import (
     expected_max,
     expected_mean,
+    expected_min,
+    expected_second_order_raw_moment,
+    expected_standard_deviation,
     expected_sum,
+    expected_sum_squares,
+    expected_sum_squares_centered,
+    expected_variance,
+    expected_variation,
     options_and_tests,
 )
 from onedal.tests.utils._dataframes_support import (
@@ -184,13 +191,16 @@ def test_multiple_options_on_random_data(
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
-# @pytest.mark.parametrize("weighted", [True, False])
+@pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_multiple_options_on_random_sparse_data(
-    queue, row_count, column_count, dtype
+    queue, row_count, column_count, weighted, dtype
 ):
     seed = 77
     random_state = 42
+
+    if weighted:
+        pytest.skip("Weighted sparse computation is not supported for sparse data")
     gen = np.random.default_rng(seed)
     X, _ = make_blobs(
         n_samples=row_count, n_features=column_count, random_state=random_state
@@ -199,33 +209,62 @@ def test_multiple_options_on_random_sparse_data(
     X_sparse = csr_matrix(X * (np.random.rand(*X.shape) < density))
     X_dense = X_sparse.toarray()
 
-    weighted = False
     if weighted:
         weights = gen.uniform(low=-0.5, high=1.0, size=row_count)
         weights = weights.astype(dtype=dtype)
-    basicstat = BasicStatistics(result_options=["mean", "sum"])
+
+    options = [
+        "sum",
+        "max",
+        "min",
+        "mean",
+        "standard_deviation" "variance",
+        "sum_squares",
+        "sum_squares_centered",
+        "second_order_raw_moment",
+    ]
+    basicstat = BasicStatistics(result_options=options)
+    if result_option == "max":
+        pytest.skip("There is a bug in oneDAL's max computations on GPU")
 
     if weighted:
         result = basicstat.fit(X_sparse, sample_weight=weights)
     else:
         result = basicstat.fit(X_sparse)
 
-    res_mean, res_sum = result.mean, result.sum
     if weighted:
         weighted_data = np.diag(weights) @ X_dense
-        gtr_mean, gtr_sum = (
-            expected_mean(weighted_data),
-            expected_sum(weighted_data),
-        )
+
+        gtr_sum = expected_sum(weighted_data)
+        gtr_min = expected_min(weighted_data)
+        gtr_mean = expected_mean(weighted_data)
+        gtr_std = expected_standard_deviation(weighted_data)
+        gtr_var = expected_variance(weighted_data)
+        gtr_variation = expected_variation(weighted_data)
+        gtr_ss = expected_sum_squares(weighted_data)
+        gtr_ssc = expected_sum_squares_centered(weighted_data)
+        gtr_seconf_moment = expected_second_order_raw_moment(weighted_data)
     else:
-        gtr_mean, gtr_sum = (
-            expected_mean(X_dense),
-            expected_sum(X_dense),
-        )
+        gtr_sum = expected_sum(X_dense)
+        gtr_min = expected_min(X_dense)
+        gtr_mean = expected_mean(X_dense)
+        gtr_std = expected_standard_deviation(X_dense)
+        gtr_var = expected_variance(X_dense)
+        gtr_variation = expected_variation(X_dense)
+        gtr_ss = expected_sum_squares(X_dense)
+        gtr_ssc = expected_sum_squares_centered(X_dense)
+        gtr_seconf_moment = expected_second_order_raw_moment(X_dense)
 
     tol = 5e-4 if res_mean.dtype == np.float32 else 1e-7
-    assert_allclose(gtr_mean, res_mean, atol=tol)
-    assert_allclose(gtr_sum, res_sum, atol=tol)
+    assert_allclose(gtr_sum, result.sum_, atol=tol)
+    assert_allclose(gtr_min, result.min_, atol=tol)
+    assert_allclose(gtr_mean, result.mean_, atol=tol)
+    assert_allclose(gtr_std, result.standard_deviation_, atol=tol)
+    assert_allclose(gtr_var, result.variance_, atol=tol)
+    assert_allclose(gtr_variation, result.variation_, atol=tol)
+    assert_allclose(gtr_ss, result.sum_squares_, atol=tol)
+    assert_allclose(gtr_ssc, result.sum_squares_centered_, atol=tol)
+    assert_allclose(gtr_seconf_moment, result.second_order_raw_moment_, atol=tol)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())

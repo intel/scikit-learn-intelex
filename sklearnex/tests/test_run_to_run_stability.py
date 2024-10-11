@@ -117,7 +117,13 @@ def _run_test(estimator, method, datasets):
 
 
 _sparse_instances = [SVC()]
-if daal_check_version((2024, "P", 700)):  # Test for > 2024.7.0
+if daal_check_version((2025, "P", 100)):  # Test for >= 2025.1.0
+    _sparse_instances.extend(
+        [
+            BasicStatistics(),
+        ]
+    )
+if daal_check_version((2024, "P", 700)):  # Test for >= 2024.7.0
     _sparse_instances.extend(
         [
             KMeans(),
