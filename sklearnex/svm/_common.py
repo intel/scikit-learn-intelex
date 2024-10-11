@@ -43,7 +43,7 @@ class BaseSVM(BaseEstimator, ABC):
         return self._dual_coef_
 
     @dual_coef_.setter
-    def _dual_coef_(self, value):
+    def dual_coef_(self, value):
         self._dual_coef_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.dual_coef_ = value
@@ -55,7 +55,7 @@ class BaseSVM(BaseEstimator, ABC):
         return self._intercept_
 
     @intercept_.setter
-    def set_intercept(self, value):
+    def intercept_(self, value):
         self._intercept_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
