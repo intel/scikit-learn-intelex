@@ -341,7 +341,6 @@ def n_jobs_check(text, estimator, method):
 
 def runtime_property_check(text, estimator, method):
     """use of Python's 'property' should not be used at runtime, only at class instantiation"""
-    # remove the _get_backend function from sklearnex from considered _get_backend
     assert (
         len(re.findall("property(", text[1])) == 0
     ), f"{estimator}.{method} should only use 'property' at instantiation"
