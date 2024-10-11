@@ -100,7 +100,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features`.
+     - Only dense data is supported.
    * - `Ridge`
      - All parameters are supported except:
 
@@ -301,7 +301,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features`.
+     - Only dense data is supported, `#observations` should be >= `#features` and there should be no linear dependencies.
 
 Clustering
 **********
@@ -453,7 +453,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features`.
+     - Only dense data is supported, `#observations` should be >= `#features` and there should be no linear dependencies.
 
 Clustering
 **********
