@@ -293,7 +293,6 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
             self._onedal_estimator.intercept_ = value
             del self._onedal_estimator._onedal_model
 
-
     @property
     def coef_(self):
         if hasattr(self, "_onedal_estimator"):
@@ -312,7 +311,6 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.coef_ = value
             del self._onedal_estimator._onedal_model
-
 
     def partial_fit(self, X, y, check_input=True):
         """
