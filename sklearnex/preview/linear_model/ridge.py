@@ -23,7 +23,7 @@ if daal_check_version((2024, "P", 600)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.linear_model import Ridge as sklearn_Ridge
+    from sklearn.linear_model import Ridge as _sklearn_Ridge
     from sklearn.metrics import r2_score
     from sklearn.utils.validation import check_is_fitted, check_X_y
 
@@ -40,6 +40,11 @@ if daal_check_version((2024, "P", 600)):
     from ..._device_offload import dispatch, wrap_output_data
     from ..._utils import PatchingConditionsChain
 
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = _sklearn_Ridge._validate_data
+
     def _is_numeric_scalar(value):
         """
         Determines if the provided value is a numeric scalar.
@@ -52,11 +57,11 @@ if daal_check_version((2024, "P", 600)):
         """
         return isinstance(value, numbers.Real)
 
-    class Ridge(sklearn_Ridge):
-        __doc__ = sklearn_Ridge.__doc__
+    class Ridge(_sklearn_Ridge):
+        __doc__ = _sklearn_Ridge.__doc__
 
         if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {**sklearn_Ridge._parameter_constraints}
+            _parameter_constraints: dict = {**_sklearn_Ridge._parameter_constraints}
 
             def __init__(
                 self,
@@ -141,7 +146,7 @@ if daal_check_version((2024, "P", 600)):
                 "fit",
                 {
                     "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_Ridge.fit,
+                    "sklearn": _sklearn_Ridge.fit,
                 },
                 X,
                 y,
@@ -158,7 +163,7 @@ if daal_check_version((2024, "P", 600)):
                 "predict",
                 {
                     "onedal": self.__class__._onedal_predict,
-                    "sklearn": sklearn_Ridge.predict,
+                    "sklearn": _sklearn_Ridge.predict,
                 },
                 X,
             )
@@ -172,7 +177,7 @@ if daal_check_version((2024, "P", 600)):
                 "score",
                 {
                     "onedal": self.__class__._onedal_score,
-                    "sklearn": sklearn_Ridge.score,
+                    "sklearn": _sklearn_Ridge.score,
                 },
                 X,
                 y,
@@ -330,7 +335,7 @@ if daal_check_version((2024, "P", 600)):
                 "multi_output": True,
             }
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(**check_params)
+                X, y = validate_data(self, **check_params)
             else:
                 X, y = check_X_y(**check_params)
 
@@ -356,7 +361,7 @@ if daal_check_version((2024, "P", 600)):
 
         def _onedal_predict(self, X, queue=None):
             if sklearn_check_version("1.0"):
-                X = self._validate_data(X, accept_sparse=False, reset=False)
+                X = validate_data(self, X, accept_sparse=False, reset=False)
 
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
@@ -402,17 +407,17 @@ if daal_check_version((2024, "P", 600)):
             self._coef = self._onedal_estimator.coef_
             self._intercept = self._onedal_estimator.intercept_
 
-        fit.__doc__ = sklearn_Ridge.fit.__doc__
-        predict.__doc__ = sklearn_Ridge.predict.__doc__
-        score.__doc__ = sklearn_Ridge.score.__doc__
+        fit.__doc__ = _sklearn_Ridge.fit.__doc__
+        predict.__doc__ = _sklearn_Ridge.predict.__doc__
+        score.__doc__ = _sklearn_Ridge.score.__doc__
 
 else:
     from daal4py.sklearn.linear_model._ridge import Ridge
-    from onedal._device_offload import support_usm_ndarray
+    from onedal._device_offload import support_input_format
 
-    Ridge.fit = support_usm_ndarray(queue_param=False)(Ridge.fit)
-    Ridge.predict = support_usm_ndarray(queue_param=False)(Ridge.predict)
-    Ridge.score = support_usm_ndarray(queue_param=False)(Ridge.score)
+    Ridge.fit = support_input_format(queue_param=False)(Ridge.fit)
+    Ridge.predict = support_input_format(queue_param=False)(Ridge.predict)
+    Ridge.score = support_input_format(queue_param=False)(Ridge.score)
 
     logging.warning(
         "Preview Ridge requires oneDAL version >= 2024.6 but it was not found"

@@ -23,7 +23,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearnex.tests._utils_spmd import (
+from sklearnex.tests.utils.spmd import (
     _generate_classification_data,
     _get_local_tensor,
     _mpi_libs_and_gpu_available,
@@ -116,7 +116,6 @@ def test_logistic_spmd_gold(dataframe, queue):
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_logistic_spmd_synthetic(n_samples, n_features, C, tol, dataframe, queue, dtype):
-    pytest.skip("Sporadic failures on coef_ check. Test disabled while fix in progress")
     # TODO: Resolve numerical issues when n_rows_rank < n_cols
     if n_samples <= n_features:
         pytest.skip("Numerical issues when rank rows < columns")

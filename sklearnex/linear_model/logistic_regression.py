@@ -19,13 +19,13 @@ from abc import ABC
 
 from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.logistic_path import (
-    LogisticRegression as LogisticRegression_daal4py,
+    LogisticRegression as _daal4py_LogisticRegression,
 )
 
 if daal_check_version((2024, "P", 1)):
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.linear_model import LogisticRegression as sklearn_LogisticRegression
+    from sklearn.linear_model import LogisticRegression as _sklearn_LogisticRegression
     from sklearn.metrics import accuracy_score
     from sklearn.utils.multiclass import type_of_target
     from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
@@ -38,6 +38,11 @@ if daal_check_version((2024, "P", 1)):
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
+
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = _sklearn_LogisticRegression._validate_data
 
     _sparsity_enabled = daal_check_version((2024, "P", 700))
 
@@ -59,13 +64,13 @@ if daal_check_version((2024, "P", 1)):
             "score",
         ]
     )
-    class LogisticRegression(sklearn_LogisticRegression, BaseLogisticRegression):
-        __doc__ = sklearn_LogisticRegression.__doc__
+    class LogisticRegression(_sklearn_LogisticRegression, BaseLogisticRegression):
+        __doc__ = _sklearn_LogisticRegression.__doc__
         intercept_, coef_, n_iter_ = None, None, None
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {
-                **sklearn_LogisticRegression._parameter_constraints
+                **_sklearn_LogisticRegression._parameter_constraints
             }
 
         def __init__(
@@ -115,7 +120,7 @@ if daal_check_version((2024, "P", 1)):
                 "fit",
                 {
                     "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_LogisticRegression.fit,
+                    "sklearn": _sklearn_LogisticRegression.fit,
                 },
                 X,
                 y,
@@ -130,7 +135,7 @@ if daal_check_version((2024, "P", 1)):
                 "predict",
                 {
                     "onedal": self.__class__._onedal_predict,
-                    "sklearn": sklearn_LogisticRegression.predict,
+                    "sklearn": _sklearn_LogisticRegression.predict,
                 },
                 X,
             )
@@ -142,7 +147,7 @@ if daal_check_version((2024, "P", 1)):
                 "predict_proba",
                 {
                     "onedal": self.__class__._onedal_predict_proba,
-                    "sklearn": sklearn_LogisticRegression.predict_proba,
+                    "sklearn": _sklearn_LogisticRegression.predict_proba,
                 },
                 X,
             )
@@ -154,7 +159,7 @@ if daal_check_version((2024, "P", 1)):
                 "predict_log_proba",
                 {
                     "onedal": self.__class__._onedal_predict_log_proba,
-                    "sklearn": sklearn_LogisticRegression.predict_log_proba,
+                    "sklearn": _sklearn_LogisticRegression.predict_log_proba,
                 },
                 X,
             )
@@ -166,7 +171,7 @@ if daal_check_version((2024, "P", 1)):
                 "score",
                 {
                     "onedal": self.__class__._onedal_score,
-                    "sklearn": sklearn_LogisticRegression.score,
+                    "sklearn": _sklearn_LogisticRegression.score,
                 },
                 X,
                 y,
@@ -287,7 +292,8 @@ if daal_check_version((2024, "P", 1)):
             assert sample_weight is None
 
             if sklearn_check_version("1.0"):
-                X, y = self._validate_data(
+                X, y = validate_data(
+                    self,
                     X,
                     y,
                     accept_sparse=_sparsity_enabled,
@@ -322,7 +328,8 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     reset=False,
                     accept_sparse=_sparsity_enabled,
@@ -346,7 +353,8 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     reset=False,
                     accept_sparse=_sparsity_enabled,
@@ -370,7 +378,8 @@ if daal_check_version((2024, "P", 1)):
 
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     reset=False,
                     accept_sparse=_sparsity_enabled,
@@ -388,14 +397,14 @@ if daal_check_version((2024, "P", 1)):
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
 
-        fit.__doc__ = sklearn_LogisticRegression.fit.__doc__
-        predict.__doc__ = sklearn_LogisticRegression.predict.__doc__
-        predict_proba.__doc__ = sklearn_LogisticRegression.predict_proba.__doc__
-        predict_log_proba.__doc__ = sklearn_LogisticRegression.predict_log_proba.__doc__
-        score.__doc__ = sklearn_LogisticRegression.score.__doc__
+        fit.__doc__ = _sklearn_LogisticRegression.fit.__doc__
+        predict.__doc__ = _sklearn_LogisticRegression.predict.__doc__
+        predict_proba.__doc__ = _sklearn_LogisticRegression.predict_proba.__doc__
+        predict_log_proba.__doc__ = _sklearn_LogisticRegression.predict_log_proba.__doc__
+        score.__doc__ = _sklearn_LogisticRegression.score.__doc__
 
 else:
-    LogisticRegression = LogisticRegression_daal4py
+    LogisticRegression = _daal4py_LogisticRegression
 
     logging.warning(
         "Sklearnex LogisticRegression requires oneDAL version >= 2024.0.1 "

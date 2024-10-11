@@ -32,6 +32,12 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
 
 import numbers
+import warnings
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
 
 
 @control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
@@ -140,20 +146,22 @@ class IncrementalBasicStatistics(BaseEstimator):
         self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
-    def _onedal_partial_fit(self, X, sample_weight=None, queue=None):
+    def _onedal_partial_fit(self, X, sample_weight=None, queue=None, check_input=True):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
-        if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-            )
+        if check_input:
+            if sklearn_check_version("1.0"):
+                X = validate_data(
+                    self,
+                    X,
+                    dtype=[np.float64, np.float32],
+                    reset=first_pass,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                )
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
@@ -175,8 +183,11 @@ class IncrementalBasicStatistics(BaseEstimator):
         self._need_to_finalize = True
 
     def _onedal_fit(self, X, sample_weight=None, queue=None):
+        if sklearn_check_version("1.2"):
+            self._validate_params()
+
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32])
+            X = validate_data(self, X, dtype=[np.float64, np.float32])
         else:
             X = check_array(X, dtype=[np.float64, np.float32])
 
@@ -196,10 +207,9 @@ class IncrementalBasicStatistics(BaseEstimator):
         for batch in gen_batches(X.shape[0], self.batch_size_):
             X_batch = X[batch]
             weights_batch = sample_weight[batch] if sample_weight is not None else None
-            self._onedal_partial_fit(X_batch, weights_batch, queue=queue)
-
-        if sklearn_check_version("1.2"):
-            self._validate_params()
+            self._onedal_partial_fit(
+                X_batch, weights_batch, queue=queue, check_input=False
+            )
 
         self.n_features_in_ = X.shape[1]
 
@@ -209,13 +219,18 @@ class IncrementalBasicStatistics(BaseEstimator):
 
     def __getattr__(self, attr):
         result_options = self.__dict__["result_options"]
+        sattr = attr.removesuffix("_")
         is_statistic_attr = (
-            isinstance(result_options, str) and (attr == result_options)
-        ) or (isinstance(result_options, list) and (attr in result_options))
+            isinstance(result_options, str) and (sattr == result_options)
+        ) or (isinstance(result_options, list) and (sattr in result_options))
         if is_statistic_attr:
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
-            return getattr(self._onedal_estimator, attr)
+            if sattr == attr:
+                warnings.warn(
+                    "Result attributes without a trailing underscore were deprecated in version 2025.1 and will be removed in 2026.0"
+                )
+            return getattr(self._onedal_estimator, sattr)
         if attr in self.__dict__:
             return self.__dict__[attr]
 
@@ -223,7 +238,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
 
-    def partial_fit(self, X, sample_weight=None):
+    def partial_fit(self, X, sample_weight=None, check_input=True):
         """Incremental fit with X. All of X is processed as a single batch.
 
         Parameters
@@ -237,6 +252,9 @@ class IncrementalBasicStatistics(BaseEstimator):
 
         sample_weight : array-like of shape (n_samples,), default=None
             Weights for compute weighted statistics, where `n_samples` is the number of samples.
+
+        check_input : bool, default=True
+            Run check_array on X.
 
         Returns
         -------
@@ -252,11 +270,12 @@ class IncrementalBasicStatistics(BaseEstimator):
             },
             X,
             sample_weight,
+            check_input=check_input,
         )
         return self
 
     def fit(self, X, y=None, sample_weight=None):
-        """Compute statistics with X, using minibatches of size batch_size.
+        """Calculate statistics of X using minibatches of size batch_size.
 
         Parameters
         ----------

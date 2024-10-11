@@ -25,14 +25,14 @@ if daal_check_version((2024, "P", 100)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.utils.validation import check_is_fitted
+    from sklearn.utils.validation import check_array, check_is_fitted
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn._utils import sklearn_check_version
 
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain
-    from ..utils import get_namespace
+    from ..utils._array_api import get_namespace
 
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
@@ -40,16 +40,21 @@ if daal_check_version((2024, "P", 100)):
     if sklearn_check_version("1.2"):
         from sklearn.utils._param_validation import StrOptions
 
-    from sklearn.decomposition import PCA as sklearn_PCA
+    from sklearn.decomposition import PCA as _sklearn_PCA
 
     from onedal.decomposition import PCA as onedal_PCA
 
+    if sklearn_check_version("1.6"):
+        from sklearn.utils.validation import validate_data
+    else:
+        validate_data = _sklearn_PCA._validate_data
+
     @control_n_jobs(decorated_methods=["fit", "transform", "fit_transform"])
-    class PCA(sklearn_PCA):
-        __doc__ = sklearn_PCA.__doc__
+    class PCA(_sklearn_PCA):
+        __doc__ = _sklearn_PCA.__doc__
 
         if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {**sklearn_PCA._parameter_constraints}
+            _parameter_constraints: dict = {**_sklearn_PCA._parameter_constraints}
             # "onedal_svd" solver uses oneDAL's PCA-SVD algorithm
             # and required for testing purposes to fully enable it in future.
             # "covariance_eigh" solver is added for ability to explicitly request
@@ -127,13 +132,14 @@ if daal_check_version((2024, "P", 100)):
                 "fit",
                 {
                     "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_PCA._fit,
+                    "sklearn": _sklearn_PCA._fit,
                 },
                 X,
             )
 
         def _onedal_fit(self, X, queue=None):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X,
                 dtype=[np.float64, np.float32],
                 ensure_2d=True,
@@ -169,7 +175,7 @@ if daal_check_version((2024, "P", 100)):
                 "transform",
                 {
                     "onedal": self.__class__._onedal_transform,
-                    "sklearn": sklearn_PCA.transform,
+                    "sklearn": _sklearn_PCA.transform,
                 },
                 X,
             )
@@ -177,12 +183,17 @@ if daal_check_version((2024, "P", 100)):
         def _onedal_transform(self, X, queue=None):
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
-                self._check_feature_names(X, reset=False)
-            X = self._validate_data(
-                X,
-                dtype=[np.float64, np.float32],
-                reset=False,
-            )
+                X = validate_data(
+                    self,
+                    X,
+                    dtype=[np.float64, np.float32],
+                    reset=False,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                )
             self._validate_n_features_in_after_fitting(X)
 
             return self._onedal_estimator.predict(X, queue=queue)
@@ -401,10 +412,10 @@ if daal_check_version((2024, "P", 100)):
                     )
                 )
 
-        fit.__doc__ = sklearn_PCA.fit.__doc__
-        transform.__doc__ = sklearn_PCA.transform.__doc__
-        fit_transform.__doc__ = sklearn_PCA.fit_transform.__doc__
-        inverse_transform.__doc__ = sklearn_PCA.inverse_transform.__doc__
+        fit.__doc__ = _sklearn_PCA.fit.__doc__
+        transform.__doc__ = _sklearn_PCA.transform.__doc__
+        fit_transform.__doc__ = _sklearn_PCA.fit_transform.__doc__
+        inverse_transform.__doc__ = _sklearn_PCA.inverse_transform.__doc__
 
 else:
     from daal4py.sklearn.decomposition import PCA
