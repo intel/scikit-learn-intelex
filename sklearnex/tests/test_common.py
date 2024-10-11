@@ -153,9 +153,12 @@ def test_class_trailing_underscore_ban(monkeypatch):
     estimators = all_estimators()  # list of tuples
     for name, obj in estimators:
         if "preview" not in obj.__module__ and "daal4py" not in obj.__module__:
+            # propeties also occur in sklearn, especially in deprecations and are expected
+            # to error if queried and the estimator is not fitted
             assert all(
                 [
-                    hasattr(obj, i) and (i.startswith("_") or not i.endswith("_"))
+                    not isinstance(getattr(obj, i), property)
+                    and (i.startswith("_") or not i.endswith("_"))
                     for i in dir(obj)
                 ]
             ), f"{name} contains class attributes which have a trailing underscore but no leading one"
