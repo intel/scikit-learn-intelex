@@ -35,6 +35,7 @@ from sklearn.neighbors._base import KNeighborsMixin
 
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex import get_patch_map, patch_sklearn, sklearn_is_patched, unpatch_sklearn
+from sklearnex.basic_statistics import BasicStatistics, IncrementalBasicStatistics
 from sklearnex.linear_model import LogisticRegression
 from sklearnex.neighbors import (
     KNeighborsClassifier,
@@ -131,6 +132,8 @@ SPECIAL_INSTANCES = sklearn_clone_dict(
             KNeighborsRegressor(algorithm="brute"),
             NearestNeighbors(algorithm="brute"),
             LogisticRegression(solver="newton-cg"),
+            BasicStatistics(),
+            IncrementalBasicStatistics(),
         ]
     }
 )
