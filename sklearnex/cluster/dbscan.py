@@ -18,7 +18,7 @@ import numbers
 from abc import ABC
 
 from scipy import sparse as sp
-from sklearn.cluster import DBSCAN as sklearn_DBSCAN
+from sklearn.cluster import DBSCAN as _sklearn_DBSCAN
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -35,7 +35,7 @@ if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = sklearn_DBSCAN._validate_data
+    validate_data = _sklearn_DBSCAN._validate_data
 
 
 class BaseDBSCAN(ABC):
@@ -52,11 +52,11 @@ class BaseDBSCAN(ABC):
 
 
 @control_n_jobs(decorated_methods=["fit"])
-class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
-    __doc__ = sklearn_DBSCAN.__doc__
+class DBSCAN(_sklearn_DBSCAN, BaseDBSCAN):
+    __doc__ = _sklearn_DBSCAN.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**sklearn_DBSCAN._parameter_constraints}
+        _parameter_constraints: dict = {**_sklearn_DBSCAN._parameter_constraints}
 
     def __init__(
         self,
@@ -191,7 +191,7 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_DBSCAN.fit,
+                "sklearn": _sklearn_DBSCAN.fit,
             },
             X,
             y,
@@ -206,4 +206,4 @@ class DBSCAN(sklearn_DBSCAN, BaseDBSCAN):
     def _more_tags(self):
         return {"array_api_support": True}
 
-    fit.__doc__ = sklearn_DBSCAN.fit.__doc__
+    fit.__doc__ = _sklearn_DBSCAN.fit.__doc__

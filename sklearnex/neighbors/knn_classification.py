@@ -16,9 +16,9 @@
 
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors._classification import (
-    KNeighborsClassifier as sklearn_KNeighborsClassifier,
+    KNeighborsClassifier as _sklearn_KNeighborsClassifier,
 )
-from sklearn.neighbors._unsupervised import NearestNeighbors as sklearn_NearestNeighbors
+from sklearn.neighbors._unsupervised import NearestNeighbors as _sklearn_NearestNeighbors
 from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -31,17 +31,17 @@ from .common import KNeighborsDispatchingBase
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = sklearn_KNeighborsClassifier._validate_data
+    validate_data = _sklearn_KNeighborsClassifier._validate_data
 
 
 @control_n_jobs(
     decorated_methods=["fit", "predict", "predict_proba", "kneighbors", "score"]
 )
-class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifier):
-    __doc__ = sklearn_KNeighborsClassifier.__doc__
+class KNeighborsClassifier(KNeighborsDispatchingBase, _sklearn_KNeighborsClassifier):
+    __doc__ = _sklearn_KNeighborsClassifier.__doc__
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
-            **sklearn_KNeighborsClassifier._parameter_constraints
+            **_sklearn_KNeighborsClassifier._parameter_constraints
         }
 
     if sklearn_check_version("1.0"):
@@ -103,7 +103,7 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifi
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_KNeighborsClassifier.fit,
+                "sklearn": _sklearn_KNeighborsClassifier.fit,
             },
             X,
             y,
@@ -120,7 +120,7 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifi
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_KNeighborsClassifier.predict,
+                "sklearn": _sklearn_KNeighborsClassifier.predict,
             },
             X,
         )
@@ -135,7 +135,7 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifi
             "predict_proba",
             {
                 "onedal": self.__class__._onedal_predict_proba,
-                "sklearn": sklearn_KNeighborsClassifier.predict_proba,
+                "sklearn": _sklearn_KNeighborsClassifier.predict_proba,
             },
             X,
         )
@@ -150,7 +150,7 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifi
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_KNeighborsClassifier.score,
+                "sklearn": _sklearn_KNeighborsClassifier.score,
             },
             X,
             y,
@@ -167,7 +167,7 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifi
             "kneighbors",
             {
                 "onedal": self.__class__._onedal_kneighbors,
-                "sklearn": sklearn_KNeighborsClassifier.kneighbors,
+                "sklearn": _sklearn_KNeighborsClassifier.kneighbors,
             },
             X,
             n_neighbors=n_neighbors,
@@ -224,8 +224,8 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, sklearn_KNeighborsClassifi
         self.outputs_2d_ = self._onedal_estimator.outputs_2d_
         self._tree = self._onedal_estimator._tree
 
-    fit.__doc__ = sklearn_KNeighborsClassifier.fit.__doc__
-    predict.__doc__ = sklearn_KNeighborsClassifier.predict.__doc__
-    predict_proba.__doc__ = sklearn_KNeighborsClassifier.predict_proba.__doc__
-    score.__doc__ = sklearn_KNeighborsClassifier.score.__doc__
-    kneighbors.__doc__ = sklearn_KNeighborsClassifier.kneighbors.__doc__
+    fit.__doc__ = _sklearn_KNeighborsClassifier.fit.__doc__
+    predict.__doc__ = _sklearn_KNeighborsClassifier.predict.__doc__
+    predict_proba.__doc__ = _sklearn_KNeighborsClassifier.predict_proba.__doc__
+    score.__doc__ = _sklearn_KNeighborsClassifier.score.__doc__
+    kneighbors.__doc__ = _sklearn_KNeighborsClassifier.kneighbors.__doc__
