@@ -16,16 +16,18 @@
 
 import importlib.util
 import os
+import pathlib
+import pkgutil
 import re
 import sys
 import trace
-from collections import namedtuple
 from glob import glob
 
 import numpy as np
 import pytest
 import scipy
 import sklearn.utils.validation
+from sklearn.utils import all_estimators
 
 from daal4py.sklearn._utils import sklearn_check_version
 from sklearnex.tests.utils import (
@@ -124,6 +126,46 @@ def test_target_offload_ban():
 
     output = "\n".join(output)
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
+
+
+def _sklearnex_walk(func):
+    """this replaces checks on pkgutils to look through sklearnex
+    folders specifically"""
+
+    def wrap(*args, **kwargs):
+        if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
+            kwargs["prefix"] = "sklearnex."
+        if "path" in kwargs:
+            # force root to sklearnex
+            kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
+        for pkginfo in func(*args, **kwargs):
+            # Do not allow spmd to be yielded
+            if "spmd" not in pkginfo.name.split("."):
+                yield pkginfo
+
+    return wrap
+
+
+def test_all_estimators_covered(monkeypatch):
+    """Check that all estimators defined in sklearnex are available in either the
+    patch map or covered in special testing via SPECIAL_INSTANCES. The estimator
+    must inherit sklearn's BaseEstimator and must not have a leading underscore.
+    The sklearnex.spmd and sklearnex.preview packages are not tested.
+    """
+    monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
+    estimators = all_estimators()  # list of tuples
+    uncovered_estimators = []
+    for name, obj in estimators:
+        # do nothing if defined in preview
+        if "preview" not in obj.__module__ and not (
+            any([issubclass(est, obj) for est in PATCHED_MODELS.values()])
+            or any([issubclass(est.__class__, obj) for est in SPECIAL_INSTANCES.values()])
+        ):
+            uncovered_estimators += [".".join([obj.__module__, name])]
+
+    assert (
+        uncovered_estimators == []
+    ), f"{uncovered_estimators} are currently not included"
 
 
 def _fullpath(path):
