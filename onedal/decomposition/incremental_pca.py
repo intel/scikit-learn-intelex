@@ -22,7 +22,8 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
 from .pca import BasePCA
 
-
+# TODO:
+# update for BasePCA.
 class IncrementalPCA(BasePCA):
     """
     Incremental estimator for PCA based on oneDAL implementation.
