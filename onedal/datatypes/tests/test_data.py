@@ -61,7 +61,6 @@ if _is_dpc_backend:
     from daal4py.sklearn._utils import get_dtype
     from onedal.cluster.dbscan import BaseDBSCAN
     from onedal.common._policy import _get_policy
-    from onedal.datatypes._data_conversion import from_table, to_table
 
     class DummyEstimatorWithTableConversions:
 
@@ -69,9 +68,9 @@ if _is_dpc_backend:
             sua_iface, xp, _ = _get_sycl_namespace(X)
             policy = _get_policy(X.sycl_queue, None)
             bs_DBSCAN = BaseDBSCAN()
-            types = [np.float32, np.float64]
+            types = [xp.float32, xp.float64]
             if get_dtype(X) not in types:
-                X = X.astype(np.float64)
+                X = xp.astype(X, dtype=xp.float64)
             dtype = get_dtype(X)
             params = bs_DBSCAN._get_onedal_params(dtype)
             X_table = to_table(X, sua_iface=sua_iface)
