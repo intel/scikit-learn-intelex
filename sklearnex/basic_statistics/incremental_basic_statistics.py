@@ -146,21 +146,22 @@ class IncrementalBasicStatistics(BaseEstimator):
         self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
-    def _onedal_partial_fit(self, X, sample_weight=None, queue=None):
+    def _onedal_partial_fit(self, X, sample_weight=None, queue=None, check_input=True):
         first_pass = not hasattr(self, "n_samples_seen_") or self.n_samples_seen_ == 0
 
-        if sklearn_check_version("1.0"):
-            X = validate_data(
-                self,
-                X,
-                dtype=[np.float64, np.float32],
-                reset=first_pass,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-            )
+        if check_input:
+            if sklearn_check_version("1.0"):
+                X = validate_data(
+                    self,
+                    X,
+                    dtype=[np.float64, np.float32],
+                    reset=first_pass,
+                )
+            else:
+                X = check_array(
+                    X,
+                    dtype=[np.float64, np.float32],
+                )
 
         if sample_weight is not None:
             sample_weight = _check_sample_weight(sample_weight, X)
@@ -206,7 +207,9 @@ class IncrementalBasicStatistics(BaseEstimator):
         for batch in gen_batches(X.shape[0], self.batch_size_):
             X_batch = X[batch]
             weights_batch = sample_weight[batch] if sample_weight is not None else None
-            self._onedal_partial_fit(X_batch, weights_batch, queue=queue)
+            self._onedal_partial_fit(
+                X_batch, weights_batch, queue=queue, check_input=False
+            )
 
         self.n_features_in_ = X.shape[1]
 
@@ -235,7 +238,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             f"'{self.__class__.__name__}' object has no attribute '{attr}'"
         )
 
-    def partial_fit(self, X, sample_weight=None):
+    def partial_fit(self, X, sample_weight=None, check_input=True):
         """Incremental fit with X. All of X is processed as a single batch.
 
         Parameters
@@ -249,6 +252,9 @@ class IncrementalBasicStatistics(BaseEstimator):
 
         sample_weight : array-like of shape (n_samples,), default=None
             Weights for compute weighted statistics, where `n_samples` is the number of samples.
+
+        check_input : bool, default=True
+            Run check_array on X.
 
         Returns
         -------
@@ -264,6 +270,7 @@ class IncrementalBasicStatistics(BaseEstimator):
             },
             X,
             sample_weight,
+            check_input=check_input,
         )
         return self
 
