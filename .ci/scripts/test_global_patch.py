@@ -25,7 +25,8 @@ import pytest
 # which didn't have it as part of the built-in 'os' module.
 EX_OK = os.EX_OK if hasattr(os, "EX_OK") else 0
 
-# Note: from the structure of this file, one might thing of adding a test
+# Note: from the structure of this file, one might think of adding a test
+
 # along the lines of 'test_patching_all_from_command_line'. There is however
 # an issue in that, after the first time a scikit-learn module is imported,
 # further calls to 'patch_sklearn' with different arguments will have no effect
