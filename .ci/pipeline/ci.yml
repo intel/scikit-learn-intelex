@@ -62,12 +62,12 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.12_Numpy2.1:
+      Python3.12_Numpy1.26:
         PYTHON_VERSION: '3.12'
-        NUMPY_VERSION: '2.1'
-      Python3.9_Numpy1.24:
+        NUMPY_VERSION: '1.26'
+      Python3.9_Numpy1.22:
         PYTHON_VERSION: '3.9'
-        NUMPY_VERSION: '1.24'
+        NUMPY_VERSION: '1.22'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
@@ -93,12 +93,12 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.12_Numpy2.1:
+      Python3.12_Numpy1.26:
         PYTHON_VERSION: '3.12'
-        NUMPY_VERSION: '2.1'
-      Python3.9_Numpy1.24:
+        NUMPY_VERSION: '1.26'
+      Python3.9_Numpy1.22:
         PYTHON_VERSION: '3.9'
-        NUMPY_VERSION: '1.24'
+        NUMPY_VERSION: '1.22'
   pool:
     vmImage: 'windows-2022'
   steps:
