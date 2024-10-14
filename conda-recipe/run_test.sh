@@ -37,33 +37,38 @@ return_code=0
 python -c "import daal4py"
 return_code=$(($return_code + $?))
 
+mkdir -p .pytest_reports
+if [[ ! -z "$(ls .pytest_reports)" ]]; then
+    rm .pytest_reports/*.json
+fi
+
 echo "Pytest run of legacy unittest ..."
 echo ${daal4py_dir}
-pytest --verbose -s ${daal4py_dir}/tests
+pytest --verbose -s ${daal4py_dir}/tests --json-report --json-report-file=.pytest_reports/legacy_report.json
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI pytest run of legacy unittest ..."
     mpirun --version
-    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py
+    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py --json-report --json-report-file=.pytest_reports/mpi_legacy_report.json
     return_code=$(($return_code + $?))
 fi
 
 echo "Pytest of daal4py running ..."
-pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn
+pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn --json-report --json-report-file=.pytest_reports/daal4py_report.json
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
-pytest --verbose --pyargs sklearnex
+pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports/sklearnex_report.json
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs ${daal4py_dir}/onedal
+pytest --verbose --pyargs ${daal4py_dir}/onedal --json-report --json-report-file=.pytest_reports/onedal_report.json
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
-pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py
+pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py --json-report --json-report-file=.pytest_reports/global_patching_report.json
 return_code=$(($return_code + $?))
 
 exit $return_code

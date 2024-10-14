@@ -39,10 +39,13 @@ IF DEFINED TBBROOT (
     call "%TBBROOT%\env\vars.bat" || set exitcode=1
 )
 
-%PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
+mkdir .pytest_reports
+del /q .pytest_reports\*.json
 
-pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
-pytest --verbose --pyargs sklearnex || set exitcode=1
-pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set exitcode=1
-pytest --verbose %1\.ci\scripts\test_global_patch.py || set exitcode=1
+%PYTHON% -m pytest --verbose -s %1\tests --json-report --json-report-file=.pytest_reports\legacy_report.json || set exitcode=1
+
+pytest --verbose --pyargs %1\daal4py\sklearn --json-report --json-report-file=.pytest_reports\daal4py_report.json || set exitcode=1
+pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
+pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" --json-report --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
+pytest --verbose %1\.ci\scripts\test_global_patch.py --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
 EXIT /B %exitcode%
