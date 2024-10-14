@@ -118,6 +118,8 @@ jobs:
           source .github/scripts/activate_components.sh
           cd .ci
           ../conda-recipe/run_test.sh
+          ls -lha
+          ls -lha ..
       - name: Sklearn testing
         run: |
           source venv/bin/activate
@@ -131,7 +133,7 @@ jobs:
           bash .ci/scripts/run_sklearn_tests.sh
       - name: Compress coverage data
         run: |
-          tar -cvzf coverage.tar.gz .coverage.*
+          tar -cvzf coverage.tar.gz .ci\coverage*
       - name: Archive coverage data
         uses: actions/upload-artifact@v4
         with:
