@@ -57,7 +57,7 @@ options_and_tests_csr = [
 def test_single_option_on_random_data(
     queue, result_option, row_count, column_count, weighted, dtype
 ):
-    function, tols = option_and_tests[result_option]
+    function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
