@@ -23,11 +23,9 @@ BasicStatistics
 ---------------
 .. autoclass:: sklearnex.basic_statistics.BasicStatistics
 
-
 IncrementalEmpiricalCovariance
 ------------------------------
 .. autoclass:: sklearnex.covariance.IncrementalEmpiricalCovariance
-
 
 IncrementalBasicStatistics
 --------------------------
