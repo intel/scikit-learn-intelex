@@ -71,14 +71,18 @@ requirements:
 
 test:
   requires:
-    - pandas
+    - pyyaml
+    - impi_rt  # [not win]
+    # next deps are synced with requirements-test.txt
+    - pytest
     - scikit-learn
+    - pandas
     - xgboost
     - lightgbm
     - catboost
-    - pytest
-    - pyyaml
-    - impi_rt  # [not win]
+    - shap
+    - array-api-compat
+    - array-api-strict
   source_files:
     - .ci
     - examples
