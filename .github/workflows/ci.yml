@@ -129,6 +129,11 @@ jobs:
           source .github/scripts/activate_components.sh
           export SKLEARNEX_PREVIEW='YES'
           bash .ci/scripts/run_sklearn_tests.sh
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}_coverage.json
+          path: .\cov.json
 
   sklearn_win:
     strategy:
