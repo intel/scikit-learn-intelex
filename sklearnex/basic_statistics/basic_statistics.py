@@ -42,6 +42,9 @@ class BasicStatistics(BaseEstimator):
     """
     Estimator for basic statistics.
     Allows to compute basic statistics for provided data.
+    Note, some results can exhibit small variations due to
+    floating point error accumulation and multithreading.
+
     Parameters
     ----------
     result_options: string or list, default='all'
