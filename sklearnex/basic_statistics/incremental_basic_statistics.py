@@ -125,7 +125,6 @@ class IncrementalBasicStatistics(BaseEstimator):
     np.array([4., 6.])
     >>> incbs.max_
     np.array([3., 4.])
-
     """
 
     _onedal_incremental_basic_statistics = staticmethod(onedal_IncrementalBasicStatistics)

@@ -119,7 +119,6 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     np.array([0.5., 0.5.])
     >>> inclr.intercept_
     np.array(0.)
-
     """
 
     _onedal_incremental_linear = staticmethod(onedal_IncrementalLinearRegression)
