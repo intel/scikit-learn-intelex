@@ -33,7 +33,12 @@ fi
 
 COV_ARGS=(--no-cov)
 if [[ "$COVERAGE" == "true" ]]; then
-COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config="$daal4py_dir/.coveragerc" --cov-append --cov-report=)
+    COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config="$daal4py_dir/.coveragerc" --cov-append --cov-report=)
+    # if a sycl gpu isn't available, uncomment gpu skips in .coveragerc
+    if !(command -v sycl-ls 2>&1 >/dev/null) || !(sycl-ls | grep -q "gpu"); then
+        echo "no SYCL GPU is available, sklearnex GPU test coverage metrics will be excluded"
+        sed -i -i 's/#//g' $daal4py_dir/.coveragerc
+    fi
 fi
 
 echo "Start testing ..."
