@@ -64,11 +64,11 @@ pytest --verbose --pyargs sklearnex "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs onedal 
+pytest --verbose --pyargs onedal "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
-pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py
+pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 exit $return_code
