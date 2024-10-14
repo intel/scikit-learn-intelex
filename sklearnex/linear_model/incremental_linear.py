@@ -88,9 +88,6 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         Independent term in the linear model. Set to 0.0 if
         `fit_intercept = False`.
 
-    n_features_in_ : int
-        Number of features seen during :term:`fit`.
-
     n_samples_seen_ : int
         The number of samples processed by the estimator. Will be reset on
         new calls to ``fit``, but increments across ``partial_fit`` calls.
