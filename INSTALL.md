@@ -30,6 +30,9 @@ To install Intel(R) Extension for Scikit-learn*, use one of the following scenar
   - [Prerequisites](#prerequisites)
   - [Configure the Build with Environment Variables](#configure-the-build-with-environment-variables)
   - [Build Intel(R) Extension for Scikit-learn](#build-intelr-extension-for-scikit-learn)
+- [Build from Sources with `conda-build`](#build-from-sources-with-conda-build)
+  - [Prerequisites for `conda-build`](#prerequisites-for-conda-build)
+  - [Build Intel(R) Extension for Scikit-learn with `conda-build`](#build-intelr-extension-for-scikit-learn-with-conda-build)
 - [Next Steps](#next-steps)
 
 > **_NOTE:_** Intel(R) Extension for Scikit-learn* is also available as a part of [Intel® AI Tools](https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html). If you already have it installed, you do not need to separately install the extension.
@@ -211,6 +214,27 @@ Where:
 back to the project source-code directory. That way, you can edit the source code and see the changes
 without reinstalling the package after a small change.
 * `--single-version-externally-managed` is an option for Python packages instructing the setup tools module to create a package the host's package manager can easily manage.
+
+## Build from Sources with `conda-build`
+
+Intel(R) Extension for Scikit-learn* is easily built from the sources using only one command and `conda-build` utility. 
+
+### Prerequisites for `conda-build`
+
+* any `conda` distribution (`miniforge` is recommended)
+* `conda-build` and `conda-verify` installed in a conda environment
+* (Windows only) Microsoft Visual Studio* 2022
+* (optional) Intel(R) oneAPI DPC++/C++ Compiler
+
+In order to enable DPC++ interfaces support, you need to set `DPCPPROOT` environment variable pointing to DPC++/C++ Compiler distribution.
+
+### Build Intel(R) Extension for Scikit-learn with `conda-build`
+
+Create and verify `scikit-learn-intelex` conda package with next command executed from root of sklearnex repo:
+
+```bash
+conda build .
+```
 
 ## Next Steps
 

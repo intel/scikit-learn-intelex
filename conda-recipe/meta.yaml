@@ -14,96 +14,101 @@
 # limitations under the License.
 #===============================================================================
 
-{% set version = '2024.1' %}
+# NB: this recipe should be synced between sklearnex repo and feedstocks
+
+{% set name = "scikit-learn-intelex" %}
+{% set version = "2025.1" %}
 {% set buildnumber = 0 %}
 
 package:
-    name: daal4py
-    version: {{ version }}
+  name: {{ name|lower }}
+  version: {{ version }}
 
+# Reminder: source should point to path for repo or github archive for feedstock
+# source:
+#   url: https://github.com/intel/scikit-learn-intelex/archive/{{ version }}.tar.gz
+#   sha256: ...
 source:
-    path: ..
+  path: ..
 
 build:
-    number: {{ buildnumber }}
-    include_recipe: False
-    script_env:
-    - DPCPPROOT
-    - DALROOT
-    ignore_run_exports:
-       - python
-       - mpich
+  skip: true  # [not (linux64 or win)]
+  number: {{ buildnumber }}
+  include_recipe: False
+  script_env:
+  - DPCPPROOT
+  - DALROOT
+  - NO_DIST=1  # [win]
 
 requirements:
-    build:
-        - {{ compiler('cxx') }}  # [not osx]
-        - {{ compiler('c') }}  # [not osx]
-    host:
-        - python
-        - setuptools
-        - numpy {{ numpy }}
-        - dal-devel ==2024.1.0
-        - cython
-        - jinja2
-        - mpich  # [osx]
-        - impi-devel  # [not osx]
-        - clang-tools
-        - pybind11
-        - make
-    run:
-        - python
-        - dpcpp_cpp_rt ==2024.1.0  # [linux]
-        - dpcpp_cpp_rt ==2024.1.0  # [win or osx]
-        - dal ==2024.1.0
-    ignore_run_exports:
-        - numpy
+  build:
+    - make  # [linux]
+    - dpcpp_linux-64  # [linux64]
+    # - dpcpp_win-64  # [win]
+    - {{ compiler('cxx') }}  # [linux64 or win]
+    - {{ compiler('c') }}  # [linux64 or win]
+    # conda-forge feedstock specific
+    # - {{ stdlib("c") }}  # [linux64 or win]
+  host:
+    - python
+    - setuptools
+    - cmake
+    - clang-format
+    - cython
+    - jinja2
+    - pybind11
+    - numpy {{ numpy }}
+    - impi-devel  # [not win]
+    # dal-devel pinning depends on the recipe location (repo or feedstock)
+    - dal-devel
+    # - dal-devel =={{ version }}
+  run:
+    - python
+    - {{ pin_compatible('numpy') }}
+    - dpcpp-cpp-rt  # [linux64]
+    # dal pinning depends on the recipe location (repo or feedstock)
+    - dal
+    # - dal =={{ version }}
 
 test:
-    requires:
-        - lightgbm  # [not win]
-        - pandas
-        - scipy
-        - scikit-learn
-        - threadpoolctl
-        - xgboost  # [not win]
-        - catboost
-        - pytest
-        - mpich  # [osx]
-        - impi_rt  # [not osx]
-    source_files:
-        - examples
-        - tests
-        - daal4py/sklearn
-    commands:
-        - python -c "import daal4py"
-        - mpirun -n 4 pytest --verbose -s tests/test*spmd*.py # [not win]
-        - mpiexec -localonly -n 4 pytest --verbose -s tests/test*spmd*.py # [win]
-        - pytest --pyargs --verbose -s tests
-        - pytest --pyargs daal4py/sklearn/
-        - python tests/run_examples.py
+  requires:
+    - pandas
+    - scikit-learn
+    - xgboost
+    - lightgbm
+    - catboost
+    - pytest
+    - pyyaml
+    - impi_rt  # [not win]
+  source_files:
+    - .ci
+    - examples
+    - tests
+    - daal4py/sklearn
 
 about:
-    about:
-        home: https://intelpython.github.io/daal4py/
-        license: Apache-2.0
-        license_file:
-              - LICENSE
-              - doc/third-party-programs.txt
-        summary: A convenient Python API to Intel (R) oneAPI Data Analytics Library
-        description: |
-          <strong>LEGAL NOTICE: Use of this software package is subject to the
-          software license agreement (as set forth above, in the license section of
-          the installed Conda package and/or the README file) and all notices,
-          disclaimers or license terms for third party or open source software
-          included in or with the software.</strong>
-          <br/><br/>
-          EULA: <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">Apache-2.0</a>
-          <br/><br/>
-        dev_url: https://github.com/IntelPython/daal4py
-        doc_url: https://intelpython.github.io/daal4py
+  home: https://intel.github.io/scikit-learn-intelex
+  license: Apache-2.0
+  license_file:
+    - LICENSE
+    - doc/third-party-programs-sklearnex.txt
+  summary: Intel(R) Extension for Scikit-learn* is a seamless way to speed up your Scikit-learn application.
+  description: |
+    <strong>LEGAL NOTICE: Use of this software package is subject to the
+    software license agreement (as set forth above, in the license section of
+    the installed Conda package and/or the README file) and all notices,
+    disclaimers or license terms for third party or open source software
+    included in or with the software.</strong>
+    <br/><br/>
+    EULA: <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">Apache-2.0</a>
+    <br/><br/>
+  dev_url: https://github.com/intel/scikit-learn-intelex
+  doc_url: https://intel.github.io/scikit-learn-intelex
 
 extra:
-    recipe-maintainers:
-        # GitHub IDs for maintainers of the recipe.
-        - napetrov
-        - Alexsandruss
+  recipe-maintainers:
+    # GitHub IDs for maintainers of the recipe.
+    - napetrov
+    - Alexsandruss
+    - maria-Petrova
+    - ethanglaser

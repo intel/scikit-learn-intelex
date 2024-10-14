@@ -64,7 +64,7 @@ def custom_build_cmake_clib(
 
     if iface in ["dpc", "spmd_dpc"]:
         if IS_WIN:
-            cxx = "icx"
+            cxx = "icx-cl"
         else:
             cxx = "icpx"
     elif cxx is None:

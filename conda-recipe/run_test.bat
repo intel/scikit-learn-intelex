@@ -15,34 +15,18 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-rem %1 - scikit-learn-intelex repo root
+rem %1% - scikit-learn-intelex repo root (leave empty if it's PWD)
 
-set MPIROOT=%PREFIX%\Library
 set exitcode=0
 
-IF DEFINED DPCPPROOT (
-    echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat" || set exitcode=1
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
-    dpcpp --version
-)
+IF NOT DEFINED PYTHON (set PYTHON="python")
 
-IF DEFINED DALROOT (
-    echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat" || set exitcode=1
-    echo "Finish sourcing DALROOT"
-)
+%PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
-IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT"
-    call "%TBBROOT%\env\vars.bat" || set exitcode=1
-)
+%PYTHON% -m pytest --verbose -s %1%tests || set exitcode=1
 
-%PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
-
-pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
+pytest --verbose --pyargs daal4py || set exitcode=1
 pytest --verbose --pyargs sklearnex || set exitcode=1
-pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set exitcode=1
-pytest --verbose %1\.ci\scripts\test_global_patch.py || set exitcode=1
+pytest --verbose --pyargs onedal || set exitcode=1
+pytest --verbose %1%.ci\scripts\test_global_patch.py || set exitcode=1
 EXIT /B %exitcode%
