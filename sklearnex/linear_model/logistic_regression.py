@@ -66,7 +66,6 @@ if daal_check_version((2024, "P", 1)):
     )
     class LogisticRegression(_sklearn_LogisticRegression, BaseLogisticRegression):
         __doc__ = _sklearn_LogisticRegression.__doc__
-        intercept_, coef_, n_iter_ = None, None, None
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {

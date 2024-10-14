@@ -146,6 +146,24 @@ def _sklearnex_walk(func):
     return wrap
 
 
+def test_class_trailing_underscore_ban(monkeypatch):
+    """Trailing underscores are defined for sklearn to be signatures of a fitted
+    estimator instance, sklearnex extends this to the classes as well"""
+    monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
+    estimators = all_estimators()  # list of tuples
+    for name, obj in estimators:
+        if "preview" not in obj.__module__ and "daal4py" not in obj.__module__:
+            # propeties also occur in sklearn, especially in deprecations and are expected
+            # to error if queried and the estimator is not fitted
+            assert all(
+                [
+                    isinstance(getattr(obj, attr), property)
+                    or (attr.startswith("_") or not attr.endswith("_"))
+                    for attr in dir(obj)
+                ]
+            ), f"{name} contains class attributes which have a trailing underscore but no leading one"
+
+
 def test_all_estimators_covered(monkeypatch):
     """Check that all estimators defined in sklearnex are available in either the
     patch map or covered in special testing via SPECIAL_INSTANCES. The estimator
