@@ -32,10 +32,10 @@ options_and_tests = {
     "variance": (lambda X: np.var(X, axis=0), (2e-3, 2e-3)),
     "variation": (lambda X: np.std(X, axis=0) / np.mean(X, axis=0), (5e-2, 5e-2)),
     "sum_squares": (lambda X: np.sum(np.square(X), axis=0), (2e-4, 1e-7)),
-    
-        "sum_squares_centered":
-        (lambda X: np.sum(np.square(X - np.mean(X, axis=0)), axis=0),
-        (2e-4, 1e-7)),
+    "sum_squares_centered": (
+        lambda X: np.sum(np.square(X - np.mean(X, axis=0)), axis=0),
+        (2e-4, 1e-7),
+    ),
     "standard_deviation": (lambda X: np.std(X, axis=0), (2e-3, 2e-3)),
     "second_order_raw_moment": (lambda X: np.mean(np.square(X), axis=0), (1e-6, 1e-7)),
 }
@@ -167,7 +167,7 @@ def test_all_option_on_random_data(queue, row_count, column_count, weighted, dty
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_1d_input_on_random_data(queue, result_option, data_size, weighted, dtype):
-    
+
     function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
