@@ -23,13 +23,13 @@ BasicStatistics
 ---------------
 .. autoclass:: sklearnex.basic_statistics.BasicStatistics
 
-IncrementalEmpiricalCovariance
-------------------------------
-.. autoclass:: sklearnex.covariance.IncrementalEmpiricalCovariance
-
 IncrementalBasicStatistics
 --------------------------
 .. autoclass:: sklearnex.basic_statistics.IncrementalBasicStatistics
+
+IncrementalEmpiricalCovariance
+------------------------------
+.. autoclass:: sklearnex.covariance.IncrementalEmpiricalCovariance
 
 IncrementalLinearRegression
 ---------------------------
