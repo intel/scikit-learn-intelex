@@ -42,17 +42,18 @@ return_code=0
 python -c "import daal4py"
 return_code=$(($return_code + $?))
 
+echo "Pytest run of legacy unittest ..."
+echo ${daal4py_dir}
+pytest --verbose -s ${daal4py_dir}/tests
+return_code=$(($return_code + $?))
+
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
-    echo "MPI unittest discover testing ..."
+    echo "MPI pytest run of legacy unittest ..."
     mpirun --version
-    mpirun -n 4 python -m unittest discover -v -s ${daal4py_dir}/tests -p test*spmd*.py
+    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py
     return_code=$(($return_code + $?))
 fi
-
-echo "Unittest discover testing ..."
-python -m unittest discover -v -s ${daal4py_dir}/tests -p test*.py
-return_code=$(($return_code + $?))
 
 echo "Pytest of daal4py running ..."
 pytest --verbose ${daal4py_dir}/daal4py/sklearn "${COV_ARGS[@]}"
@@ -67,7 +68,7 @@ pytest --verbose --pyargs onedal
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
-python ${daal4py_dir}/.ci/scripts/test_global_patch.py
+pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py
 return_code=$(($return_code + $?))
 
 exit $return_code
