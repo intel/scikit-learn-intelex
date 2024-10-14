@@ -152,7 +152,7 @@ def test_partial_fit_multiple_options_on_random_data(
         gtr_mean, gtr_max, gtr_sum = (
             options_and_tests["mean"][0](weighted_data),
             options_and_tests["max"][0](weighted_data),
-            options_and_tests["sum"][0]weighted_data),
+            options_and_tests["sum"][0](weighted_data),
         )
     else:
         gtr_mean, gtr_max, gtr_sum = (
