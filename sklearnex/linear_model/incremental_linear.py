@@ -334,12 +334,12 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
+            Training data, where ``n_samples`` is the number of samples and
             `n_features` is the number of features.
 
         y : array-like of shape (n_samples,) or (n_samples, n_targets)
-            Target values, where `n_samples` is the number of samples and
-            `n_targets` is the number of targets.
+            Target values, where ``n_samples`` is the number of samples and
+            ``n_targets`` is the number of targets.
 
         Returns
         -------
@@ -362,20 +362,20 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
     def fit(self, X, y):
         """
-        Fit the model with X and y, using minibatches of size batch_size.
+        Fit the model with X and y, using minibatches of size ``batch_size``.
 
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
-            `n_features` is the number of features. It is necessary for
-            `n_samples` to be not less than `n_features` if `fit_intercept`
-            is False and not less than `n_features` + 1 if `fit_intercept`
+            Training data, where ``n_samples`` is the number of samples and
+            ``n_features`` is the number of features. It is necessary for
+            ``n_samples`` to be not less than ``n_features`` if ``fit_intercept``
+            is False and not less than ``n_features + 1`` if ``fit_intercept``
             is True
 
         y : array-like of shape (n_samples,) or (n_samples, n_targets)
-            Target values, where `n_samples` is the number of samples and
-            `n_targets` is the number of targets.
+            Target values, where ``n_samples`` is the number of samples and
+            ``n_targets`` is the number of targets.
 
         Returns
         -------
@@ -399,10 +399,15 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     def predict(self, X, y=None):
         """
         Predict using the linear model.
+
         Parameters
         ----------
         X : array-like or sparse matrix, shape (n_samples, n_features)
             Samples.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
         Returns
         -------
         C : array, shape (n_samples, n_targets)

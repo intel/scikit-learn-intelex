@@ -22,15 +22,23 @@ available for both CPU and GPU (including distributed mode)
 BasicStatistics
 ---------------
 .. autoclass:: sklearnex.basic_statistics.BasicStatistics
+.. automethod:: sklearnex.basic_statistics.BasicStatistics.fit
 
 IncrementalBasicStatistics
 --------------------------
 .. autoclass:: sklearnex.basic_statistics.IncrementalBasicStatistics
+.. automethod:: sklearnex.basic_statistics.IncrementalBasicStatistics.fit
+.. automethod:: sklearnex.basic_statistics.IncrementalBasicStatistics.partial_fit
 
 IncrementalEmpiricalCovariance
 ------------------------------
 .. autoclass:: sklearnex.covariance.IncrementalEmpiricalCovariance
+.. automethod:: sklearnex.covariance.IncrementalEmpiricalCovariance.fit
+.. automethod:: sklearnex.covariance.IncrementalEmpiricalCovariance.partial_fit
 
 IncrementalLinearRegression
 ---------------------------
 .. autoclass:: sklearnex.linear_model.IncrementalLinearRegression
+.. automethod:: sklearnex.linear_model.IncrementalLinearRegression.fit
+.. automethod:: sklearnex.linear_model.IncrementalLinearRegression.partial_fit
+.. automethod:: sklearnex.linear_model.IncrementalLinearRegression.predict
