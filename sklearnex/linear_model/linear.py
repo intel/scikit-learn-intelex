@@ -278,31 +278,41 @@ class LinearRegression(_sklearn_LinearRegression):
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
-    def get_coef_(self):
-        return self.coef_
+    @property
+    def coef_(self):
+        return self._coef_
 
-    def set_coef_(self, value):
-        self.__dict__["coef_"] = value
+    @coef_.setter
+    def coef_(self, value):
+        self._coef_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.coef_ = value
             del self._onedal_estimator._onedal_model
 
-    def get_intercept_(self):
-        return self.intercept_
+    @coef_.deleter
+    def coef_(self):
+        del self._coef_
 
-    def set_intercept_(self, value):
-        self.__dict__["intercept_"] = value
+    @property
+    def intercept_(self):
+        return self._intercept_
+
+    @intercept_.setter
+    def intercept_(self, value):
+        self._intercept_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             del self._onedal_estimator._onedal_model
 
+    @intercept_.deleter
+    def intercept_(self):
+        del self._intercept_
+
     def _save_attributes(self):
-        self.coef_ = property(self.get_coef_, self.set_coef_)
-        self.intercept_ = property(self.get_intercept_, self.set_intercept_)
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self._sparse = False
-        self.__dict__["coef_"] = self._onedal_estimator.coef_
-        self.__dict__["intercept_"] = self._onedal_estimator.intercept_
+        self._coef_ = self._onedal_estimator.coef_
+        self._intercept_ = self._onedal_estimator.intercept_
 
     fit.__doc__ = _sklearn_LinearRegression.fit.__doc__
     predict.__doc__ = _sklearn_LinearRegression.predict.__doc__
