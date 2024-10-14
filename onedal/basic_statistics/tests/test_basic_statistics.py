@@ -24,22 +24,21 @@ from onedal.basic_statistics import BasicStatistics
 from onedal.tests.utils._device_selection import get_queues
 
 
-options_and_tests = [
-    ("sum", lambda X: np.sum(X, axis=0), (5e-4, 1e-7)),
-    ("min", lambda X: np.min(X, axis=0), (1e-7, 1e-7)),
-    ("max", lambda X: np.max(X, axis=0), (1e-7, 1e-7)),
-    ("mean", lambda X: np.mean(X, axis=0), (5e-7, 1e-7)),
-    ("variance", lambda X: np.var(X, axis=0), (2e-3, 2e-3)),
-    ("variation", lambda X: np.std(X, axis=0) / np.mean(X, axis=0), (5e-2, 5e-2)),
-    ("sum_squares", lambda X: np.sum(np.square(X), axis=0), (2e-4, 1e-7)),
-    (
-        "sum_squares_centered",
-        lambda X: np.sum(np.square(X - np.mean(X, axis=0)), axis=0),
-        (2e-4, 1e-7),
-    ),
-    ("standard_deviation", lambda X: np.std(X, axis=0), (2e-3, 2e-3)),
-    ("second_order_raw_moment", lambda X: np.mean(np.square(X), axis=0), (1e-6, 1e-7)),
-]
+options_and_tests = {
+    "sum": (lambda X: np.sum(X, axis=0), (5e-4, 1e-7)),
+    "min": (lambda X: np.min(X, axis=0), (1e-7, 1e-7)),
+    "max": (lambda X: np.max(X, axis=0), (1e-7, 1e-7)),
+    "mean": (lambda X: np.mean(X, axis=0), (5e-7, 1e-7)),
+    "variance": (lambda X: np.var(X, axis=0), (2e-3, 2e-3)),
+    "variation": (lambda X: np.std(X, axis=0) / np.mean(X, axis=0), (5e-2, 5e-2)),
+    "sum_squares": (lambda X: np.sum(np.square(X), axis=0), (2e-4, 1e-7)),
+    
+        "sum_squares_centered":
+        (lambda X: np.sum(np.square(X - np.mean(X, axis=0)), axis=0),
+        (2e-4, 1e-7)),
+    "standard_deviation": (lambda X: np.std(X, axis=0), (2e-3, 2e-3)),
+    "second_order_raw_moment": (lambda X: np.mean(np.square(X), axis=0), (1e-6, 1e-7)),
+}
 
 options_and_tests_csr = [
     ("sum", "sum", (5e-6, 1e-9)),
@@ -50,15 +49,15 @@ options_and_tests_csr = [
 
 
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("result_option", options_and_tests.keys())
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_single_option_on_random_data(
-    queue, option, row_count, column_count, weighted, dtype
+    queue, result_option, row_count, column_count, weighted, dtype
 ):
-    result_option, function, tols = option
+    function, tols = option_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
@@ -110,15 +109,15 @@ def test_multiple_options_on_random_data(queue, row_count, column_count, weighte
     if weighted:
         weighted_data = np.diag(weights) @ data
         gtr_mean, gtr_max, gtr_sum = (
-            options_and_tests["mean"][1](weighted_data),
-            options_and_tests["max"][1](weighted_data),
-            options_and_tests["sum"][1](weighted_data),
+            options_and_tests["mean"][0](weighted_data),
+            options_and_tests["max"][0](weighted_data),
+            options_and_tests["sum"][0](weighted_data),
         )
     else:
         gtr_mean, gtr_max, gtr_sum = (
-            options_and_tests["mean"][1](data),
-            options_and_tests["max"][1](data),
-            options_and_tests["sum"][1](data),
+            options_and_tests["mean"][0](data),
+            options_and_tests["max"][0](data),
+            options_and_tests["sum"][0](data),
         )
 
     tol = 5e-4 if res_mean.dtype == np.float32 else 1e-7
@@ -150,8 +149,8 @@ def test_all_option_on_random_data(queue, row_count, column_count, weighted, dty
     if weighted:
         weighted_data = np.diag(weights) @ data
 
-    for option in options_and_tests:
-        result_option, function, tols = option
+    for result_option in options_and_tests:
+        function, tols = options_and_tests[result_option]
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
@@ -163,12 +162,13 @@ def test_all_option_on_random_data(queue, row_count, column_count, weighted, dty
 
 
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("result_option", options_and_tests.keys())
 @pytest.mark.parametrize("data_size", [100, 1000])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_1d_input_on_random_data(queue, option, data_size, weighted, dtype):
-    result_option, function, tols = option
+def test_1d_input_on_random_data(queue, result_option, data_size, weighted, dtype):
+    
+    function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
