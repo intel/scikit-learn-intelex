@@ -119,7 +119,6 @@ jobs:
           cd .ci
           ../conda-recipe/run_test.sh
           ls -lha
-          ls -lha .ci
       - name: Sklearn testing
         run: |
           source venv/bin/activate
