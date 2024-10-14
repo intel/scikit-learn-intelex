@@ -37,6 +37,15 @@ Example usage
 
 Support for Array API-compatible inputs
 ----------------------------------
+All patched estimators, metrics, tools and non-scikit-learn estimators functionally support Array API.
+Functionally all input and output data have the same data format type.
+
+Stock scikit-learn uses ```config_context(array_api_dispatch=True)``` for enabling Array API `support <https://scikit-learn.org/1.5/modules/array_api.html>`__.
+If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn, then raw inputs are used for the fallback.
+
+.. note::
+    Stock scikit-learn doesn't support DPCTL usm_ndarray or DPNP ndarray inputs, host numpy copies of the inputs data will be used for the fallback cases. 
 
 Planned features
 ----------------------------------
+TBD
