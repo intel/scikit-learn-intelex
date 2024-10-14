@@ -118,7 +118,6 @@ jobs:
           source .github/scripts/activate_components.sh
           cd .ci
           ../conda-recipe/run_test.sh
-          ls -lha
       - name: Sklearn testing
         run: |
           source venv/bin/activate
@@ -130,13 +129,12 @@ jobs:
           source .github/scripts/activate_components.sh
           export SKLEARNEX_PREVIEW='YES'
           bash .ci/scripts/run_sklearn_tests.sh
-          ls -lha
-          ls -lha .ci
       - name: Archive coverage data
         uses: actions/upload-artifact@v4
         with:
           name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
           path: .ci/.coverage
+          include-hidden-files: true
 
   sklearn_win:
     strategy:
