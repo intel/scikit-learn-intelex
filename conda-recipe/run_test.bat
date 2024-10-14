@@ -39,13 +39,19 @@ IF DEFINED TBBROOT (
     call "%TBBROOT%\env\vars.bat" || set exitcode=1
 )
 
-mkdir .pytest_reports
-del /q .pytest_reports\*.json
+rem Note: execute with argument --json-report in order to produce
+rem a JSON report under folder '.pytest_reports'. Other arguments
+rem will also be forwarded to pytest, but '--json-report' needs to
+rem be the first one.
+if "%~1"=="--json-report" (
+    mkdir .pytest_reports
+    del /q .pytest_reports\*.json
+)
 
-%PYTHON% -m pytest --verbose -s %1\tests --json-report --json-report-file=.pytest_reports\legacy_report.json || set exitcode=1
+%PYTHON% -m pytest --verbose -s %1\tests %* --json-report-file=.pytest_reports\legacy_report.json || set exitcode=1
 
-pytest --verbose --pyargs %1\daal4py\sklearn --json-report --json-report-file=.pytest_reports\daal4py_report.json || set exitcode=1
-pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
-pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" --json-report --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
-pytest --verbose %1\.ci\scripts\test_global_patch.py --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
+pytest --verbose --pyargs %1\daal4py\sklearn %* --json-report-file=.pytest_reports\daal4py_report.json || set exitcode=1
+pytest --verbose --pyargs sklearnex %* --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
+pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" %* --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
+pytest --verbose %1\.ci\scripts\test_global_patch.py %* --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
 EXIT /B %exitcode%
