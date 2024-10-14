@@ -24,46 +24,6 @@ from onedal.basic_statistics import BasicStatistics
 from onedal.tests.utils._device_selection import get_queues
 
 
-def _expected_sum(X):
-    return
-
-
-def _expected_max(X):
-    return np.max(X, axis=0)
-
-
-def _expected_min(X):
-    return np.min(X, axis=0)
-
-
-def _expected_mean(X):
-    return np.mean(X, axis=0)
-
-
-def _expected_standard_deviation(X):
-    return np.std(X, axis=0)
-
-
-def _expected_variance(X):
-    return np.var(X, axis=0)
-
-
-def _expected_variation(X):
-    return expected_standard_deviation(X) / expected_mean(X)
-
-
-def _expected_sum_squares(X):
-    return np.sum(np.square(X), axis=0)
-
-
-def _expected_sum_squares_centered(X):
-    return np.sum(np.square(X - expected_mean(X)), axis=0)
-
-
-def _expected_standard_deviation(X):
-    return np.sqrt(expected_variance(X))
-
-
 options_and_tests = [
     ("sum", lambda X: np.sum(X, axis=0), (5e-4, 1e-7)),
     ("min", lambda X: np.min(X, axis=0), (1e-7, 1e-7)),
