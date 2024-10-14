@@ -15,7 +15,7 @@
 .. *******************************************************************************/
 
 Non-Scikit-Learn Algorithms
-=====================
+===========================
 Algorithms not presented in the original scikit-learn are described here. All algorithms are 
 available for both CPU and GPU (including distributed mode)
 
