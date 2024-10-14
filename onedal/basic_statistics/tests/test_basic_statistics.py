@@ -110,15 +110,15 @@ def test_multiple_options_on_random_data(queue, row_count, column_count, weighte
     if weighted:
         weighted_data = np.diag(weights) @ data
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(weighted_data),
-            expected_max(weighted_data),
-            expected_sum(weighted_data),
+            options_and_tests["mean"][1](weighted_data),
+            options_and_tests["max"][1](weighted_data),
+            options_and_tests["sum"][1](weighted_data),
         )
     else:
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(data),
-            expected_max(data),
-            expected_sum(data),
+            options_and_tests["mean"][1](data),
+            options_and_tests["max"][1](data),
+            options_and_tests["sum"][1](data),
         )
 
     tol = 5e-4 if res_mean.dtype == np.float32 else 1e-7
