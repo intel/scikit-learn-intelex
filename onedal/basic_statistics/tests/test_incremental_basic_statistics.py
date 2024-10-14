@@ -62,15 +62,15 @@ def test_multiple_options_on_gold_data(queue, weighted, dtype):
 
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
-@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("result_option", options_and_tests.keys())
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_single_option_on_random_data(
-    queue, num_batches, option, row_count, column_count, weighted, dtype
+    queue, num_batches, result_option, row_count, column_count, weighted, dtype
 ):
-    result_option, function, tols = option
+    function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
