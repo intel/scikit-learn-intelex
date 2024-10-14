@@ -46,7 +46,6 @@ requirements:
     - dpcpp_linux-64  # [linux64]
     # - dpcpp_win-64  # [win]
     - {{ compiler('cxx') }}  # [linux64 or win]
-    - {{ compiler('c') }}  # [linux64 or win]
     # conda-forge feedstock specific
     # - {{ stdlib("c") }}  # [linux64 or win]
   host:
