@@ -24,61 +24,56 @@ from onedal.basic_statistics import BasicStatistics
 from onedal.tests.utils._device_selection import get_queues
 
 
-def expected_sum(X):
-    return np.sum(X, axis=0)
+def _expected_sum(X):
+    return 
 
 
-def expected_max(X):
+def _expected_max(X):
     return np.max(X, axis=0)
 
 
-def expected_min(X):
+def _expected_min(X):
     return np.min(X, axis=0)
 
 
-def expected_mean(X):
+def _expected_mean(X):
     return np.mean(X, axis=0)
 
 
-def expected_standard_deviation(X):
+def _expected_standard_deviation(X):
     return np.std(X, axis=0)
 
 
-def expected_variance(X):
+def _expected_variance(X):
     return np.var(X, axis=0)
 
 
-def expected_variation(X):
+def _expected_variation(X):
     return expected_standard_deviation(X) / expected_mean(X)
 
 
-def expected_sum_squares(X):
+def _expected_sum_squares(X):
     return np.sum(np.square(X), axis=0)
 
 
-def expected_sum_squares_centered(X):
+def _expected_sum_squares_centered(X):
     return np.sum(np.square(X - expected_mean(X)), axis=0)
 
 
-def expected_standard_deviation(X):
+def _expected_standard_deviation(X):
     return np.sqrt(expected_variance(X))
 
-
-def expected_second_order_raw_moment(X):
-    return np.mean(np.square(X), axis=0)
-
-
 options_and_tests = [
-    ("sum", expected_sum, (5e-4, 1e-7)),
-    ("min", expected_min, (1e-7, 1e-7)),
-    ("max", expected_max, (1e-7, 1e-7)),
-    ("mean", expected_mean, (5e-7, 1e-7)),
-    ("variance", expected_variance, (2e-3, 2e-3)),
-    ("variation", expected_variation, (5e-2, 5e-2)),
-    ("sum_squares", expected_sum_squares, (2e-4, 1e-7)),
-    ("sum_squares_centered", expected_sum_squares_centered, (2e-4, 1e-7)),
-    ("standard_deviation", expected_standard_deviation, (2e-3, 2e-3)),
-    ("second_order_raw_moment", expected_second_order_raw_moment, (1e-6, 1e-7)),
+    ("sum", lambda X: np.sum(X, axis=0), (5e-4, 1e-7)),
+    ("min", lambda X: np.min(X, axis=0), (1e-7, 1e-7)),
+    ("max", lambda X: np.max(X, axis=0), (1e-7, 1e-7)),
+    ("mean", lambda X: np.mean(X, axis=0), (5e-7, 1e-7)),
+    ("variance", lambda X: np.var(X, axis=0), (2e-3, 2e-3)),
+    ("variation", lambda X: np.std(X, axis=0)/np.mean(X, axis=0), (5e-2, 5e-2)),
+    ("sum_squares", lambda X: np.sum(np.square(X), axis=0), (2e-4, 1e-7)),
+    ("sum_squares_centered", lambda X: np.sum(np.square(X - np.mean(X, axis=0)), axis=0), (2e-4, 1e-7)),
+    ("standard_deviation", lambda X: np.std(X, axis=0), (2e-3, 2e-3)),
+    ("second_order_raw_moment", lambda X: np.mean(np.square(X), axis=0), (1e-6, 1e-7)),
 ]
 
 options_and_tests_csr = [
