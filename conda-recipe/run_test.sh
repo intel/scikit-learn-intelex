@@ -33,7 +33,7 @@ fi
 
 COV_ARGS=(--no-cov)
 if [[ "$COVERAGE" == "true" ]]; then
-COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config="$daal4py_dir/.coveragerc" --cov-report=json)
+COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config="$daal4py_dir/.coveragerc" --cov-append --cov-report=)
 fi
 
 echo "Start testing ..."
