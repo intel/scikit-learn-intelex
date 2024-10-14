@@ -48,10 +48,10 @@ class BasicStatistics(BaseEstimator):
     result_options: string or list, default='all'
         Used to set statistics to calculate. Possible values are ``'min'``, ``'max'``, ``'sum'``, ``'mean'``, ``'variance'``,
         ``'variation'``, ``sum_squares'``, ``sum_squares_centered'``, ``'standard_deviation'``, ``'second_order_raw_moment'``
-        or a list containing any of these values. If set to ``'all'`` then all possible statistics will be 
+        or a list containing any of these values. If set to ``'all'`` then all possible statistics will be
         calculated.
 
-    Attributes 
+    Attributes
     ----------
         min_ : ndarray of shape (n_features,)
             Minimum of each feature over all samples.
@@ -84,7 +84,7 @@ class BasicStatistics(BaseEstimator):
     supported currently but deprecated in 2025.1 and will be removed in 2026.0
 
     Note
-    ---- 
+    ----
     Some results can exhibit small variations due to
     floating point error accumulation and multithreading.
 

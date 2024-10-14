@@ -100,9 +100,9 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     >>> X = np.array([[1, 2], [3, 4]])
     >>> inccov.partial_fit(X[:1])
     >>> inccov.partial_fit(X[1:])
-    >>> inccov.covariance_ 
+    >>> inccov.covariance_
     np.array([[1., 1.],[1., 1.]])
-    >>> inccov.location_ 
+    >>> inccov.location_
     np.array([2., 3.])
     >>> inccov.fit(X)
     >>> inccov.covariance_
