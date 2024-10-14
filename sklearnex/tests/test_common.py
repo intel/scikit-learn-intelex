@@ -357,7 +357,14 @@ def n_jobs_check(text, estimator, method):
     ), f"verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
 
 
-DESIGN_RULES = [n_jobs_check]
+def runtime_property_check(text, estimator, method):
+    """use of Python's 'property' should not be used at runtime, only at class instantiation"""
+    assert (
+        len(re.findall(r"property\(", text[1])) == 0
+    ), f"{estimator}.{method} should only use 'property' at instantiation"
+
+
+DESIGN_RULES = [n_jobs_check, runtime_property_check]
 
 
 if sklearn_check_version("1.0"):
