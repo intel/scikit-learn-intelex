@@ -21,6 +21,7 @@ from .base import (
     SPECIAL_INSTANCES,
     UNPATCHED_FUNCTIONS,
     UNPATCHED_MODELS,
+    _get_processor_info,
     call_method,
     gen_dataset,
     gen_models_info,
@@ -39,3 +40,5 @@ __all__ = [
     "gen_dataset",
     "sklearn_clone_dict",
 ]
+
+_IS_INTEL = "GenuineIntel" in _get_processor_info()

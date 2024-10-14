@@ -15,7 +15,7 @@
 # ==============================================================================
 
 import numpy as np
-from sklearn.svm import NuSVR as sklearn_NuSVR
+from sklearn.svm import NuSVR as _sklearn_NuSVR
 from sklearn.utils.validation import _deprecate_positional_args, check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -32,11 +32,11 @@ else:
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "score"])
-class NuSVR(sklearn_NuSVR, BaseSVR):
-    __doc__ = sklearn_NuSVR.__doc__
+class NuSVR(_sklearn_NuSVR, BaseSVR):
+    __doc__ = _sklearn_NuSVR.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**sklearn_NuSVR._parameter_constraints}
+        _parameter_constraints: dict = {**_sklearn_NuSVR._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(
@@ -87,7 +87,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_NuSVR.fit,
+                "sklearn": _sklearn_NuSVR.fit,
             },
             X,
             y,
@@ -102,7 +102,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_NuSVR.predict,
+                "sklearn": _sklearn_NuSVR.predict,
             },
             X,
         )
@@ -114,7 +114,7 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_NuSVR.score,
+                "sklearn": _sklearn_NuSVR.score,
             },
             X,
             y,
@@ -159,6 +159,6 @@ class NuSVR(sklearn_NuSVR, BaseSVR):
             )
         return self._onedal_estimator.predict(X, queue=queue)
 
-    fit.__doc__ = sklearn_NuSVR.fit.__doc__
-    predict.__doc__ = sklearn_NuSVR.predict.__doc__
-    score.__doc__ = sklearn_NuSVR.score.__doc__
+    fit.__doc__ = _sklearn_NuSVR.fit.__doc__
+    predict.__doc__ = _sklearn_NuSVR.predict.__doc__
+    score.__doc__ = _sklearn_NuSVR.score.__doc__

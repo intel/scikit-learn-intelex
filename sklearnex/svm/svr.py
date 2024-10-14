@@ -15,7 +15,7 @@
 # ==============================================================================
 
 import numpy as np
-from sklearn.svm import SVR as sklearn_SVR
+from sklearn.svm import SVR as _sklearn_SVR
 from sklearn.utils.validation import _deprecate_positional_args
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -32,11 +32,11 @@ else:
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "score"])
-class SVR(sklearn_SVR, BaseSVR):
-    __doc__ = sklearn_SVR.__doc__
+class SVR(_sklearn_SVR, BaseSVR):
+    __doc__ = _sklearn_SVR.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**sklearn_SVR._parameter_constraints}
+        _parameter_constraints: dict = {**_sklearn_SVR._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(
@@ -87,7 +87,7 @@ class SVR(sklearn_SVR, BaseSVR):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_SVR.fit,
+                "sklearn": _sklearn_SVR.fit,
             },
             X,
             y,
@@ -103,7 +103,7 @@ class SVR(sklearn_SVR, BaseSVR):
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_SVR.predict,
+                "sklearn": _sklearn_SVR.predict,
             },
             X,
         )
@@ -115,7 +115,7 @@ class SVR(sklearn_SVR, BaseSVR):
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_SVR.score,
+                "sklearn": _sklearn_SVR.score,
             },
             X,
             y,
@@ -160,6 +160,6 @@ class SVR(sklearn_SVR, BaseSVR):
             )
         return self._onedal_estimator.predict(X, queue=queue)
 
-    fit.__doc__ = sklearn_SVR.fit.__doc__
-    predict.__doc__ = sklearn_SVR.predict.__doc__
-    score.__doc__ = sklearn_SVR.score.__doc__
+    fit.__doc__ = _sklearn_SVR.fit.__doc__
+    predict.__doc__ = _sklearn_SVR.predict.__doc__
+    score.__doc__ = _sklearn_SVR.score.__doc__
