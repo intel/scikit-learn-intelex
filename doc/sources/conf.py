@@ -34,7 +34,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../"))
 
-
 # -- Project information -----------------------------------------------------
 
 project = "Intel(R) Extension for Scikit-learn*"
@@ -67,6 +66,7 @@ extensions = [
     "notfound.extension",
     "sphinx_design",
     "sphinx_copybutton",
+    "sphinx.ext.napoleon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

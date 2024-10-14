@@ -54,8 +54,9 @@ from .._utils import PatchingConditionsChain, register_hyperparameters
 )
 class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimator):
     """
-    Incremental estimator for linear regression.
-    Allows to train linear regression if data are splitted into batches.
+    Trains a linear regression model, allows for computation if the data are split into
+    batches. The user can use the ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
+    the entire dataset.
 
     Parameters
     ----------
@@ -73,8 +74,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     batch_size : int, default=None
         The number of samples to use for each batch. Only used when calling
         ``fit``. If ``batch_size`` is ``None``, then ``batch_size``
-        is inferred from the data and set to ``5 * n_features``, to provide a
-        balance between approximation accuracy and memory consumption.
+        is inferred from the data and set to ``5 * n_features``.
 
     Attributes
     ----------
@@ -93,7 +93,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
     n_samples_seen_ : int
         The number of samples processed by the estimator. Will be reset on
-        new calls to fit, but increments across ``partial_fit`` calls.
+        new calls to ``fit``, but increments across ``partial_fit`` calls.
         It should be not less than `n_features_in_` if `fit_intercept`
         is False and not less than `n_features_in_` + 1 if `fit_intercept`
         is True to obtain regression coefficients.
@@ -102,7 +102,26 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         Inferred batch size from ``batch_size``.
 
     n_features_in_ : int
-        Number of features seen during :term:`fit` `partial_fit`.
+        Number of features seen during ``fit`` or ``partial_fit``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearnex.linear_model import IncrementalLinearRegression
+    >>> inclr = IncrementalLinearRegression(batch_size=2)
+    >>> X = np.array([[1, 2], [3, 4], [5, 6], [7, 10]])
+    >>> y = np.array([1.5, 3.5, 5.5, 8.5])
+    >>> inclr.partial_fit(X[:2], y[:2])
+    >>> inclr.partial_fit(X[2:], y[2:])
+    >>> inclr.coef_
+    np.array([0.5., 0.5.])
+    >>> inclr.intercept_
+    np.array(0.)
+    >>> inclr.fit(X)
+    >>> inclr.coef_
+    np.array([0.5., 0.5.])
+    >>> inclr.intercept_
+    np.array(0.)
 
     """
 
