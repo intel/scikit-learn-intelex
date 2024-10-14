@@ -19,12 +19,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
-from onedal.basic_statistics.tests.test_basic_statistics import (
-    expected_max,
-    expected_mean,
-    expected_sum,
-    options_and_tests,
-)
+from onedal.basic_statistics.tests.test_basic_statistics import options_and_tests
+
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -96,15 +92,15 @@ def test_multiple_options_on_gold_data(dataframe, queue, weighted, dtype):
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("result_option", options_and_tests.keys())
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_single_option_on_random_data(
-    dataframe, queue, option, row_count, column_count, weighted, dtype
+    dataframe, queue, result_option, row_count, column_count, weighted, dtype
 ):
-    result_option, function, tols = option
+    function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
@@ -161,15 +157,15 @@ def test_multiple_options_on_random_data(
     if weighted:
         weighted_data = np.diag(weights) @ X
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(weighted_data),
-            expected_max(weighted_data),
-            expected_sum(weighted_data),
+            options_and_tests["mean"][0](weighted_data),
+            options_and_tests["max"][0](weighted_data),
+            options_and_tests["sum"][0](weighted_data),
         )
     else:
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(X),
-            expected_max(X),
-            expected_sum(X),
+            options_and_tests["mean"][0](X),
+            options_and_tests["max"][0](X),
+            options_and_tests["sum"][0](X),
         )
 
     tol = 5e-4 if res_mean.dtype == np.float32 else 1e-7
@@ -205,8 +201,8 @@ def test_all_option_on_random_data(
     if weighted:
         weighted_data = np.diag(weights) @ X
 
-    for option in options_and_tests:
-        result_option, function, tols = option
+    for result_option in options_and_tests:
+        function, tols = options_and_tests[result_option]
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
@@ -218,12 +214,12 @@ def test_all_option_on_random_data(
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("result_option", options_and_tests.keys())
 @pytest.mark.parametrize("data_size", [100, 1000])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_1d_input_on_random_data(dataframe, queue, option, data_size, weighted, dtype):
-    result_option, function, tols = option
+def test_1d_input_on_random_data(dataframe, queue, result_option, data_size, weighted, dtype):
+    function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
