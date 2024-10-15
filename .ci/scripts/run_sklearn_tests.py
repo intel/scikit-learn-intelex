@@ -48,9 +48,9 @@ if __name__ == "__main__":
         f'{os.environ["DESELECTED_TESTS"]} {os.environ["SELECTED_TESTS"]}'.split(" ")
     )
 
-    if os.getenv("COVERAGE"):
+    if os.getenv("COVERAGE_RCFILE"):
         pytest_args += (
-            f'--cov=onedal --cov=sklearnex --cov-config={os.environ["COVERAGE"]} '
+            f'--cov=onedal --cov=sklearnex --cov-config={os.environ["COVERAGE_RCFILE"]} '
             "--cov-report=term".split(" ")
         )
     print("to be run: pytest "+" ".join(pytest_args))
