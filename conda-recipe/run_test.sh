@@ -18,7 +18,7 @@
 sklex_root="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 count=3
 while [[ count -ne 0 ]]; do
-    if [[ -d $sklex_root/.ci/ && -d $sklex_root/examples/ && -d $sklex_root/tests/ && -d $sklex_root/daal4py/sklearn ]]; then
+    if [[ -d $sklex_root/.ci/ && -d $sklex_root/examples/ && -d $sklex_root/tests/ ]]; then
         break
     fi
     sklex_root="$( dirname "${sklex_root}" )"

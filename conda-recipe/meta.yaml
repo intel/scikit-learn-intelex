@@ -87,7 +87,6 @@ test:
     - .ci
     - examples
     - tests
-    - daal4py/sklearn
 
 about:
   home: https://intel.github.io/scikit-learn-intelex
