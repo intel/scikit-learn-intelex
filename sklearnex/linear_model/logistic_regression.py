@@ -231,6 +231,7 @@ if daal_check_version((2024, "P", 1)):
                 "score",
             ]
 
+            check_is_fitted(self) #  Necessary for result sparsity checks
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f"sklearn.linear_model.{class_name}.{method_name}"
@@ -325,7 +326,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -350,7 +350,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -375,7 +374,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
