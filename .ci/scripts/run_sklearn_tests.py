@@ -47,6 +47,13 @@ if __name__ == "__main__":
         f"--rootdir={os.path.dirname(sklearn.__file__)} "
         f'{os.environ["DESELECTED_TESTS"]} {os.environ["SELECTED_TESTS"]}'.split(" ")
     )
+
+    if os.getenv("COVERAGE"):
+        pytest_args += (
+            f'--cov=onedal --cov=sklearnex --cov-config={os.environ["COVERAGE"]} '
+            "--cov-report=".split(" ")
+        )
+
     while "" in pytest_args:
         pytest_args.remove("")
 

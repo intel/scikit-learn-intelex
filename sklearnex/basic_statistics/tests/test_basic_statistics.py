@@ -20,7 +20,6 @@ from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics.tests.test_basic_statistics import options_and_tests
-
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -218,7 +217,9 @@ def test_all_option_on_random_data(
 @pytest.mark.parametrize("data_size", [100, 1000])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_1d_input_on_random_data(dataframe, queue, result_option, data_size, weighted, dtype):
+def test_1d_input_on_random_data(
+    dataframe, queue, result_option, data_size, weighted, dtype
+):
     function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
