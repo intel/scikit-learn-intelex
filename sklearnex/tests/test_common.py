@@ -374,8 +374,8 @@ def fit_check_before_support_check(text, estimator, method):
         else:
             pytest.skip(f"onedal dispatching not used in {estimator}.{method}")
         # get location of _onedal_*_supported
-        idx = len(text[0]) - 1 - text[0][::-1].index(onedal_support)
-        validfuncs = text[0][:idx]
+        idx = len(text["funcs"]) - 1 - text["funcs"][::-1].index(onedal_support)
+        validfuncs = text["funcs"][:idx]
         assert (
             "check_is_fitted" in validfuncs
         ), f"sklearn's check_is_fitted must be called before checking oneDAL support"
