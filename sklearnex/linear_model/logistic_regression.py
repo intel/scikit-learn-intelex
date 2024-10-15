@@ -231,16 +231,12 @@ if daal_check_version((2024, "P", 1)):
                 "score",
             ]
 
-            check_is_fitted(self) #  Necessary for result sparsity checks
             class_name = self.__class__.__name__
             patching_status = PatchingConditionsChain(
                 f"sklearn.linear_model.{class_name}.{method_name}"
             )
 
             n_samples = _num_samples(data[0])
-            model_is_sparse = issparse(self.coef_) or (
-                self.fit_intercept and issparse(self.intercept_)
-            )
             dal_ready = patching_status.and_conditions(
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
@@ -248,7 +244,6 @@ if daal_check_version((2024, "P", 1)):
                         (not any([issparse(i) for i in data])) or _sparsity_enabled,
                         "Sparse input is not supported.",
                     ),
-                    (not model_is_sparse, "Sparse coefficients are not supported."),
                     (
                         hasattr(self, "_onedal_estimator"),
                         "oneDAL model was not trained.",
@@ -326,6 +321,7 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
+            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -350,6 +346,7 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
+            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -374,6 +371,7 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
+            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
