@@ -63,4 +63,10 @@ if __name__ == "__main__":
             return_code = pytest.main(pytest_args)
     else:
         return_code = pytest.main(pytest_args)
+
+    if os.getenv("COVERAGE_RCFILE"):
+        # move the coverage data from the rootdir to the current directory
+        print(os.cwd())
+        os.rename(f"{os.path.dirname(sklearn.__file__)}{os.sep}.coverage",f"{os.getcwd()}{os.sep}.coverage")
+    
     sys.exit(int(return_code))
