@@ -159,6 +159,9 @@ Dimensionality Reduction
 
        - ``svd_solver`` not in [`'full'`, `'covariance_eigh'`]
      - Sparse data is not supported
+   * - `IncrementalPCA`
+     - All parameters are supported
+     - Sparse data is not supported
    * - `TSNE`
      - All parameters are supported except:
 
