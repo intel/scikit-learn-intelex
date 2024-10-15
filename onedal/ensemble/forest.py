@@ -357,7 +357,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        hparams = get_hyperparameters_ver("decision_forest", "infer")
+        hparams = get_hyperparameters("decision_forest", "infer")
         if hparams is not None and not hparams.is_default:
             result = module.infer(policy, params, hparams.backend, model, to_table(X))
         else:
@@ -383,13 +383,14 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         return y
 
 
+# Version of register_hyperparameters that supports versioning
 register_hyperparameters_ver = daal_require_version_wrapper((2024, "P", 300))(
     register_hyperparameters
 )
 
 
 @register_hyperparameters_ver(
-    {"predict": get_hyperparameters_ver("decision_forest", "infer")}
+    {"predict": get_hyperparameters("decision_forest", "infer")}
 )
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(
