@@ -51,7 +51,7 @@ if __name__ == "__main__":
     if os.getenv("COVERAGE"):
         pytest_args += (
             f'--cov=onedal --cov=sklearnex --cov-config={os.environ["COVERAGE"]} '
-            "--cov-report=".split(" ")
+            "--cov-report=term".split(" ")
         )
     print("to be run: pytest "+" ".join(pytest_args))
 
