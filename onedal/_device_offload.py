@@ -140,7 +140,7 @@ def _transfer_to_host(queue, *data):
             raise RuntimeError("Input data shall be located on single target device")
 
         host_data.append(item)
-    return queue, host_data
+    return has_usm_data, queue, host_data
 
 
 def _get_global_queue():
@@ -157,8 +157,8 @@ def _get_global_queue():
 
 def _get_host_inputs(*args, **kwargs):
     q = _get_global_queue()
-    q, hostargs = _transfer_to_host(q, *args)
-    q, hostvalues = _transfer_to_host(q, *kwargs.values())
+    _, q, hostargs = _transfer_to_host(q, *args)
+    _, q, hostvalues = _transfer_to_host(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
     return q, hostargs, hostkwargs
 
