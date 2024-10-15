@@ -40,11 +40,6 @@ from ..utils import (
 )
 
 
-def get_hyperparameters_ver(*args):
-    if daal_check_version((2024, "P", 300)):
-        return get_hyperparameters(*args)
-
-
 class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
     @abstractmethod
     def __init__(

@@ -111,7 +111,7 @@ if daal_check_version((2024, "P", 0)):
         )
 
     def get_hyperparameters(algorithm, op):
-        return hyperparameters_map[(algorithm, op)]
+        return hyperparameters_map.get((algorithm, op), None)
 
 else:
 

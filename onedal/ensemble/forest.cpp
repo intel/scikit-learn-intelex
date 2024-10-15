@@ -334,48 +334,48 @@ void init_infer_hyperparameters(py::module_& m) {
     using namespace dal::decision_forest::detail;
     using infer_hyperparams_t = infer_parameters<Task>;
 
-    auto cls =
-        py::class_<infer_hyperparams_t>(m, "infer_hyperparameters")
-            .def(py::init())
-            .def("set_block_size_multiplier",
-                 [](infer_hyperparams_t& self, int64_t multiplier) {
-                     self.set_block_size_multiplier(multiplier);
-                 })
-            .def("get_block_size_multiplier",
-                 [](const infer_hyperparams_t& self) {
-                     return self.get_block_size_multiplier();
-                 })
-            .def("set_block_size",
-                 [](infer_hyperparams_t& self, int64_t block_size) {
-                     self.set_block_size(block_size);
-                 })
-            .def("get_block_size",
-                 [](const infer_hyperparams_t& self) {
-                     return self.get_block_size();
-                 })
-            .def("set_min_trees_for_threading",
-                 [](infer_hyperparams_t& self, int64_t trees) {
-                     self.set_min_trees_for_threading(trees);
-                 })
-            .def("get_min_trees_for_threading",
-                 [](const infer_hyperparams_t& self) {
-                     return self.get_min_trees_for_threading();
-                 })
-            .def("set_min_number_of_rows_for_vect_seq_compute",
-                 [](infer_hyperparams_t& self, int64_t rows) {
-                     self.set_min_number_of_rows_for_vect_seq_compute(rows);
-                 })
-            .def("get_min_number_of_rows_for_vect_seq_compute",
-                 [](const infer_hyperparams_t& self) {
-                     return self.get_min_number_of_rows_for_vect_seq_compute();
-                 })
-            .def("set_scale_factor_for_vect_parallel_compute",
-                 [](infer_hyperparams_t& self, double factor) {
-                     self.set_scale_factor_for_vect_parallel_compute(factor);
-                 })
-            .def("get_scale_factor_for_vect_parallel_compute", [](const infer_hyperparams_t& self) {
-                return self.get_scale_factor_for_vect_parallel_compute();
-            });
+    auto cls = py::class_<infer_hyperparams_t>(m, "infer_hyperparameters")
+                   .def(py::init())
+                   .def("set_block_size_multiplier",
+                        [](infer_hyperparams_t& self, std::int64_t multiplier) {
+                            self.set_block_size_multiplier(multiplier);
+                        })
+                   .def("get_block_size_multiplier",
+                        [](const infer_hyperparams_t& self) -> std::int64_t {
+                            return self.get_block_size_multiplier();
+                        })
+                   .def("set_block_size",
+                        [](infer_hyperparams_t& self, std::int64_t block_size) {
+                            self.set_block_size(block_size);
+                        })
+                   .def("get_block_size",
+                        [](const infer_hyperparams_t& self) -> std::int64_t {
+                            return self.get_block_size();
+                        })
+                   .def("set_min_trees_for_threading",
+                        [](infer_hyperparams_t& self, std::int64_t trees) {
+                            self.set_min_trees_for_threading(trees);
+                        })
+                   .def("get_min_trees_for_threading",
+                        [](const infer_hyperparams_t& self) -> std::int64_t {
+                            return self.get_min_trees_for_threading();
+                        })
+                   .def("set_min_number_of_rows_for_vect_seq_compute",
+                        [](infer_hyperparams_t& self, std::int64_t rows) {
+                            self.set_min_number_of_rows_for_vect_seq_compute(rows);
+                        })
+                   .def("get_min_number_of_rows_for_vect_seq_compute",
+                        [](const infer_hyperparams_t& self) -> std::int64_t {
+                            return self.get_min_number_of_rows_for_vect_seq_compute();
+                        })
+                   .def("set_scale_factor_for_vect_parallel_compute",
+                        [](infer_hyperparams_t& self, double factor) {
+                            self.set_scale_factor_for_vect_parallel_compute(factor);
+                        })
+                   .def("get_scale_factor_for_vect_parallel_compute",
+                        [](const infer_hyperparams_t& self) -> double {
+                            return self.get_scale_factor_for_vect_parallel_compute();
+                        });
 }
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
