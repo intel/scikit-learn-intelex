@@ -226,7 +226,8 @@ Intel(R) Extension for Scikit-learn* is easily built from the sources using only
 * (Windows only) Microsoft Visual Studio* 2022
 * (optional) Intel(R) oneAPI DPC++/C++ Compiler
 
-In order to enable DPC++ interfaces support, you need to set `DPCPPROOT` environment variable pointing to DPC++/C++ Compiler distribution.
+In order to enable DPC++ interfaces support on Windows, you need to set `DPCPPROOT` environment variable pointing to DPC++/C++ Compiler distribution.
+Conda-forge distribution of DPC++ compiler is used by default on Linux, but you still can set your own distribution via `DPCPPROOT` variable.
 
 ### Build Intel(R) Extension for Scikit-learn with `conda-build`
 
