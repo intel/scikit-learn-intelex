@@ -123,6 +123,12 @@ jobs:
           source venv/bin/activate
           source .github/scripts/activate_components.sh
           bash .ci/scripts/run_sklearn_tests.sh
+      - name: Collect Coverage data
+        run: |
+          mkdir cov
+          mv .ci/.coverage ./cov/.coverage.sklearnex
+          mv .coverage ./cov/.coverage.sklearn
+          cp .coveragerc ./cov/.coveragerc
       - name: Sklearn testing [preview]
         run: |
           source venv/bin/activate
@@ -133,7 +139,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
-          path: .ci/.coverage
+          path: ./cov
           include-hidden-files: true
 
   sklearn_win:
