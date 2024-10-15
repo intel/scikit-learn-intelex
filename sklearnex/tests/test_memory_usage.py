@@ -228,9 +228,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
         name = estimator.__name__
 
     threshold = (
-        EXTRA_MEMORY_THRESHOLD_PANDAS
-        if isinstance(dataframe, pd.DataFrame)
-        else EXTRA_MEMORY_THRESHOLD
+        EXTRA_MEMORY_THRESHOLD_PANDAS if dataframe == "pandas" else EXTRA_MEMORY_THRESHOLD
     )
     message = (
         "Size of extra allocated memory {} using garbage collector "
