@@ -21,7 +21,10 @@ from warnings import warn
 from daal4py.sklearn._utils import daal_check_version
 from onedal import _backend
 
-if daal_check_version((2024, "P", 0)):
+if not daal_check_version((2024, "P", 0)):
+    warn("Hyperparameters are supported in oneDAL starting from 2024.0.0 version.")
+    hyperparameters_map = {}
+else:
     _hparams_reserved_words = [
         "algorithm",
         "op",
@@ -110,11 +113,6 @@ if daal_check_version((2024, "P", 0)):
             algorithm, op, setters, getters, hyperparameters
         )
 
-    def get_hyperparameters(algorithm, op):
-        return hyperparameters_map.get((algorithm, op), None)
 
-else:
-
-    def get_hyperparameters(algorithm, op):
-        warn("Hyperparameters are supported in oneDAL starting from 2024.0.0 version.")
-        return None
+def get_hyperparameters(algorithm, op):
+    return hyperparameters_map.get((algorithm, op), None)
