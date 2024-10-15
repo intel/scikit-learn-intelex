@@ -37,14 +37,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    os.chdir(os.path.dirname(sklearn.__file__))
-
     if os.environ["SELECTED_TESTS"] == "all":
         os.environ["SELECTED_TESTS"] = ""
 
+    root_dir = os.path.dirname(sklearn.__file__)
+    
     pytest_args = (
         "--verbose --durations=100 --durations-min=0.01 "
-        f"--rootdir={os.path.dirname(sklearn.__file__)} "
+        f"--rootdir={root_dir} "
         f'{os.environ["DESELECTED_TESTS"]} {os.environ["SELECTED_TESTS"]}'.split(" ")
     )
 
@@ -67,6 +67,6 @@ if __name__ == "__main__":
     if os.getenv("COVERAGE_RCFILE") and int(return_code) == 0:
         # move the coverage data from the rootdir to the current working directory on a successful run
         print(os.cwd())
-        os.rename(f"{os.path.dirname(sklearn.__file__)}{os.sep}.coverage",f"{os.getcwd()}{os.sep}.coverage")
+        # os.rename(f"{root_dir}{os.sep}.coverage",f"{os.getcwd()}{os.sep}.coverage")
     
     sys.exit(int(return_code))
