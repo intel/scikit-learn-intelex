@@ -367,9 +367,9 @@ def runtime_property_check(text, estimator, method):
 
 def fit_check_before_support_check(text, estimator, method):
     if "fit" not in method:
-        if "_onedal_cpu_supported" in text[0]:
+        if "_onedal_cpu_supported" in text["funcs"]:
             onedal_support = "_onedal_cpu_supported"
-        elif "_onedal_gpu_supported" in text[0]:
+        elif "_onedal_gpu_supported" in text["funcs"]:
             onedal_support = "_onedal_gpu_supported"
         else:
             pytest.skip(f"onedal dispatching not used in {estimator}.{method}")
