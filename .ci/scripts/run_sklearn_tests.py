@@ -37,11 +37,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    cwd = os.cwd()
+    root_dir = os.path.dirname(sklearn.__file__)
+    os.chdir(root_dir)
+
     if os.environ["SELECTED_TESTS"] == "all":
         os.environ["SELECTED_TESTS"] = ""
 
-    root_dir = os.path.dirname(sklearn.__file__)
-    
     pytest_args = (
         "--verbose --durations=100 --durations-min=0.01 "
         f"--rootdir={root_dir} "
@@ -60,13 +62,12 @@ if __name__ == "__main__":
 
     if args.device != "none":
         with sklearn.config_context(target_offload=args.device):
-            return_code = pytest.main(pytest_args)
+            return_code = int(pytest.main(pytest_args))
     else:
-        return_code = pytest.main(pytest_args)
+        return_code = int(pytest.main(pytest_args))
 
-    if os.getenv("COVERAGE_RCFILE") and int(return_code) == 0:
+    if os.getenv("COVERAGE_RCFILE") and return_code == 0:
         # move the coverage data from the rootdir to the current working directory on a successful run
-        print(os.cwd())
-        # os.rename(f"{root_dir}{os.sep}.coverage",f"{os.getcwd()}{os.sep}.coverage")
-    
-    sys.exit(int(return_code))
+        os.rename(f"{root_dir}{os.sep}.coverage", f"{cwd}{os.sep}.coverage")
+
+    sys.exit(return_code)
