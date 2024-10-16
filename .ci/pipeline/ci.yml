@@ -52,7 +52,7 @@ jobs:
       echo "##vso[task.setvariable variable=ISORT_VERSION]$(grep -zoP '(?<=isort\n    rev: ).*' .pre-commit-config.yaml)"
       echo "##vso[task.setvariable variable=BLACK_VERSION]$(grep -zoP '(?<=black\n    rev: ).*' .pre-commit-config.yaml)"
       echo "##vso[task.setvariable variable=PYTHON_LINT_VERSION]'$(grep -oP -m 1 '(?<=python).*' .pre-commit-config.yaml)'"
-  displayName: 'Collect lint versions'
+    displayName: 'Collect lint versions'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: $(PYTHON_LINT_VERSION)
