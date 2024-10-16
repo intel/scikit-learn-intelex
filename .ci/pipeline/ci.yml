@@ -57,7 +57,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip setuptools
       pip install isort==${ISORT_VERSION} black[jupyter]==${BLACK_VERSION}
-      if !(grep -q ./.pre-commit-config.yaml "${ISORT_VERSION}") || !(grep -q ./.pre-commit-config.yaml "${BLACK_VERSION}"); then exit 1; fi
+      if !(grep -q "${ISORT_VERSION}" ./.pre-commit-config.yaml) || !(grep -q "${BLACK_VERSION}" ./.pre-commit-config.yaml); then exit 1; fi
       isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: LinuxCondaEnv
