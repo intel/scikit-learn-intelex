@@ -53,7 +53,7 @@ jobs:
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: ${PYTHON_LINT_VERSION}
+      versionSpec: $(PYTHON_LINT_VERSION)
       addToPath: true
   - script: |
       if !(grep -q "rev: ${ISORT_VERSION}" ./.pre-commit-config.yaml) then echo "##vso[task.logissue type=error]isort version mismatch"; fi
