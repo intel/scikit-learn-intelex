@@ -54,7 +54,7 @@ jobs:
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
-      pip install isort black[jupyter]==24.1.1
+      pip install isort==5.13.2 black[jupyter]==24.1.1
       isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: LinuxCondaEnv
