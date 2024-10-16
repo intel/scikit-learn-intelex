@@ -42,6 +42,8 @@ variables:
   PYTHON: 'python'
   ARGS: '1'
   SHELLOPTS: 'errexit:pipefail'
+  ISORT_VERSION: 5.13.2
+  BLACK_VERSION: 24.1.1
 
 jobs:
 - job: Lint
@@ -50,11 +52,12 @@ jobs:
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.9'
+      versionSpec: '3.10'
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
-      pip install isort==5.13.2 black[jupyter]==24.1.1
+      pip install isort==${ISORT_VERSION} black[jupyter]==${BLACK_VERSION}
+      if !(grep -q ./.pre-commit-config.yaml "${ISORT_VERSION}") || !(grep -q ./.pre-commit-config.yaml "${BLACK_VERSION}"); then exit 1; fi
       isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: LinuxCondaEnv
