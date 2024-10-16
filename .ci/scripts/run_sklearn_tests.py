@@ -55,7 +55,7 @@ if __name__ == "__main__":
             f'--cov=onedal --cov=sklearnex --cov-config={os.environ["COVERAGE_RCFILE"]} '
             "--cov-report=term".split(" ")
         )
-    print("to be run: pytest "+" ".join(pytest_args))
+    print("to be run: pytest " + " ".join(pytest_args))
 
     while "" in pytest_args:
         pytest_args.remove("")
