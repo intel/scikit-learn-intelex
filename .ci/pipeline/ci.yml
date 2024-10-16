@@ -42,8 +42,9 @@ variables:
   PYTHON: 'python'
   ARGS: '1'
   SHELLOPTS: 'errexit:pipefail'
-  ISORT_VERSION: 5.13.2
+  ISORT_VERSION: 5.13.1
   BLACK_VERSION: 24.1.1
+  PYTHON_LINT_VERSION: '3.10'
 
 jobs:
 - job: Lint
@@ -52,12 +53,14 @@ jobs:
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.10'
+      versionSpec: ${PYTHON_LINT_VERSION}
       addToPath: true
   - script: |
+      if !(grep -q "rev: ${ISORT_VERSION}" ./.pre-commit-config.yaml) then echo "##vso[task.logissue type=error]isort version mismatch"; fi
+      if !(grep -q "rev: ${BLACK_VERSION}" ./.pre-commit-config.yaml); then echo "##vso[task.logissue type=error]black version mismatch"; fi
+      if !(grep -q "python${PYTHON_LINT_VERSION}" ./.pre-commit-config.yaml); then echo "##vso[task.logissue type=error]python lint version mismatch"; fi
       python -m pip install --upgrade pip setuptools
       pip install isort==${ISORT_VERSION} black[jupyter]==${BLACK_VERSION}
-      if !(grep -q "${ISORT_VERSION}" ./.pre-commit-config.yaml) || !(grep -q "${BLACK_VERSION}" ./.pre-commit-config.yaml); then exit 1; fi
       isort --profile black --check . && black --check .
     displayName: 'Linting'
 - job: LinuxCondaEnv
