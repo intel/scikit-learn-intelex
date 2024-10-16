@@ -60,9 +60,12 @@ else:
                 return super().__getattribute__(__name)
             elif __name in self.getters.keys():
                 return self.getters[__name]()
-            else:
-                raise ValueError(
-                    f"Unknown '{__name}' name in "
+            try:
+                # return all variables that are in super() class normally
+                return super().__getattribute__(__name)
+            except AttributeError:
+                raise AttributeError(
+                    f"Unknown attribute '{__name}' in "
                     f"'{self.algorithm}.{self.op}' hyperparameters"
                 )
 
@@ -74,7 +77,7 @@ else:
                 self.setters[__name](__value)
             else:
                 raise ValueError(
-                    f"Unknown '{__name}' name in "
+                    f"Unknown attribute '{__name}' in "
                     f"'{self.algorithm}.{self.op}' hyperparameters"
                 )
 
