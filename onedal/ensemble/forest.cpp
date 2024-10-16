@@ -402,7 +402,7 @@ ONEDAL_PY_INIT_MODULE(ensemble) {
     ONEDAL_PY_INSTANTIATE(init_infer_result, sub, task_list);
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
-    ONEDAL_PY_INSTANTIATE(init_infer_hyperparameters, sub, task::classification);
+    ONEDAL_PY_INSTANTIATE(init_infer_hyperparameters, sub, task_list);
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240300
 
 #endif // ONEDAL_DATA_PARALLEL_SPMD
