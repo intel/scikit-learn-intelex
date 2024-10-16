@@ -23,7 +23,6 @@ from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics import BasicStatistics
 from onedal.tests.utils._device_selection import get_queues
 
-
 options_and_tests = {
     "sum": (lambda X: np.sum(X, axis=0), (5e-4, 1e-7)),
     "min": (lambda X: np.min(X, axis=0), (1e-7, 1e-7)),
