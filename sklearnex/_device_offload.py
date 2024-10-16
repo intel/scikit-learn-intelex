@@ -80,6 +80,12 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
             and obj._get_tags()["array_api_support"]
             and not has_usm_data
         ):
+            # USM ndarrays are also excluded for the fallback Array API. Currently, DPNP.ndarray is
+            # not compliant with the Array API standard, and DPCTL usm_ndarray Array API is compliant,
+            # except for the linalg module. There is no guarantee that stock scikit-learn will
+            # work with such input data. The condition will be updated after DPNP.ndarray and
+            # DPCTL usm_ndarray enabling for conformance testing and these arrays supportance
+            # of the fallback cases.
             # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
             # then raw inputs are used for the fallback.
             patching_status.write_log()
