@@ -56,9 +56,9 @@ jobs:
       versionSpec: $(PYTHON_LINT_VERSION)
       addToPath: true
   - script: |
-      if !(grep -q "rev: ${ISORT_VERSION}" ./.pre-commit-config.yaml) then echo "##vso[task.logissue type=error]isort version mismatch"; fi
-      if !(grep -q "rev: ${BLACK_VERSION}" ./.pre-commit-config.yaml); then echo "##vso[task.logissue type=error]black version mismatch"; fi
-      if !(grep -q "python${PYTHON_LINT_VERSION}" ./.pre-commit-config.yaml); then echo "##vso[task.logissue type=error]python lint version mismatch"; fi
+      if !(grep -q "rev: ${ISORT_VERSION}" ./.pre-commit-config.yaml) then echo "##vso[task.logissue type=error]isort mismatch" && exit 1; fi
+      if !(grep -q "rev: ${BLACK_VERSION}" ./.pre-commit-config.yaml); then echo "##vso[task.logissue type=error]black mismatch" && exit 1; fi
+      if !(grep -q "python${PYTHON_LINT_VERSION}" ./.pre-commit-config.yaml); then echo "##vso[task.logissue type=error]python lint mismatch" && exit 1; fi
       python -m pip install --upgrade pip setuptools
       pip install isort==${ISORT_VERSION} black[jupyter]==${BLACK_VERSION}
       isort --profile black --check . && black --check .
