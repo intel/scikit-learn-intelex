@@ -37,44 +37,51 @@ return_code=0
 # Note: execute with argument --json-report in order to produce
 # a JSON report under folder '.pytest_reports'. Other arguments
 # will also be forwarded to pytest.
+with_json_report=0
 if [[ "$*" == *"--json-report"* ]]; then
     echo "Will produce JSON report of tests"
+    with_json_report=1
     mkdir -p .pytest_reports
     if [[ ! -z "$(ls .pytest_reports)" ]]; then
         rm .pytest_reports/*.json
     fi
 fi
+function json_report_name {
+    if [[ "${with_json_report}" == "1" ]]; then
+        printf -- "--json-report-file=.pytest_reports/$1_report.json"
+    fi
+}
 
 python -c "import daal4py"
 return_code=$(($return_code + $?))
 
 echo "Pytest run of legacy unittest ..."
 echo ${daal4py_dir}
-pytest --verbose -s ${daal4py_dir}/tests $@ --json-report-file=.pytest_reports/legacy_report.json
+pytest --verbose -s ${daal4py_dir}/tests $@ $(json_report_name legacy)
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI pytest run of legacy unittest ..."
     mpirun --version
-    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py $@ --json-report-file=.pytest_reports/mpi_legacy_report.json
+    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py $@ $(json_report_name mpi_legacy)
     return_code=$(($return_code + $?))
 fi
 
 echo "Pytest of daal4py running ..."
-pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn $@ --json-report-file=.pytest_reports/daal4py_report.json
+pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn $@ $(json_report_name daal4py)
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
-pytest --verbose --pyargs sklearnex $@ --json-report-file=.pytest_reports/sklearnex_report.json
+pytest --verbose --pyargs sklearnex $@ $(json_report_name sklearnex)
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs ${daal4py_dir}/onedal $@ --json-report-file=.pytest_reports/onedal_report.json
+pytest --verbose --pyargs ${daal4py_dir}/onedal $@ $(json_report_name onedal)
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
-pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py $@ --json-report-file=.pytest_reports/global_patching_report.json
+pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching)
 return_code=$(($return_code + $?))
 
 exit $return_code
