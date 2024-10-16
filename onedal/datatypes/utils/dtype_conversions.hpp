@@ -24,25 +24,25 @@
 
 namespace py = pybind11;
 
-#define SET_DAL_TYPE_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
-    switch (_T) {                                          \
-        case dal::data_type::float32: {                    \
-            _FUNCT(float);                                 \
-            break;                                         \
-        }                                                  \
-        case dal::data_type::float64: {                    \
-            _FUNCT(double);                                \
-            break;                                         \
-        }                                                  \
-        case dal::data_type::int32: {                      \
-            _FUNCT(std::int32_t);                          \
-            break;                                         \
-        }                                                  \
-        case dal::data_type::int64: {                      \
-            _FUNCT(std::int64_t);                          \
-            break;                                         \
-        }                                                  \
-        default: _EXCEPTION;                               \
+#define SET_CTYPE_FROM_DAL_TYPE(_T, _FUNCT, _EXCEPTION) \
+    switch (_T) {                                       \
+        case dal::data_type::float32: {                 \
+            _FUNCT(float);                              \
+            break;                                      \
+        }                                               \
+        case dal::data_type::float64: {                 \
+            _FUNCT(double);                             \
+            break;                                      \
+        }                                               \
+        case dal::data_type::int32: {                   \
+            _FUNCT(std::int32_t);                       \
+            break;                                      \
+        }                                               \
+        case dal::data_type::int64: {                   \
+            _FUNCT(std::int64_t);                       \
+            break;                                      \
+        }                                               \
+        default: _EXCEPTION;                            \
     };
 
 namespace oneapi::dal::python {

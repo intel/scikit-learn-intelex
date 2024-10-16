@@ -86,9 +86,9 @@ dal::table convert_from_sua_iface(py::object obj) {
 
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(obj);
 
-    SET_DAL_TYPE_FROM_DAL_TYPE(type,
-                               MAKE_HOMOGEN_TABLE, //
-                               report_problem_for_sua_iface(": unknown data type"));
+    SET_CTYPE_FROM_DAL_TYPE(type,
+                            MAKE_HOMOGEN_TABLE,
+                            report_problem_for_sua_iface(": unknown data type"));
 
 #undef MAKE_HOMOGEN_TABLE
 
