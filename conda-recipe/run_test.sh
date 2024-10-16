@@ -31,7 +31,7 @@ if [[ count -eq 0 ]]; then
     exit 1
 fi
 
-COV_ARGS=(--no-cov)
+declare -a COV_ARGS=()
 if [ -n "$COVERAGE_RCFILE" ]; then
     COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config=$COVERAGE_RCFILE --cov-append --cov-report=)
     # if a sycl gpu isn't available, uncomment gpu skips in .coveragerc
