@@ -42,7 +42,7 @@ variables:
   PYTHON: 'python'
   ARGS: '1'
   SHELLOPTS: 'errexit:pipefail'
-  ISORT_VERSION: 5.13.1
+  ISORT_VERSION: 5.13.2
   BLACK_VERSION: 24.1.1
   PYTHON_LINT_VERSION: '3.10'
 
