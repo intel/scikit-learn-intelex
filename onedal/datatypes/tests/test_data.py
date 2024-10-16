@@ -20,7 +20,7 @@ from numpy.testing import assert_allclose
 from sklearn.datasets import make_blobs
 
 from onedal import _backend, _is_dpc_backend
-from onedal._device_offload import dpctl_available, dpnp_available
+from onedal._device_offload import dpctl_available
 from onedal.datatypes import from_table, to_table
 
 if dpctl_available:
@@ -36,13 +36,6 @@ from onedal.tests.utils._dataframes_support import (
 )
 from onedal.tests.utils._device_selection import get_queues
 from onedal.utils._array_api import _get_sycl_namespace
-
-if dpctl_available:
-    import dpctl.tensor as dpt
-
-if dpnp_available:
-    import dpnp
-
 
 data_shapes = [
     pytest.param((1000, 100), id="(1000, 100)"),
@@ -239,7 +232,7 @@ def test_conversion_to_table(dtype):
     reason="__sycl_usm_array_interface__ support requires DPC backend.",
 )
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu, gpu")
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
 )
 @pytest.mark.parametrize("order", ["C", "F"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64])
@@ -275,7 +268,7 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
     reason="__sycl_usm_array_interface__ support requires DPC backend.",
 )
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
 )
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
@@ -295,10 +288,8 @@ def test_table_conversions(dataframe, queue, order, data_shape):
     alg = DummyEstimatorWithTableConversions()
     X_table, result_responses_table, result_responses_df = alg.fit(X)
 
-    assert hasattr(X_table, "__sycl_usm_array_interface__")
-    assert hasattr(result_responses_table, "__sycl_usm_array_interface__")
-    assert hasattr(result_responses_df, "__sycl_usm_array_interface__")
-    assert hasattr(X, "__sycl_usm_array_interface__")
+    for obj in [X_table, result_responses_table, result_responses_df, X]:
+        assert hasattr(obj, "__sycl_usm_array_interface__"), f"{obj} has no SUA interface"
     _assert_sua_iface_fields(X, X_table)
 
     # Work around for saving compute-follows-data execution
@@ -335,7 +326,7 @@ def test_table_conversions(dataframe, queue, order, data_shape):
     reason="__sycl_usm_array_interface__ support requires DPC backend.",
 )
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
 )
 @pytest.mark.parametrize("data_shape", unsupported_data_shapes)
 def test_sua_iface_interop_invalid_shape(dataframe, queue, data_shape):
@@ -355,7 +346,7 @@ def test_sua_iface_interop_invalid_shape(dataframe, queue, data_shape):
     reason="__sycl_usm_array_interface__ support requires DPC backend.",
 )
 @pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues("dpctl, dpnp", "cpu, gpu")
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
 )
 @pytest.mark.parametrize(
     "dtype",
