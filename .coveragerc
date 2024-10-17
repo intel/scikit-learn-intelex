@@ -1,0 +1,27 @@
+[run]
+branch = True
+source = 
+    sklearnex
+    onedal
+parallel = True
+omit =
+    */onedal/tests/*
+    */sklearnex/conftest.py
+    */sklearnex/tests/*
+    */sklearnex/preview/*
+    */sklearnex/spmd/*
+[paths]
+sklearnex =
+    sklearnex/
+    /*/sklearnex
+    c:\*\sklearnex
+    d:\*\sklearnex
+onedal =
+    onedal/
+    /*/onedal
+    c:\*\onedal
+    d:\*\onedal
+#[report]
+#exclude_also =
+#    def _onedal_gpu.*
+#    no cover: gpu_start(?s:.)*?no cover: gpu_stop

@@ -31,6 +31,16 @@ if [[ count -eq 0 ]]; then
     exit 1
 fi
 
+declare -a COV_ARGS=()
+if [ -n "$COVERAGE_RCFILE" ]; then
+    COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config=$COVERAGE_RCFILE --cov-append --cov-report=)
+    # if a sycl gpu isn't available, uncomment gpu skips in .coveragerc
+    if !(command -v sycl-ls 2>&1 >/dev/null) || !(sycl-ls | grep -q "gpu"); then
+        echo "no SYCL GPU is available, sklearnex GPU code coverage metrics will be excluded"
+        sed -i -i 's/#//g' $COVERAGE_RCFILE
+    fi
+fi
+
 echo "Start testing ..."
 return_code=0
 
@@ -51,19 +61,19 @@ if [[ ! $NO_DIST ]]; then
 fi
 
 echo "Pytest of daal4py running ..."
-pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn
+pytest --verbose ${daal4py_dir}/daal4py/sklearn "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
-pytest --verbose --pyargs sklearnex
+pytest --verbose --pyargs sklearnex "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs ${daal4py_dir}/onedal
+pytest --verbose --pyargs onedal "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
-pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py
+pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 exit $return_code
