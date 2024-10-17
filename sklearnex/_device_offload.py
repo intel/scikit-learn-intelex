@@ -63,12 +63,12 @@ def _get_backend(obj, queue, method_name, *data):
 
 def dispatch(obj, method_name, branches, *args, **kwargs):
     q = _get_global_queue()
-    q, hostargs = _transfer_to_host(q, *args)
-    q, hostvalues = _transfer_to_host(q, *kwargs.values())
+    has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
+    has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
 
     backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
-
+    has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
     if backend == "onedal":
         patching_status.write_log(queue=q)
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
@@ -78,7 +78,14 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
             and get_config()["array_api_dispatch"]
             and "array_api_support" in obj._get_tags()
             and obj._get_tags()["array_api_support"]
+            and not has_usm_data
         ):
+            # USM ndarrays are also excluded for the fallback Array API. Currently, DPNP.ndarray is
+            # not compliant with the Array API standard, and DPCTL usm_ndarray Array API is compliant,
+            # except for the linalg module. There is no guarantee that stock scikit-learn will
+            # work with such input data. The condition will be updated after DPNP.ndarray and
+            # DPCTL usm_ndarray enabling for conformance testing and these arrays supportance
+            # of the fallback cases.
             # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
             # then raw inputs are used for the fallback.
             patching_status.write_log()
