@@ -98,8 +98,8 @@ else:
         ("covariance", "compute"): _backend.covariance.compute_hyperparameters(),
     }
     if daal_check_version((2024, "P", 300)):
-        infer_hp = _backend.decision_forest.infer_hyperparameters
-        hyperparameters_backend[("decision_forest", "infer")] = infer_hp()
+        df_infer_hp = _backend.decision_forest.infer_hyperparameters
+        hyperparameters_backend[("decision_forest", "infer")] = df_infer_hp()
     hyperparameters_map = {}
 
     for (algorithm, op), hyperparameters in hyperparameters_backend.items():
