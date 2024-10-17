@@ -98,8 +98,15 @@ if dpctl_available:
             assert actual_sua_iface["data"][0] == desired_sua_iface["data"][0]
         if not skip_data_1:
             assert actual_sua_iface["data"][1] == desired_sua_iface["data"][1]
-        # shape: a tuple of integers describing dimensions of an N-dimensional array
-        assert actual_sua_iface["shape"] == desired_sua_iface["shape"]
+        # shape: a tuple of integers describing dimensions of an N-dimensional array.
+        # Reformating shapes for check cases (r,) vs (r,1). Contiguous flattened array
+        # shape (r,) becoming (r,1) just for the check, since OneDAL supports only (r,1)
+        # for 1-D arrays. In code after from_table conversion for 1-D expected outputs
+        # xp.ravel or reshape(-1) is used.
+        get_shape_if_1d = lambda shape: (shape[0], 1) if len(shape) == 1 else shape
+        actual_shape = get_shape_if_1d(actual_sua_iface["shape"])
+        desired_shape = get_shape_if_1d(desired_sua_iface["shape"])
+        assert actual_shape == desired_shape
         # strides: An optional tuple of integers describing number of array elements
         # needed to jump to the next array element in the corresponding dimensions.
         if not actual_sua_iface["strides"] and not desired_sua_iface["strides"]:

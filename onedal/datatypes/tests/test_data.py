@@ -17,7 +17,6 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-from sklearn.datasets import make_blobs
 
 from onedal import _backend, _is_dpc_backend
 from onedal._device_offload import dpctl_available
@@ -38,8 +37,11 @@ from onedal.tests.utils._device_selection import get_queues
 from onedal.utils._array_api import _get_sycl_namespace
 
 data_shapes = [
-    pytest.param((1000, 100), id="(1000, 100)"),
-    pytest.param((2000, 50), id="(2000, 50)"),
+    pytest.param((1000, 100), id="(1000, 100)"),  # 2-D array
+    pytest.param((2000, 50), id="(2000, 50)"),  # 2-D array
+    pytest.param((50, 1), id="(50, 1)"),  # 2-D array
+    pytest.param((1, 50), id="(1, 50)"),  # 2-D array
+    pytest.param((50,), id="(50,)"),  # 1-D array
 ]
 
 unsupported_data_shapes = [
@@ -272,15 +274,14 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
 )
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
-def test_table_conversions(dataframe, queue, order, data_shape):
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_table_conversions(dataframe, queue, order, data_shape, dtype):
     """Checking that values ​​representing USM allocations `__sycl_usm_array_interface__`
     are preserved during conversion to onedal table and from onedal table to
     sycl usm array dataformat.
     """
-    n_samples, n_features = data_shape
-    X, y = make_blobs(
-        n_samples=n_samples, centers=3, n_features=n_features, random_state=0
-    )
+    rng = np.random.RandomState(0)
+    X = np.array(5 * rng.random_sample(data_shape), dtype=dtype)
 
     X = ORDER_DICT[order](X)
 
