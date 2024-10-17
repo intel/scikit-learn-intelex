@@ -18,12 +18,14 @@ import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
 from math import ceil
+from typing import Literal, Optional
 
 import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, daal_require_version_wrapper
+from onedal.common.hyperparameters import HyperParameters
 from sklearnex import get_hyperparameters
 from sklearnex._utils import register_hyperparameters
 
@@ -38,6 +40,9 @@ from ..utils import (
     _column_or_1d,
     _validate_targets,
 )
+
+# typing literals for the operation, which can be "train" or "infer"
+OperationType = Literal["train", "infer"]
 
 
 class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
@@ -190,6 +195,9 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         if daal_check_version((2023, "P", 101)):
             onedal_params["splitter_mode"] = self.splitter_mode
         return onedal_params
+
+    def _get_hyperparameters(self, op: OperationType) -> Optional[HyperParameters]:
+        return None
 
     def _check_parameters(self):
         if isinstance(self.min_samples_leaf, numbers.Integral):
@@ -357,7 +365,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        hparams = get_hyperparameters("decision_forest", "infer")
+        hparams = self._get_hyperparameters("infer")
         if hparams is not None and not hparams.is_default:
             result = module.infer(policy, params, hparams.backend, model, to_table(X))
         else:
@@ -461,6 +469,9 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         # if hasattr(self, "classes_"):
         #    self.n_classes_ = self.classes_
         return y
+
+    def _get_hyperparameters(self, op: OperationType) -> Optional[HyperParameters]:
+        get_hyperparameters("decision_forest", op)
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
