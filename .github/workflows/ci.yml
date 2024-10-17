@@ -72,9 +72,7 @@ jobs:
           github-token: ${{ github.token }}
           repository: oneapi-src/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
-      - name: Decompress oneDAL build artifact
-        run: |
-          tar -xvzf __release_lnx.tar.gz
+          path: ./__release_lnx
       - name: Set Environment Variables
         id: set-env
         run: |
@@ -168,6 +166,7 @@ jobs:
           github-token: ${{ github.token }}
           repository: oneapi-src/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: ./__release_win
       - name: Download Intel BaseKit artifact
         uses: actions/download-artifact@v4
         with:
@@ -175,11 +174,6 @@ jobs:
           github-token: ${{ github.token }}
           repository: oneapi-src/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
-      - name: Decompress oneDAL build
-        shell: cmd
-        run: |
-          tar -xvzf __release_win.tar.gz
-          echo "Unzip complete"
       - name: Decompress Intel BaseKit
         shell: cmd
         run: |
