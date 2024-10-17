@@ -73,6 +73,9 @@ test:
   requires:
     - pyyaml
     - impi_rt  # [not win]
+    # TODO: enable data parallel frameworks when they are available on conda-forge
+    # - dpctl
+    # - dpnp
     # next deps are synced with requirements-test.txt
     - pytest
     - scikit-learn
@@ -80,7 +83,8 @@ test:
     - xgboost
     - lightgbm
     - catboost
-    - shap
+    # TODO: re-enable shap when conda-forge package has a numpy 2.* compatible version 
+    # - shap
     - array-api-compat
     - array-api-strict
   source_files:
