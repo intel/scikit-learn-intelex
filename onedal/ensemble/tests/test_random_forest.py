@@ -22,18 +22,18 @@ from daal4py.sklearn._utils import daal_check_version
 from onedal.ensemble import RandomForestClassifier, RandomForestRegressor
 from onedal.tests.utils._device_selection import get_queues
 
-hparams = [
+hparam_values = [
     (None, None, None, None),
-    (22, 100, 32, 0.3),
+    (8, 100, 32, 0.3),
     (16, 100, 32, 0.3),
     (32, 100, 32, 0.3),
-    (22, 10, 32, 0.1),
-    (22, 100, 1000, 1.0),
+    (64, 10, 32, 0.1),
+    (128, 100, 1000, 1.0),
 ]
 
 
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("block, trees, rows, scale", hparams)
+@pytest.mark.parametrize("block, trees, rows, scale", hparam_values)
 def test_rf_classifier(queue, block, trees, rows, scale):
     X, y = make_classification(
         n_samples=100,

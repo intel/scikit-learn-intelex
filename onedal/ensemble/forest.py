@@ -196,7 +196,9 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             onedal_params["splitter_mode"] = self.splitter_mode
         return onedal_params
 
-    def _get_hyperparameters(self, op: OperationType) -> Optional[HyperParameters]:
+    # base version of _get_hyperparameters that returns None
+    # overloaded versions in derived classes may return HyperParameters, if supported
+    def _get_hyperparameters(self, _: OperationType) -> Optional[HyperParameters]:
         return None
 
     def _check_parameters(self):
@@ -471,7 +473,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         return y
 
     def _get_hyperparameters(self, op: OperationType) -> Optional[HyperParameters]:
-        get_hyperparameters("decision_forest", op)
+        return get_hyperparameters("decision_forest", op)
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
