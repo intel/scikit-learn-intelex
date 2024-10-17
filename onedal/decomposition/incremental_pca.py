@@ -23,6 +23,8 @@ from ..utils import _check_array
 from .pca import BasePCA
 
 
+# TODO:
+# update for BasePCA.
 class IncrementalPCA(BasePCA):
     """
     Incremental estimator for PCA based on oneDAL implementation.
