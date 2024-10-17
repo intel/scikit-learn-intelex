@@ -18,14 +18,16 @@ import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
 from math import ceil
-from numbers import Number
+from typing import Literal, Optional
 
 import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
-from daal4py.sklearn._utils import daal_check_version
-from onedal import _backend
+from daal4py.sklearn._utils import daal_check_version, daal_require_version_wrapper
+from onedal.common.hyperparameters import HyperParameters
+from sklearnex import get_hyperparameters
+from sklearnex._utils import register_hyperparameters
 
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
@@ -38,6 +40,9 @@ from ..utils import (
     _column_or_1d,
     _validate_targets,
 )
+
+# typing literals for the operation, which can be "train" or "infer"
+OperationType = Literal["train", "infer"]
 
 
 class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
@@ -190,6 +195,11 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         if daal_check_version((2023, "P", 101)):
             onedal_params["splitter_mode"] = self.splitter_mode
         return onedal_params
+
+    # base version of _get_hyperparameters that returns None
+    # overloaded versions in derived classes may return HyperParameters, if supported
+    def _get_hyperparameters(self, _: OperationType) -> Optional[HyperParameters]:
+        return None
 
     def _check_parameters(self):
         if isinstance(self.min_samples_leaf, numbers.Integral):
@@ -357,7 +367,12 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        result = module.infer(policy, params, model, to_table(X))
+        hparams = self._get_hyperparameters("infer")
+        if hparams is not None and not hparams.is_default:
+            result = module.infer(policy, params, hparams.backend, model, to_table(X))
+        else:
+            result = module.infer(policy, params, model, to_table(X))
+
         y = from_table(result.responses)
         return y
 
@@ -378,6 +393,15 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         return y
 
 
+# Version of register_hyperparameters that supports versioning
+register_hyperparameters_ver = daal_require_version_wrapper((2024, "P", 300))(
+    register_hyperparameters
+)
+
+
+@register_hyperparameters_ver(
+    {"predict": get_hyperparameters("decision_forest", "infer")}
+)
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(
         self,
@@ -447,6 +471,9 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         # if hasattr(self, "classes_"):
         #    self.n_classes_ = self.classes_
         return y
+
+    def _get_hyperparameters(self, op: OperationType) -> Optional[HyperParameters]:
+        return get_hyperparameters("decision_forest", op)
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(

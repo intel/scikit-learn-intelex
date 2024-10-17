@@ -15,12 +15,16 @@
 # ==============================================================================
 
 import logging
+from typing import Any, Dict, Tuple
 from warnings import warn
 
 from daal4py.sklearn._utils import daal_check_version
 from onedal import _backend
 
-if daal_check_version((2024, "P", 0)):
+if not daal_check_version((2024, "P", 0)):
+    warn("Hyperparameters are supported in oneDAL starting from 2024.0.0 version.")
+    hyperparameters_map = {}
+else:
     _hparams_reserved_words = [
         "algorithm",
         "op",
@@ -56,9 +60,12 @@ if daal_check_version((2024, "P", 0)):
                 return super().__getattribute__(__name)
             elif __name in self.getters.keys():
                 return self.getters[__name]()
-            else:
-                raise ValueError(
-                    f"Unknown '{__name}' name in "
+            try:
+                # return all variables that are in super() class normally
+                return super().__getattribute__(__name)
+            except AttributeError:
+                raise AttributeError(
+                    f"Unknown attribute '{__name}' in "
                     f"'{self.algorithm}.{self.op}' hyperparameters"
                 )
 
@@ -70,7 +77,7 @@ if daal_check_version((2024, "P", 0)):
                 self.setters[__name](__value)
             else:
                 raise ValueError(
-                    f"Unknown '{__name}' name in "
+                    f"Unknown attribute '{__name}' in "
                     f"'{self.algorithm}.{self.op}' hyperparameters"
                 )
 
@@ -83,13 +90,16 @@ if daal_check_version((2024, "P", 0)):
             for method in filter(lambda f: f.startswith(prefix), dir(obj))
         }
 
-    hyperparameters_backend = {
+    hyperparameters_backend: Dict[Tuple[str, str], Any] = {
         (
             "linear_regression",
             "train",
         ): _backend.linear_model.regression.train_hyperparameters(),
         ("covariance", "compute"): _backend.covariance.compute_hyperparameters(),
     }
+    if daal_check_version((2024, "P", 300)):
+        df_infer_hp = _backend.decision_forest.infer_hyperparameters
+        hyperparameters_backend[("decision_forest", "infer")] = df_infer_hp()
     hyperparameters_map = {}
 
     for (algorithm, op), hyperparameters in hyperparameters_backend.items():
@@ -106,11 +116,6 @@ if daal_check_version((2024, "P", 0)):
             algorithm, op, setters, getters, hyperparameters
         )
 
-    def get_hyperparameters(algorithm, op):
-        return hyperparameters_map[(algorithm, op)]
 
-else:
-
-    def get_hyperparameters(algorithm, op):
-        warn("Hyperparameters are supported in oneDAL starting from 2024.0.0 version.")
-        return None
+def get_hyperparameters(algorithm, op):
+    return hyperparameters_map.get((algorithm, op), None)

@@ -17,7 +17,7 @@
 name: CI
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   push:
     branches:
       - main
@@ -56,7 +56,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.PYTHON_VERSION }}  
+          python-version: ${{ matrix.PYTHON_VERSION }}
       - name: Get run ID of "Nightly-build" workflow
         id: get-run-id
         run: |
@@ -156,7 +156,7 @@ jobs:
         run: |
           OTHER_REPO="oneapi-src/oneDAL"
           WF_NAME="Nightly-build"
-          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --status completed --jq .[0].databaseId`
+          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --status completed --jq .[7].databaseId`
           echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
           echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
         env:
@@ -215,7 +215,7 @@ jobs:
           pip install --upgrade setuptools
           pip install cpufeature clang-format pyyaml
           pip install -r dependencies-dev
-      - name: System info 
+      - name: System info
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
