@@ -20,7 +20,7 @@ from functools import partialmethod
 
 import numpy as np
 from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.utils.validation import check_array
 
@@ -43,16 +43,18 @@ from onedal.utils import _num_features, _num_samples
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = sklearn_LinearRegression._validate_data
+    validate_data = _sklearn_LinearRegression._validate_data
 
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
 @control_n_jobs(decorated_methods=["fit", "predict", "score"])
-class LinearRegression(sklearn_LinearRegression):
-    __doc__ = sklearn_LinearRegression.__doc__
+class LinearRegression(_sklearn_LinearRegression):
+    __doc__ = _sklearn_LinearRegression.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**sklearn_LinearRegression._parameter_constraints}
+        _parameter_constraints: dict = {
+            **_sklearn_LinearRegression._parameter_constraints
+        }
 
         def __init__(
             self,
@@ -100,7 +102,7 @@ class LinearRegression(sklearn_LinearRegression):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_LinearRegression.fit,
+                "sklearn": _sklearn_LinearRegression.fit,
             },
             X,
             y,
@@ -122,7 +124,7 @@ class LinearRegression(sklearn_LinearRegression):
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_LinearRegression.predict,
+                "sklearn": _sklearn_LinearRegression.predict,
             },
             X,
         )
@@ -134,7 +136,7 @@ class LinearRegression(sklearn_LinearRegression):
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_LinearRegression.score,
+                "sklearn": _sklearn_LinearRegression.score,
             },
             X,
             y,
@@ -284,32 +286,42 @@ class LinearRegression(sklearn_LinearRegression):
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
-    def get_coef_(self):
-        return self.coef_
+    @property
+    def coef_(self):
+        return self._coef_
 
-    def set_coef_(self, value):
-        self.__dict__["coef_"] = value
+    @coef_.setter
+    def coef_(self, value):
+        self._coef_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.coef_ = value
             del self._onedal_estimator._onedal_model
 
-    def get_intercept_(self):
-        return self.intercept_
+    @coef_.deleter
+    def coef_(self):
+        del self._coef_
 
-    def set_intercept_(self, value):
-        self.__dict__["intercept_"] = value
+    @property
+    def intercept_(self):
+        return self._intercept_
+
+    @intercept_.setter
+    def intercept_(self, value):
+        self._intercept_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             del self._onedal_estimator._onedal_model
 
+    @intercept_.deleter
+    def intercept_(self):
+        del self._intercept_
+
     def _save_attributes(self):
-        self.coef_ = property(self.get_coef_, self.set_coef_)
-        self.intercept_ = property(self.get_intercept_, self.set_intercept_)
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self._sparse = False
-        self.__dict__["coef_"] = self._onedal_estimator.coef_
-        self.__dict__["intercept_"] = self._onedal_estimator.intercept_
+        self._coef_ = self._onedal_estimator.coef_
+        self._intercept_ = self._onedal_estimator.intercept_
 
-    fit.__doc__ = sklearn_LinearRegression.fit.__doc__
-    predict.__doc__ = sklearn_LinearRegression.predict.__doc__
-    score.__doc__ = sklearn_LinearRegression.score.__doc__
+    fit.__doc__ = _sklearn_LinearRegression.fit.__doc__
+    predict.__doc__ = _sklearn_LinearRegression.predict.__doc__
+    score.__doc__ = _sklearn_LinearRegression.score.__doc__
