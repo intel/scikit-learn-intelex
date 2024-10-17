@@ -16,16 +16,18 @@
 
 import importlib.util
 import os
+import pathlib
+import pkgutil
 import re
 import sys
 import trace
-from collections import namedtuple
 from glob import glob
 
 import numpy as np
 import pytest
 import scipy
 import sklearn.utils.validation
+from sklearn.utils import all_estimators
 
 from daal4py.sklearn._utils import sklearn_check_version
 from sklearnex.tests.utils import (
@@ -124,6 +126,64 @@ def test_target_offload_ban():
 
     output = "\n".join(output)
     assert output == "", f"sklearn versioning is occuring in: \n{output}"
+
+
+def _sklearnex_walk(func):
+    """this replaces checks on pkgutils to look through sklearnex
+    folders specifically"""
+
+    def wrap(*args, **kwargs):
+        if "prefix" in kwargs and kwargs["prefix"] == "sklearn.":
+            kwargs["prefix"] = "sklearnex."
+        if "path" in kwargs:
+            # force root to sklearnex
+            kwargs["path"] = [str(pathlib.Path(__file__).parent.parent)]
+        for pkginfo in func(*args, **kwargs):
+            # Do not allow spmd to be yielded
+            if "spmd" not in pkginfo.name.split("."):
+                yield pkginfo
+
+    return wrap
+
+
+def test_class_trailing_underscore_ban(monkeypatch):
+    """Trailing underscores are defined for sklearn to be signatures of a fitted
+    estimator instance, sklearnex extends this to the classes as well"""
+    monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
+    estimators = all_estimators()  # list of tuples
+    for name, obj in estimators:
+        if "preview" not in obj.__module__ and "daal4py" not in obj.__module__:
+            # propeties also occur in sklearn, especially in deprecations and are expected
+            # to error if queried and the estimator is not fitted
+            assert all(
+                [
+                    isinstance(getattr(obj, attr), property)
+                    or (attr.startswith("_") or not attr.endswith("_"))
+                    for attr in dir(obj)
+                ]
+            ), f"{name} contains class attributes which have a trailing underscore but no leading one"
+
+
+def test_all_estimators_covered(monkeypatch):
+    """Check that all estimators defined in sklearnex are available in either the
+    patch map or covered in special testing via SPECIAL_INSTANCES. The estimator
+    must inherit sklearn's BaseEstimator and must not have a leading underscore.
+    The sklearnex.spmd and sklearnex.preview packages are not tested.
+    """
+    monkeypatch.setattr(pkgutil, "walk_packages", _sklearnex_walk(pkgutil.walk_packages))
+    estimators = all_estimators()  # list of tuples
+    uncovered_estimators = []
+    for name, obj in estimators:
+        # do nothing if defined in preview
+        if "preview" not in obj.__module__ and not (
+            any([issubclass(est, obj) for est in PATCHED_MODELS.values()])
+            or any([issubclass(est.__class__, obj) for est in SPECIAL_INSTANCES.values()])
+        ):
+            uncovered_estimators += [".".join([obj.__module__, name])]
+
+    assert (
+        uncovered_estimators == []
+    ), f"{uncovered_estimators} are currently not included"
 
 
 def _fullpath(path):
@@ -246,12 +306,12 @@ def estimator_trace(estimator, method, cache, capsys, monkeypatch):
         cache.set("key", key)
         cache.set(
             "text",
-            [
-                re.findall(regex_func, text),
-                text,
-                [i.replace(os.sep, ".") for i in re.findall(regex_mod, text)],
-                [""] + re.findall(regex_callingline, text),
-            ],
+            {
+                "funcs": re.findall(regex_func, text),
+                "trace": text,
+                "modules": [i.replace(os.sep, ".") for i in re.findall(regex_mod, text)],
+                "callingline": [""] + re.findall(regex_callingline, text),
+            },
         )
 
     return cache.get("text", None)
@@ -262,8 +322,8 @@ def call_validate_data(text, estimator, method):
     called once before offloading to oneDAL in sklearnex"""
     try:
         # get last to_table call showing end of oneDAL input portion of code
-        idx = len(text[0]) - 1 - text[0][::-1].index("to_table")
-        validfuncs = text[0][:idx]
+        idx = len(text["funcs"]) - 1 - text["funcs"][::-1].index("to_table")
+        validfuncs = text["funcs"][:idx]
     except ValueError:
         pytest.skip("onedal backend not used in this function")
 
@@ -281,23 +341,31 @@ def n_jobs_check(text, estimator, method):
     """verify the n_jobs is being set if '_get_backend' or 'to_table' is called"""
     # remove the _get_backend function from sklearnex from considered _get_backend
     count = max(
-        text[0].count("to_table"),
+        text["funcs"].count("to_table"),
         len(
             [
                 i
-                for i in range(len(text[0]))
-                if text[0][i] == "_get_backend" and "sklearnex" not in text[2][i]
+                for i in range(len(text["funcs"]))
+                if text["funcs"][i] == "_get_backend"
+                and "sklearnex" not in text["modules"][i]
             ]
         ),
     )
-    n_jobs_count = text[0].count("n_jobs_wrapper")
+    n_jobs_count = text["funcs"].count("n_jobs_wrapper")
 
     assert bool(count) == bool(
         n_jobs_count
     ), f"verify if {method} should be in control_n_jobs' decorated_methods for {estimator}"
 
 
-DESIGN_RULES = [n_jobs_check]
+def runtime_property_check(text, estimator, method):
+    """use of Python's 'property' should not be used at runtime, only at class instantiation"""
+    assert (
+        len(re.findall(r"property\(", text["trace"])) == 0
+    ), f"{estimator}.{method} should only use 'property' at instantiation"
+
+
+DESIGN_RULES = [n_jobs_check, runtime_property_check]
 
 
 if sklearn_check_version("1.0"):
