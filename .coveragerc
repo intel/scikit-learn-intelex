@@ -10,6 +10,17 @@ omit =
     */sklearnex/tests/*
     */sklearnex/preview/*
     */sklearnex/spmd/*
+[paths]
+sklearnex =
+    sklearnex/
+    /*/sklearnex
+    c:\*\sklearnex
+    d:\*\sklearnex
+onedal =
+    onedal/
+    /*/onedal
+    c:\*\onedal
+    d:\*\onedal
 #[report]
 #exclude_also =
 #    def _onedal_gpu.*
