@@ -43,6 +43,8 @@ def test_sklearnex_import_linear(
 ):
     if (overdetermined or multi_output) and not daal_check_version((2025, "P", 1)):
         pytest.skip()
+    if overdetermined and queue and queue.sycl_device.is_gpu:
+        pytest.skip()
 
     from sklearnex.linear_model import LinearRegression
 

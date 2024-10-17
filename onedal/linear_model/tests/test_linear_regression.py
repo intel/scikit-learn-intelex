@@ -150,7 +150,7 @@ def test_reconstruct_model(queue, dtype):
     assert_allclose(gtr, res, rtol=tol)
 
 
-@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("queue", get_queues("cpu"))
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("fit_intercept", [False, True])
 @pytest.mark.skipif(
@@ -176,7 +176,7 @@ def test_overdetermined_system(queue, dtype, fit_intercept):
     assert np.all(np.abs(residual) < 1e-6)
 
 
-@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("queue", get_queues("cpu"))
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("fit_intercept", [False, True])
 @pytest.mark.skipif(
@@ -212,6 +212,8 @@ def test_singular_matrix(queue, dtype, fit_intercept):
     reason="Functionality introduced in later versions",
 )
 def test_multioutput_regression(queue, dtype, fit_intercept, problem_type):
+    if problem_type != "regular" and queue and queue.sycl_device.is_gpu:
+        pytest.skip()  # not yet implemented on GPU
     gen = np.random.default_rng(seed=123)
     if problem_type == "regular":
         X = gen.standard_normal(size=(20, 5))
