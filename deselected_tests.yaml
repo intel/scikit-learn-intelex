@@ -476,6 +476,8 @@ public:
   - metrics/tests/test_common.py::test_binary_sample_weight_invariance[precision_recall_curve]
   # Fails from numpy 2.0 and sklearn 1.4+
   - neighbors/tests/test_neighbors.py::test_KNeighborsClassifier_raise_on_all_zero_weights
+  # Fails in stock scikit-learn: checks that data is modified in-place when not strictly required
+  - linear_model/tests/test_base.py::test_inplace_data_preprocessing[42-False-False]
 
   # --------------------------------------------------------
   # The following tests currently fail with GPU offloading
