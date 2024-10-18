@@ -325,7 +325,6 @@ if daal_check_version((2024, "P", 1)):
 
             #  coverage: gpu_start
             check_is_fitted(self)
-
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
