@@ -31,7 +31,6 @@ X = array_api_strict.asarray(
 # manager for sklearnex, only guarantee that in case of the fallback to stock
 # scikit-learn, fitted attributes to be from the same Array API namespace as
 # the training data.
-with config_context(array_api_dispatch=True):
-    clustering = DBSCAN(eps=3, min_samples=2).fit(X)
+clustering = DBSCAN(eps=3, min_samples=2).fit(X)
 
 print(f"Fitted labels :\n", clustering.labels_)
