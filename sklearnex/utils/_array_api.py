@@ -85,12 +85,19 @@ def get_namespace(*arrays):
 
     if sycl_type:
         return xp, is_array_api_compliant
-    elif sklearn_check_version("1.2") and get_config()["array_api_dispatch"]:
-        return sklearn_get_namespace(*arrays)
-    elif array_api_available:
-        namespace, is_array_api_compliant = array_api_compat.get_namespace(*arrays), True
+    # TODO:
+    # correct condition.
+    # scikit-learn's get_namespace require config_contex(array_api_dispatch=True).
+    # elif sklearn_check_version("1.2") and get_config()["array_api_dispatch"]:
+    elif sklearn_check_version("1.2"):
+        namespace, is_array_api_compliant = sklearn_get_namespace(*arrays)
         return namespace, is_array_api_compliant
+    # TODO:
+    # on PR 2096.
+    # elif array_api_available:
+    #     namespace, is_array_api_compliant = array_api_compat.get_namespace(*arrays), True
+    #     return namespace, is_array_api_compliant
     # TODO:
     # should be removed.
     else:
-        np, False
+        return np, False

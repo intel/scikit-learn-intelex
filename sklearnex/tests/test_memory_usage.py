@@ -33,12 +33,20 @@ from sklearn.model_selection import KFold
 from onedal import _is_dpc_backend
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
+    dpctl_available,
+    dpnp_available,
     get_dataframes_and_queues,
 )
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
 from sklearnex import config_context
 from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from sklearnex.utils._array_api import get_namespace
+
+if dpctl_available:
+    from dpctl.tensor import usm_ndarray
+
+if dpnp_available:
+    import dpnp
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -144,12 +152,23 @@ def get_traced_memory(queue=None):
 
 
 def take(x, index, axis=0, queue=None):
-    with config_context(array_api_dispatch=True):
-        xp, array_api = get_namespace(x)
-        if array_api:
-            return xp.take(x, xp.asarray(index, device=queue), axis=axis)
-        else:
-            return x.take(index, axis=axis)
+    xp, array_api = get_namespace(x)
+    if (
+        dpnp_available
+        and isinstance(x, dpnp.ndarray)
+        or dpctl_available
+        and isinstance(x, usm_ndarray)
+    ):
+        # Using the same sycl queue for dpnp.ndarray or usm_ndarray.
+        return xp.take(
+            x, xp.asarray(index, usm_type="device", sycl_queue=x.sycl_queue), axis=axis
+        )
+    # TODO:
+    # re-impl _is_numpy_namespace
+    elif array_api and not isinstance(x, np.ndarray):
+        return xp.take(x, xp.asarray(index, device=x.device), axis=axis)
+    else:
+        return xp.take(x, xp.asarray(index), axis=axis)
 
 
 def split_train_inference(kf, x, y, estimator, queue=None):
