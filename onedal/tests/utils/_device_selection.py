@@ -20,6 +20,10 @@ import pytest
 
 from ...utils._dpep_helpers import dpctl_available
 
+if dpctl_available:
+    import dpctl
+    from dpctl.memory import MemoryUSMDevice, MemoryUSMShared
+
 
 def get_queues(filter_="cpu,gpu"):
     """Get available dpctl.SycQueues for testing.
@@ -43,30 +47,23 @@ def get_queues(filter_="cpu,gpu"):
     """
     queues = [None] if "cpu" in filter_ else []
 
-    try:
-        import dpctl
-
+    if dpctl_available:
         if dpctl.has_cpu_devices() and "cpu" in filter_:
             queues.append(pytest.param(dpctl.SyclQueue("cpu"), id="SyclQueue_CPU"))
         if dpctl.has_gpu_devices() and "gpu" in filter_:
             queues.append(pytest.param(dpctl.SyclQueue("gpu"), id="SyclQueue_GPU"))
-    finally:
-        return queues
+
+    return queues
 
 
 def get_memory_usm():
-    try:
-        from dpctl.memory import MemoryUSMDevice, MemoryUSMShared
-
+    if dpctl_available:
         return [MemoryUSMDevice, MemoryUSMShared]
-    except ImportError:
-        return []
+    return []
 
 
 def is_dpctl_device_available(targets):
     if dpctl_available:
-        import dpctl
-
         for device in targets:
             if device == "cpu" and not dpctl.has_cpu_devices():
                 return False
@@ -80,12 +77,11 @@ def device_type_to_str(queue):
     if queue is None:
         return "cpu"
 
-    from dpctl import device_type
-
-    if queue.sycl_device.device_type == device_type.cpu:
-        return "cpu"
-    if queue.sycl_device.device_type == device_type.gpu:
-        return "gpu"
+    if dpctl_available:
+        if queue.sycl_device.is_cpu:
+            return "cpu"
+        if queue.sycl_device.is_gpu:
+            return "gpu"
     return "unknown"
 
 
