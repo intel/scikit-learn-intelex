@@ -165,6 +165,7 @@ req_library = defaultdict(lambda: [])
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["dbscan_array_api.py"] = ["array_api_strict"]
 req_library["incremental_basic_statistics_dpctl.py"] = ["dpctl"]
 req_library["incremental_covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["incremental_linear_regression_dpctl.py"] = ["dpctl"]
