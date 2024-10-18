@@ -16,6 +16,7 @@
 
 import logging
 from abc import ABC
+from functools import partialmethod
 
 import numpy as np
 from sklearn.exceptions import NotFittedError
@@ -24,7 +25,7 @@ from sklearn.metrics import r2_score
 from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
@@ -111,7 +112,6 @@ class LinearRegression(_sklearn_LinearRegression):
 
     @wrap_output_data
     def predict(self, X):
-
         if not hasattr(self, "coef_"):
             msg = (
                 "This %(name)s instance is not fitted yet. Call 'fit' with "
@@ -143,7 +143,7 @@ class LinearRegression(_sklearn_LinearRegression):
             sample_weight=sample_weight,
         )
 
-    def _onedal_fit_supported(self, method_name, *data):
+    def _onedal_fit_supported(self, is_gpu, method_name, *data):
         assert method_name == "fit"
         assert len(data) == 3
         X, y, sample_weight = data
@@ -163,8 +163,11 @@ class LinearRegression(_sklearn_LinearRegression):
         n_samples = _num_samples(X)
         n_features = _num_features(X, fallback_1d=True)
 
-        # Check if equations are well defined
+        # Note: support for some variants was either introduced in oneDAL 2025.1,
+        # or had bugs in some uncommon cases in older versions.
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+        is_multi_output = hasattr(y, "shape") and len(y.shape) > 1 and y.shape[1] > 1
+        supports_all_variants = daal_check_version((2025, "P", 1))
 
         patching_status.and_conditions(
             [
@@ -179,9 +182,13 @@ class LinearRegression(_sklearn_LinearRegression):
                     "Forced positive coefficients are not supported.",
                 ),
                 (
-                    not is_underdetermined,
+                    not (is_underdetermined and (not supports_all_variants or is_gpu)),
                     "The shape of X (fitting) does not satisfy oneDAL requirements:"
                     "Number of features + 1 >= number of samples.",
+                ),
+                (
+                    not (is_multi_output and not supports_all_variants),
+                    "Multi-output regression is not supported.",
                 ),
             ]
         )
@@ -208,15 +215,15 @@ class LinearRegression(_sklearn_LinearRegression):
 
         return patching_status
 
-    def _onedal_supported(self, method_name, *data):
+    def _onedal_supported(self, is_gpu, method_name, *data):
         if method_name == "fit":
-            return self._onedal_fit_supported(method_name, *data)
+            return self._onedal_fit_supported(is_gpu, method_name, *data)
         if method_name in ["predict", "score"]:
             return self._onedal_predict_supported(method_name, *data)
         raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
 
-    _onedal_gpu_supported = _onedal_supported
-    _onedal_cpu_supported = _onedal_supported
+    _onedal_gpu_supported = partialmethod(_onedal_supported, True)
+    _onedal_cpu_supported = partialmethod(_onedal_supported, False)
 
     def _initialize_onedal_estimator(self):
         onedal_params = {"fit_intercept": self.fit_intercept, "copy_X": self.copy_X}
@@ -225,13 +232,14 @@ class LinearRegression(_sklearn_LinearRegression):
     def _onedal_fit(self, X, y, sample_weight, queue=None):
         assert sample_weight is None
 
+        supports_multi_output = daal_check_version((2025, "P", 1))
         check_params = {
             "X": X,
             "y": y,
             "dtype": [np.float64, np.float32],
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
-            "multi_output": True,
+            "multi_output": supports_multi_output,
         }
         if sklearn_check_version("1.0"):
             X, y = validate_data(self, **check_params)
