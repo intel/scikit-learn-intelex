@@ -54,6 +54,10 @@ if "%with_json_report%" == "1" (
     pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
     pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" --json-report --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
     pytest --verbose %1\.ci\scripts\test_global_patch.py --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
+    if NOT EXIST .pytest_reports\legacy_report.json (
+        echo "Error: JSON report files failed to be produced."
+        set exitcode=1
+    )
 ) else (
     %PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
     pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1

@@ -84,4 +84,11 @@ echo "Global patching test running ..."
 pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching)
 return_code=$(($return_code + $?))
 
+if [[ "${with_json_report}" == "1" ]]; then
+    if [[ ! -f "$(json_report_name legacy)" ]]; then
+        echo "Error: JSON report files failed to be produced."
+        return_code=1
+    fi
+fi
+
 exit $return_code
