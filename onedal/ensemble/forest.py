@@ -18,7 +18,6 @@ import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
 from math import ceil
-from typing import Literal
 
 import numpy as np
 from sklearn.ensemble import BaseEnsemble
@@ -39,9 +38,6 @@ from ..utils import (
     _column_or_1d,
     _validate_targets,
 )
-
-# typing literals for the operation, which can be "train" or "infer"
-OperationType = Literal["train", "infer"]
 
 
 class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
