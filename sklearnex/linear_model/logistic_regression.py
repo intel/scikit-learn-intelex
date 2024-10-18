@@ -47,7 +47,7 @@ if daal_check_version((2024, "P", 1)):
     _sparsity_enabled = daal_check_version((2024, "P", 700))
 
     class BaseLogisticRegression(ABC):
-        def _save_attributes(self):
+        def _onedal_gpu_save_attributes(self):
             assert hasattr(self, "_onedal_estimator")
             self.classes_ = self._onedal_estimator.classes_
             self.coef_ = self._onedal_estimator.coef_
@@ -270,7 +270,7 @@ if daal_check_version((2024, "P", 1)):
 
             return patching_status
 
-        def _initialize_onedal_estimator(self):
+        def _onedal_gpu_initialize_estimator(self):
             onedal_params = {
                 "tol": self.tol,
                 "C": self.C,
@@ -284,6 +284,7 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return self._onedal_cpu_fit(X, y, sample_weight)
 
+            #  coverage: gpu_start
             assert sample_weight is None
 
             if sklearn_check_version("1.0"):
@@ -304,10 +305,10 @@ if daal_check_version((2024, "P", 1)):
                     dtype=[np.float64, np.float32],
                 )
 
-            self._initialize_onedal_estimator()
+            self._onedal_gpu_initialize_estimator()
             try:
                 self._onedal_estimator.fit(X, y, queue=queue)
-                self._save_attributes()
+                self._onedal_gpu_save_attributes()
             except RuntimeError:
                 logging.getLogger("sklearnex").info(
                     f"{self.__class__.__name__}.fit "
@@ -316,11 +317,13 @@ if daal_check_version((2024, "P", 1)):
 
                 del self._onedal_estimator
                 super().fit(X, y)
+            #  coverage: gpu_stop
 
         def _onedal_predict(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
+            #  coverage: gpu_start
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
@@ -342,10 +345,13 @@ if daal_check_version((2024, "P", 1)):
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict(X, queue=queue)
 
+        #  coverage: gpu_stop
+
         def _onedal_predict_proba(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
+            #  coverage: gpu_start
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
@@ -367,10 +373,12 @@ if daal_check_version((2024, "P", 1)):
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_proba(X, queue=queue)
 
+        #  coverage: gpu_stop
+
         def _onedal_predict_log_proba(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
-
+            #  coverage: gpu_start
             check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
@@ -391,6 +399,8 @@ if daal_check_version((2024, "P", 1)):
 
             assert hasattr(self, "_onedal_estimator")
             return self._onedal_estimator.predict_log_proba(X, queue=queue)
+
+        #  coverage: gpu_stop
 
         fit.__doc__ = _sklearn_LogisticRegression.fit.__doc__
         predict.__doc__ = _sklearn_LogisticRegression.predict.__doc__
