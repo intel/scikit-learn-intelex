@@ -113,7 +113,7 @@ jobs:
           source venv/bin/activate
           source .github/scripts/activate_components.sh
           cd .ci
-          ../conda-recipe/run_test.sh --json-report
+          ../conda-recipe/run_test.sh
       - name: Sklearn testing
         run: |
           source venv/bin/activate
