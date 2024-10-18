@@ -38,7 +38,12 @@ def get_config():
     return {**sklearn, **sklearnex}
 
 
-def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_configs):
+def set_config(
+    target_offload=None,
+    allow_fallback_to_host=None,
+    allow_sklearn_after_onedal=True,
+    **sklearn_configs,
+):
     """Set global configuration
     Parameters
     ----------
@@ -50,6 +55,10 @@ def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_confi
     allow_fallback_to_host : bool, default=None
         If True, allows to fallback computation to host device
         in case particular estimator does not support the selected one.
+        Global default: False.
+    allow_sklearn_after_onedal : bool, default=True
+        If True, allows to fallback computation to sklearn after onedal
+        backend in case of runtime error on onedal backend computations.
         Global default: False.
     See Also
     --------
@@ -64,6 +73,7 @@ def set_config(target_offload=None, allow_fallback_to_host=None, **sklearn_confi
         local_config["target_offload"] = target_offload
     if allow_fallback_to_host is not None:
         local_config["allow_fallback_to_host"] = allow_fallback_to_host
+    local_config["allow_sklearn_after_onedal"] = allow_sklearn_after_onedal
 
 
 @contextmanager
