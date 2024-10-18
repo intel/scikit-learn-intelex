@@ -163,7 +163,7 @@ class LinearRegression(_sklearn_LinearRegression):
         n_samples = _num_samples(X)
         n_features = _num_features(X, fallback_1d=True)
 
-        # Note: support for some variants was either introduced later on,
+        # Note: support for some variants was either introduced in oneDAL 2025.1,
         # or had bugs in some uncommon cases in older versions.
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
         is_multi_output = hasattr(y, "shape") and len(y.shape) > 1 and y.shape[1] > 1
