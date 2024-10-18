@@ -61,6 +61,27 @@ DPCTL or DPNP inputs are not required to use `config_context(target_offload=devi
     of data to the targeted device.
 
 
+Support for Array API-compatible inputs
+=======================================
+All patched estimators, metrics, tools and non-scikit-learn estimators functionally support Array API standart.
+Intel(R) Extension for scikit-Learn preserves input data format for all outputs. For all array inputs except
+SYCL USM arrays `dpnp's <https://github.com/IntelPython/dpnp>`__ ndarray and
+`Data Parallel Control usm_ndarray <https://intelpython.github.io/dpctl/latest/index.html>`__ all computation
+will be only accomplished on CPU unless specified by a `config_context`` with an available GPU device.
+
+Stock scikit-learn uses `config_context(array_api_dispatch=True)` for enabling Array API
+`support <https://scikit-learn.org/1.5/modules/array_api.html>`__.
+If `array_api_dispatch` is enabled and the installed Scikit-Learn version supports array API, then the original
+inputs are used for when falling back to Scikit-Learn functionality.
+
+.. note::
+    Data Parallel Control usm_ndarray or DPNP ndarray inputs will use host numpy data copies when
+    falling back to Scikit-Learn since they are not array API compliant.
+.. note::
+    Functional support doesn't guarantee that after the model is trained, fitted attributes that are arrays
+    will also be from the same namespace as the training data.
+
+
 Example usage
 =============
 
@@ -100,20 +121,3 @@ arrays to run `DBSCAN`.
 
 .. literalinclude:: ../../examples/sklearnex/dbscan_array_api.py
 	   :language: python
-
-
-Support for Array API-compatible inputs
-=======================================
-All patched estimators, metrics, tools and non-scikit-learn estimators functionally support Array API.
-Functionally all input and output data have the same data format type.
-For all array inputs except SYCL USM arrays `dpnp's <https://github.com/IntelPython/dpnp>`__ ndarray and
-`Data Parallel Control usm_ndarray <https://intelpython.github.io/dpctl/latest/index.html>`__ all computation
-will be only accomplished on CPU unless specified by a config_context with an available GPU device.
-
-Stock scikit-learn uses `config_context(array_api_dispatch=True)` for enabling Array API `support <https://scikit-learn.org/1.5/modules/array_api.html>`__.
-If `array_api_dispatch` enabled and the installed Scikit-Learn version supports array API, then the original
-inputs are used for when falling back to Scikit-Learn functionality.
-
-.. note::
-    Data Parallel Control usm_ndarray or DPNP ndarray inputs will use host numpy data copies when
-    falling back to Scikit-Learn since they are not array API compliant.
