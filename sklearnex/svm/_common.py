@@ -37,31 +37,39 @@ else:
     validate_data = BaseEstimator._validate_data
 
 
-def get_dual_coef(self):
-    return self.dual_coef_
-
-
-def set_dual_coef(self, value):
-    self.dual_coef_ = value
-    if hasattr(self, "_onedal_estimator"):
-        self._onedal_estimator.dual_coef_ = value
-        if not self._is_in_fit:
-            del self._onedal_estimator._onedal_model
-
-
-def get_intercept(self):
-    return self._intercept_
-
-
-def set_intercept(self, value):
-    self._intercept_ = value
-    if hasattr(self, "_onedal_estimator"):
-        self._onedal_estimator.intercept_ = value
-        if not self._is_in_fit:
-            del self._onedal_estimator._onedal_model
-
-
 class BaseSVM(BaseEstimator, ABC):
+
+    @property
+    def _dual_coef_(self):
+        return self._dualcoef_
+
+    @_dual_coef_.setter
+    def _dual_coef_(self, value):
+        self._dualcoef_ = value
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator.dual_coef_ = value
+            if hasattr(self._onedal_estimator, "_onedal_model"):
+                del self._onedal_estimator._onedal_model
+
+    @_dual_coef_.deleter
+    def _dual_coef_(self):
+        del self._dualcoef_
+
+    @property
+    def intercept_(self):
+        return self._icept_
+
+    @intercept_.setter
+    def intercept_(self, value):
+        self._icept_ = value
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator.intercept_ = value
+            if hasattr(self._onedal_estimator, "_onedal_model"):
+                del self._onedal_estimator._onedal_model
+
+    @intercept_.deleter
+    def intercept_(self):
+        del self._icept_
 
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
@@ -285,7 +293,7 @@ class BaseSVC(BaseSVM):
             self.class_weight_ = self._onedal_estimator.class_weight_
         self.support_ = self._onedal_estimator.support_
 
-        self._intercept_ = self._onedal_estimator.intercept_
+        self._icept_ = self._onedal_estimator.intercept_
         self._n_support = self._onedal_estimator._n_support
         self._sparse = False
         self._gamma = self._onedal_estimator._gamma
@@ -297,13 +305,7 @@ class BaseSVC(BaseSVM):
             self._probA = np.empty(0)
             self._probB = np.empty(0)
 
-        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-        self.intercept_ = property(get_intercept, set_intercept)
-
-        self._is_in_fit = True
-        self._dual_coef_ = self.dual_coef_
-        self.intercept_ = self._intercept_
-        self._is_in_fit = False
+        self._dualcoef_ = self.dual_coef_
 
         if sklearn_check_version("1.1"):
             length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
@@ -319,23 +321,17 @@ class BaseSVR(BaseSVM):
         self.shape_fit_ = self._onedal_estimator.shape_fit_
         self.support_ = self._onedal_estimator.support_
 
-        self._intercept_ = self._onedal_estimator.intercept_
+        self._icept_ = self._onedal_estimator.intercept_
         self._n_support = [self.support_vectors_.shape[0]]
         self._sparse = False
         self._gamma = self._onedal_estimator._gamma
         self._probA = None
         self._probB = None
 
-        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-        self.intercept_ = property(get_intercept, set_intercept)
-
-        self._is_in_fit = True
-        self._dual_coef_ = self.dual_coef_
-        self.intercept_ = self._intercept_
-        self._is_in_fit = False
-
         if sklearn_check_version("1.1"):
             self.n_iter_ = self._onedal_estimator.n_iter_
+
+        self._dualcoef_ = self.dual_coef_
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return r2_score(
