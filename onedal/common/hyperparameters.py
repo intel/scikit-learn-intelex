@@ -61,9 +61,13 @@ else:
             elif __name in self.getters.keys():
                 return self.getters[__name]()
             try:
-                # return all variables that are in super() class normally
+                # try to return attribute from base class
+                # required to read builtin attributes like __class__, __doc__, etc.
+                # which are used in debuggers
                 return super().__getattribute__(__name)
             except AttributeError:
+                # raise an AttributeError with a hyperparameter-specific message
+                # for easier debugging
                 raise AttributeError(
                     f"Unknown attribute '{__name}' in "
                     f"'{self.algorithm}.{self.op}' hyperparameters"
