@@ -456,7 +456,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features` and there should be no linear dependencies.
+     - Only dense data is supported, `#observations` should be >= `#features` and there should be no linearly dependent features in the data.
 
 Clustering
 **********
