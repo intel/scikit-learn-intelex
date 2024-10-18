@@ -96,13 +96,6 @@ def get_patch_message(s, queue=None, transferred_to_host=True):
     return message
 
 
-def get_usm_data_message(is_copied=False):
-    message = ""
-    if is_copied:
-        message = ". All USM inputs are being copied to HOST for further computations."
-    return message
-
-
 def register_hyperparameters(hyperparameters_map):
     """Decorator for hyperparameters support in estimator class.
     Adds `get_hyperparameters` method to class.
