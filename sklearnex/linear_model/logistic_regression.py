@@ -129,6 +129,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict",
@@ -141,6 +142,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_proba(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict_proba",
@@ -153,6 +155,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_log_proba(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict_log_proba",
@@ -165,6 +168,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "score",
@@ -321,7 +325,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -346,7 +349,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -371,7 +373,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,

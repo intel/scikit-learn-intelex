@@ -170,6 +170,7 @@ if daal_check_version((2024, "P", 100)):
 
         @wrap_output_data
         def transform(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "transform",
@@ -181,7 +182,6 @@ if daal_check_version((2024, "P", 100)):
             )
 
         def _onedal_transform(self, X, queue=None):
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,

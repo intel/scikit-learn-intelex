@@ -101,6 +101,7 @@ class NearestNeighbors(KNeighborsDispatchingBase, _sklearn_NearestNeighbors):
             and self._fit_method == "kd_tree"
         ):
             _sklearn_NearestNeighbors.fit(self, self._fit_X, getattr(self, "_y", None))
+        check_is_fitted(self)
         return dispatch(
             self,
             "radius_neighbors",
