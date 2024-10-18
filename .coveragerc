@@ -20,4 +20,4 @@ onedal =
 #[report]
 #exclude_also =
 #    def _onedal_gpu.*
-#    no cover: gpu_start(?s:.)*?no cover: gpu_stop
+#    coverage: gpu_start(?s:.)*?coverage: gpu_stop
