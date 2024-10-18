@@ -18,14 +18,13 @@ import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
 from math import ceil
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
-from daal4py.sklearn._utils import daal_check_version, daal_require_version_wrapper
-from onedal.common.hyperparameters import HyperParameters
+from daal4py.sklearn._utils import daal_check_version
 from sklearnex import get_hyperparameters
 from sklearnex._utils import register_hyperparameters
 
@@ -196,11 +195,6 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             onedal_params["splitter_mode"] = self.splitter_mode
         return onedal_params
 
-    # base version of _get_hyperparameters that returns None
-    # overloaded versions in derived classes may return HyperParameters, if supported
-    def _get_hyperparameters(self, _: OperationType) -> Optional[HyperParameters]:
-        return None
-
     def _check_parameters(self):
         if isinstance(self.min_samples_leaf, numbers.Integral):
             if not 1 <= self.min_samples_leaf:
@@ -367,7 +361,11 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        hparams = self._get_hyperparameters("infer")
+        hparams = (
+            self.get_hyperparameters("infer")
+            if hasattr(self, "get_hyperparameters")
+            else None
+        )
         if hparams is not None and not hparams.is_default:
             result = module.infer(policy, params, hparams.backend, model, to_table(X))
         else:
@@ -393,15 +391,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         return y
 
 
-# Version of register_hyperparameters that supports versioning
-register_hyperparameters_ver = daal_require_version_wrapper((2024, "P", 300))(
-    register_hyperparameters
-)
-
-
-@register_hyperparameters_ver(
-    {"predict": get_hyperparameters("decision_forest", "infer")}
-)
+@register_hyperparameters({"infer": get_hyperparameters("decision_forest", "infer")})
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(
         self,
@@ -471,9 +461,6 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         # if hasattr(self, "classes_"):
         #    self.n_classes_ = self.classes_
         return y
-
-    def _get_hyperparameters(self, op: OperationType) -> Optional[HyperParameters]:
-        return get_hyperparameters("decision_forest", op)
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
