@@ -39,10 +39,31 @@ IF DEFINED TBBROOT (
     call "%TBBROOT%\env\vars.bat" || set exitcode=1
 )
 
-%PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
+rem Note: execute with argument --json-report as second argument
+rem in order to produce a JSON report under folder '.pytest_reports'.
+set with_json_report=0
+if "%~2"=="--json-report" (
+    set with_json_report=1
+    mkdir .pytest_reports
+    del /q .pytest_reports\*.json
+)
 
-pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
-pytest --verbose --pyargs sklearnex || set exitcode=1
-pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set exitcode=1
-pytest --verbose %1\.ci\scripts\test_global_patch.py || set exitcode=1
+if "%with_json_report%"=="1" (
+    %PYTHON% -m pytest --verbose -s %1\tests --json-report --json-report-file=.pytest_reports\legacy_report.json || set exitcode=1
+    pytest --verbose --pyargs %1\daal4py\sklearn --json-report --json-report-file=.pytest_reports\daal4py_report.json || set exitcode=1
+    pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
+    pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" --json-report --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
+    pytest --verbose %1\.ci\scripts\test_global_patch.py --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
+    if NOT EXIST .pytest_reports\legacy_report.json (
+        echo "Error: JSON report files failed to be produced."
+        set exitcode=1
+    )
+) else (
+    %PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
+    pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
+    pytest --verbose --pyargs sklearnex || set exitcode=1
+    pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set exitcode=1
+    pytest --verbose %1\.ci\scripts\test_global_patch.py || set exitcode=1
+)
+
 EXIT /B %exitcode%

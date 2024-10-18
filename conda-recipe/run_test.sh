@@ -34,36 +34,61 @@ fi
 echo "Start testing ..."
 return_code=0
 
+# Note: execute with argument --json-report in order to produce
+# a JSON report under folder '.pytest_reports'. Other arguments
+# will also be forwarded to pytest.
+with_json_report=0
+if [[ "$*" == *"--json-report"* ]]; then
+    echo "Will produce JSON report of tests"
+    with_json_report=1
+    mkdir -p .pytest_reports
+    if [[ ! -z "$(ls .pytest_reports)" ]]; then
+        rm .pytest_reports/*.json
+    fi
+fi
+function json_report_name {
+    if [[ "${with_json_report}" == "1" ]]; then
+        printf -- "--json-report-file=.pytest_reports/$1_report.json"
+    fi
+}
+
 python -c "import daal4py"
 return_code=$(($return_code + $?))
 
 echo "Pytest run of legacy unittest ..."
 echo ${daal4py_dir}
-pytest --verbose -s ${daal4py_dir}/tests
+pytest --verbose -s ${daal4py_dir}/tests $@ $(json_report_name legacy)
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     echo "MPI pytest run of legacy unittest ..."
     mpirun --version
-    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py
+    mpirun -n 4 pytest --verbose -s ${daal4py_dir}/tests/test*spmd*.py $@ $(json_report_name mpi_legacy)
     return_code=$(($return_code + $?))
 fi
 
 echo "Pytest of daal4py running ..."
-pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn
+pytest --verbose --pyargs ${daal4py_dir}/daal4py/sklearn $@ $(json_report_name daal4py)
 return_code=$(($return_code + $?))
 
 echo "Pytest of sklearnex running ..."
-pytest --verbose --pyargs sklearnex
+pytest --verbose --pyargs sklearnex $@ $(json_report_name sklearnex)
 return_code=$(($return_code + $?))
 
 echo "Pytest of onedal running ..."
-pytest --verbose --pyargs ${daal4py_dir}/onedal
+pytest --verbose --pyargs ${daal4py_dir}/onedal $@ $(json_report_name onedal)
 return_code=$(($return_code + $?))
 
 echo "Global patching test running ..."
-pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py
+pytest --verbose -s ${daal4py_dir}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching)
 return_code=$(($return_code + $?))
+
+if [[ "${with_json_report}" == "1" ]]; then
+    if [[ ! -f ".pytest_reports/legacy_report.json" ]]; then
+        echo "Error: JSON report files failed to be produced."
+        return_code=1
+    fi
+fi
 
 exit $return_code

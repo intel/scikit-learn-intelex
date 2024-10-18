@@ -55,7 +55,7 @@ steps:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       cd ..
-      ./s/conda-recipe/run_test.sh
+      ./s/conda-recipe/run_test.sh --json-report
     displayName: "Sklearnex testing"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
