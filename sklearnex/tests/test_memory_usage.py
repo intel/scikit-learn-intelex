@@ -23,7 +23,6 @@ import warnings
 from inspect import isclass
 
 import numpy as np
-import pandas as pd
 import pytest
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, clone
@@ -33,12 +32,21 @@ from sklearn.model_selection import KFold
 from onedal import _is_dpc_backend
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
+    dpctl_available,
+    dpnp_available,
     get_dataframes_and_queues,
 )
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
+from onedal.utils._array_api import _get_sycl_namespace
 from sklearnex import config_context
 from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from sklearnex.utils._array_api import get_namespace
+
+if dpctl_available:
+    from dpctl.tensor import usm_ndarray
+
+if dpnp_available:
+    import dpnp
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -125,6 +133,27 @@ N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
+if _is_dpc_backend:
+
+    from onedal.datatypes import from_table, to_table
+
+    class DummyEstimatorWithTableConversions(BaseEstimator):
+
+        def fit(self, X, y=None):
+            sua_iface, _, _ = _get_sycl_namespace(X)
+            X_table = to_table(X, sua_iface=sua_iface)
+            y_table = to_table(y, sua_iface=sua_iface)
+            return self
+
+        def predict(self, X):
+            sua_iface, xp, _ = _get_sycl_namespace(X)
+            X_table = to_table(X, sua_iface=sua_iface)
+            returned_X = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
+            return returned_X
+
+
 def gen_clsf_data(n_samples, n_features):
     data, label = make_classification(
         n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777
@@ -145,8 +174,18 @@ def get_traced_memory(queue=None):
 
 def take(x, index, axis=0, queue=None):
     xp, array_api = get_namespace(x)
-    if array_api:
-        return xp.take(x, xp.asarray(index, device=queue), axis=axis)
+    if (
+        dpnp_available
+        and isinstance(x, dpnp.ndarray)
+        or dpctl_available
+        and isinstance(x, usm_ndarray)
+    ):
+        # Using the same sycl queue for dpnp.ndarray or usm_ndarray.
+        return xp.take(
+            x, xp.asarray(index, usm_type="device", sycl_queue=x.sycl_queue), axis=axis
+        )
+    elif array_api:
+        return xp.take(x, xp.asarray(index, device=x.device), axis=axis)
     else:
         return x.take(index, axis=axis)
 
@@ -293,3 +332,29 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 
     with config_context(target_offload=queue):
         _kfold_function_template(GPU_ESTIMATORS[estimator], None, data_shape, queue, func)
+
+
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
+)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
+)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("data_shape", data_shapes)
+def test_table_conversions_memory_leaks(dataframe, queue, order, data_shape):
+    func = ORDER_DICT[order]
+
+    if queue.sycl_device.is_gpu and (
+        os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_available("gpu")
+    ):
+        pytest.skip("SYCL device memory leak check requires the level zero sysman")
+
+    _kfold_function_template(
+        DummyEstimatorWithTableConversions,
+        dataframe,
+        data_shape,
+        queue,
+        func,
+    )

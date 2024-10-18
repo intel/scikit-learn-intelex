@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2023 Intel Corporation
+* Copyright 2024 Intel Corporation
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ namespace oneapi::dal::python {
 
 namespace py = pybind11;
 
-dal::table convert_from_dptensor(py::object obj);
+dal::table convert_from_sua_iface(py::object obj);
 py::dict construct_sua_iface(const dal::table& input);
 
 void define_sycl_usm_array_property(py::class_<dal::table>& t);
