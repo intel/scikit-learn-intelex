@@ -69,9 +69,6 @@ jobs:
     vmImage: 'ubuntu-22.04'
   steps:
   - script: |
-      bash .ci/scripts/install_dpcpp.sh
-    displayName: "dpcpp installation"
-  - script: |
       conda config --add channels conda-forge
       conda config --set channel_priority strict
       conda update -y -q --all
@@ -80,7 +77,6 @@ jobs:
       conda create -y -q -n build-env conda-build conda-verify
     displayName: "Conda create"
   - script: |
-      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate build-env
       conda build . --python $(PYTHON_VERSION) --numpy $(NUMPY_VERSION)
