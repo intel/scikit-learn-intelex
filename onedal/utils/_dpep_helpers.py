@@ -18,9 +18,12 @@
 See `Data Parallel Extensions for Python <https://github.com/IntelPython/DPEP>`__
 """
 
+import functools
+
 from daal4py.sklearn._utils import _package_check_version
 
 
+@functools.lru_cache(maxsize=256, typed=False)
 def is_dpctl_available(version=None):
     """Checks availability of DPCtl package"""
     try:
@@ -35,6 +38,7 @@ def is_dpctl_available(version=None):
     return dpctl_available
 
 
+@functools.lru_cache(maxsize=256, typed=False)
 def is_dpnp_available(version=None):
     """Checks availability of DPNP package"""
     try:
