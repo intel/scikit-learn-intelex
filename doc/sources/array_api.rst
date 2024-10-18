@@ -16,9 +16,9 @@
 
 .. _array_api:
 
-#################
+=================
 Array API support
-#################
+=================
 The `Array API <https://data-apis.org/array-api/latest/>`_ specification defines
 a standard API for all array manipulation libraries with a NumPy-like API.
 Intel(R) Extension for Scikit-Learn doesn't require
@@ -42,7 +42,7 @@ The main goal is to save preeservance of returned inputs data formats for the ou
 
 
 Support for DPNP and DPCTL
-----------------------------------
+==========================
 The functional support of input data for sklearnex estimators also extended for dpnp.ndarrays,
 which are not Array API compliant, and dpctl usm_ndarray, which are array API compliant except
 `linalg` module. DPNP and DPCTL usm_ndarray sycl context used for scikit-learn-intelex device
@@ -60,16 +60,50 @@ DPCTL or DPNP inputs doesn't require to use ```config_context(target_offload=dev
     for the device primarily used to perform computations, returned output will have different sycl queue for
     the device. `target_offload` provided with `config_context` will be used to perform computations.
 
-.. automodule:: examples/sklearnex/random_forest_regressor_dpnp.py
-  :members:
 
 Example usage
-----------------------------------
-TBD
+=============
+
+DPNP ndarrays
+-------------
+
+Here is an example code to demonstrate how to use `dpnp <https://github.com/IntelPython/dpnp>`__ arrays to
+run `RandomForestRegressor` on a GPU witout ```config_context(array_api_dispatch=True)```:
+
+.. literalinclude:: ../../examples/sklearnex/random_forest_regressor_dpnp.py
+	   :language: python
+
+
+.. note::
+    Functional support doesn't guarantee that after the model is trained, fitted attributes that are arrays
+    will also be from the same namespace as the training data.
+
+For example, if `dpnp's <https://github.com/IntelPython/dpnp>`__ namespace was used for training,
+then fitted attributes will be on the CPU and `numpy.ndarray` data format.
+
+DPCTL usm_ndarrays
+------------------
+Here is an example code to demonstrate how to use `dpctl <https://intelpython.github.io/dpctl/latest/index.html>`__
+arrays to run `RandomForestClassifier` on a GPU witout ```config_context(array_api_dispatch=True)```:
+
+.. literalinclude:: ../../examples/sklearnex/random_forest_classifier_dpctl.py
+	   :language: python
+
+As on previous example, if `dpctl <https://intelpython.github.io/dpctl/latest/index.html>`__ Array API namespace was
+used for training, then fitted attributes will be on the CPU and `numpy.ndarray` data format.
+
+Use of `array-api-strict`
+-------------------------
+
+Here is an example code to demonstrate how to use `array-api-strict <https://github.com/data-apis/array-api-strict>`__
+arrays to run `DBSCAN`.
+
+.. literalinclude:: ../../examples/sklearnex/dbscan_array_api.py
+	   :language: python
 
 
 Support for Array API-compatible inputs
-----------------------------------
+=======================================
 All patched estimators, metrics, tools and non-scikit-learn estimators functionally support Array API.
 Functionally all input and output data have the same data format type.
 
@@ -84,5 +118,6 @@ If `array_api_dispatch` enabled and array api is supported for the stock scikit-
 
 
 Planned features
-----------------------------------
-TBD
+================
+It is planned to implement DBSCAN, PCA and other estimators via Array API for next releases.
+This will allow fitted attributes to be from the same Array API namespace as the training data after the model is trained.
