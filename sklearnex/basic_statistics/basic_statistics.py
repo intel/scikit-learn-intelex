@@ -42,33 +42,63 @@ class BasicStatistics(BaseEstimator):
     """
     Estimator for basic statistics.
     Allows to compute basic statistics for provided data.
+
     Parameters
     ----------
     result_options: string or list, default='all'
-        List of statistics to compute
+        Used to set statistics to calculate. Possible values are ``'min'``, ``'max'``, ``'sum'``, ``'mean'``, ``'variance'``,
+        ``'variation'``, ``sum_squares'``, ``sum_squares_centered'``, ``'standard_deviation'``, ``'second_order_raw_moment'``
+        or a list containing any of these values. If set to ``'all'`` then all possible statistics will be
+        calculated.
 
-    Attributes (are existing only if corresponding result option exists)
+    Attributes
     ----------
-        min : ndarray of shape (n_features,)
+        min_ : ndarray of shape (n_features,)
             Minimum of each feature over all samples.
-        max : ndarray of shape (n_features,)
+        max_ : ndarray of shape (n_features,)
             Maximum of each feature over all samples.
-        sum : ndarray of shape (n_features,)
+        sum_ : ndarray of shape (n_features,)
             Sum of each feature over all samples.
-        mean : ndarray of shape (n_features,)
+        mean_ : ndarray of shape (n_features,)
             Mean of each feature over all samples.
-        variance : ndarray of shape (n_features,)
+        variance_ : ndarray of shape (n_features,)
             Variance of each feature over all samples.
-        variation : ndarray of shape (n_features,)
+        variation_ : ndarray of shape (n_features,)
             Variation of each feature over all samples.
-        sum_squares : ndarray of shape (n_features,)
+        sum_squares_ : ndarray of shape (n_features,)
             Sum of squares for each feature over all samples.
-        standard_deviation : ndarray of shape (n_features,)
+        standard_deviation_ : ndarray of shape (n_features,)
             Standard deviation of each feature over all samples.
-        sum_squares_centered : ndarray of shape (n_features,)
+        sum_squares_centered_ : ndarray of shape (n_features,)
             Centered sum of squares for each feature over all samples.
-        second_order_raw_moment : ndarray of shape (n_features,)
+        second_order_raw_moment_ : ndarray of shape (n_features,)
             Second order moment of each feature over all samples.
+
+    Note
+    ----
+    Attribute exists only if corresponding result option has been provided.
+
+    Note
+    ----
+    Attributes' names without the trailing underscore are
+    supported currently but deprecated in 2025.1 and will be removed in 2026.0
+
+    Note
+    ----
+    Some results can exhibit small variations due to
+    floating point error accumulation and multithreading.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearnex.basic_statistics import BasicStatistics
+    >>> bs = BasicStatistics(result_options=['sum', 'min', 'max'])
+    >>> X = np.array([[1, 2], [3, 4]])
+    >>> bs.fit(X)
+    >>> bs.sum_
+    np.array([4., 6.])
+    >>> bs.min_
+    np.array([1., 2.])
     """
 
     def __init__(self, result_options="all"):
@@ -173,14 +203,14 @@ class BasicStatistics(BaseEstimator):
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Data for compute, where `n_samples` is the number of samples and
-            `n_features` is the number of features.
+            Data for compute, where ``n_samples`` is the number of samples and
+            ``n_features`` is the number of features.
 
         y : Ignored
             Not used, present for API consistency by convention.
 
         sample_weight : array-like of shape (n_samples,), default=None
-            Weights for compute weighted statistics, where `n_samples` is the number of samples.
+            Weights for compute weighted statistics, where ``n_samples`` is the number of samples.
 
         Returns
         -------

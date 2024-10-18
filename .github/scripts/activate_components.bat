@@ -15,15 +15,13 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-rem %1 - dpcpp compiler version
-rem %2 - tbb version
-rem %3 - dpcpp activate flag
+rem %1 - dpcpp activate flag
 
 rem prepare vc
 call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
 rem prepare icx only if no parameter is given.
-if "%3"=="" call .\dpcpp\compiler\%1\env\vars.bat
+if "%1"=="" call .\oneapi\compiler\latest\env\vars.bat
 rem prepare tbb
-call .\dpcpp\tbb\%2\env\vars.bat
+call .\oneapi\tbb\latest\env\vars.bat
 rem prepare oneDAL
 call .\__release_win\daal\latest\env\vars.bat

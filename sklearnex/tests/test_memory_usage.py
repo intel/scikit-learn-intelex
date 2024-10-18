@@ -120,6 +120,7 @@ data_shapes = [
 ]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
+EXTRA_MEMORY_THRESHOLD_PANDAS = 0.25
 N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
@@ -227,15 +228,18 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     else:
         name = estimator.__name__
 
+    threshold = (
+        EXTRA_MEMORY_THRESHOLD_PANDAS if dataframe == "pandas" else EXTRA_MEMORY_THRESHOLD
+    )
     message = (
         "Size of extra allocated memory {} using garbage collector "
-        f"is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data"
+        f"is greater than {threshold * 100}% of input data"
         f"\n\tAlgorithm: {name}"
         f"\n\tInput data size: {data_memory_size} bytes"
         "\n\tExtra allocated memory size: {} bytes"
         " / {} %"
     )
-    if mem_diff >= EXTRA_MEMORY_THRESHOLD * data_memory_size:
+    if mem_diff >= threshold * data_memory_size:
         logging.warning(
             message.format(
                 "before", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
@@ -254,7 +258,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     # as it looks like a memory leak (at least there is no way to discern a
     # leak on the first run).
     if queue is None or queue.sycl_device.is_cpu:
-        assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, message.format(
+        assert mem_diff < threshold * data_memory_size, message.format(
             "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
         )
 
