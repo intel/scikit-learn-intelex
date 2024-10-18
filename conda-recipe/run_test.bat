@@ -48,7 +48,7 @@ if "%~2"=="--json-report" (
     del /q .pytest_reports\*.json
 )
 
-if "%with_json_report%" == "1" (
+if "%with_json_report%"=="1" (
     %PYTHON% -m pytest --verbose -s %1\tests --json-report --json-report-file=.pytest_reports\legacy_report.json || set exitcode=1
     pytest --verbose --pyargs %1\daal4py\sklearn --json-report --json-report-file=.pytest_reports\daal4py_report.json || set exitcode=1
     pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
