@@ -15,7 +15,7 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-IF NOT DEFINED PYTHON (set PYTHON="python")
+IF NOT DEFINED PYTHON (set "PYTHON=python")
 IF DEFINED PKG_VERSION (set SKLEARNEX_VERSION=%PKG_VERSION%)
 IF NOT DEFINED DALROOT (set DALROOT=%PREFIX%)
 IF NOT DEFINED MPIROOT IF "%NO_DIST%"=="" (set MPIROOT=%PREFIX%\Library)
