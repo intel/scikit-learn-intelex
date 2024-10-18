@@ -18,10 +18,13 @@
 
 {% set name = "scikit-learn-intelex" %}
 {% set buildnumber = 0 %}
+# version is set manually in feedstocks and through git tag in repo
+# {% set version = "1.1.1" %}
 
 package:
   name: {{ name|lower }}
   version: {{ environ.get('GIT_DESCRIBE_TAG') }}
+  # version: {{ version }}
 
 # Reminder: source should point to path for repo or github archive for feedstock
 # source:
