@@ -39,14 +39,6 @@ fi
 ${PYTHON} -c "from sklearnex import patch_sklearn; patch_sklearn()"
 return_code=$(($return_code + $?))
 
-echo "NO_DIST=$NO_DIST"
-if [[ ! $NO_DIST ]]; then
-    echo "MPI pytest run"
-    mpirun --version
-    mpirun -n 4 pytest --verbose -s ${sklex_root}/tests/test*spmd*.py
-    return_code=$(($return_code + $?))
-fi
-
 pytest --verbose -s ${sklex_root}/tests
 return_code=$(($return_code + $?))
 
@@ -61,5 +53,12 @@ return_code=$(($return_code + $?))
 
 pytest --verbose -s ${sklex_root}/.ci/scripts/test_global_patch.py
 return_code=$(($return_code + $?))
+
+echo "NO_DIST=$NO_DIST"
+if [[ ! $NO_DIST ]]; then
+    mpirun --version
+    mpirun -n 4 pytest --verbose -s ${sklex_root}/tests/test*spmd*.py
+    return_code=$(($return_code + $?))
+fi
 
 exit $return_code
