@@ -47,7 +47,7 @@ Continuous Integration (CI) testing is enabled for the repository. Your pull req
 
 ## Code Style
 
-We use [black](https://black.readthedocs.io/en/stable/) and [isort](https://pycqa.github.io/isort/) formatters for Python* code. The line length is 90 characters; use default options otherwise. You can find the linter configuration in [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/main/pyproject.toml).
+We use [black](https://black.readthedocs.io/en/stable/) version 24.1.1 and [isort](https://pycqa.github.io/isort/) version 5.13.2 formatters for Python* code. The line length is 90 characters; use default options otherwise. You can find the linter configuration in [.pyproject.toml](https://github.com/intel/scikit-learn-intelex/blob/main/pyproject.toml).
 
 A GitHub* Action verifies if your changes comply with the output of the auto-formatting tools.
 
