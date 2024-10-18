@@ -223,8 +223,10 @@ Intel(R) Extension for Scikit-learn* is easily built from the sources using only
 
 * any `conda` distribution (`miniforge` is recommended)
 * `conda-build` and `conda-verify` installed in a conda environment
-* (Windows only) Microsoft Visual Studio* 2022
+* (Windows only) Microsoft Visual Studio*
 * (optional) Intel(R) oneAPI DPC++/C++ Compiler
+
+`conda-build` config requires **2022** version of Microsoft Visual Studio* by default, you can specify another version in `conda-recipe/conda_build_config.yaml` if needed.
 
 In order to enable DPC++ interfaces support on Windows, you need to set `DPCPPROOT` environment variable pointing to DPC++/C++ Compiler distribution.
 Conda-forge distribution of DPC++ compiler is used by default on Linux, but you still can set your own distribution via `DPCPPROOT` variable.
