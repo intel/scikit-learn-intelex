@@ -70,7 +70,9 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
     has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
     if backend == "onedal":
-        patching_status.write_log(queue=q)
+        # Host args only used before onedal backend call.
+        # Device will be offloaded when onedal backend will be called.
+        patching_status.write_log(queue=q, transferred_to_host=False)
         return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == "sklearn":
         if (
@@ -88,7 +90,7 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
             # of the fallback cases.
             # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
             # then raw inputs are used for the fallback.
-            patching_status.write_log()
+            patching_status.write_log(transferred_to_host=False)
             return branches[backend](obj, *args, **kwargs)
         else:
             patching_status.write_log()

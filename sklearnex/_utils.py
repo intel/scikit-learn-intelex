@@ -29,10 +29,10 @@ class PatchingConditionsChain(daal4py_PatchingConditionsChain):
     def get_status(self):
         return self.patching_is_enabled
 
-    def write_log(self, queue=None):
+    def write_log(self, queue=None, transferred_to_host=True):
         if self.patching_is_enabled:
             self.logger.info(
-                f"{self.scope_name}: {get_patch_message('onedal', queue=queue)}"
+                f"{self.scope_name}: {get_patch_message('onedal', queue=queue, transferred_to_host=transferred_to_host)}"
             )
         else:
             self.logger.debug(
@@ -43,7 +43,9 @@ class PatchingConditionsChain(daal4py_PatchingConditionsChain):
                 self.logger.debug(
                     f"{self.scope_name}: patching failed with cause - {message}"
                 )
-            self.logger.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
+            self.logger.info(
+                f"{self.scope_name}: {get_patch_message('sklearn', transferred_to_host=transferred_to_host)}"
+            )
 
 
 def set_sklearn_ex_verbose():
@@ -66,7 +68,7 @@ def set_sklearn_ex_verbose():
         )
 
 
-def get_patch_message(s, queue=None):
+def get_patch_message(s, queue=None, transferred_to_host=True):
     if s == "onedal":
         message = "running accelerated version on "
         if queue is not None:
@@ -87,11 +89,18 @@ def get_patch_message(s, queue=None):
             f"Invalid input - expected one of 'onedal','sklearn',"
             f" 'sklearn_after_onedal', got {s}"
         )
+    if transferred_to_host:
+        message += (
+            ". All input data transferred to host for further backend computations."
+        )
     return message
 
 
-def get_sklearnex_version(rule):
-    return daal_check_version(rule)
+def get_usm_data_message(is_copied=False):
+    message = ""
+    if is_copied:
+        message = ". All USM inputs are being copied to HOST for further computations."
+    return message
 
 
 def register_hyperparameters(hyperparameters_map):
