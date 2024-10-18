@@ -25,8 +25,8 @@ Intel(R) Extension for Scikit-Learn doesn't require
 `array-api-compat <https://github.com/data-apis/array-api-compat>`__ to be installed for
 functional support of the array API standard.
 In the current implementation, the functional support of array api follows the functional
-support of different array or DataFrame inputs and does not modify the precision of the input and
-output data formats unless necessary. Any array API input data provided will be converted to host
+support of different array or DataFrame inputs and does not modify the precision of the
+input and output data formats unless necessary. Any array API input will be converted to host
 numpy.ndarrays and all internal manipulations with data will be done with these representations of
 the input data. DPNP's 'ndarray' and Data Parallel Control's 'usm_ndarray' have special handling
 requirements that are described in the relevant section of this document. Output values will in
@@ -42,9 +42,8 @@ all relevant cases match the input data format.
 
 Support for DPNP and DPCTL
 ==========================
-The functional support of input data for sklearnex estimators also extended for non-array API
-compliant array formats not covered by array-api-compat. These include SYCL USM arrays
-`dpnp's <https://github.com/IntelPython/dpnp>`__ ndarray and
+The functional support of input data for sklearnex estimators also extended for SYCL USM array types.
+These include SYCL USM arrays `dpnp's <https://github.com/IntelPython/dpnp>`__ ndarray and
 `Data Parallel Control usm_ndarray <https://intelpython.github.io/dpctl/latest/index.html>`__.
 DPNP ndarray and Data Parallel Control usm_ndarray contain SYCL contexts which can be used for
 `sklearnex` device offloading.
@@ -53,7 +52,7 @@ DPNP ndarray and Data Parallel Control usm_ndarray contain SYCL contexts which c
     Current support for DPNP and DPCTL usm_ndarray data can be copied and moved to and from device in sklearnex and have
     impacts on memory utilization.
 
-DPCTL or DPNP inputs doesn't require to use `config_context(target_offload=device)`.
+DPCTL or DPNP inputs are not required to use `config_context(target_offload=device)`.
 `sklearnex` will use input usm_ndarray sycl context for device offloading.
 
 .. note::
@@ -69,7 +68,7 @@ DPNP ndarrays
 -------------
 
 Here is an example code to demonstrate how to use `dpnp <https://github.com/IntelPython/dpnp>`__ arrays to
-run `RandomForestRegressor` on a GPU witout ```config_context(array_api_dispatch=True)```:
+run `RandomForestRegressor` on a GPU without `config_context(array_api_dispatch=True)`:
 
 .. literalinclude:: ../../examples/sklearnex/random_forest_regressor_dpnp.py
 	   :language: python
@@ -109,7 +108,7 @@ All patched estimators, metrics, tools and non-scikit-learn estimators functiona
 Functionally all input and output data have the same data format type.
 For all array inputs except SYCL USM arrays `dpnp's <https://github.com/IntelPython/dpnp>`__ ndarray and
 `Data Parallel Control usm_ndarray <https://intelpython.github.io/dpctl/latest/index.html>`__ all computation
-will be only accomplished on CPU.
+will be only accomplished on CPU unless specified by a config_context with an available GPU device.
 
 Stock scikit-learn uses `config_context(array_api_dispatch=True)` for enabling Array API `support <https://scikit-learn.org/1.5/modules/array_api.html>`__.
 If `array_api_dispatch` enabled and the installed Scikit-Learn version supports array API, then the original
