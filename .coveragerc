@@ -13,14 +13,10 @@ omit =
 [paths]
 sklearnex =
     sklearnex/
-    /*/sklearnex
-    c:\*\sklearnex
-    d:\*\sklearnex
+    */sklearnex
 onedal =
     onedal/
-    /*/onedal
-    c:\*\onedal
-    d:\*\onedal
+    */onedal
 #[report]
 #exclude_also =
 #    def _onedal_gpu.*
