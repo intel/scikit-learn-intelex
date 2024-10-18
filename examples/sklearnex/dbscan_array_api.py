@@ -28,7 +28,7 @@ X = array_api_strict.asarray(
 )
 
 # Could be launched without `config_context(array_api_dispatch=True)`. This context
-# manager for sklearnex,only guarantee that in case of the fallback to stock
+# manager for sklearnex, only guarantee that in case of the fallback to stock
 # scikit-learn, fitted attributes to be from the same Array API namespace as
 # the training data.
 with config_context(array_api_dispatch=True):
