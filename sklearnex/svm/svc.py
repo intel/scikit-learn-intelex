@@ -18,15 +18,15 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
-from sklearn.svm import SVC as sklearn_SVC
-from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.svm import SVC as _sklearn_SVC
+from sklearn.utils.validation import _deprecate_positional_args, check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
-from sklearnex.utils import get_namespace
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
+from ..utils._array_api import get_namespace
 from ._common import BaseSVC
 
 if sklearn_check_version("1.0"):
@@ -34,15 +34,20 @@ if sklearn_check_version("1.0"):
 
 from onedal.svm import SVC as onedal_SVC
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseSVC._validate_data
+
 
 @control_n_jobs(
     decorated_methods=["fit", "predict", "_predict_proba", "decision_function", "score"]
 )
-class SVC(sklearn_SVC, BaseSVC):
-    __doc__ = sklearn_SVC.__doc__
+class SVC(_sklearn_SVC, BaseSVC):
+    __doc__ = _sklearn_SVC.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**sklearn_SVC._parameter_constraints}
+        _parameter_constraints: dict = {**_sklearn_SVC._parameter_constraints}
 
     @_deprecate_positional_args
     def __init__(
@@ -85,14 +90,23 @@ class SVC(sklearn_SVC, BaseSVC):
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
+        elif self.C <= 0:
+            # else if added to correct issues with
+            # sklearn tests:
+            # svm/tests/test_sparse.py::test_error
+            # svm/tests/test_svm.py::test_bad_input
+            # for sklearn versions < 1.2 (i.e. without
+            # validate_params parameter checking)
+            # Without this, a segmentation fault with
+            # Windows fatal exception: access violation
+            # occurs
+            raise ValueError("C <= 0")
         dispatch(
             self,
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_SVC.fit,
+                "sklearn": _sklearn_SVC.fit,
             },
             X,
             y,
@@ -103,28 +117,24 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_SVC.predict,
+                "sklearn": _sklearn_SVC.predict,
             },
             X,
         )
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_SVC.score,
+                "sklearn": _sklearn_SVC.score,
             },
             X,
             y,
@@ -133,7 +143,7 @@ class SVC(sklearn_SVC, BaseSVC):
 
     if sklearn_check_version("1.0"):
 
-        @available_if(sklearn_SVC._check_proba)
+        @available_if(_sklearn_SVC._check_proba)
         def predict_proba(self, X):
             """
             Compute probabilities of possible outcomes for samples in X.
@@ -163,7 +173,7 @@ class SVC(sklearn_SVC, BaseSVC):
             """
             return self._predict_proba(X)
 
-        @available_if(sklearn_SVC._check_proba)
+        @available_if(_sklearn_SVC._check_proba)
         def predict_log_proba(self, X):
             """Compute log probabilities of possible outcomes for samples in X.
 
@@ -206,14 +216,14 @@ class SVC(sklearn_SVC, BaseSVC):
             xp, _ = get_namespace(X)
             return xp.log(self.predict_proba(X))
 
-        predict_proba.__doc__ = sklearn_SVC.predict_proba.__doc__
+        predict_proba.__doc__ = _sklearn_SVC.predict_proba.__doc__
 
     @wrap_output_data
     def _predict_proba(self, X):
         sklearn_pred_proba = (
-            sklearn_SVC.predict_proba
+            _sklearn_SVC.predict_proba
             if sklearn_check_version("1.0")
-            else sklearn_SVC._predict_proba
+            else _sklearn_SVC._predict_proba
         )
 
         return dispatch(
@@ -228,19 +238,17 @@ class SVC(sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
         return dispatch(
             self,
             "decision_function",
             {
                 "onedal": self.__class__._onedal_decision_function,
-                "sklearn": sklearn_SVC.decision_function,
+                "sklearn": _sklearn_SVC.decision_function,
             },
             X,
         )
 
-    decision_function.__doc__ = sklearn_SVC.decision_function.__doc__
+    decision_function.__doc__ = _sklearn_SVC.decision_function.__doc__
 
     def _onedal_gpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
@@ -319,6 +327,23 @@ class SVC(sklearn_SVC, BaseSVC):
         self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
+        if sklearn_check_version("1.0"):
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                ensure_2d=False,
+                accept_sparse="csr",
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
         return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_predict_proba(self, X, queue=None):
@@ -336,6 +361,22 @@ class SVC(sklearn_SVC, BaseSVC):
             return self.clf_prob.predict_proba(X)
 
     def _onedal_decision_function(self, X, queue=None):
+        if sklearn_check_version("1.0"):
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
         return self._onedal_estimator.decision_function(X, queue=queue)
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
@@ -343,7 +384,7 @@ class SVC(sklearn_SVC, BaseSVC):
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
-    fit.__doc__ = sklearn_SVC.fit.__doc__
-    predict.__doc__ = sklearn_SVC.predict.__doc__
-    decision_function.__doc__ = sklearn_SVC.decision_function.__doc__
-    score.__doc__ = sklearn_SVC.score.__doc__
+    fit.__doc__ = _sklearn_SVC.fit.__doc__
+    predict.__doc__ = _sklearn_SVC.predict.__doc__
+    decision_function.__doc__ = _sklearn_SVC.decision_function.__doc__
+    score.__doc__ = _sklearn_SVC.score.__doc__

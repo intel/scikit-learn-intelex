@@ -14,4 +14,4 @@
 # limitations under the License.
 # ==============================================================================
 
-__all__ = ["cluster", "covariance", "decomposition"]
+__all__ = ["covariance", "decomposition", "linear_model"]

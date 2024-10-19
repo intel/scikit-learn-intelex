@@ -24,6 +24,7 @@ trigger:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .github/Pull_Request_template.md
 
 pr:
   branches:
@@ -35,6 +36,7 @@ pr:
     - requirements-doc.txt
     - doc/
     - .ci/pipeline/docs.yml
+    - .github/Pull_Request_template.md
 
 variables:
   PYTHON: 'python'
@@ -46,16 +48,70 @@ jobs:
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
+  - script: |
+      echo "##vso[task.setvariable variable=ISORT_VERSION]$(grep -zoP '(?<=isort\n    rev: ).*' .pre-commit-config.yaml)"
+      echo "##vso[task.setvariable variable=BLACK_VERSION]$(grep -zoP '(?<=black\n    rev: ).*' .pre-commit-config.yaml)"
+      echo "##vso[task.setvariable variable=PYTHON_LINT_VERSION]$(grep -oP -m 1 '(?<=python).*' .pre-commit-config.yaml)"
+    displayName: 'Collect lint versions'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.9'
+      versionSpec: $(PYTHON_LINT_VERSION)
       addToPath: true
   - script: |
       python -m pip install --upgrade pip setuptools
-      pip install isort black[jupyter]==24.1.1
+      pip install isort==${ISORT_VERSION} black[jupyter]==${BLACK_VERSION}
       isort --profile black --check . && black --check .
     displayName: 'Linting'
-- job: Linux
+- job: LinuxCondaRecipe
+  dependsOn: Lint
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Python3.12:
+        PYTHON_VERSION: '3.12'
+        NUMPY_VERSION: '2.1'
+  pool:
+    vmImage: 'ubuntu-22.04'
+  steps:
+  - script: |
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+      conda update -y -q --all
+    displayName: "Conda update"
+  - script: |
+      conda create -y -q -n build-env conda-build conda-verify
+    displayName: "Conda create"
+  - script: |
+      . /usr/share/miniconda/etc/profile.d/conda.sh
+      conda activate build-env
+      conda build . --python $(PYTHON_VERSION) --numpy $(NUMPY_VERSION)
+    displayName: "Conda build and test"
+- job: WindowsCondaRecipe
+  dependsOn: Lint
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Python3.12:
+        PYTHON_VERSION: '3.12'
+        NUMPY_VERSION: '2.1'
+  pool:
+    vmImage: 'windows-2022'
+  steps:
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+  - script: |
+      conda config --add channels conda-forge
+      conda config --set channel_priority strict
+      conda update -y -q --all
+    displayName: "Conda update"
+  - script: |
+      conda create -y -q -n build-env conda-build conda-verify
+    displayName: "Conda create"
+  - script: |
+      call activate build-env
+      conda build . --python $(PYTHON_VERSION) --numpy $(NUMPY_VERSION)
+    displayName: "Conda build and test"
+- job: LinuxCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
@@ -82,7 +138,7 @@ jobs:
     vmImage: 'ubuntu-22.04'
   steps:
   - template: build-and-test-lnx.yml
-- job: Windows
+- job: WindowsCondaEnv
   dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
@@ -106,6 +162,6 @@ jobs:
         PYTHON_VERSION: '3.12'
         SKLEARN_VERSION: '1.5'
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
   steps:
   - template: build-and-test-win.yml

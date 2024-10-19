@@ -34,7 +34,7 @@ variables:
 jobs:
 - job: Coverity
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
   steps:
   - script: |
       cd $(Agent.BuildDirectory)
@@ -58,13 +58,13 @@ jobs:
 - job: Jupyter
   timeoutInMinutes: 0
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-22.04'
   steps:
   - script: |
       conda config --append channels conda-forge
       conda config --remove channels defaults
       conda update -y -q conda
-      conda create -y -q -n CB -c intel -c conda-forge python=$(python.version) dal-devel impi-devel
+      conda create -y -q -n CB -c conda-forge python=$(python.version) dal-devel impi-devel
     displayName: 'Conda create'
   - script: |
       bash .ci/scripts/describe_system.sh
@@ -82,7 +82,6 @@ jobs:
       conda activate CB
       export DALROOT=$CONDA_PREFIX
       ./conda-recipe/build.sh
-      python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
     displayName: 'Build daal4py/sklearnex'
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -111,6 +110,6 @@ jobs:
         PYTHON_VERSION: '3.11'
         SKLEARN_VERSION: 'main'
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2022'
   steps:
   - template: build-and-test-win.yml

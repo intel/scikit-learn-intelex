@@ -48,25 +48,17 @@ def get_patch_map_core(preview=False):
             import sklearn.decomposition as decomposition_module
 
             # Preview classes for patching
-            from .preview.cluster import KMeans as KMeans_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
             from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
+            from .preview.linear_model import Ridge as Ridge_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
             # when preview is used, setting the mapping element[1] to None
             # should NOT be done. This may lose track of the unpatched
             # sklearn estimator or function.
-            # KMeans
-            cluster_module, _, _ = mapping["kmeans"][0][0]
-            sklearn_obj = mapping["kmeans"][0][1]
-            mapping.pop("kmeans")
-            mapping["kmeans"] = [
-                [(cluster_module, "kmeans", KMeans_sklearnex), sklearn_obj]
-            ]
-
             # Covariance
             mapping["empiricalcovariance"] = [
                 [
@@ -90,6 +82,15 @@ def get_patch_map_core(preview=False):
                     None,
                 ]
             ]
+
+            # Ridge
+            linear_model_module, _, _ = mapping["ridge"][0][0]
+            sklearn_obj = mapping["ridge"][0][1]
+            mapping.pop("ridge")
+            mapping["ridge"] = [
+                [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
+            ]
+
         return mapping
 
     from daal4py.sklearn.monkeypatch.dispatcher import _get_map_of_algorithms
@@ -111,6 +112,9 @@ def get_patch_map_core(preview=False):
         import sklearn.decomposition as decomposition_module
         import sklearn.ensemble as ensemble_module
         import sklearn.linear_model as linear_model_module
+        import sklearn.manifold as manifold_module
+        import sklearn.metrics as metrics_module
+        import sklearn.model_selection as model_selection_module
         import sklearn.neighbors as neighbors_module
         import sklearn.svm as svm_module
 
@@ -130,6 +134,7 @@ def get_patch_map_core(preview=False):
             from .utils.parallel import _FuncWrapperOld as _FuncWrapper_sklearnex
 
         from .cluster import DBSCAN as DBSCAN_sklearnex
+        from .cluster import KMeans as KMeans_sklearnex
         from .covariance import (
             IncrementalEmpiricalCovariance as IncrementalEmpiricalCovariance_sklearnex,
         )
@@ -138,11 +143,19 @@ def get_patch_map_core(preview=False):
         from .ensemble import ExtraTreesRegressor as ExtraTreesRegressor_sklearnex
         from .ensemble import RandomForestClassifier as RandomForestClassifier_sklearnex
         from .ensemble import RandomForestRegressor as RandomForestRegressor_sklearnex
+        from .linear_model import ElasticNet as ElasticNet_sklearnex
         from .linear_model import (
             IncrementalLinearRegression as IncrementalLinearRegression_sklearnex,
         )
+        from .linear_model import IncrementalRidge as IncrementalRidge_sklearnex
+        from .linear_model import Lasso as Lasso_sklearnex
         from .linear_model import LinearRegression as LinearRegression_sklearnex
         from .linear_model import LogisticRegression as LogisticRegression_sklearnex
+        from .linear_model import Ridge as Ridge_sklearnex
+        from .manifold import TSNE as TSNE_sklearnex
+        from .metrics import pairwise_distances as pairwise_distances_sklearnex
+        from .metrics import roc_auc_score as roc_auc_score_sklearnex
+        from .model_selection import train_test_split as train_test_split_sklearnex
         from .neighbors import KNeighborsClassifier as KNeighborsClassifier_sklearnex
         from .neighbors import KNeighborsRegressor as KNeighborsRegressor_sklearnex
         from .neighbors import LocalOutlierFactor as LocalOutlierFactor_sklearnex
@@ -156,6 +169,10 @@ def get_patch_map_core(preview=False):
         mapping.pop("dbscan")
         mapping["dbscan"] = [[(cluster_module, "DBSCAN", DBSCAN_sklearnex), None]]
 
+        # KMeans
+        mapping.pop("kmeans")
+        mapping["kmeans"] = [[(cluster_module, "KMeans", KMeans_sklearnex), None]]
+
         # PCA
         mapping.pop("pca")
         mapping["pca"] = [[(decomposition_module, "PCA", PCA_sklearnex), None]]
@@ -167,6 +184,32 @@ def get_patch_map_core(preview=False):
         mapping["svc"] = [[(svm_module, "SVC", SVC_sklearnex), None]]
         mapping["nusvr"] = [[(svm_module, "NuSVR", NuSVR_sklearnex), None]]
         mapping["nusvc"] = [[(svm_module, "NuSVC", NuSVC_sklearnex), None]]
+
+        # ElasticNet
+        mapping.pop("elasticnet")
+        mapping["elasticnet"] = [
+            [
+                (
+                    linear_model_module,
+                    "ElasticNet",
+                    ElasticNet_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # Lasso
+        mapping.pop("lasso")
+        mapping["lasso"] = [
+            [
+                (
+                    linear_model_module,
+                    "Lasso",
+                    Lasso_sklearnex,
+                ),
+                None,
+            ]
+        ]
 
         # Linear Regression
         mapping.pop("linear")
@@ -200,6 +243,54 @@ def get_patch_map_core(preview=False):
             ]
         ]
         mapping["logisticregression"] = mapping["log_reg"]
+
+        # Ridge
+        mapping.pop("ridge")
+        mapping["ridge"] = [
+            [
+                (
+                    linear_model_module,
+                    "Ridge",
+                    Ridge_sklearnex,
+                ),
+                None,
+            ]
+        ]
+
+        # manifold
+        mapping.pop("tsne")
+        mapping["tsne"] = [
+            [
+                (manifold_module, "TSNE", TSNE_sklearnex),
+                None,
+            ]
+        ]
+
+        # metrics
+        mapping.pop("distances")
+        mapping.pop("roc_auc_score")
+        mapping["distances"] = [
+            [
+                (metrics_module, "pairwise_distances", pairwise_distances_sklearnex),
+                None,
+            ]
+        ]
+        mapping["pairwise_distances"] = mapping["distances"]
+        mapping["roc_auc_score"] = [
+            [
+                (metrics_module, "roc_auc_score", roc_auc_score_sklearnex),
+                None,
+            ]
+        ]
+
+        # model_selection
+        mapping.pop("train_test_split")
+        mapping["train_test_split"] = [
+            [
+                (model_selection_module, "train_test_split", train_test_split_sklearnex),
+                None,
+            ]
+        ]
 
         # kNN
         mapping.pop("knn_classifier")
@@ -317,6 +408,19 @@ def get_patch_map_core(preview=False):
                 None,
             ]
         ]
+
+        if daal_check_version((2024, "P", 600)):
+            # IncrementalRidge
+            mapping["incrementalridge"] = [
+                [
+                    (
+                        linear_model_module,
+                        "IncrementalRidge",
+                        IncrementalRidge_sklearnex,
+                    ),
+                    None,
+                ]
+            ]
 
         # Configs
         mapping["set_config"] = [

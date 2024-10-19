@@ -21,13 +21,6 @@ from numbers import Number
 
 import numpy as np
 import pytest
-from _utils import (
-    PATCHED_MODELS,
-    SPECIAL_INSTANCES,
-    _sklearn_clone_dict,
-    gen_dataset,
-    gen_models_info,
-)
 from numpy.testing import assert_allclose
 from scipy import sparse
 from sklearn.datasets import (
@@ -39,6 +32,7 @@ from sklearn.datasets import (
 )
 
 import daal4py as d4p
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import _as_numpy, get_dataframes_and_queues
 from sklearnex.cluster import DBSCAN, KMeans
 from sklearnex.decomposition import PCA
@@ -50,6 +44,15 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC
+from sklearnex.tests.utils import (
+    _IS_INTEL,
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    call_method,
+    gen_dataset,
+    gen_models_info,
+    sklearn_clone_dict,
+)
 
 # to reproduce errors even in CI
 d4p.daalinit(nthreads=100)
@@ -73,23 +76,23 @@ def eval_method(X, y, est, method):
     est.fit(X, y)
 
     if method:
-        if method != "score":
-            res = getattr(est, method)(X)
-        else:
-            res = est.score(X, y)
+        res = call_method(est, method, X, y)
 
     if not isinstance(res, Iterable):
-        res = [res]
+        results = [_as_numpy(res)] if res is not est else []
+    else:
+        results = [_as_numpy(i) for i in res]
+
+    attributes = [method] * len(results)
 
     # if estimator follows sklearn design rules, then set attributes should have a
     # trailing underscore
-    attributes = [
+    attributes += [
         i
         for i in dir(est)
         if hasattr(est, i) and not i.startswith("_") and i.endswith("_")
     ]
-    results = [getattr(est, i) for i in attributes] + [_as_numpy(i) for i in res]
-    attributes += [method for i in res]
+    results += [getattr(est, i) for i in attributes if i != method]
     return results, attributes
 
 
@@ -113,18 +116,18 @@ def _run_test(estimator, method, datasets):
                     )
 
 
-SPARSE_INSTANCES = _sklearn_clone_dict(
-    {
-        str(i): i
-        for i in [
-            SVC(),
+_sparse_instances = [SVC()]
+if daal_check_version((2024, "P", 700)):  # Test for > 2024.7.0
+    _sparse_instances.extend(
+        [
             KMeans(),
             KMeans(init="random"),
+            KMeans(init="k-means++"),
         ]
-    }
-)
+    )
+SPARSE_INSTANCES = sklearn_clone_dict({str(i): i for i in _sparse_instances})
 
-STABILITY_INSTANCES = _sklearn_clone_dict(
+STABILITY_INSTANCES = sklearn_clone_dict(
     {
         str(i): i
         for i in [
@@ -143,13 +146,31 @@ STABILITY_INSTANCES = _sklearn_clone_dict(
 )
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+def _skip_neighbors(estimator, method):
+    if (
+        not _IS_INTEL
+        and ("Neighbors" in estimator or "LocalOutlierFactor" in estimator)
+        and method
+        in ["score", "predict", "kneighbors", "kneighbors_graph", "predict_proba"]
+    ):
+        if daal_check_version((2025, "P", 200)):
+            pytest.fail("Re-verify failure of algorithms in oneDAL 2025.2")
+        pytest.skip(f"{estimator} shows instability on non-Intel(R) hardware")
+
+
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(PATCHED_MODELS))
 def test_standard_estimator_stability(estimator, method, dataframe, queue):
     if estimator in ["LogisticRegression", "TSNE"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
-    if estimator in ["KMeans", "PCA"] and method == "score" and queue == None:
+    if estimator in ["KMeans", "PCA"] and "score" in method and queue == None:
         pytest.skip(f"variation observed in {estimator}.score")
+    if estimator in ["IncrementalEmpiricalCovariance"] and method == "mahalanobis":
+        pytest.skip("allowed fallback to sklearn occurs")
+    _skip_neighbors(estimator, method)
+
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
 
     est = PATCHED_MODELS[estimator]()
 
@@ -166,13 +187,18 @@ def test_standard_estimator_stability(estimator, method, dataframe, queue):
 
 
 @pytest.mark.allow_sklearn_fallback
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPECIAL_INSTANCES))
 def test_special_estimator_stability(estimator, method, dataframe, queue):
     if queue is None and estimator in ["LogisticRegression(solver='newton-cg')"]:
         pytest.skip(f"stability not guaranteed for {estimator}")
     if "KMeans" in estimator and method == "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.score")
+    if estimator == "BasicStatistics()" and queue == None:
+        pytest.skip(f"BasicStatistics not deterministic")
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    _skip_neighbors(estimator, method)
 
     est = SPECIAL_INSTANCES[estimator]
 
@@ -188,11 +214,20 @@ def test_special_estimator_stability(estimator, method, dataframe, queue):
     _run_test(est, method, datasets)
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(SPARSE_INSTANCES))
 def test_sparse_estimator_stability(estimator, method, dataframe, queue):
-    if "KMeans" in estimator and method == "score" and queue == None:
-        pytest.skip(f"variation observed in KMeans.score")
+    if "KMeans" in estimator and method in "score" and queue == None:
+        pytest.skip(f"variation observed in KMeans.{method}")
+    if (
+        not daal_check_version((2025, "P", 0))
+        and "KMeans()" in estimator
+        and queue == None
+    ):
+        pytest.skip(f"variation observed in KMeans.{method} in 2024.7 oneDAL")
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    _skip_neighbors(estimator, method)
 
     est = SPARSE_INSTANCES[estimator]
 
@@ -210,11 +245,14 @@ def test_sparse_estimator_stability(estimator, method, dataframe, queue):
     _run_test(est, method, datasets)
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy"))
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues("numpy,array_api"))
 @pytest.mark.parametrize("estimator, method", gen_models_info(STABILITY_INSTANCES))
 def test_other_estimator_stability(estimator, method, dataframe, queue):
     if "KMeans" in estimator and method == "score" and queue == None:
         pytest.skip(f"variation observed in KMeans.score")
+    if "NearestNeighbors" in estimator and "radius" in method:
+        pytest.skip(f"RadiusNeighbors estimator not implemented in sklearnex")
+    _skip_neighbors(estimator, method)
 
     est = STABILITY_INSTANCES[estimator]
 

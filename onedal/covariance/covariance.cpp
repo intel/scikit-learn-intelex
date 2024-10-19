@@ -175,9 +175,11 @@ ONEDAL_PY_INIT_MODULE(covariance) {
     using namespace dal::covariance;
 
     auto sub = m.def_submodule("covariance");
+
     #ifdef ONEDAL_DATA_PARALLEL_SPMD
         ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_spmd, task::compute);
-    #else    
+        ONEDAL_PY_INSTANTIATE(init_finalize_compute_ops, sub, policy_spmd, task::compute);
+    #else
         ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task::compute);
         ONEDAL_PY_INSTANTIATE(init_partial_compute_ops, sub, policy_list, task::compute); 
         ONEDAL_PY_INSTANTIATE(init_finalize_compute_ops, sub, policy_list, task::compute);
@@ -187,7 +189,6 @@ ONEDAL_PY_INIT_MODULE(covariance) {
             ONEDAL_PY_INSTANTIATE(init_compute_hyperparameters, sub, task::compute);
         #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
     #endif
-
 }
 
 } // namespace oneapi::dal::python

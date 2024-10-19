@@ -76,7 +76,7 @@ def _run_with_n_jobs(method):
     """
 
     @wraps(method)
-    def method_wrapper(self, *args, **kwargs):
+    def n_jobs_wrapper(self, *args, **kwargs):
         # threading parallel backend branch
         if not isinstance(threading.current_thread(), threading._MainThread):
             warn(
@@ -117,7 +117,10 @@ def _run_with_n_jobs(method):
                 n_jobs = max(1, n_threads + n_jobs + 1)
         # branch with set n_jobs
         old_n_threads = get_n_threads()
-        if n_jobs != old_n_threads:
+        if n_jobs == old_n_threads:
+            return method(self, *args, **kwargs)
+
+        try:
             logger = logging.getLogger("sklearnex")
             cl = self.__class__
             logger.debug(
@@ -125,12 +128,11 @@ def _run_with_n_jobs(method):
                 f"setting {n_jobs} threads (previous - {old_n_threads})"
             )
             set_n_threads(n_jobs)
-        result = method(self, *args, **kwargs)
-        if n_jobs != old_n_threads:
+            return method(self, *args, **kwargs)
+        finally:
             set_n_threads(old_n_threads)
-        return result
 
-    return method_wrapper
+    return n_jobs_wrapper
 
 
 def control_n_jobs(decorated_methods: list = []):

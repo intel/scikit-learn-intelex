@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 from abc import ABC
 from numbers import Number, Real
 
@@ -22,7 +23,6 @@ from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import r2_score
-from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 
 from daal4py.sklearn._utils import sklearn_check_version
@@ -31,32 +31,45 @@ from onedal.utils import _check_array, _check_X_y, _column_or_1d
 from .._config import config_context, get_config
 from .._utils import PatchingConditionsChain
 
-
-def get_dual_coef(self):
-    return self.dual_coef_
-
-
-def set_dual_coef(self, value):
-    self.dual_coef_ = value
-    if hasattr(self, "_onedal_estimator"):
-        self._onedal_estimator.dual_coef_ = value
-        if not self._is_in_fit:
-            del self._onedal_estimator._onedal_model
-
-
-def get_intercept(self):
-    return self._intercept_
-
-
-def set_intercept(self, value):
-    self._intercept_ = value
-    if hasattr(self, "_onedal_estimator"):
-        self._onedal_estimator.intercept_ = value
-        if not self._is_in_fit:
-            del self._onedal_estimator._onedal_model
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
 
 
 class BaseSVM(BaseEstimator, ABC):
+
+    @property
+    def _dual_coef_(self):
+        return self._dualcoef_
+
+    @_dual_coef_.setter
+    def _dual_coef_(self, value):
+        self._dualcoef_ = value
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator.dual_coef_ = value
+            if hasattr(self._onedal_estimator, "_onedal_model"):
+                del self._onedal_estimator._onedal_model
+
+    @_dual_coef_.deleter
+    def _dual_coef_(self):
+        del self._dualcoef_
+
+    @property
+    def intercept_(self):
+        return self._icept_
+
+    @intercept_.setter
+    def intercept_(self, value):
+        self._icept_ = value
+        if hasattr(self, "_onedal_estimator"):
+            self._onedal_estimator.intercept_ = value
+            if hasattr(self._onedal_estimator, "_onedal_model"):
+                del self._onedal_estimator._onedal_model
+
+    @intercept_.deleter
+    def intercept_(self):
+        del self._icept_
 
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(f"sklearn.{method_name}")
@@ -150,13 +163,23 @@ class BaseSVM(BaseEstimator, ABC):
                 )
         # using onedal _check_X_y to insure X and y are contiguous
         # finite check occurs in onedal estimator
-        X, y = _check_X_y(
-            X,
-            y,
-            dtype=[np.float64, np.float32],
-            force_all_finite=False,
-            accept_sparse="csr",
-        )
+        if sklearn_check_version("1.0"):
+            X, y = validate_data(
+                self,
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
+        else:
+            X, y = _check_X_y(
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
         y = self._validate_targets(y)
         sample_weight = self._get_sample_weight(X, y, sample_weight)
         return X, y, sample_weight
@@ -230,6 +253,17 @@ class BaseSVC(BaseSVM):
         return recip_freq[le.transform(classes)]
 
     def _fit_proba(self, X, y, sample_weight=None, queue=None):
+        # TODO: rewrite this method when probabilities output is implemented in oneDAL
+
+        # LibSVM uses the random seed to control cross-validation for probability generation
+        # CalibratedClassifierCV with "prefit" does not use an RNG nor a seed. This may
+        # impact users without their knowledge, so display a warning.
+        if self.random_state is not None:
+            warnings.warn(
+                "random_state does not influence oneDAL SVM results",
+                RuntimeWarning,
+            )
+
         params = self.get_params()
         params["probability"] = False
         params["decision_function_shape"] = "ovr"
@@ -240,26 +274,13 @@ class BaseSVC(BaseSVM):
         cfg = get_config()
         cfg["target_offload"] = queue
         with config_context(**cfg):
-            try:
-                n_splits = 5
-                n_jobs = n_splits if queue is None or queue.sycl_device.is_cpu else 1
-                cv = StratifiedKFold(
-                    n_splits=n_splits, shuffle=True, random_state=self.random_state
-                )
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base,
-                    ensemble=False,
-                    cv=cv,
-                    method="sigmoid",
-                )
-                self.clf_prob.fit(X, y, sample_weight)
-
-            except ValueError:
-                clf_base = clf_base.fit(X, y, sample_weight)
-                self.clf_prob = CalibratedClassifierCV(
-                    clf_base, cv="prefit", method="sigmoid"
-                )
-                self.clf_prob.fit(X, y, sample_weight)
+            clf_base.fit(X, y)
+            self.clf_prob = CalibratedClassifierCV(
+                clf_base,
+                ensemble=False,
+                cv="prefit",
+                method="sigmoid",
+            ).fit(X, y)
 
     def _save_attributes(self):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
@@ -272,7 +293,7 @@ class BaseSVC(BaseSVM):
             self.class_weight_ = self._onedal_estimator.class_weight_
         self.support_ = self._onedal_estimator.support_
 
-        self._intercept_ = self._onedal_estimator.intercept_
+        self._icept_ = self._onedal_estimator.intercept_
         self._n_support = self._onedal_estimator._n_support
         self._sparse = False
         self._gamma = self._onedal_estimator._gamma
@@ -284,13 +305,7 @@ class BaseSVC(BaseSVM):
             self._probA = np.empty(0)
             self._probB = np.empty(0)
 
-        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-        self.intercept_ = property(get_intercept, set_intercept)
-
-        self._is_in_fit = True
-        self._dual_coef_ = self.dual_coef_
-        self.intercept_ = self._intercept_
-        self._is_in_fit = False
+        self._dualcoef_ = self.dual_coef_
 
         if sklearn_check_version("1.1"):
             length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
@@ -306,23 +321,17 @@ class BaseSVR(BaseSVM):
         self.shape_fit_ = self._onedal_estimator.shape_fit_
         self.support_ = self._onedal_estimator.support_
 
-        self._intercept_ = self._onedal_estimator.intercept_
+        self._icept_ = self._onedal_estimator.intercept_
         self._n_support = [self.support_vectors_.shape[0]]
         self._sparse = False
         self._gamma = self._onedal_estimator._gamma
         self._probA = None
         self._probB = None
 
-        self._dual_coef_ = property(get_dual_coef, set_dual_coef)
-        self.intercept_ = property(get_intercept, set_intercept)
-
-        self._is_in_fit = True
-        self._dual_coef_ = self.dual_coef_
-        self.intercept_ = self._intercept_
-        self._is_in_fit = False
-
         if sklearn_check_version("1.1"):
             self.n_iter_ = self._onedal_estimator.n_iter_
+
+        self._dualcoef_ = self.dual_coef_
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return r2_score(

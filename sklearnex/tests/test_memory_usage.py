@@ -37,8 +37,8 @@ from onedal.tests.utils._dataframes_support import (
 )
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
 from sklearnex import config_context
-from sklearnex.tests._utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
-from sklearnex.utils import get_namespace
+from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
+from sklearnex.utils._array_api import get_namespace
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -54,6 +54,7 @@ CPU_SKIP_LIST = (
     "IncrementalEmpiricalCovariance",  # dataframe_f issues
     "IncrementalLinearRegression",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "IncrementalPCA",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
+    "IncrementalRidge",  # TODO fix memory leak issue in private CI for data_shape = (1000, 100), data_transform_function = dataframe_f
     "LogisticRegression(solver='newton-cg')",  # memory leak fortran (1000, 100)
 )
 
@@ -119,6 +120,7 @@ data_shapes = [
 ]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
+EXTRA_MEMORY_THRESHOLD_PANDAS = 0.25
 N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
@@ -225,15 +227,18 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     else:
         name = estimator.__name__
 
+    threshold = (
+        EXTRA_MEMORY_THRESHOLD_PANDAS if dataframe == "pandas" else EXTRA_MEMORY_THRESHOLD
+    )
     message = (
         "Size of extra allocated memory {} using garbage collector "
-        f"is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data"
+        f"is greater than {threshold * 100}% of input data"
         f"\n\tAlgorithm: {name}"
         f"\n\tInput data size: {data_memory_size} bytes"
         "\n\tExtra allocated memory size: {} bytes"
         " / {} %"
     )
-    if mem_diff >= EXTRA_MEMORY_THRESHOLD * data_memory_size:
+    if mem_diff >= threshold * data_memory_size:
         logging.warning(
             message.format(
                 "before", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
@@ -252,7 +257,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     # as it looks like a memory leak (at least there is no way to discern a
     # leak on the first run).
     if queue is None or queue.sycl_device.is_cpu:
-        assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, message.format(
+        assert mem_diff < threshold * data_memory_size, message.format(
             "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
         )
 

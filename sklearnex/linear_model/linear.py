@@ -19,15 +19,15 @@ from abc import ABC
 
 import numpy as np
 from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import LinearRegression as sklearn_LinearRegression
+from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
-from ..utils.validation import _assert_all_finite
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
@@ -39,14 +39,21 @@ from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
 from onedal.utils import _num_features, _num_samples
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = _sklearn_LinearRegression._validate_data
+
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
-@control_n_jobs(decorated_methods=["fit", "predict"])
-class LinearRegression(sklearn_LinearRegression):
-    __doc__ = sklearn_LinearRegression.__doc__
+@control_n_jobs(decorated_methods=["fit", "predict", "score"])
+class LinearRegression(_sklearn_LinearRegression):
+    __doc__ = _sklearn_LinearRegression.__doc__
 
     if sklearn_check_version("1.2"):
-        _parameter_constraints: dict = {**sklearn_LinearRegression._parameter_constraints}
+        _parameter_constraints: dict = {
+            **_sklearn_LinearRegression._parameter_constraints
+        }
 
         def __init__(
             self,
@@ -81,8 +88,6 @@ class LinearRegression(sklearn_LinearRegression):
             )
 
     def fit(self, X, y, sample_weight=None):
-        if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=True)
         if sklearn_check_version("1.2"):
             self._validate_params()
 
@@ -96,7 +101,7 @@ class LinearRegression(sklearn_LinearRegression):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_LinearRegression.fit,
+                "sklearn": _sklearn_LinearRegression.fit,
             },
             X,
             y,
@@ -119,7 +124,7 @@ class LinearRegression(sklearn_LinearRegression):
             "predict",
             {
                 "onedal": self.__class__._onedal_predict,
-                "sklearn": sklearn_LinearRegression.predict,
+                "sklearn": _sklearn_LinearRegression.predict,
             },
             X,
         )
@@ -131,25 +136,12 @@ class LinearRegression(sklearn_LinearRegression):
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": sklearn_LinearRegression.score,
+                "sklearn": _sklearn_LinearRegression.score,
             },
             X,
             y,
             sample_weight=sample_weight,
         )
-
-    def _test_type_and_finiteness(self, X_in):
-        X = X_in if isinstance(X_in, np.ndarray) else np.asarray(X_in)
-
-        dtype = X.dtype
-        if "complex" in str(type(dtype)):
-            return False
-
-        try:
-            _assert_all_finite(X)
-        except BaseException:
-            return False
-        return True
 
     def _onedal_fit_supported(self, method_name, *data):
         assert method_name == "fit"
@@ -174,7 +166,7 @@ class LinearRegression(sklearn_LinearRegression):
         # Check if equations are well defined
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
 
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (sample_weight is None, "Sample weight is not supported."),
                 (
@@ -193,17 +185,6 @@ class LinearRegression(sklearn_LinearRegression):
                 ),
             ]
         )
-        if not dal_ready:
-            return patching_status
-
-        if not patching_status.and_condition(
-            self._test_type_and_finiteness(X), "Input X is not supported."
-        ):
-            return patching_status
-
-        patching_status.and_condition(
-            self._test_type_and_finiteness(y), "Input y is not supported."
-        )
 
         return patching_status
 
@@ -217,18 +198,12 @@ class LinearRegression(sklearn_LinearRegression):
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
         )
-        dal_ready = patching_status.and_conditions(
+        patching_status.and_conditions(
             [
                 (n_samples > 0, "Number of samples is less than 1."),
                 (not issparse(data[0]), "Sparse input is not supported."),
                 (not model_is_sparse, "Sparse coefficients are not supported."),
             ]
-        )
-        if not dal_ready:
-            return patching_status
-
-        patching_status.and_condition(
-            self._test_type_and_finiteness(data[0]), "Input X is not supported."
         )
 
         return patching_status
@@ -257,10 +232,9 @@ class LinearRegression(sklearn_LinearRegression):
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
             "multi_output": True,
-            "force_all_finite": False,
         }
-        if sklearn_check_version("1.2"):
-            X, y = self._validate_data(**check_params)
+        if sklearn_check_version("1.0"):
+            X, y = validate_data(self, **check_params)
         else:
             X, y = check_X_y(**check_params)
 
@@ -287,9 +261,10 @@ class LinearRegression(sklearn_LinearRegression):
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
-            self._check_feature_names(X, reset=False)
+            X = validate_data(self, X, accept_sparse=False, reset=False)
+        else:
+            X = check_array(X, accept_sparse=False)
 
-        X = self._validate_data(X, accept_sparse=False, reset=False)
         if not hasattr(self, "_onedal_estimator"):
             self._initialize_onedal_estimator()
             self._onedal_estimator.coef_ = self.coef_
@@ -303,32 +278,42 @@ class LinearRegression(sklearn_LinearRegression):
             y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
         )
 
-    def get_coef_(self):
-        return self.coef_
+    @property
+    def coef_(self):
+        return self._coef_
 
-    def set_coef_(self, value):
-        self.__dict__["coef_"] = value
+    @coef_.setter
+    def coef_(self, value):
+        self._coef_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.coef_ = value
             del self._onedal_estimator._onedal_model
 
-    def get_intercept_(self):
-        return self.intercept_
+    @coef_.deleter
+    def coef_(self):
+        del self._coef_
 
-    def set_intercept_(self, value):
-        self.__dict__["intercept_"] = value
+    @property
+    def intercept_(self):
+        return self._intercept_
+
+    @intercept_.setter
+    def intercept_(self, value):
+        self._intercept_ = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             del self._onedal_estimator._onedal_model
 
+    @intercept_.deleter
+    def intercept_(self):
+        del self._intercept_
+
     def _save_attributes(self):
-        self.coef_ = property(self.get_coef_, self.set_coef_)
-        self.intercept_ = property(self.get_intercept_, self.set_intercept_)
         self.n_features_in_ = self._onedal_estimator.n_features_in_
         self._sparse = False
-        self.__dict__["coef_"] = self._onedal_estimator.coef_
-        self.__dict__["intercept_"] = self._onedal_estimator.intercept_
+        self._coef_ = self._onedal_estimator.coef_
+        self._intercept_ = self._onedal_estimator.intercept_
 
-    fit.__doc__ = sklearn_LinearRegression.fit.__doc__
-    predict.__doc__ = sklearn_LinearRegression.predict.__doc__
-    score.__doc__ = sklearn_LinearRegression.score.__doc__
+    fit.__doc__ = _sklearn_LinearRegression.fit.__doc__
+    predict.__doc__ = _sklearn_LinearRegression.predict.__doc__
+    score.__doc__ = _sklearn_LinearRegression.score.__doc__

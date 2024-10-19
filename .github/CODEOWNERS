@@ -1,23 +1,22 @@
 # Infra and tools
 .ci/                          @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
-.github/                      @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
+.github/                      @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser @samir-nasibli @icfaust
 .circleci/                    @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
 
 # Docs
-*.md                          @maria-Petrova @napetrov @aepanchi @Alexsandruss
-doc/                          @maria-Petrova @napetrov @aepanchi @Alexsandruss
-requirements-doc.txt          @maria-Petrova @napetrov @aepanchi @Alexsandruss
+*.md                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss @samir-nasibli @icfaust
+doc/                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss @samir-nasibli @icfaust
+requirements-doc.txt          @emmwalsh @Alexsandruss
 
 # DPC++
-**/oneapi/                    @Alexsandruss @samir-nasibli
-onedal/                       @Alexsandruss @samir-nasibli
-sklearnex/                    @Alexsandruss @samir-nasibli
+onedal/                       @Alexsandruss @samir-nasibli @icfaust
+sklearnex/                    @Alexsandruss @samir-nasibli @icfaust
 
 # Examples
 examples/                     @maria-Petrova @Alexsandruss @samir-nasibli @napetrov
 
 # Dependencies
-setup.py                      @napetrov @Alexsandruss @samir-nasibli
+setup.py                      @napetrov @Alexsandruss @samir-nasibli @icfaust
 requirements*                 @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
 dependencies-dev              @napetrov @Alexsandruss @samir-nasibli @homksei @ahuber21 @ethanglaser
 conda-recipe/                 @napetrov @Alexsandruss
@@ -29,14 +28,14 @@ conda-recipe/                 @napetrov @Alexsandruss
 *ensemble*                    @ahuber21 @icfaust
 
 # Testing
-**/test*.py                   @Alexsandruss @samir-nasibli
+**/test*.py                   @Alexsandruss @samir-nasibli @icfaust
 
 # Distributed
-*spmd*                        @samir-nasibli
+*spmd*                        @samir-nasibli @ethanglaser
 
 # Scikit-learn patching
-daal4py/sklearn/              @Alexsandruss @samir-nasibli
+daal4py/sklearn/              @Alexsandruss @samir-nasibli @icfaust
 
 # Core
-src/                          @Alexsandruss
-generator/                    @Alexsandruss
+src/                          @Alexsandruss @samir-nasibli @icfaust
+generator/                    @Alexsandruss @samir-nasibli @icfaust

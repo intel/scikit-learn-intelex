@@ -15,7 +15,7 @@
 # ===============================================================================
 
 import numpy as np
-from sklearn.decomposition import IncrementalPCA as sklearn_IncrementalPCA
+from sklearn.decomposition import IncrementalPCA as _sklearn_IncrementalPCA
 from sklearn.utils import check_array, gen_batches
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
@@ -25,11 +25,16 @@ from onedal.decomposition import IncrementalPCA as onedal_IncrementalPCA
 from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = _sklearn_IncrementalPCA._validate_data
+
 
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "transform", "_onedal_finalize_fit"]
 )
-class IncrementalPCA(sklearn_IncrementalPCA):
+class IncrementalPCA(_sklearn_IncrementalPCA):
 
     def __init__(self, n_components=None, *, whiten=False, copy=True, batch_size=None):
         super().__init__(
@@ -61,12 +66,12 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         return self._onedal_transform(X, queue)
 
     def _onedal_partial_fit(self, X, check_input=True, queue=None):
-        first_pass = not hasattr(self, "components_")
+        first_pass = not hasattr(self, "_onedal_estimator")
 
         if check_input:
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
-                    X, dtype=[np.float64, np.float32], reset=first_pass
+                X = validate_data(
+                    self, X, dtype=[np.float64, np.float32], reset=first_pass
                 )
             else:
                 X = check_array(
@@ -78,10 +83,10 @@ class IncrementalPCA(sklearn_IncrementalPCA):
         n_samples, n_features = X.shape
 
         if self.n_components is None:
-            if not hasattr(self, "components_"):
+            if not hasattr(self, "_components_shape"):
                 self.n_components_ = min(n_samples, n_features)
-            else:
-                self.n_components_ = self.components_.shape[0]
+                self._components_shape = self.n_components_
+
         elif not self.n_components <= n_features:
             raise ValueError(
                 "n_components=%r invalid for n_features=%d, need "
@@ -106,12 +111,12 @@ class IncrementalPCA(sklearn_IncrementalPCA):
 
         if not hasattr(self, "_onedal_estimator"):
             self._onedal_estimator = self._onedal_incremental_pca(**onedal_params)
-        self._onedal_estimator.partial_fit(X, queue)
+        self._onedal_estimator.partial_fit(X, queue=queue)
         self._need_to_finalize = True
 
-    def _onedal_finalize_fit(self):
+    def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit()
+        self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
     def _onedal_fit(self, X, queue=None):
@@ -119,7 +124,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = self._validate_data(X, dtype=[np.float64, np.float32], copy=self.copy)
+            X = validate_data(self, X, dtype=[np.float64, np.float32], copy=self.copy)
         else:
             X = check_array(
                 X,
@@ -142,7 +147,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
 
-        self._onedal_finalize_fit()
+        self._onedal_finalize_fit(queue=queue)
 
         return self
 
@@ -178,7 +183,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             "partial_fit",
             {
                 "onedal": self.__class__._onedal_partial_fit,
-                "sklearn": sklearn_IncrementalPCA.partial_fit,
+                "sklearn": _sklearn_IncrementalPCA.partial_fit,
             },
             X,
             check_input=check_input,
@@ -191,7 +196,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_IncrementalPCA.fit,
+                "sklearn": _sklearn_IncrementalPCA.fit,
             },
             X,
         )
@@ -204,7 +209,7 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             "transform",
             {
                 "onedal": self.__class__._onedal_transform,
-                "sklearn": sklearn_IncrementalPCA.transform,
+                "sklearn": _sklearn_IncrementalPCA.transform,
             },
             X,
         )
@@ -216,13 +221,13 @@ class IncrementalPCA(sklearn_IncrementalPCA):
             "fit_transform",
             {
                 "onedal": self.__class__._onedal_fit_transform,
-                "sklearn": sklearn_IncrementalPCA.fit_transform,
+                "sklearn": _sklearn_IncrementalPCA.fit_transform,
             },
             X,
         )
 
-    __doc__ = sklearn_IncrementalPCA.__doc__
-    fit.__doc__ = sklearn_IncrementalPCA.fit.__doc__
-    fit_transform.__doc__ = sklearn_IncrementalPCA.fit_transform.__doc__
-    transform.__doc__ = sklearn_IncrementalPCA.transform.__doc__
-    partial_fit.__doc__ = sklearn_IncrementalPCA.partial_fit.__doc__
+    __doc__ = _sklearn_IncrementalPCA.__doc__
+    fit.__doc__ = _sklearn_IncrementalPCA.fit.__doc__
+    fit_transform.__doc__ = _sklearn_IncrementalPCA.fit_transform.__doc__
+    transform.__doc__ = _sklearn_IncrementalPCA.transform.__doc__
+    partial_fit.__doc__ = _sklearn_IncrementalPCA.partial_fit.__doc__

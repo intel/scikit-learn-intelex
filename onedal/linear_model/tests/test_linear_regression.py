@@ -36,7 +36,7 @@ def test_diabetes(queue, dtype):
     model = LinearRegression(fit_intercept=True)
     model.fit(X_train, y_train, queue=queue)
     y_pred = model.predict(X_test, queue=queue)
-    assert mean_squared_error(y_test, y_pred) < 2396
+    assert_allclose(mean_squared_error(y_test, y_pred), 2395.567, rtol=1e-5)
 
 
 @pytest.mark.parametrize("queue", get_queues())
@@ -76,7 +76,7 @@ def test_full_results(queue, dtype):
     model = LinearRegression(fit_intercept=True)
     model.fit(X, y, queue=queue)
 
-    if queue.sycl_device.is_gpu:
+    if queue and queue.sycl_device.is_gpu:
         tol = 5e-3 if model.coef_.dtype == np.float32 else 1e-5
     else:
         tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-5
@@ -110,7 +110,7 @@ def test_no_intercept_results(queue, dtype):
     model = LinearRegression(fit_intercept=False)
     model.fit(X, y, queue=queue)
 
-    if queue.sycl_device.is_gpu:
+    if queue and queue.sycl_device.is_gpu:
         tol = 3e-3 if model.coef_.dtype == np.float32 else 1e-7
     else:
         tol = 2e-3 if model.coef_.dtype == np.float32 else 1e-7

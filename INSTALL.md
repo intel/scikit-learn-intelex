@@ -26,11 +26,13 @@ To install Intel(R) Extension for Scikit-learn*, use one of the following scenar
 - [Install from Anaconda Cloud](#install-from-anaconda-cloud)
   - [Install via Anaconda Cloud from Conda-Forge Channel](#install-via-anaconda-cloud-from-conda-forge-channel)
   - [Install via Anaconda Cloud from Intel Channel](#install-via-anaconda-cloud-from-intel-channel)
-  - [Install via Anaconda Cloud from Main Channel](#install-via-anaconda-cloud-from-main-channel)
 - [Build from Sources](#build-from-sources)
   - [Prerequisites](#prerequisites)
   - [Configure the Build with Environment Variables](#configure-the-build-with-environment-variables)
   - [Build Intel(R) Extension for Scikit-learn](#build-intelr-extension-for-scikit-learn)
+- [Build from Sources with `conda-build`](#build-from-sources-with-conda-build)
+  - [Prerequisites for `conda-build`](#prerequisites-for-conda-build)
+  - [Build Intel(R) Extension for Scikit-learn with `conda-build`](#build-intelr-extension-for-scikit-learn-with-conda-build)
 - [Next Steps](#next-steps)
 
 > **_NOTE:_** Intel(R) Extension for Scikit-learn* is also available as a part of [Intel® AI Tools](https://www.intel.com/content/www/us/en/developer/tools/oneapi/ai-analytics-toolkit.html). If you already have it installed, you do not need to separately install the extension.
@@ -42,17 +44,16 @@ Check [System](https://intel.github.io/scikit-learn-intelex/latest/system-requir
 
 ## Supported Configurations
 
-| OS / Python version | **Python 3.8** | **Python 3.9** | **Python 3.10** | **Python 3.11** | **Python 3.12** |
-| :------------------ | :------------: | :------------: |  :------------: |  :------------: |  :------------: |
-| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
-| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+| OS / Python version | **Python 3.9** | **Python 3.10** | **Python 3.11** | **Python 3.12** |
+| :------------------ | :------------: |  :------------: |  :------------: |  :------------: |
+| **Linux**           |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
+| **Windows**         |   [CPU, GPU]   |   [CPU, GPU]    |   [CPU, GPU]    |   [CPU, GPU]    |
 
 Applicable for:
 
 * PyPI
 * Anaconda Cloud from Conda-Forge Channel
 * Anaconda Cloud from Intel Channel
-* Anaconda Cloud from Main Channel
 
 
 
@@ -113,7 +114,7 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into a newly created environment (recommended):
 
   ```bash
-  conda config --add channels intel
+  conda config --add channels https://software.repos.intel.com/python/conda/
   conda config --set channel_priority strict
   conda create -n env python=3.10 scikit-learn-intelex
   ```
@@ -123,19 +124,9 @@ We recommend this installation for the users of Intel® Distribution for Python.
 - Install into your current environment:
 
   ```bash
-  conda config --add channels intel
+  conda config --add channels https://software.repos.intel.com/python/conda/
   conda config --set channel_priority strict
   conda install scikit-learn-intelex
-  ```
-
-### Install via Anaconda Cloud from Main Channel
-
-> **_NOTE:_** You may not find the latest version on the Anaconda Main channel since it usually lags on versions deployed. 
-
-- Install into a newly created environment (recommended):
-
-  ```bash
-  conda create -n env python=3.10 scikit-learn-intelex
   ```
 
 > **_NOTE:_** If you do not specify the version of Python, the latest one is downloaded. 
@@ -151,15 +142,35 @@ Intel(R) Extension for Scikit-learn* is easily built from the sources with the m
 
 The package is available for Windows* OS, Linux* OS, and macOS*.
 
-### Prerequisites
-* Python version >= 3.8, <= 3.12
-* daal4py >= 2024.3
+Multi-node (distributed) and streaming support can be disabled if needed.
 
-**TIP:** [Build daal4py from sources](https://github.com/intel/scikit-learn-intelex/blob/main/daal4py/INSTALL.md) or get it from [distribution channels](https://intelpython.github.io/daal4py/#getting-daal4py).
+The build-process (using setup.py) happens in 4 stages:
+1. Creating C++ and Cython sources from oneDAL C++ headers
+2. Building oneDAL Python interfaces via cmake and pybind11
+3. Running Cython on generated sources
+4. Compiling and linking them
+
+### Prerequisites
+* Python version >= 3.9, <= 3.12
+* Jinja2
+* Cython
+* Numpy
+* cmake and pybind11
+* A C++ compiler with C++11 support
+* Clang-Format
+* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
+  * You can use the pre-built `dal-devel` conda package from conda-forge channel
+* MPI (optional, needed for distributed mode)
+  * You can use the pre-built `impi-devel` conda package from conda-forge channel
+* A DPC++ compiler (optional, needed for DPC++ interfaces)
 
 ### Configure the Build with Environment Variables
 * ``SKLEARNEX_VERSION``: sets the package version
 * ``DALROOT``: sets the oneAPI Data Analytics Library path
+* ``NO_DIST``: set to '1', 'yes' or alike to build without support for distributed mode
+* ``NO_STREAM``: set to '1', 'yes' or alike to build without support for streaming mode
+* ``NO_DPC``: set to '1', 'yes' or alike to build without support of oneDAL DPC++ interfaces
+* ``OFF_ONEDAL_IFACE``: set to '1' to build without the support of oneDAL interfaces
 
 ### Build Intel(R) Extension for Scikit-learn
 
@@ -167,25 +178,33 @@ The package is available for Windows* OS, Linux* OS, and macOS*.
 
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py install
+   python setup.py install
    ```
 
 - To install the package in the development mode:
 
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py develop
+   python setup.py develop
    ```
 
-- To install scikit-learn-intelex without downloading daal4py:
+- To install scikit-learn-intelex without checking for dependencies:
 
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py install --single-version-externally-managed --record=record.txt
+   python setup.py install --single-version-externally-managed --record=record.txt
    ```
    ```bash
    cd <checkout-dir>
-   python setup_sklearnex.py develop --no-deps
+   python setup.py develop --no-deps
+   ```
+
+- To build the python module without installing it:
+
+   ```bash
+   cd <checkout-dir>
+   python setup.py build_ext --inplace --force
+   python setup.py build
    ```
 
 Where: 
@@ -195,6 +214,30 @@ Where:
 back to the project source-code directory. That way, you can edit the source code and see the changes
 without reinstalling the package after a small change.
 * `--single-version-externally-managed` is an option for Python packages instructing the setup tools module to create a package the host's package manager can easily manage.
+
+## Build from Sources with `conda-build`
+
+Intel(R) Extension for Scikit-learn* is easily built from the sources using only one command and `conda-build` utility. 
+
+### Prerequisites for `conda-build`
+
+* any `conda` distribution (`miniforge` is recommended)
+* `conda-build` and `conda-verify` installed in a conda environment
+* (Windows only) Microsoft Visual Studio*
+* (optional) Intel(R) oneAPI DPC++/C++ Compiler
+
+`conda-build` config requires **2022** version of Microsoft Visual Studio* by default, you can specify another version in `conda-recipe/conda_build_config.yaml` if needed.
+
+In order to enable DPC++ interfaces support on Windows, you need to set `DPCPPROOT` environment variable pointing to DPC++/C++ Compiler distribution.
+Conda-forge distribution of DPC++ compiler is used by default on Linux, but you still can set your own distribution via `DPCPPROOT` variable.
+
+### Build Intel(R) Extension for Scikit-learn with `conda-build`
+
+Create and verify `scikit-learn-intelex` conda package with next command executed from root of sklearnex repo:
+
+```bash
+conda build .
+```
 
 ## Next Steps
 

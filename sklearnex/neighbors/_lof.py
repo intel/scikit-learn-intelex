@@ -17,7 +17,7 @@
 import warnings
 
 import numpy as np
-from sklearn.neighbors import LocalOutlierFactor as sklearn_LocalOutlierFactor
+from sklearn.neighbors import LocalOutlierFactor as _sklearn_LocalOutlierFactor
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
@@ -26,20 +26,26 @@ from daal4py.sklearn._utils import sklearn_check_version
 from sklearnex._device_offload import dispatch, wrap_output_data
 from sklearnex.neighbors.common import KNeighborsDispatchingBase
 from sklearnex.neighbors.knn_unsupervised import NearestNeighbors
-from sklearnex.utils import get_namespace
+
+from ..utils._array_api import get_namespace
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = _sklearn_LocalOutlierFactor._validate_data
 
 
-@control_n_jobs(decorated_methods=["fit", "_kneighbors"])
-class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
+@control_n_jobs(decorated_methods=["fit", "kneighbors", "_kneighbors"])
+class LocalOutlierFactor(KNeighborsDispatchingBase, _sklearn_LocalOutlierFactor):
     __doc__ = (
-        sklearn_LocalOutlierFactor.__doc__
+        _sklearn_LocalOutlierFactor.__doc__
         + "\n NOTE: When X=None, methods kneighbors, kneighbors_graph, and predict will"
         + "\n only output numpy arrays. In that case, the only way to offload to gpu"
         + "\n is to use a global queue (e.g. using config_context)"
     )
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {
-            **sklearn_LocalOutlierFactor._parameter_constraints
+            **_sklearn_LocalOutlierFactor._parameter_constraints
         }
 
     # Only certain methods should be taken from knn to prevent code
@@ -97,6 +103,15 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
                 self.negative_outlier_factor_, 100.0 * self.contamination
             )
 
+        # adoption of warning for data with duplicated samples from
+        # https://github.com/scikit-learn/scikit-learn/pull/28773
+        if sklearn_check_version("1.6"):
+            if np.min(self.negative_outlier_factor_) < -1e7 and not self.novelty:
+                warnings.warn(
+                    "Duplicate values are leading to incorrect results. "
+                    "Increase the number of neighbors for more accurate results."
+                )
+
         return self
 
     def fit(self, X, y=None):
@@ -105,7 +120,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             "fit",
             {
                 "onedal": self.__class__._onedal_fit,
-                "sklearn": sklearn_LocalOutlierFactor.fit,
+                "sklearn": _sklearn_LocalOutlierFactor.fit,
             },
             X,
             None,
@@ -130,7 +145,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
     # argument is given and it is a dpctl tensor or dpnp array.
     # This would cause issues in fit_predict. Also, available_if
     # is hard to unwrap, and this is the most straighforward way.
-    @available_if(sklearn_LocalOutlierFactor._check_novelty_fit_predict)
+    @available_if(_sklearn_LocalOutlierFactor._check_novelty_fit_predict)
     @wrap_output_data
     def fit_predict(self, X, y=None):
         """Fit the model to the training set X and return the labels.
@@ -164,7 +179,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
             "kneighbors",
             {
                 "onedal": self.__class__._onedal_kneighbors,
-                "sklearn": sklearn_LocalOutlierFactor.kneighbors,
+                "sklearn": _sklearn_LocalOutlierFactor.kneighbors,
             },
             X,
             n_neighbors=n_neighbors,
@@ -173,7 +188,7 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
 
     kneighbors = wrap_output_data(_kneighbors)
 
-    @available_if(sklearn_LocalOutlierFactor._check_novelty_score_samples)
+    @available_if(_sklearn_LocalOutlierFactor._check_novelty_score_samples)
     @wrap_output_data
     def score_samples(self, X):
         """Opposite of the Local Outlier Factor of X.
@@ -217,5 +232,5 @@ class LocalOutlierFactor(KNeighborsDispatchingBase, sklearn_LocalOutlierFactor):
 
         return -np.mean(lrd_ratios_array, axis=1)
 
-    fit.__doc__ = sklearn_LocalOutlierFactor.fit.__doc__
-    kneighbors.__doc__ = sklearn_LocalOutlierFactor.kneighbors.__doc__
+    fit.__doc__ = _sklearn_LocalOutlierFactor.fit.__doc__
+    kneighbors.__doc__ = _sklearn_LocalOutlierFactor.kneighbors.__doc__

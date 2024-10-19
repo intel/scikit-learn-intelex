@@ -23,8 +23,10 @@ parser.add_argument("--channels", nargs="+", default=["pypi"])
 args = parser.parse_args()
 
 CHANNELS = args.channels
-PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11"]
-SYSTEMS = ["ubuntu-latest", "windows-latest"]
+PYTHON_VERSIONS = ["3.9", "3.10", "3.11"]
+# image versions are pinned to exact number instead of "latest"
+# to avoid unexpected failures when images are updated
+SYSTEMS = ["ubuntu-22.04", "windows-2022"]
 ACTIVATE = {
     "ubuntu-latest": "conda activate",
     "windows-latest": "call activate",
