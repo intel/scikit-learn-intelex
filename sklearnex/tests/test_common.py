@@ -23,10 +23,10 @@ import sys
 import trace
 
 import pytest
-from onedal.tests.test_common import _test_primitive_usage_ban
 from sklearn.utils import all_estimators
 
 from daal4py.sklearn._utils import sklearn_check_version
+from onedal.tests.test_common import _test_primitive_usage_ban
 from sklearnex.tests.utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
