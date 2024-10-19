@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import platform
+import subprocess
 from functools import partial
 from inspect import Parameter, getattr_static, isclass, signature
 
@@ -33,6 +35,7 @@ from sklearn.neighbors._base import KNeighborsMixin
 
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex import get_patch_map, patch_sklearn, sklearn_is_patched, unpatch_sklearn
+from sklearnex.basic_statistics import BasicStatistics, IncrementalBasicStatistics
 from sklearnex.linear_model import LogisticRegression
 from sklearnex.neighbors import (
     KNeighborsClassifier,
@@ -129,6 +132,8 @@ SPECIAL_INSTANCES = sklearn_clone_dict(
             KNeighborsRegressor(algorithm="brute"),
             NearestNeighbors(algorithm="brute"),
             LogisticRegression(solver="newton-cg"),
+            BasicStatistics(),
+            IncrementalBasicStatistics(),
         ]
     }
 )
@@ -344,3 +349,23 @@ DTYPES = [
     np.uint32,
     np.uint64,
 ]
+
+
+def _get_processor_info():
+    proc = ""
+    if platform.system() == "Linux":
+        proc = (
+            subprocess.check_output(["/usr/bin/cat", "/proc/cpuinfo"])
+            .strip()
+            .decode("utf-8")
+        )
+    elif platform.system() == "Windows":
+        proc = platform.processor()
+    elif platform.system() == "Darwin":
+        proc = (
+            subprocess.check_output(["/usr/bin/sysctl", "-n", "machdep.cpu.brand_string"])
+            .strip()
+            .decode("utf-8")
+        )
+
+    return proc
