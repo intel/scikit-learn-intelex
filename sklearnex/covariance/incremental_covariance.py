@@ -20,7 +20,7 @@ import warnings
 import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator, clone
-from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
 from sklearn.utils.validation import _num_features
@@ -49,9 +49,9 @@ else:
 @control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
 class IncrementalEmpiricalCovariance(BaseEstimator):
     """
-    Incremental estimator for covariance.
-    Allows to compute empirical covariance estimated by maximum
-    likelihood method if data are splitted into batches.
+    Maximum likelihood covariance estimator that allows for the estimation when the data are split into
+    batches. The user can use the ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
+    the entire dataset.
 
     Parameters
     ----------
@@ -84,13 +84,31 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     n_samples_seen_ : int
         The number of samples processed by the estimator. Will be reset on
-        new calls to fit, but increments across ``partial_fit`` calls.
+        new calls to ``fit``, but increments across ``partial_fit`` calls.
 
     batch_size_ : int
         Inferred batch size from ``batch_size``.
 
     n_features_in_ : int
-        Number of features seen during :term:`fit` `partial_fit`.
+        Number of features seen during ``fit`` or ``partial_fit``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearnex.covariance import IncrementalEmpiricalCovariance
+    >>> inccov = IncrementalEmpiricalCovariance(batch_size=1)
+    >>> X = np.array([[1, 2], [3, 4]])
+    >>> inccov.partial_fit(X[:1])
+    >>> inccov.partial_fit(X[1:])
+    >>> inccov.covariance_
+    np.array([[1., 1.],[1., 1.]])
+    >>> inccov.location_
+    np.array([2., 3.])
+    >>> inccov.fit(X)
+    >>> inccov.covariance_
+    np.array([[1., 1.],[1., 1.]])
+    >>> inccov.location_
+    np.array([2., 3.])
     """
 
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
@@ -103,8 +121,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             "copy": ["boolean"],
         }
 
-    get_precision = sklearn_EmpiricalCovariance.get_precision
-    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
+    get_precision = _sklearn_EmpiricalCovariance.get_precision
+    error_norm = wrap_output_data(_sklearn_EmpiricalCovariance.error_norm)
 
     def __init__(
         self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True
@@ -374,6 +392,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
-    mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
-    error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
-    score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__
+    mahalanobis.__doc__ = _sklearn_EmpiricalCovariance.mahalanobis.__doc__
+    error_norm.__doc__ = _sklearn_EmpiricalCovariance.error_norm.__doc__
+    score.__doc__ = _sklearn_EmpiricalCovariance.score.__doc__

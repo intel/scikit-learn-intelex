@@ -25,7 +25,7 @@ if daal_check_version((2023, "P", 200)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.cluster import KMeans as sklearn_KMeans
+    from sklearn.cluster import KMeans as _sklearn_KMeans
     from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
     from sklearn.utils.validation import (
         _check_sample_weight,
@@ -44,14 +44,14 @@ if daal_check_version((2023, "P", 200)):
     if sklearn_check_version("1.6"):
         from sklearn.utils.validation import validate_data
     else:
-        validate_data = sklearn_KMeans._validate_data
+        validate_data = _sklearn_KMeans._validate_data
 
     @control_n_jobs(decorated_methods=["fit", "fit_transform", "predict", "score"])
-    class KMeans(sklearn_KMeans):
-        __doc__ = sklearn_KMeans.__doc__
+    class KMeans(_sklearn_KMeans):
+        __doc__ = _sklearn_KMeans.__doc__
 
         if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {**sklearn_KMeans._parameter_constraints}
+            _parameter_constraints: dict = {**_sklearn_KMeans._parameter_constraints}
 
         def __init__(
             self,
@@ -102,8 +102,8 @@ if daal_check_version((2023, "P", 200)):
             patching_status = PatchingConditionsChain(f"sklearn.cluster.{class_name}.fit")
 
             sample_count = _num_samples(X)
-            self._algorithm = self.algorithm
             supported_algs = ["auto", "full", "lloyd", "elkan"]
+
             if self.algorithm == "elkan":
                 logging.getLogger("sklearnex").info(
                     "oneDAL does not support 'elkan', using 'lloyd' algorithm instead."
@@ -145,7 +145,7 @@ if daal_check_version((2023, "P", 200)):
                 "fit",
                 {
                     "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_KMeans.fit,
+                    "sklearn": _sklearn_KMeans.fit,
                 },
                 X,
                 y,
@@ -254,7 +254,7 @@ if daal_check_version((2023, "P", 200)):
                     "predict",
                     {
                         "onedal": self.__class__._onedal_predict,
-                        "sklearn": sklearn_KMeans.predict,
+                        "sklearn": _sklearn_KMeans.predict,
                     },
                     X,
                 )
@@ -286,7 +286,7 @@ if daal_check_version((2023, "P", 200)):
                     "predict",
                     {
                         "onedal": self.__class__._onedal_predict,
-                        "sklearn": sklearn_KMeans.predict,
+                        "sklearn": _sklearn_KMeans.predict,
                     },
                     X,
                     sample_weight,
@@ -339,7 +339,7 @@ if daal_check_version((2023, "P", 200)):
                 "score",
                 {
                     "onedal": self.__class__._onedal_score,
-                    "sklearn": sklearn_KMeans.score,
+                    "sklearn": _sklearn_KMeans.score,
                 },
                 X,
                 y,
@@ -384,11 +384,11 @@ if daal_check_version((2023, "P", 200)):
 
             self._n_init = self._onedal_estimator._n_init
 
-        fit.__doc__ = sklearn_KMeans.fit.__doc__
-        predict.__doc__ = sklearn_KMeans.predict.__doc__
-        transform.__doc__ = sklearn_KMeans.transform.__doc__
-        fit_transform.__doc__ = sklearn_KMeans.fit_transform.__doc__
-        score.__doc__ = sklearn_KMeans.score.__doc__
+        fit.__doc__ = _sklearn_KMeans.fit.__doc__
+        predict.__doc__ = _sklearn_KMeans.predict.__doc__
+        transform.__doc__ = _sklearn_KMeans.transform.__doc__
+        fit_transform.__doc__ = _sklearn_KMeans.fit_transform.__doc__
+        score.__doc__ = _sklearn_KMeans.score.__doc__
 
 else:
     from daal4py.sklearn.cluster import KMeans
