@@ -135,17 +135,31 @@ ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 if _is_dpc_backend:
 
+    from sklearn.utils.validation import check_is_fitted
+
     from onedal.datatypes import from_table, to_table
 
     class DummyEstimatorWithTableConversions(BaseEstimator):
 
         def fit(self, X, y=None):
-            sua_iface, _, _ = _get_sycl_namespace(X)
+            sua_iface, xp, _ = _get_sycl_namespace(X)
             X_table = to_table(X, sua_iface=sua_iface)
             y_table = to_table(y, sua_iface=sua_iface)
+            # The presence of the fitted attributes (ending with a trailing
+            # underscore) is required for the correct check. The cleanup of
+            # the memory will occur at the estimator instance deletion.
+            self.x_attr_ = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
+            self.y_attr_ = from_table(
+                y_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
             return self
 
         def predict(self, X):
+            # Checks if the estimator is fitted by verifying the presence of
+            # fitted attributes (ending with a trailing underscore).
+            check_is_fitted(self)
             sua_iface, xp, _ = _get_sycl_namespace(X)
             X_table = to_table(X, sua_iface=sua_iface)
             returned_X = from_table(
@@ -154,10 +168,12 @@ if _is_dpc_backend:
             return returned_X
 
 
-def gen_clsf_data(n_samples, n_features):
+def gen_clsf_data(n_samples, n_features, dtype=None):
     data, label = make_classification(
         n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777
     )
+    if dtype:
+        data, label = data.astype(dtype), label.astype(dtype)
     return (
         data,
         label,
@@ -224,11 +240,13 @@ def split_train_inference(kf, x, y, estimator, queue=None):
     return mem_tracks
 
 
-def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
+def _kfold_function_template(
+    estimator, dataframe, data_shape, queue=None, func=None, dtype=None
+):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
+    X, y, data_memory_size = gen_clsf_data(n_samples, n_features, dtype=dtype)
     kf = KFold(n_splits=N_SPLITS)
     if func:
         X = func(X)
@@ -343,7 +361,8 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 )
 @pytest.mark.parametrize("order", ["F", "C"])
 @pytest.mark.parametrize("data_shape", data_shapes)
-def test_table_conversions_memory_leaks(dataframe, queue, order, data_shape):
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_table_conversions_memory_leaks(dataframe, queue, order, data_shape, dtype):
     func = ORDER_DICT[order]
 
     if queue.sycl_device.is_gpu and (
