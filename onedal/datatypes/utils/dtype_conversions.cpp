@@ -21,7 +21,6 @@
 #include "oneapi/dal/common.hpp"
 #include "oneapi/dal/detail/common.hpp"
 
-#include "onedal/datatypes/utils/common.hpp"
 #include "onedal/datatypes/utils/dtype_conversions.hpp"
 #include "onedal/datatypes/utils/dtype_dispatcher.hpp"
 
@@ -72,7 +71,8 @@ inline std::string describe(char e = '<') {
     return std::string{ { e, d, s } };
 }
 
-const char end = is_big_endian() ? '>' : '<';
+// oneDAL works only on little-endian hardware.
+const char end = '<';
 
 template <typename... Types>
 inline auto make_fwd_map(const std::tuple<Types...>* const = nullptr) {

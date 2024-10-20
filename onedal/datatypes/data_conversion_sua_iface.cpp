@@ -123,7 +123,6 @@ py::dict construct_sua_iface(const dal::table& input) {
 
     const bool is_mutable = bytes_array.has_mutable_data();
 
-    static_assert(sizeof(std::size_t) == sizeof(void*));
     data_entry[0] = is_mutable ? reinterpret_cast<std::size_t>(bytes_array.get_mutable_data())
                                : reinterpret_cast<std::size_t>(bytes_array.get_data());
     data_entry[1] = is_mutable;
