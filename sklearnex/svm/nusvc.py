@@ -18,7 +18,11 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
 from sklearn.svm import NuSVC as _sklearn_NuSVC
-from sklearn.utils.validation import _deprecate_positional_args, check_array
+from sklearn.utils.validation import (
+    _deprecate_positional_args,
+    check_array,
+    check_is_fitted,
+)
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -115,6 +119,7 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -127,6 +132,7 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
@@ -169,6 +175,7 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
             predict. Also, it will produce meaningless results on very small
             datasets.
             """
+            check_is_fitted(self)
             return self._predict_proba(X)
 
         @available_if(_sklearn_NuSVC._check_proba)
@@ -208,6 +215,7 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
         @property
         def predict_proba(self):
             self._check_proba()
+            check_is_fitted(self)
             return self._predict_proba
 
         def _predict_log_proba(self, X):
@@ -236,6 +244,7 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "decision_function",

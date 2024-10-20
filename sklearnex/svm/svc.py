@@ -19,7 +19,11 @@ from scipy import sparse as sp
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC as _sklearn_SVC
-from sklearn.utils.validation import _deprecate_positional_args, check_array
+from sklearn.utils.validation import (
+    _deprecate_positional_args,
+    check_array,
+    check_is_fitted,
+)
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -117,6 +121,7 @@ class SVC(_sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -129,6 +134,7 @@ class SVC(_sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
@@ -171,6 +177,7 @@ class SVC(_sklearn_SVC, BaseSVC):
             predict. Also, it will produce meaningless results on very small
             datasets.
             """
+            check_is_fitted(self)
             return self._predict_proba(X)
 
         @available_if(_sklearn_SVC._check_proba)
@@ -210,6 +217,7 @@ class SVC(_sklearn_SVC, BaseSVC):
         @property
         def predict_proba(self):
             self._check_proba()
+            check_is_fitted(self)
             return self._predict_proba
 
         def _predict_log_proba(self, X):
@@ -238,6 +246,7 @@ class SVC(_sklearn_SVC, BaseSVC):
 
     @wrap_output_data
     def decision_function(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "decision_function",
