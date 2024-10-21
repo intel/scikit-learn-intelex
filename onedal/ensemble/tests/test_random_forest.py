@@ -45,7 +45,7 @@ def test_rf_classifier(queue, block, trees, rows, scale):
     )
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y, queue=queue)
     if daal_check_version((2024, "P", 300)) and block is not None:
-        hparams = rf.get_hyperparameters("predict")
+        hparams = rf.get_hyperparameters("infer")
         hparams.block_size = block
         hparams.min_trees_for_threading = trees
         hparams.min_number_of_rows_for_vect_seq_compute = rows
