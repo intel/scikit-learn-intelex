@@ -14,17 +14,21 @@
 # limitations under the License.
 # ==============================================================================
 
-import importlib
 import os
+import pkgutil
 from glob import glob
 
 
-def _test_primitive_usage_ban(primimtive_name, banned_locations, allowed_locations=None):
+def _check_primitive_usage_ban(primitive_name, package, allowed_locations=None):
     """This test blocks the usage of the primitive in
     in certain files.
     """
 
-    loc = importlib.import_module(banned_locations).__file__
+    # TODO:
+    # Address deprecation warning.
+    # The function "get_loader" is deprecated Use importlib.util.find_spec() instead.
+    # Will be removed in Python 3.14.
+    loc = pkgutil.get_loader(package).get_filename()
 
     path = loc.replace("__init__.py", "")
     files = [y for x in os.walk(path) for y in glob(os.path.join(x[0], "*.py"))]
@@ -32,8 +36,8 @@ def _test_primitive_usage_ban(primimtive_name, banned_locations, allowed_locatio
     output = []
 
     for f in files:
-        if open(f, "r").read().find(primimtive_name) != -1:
-            output += [f.replace(path, banned_locations + os.sep)]
+        if open(f, "r").read().find(primitive_name) != -1:
+            output += [f.replace(path, package + os.sep)]
 
     # remove this file from the list
     if allowed_locations:
@@ -48,8 +52,8 @@ def test_sklearn_check_version_ban():
     in onedal files. The versioning should occur in the
     sklearnex package for clarity and maintainability.
     """
-    output = _test_primitive_usage_ban(
-        primimtive_name="sklearn_check_version", banned_locations="onedal"
+    output = _check_primitive_usage_ban(
+        primitive_name="sklearn_check_version", package="onedal"
     )
 
     # remove this file from the list

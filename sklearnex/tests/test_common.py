@@ -26,7 +26,7 @@ import pytest
 from sklearn.utils import all_estimators
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal.tests.test_common import _test_primitive_usage_ban
+from onedal.tests.test_common import _check_primitive_usage_ban
 from sklearnex.tests.utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
@@ -106,9 +106,9 @@ def test_target_offload_ban():
     within the architecture of the sklearnex classes. This
     is for clarity, traceability and maintainability.
     """
-    output = _test_primitive_usage_ban(
-        primimtive_name="target_offload",
-        banned_locations="sklearnex",
+    output = _check_primitive_usage_ban(
+        primitive_name="target_offload",
+        package="sklearnex",
         allowed_locations=TARGET_OFFLOAD_ALLOWED_LOCATIONS,
     )
     output = "\n".join(output)
