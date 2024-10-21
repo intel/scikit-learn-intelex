@@ -187,7 +187,8 @@ class LinearRegression(_sklearn_LinearRegression):
                     "Number of features + 1 >= number of samples.",
                 ),
                 (
-                    not (is_multi_output and not supports_all_variants),
+                    not is_multi_output or supports_all_variants,
+
                     "Multi-output regression is not supported.",
                 ),
             ]
