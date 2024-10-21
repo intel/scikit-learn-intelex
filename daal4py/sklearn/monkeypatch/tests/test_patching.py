@@ -57,7 +57,7 @@ def get_result_log():
         process = subprocess.check_output(
             [
                 sys.executable,
-                os.path.join([absolute_path, "utils", "_launch_algorithms.py"]),
+                os.sep.join([absolute_path, "utils", "_launch_algorithms.py"]),
             ]
         )
     except subprocess.CalledProcessError as e:
