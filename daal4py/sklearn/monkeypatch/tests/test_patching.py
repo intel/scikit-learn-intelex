@@ -55,7 +55,7 @@ def get_result_log():
     absolute_path = str(pathlib.Path(__file__).parent.absolute())
     try:
         process = subprocess.check_output(
-            [sys.executable, absolute_path + "/utils/_launch_algorithms.py"]
+            [sys.executable, os.path.join([absolute_path, "utils", "_launch_algorithms.py"])]
         )
     except subprocess.CalledProcessError as e:
         print(e)
