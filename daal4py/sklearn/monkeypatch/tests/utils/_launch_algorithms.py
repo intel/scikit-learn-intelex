@@ -29,8 +29,8 @@ import sys
 from sklearn.datasets import load_diabetes, load_iris, make_regression
 from sklearn.metrics import pairwise_distances, roc_auc_score
 
-absolute_path = str(pathlib.Path(__file__).parent.absolute())
-sys.path.append(absolute_path + "/../")
+absolute_path = str(pathlib.Path(__file__).parent.parent.absolute())
+sys.path.append(absolute_path)
 from _models_info import MODELS_INFO, TYPES
 
 
