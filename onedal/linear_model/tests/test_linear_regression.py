@@ -213,7 +213,7 @@ def test_singular_matrix(queue, dtype, fit_intercept):
 )
 def test_multioutput_regression(queue, dtype, fit_intercept, problem_type):
     if problem_type != "regular" and queue and queue.sycl_device.is_gpu:
-        pytest.skip()  # not yet implemented on GPU
+        pytest.skip("Not yet implemented on GPU")
     gen = np.random.default_rng(seed=123)
     if problem_type == "regular":
         X = gen.standard_normal(size=(20, 5))
