@@ -15,17 +15,20 @@
 # ==============================================================================
 
 import os
+import pkgutil
 from glob import glob
 
-import pytest
 
-
-def test_sklearn_check_version_ban():
-    """This test blocks the use of sklearn_check_version
-    in onedal files. The versioning should occur in the
-    sklearnex package for clarity and maintainability.
+def _check_primitive_usage_ban(primitive_name, package, allowed_locations=None):
+    """This test blocks the usage of the primitive in
+    in certain files.
     """
-    from onedal import __file__ as loc
+
+    # TODO:
+    # Address deprecation warning.
+    # The function "get_loader" is deprecated Use importlib.util.find_spec() instead.
+    # Will be removed in Python 3.14.
+    loc = pkgutil.get_loader(package).get_filename()
 
     path = loc.replace("__init__.py", "")
     files = [y for x in os.walk(path) for y in glob(os.path.join(x[0], "*.py"))]
@@ -33,8 +36,25 @@ def test_sklearn_check_version_ban():
     output = []
 
     for f in files:
-        if open(f, "r").read().find("sklearn_check_version") != -1:
-            output += [f.replace(path, "onedal" + os.sep)]
+        if open(f, "r").read().find(primitive_name) != -1:
+            output += [f.replace(path, package + os.sep)]
+
+    # remove this file from the list
+    if allowed_locations:
+        for allowed in allowed_locations:
+            output = [i for i in output if allowed not in i]
+
+    return output
+
+
+def test_sklearn_check_version_ban():
+    """This test blocks the use of sklearn_check_version
+    in onedal files. The versioning should occur in the
+    sklearnex package for clarity and maintainability.
+    """
+    output = _check_primitive_usage_ban(
+        primitive_name="sklearn_check_version", package="onedal"
+    )
 
     # remove this file from the list
     output = "\n".join([i for i in output if "test_common.py" not in i])
