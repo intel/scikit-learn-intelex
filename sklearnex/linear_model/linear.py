@@ -182,13 +182,12 @@ class LinearRegression(_sklearn_LinearRegression):
                     "Forced positive coefficients are not supported.",
                 ),
                 (
-                    not (is_underdetermined and (not supports_all_variants or is_gpu)),
+                    not is_underdetermined or (supports_all_variants and not is_gpu),
                     "The shape of X (fitting) does not satisfy oneDAL requirements:"
                     "Number of features + 1 >= number of samples.",
                 ),
                 (
                     not is_multi_output or supports_all_variants,
-
                     "Multi-output regression is not supported.",
                 ),
             ]
