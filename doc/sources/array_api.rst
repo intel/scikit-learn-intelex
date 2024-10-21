@@ -63,7 +63,7 @@ DPCTL or DPNP inputs are not required to use `config_context(target_offload=devi
 
 Support for Array API-compatible inputs
 =======================================
-All patched estimators, metrics, tools and non-scikit-learn estimators functionally support Array API standart.
+All patched estimators, metrics, tools and non-scikit-learn estimators functionally support Array API standard.
 Intel(R) Extension for scikit-Learn preserves input data format for all outputs. For all array inputs except
 SYCL USM arrays `dpnp's <https://github.com/IntelPython/dpnp>`__ ndarray and
 `Data Parallel Control usm_ndarray <https://intelpython.github.io/dpctl/latest/index.html>`__ all computation
@@ -72,7 +72,7 @@ will be only accomplished on CPU unless specified by a `config_context`` with an
 Stock scikit-learn uses `config_context(array_api_dispatch=True)` for enabling Array API
 `support <https://scikit-learn.org/1.5/modules/array_api.html>`__.
 If `array_api_dispatch` is enabled and the installed Scikit-Learn version supports array API, then the original
-inputs are used for when falling back to Scikit-Learn functionality.
+inputs are used when falling back to Scikit-Learn functionality.
 
 .. note::
     Data Parallel Control usm_ndarray or DPNP ndarray inputs will use host numpy data copies when
