@@ -112,8 +112,8 @@ dal::table convert_from_sua_iface(py::object obj) {
     // Get `__sycl_usm_array_interface__` dictionary representing USM allocations.
     auto sua_iface_dict = get_sua_interface(obj);
 
-    // Get converted to c-type a string encoding elemental data type of the array provided
-    // by `__sycl_usm_array_interface__["syclobj"]`.
+    // Convert a string encoding elemental data type of the array to oneDAL homogen table
+    // data type.
     const auto type = get_sua_dtype(sua_iface_dict);
 
     dal::table res{};
@@ -161,7 +161,7 @@ py::dict construct_sua_iface(const dal::table& input) {
     // oneDAL returns tables without sycl context for CPU sycl queue inputs, that
     // breaks the compute-follows-data execution.
     // Currently not throwing runtime exception and __sycl_usm_array_interface__["syclobj"] None asigned
-    // if no Sycl queue to allow workaround on python side.
+    // if no SYCL queue to allow workaround on python side.
     // if (!has_queue) {
     //     report_problem_to_sua_iface(": table has no queue");
     // }
