@@ -209,7 +209,7 @@ def test_singular_matrix(queue, dtype, fit_intercept):
 @pytest.mark.parametrize("problem_type", ["regular", "overdetermined", "singular"])
 @pytest.mark.skipif(
     not daal_check_version((2025, "P", 1)),
-    reason="Functionality introduced in later versions",
+    reason="Functionality introduced in the versions >= 2025.0",
 )
 def test_multioutput_regression(queue, dtype, fit_intercept, problem_type):
     if problem_type != "regular" and queue and queue.sycl_device.is_gpu:
