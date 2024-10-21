@@ -46,7 +46,8 @@
  *   strides: tuple of int
  *   offset: int
  *   version: int
- *   syclobj: dpctl.SyclQueue or dpctl.SyclContext object
+ *   syclobj: dpctl.SyclQueue or dpctl.SyclContext object or `SyclQueueRef` PyCapsule that
+ *            represents an opaque value of sycl::queue.
  *
  * For more informations please follow <https://intelpython.github.io/dpctl/latest/
  * api_reference/dpctl/sycl_usm_array_interface.html#sycl-usm-array-interface-attribute>
@@ -54,16 +55,20 @@
 
 namespace oneapi::dal::python {
 
+// Get converted to c-type a string encoding elemental data type of the array provided
+// by `__sycl_usm_array_interface__["syclobj"]`
 dal::data_type get_sua_dtype(const py::dict& sua) {
     auto dtype = sua["typestr"].cast<std::string>();
     return convert_sua_to_dal_type(std::move(dtype));
 }
 
+// Get `__sycl_usm_array_interface__` dictionary, that representing USM allocations.
 py::dict get_sua_interface(const py::object& obj) {
     constexpr const char name[] = "__sycl_usm_array_interface__";
     return obj.attr(name).cast<py::dict>();
 }
 
+// Get a 2-tuple data entry for `__sycl_usm_array_interface__`.
 py::tuple get_sua_data(const py::dict& sua) {
     py::tuple result = sua["data"].cast<py::tuple>();
     if (result.size() != py::ssize_t{ 2ul }) {
@@ -72,16 +77,22 @@ py::tuple get_sua_data(const py::dict& sua) {
     return result;
 }
 
+// Get `__sycl_usm_array_interface__['data'][0]`, the first element of data entry,
+// which is a Python integer encoding USM pointer value.
 std::uintptr_t get_sua_ptr(const py::dict& sua) {
     const py::tuple data = get_sua_data(sua);
     return data[0ul].cast<std::uintptr_t>();
 }
 
+// Get `__sycl_usm_array_interface__['data'][1]`, which is the data entry a read-only
+// flag (True means the data area is read-only).
 bool is_sua_readonly(const py::dict& sua) {
     const py::tuple data = get_sua_data(sua);
     return data[1ul].cast<bool>();
 }
 
+// Get `__sycl_usm_array_interface__['shape']`.
+// shape : a tuple of integers describing dimensions of an N-dimensional array.
 py::tuple get_sua_shape(const py::dict& sua) {
     py::tuple shape = sua["shape"].cast<py::tuple>();
     if (shape.size() == py::ssize_t{ 0ul }) {
@@ -98,6 +109,7 @@ void report_problem_for_sua_iface(const char* clarification) {
     throw std::invalid_argument{ message };
 }
 
+// Get and check `__sycl_usm_array_interface__` number of dimensions.
 std::int64_t get_and_check_sua_iface_ndim(const py::dict& sua_dict) {
     constexpr const char* const err_message = ": only 1D & 2D tensors are allowed";
     py::tuple shape = get_sua_shape(sua_dict);
@@ -108,6 +120,7 @@ std::int64_t get_and_check_sua_iface_ndim(const py::dict& sua_dict) {
     return ndim;
 }
 
+// Get the pair of row and column counts.
 std::pair<std::int64_t, std::int64_t> get_sua_iface_shape_by_values(const py::dict sua_dict,
                                                                     const std::int64_t ndim) {
     std::int64_t row_count, col_count;
@@ -123,6 +136,7 @@ std::pair<std::int64_t, std::int64_t> get_sua_iface_shape_by_values(const py::di
     return std::make_pair(row_count, col_count);
 }
 
+// Get OneDAL Homogen DataLayout enumeration from input object shape and strides.
 dal::data_layout get_sua_iface_layout(const py::dict& sua_dict,
                                       const std::int64_t& r_count,
                                       const std::int64_t& c_count) {
@@ -168,6 +182,8 @@ void report_problem_to_sua_iface(const char* clarification) {
     throw std::runtime_error{ message };
 }
 
+// Get numpy-like strides. Strides is a tuple of integers describing number of array elements
+// needed to jump to the next array element in the corresponding dimensions.
 py::tuple get_npy_strides(const dal::data_layout& data_layout,
                           npy_intp row_count,
                           npy_intp column_count) {
@@ -184,6 +200,8 @@ py::tuple get_npy_strides(const dal::data_layout& data_layout,
     return strides;
 }
 
+// Create `SyclQueueRef` PyCapsule that represents an opaque value of
+// sycl::queue.
 py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue) {
     static const char queue_capsule_name[] = "SyclQueueRef";
     if (queue.get() == nullptr) {
