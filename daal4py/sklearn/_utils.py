@@ -18,7 +18,7 @@ import functools
 import os
 import sys
 import warnings
-from typing import Any, Callable, Tuple
+from typing import Any, Tuple
 
 import numpy as np
 from numpy.lib.recfunctions import require_fields
