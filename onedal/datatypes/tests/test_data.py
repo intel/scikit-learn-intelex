@@ -70,8 +70,8 @@ if _is_dpc_backend:
             params = bs_DBSCAN._get_onedal_params(dtype)
             X_table = to_table(X, sua_iface=sua_iface)
             # TODO:
-            # check other candidates for the dummy base OneDAL func.
-            # OneDAL backend func is needed to check result table checks.
+            # check other candidates for the dummy base oneDAL func.
+            # oneDAL backend func is needed to check result table checks.
             result = _backend.dbscan.clustering.compute(
                 policy, params, X_table, to_table(None)
             )
@@ -358,7 +358,7 @@ def test_sua_iface_interop_invalid_shape(dataframe, queue, data_shape):
     ],
 )
 def test_sua_iface_interop_unsupported_dtypes(dataframe, queue, dtype):
-    # sua iface interobility supported only for OneDAL supported dtypes
+    # sua iface interobility supported only for oneDAL supported dtypes
     # for input data: int32, int64, float32, float64.
     # Checking some common dtypes supported by dpctl, dpnp for exception
     # raise.

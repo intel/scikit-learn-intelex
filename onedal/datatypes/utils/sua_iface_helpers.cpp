@@ -55,7 +55,7 @@
 
 namespace oneapi::dal::python {
 
-// Convert a string encoding elemental data type of the array to OneDAL homogen table data type.
+// Convert a string encoding elemental data type of the array to oneDAL homogen table data type.
 dal::data_type get_sua_dtype(const py::dict& sua) {
     auto dtype = sua["typestr"].cast<std::string>();
     return convert_sua_to_dal_type(std::move(dtype));
@@ -135,7 +135,7 @@ std::pair<std::int64_t, std::int64_t> get_sua_iface_shape_by_values(const py::di
     return std::make_pair(row_count, col_count);
 }
 
-// Get OneDAL Homogen DataLayout enumeration from input object shape and strides.
+// Get oneDAL Homogen DataLayout enumeration from input object shape and strides.
 dal::data_layout get_sua_iface_layout(const py::dict& sua_dict,
                                       const std::int64_t& r_count,
                                       const std::int64_t& c_count) {

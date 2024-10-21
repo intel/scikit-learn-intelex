@@ -51,7 +51,7 @@ def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
                 and sycl_queue.sycl_device.is_cpu
                 and table.__sycl_usm_array_interface__["syclobj"] is None
             ):
-                # OneDAL returns tables with None sycl queue for CPU sycl queue inputs.
+                # oneDAL returns tables with None sycl queue for CPU sycl queue inputs.
                 # This workaround is necessary for the functional preservation
                 # of the compute-follows-data execution.
                 # Host tables first converted into numpy.narrays and then to array from xp

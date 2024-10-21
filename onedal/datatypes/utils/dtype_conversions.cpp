@@ -33,7 +33,7 @@ inline void unknown_type() {
     throw std::runtime_error("Unknown type");
 }
 
-// Get the basic type character codes supported on OneDAL backend side
+// Get the basic type character codes supported on oneDAL backend side
 // for a string providing the basic type of the homogeneous array.
 template <typename Type>
 constexpr inline char type_desc() {
@@ -113,14 +113,14 @@ inline auto make_inv_map(const std::tuple<Types...>* const = nullptr) {
 }
 
 // The map, that provides translation from `__sycl_usm_array_interface__['typestr']`
-// a string encoding elemental data type of the array to OneDAL table data type.
+// a string encoding elemental data type of the array to oneDAL table data type.
 static const fwd_map_t& get_fwd_map() {
     constexpr const supported_types_t* types = nullptr;
     static const fwd_map_t body = make_fwd_map(types);
     return body;
 }
 
-// The map, that provides translation from OneDAL table data type to
+// The map, that provides translation from oneDAL table data type to
 // `__sycl_usm_array_interface__['typestr']` a string encoding elemental data type
 // of the array.
 static const inv_map_t& get_inv_map() {
@@ -129,12 +129,12 @@ static const inv_map_t& get_inv_map() {
     return body;
 }
 
-// Convert a string encoding elemental data type of the array to OneDAL homogen table data type.
+// Convert a string encoding elemental data type of the array to oneDAL homogen table data type.
 dal::data_type convert_sua_to_dal_type(std::string dtype) {
     return get_fwd_map().at(dtype);
 }
 
-// Convert OneDAL homogen table data type to a string encoding elemental data type of the array.
+// Convert oneDAL homogen table data type to a string encoding elemental data type of the array.
 std::string convert_dal_to_sua_type(dal::data_type dtype) {
     return get_inv_map().at(dtype);
 }

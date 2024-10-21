@@ -38,7 +38,7 @@ namespace oneapi::dal::python {
 // api_reference/dpctl/sycl_usm_array_interface.html#sycl-usm-array-interface-attribute>
 // for the description of `__sycl_usm_array_interface__` protocol.
 
-// Convert python object to OneDAL homogen table with zero-copy by use
+// Convert python object to oneDAL homogen table with zero-copy by use
 // of `__sycl_usm_array_interface__` protocol.
 template <typename Type>
 dal::table convert_to_homogen_impl(py::object obj) {
@@ -61,7 +61,7 @@ dal::table convert_to_homogen_impl(py::object obj) {
     // Get the pair of row and column counts.
     const auto [r_count, c_count] = get_sua_iface_shape_by_values(sua_iface_dict, ndim);
 
-    // Get OneDAL Homogen DataLayout enumeration from input object shape and strides.
+    // Get oneDAL Homogen DataLayout enumeration from input object shape and strides.
     const auto layout = get_sua_iface_layout(sua_iface_dict, r_count, c_count);
 
     // Get `__sycl_usm_array_interface__['data'][0]`, the first element of data entry,
@@ -102,12 +102,12 @@ dal::table convert_to_homogen_impl(py::object obj) {
     }
 
     // Towards the python object memory model icnrement the python object reference
-    // count due to new reference by OneDAL table pointing to that object.
+    // count due to new reference by oneDAL table pointing to that object.
     obj.inc_ref();
     return res;
 }
 
-// Convert OneDAL table with zero-copy by use of `__sycl_usm_array_interface__` protocol.
+// Convert oneDAL table with zero-copy by use of `__sycl_usm_array_interface__` protocol.
 dal::table convert_from_sua_iface(py::object obj) {
     // Get `__sycl_usm_array_interface__` dictionary, that representing USM allocations.
     auto sua_iface_dict = get_sua_interface(obj);
@@ -129,7 +129,7 @@ dal::table convert_from_sua_iface(py::object obj) {
     return res;
 }
 
-// Create a dictionary for `__sycl_usm_array_interface__` protocol from OneDAL table properties.
+// Create a dictionary for `__sycl_usm_array_interface__` protocol from oneDAL table properties.
 py::dict construct_sua_iface(const dal::table& input) {
     const auto kind = input.get_kind();
     if (kind != dal::homogen_table::kind())
@@ -158,7 +158,7 @@ py::dict construct_sua_iface(const dal::table& input) {
 
     auto bytes_array = dal::detail::get_original_data(homogen_input);
     auto has_queue = bytes_array.get_queue().has_value();
-    // OneDAL returns tables without sycl context for CPU sycl queue inputs, that
+    // oneDAL returns tables without sycl context for CPU sycl queue inputs, that
     // breaks the compute-follows-data execution.
     // Currently not throwing runtime exception and __sycl_usm_array_interface__["syclobj"] None asigned
     // if no Sycl queue to allow workaround on python side.
@@ -178,7 +178,7 @@ py::dict construct_sua_iface(const dal::table& input) {
     py::dict iface;
     iface["data"] = data_entry;
     // shape: a tuple of integers describing dimensions of an N-dimensional array.
-    // Note:  OneDAL supports only (r,1) for 1-D arrays. In python code after from_table conversion
+    // Note:  oneDAL supports only (r,1) for 1-D arrays. In python code after from_table conversion
     // for 1-D expected outputs xp.ravel or reshape(-1) is used.
     // TODO:
     // probably worth to update for 1-D arrays.
@@ -191,7 +191,7 @@ py::dict construct_sua_iface(const dal::table& input) {
     // Version of the `__sycl_usm_array_interface__`. At present, the only supported value is 1.
     iface["version"] = 1;
 
-    // Convert OneDAL homogen table data type to a string encoding elemental data type of the array.
+    // Convert oneDAL homogen table data type to a string encoding elemental data type of the array.
     iface["typestr"] = convert_dal_to_sua_type(dtype);
 
     // syclobj: Python object from which SYCL context to which represented USM allocation is bound.
@@ -206,7 +206,7 @@ py::dict construct_sua_iface(const dal::table& input) {
     return iface;
 }
 
-// Adding `__sycl_usm_array_interface__` attribute to python OneDAL table, that representing
+// Adding `__sycl_usm_array_interface__` attribute to python oneDAL table, that representing
 // USM allocations.
 void define_sycl_usm_array_property(py::class_<dal::table>& table_obj) {
     // To enable native extensions to pass the memory allocated by a native SYCL library to SYCL-aware

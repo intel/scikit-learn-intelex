@@ -27,13 +27,13 @@ namespace oneapi::dal::python {
 
 namespace py = pybind11;
 
-// Convert OneDAL table with zero-copy by use of `__sycl_usm_array_interface__` protocol.
+// Convert oneDAL table with zero-copy by use of `__sycl_usm_array_interface__` protocol.
 dal::table convert_from_sua_iface(py::object obj);
 
-// Create a dictionary for `__sycl_usm_array_interface__` protocol from OneDAL table properties.
+// Create a dictionary for `__sycl_usm_array_interface__` protocol from oneDAL table properties.
 py::dict construct_sua_iface(const dal::table& input);
 
-// Adding `__sycl_usm_array_interface__` attribute to python OneDAL table, that representing
+// Adding `__sycl_usm_array_interface__` attribute to python oneDAL table, that representing
 // USM allocations.
 void define_sycl_usm_array_property(py::class_<dal::table>& t);
 
