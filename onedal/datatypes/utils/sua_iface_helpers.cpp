@@ -55,8 +55,7 @@
 
 namespace oneapi::dal::python {
 
-// Get converted to c-type a string encoding elemental data type of the array provided
-// by `__sycl_usm_array_interface__["syclobj"]`
+// Convert a string encoding elemental data type of the array to OneDAL homogen table data type.
 dal::data_type get_sua_dtype(const py::dict& sua) {
     auto dtype = sua["typestr"].cast<std::string>();
     return convert_sua_to_dal_type(std::move(dtype));

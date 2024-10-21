@@ -191,7 +191,7 @@ py::dict construct_sua_iface(const dal::table& input) {
     // Version of the `__sycl_usm_array_interface__`. At present, the only supported value is 1.
     iface["version"] = 1;
 
-    // typestr: a string encoding elemental data type of the array.
+    // Convert OneDAL homogen table data type to a string encoding elemental data type of the array.
     iface["typestr"] = convert_dal_to_sua_type(dtype);
 
     // syclobj: Python object from which SYCL context to which represented USM allocation is bound.

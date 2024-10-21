@@ -33,18 +33,23 @@ inline void unknown_type() {
     throw std::runtime_error("Unknown type");
 }
 
+// Get the basic type character codes supported on OneDAL backend side
+// for a string providing the basic type of the homogeneous array.
 template <typename Type>
 constexpr inline char type_desc() {
     if constexpr (std::is_integral_v<Type>) {
         if (std::is_unsigned_v<Type>) {
+            // Unsigned integer
             return 'u';
         }
         else {
+            // Integer
             return 'i';
         }
     }
     else {
         if (std::is_floating_point_v<Type>) {
+            // Floating point
             return 'f';
         }
         else {
@@ -64,6 +69,7 @@ constexpr inline char type_size() {
     };
 }
 
+// Get a string encoding elemental data type of the array.
 template <typename Type>
 inline std::string describe(char e = '<') {
     constexpr auto s = type_size<Type>();
@@ -106,22 +112,29 @@ inline auto make_inv_map(const std::tuple<Types...>* const = nullptr) {
     return result;
 }
 
+// The map, that provides translation from `__sycl_usm_array_interface__['typestr']`
+// a string encoding elemental data type of the array to OneDAL table data type.
 static const fwd_map_t& get_fwd_map() {
     constexpr const supported_types_t* types = nullptr;
     static const fwd_map_t body = make_fwd_map(types);
     return body;
 }
 
+// The map, that provides translation from OneDAL table data type to
+// `__sycl_usm_array_interface__['typestr']` a string encoding elemental data type
+// of the array.
 static const inv_map_t& get_inv_map() {
     constexpr const supported_types_t* types = nullptr;
     static const inv_map_t body = make_inv_map(types);
     return body;
 }
 
+// Convert a string encoding elemental data type of the array to OneDAL homogen table data type.
 dal::data_type convert_sua_to_dal_type(std::string dtype) {
     return get_fwd_map().at(dtype);
 }
 
+// Convert OneDAL homogen table data type to a string encoding elemental data type of the array.
 std::string convert_dal_to_sua_type(dal::data_type dtype) {
     return get_inv_map().at(dtype);
 }
