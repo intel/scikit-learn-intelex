@@ -61,7 +61,7 @@ dal::data_type get_sua_dtype(const py::dict& sua) {
     return convert_sua_to_dal_type(std::move(dtype));
 }
 
-// Get `__sycl_usm_array_interface__` dictionary, that representing USM allocations.
+// Get `__sycl_usm_array_interface__` dictionary representing USM allocations.
 py::dict get_sua_interface(const py::object& obj) {
     constexpr const char name[] = "__sycl_usm_array_interface__";
     return obj.attr(name).cast<py::dict>();

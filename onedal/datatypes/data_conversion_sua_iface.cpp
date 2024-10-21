@@ -42,7 +42,7 @@ namespace oneapi::dal::python {
 // of `__sycl_usm_array_interface__` protocol.
 template <typename Type>
 dal::table convert_to_homogen_impl(py::object obj) {
-    // Get `__sycl_usm_array_interface__` dictionary, that representing USM allocations.
+    // Get `__sycl_usm_array_interface__` dictionary representing USM allocations.
     auto sua_iface_dict = get_sua_interface(obj);
 
     // Python uses reference counting as its primary memory management technique.
@@ -109,11 +109,11 @@ dal::table convert_to_homogen_impl(py::object obj) {
 
 // Convert oneDAL table with zero-copy by use of `__sycl_usm_array_interface__` protocol.
 dal::table convert_from_sua_iface(py::object obj) {
-    // Get `__sycl_usm_array_interface__` dictionary, that representing USM allocations.
+    // Get `__sycl_usm_array_interface__` dictionary representing USM allocations.
     auto sua_iface_dict = get_sua_interface(obj);
 
     // Get converted to c-type a string encoding elemental data type of the array provided
-    // by `__sycl_usm_array_interface__["syclobj"]`
+    // by `__sycl_usm_array_interface__["syclobj"]`.
     const auto type = get_sua_dtype(sua_iface_dict);
 
     dal::table res{};
@@ -211,7 +211,7 @@ py::dict construct_sua_iface(const dal::table& input) {
 void define_sycl_usm_array_property(py::class_<dal::table>& table_obj) {
     // To enable native extensions to pass the memory allocated by a native SYCL library to SYCL-aware
     // Python extension without making a copy, the class must provide `__sycl_usm_array_interface__`
-    // attribute, that representing USM allocations. The `__sycl_usm_array_interface__` attribute is used
+    // attribute representing USM allocations. The `__sycl_usm_array_interface__` attribute is used
     // for constructing DPCTL usm_ndarray or DPNP ndarray with zero-copy on python level.
     table_obj.def_property_readonly("__sycl_usm_array_interface__", &construct_sua_iface);
 }
