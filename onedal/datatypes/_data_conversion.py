@@ -33,12 +33,8 @@ if dpnp_available:
 
 def _apply_and_pass(func, *args, **kwargs):
     if len(args) == 1:
-        return func(args[0], **kwargs) if len(kwargs) > 0 else func(args[0])
-    return (
-        tuple(func(arg, **kwargs) for arg in args)
-        if len(kwargs) > 0
-        else tuple(func(arg) for arg in args)
-    )
+        return func(args[0], **kwargs)
+    return tuple(map(lambda arg: func(arg, **kwargs), args))
 
 
 def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
