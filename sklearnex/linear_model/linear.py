@@ -22,7 +22,7 @@ import numpy as np
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
-from sklearn.utils.validation import check_array
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
@@ -112,13 +112,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     @wrap_output_data
     def predict(self, X):
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' with "
-                "appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -131,6 +125,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
