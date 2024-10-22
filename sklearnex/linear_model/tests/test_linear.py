@@ -67,6 +67,7 @@ def test_sklearnex_import_linear(
 
     X = X.astype(dtype=dtype)
     y = y.astype(dtype=dtype)
+    y_list = y.tolist()
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg.fit(X, y)
@@ -77,6 +78,11 @@ def test_sklearnex_import_linear(
     rtol = 1e-3 if dtype == np.float32 else 1e-5
     assert_allclose(_as_numpy(linreg.coef_), expected_coefs, rtol=rtol)
     assert_allclose(_as_numpy(linreg.intercept_), expected_intercept, rtol=rtol)
+
+    # check that it also works with lists
+    linreg_list = LinearRegression().fit(X, y_list)
+    assert_allclose(linreg_list.coef_, linreg.coef_)
+    assert_allclose(linreg_list.intercept_, linreg.intercept_)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
