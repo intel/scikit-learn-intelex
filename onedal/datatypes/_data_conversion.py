@@ -21,14 +21,11 @@ import numpy as np
 from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
-from .._device_offload import dpctl_available, dpnp_available
 from ..utils import _is_csr
+from ..utils._dpep_helpers import dpctl_available, dpnp_available
 
 if dpctl_available:
     import dpctl.tensor as dpt
-
-if dpnp_available:
-    import dpnp
 
 
 def _apply_and_pass(func, *args, **kwargs):
