@@ -25,20 +25,11 @@ from sklearn import config_context, get_config
 from daal4py.sklearn._utils import get_dtype
 from daal4py.sklearn._utils import make2d as d4p_make2d
 
-try:
+from ._dpep_helpers import dpctl_available, dpnp_available
+
+if dpctl_available:
     import dpctl.tensor as dpt
     from dpctl.tensor import usm_ndarray
-
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
-
-try:
-    import dpnp
-
-    dpnp_available = True
-except ImportError:
-    dpnp_available = False
 
 
 # TODO:

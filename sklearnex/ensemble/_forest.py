@@ -598,6 +598,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -613,7 +614,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         # TODO:
         # _check_proba()
         # self._check_proba()
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict_proba",
@@ -639,6 +640,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
@@ -786,7 +788,6 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
-        check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
             X = validate_data(
@@ -822,7 +823,6 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
-        check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
             X = validate_data(
@@ -1166,6 +1166,7 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -1178,6 +1179,7 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
