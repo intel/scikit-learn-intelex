@@ -105,6 +105,7 @@ Enable Intel(R) GPU optimizations
    algorithms.rst
    oneAPI and GPU support <oneapi-gpu.rst>
    distributed-mode.rst
+   non-scikit-algorithms.rst
    array_api.rst
    verbose.rst
    deprecation.rst
