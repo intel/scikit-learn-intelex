@@ -27,7 +27,9 @@ steps:
       conda config --add channels conda-forge
       conda config --set channel_priority strict
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
+      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
+      conda activate CB
+      if [-z "$(DALROOT)"]; then conda install -q -y -c conda-forge dal-devel; fi
     displayName: "Conda create"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -39,7 +41,7 @@ steps:
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      export DALROOT=$CONDA_PREFIX
+      if [-z "$(DALROOT)"]; then export DALROOT=$CONDA_PREFIX; fi
       ./conda-recipe/build.sh
     displayName: "Build daal4py/sklearnex"
   - script: |
