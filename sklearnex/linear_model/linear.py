@@ -143,15 +143,44 @@ class LinearRegression(_sklearn_LinearRegression):
             sample_weight=sample_weight,
         )
 
-    def _onedal_fit_supported(self, is_gpu, method_name, *data):
+    def _onedal_cpu_supported(self, method_name, *data):
+        patching_status = PatchingConditionsChain(
+            f"sklearn.linear_model.{self.__class__.__name__}.fit"
+        )
+        return self._onedal_supported(patching_status, method_name, *data)
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        patching_status = PatchingConditionsChain(
+            f"sklearn.linear_model.{self.__class__.__name__}.fit"
+        )
+
+        if method_name == "fit":
+            n_samples = _num_samples(data[0])
+            n_features = _num_features(X, fallback_1d=True)
+            is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+            patching_status.and_conditions(
+                [
+                    (
+                        not is_underdetermined,
+                        "The shape of X (fitting) does not satisfy oneDAL requirements:"
+                        "Number of features + 1 >= number of samples.",
+                    )
+                ]
+            )
+
+        return self._onedal_supported(patching_status, method_name, *data)
+
+    def _onedal_supported(self, patching_status, method_name, *data):
+        if method_name == "fit":
+            return self._onedal_fit_supported(patching_status, method_name, *data)
+        if method_name in ["predict", "score"]:
+            return self._onedal_predict_supported(patching_status, method_name, *data)
+        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+
+    def _onedal_fit_supported(self, patching_status, method_name, *data):
         assert method_name == "fit"
         assert len(data) == 3
         X, y, sample_weight = data
-
-        class_name = self.__class__.__name__
-        patching_status = PatchingConditionsChain(
-            f"sklearn.linear_model.{class_name}.fit"
-        )
 
         normalize_is_set = (
             hasattr(self, "normalize")
@@ -182,7 +211,7 @@ class LinearRegression(_sklearn_LinearRegression):
                     "Forced positive coefficients are not supported.",
                 ),
                 (
-                    not is_underdetermined or (supports_all_variants and not is_gpu),
+                    not is_underdetermined or supports_all_variants,
                     "The shape of X (fitting) does not satisfy oneDAL requirements:"
                     "Number of features + 1 >= number of samples.",
                 ),
@@ -195,12 +224,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
         return patching_status
 
-    def _onedal_predict_supported(self, method_name, *data):
-        class_name = self.__class__.__name__
-        patching_status = PatchingConditionsChain(
-            f"sklearn.linear_model.{class_name}.predict"
-        )
-
+    def _onedal_predict_supported(self, patching_status, method_name, *data):
         n_samples = _num_samples(data[0])
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
@@ -214,16 +238,6 @@ class LinearRegression(_sklearn_LinearRegression):
         )
 
         return patching_status
-
-    def _onedal_supported(self, is_gpu, method_name, *data):
-        if method_name == "fit":
-            return self._onedal_fit_supported(is_gpu, method_name, *data)
-        if method_name in ["predict", "score"]:
-            return self._onedal_predict_supported(method_name, *data)
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
-
-    _onedal_gpu_supported = partialmethod(_onedal_supported, True)
-    _onedal_cpu_supported = partialmethod(_onedal_supported, False)
 
     def _initialize_onedal_estimator(self):
         onedal_params = {"fit_intercept": self.fit_intercept, "copy_X": self.copy_X}
