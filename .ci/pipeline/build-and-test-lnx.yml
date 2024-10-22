@@ -28,12 +28,11 @@ steps:
       conda config --set channel_priority strict
       conda update -y -q conda
       conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
-      conda activate CB
-      if [-z "$(DALROOT)"]; then . /usr/share/miniconda/etc/profile.d/conda.sh && conda install -q -y -c conda-forge dal-devel; fi
     displayName: "Conda create"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      if [-z "$(DALROOT)"]; then conda install -q -y -c conda-forge dal-devel; fi
       pip install -r dependencies-dev
       pip list
     displayName: "Install develop requirements"
