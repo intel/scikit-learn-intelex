@@ -42,9 +42,9 @@ copyright = "Intel"
 author = "Intel"
 
 # The short X.Y version
-version = "2024.3.0"
+version = "2025.0.0"
 # The full version, including alpha/beta/rc tags
-release = "2024.3.0"
+release = "2025.0.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -67,6 +67,7 @@ extensions = [
     "notfound.extension",
     "sphinx_design",
     "sphinx_copybutton",
+    "sphinx.ext.napoleon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
