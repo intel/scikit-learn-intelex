@@ -16,7 +16,11 @@
 
 import numpy as np
 from sklearn.svm import NuSVR as _sklearn_NuSVR
-from sklearn.utils.validation import _deprecate_positional_args, check_array
+from sklearn.utils.validation import (
+    _deprecate_positional_args,
+    check_array,
+    check_is_fitted,
+)
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -97,6 +101,7 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -109,6 +114,7 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
