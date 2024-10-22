@@ -83,7 +83,7 @@ def run_patch(model_info, dtype):
         logging.info(i)
 
 
-def run_algotithms():
+def run_algorithms():
     for info in MODELS_INFO:
         for t in TYPES:
             model_name = get_class_name(info["model"])
@@ -113,5 +113,5 @@ def run_utils():
 
 
 if __name__ == "__main__":
-    run_algotithms()
+    run_algorithms()
     run_utils()
