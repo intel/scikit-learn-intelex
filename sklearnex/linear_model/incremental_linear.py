@@ -19,7 +19,6 @@ import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
-from sklearn.exceptions import NotFittedError
 from sklearn.metrics import r2_score
 from sklearn.utils import check_array, gen_batches
 from sklearn.utils.validation import check_is_fitted
