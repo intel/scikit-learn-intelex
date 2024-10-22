@@ -32,7 +32,7 @@ steps:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [-z "$(DALROOT)"]; then conda install -q -y -c conda-forge dal-devel; fi
+      if [ -z "$(DALROOT)" ]; then conda install -q -y -c conda-forge dal-devel; fi
       pip install -r dependencies-dev
       pip list
     displayName: "Install develop requirements"
@@ -40,7 +40,7 @@ steps:
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [-z "$(DALROOT)"]; then export DALROOT=$CONDA_PREFIX; fi
+      if [ -z "$(DALROOT)" ]; then export DALROOT=$CONDA_PREFIX; fi
       ./conda-recipe/build.sh
     displayName: "Build daal4py/sklearnex"
   - script: |
