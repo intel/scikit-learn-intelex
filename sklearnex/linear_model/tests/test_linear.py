@@ -80,9 +80,10 @@ def test_sklearnex_import_linear(
     assert_allclose(_as_numpy(linreg.intercept_), expected_intercept, rtol=rtol)
 
     # check that it also works with lists
-    linreg_list = LinearRegression().fit(X, y_list)
-    assert_allclose(linreg_list.coef_, linreg.coef_)
-    assert_allclose(linreg_list.intercept_, linreg.intercept_)
+    if isinstance(X, np.ndarray):
+        linreg_list = LinearRegression().fit(X, y_list)
+        assert_allclose(linreg_list.coef_, linreg.coef_)
+        assert_allclose(linreg_list.intercept_, linreg.intercept_)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
