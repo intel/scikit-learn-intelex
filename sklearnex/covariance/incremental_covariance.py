@@ -23,7 +23,7 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
-from sklearn.utils.validation import _num_features
+from sklearn.utils.validation import _num_features, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
@@ -226,6 +226,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     def score(self, X_test, y=None):
         xp, _ = get_namespace(X_test)
 
+        check_is_fitted(self)
         location = self.location_
         if sklearn_check_version("1.0"):
             X = validate_data(
