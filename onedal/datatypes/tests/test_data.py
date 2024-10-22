@@ -19,8 +19,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal import _backend, _is_dpc_backend
-from onedal.utils._dpep_helpers import dpctl_available
 from onedal.datatypes import from_table, to_table
+from onedal.utils._dpep_helpers import dpctl_available
 
 if dpctl_available:
     from onedal.datatypes.tests.common import (

@@ -36,9 +36,9 @@ from onedal.tests.utils._dataframes_support import (
     dpnp_available,
     get_dataframes_and_queues,
 )
-from onedal.utils._dpep_helpers import is_dpctl_available
-from onedal.utils._array_api import _get_sycl_namespace
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_device_available
+from onedal.utils._array_api import _get_sycl_namespace
+from onedal.utils._dpep_helpers import is_dpctl_available
 from sklearnex import config_context
 from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from sklearnex.utils._array_api import get_namespace
