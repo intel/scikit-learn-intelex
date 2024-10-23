@@ -151,7 +151,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
         if method_name == "fit":
             n_samples = _num_samples(data[0])
-            n_features = _num_features(X, fallback_1d=True)
+            n_features = _num_features(data[0], fallback_1d=True)
             is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
             patching_status.and_conditions(
                 [
