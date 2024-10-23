@@ -189,10 +189,7 @@ class LinearRegression(_sklearn_LinearRegression):
         # or had bugs in some uncommon cases in older versions.
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
         supports_all_variants = daal_check_version((2025, "P", 1))
-        if hasattr(y, "shape"):
-            is_multi_output = len(y.shape) > 1 and y.shape[1] > 1
-        else:
-            is_multi_output = _num_features(y, fallback_1d=True) > 1
+        is_multi_output = _num_features(y, fallback_1d=True) > 1
 
         patching_status.and_conditions(
             [

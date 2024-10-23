@@ -376,7 +376,10 @@ def _num_features(X, fallback_1d=False):
         if not hasattr(X.shape, "__len__") or len(X.shape) < ndim_thr:
             message += f" with shape {X.shape}"
             raise TypeError(message)
-        return X.shape[-1]
+        if len(X.shape) <= 1:
+            return len(X)
+        else:
+            return X.shape[-1]
 
     first_sample = X[0]
 
