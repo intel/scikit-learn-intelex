@@ -223,7 +223,7 @@ def get_exe_cmd(ex, args):
             return None
     if not args.nodist and ex.endswith("spmd.py"):
         if IS_WIN:
-            return 'mpiexec -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
+            return 'mpirun -localonly -n 4 "' + sys.executable + '" "' + ex + '"'
         return 'mpirun -n 4 "' + sys.executable + '" "' + ex + '"'
     else:
         return '"' + sys.executable + '" "' + ex + '"'
