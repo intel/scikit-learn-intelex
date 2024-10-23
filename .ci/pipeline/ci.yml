@@ -112,6 +112,8 @@ jobs:
       conda build . --python $(PYTHON_VERSION) --numpy $(NUMPY_VERSION)
     displayName: "Conda build and test"
 - job: LinuxCondaEnv
+  variables:
+    DALROOT: ''
   dependsOn: Lint
   timeoutInMinutes: 120
   strategy:
