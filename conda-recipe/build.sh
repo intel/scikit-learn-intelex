@@ -25,6 +25,9 @@ fi
 
 if [ -z "${DALROOT}" ]; then
     export DALROOT=${PREFIX}
+else
+# source oneDAL if DALROOT is set outside of conda-build
+    source ${DALROOT}/env/vars.sh
 fi
 
 if [ -z "${MPIROOT}" ] && [ -z "${NO_DIST}" ]; then
