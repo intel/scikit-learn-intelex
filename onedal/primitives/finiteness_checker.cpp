@@ -52,7 +52,7 @@ struct params2desc {
         using namespace dal::finiteness_checker;
 
         auto desc = descriptor<Float, Method, Task>();
-        desc.set_allow_NaN(params["allow_nan"].cast<std::bool>());
+        desc.set_allow_NaN(params["allow_nan"].cast<bool>());
         return desc;
     }
 };
