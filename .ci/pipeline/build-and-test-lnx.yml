@@ -40,10 +40,12 @@ steps:
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [ -z "$(DALROOT)" ]; then export DALROOT=$CONDA_PREFIX; fi
-      if [ -n "$(NO_DPC)" ]; then export NO_DPC=1; fi # enable non-dpc builds in CI
+      if [ -z "${DALROOT}" ]; then export DALROOT=$CONDA_PREFIX; fi
       ./conda-recipe/build.sh
     displayName: "Build daal4py/sklearnex"
+    env:
+      NO_DPC: $(NO_DPC) # enable non-dpc builds in CI when set
+      DALROOT: $(DALROOT)
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
