@@ -29,8 +29,7 @@ import sys
 from sklearn.datasets import load_diabetes, load_iris, make_regression
 from sklearn.metrics import pairwise_distances, roc_auc_score
 
-absolute_path = str(pathlib.Path(__file__).parent.absolute())
-sys.path.append(absolute_path + "/../")
+sys.path.append(str(pathlib.Path(__file__).parent.parent.absolute()))
 from _models_info import MODELS_INFO, TYPES
 
 
@@ -84,7 +83,7 @@ def run_patch(model_info, dtype):
         logging.info(i)
 
 
-def run_algotithms():
+def run_algorithms():
     for info in MODELS_INFO:
         for t in TYPES:
             model_name = get_class_name(info["model"])
@@ -114,5 +113,5 @@ def run_utils():
 
 
 if __name__ == "__main__":
-    run_algotithms()
+    run_algorithms()
     run_utils()
