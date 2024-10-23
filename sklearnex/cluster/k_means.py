@@ -248,7 +248,7 @@ if daal_check_version((2023, "P", 200)):
             @wrap_output_data
             def predict(self, X):
                 self._validate_params()
-
+                check_is_fitted(self)
                 return dispatch(
                     self,
                     "predict",
@@ -280,7 +280,7 @@ if daal_check_version((2023, "P", 200)):
                             "will be removed in 1.5.",
                             FutureWarning,
                         )
-
+                check_is_fitted(self)
                 return dispatch(
                     self,
                     "predict",
@@ -293,8 +293,6 @@ if daal_check_version((2023, "P", 200)):
                 )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
-            check_is_fitted(self)
-
             X = validate_data(
                 self,
                 X,
@@ -334,6 +332,7 @@ if daal_check_version((2023, "P", 200)):
 
         @wrap_output_data
         def score(self, X, y=None, sample_weight=None):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "score",
@@ -347,8 +346,6 @@ if daal_check_version((2023, "P", 200)):
             )
 
         def _onedal_score(self, X, y=None, sample_weight=None, queue=None):
-            check_is_fitted(self)
-
             X = validate_data(
                 self,
                 X,

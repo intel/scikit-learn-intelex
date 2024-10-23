@@ -19,9 +19,9 @@ import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
-from sklearn.exceptions import NotFittedError
 from sklearn.metrics import r2_score
 from sklearn.utils import check_array, gen_batches
+from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -414,13 +414,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         C : array, shape (n_samples, n_targets)
             Returns predicted values.
         """
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
-                "with appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -472,13 +466,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         regressors (except for
         :class:`~sklearn.multioutput.MultiOutputRegressor`).
         """
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
-                "with appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
