@@ -19,7 +19,6 @@ from abc import ABC
 from functools import partialmethod
 
 import numpy as np
-from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.utils.validation import check_array, check_is_fitted
@@ -34,7 +33,7 @@ if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
 
 from scipy.sparse import issparse
-from sklearn.utils.validation import check_X_y
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
