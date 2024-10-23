@@ -21,23 +21,8 @@ from scipy import sparse as sp
 
 from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics import BasicStatistics
-from onedal.tests.utils._device_selection import get_queues
-
-options_and_tests = {
-    "sum": (lambda X: np.sum(X, axis=0), (5e-4, 1e-7)),
-    "min": (lambda X: np.min(X, axis=0), (1e-7, 1e-7)),
-    "max": (lambda X: np.max(X, axis=0), (1e-7, 1e-7)),
-    "mean": (lambda X: np.mean(X, axis=0), (5e-7, 1e-7)),
-    "variance": (lambda X: np.var(X, axis=0), (2e-3, 2e-3)),
-    "variation": (lambda X: np.std(X, axis=0) / np.mean(X, axis=0), (5e-2, 5e-2)),
-    "sum_squares": (lambda X: np.sum(np.square(X), axis=0), (2e-4, 1e-7)),
-    "sum_squares_centered": (
-        lambda X: np.sum(np.square(X - np.mean(X, axis=0)), axis=0),
-        (2e-4, 1e-7),
-    ),
-    "standard_deviation": (lambda X: np.std(X, axis=0), (2e-3, 2e-3)),
-    "second_order_raw_moment": (lambda X: np.mean(np.square(X), axis=0), (1e-6, 1e-7)),
-}
+from onedal.tests.utils import basicstats_options_and_tests as options_and_tests
+from onedal.tests.utils import get_queues
 
 options_and_tests_csr = [
     ("sum", "sum", (5e-6, 1e-9)),

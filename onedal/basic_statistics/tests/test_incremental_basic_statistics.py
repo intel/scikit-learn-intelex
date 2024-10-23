@@ -19,8 +19,8 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.basic_statistics import IncrementalBasicStatistics
-from onedal.basic_statistics.tests.test_basic_statistics import options_and_tests
-from onedal.tests.utils._device_selection import get_queues
+from onedal.tests.utils import basicstats_options_and_tests as options_and_tests
+from onedal.tests.utils import get_queues
 
 
 @pytest.mark.parametrize("queue", get_queues())
