@@ -21,15 +21,12 @@ import pkgutil
 import re
 import sys
 import trace
-from glob import glob
 
-import numpy as np
 import pytest
-import scipy
-import sklearn.utils.validation
 from sklearn.utils import all_estimators
 
 from daal4py.sklearn._utils import sklearn_check_version
+from onedal.tests.test_common import _check_primitive_usage_ban
 from sklearnex.tests.utils import (
     PATCHED_MODELS,
     SPECIAL_INSTANCES,
@@ -38,7 +35,7 @@ from sklearnex.tests.utils import (
     gen_models_info,
 )
 
-ALLOWED_LOCATIONS = [
+TARGET_OFFLOAD_ALLOWED_LOCATIONS = [
     "_config.py",
     "_device_offload.py",
     "test",
@@ -109,23 +106,13 @@ def test_target_offload_ban():
     within the architecture of the sklearnex classes. This
     is for clarity, traceability and maintainability.
     """
-    from sklearnex import __file__ as loc
-
-    path = loc.replace("__init__.py", "")
-    files = [y for x in os.walk(path) for y in glob(os.path.join(x[0], "*.py"))]
-
-    output = []
-
-    for f in files:
-        if open(f, "r").read().find("target_offload") != -1:
-            output += [f.replace(path, "sklearnex" + os.sep)]
-
-    # remove this file from the list
-    for allowed in ALLOWED_LOCATIONS:
-        output = [i for i in output if allowed not in i]
-
+    output = _check_primitive_usage_ban(
+        primitive_name="target_offload",
+        package="sklearnex",
+        allowed_locations=TARGET_OFFLOAD_ALLOWED_LOCATIONS,
+    )
     output = "\n".join(output)
-    assert output == "", f"sklearn versioning is occuring in: \n{output}"
+    assert output == "", f"target offloading is occuring in: \n{output}"
 
 
 def _sklearnex_walk(func):
