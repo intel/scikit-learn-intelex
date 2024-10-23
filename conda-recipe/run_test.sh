@@ -36,7 +36,7 @@ if [ -z "${PYTHON}" ]; then
     export PYTHON=python
 fi
 
-if [ ! -z "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then
+if [ -n "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then
 # source oneDAL if DALROOT is set outside of conda-build
     source ${DALROOT}/env/vars.sh
 fi
