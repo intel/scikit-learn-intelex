@@ -36,6 +36,11 @@ if [ -z "${PYTHON}" ]; then
     export PYTHON=python
 fi
 
+if [ ! -z "${DALROOT}" ] && [ "$DALROOT" != "$CONDA_PREFIX" ]; then
+# source oneDAL if DALROOT is set outside of conda-build
+    source ${DALROOT}/env/vars.sh
+fi
+
 # Note: execute with argument --json-report in order to produce
 # a JSON report under folder '.pytest_reports'. Other arguments
 # will also be forwarded to pytest.
