@@ -36,28 +36,46 @@ if [ -z "${PYTHON}" ]; then
     export PYTHON=python
 fi
 
+# Note: execute with argument --json-report in order to produce
+# a JSON report under folder '.pytest_reports'. Other arguments
+# will also be forwarded to pytest.
+with_json_report=0
+if [[ "$*" == *"--json-report"* ]]; then
+    echo "Will produce JSON report of tests"
+    with_json_report=1
+    mkdir -p .pytest_reports
+    if [[ ! -z "$(ls .pytest_reports)" ]]; then
+        rm .pytest_reports/*.json
+    fi
+fi
+function json_report_name {
+    if [[ "${with_json_report}" == "1" ]]; then
+        printf -- "--json-report-file=.pytest_reports/$1_report.json"
+    fi
+}
+
 ${PYTHON} -c "from sklearnex import patch_sklearn; patch_sklearn()"
 return_code=$(($return_code + $?))
 
-pytest --verbose -s ${sklex_root}/tests
+pytest --verbose -s ${sklex_root}/tests $@ $(json_report_name legacy)
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs daal4py
+pytest --verbose --pyargs daal4py $@ $(json_report_name daal4py)
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs sklearnex
+pytest --verbose --pyargs sklearnex $@ $(json_report_name sklearnex)
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs onedal
+pytest --verbose --pyargs onedal $@ $(json_report_name onedal)
 return_code=$(($return_code + $?))
 
-pytest --verbose -s ${sklex_root}/.ci/scripts/test_global_patch.py
+pytest --verbose -s ${sklex_root}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching)
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     mpirun --version
-    mpirun -n 4 pytest --verbose -s ${sklex_root}/tests/test*spmd*.py
+    mpirun -n 4 pytest --verbose -s ${sklex_root}/tests/test*spmd*.py $@ $(json_report_name mpi_legacy)
     return_code=$(($return_code + $?))
 fi
 

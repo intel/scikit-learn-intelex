@@ -352,7 +352,26 @@ def runtime_property_check(text, estimator, method):
     ), f"{estimator}.{method} should only use 'property' at instantiation"
 
 
-DESIGN_RULES = [n_jobs_check, runtime_property_check]
+def fit_check_before_support_check(text, estimator, method):
+    if "fit" not in method:
+        if "_onedal_cpu_supported" in text["funcs"]:
+            onedal_support = "_onedal_cpu_supported"
+        elif "_onedal_gpu_supported" in text["funcs"]:
+            onedal_support = "_onedal_gpu_supported"
+        else:
+            pytest.skip(f"onedal dispatching not used in {estimator}.{method}")
+        # get location of _onedal_*_supported
+        idx = len(text["funcs"]) - 1 - text["funcs"][::-1].index(onedal_support)
+        validfuncs = text["funcs"][:idx]
+        assert (
+            "check_is_fitted" in validfuncs
+        ), f"sklearn's check_is_fitted must be called before checking oneDAL support"
+
+    else:
+        pytest.skip(f"fitting occurs in {estimator}.{method}")
+
+
+DESIGN_RULES = [n_jobs_check, runtime_property_check, fit_check_before_support_check]
 
 
 if sklearn_check_version("1.0"):
