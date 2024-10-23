@@ -55,6 +55,7 @@ steps:
     displayName: "Install testing requirements"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
+      if [ -n "$(DALROOT)" ]; then export DALROOT=$(DALROOT); fi
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh --json-report
