@@ -16,7 +16,7 @@
 
 // fix error with missing headers
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20250200
-    #include "oneapi/dal/algo/finiteness_checker.hpp
+    #include "oneapi/dal/algo/finiteness_checker.hpp"
 #else
     #include "oneapi/dal/algo/finiteness_checker/compute.hpp"
 #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20250200
