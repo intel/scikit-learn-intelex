@@ -14,8 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import importlib
 import os
-import pkgutil
 from glob import glob
 
 
@@ -24,11 +24,7 @@ def _check_primitive_usage_ban(primitive_name, package, allowed_locations=None):
     in certain files.
     """
 
-    # TODO:
-    # Address deprecation warning.
-    # The function "get_loader" is deprecated Use importlib.util.find_spec() instead.
-    # Will be removed in Python 3.14.
-    loc = pkgutil.get_loader(package).get_filename()
+    loc = importlib.util.find_spec(package).origin
 
     path = loc.replace("__init__.py", "")
     files = [y for x in os.walk(path) for y in glob(os.path.join(x[0], "*.py"))]
