@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "oneapi/dal/algo/finiteness_checker.hpp"
+#include "oneapi/dal/algo/finiteness_checker/compute.hpp"
 
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
