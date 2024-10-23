@@ -78,7 +78,7 @@ void init_compute_result(py::module_& m) {
 
     py::class_<result_t>(m, "compute_result")
         .def(py::init())
-        .DEF_ONEDAL_PY_PROPERTY(finite, result_t)
+        .DEF_ONEDAL_PY_PROPERTY(finite, result_t);
 }
 
 ONEDAL_PY_TYPE2STR(finiteness_checker::task::compute, "compute");
@@ -89,7 +89,7 @@ ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
 ONEDAL_PY_INIT_MODULE(finiteness_checker) {
     using namespace dal::detail;
     using namespace finiteness_checker;
-    using namespace dal::finiteness;
+    using namespace dal::finiteness_checker;
 
     using task_list = types<task::compute>;
     auto sub = m.def_submodule("finiteness_checker");
