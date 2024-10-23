@@ -101,7 +101,7 @@ dal::table convert_to_homogen_impl(py::object obj) {
                                  layout);
     }
 
-    // Towards the python object memory model icnrement the python object reference
+    // Towards the python object memory model increment the python object reference
     // count due to new reference by oneDAL table pointing to that object.
     obj.inc_ref();
     return res;
