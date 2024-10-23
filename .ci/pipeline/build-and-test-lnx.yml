@@ -41,7 +41,7 @@ steps:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       if [ -z "$(DALROOT)" ]; then export DALROOT=$CONDA_PREFIX; else export DALROOT=$(DALROOT); fi
-      if [ -n "$(NO_DPC)" ]; then export NO_DPC=1; fi # enable non-dpc builds var in CI when set
+      if [ -n "$(NO_DPC)" ]; then export NO_DPC=1; fi # enable non-dpc builds in CI when var set
       ./conda-recipe/build.sh
     displayName: "Build daal4py/sklearnex"
   - script: |
