@@ -16,7 +16,6 @@
 
 import logging
 from abc import ABC
-from functools import partialmethod
 
 import numpy as np
 from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
