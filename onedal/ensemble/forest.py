@@ -25,7 +25,6 @@ from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version
 from sklearnex import get_hyperparameters
-from sklearnex._utils import register_hyperparameters
 
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
@@ -346,7 +345,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         # upate error msg.
         raise NotImplementedError("Creating model is not supported.")
 
-    def _predict(self, X, module, queue):
+    def _predict(self, X, module, queue, hparams=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
@@ -357,11 +356,6 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        hparams = (
-            self.get_hyperparameters("infer")
-            if hasattr(self, "get_hyperparameters")
-            else None
-        )
         if hparams is not None and not hparams.is_default:
             result = module.infer(policy, params, hparams.backend, model, to_table(X))
         else:
@@ -387,7 +381,6 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         return y
 
 
-@register_hyperparameters({"infer": get_hyperparameters("decision_forest", "infer")})
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def __init__(
         self,
@@ -468,8 +461,12 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         )
 
     def predict(self, X, queue=None):
+        hparams = get_hyperparameters("decision_forest", "infer")
         pred = super()._predict(
-            X, self._get_backend("decision_forest", "classification", None), queue
+            X,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
+            hparams,
         )
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
