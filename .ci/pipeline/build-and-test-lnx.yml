@@ -61,12 +61,14 @@ steps:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      if [ "$(DALROOT)" != "$CONDA_PREFIX" ]; then source $(DALROOT)/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: "Sklearn testing"
     condition: succeededOrFailed()
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      if [ "$(DALROOT)" != "$CONDA_PREFIX" ]; then source $(DALROOT)/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
     env:
       SKLEARNEX_PREVIEW: "YES"
