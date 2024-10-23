@@ -14,7 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from sklearn.datasets import make_classification, make_regression
@@ -27,8 +26,40 @@ from onedal.tests.utils._dataframes_support import (
 )
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import_rf_classifier(dataframe, queue):
+def test_rf_classifier(queue, block, trees, rows, scale):
+    from sklearnex.ensemble import RandomForestClassifier
+
+    X, y = make_classification(
+        n_samples=100,
+        n_features=4,
+        n_informative=2,
+        n_redundant=0,
+        random_state=0,
+        shuffle=False,
+    )
+    rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y, queue=queue)
+    if daal_check_version((2024, "P", 300)) and block is not None:
+        hparams = rf.get_hyperparameters("infer")
+        hparams.block_size = block
+        hparams.min_trees_for_threading = trees
+        hparams.min_number_of_rows_for_vect_seq_compute = rows
+        hparams.scale_factor_for_vect_parallel_compute = scale
+    assert_allclose([1], rf.predict([[0, 0, 0, 0]], queue=queue))
+
+
+hparam_values = [
+    (None, None, None, None),
+    (8, 100, 32, 0.3),
+    (16, 100, 32, 0.3),
+    (32, 100, 32, 0.3),
+    (64, 10, 32, 0.1),
+    (128, 100, 1000, 1.0),
+]
+
+
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("block, trees, rows, scale", hparam_values)
+def test_sklearnex_import_rf_classifier(dataframe, queue, block, trees, rows, scale):
     from sklearnex.ensemble import RandomForestClassifier
 
     X, y = make_classification(
