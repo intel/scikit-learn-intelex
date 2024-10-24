@@ -27,11 +27,12 @@ steps:
       conda config --add channels conda-forge
       conda config --set channel_priority strict
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
+      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) mpich pyyaml "dpcpp-cpp-rt=2024.2.0"
     displayName: "Conda create"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      if [ -z "$(DALROOT)" ]; then conda install -q -y -c conda-forge dal-devel; fi
       pip install -r dependencies-dev
       pip list
     displayName: "Install develop requirements"
@@ -39,7 +40,9 @@ steps:
       export DPCPPROOT=/opt/intel/oneapi/compiler/latest
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      export DALROOT=$CONDA_PREFIX
+      if [ -z "$(DALROOT)" ]; then export DALROOT=$CONDA_PREFIX; else export DALROOT=$(DALROOT); fi
+      if [ -n "$(NO_DPC)" ]; then export NO_DPC=1; fi # enable non-dpc builds in CI when var set
+      if [ -n "$(NO_DIST)" ]; then export NO_DIST=1; fi # enable non-mpi builds in CI when var set
       ./conda-recipe/build.sh
     displayName: "Build daal4py/sklearnex"
   - script: |
@@ -53,6 +56,7 @@ steps:
     displayName: "Install testing requirements"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
+      if [ -n "$(DALROOT)" ]; then export DALROOT=$(DALROOT); fi
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh --json-report
@@ -60,12 +64,14 @@ steps:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      if [ -n "$(DALROOT)" ] && [ "$(DALROOT)" != "${CONDA_PREFIX}" ]; then source $(DALROOT)/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: "Sklearn testing"
     condition: succeededOrFailed()
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
+      if [ -n "$(DALROOT)" ] && [ "$(DALROOT)" != "${CONDA_PREFIX}" ]; then source $(DALROOT)/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
     env:
       SKLEARNEX_PREVIEW: "YES"
