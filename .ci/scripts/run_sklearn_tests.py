@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     if rc := os.getenv("COVERAGE_RCFILE"):
         pytest_args += (
-            f'--cov=onedal --cov=sklearnex --cov-config={rc} '
+            f"--cov=onedal --cov=sklearnex --cov-config={rc} "
             "--cov-report=term".split(" ")
         )
 
@@ -69,7 +69,9 @@ if __name__ == "__main__":
 
     if os.getenv("COVERAGE_RCFILE") and return_code == 0:
         # move the coverage data from the rootdir to the current working directory on a successful run
-        os.rename(f"{sklearn_file_dir}{os.sep}.coverage", f"{cwd}{os.sep}.coverage.sklearn")
+        os.rename(
+            f"{sklearn_file_dir}{os.sep}.coverage", f"{cwd}{os.sep}.coverage.sklearn"
+        )
         print(cwd)
 
     sys.exit(return_code)
