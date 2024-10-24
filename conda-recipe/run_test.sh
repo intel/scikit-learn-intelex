@@ -30,6 +30,16 @@ if [[ count -eq 0 ]]; then
     exit 1
 fi
 
+declare -a COV_ARGS=()
+if [ -n "$COVERAGE_RCFILE" ]; then
+    COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config=$COVERAGE_RCFILE --cov-append --cov-report=)
+    # if a sycl gpu isn't available, uncomment gpu skips in .coveragerc
+    if !(command -v sycl-ls 2>&1 >/dev/null) || !(sycl-ls | grep -q "gpu"); then
+        echo "no SYCL GPU is available, sklearnex GPU code coverage metrics will be excluded"
+        sed -i -i 's/#//g' $COVERAGE_RCFILE
+    fi
+fi
+
 return_code=0
 
 if [ -z "${PYTHON}" ]; then
@@ -60,16 +70,16 @@ return_code=$(($return_code + $?))
 pytest --verbose -s ${sklex_root}/tests $@ $(json_report_name legacy)
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs daal4py $@ $(json_report_name daal4py)
+pytest --verbose --pyargs daal4py $@ $(json_report_name daal4py) "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs sklearnex $@ $(json_report_name sklearnex)
+pytest --verbose --pyargs sklearnex $@ $(json_report_name sklearnex) "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs onedal $@ $(json_report_name onedal)
+pytest --verbose --pyargs onedal $@ $(json_report_name onedal) "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
-pytest --verbose -s ${sklex_root}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching)
+pytest --verbose -s ${sklex_root}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching) "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"

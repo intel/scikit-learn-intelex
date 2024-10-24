@@ -82,6 +82,8 @@ jobs:
           DPCFLAG="0"
           if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
           echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
+          # enable coverage report generation
+          echo "COVERAGE_RCFILE=$(readlink -f .coveragerc)" >> "$GITHUB_ENV"
       - name: apt-get
         run: sudo apt-get update && sudo apt-get install -y clang-format
       - name: dpcpp installation
@@ -114,11 +116,23 @@ jobs:
           source .github/scripts/activate_components.sh
           cd .ci
           ../conda-recipe/run_test.sh
+      - name: Archive sklearnex coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}_sklearnex
+          path: .ci/.coverage
+          include-hidden-files: true
       - name: Sklearn testing
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
           bash .ci/scripts/run_sklearn_tests.sh
+      - name: Archive sklearn coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}_sklearn
+          path: .ci/.coverage.sklearn
+          include-hidden-files: true
       - name: Sklearn testing [preview]
         run: |
           source venv/bin/activate
