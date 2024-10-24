@@ -23,7 +23,7 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
-from sklearn.utils.validation import _num_features
+from sklearn.utils.validation import _num_features, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
@@ -49,9 +49,9 @@ else:
 @control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
 class IncrementalEmpiricalCovariance(BaseEstimator):
     """
-    Incremental estimator for covariance.
-    Allows to compute empirical covariance estimated by maximum
-    likelihood method if data are splitted into batches.
+    Maximum likelihood covariance estimator that allows for the estimation when the data are split into
+    batches. The user can use the ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
+    the entire dataset.
 
     Parameters
     ----------
@@ -84,13 +84,31 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     n_samples_seen_ : int
         The number of samples processed by the estimator. Will be reset on
-        new calls to fit, but increments across ``partial_fit`` calls.
+        new calls to ``fit``, but increments across ``partial_fit`` calls.
 
     batch_size_ : int
         Inferred batch size from ``batch_size``.
 
     n_features_in_ : int
-        Number of features seen during :term:`fit` `partial_fit`.
+        Number of features seen during ``fit`` or ``partial_fit``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearnex.covariance import IncrementalEmpiricalCovariance
+    >>> inccov = IncrementalEmpiricalCovariance(batch_size=1)
+    >>> X = np.array([[1, 2], [3, 4]])
+    >>> inccov.partial_fit(X[:1])
+    >>> inccov.partial_fit(X[1:])
+    >>> inccov.covariance_
+    np.array([[1., 1.],[1., 1.]])
+    >>> inccov.location_
+    np.array([2., 3.])
+    >>> inccov.fit(X)
+    >>> inccov.covariance_
+    np.array([[1., 1.],[1., 1.]])
+    >>> inccov.location_
+    np.array([2., 3.])
     """
 
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
@@ -208,6 +226,7 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     def score(self, X_test, y=None):
         xp, _ = get_namespace(X_test)
 
+        check_is_fitted(self)
         location = self.location_
         if sklearn_check_version("1.0"):
             X = validate_data(

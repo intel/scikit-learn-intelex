@@ -66,7 +66,6 @@ if daal_check_version((2024, "P", 1)):
     )
     class LogisticRegression(_sklearn_LogisticRegression, BaseLogisticRegression):
         __doc__ = _sklearn_LogisticRegression.__doc__
-        intercept_, coef_, n_iter_ = None, None, None
 
         if sklearn_check_version("1.2"):
             _parameter_constraints: dict = {
@@ -130,6 +129,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict",
@@ -142,6 +142,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_proba(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict_proba",
@@ -154,6 +155,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_log_proba(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict_log_proba",
@@ -166,6 +168,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "score",
@@ -238,9 +241,6 @@ if daal_check_version((2024, "P", 1)):
             )
 
             n_samples = _num_samples(data[0])
-            model_is_sparse = issparse(self.coef_) or (
-                self.fit_intercept and issparse(self.intercept_)
-            )
             dal_ready = patching_status.and_conditions(
                 [
                     (n_samples > 0, "Number of samples is less than 1."),
@@ -248,7 +248,6 @@ if daal_check_version((2024, "P", 1)):
                         (not any([issparse(i) for i in data])) or _sparsity_enabled,
                         "Sparse input is not supported.",
                     ),
-                    (not model_is_sparse, "Sparse coefficients are not supported."),
                     (
                         hasattr(self, "_onedal_estimator"),
                         "oneDAL model was not trained.",
@@ -326,7 +325,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -351,7 +349,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -376,7 +373,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,

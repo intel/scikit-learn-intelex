@@ -28,8 +28,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TBB_VERSION: 2021.13
-  DPCPP_VERSION: 2024.2
   DPCTL_VERSION: 0.17.0
   DPNP_VERSION: 0.15.0
   DPCTL_PY_VERSIONS: '3.9\|3.11'
@@ -168,19 +166,18 @@ jobs:
           github-token: ${{ github.token }}
           repository: oneapi-src/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
-          path: .\__release_win
-      - name: Download DPCPP compiler artifact
+          path: ./__release_win
+      - name: Download Intel BaseKit artifact
         uses: actions/download-artifact@v4
         with:
-          name: icx_compiler
+          name: intel_oneapi_basekit
           github-token: ${{ github.token }}
           repository: oneapi-src/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
-          path: .
-      - name: Unzip Compiler
+      - name: Decompress Intel BaseKit
         shell: cmd
         run: |
-          tar -xvzf icx.zip
+          tar -xvzf oneapi.tar.gz
           echo "Unzip complete"
       - name: Set Environment Variables
         id: set-env
@@ -219,14 +216,14 @@ jobs:
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
-          call .\oneapi\compiler\${{ env.DPCPP_VERSION }}\env\vars.bat
-          call .\oneapi\compiler\${{ env.DPCPP_VERSION }}\bin\sycl-ls.exe
+          call .\oneapi\setvars.bat
+          call .\oneapi\compiler\latest\bin\sycl-ls.exe
           bash .ci/scripts/describe_system.sh
       - name: Build daal4py/sklearnex
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           set PREFIX=.
           set PYTHON=python
           call .\conda-recipe\bld.bat
@@ -234,7 +231,7 @@ jobs:
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/setup_sklearn.sh ${{ matrix.SKLEARN_VERSION }}
           pip install --upgrade -r requirements-test.txt
           for /f "delims=" %%c in ('python .ci\scripts\get_compatible_scipy_version.py ${{ matrix.SKLEARN_VERSION }}') do set SCIPY_VERSION=%%c
@@ -245,20 +242,20 @@ jobs:
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           set PYTHON=python
           cd ..
-          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex
+          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\ --json-report
       - name: Sklearn testing
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/run_sklearn_tests.sh
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
-          call .\.github\scripts\activate_components.bat ${{ env.DPCPP_VERSION }} ${{ env.TBB_VERSION }} ${{ steps.set-env.outputs.DPCFLAG }}
+          call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           set SKLEARNEX_PREVIEW=YES
           bash .ci/scripts/run_sklearn_tests.sh
