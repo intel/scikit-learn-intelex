@@ -22,7 +22,7 @@ from onedal._device_offload import (
     _transfer_to_host,
     dpnp_available,
 )
-from onedal.utils._array_api import _asarray, _is_numpy_namespace
+from onedal.utils._array_api import _asarray
 
 if dpnp_available:
     import dpnp
