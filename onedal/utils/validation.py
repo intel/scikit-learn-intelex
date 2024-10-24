@@ -377,13 +377,14 @@ def _num_features(X, fallback_1d=False):
             message += f" with shape {X.shape}"
             raise TypeError(message)
         if len(X.shape) <= 1:
-            if len(X.shape) == 0:
-                raise ValueError("Passed empty array")
             return 1
         else:
             return X.shape[-1]
 
-    first_sample = X[0]
+    try:
+        first_sample = X[0]
+    except IndexError:
+        raise ValueError("Passed empty data.")
 
     # Do not consider an array-like of strings or dicts to be a 2D array
     if isinstance(first_sample, (str, bytes, dict)):
