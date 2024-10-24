@@ -25,6 +25,7 @@ from sklearn.utils.validation import check_array
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 
+from .._config import get_config
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
 
@@ -239,18 +240,24 @@ class LinearRegression(_sklearn_LinearRegression):
             )
 
         self._initialize_onedal_estimator()
-        try:
+        # TODO:
+        # impl wrapper/primitive for this case.
+        if get_config()["allow_sklearn_after_onedal"]:
+            try:
+                self._onedal_estimator.fit(X, y, queue=queue)
+                self._save_attributes()
+
+            except RuntimeError:
+                logging.getLogger("sklearnex").info(
+                    f"{self.__class__.__name__}.fit "
+                    + get_patch_message("sklearn_after_onedal")
+                )
+
+                del self._onedal_estimator
+                super().fit(X, y)
+        else:
             self._onedal_estimator.fit(X, y, queue=queue)
             self._save_attributes()
-
-        except RuntimeError:
-            logging.getLogger("sklearnex").info(
-                f"{self.__class__.__name__}.fit "
-                + get_patch_message("sklearn_after_onedal")
-            )
-
-            del self._onedal_estimator
-            super().fit(X, y)
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
