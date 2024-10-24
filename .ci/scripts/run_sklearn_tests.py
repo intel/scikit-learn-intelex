@@ -50,11 +50,12 @@ if __name__ == "__main__":
         f'{os.environ["DESELECTED_TESTS"]} {os.environ["SELECTED_TESTS"]}'.split(" ")
     )
 
-    if os.getenv("COVERAGE_RCFILE"):
+    if rc := os.getenv("COVERAGE_RCFILE"):
         pytest_args += (
-            f'--cov=onedal --cov=sklearnex --cov-config={os.environ["COVERAGE_RCFILE"]} '
+            f'--cov=onedal --cov=sklearnex --cov-config={rc} '
             "--cov-report=term".split(" ")
         )
+
     print("to be run: pytest " + " ".join(pytest_args))
 
     while "" in pytest_args:
