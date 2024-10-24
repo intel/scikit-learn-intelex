@@ -131,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}_sklearn
-          path: .ci/.coverage
+          path: .ci/.coverage.sklearn
           include-hidden-files: true
       - name: Sklearn testing [preview]
         run: |

@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     if os.getenv("COVERAGE_RCFILE") and return_code == 0:
         # move the coverage data from the rootdir to the current working directory on a successful run
-        os.rename(f"{root_dir}{os.sep}.coverage", f"{cwd}{os.sep}.coverage")
+        os.rename(f"{root_dir}{os.sep}.coverage", f"{cwd}{os.sep}.coverage.sklearn")
         print(cwd)
 
     sys.exit(return_code)
