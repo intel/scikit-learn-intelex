@@ -94,8 +94,10 @@ ONEDAL_PY_INIT_MODULE(finiteness_checker) {
     using task_list = types<task::compute>;
     auto sub = m.def_submodule("finiteness_checker");
 
-    ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
-    ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
+    #ifndef ONEDAL_DATA_PARALLEL_SPMD
+        ONEDAL_PY_INSTANTIATE(init_compute_ops, sub, policy_list, task_list);
+        ONEDAL_PY_INSTANTIATE(init_compute_result, sub, task_list);
+    #endif
 }
 
 } // namespace oneapi::dal::python
