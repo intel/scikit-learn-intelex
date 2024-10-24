@@ -377,6 +377,8 @@ def _num_features(X, fallback_1d=False):
             message += f" with shape {X.shape}"
             raise TypeError(message)
         if len(X.shape) <= 1:
+            if len(X.shape) == 0:
+                raise ValueError("Passed empty array")
             return 1
         else:
             return X.shape[-1]
