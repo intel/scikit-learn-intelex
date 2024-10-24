@@ -17,7 +17,7 @@ sklearnex =
 onedal =
     onedal/
     */onedal
-[report]
-exclude_also =
-    def _onedal_gpu.*
-    coverage: gpu_start(?s:.)*coverage: gpu_stop
+#[report]
+#exclude_also =
+#    def _onedal_gpu.*
+#    coverage: gpu_start(?s:.)*coverage: gpu_stop
