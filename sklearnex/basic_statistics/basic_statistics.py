@@ -37,7 +37,7 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import StrOptions
 
 
-@control_n_jobs(decorated_methods=["fit"])
+@control_n_jobs(decorated_methods=["fit"], non_sklearn_class=True)
 class BasicStatistics(BaseEstimator):
     """
     Estimator for basic statistics.
@@ -80,7 +80,7 @@ class BasicStatistics(BaseEstimator):
 
     Note
     ----
-    Attributes' names without the trailing underscore are
+    Names of attributes without the trailing underscore are
     supported currently but deprecated in 2025.1 and will be removed in 2026.0
 
     Note

@@ -40,7 +40,9 @@ else:
     validate_data = BaseEstimator._validate_data
 
 
-@control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
+@control_n_jobs(
+    decorated_methods=["partial_fit", "_onedal_finalize_fit"], non_sklearn_class=True
+)
 class IncrementalBasicStatistics(BaseEstimator):
     """
     Calculates basic statistics on the given data, allows for computation when the data are split into
@@ -105,7 +107,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
     Note
     ----
-    Attributes' names without the trailing underscore are
+    Names of attributes without the trailing underscore are
     supported currently but deprecated in 2025.1 and will be removed in 2026.0
 
     Examples
