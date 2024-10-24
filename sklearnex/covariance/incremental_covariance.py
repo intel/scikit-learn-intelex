@@ -46,7 +46,10 @@ else:
     validate_data = BaseEstimator._validate_data
 
 
-@control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
+@control_n_jobs(
+    decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"],
+    non_sklearn_class=True,
+)
 class IncrementalEmpiricalCovariance(BaseEstimator):
     """
     Maximum likelihood covariance estimator that allows for the estimation when the data are split into
