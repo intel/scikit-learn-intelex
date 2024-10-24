@@ -17,11 +17,32 @@
 """Tools to support array_api."""
 
 from collections.abc import Iterable
+from functools import wraps
+
+import numpy as np
+from sklearn import config_context, get_config
+
+from daal4py.sklearn._utils import get_dtype
+from daal4py.sklearn._utils import make2d as d4p_make2d
 
 from ._dpep_helpers import dpctl_available, dpnp_available
 
 if dpctl_available:
+    import dpctl.tensor as dpt
     from dpctl.tensor import usm_ndarray
+
+
+# TODO:
+# move to Array API module.
+# TODO
+# def make2d(arg, xp=None, is_array_api_compliant=None):
+def make2d(arg, xp=None):
+    if xp and not _is_numpy_namespace(xp) and arg.ndim == 1:
+        return xp.reshape(arg, (arg.size, 1)) if arg.ndim == 1 else arg
+    # TODO:
+    # reimpl via is_array_api_compliant usage.
+    return d4p_make2d(arg)
+
 
 if dpnp_available:
     import dpnp
@@ -36,6 +57,20 @@ if dpnp_available:
             for i in range(len(array)):
                 array[i] = _convert_to_dpnp(array[i])
         return array
+
+
+def _convert_to_numpy(array, xp):
+    """Convert X into a NumPy ndarray on the CPU."""
+    xp_name = xp.__name__
+
+    if dpctl_available and xp_name in {
+        "dpctl.tensor",
+    }:
+        return dpt.to_numpy(array)
+    elif dpnp_available and isinstance(array, dpnp.ndarray):
+        return dpnp.asnumpy(array)
+    else:
+        return _asarray(array, xp)
 
 
 def _asarray(data, xp, *args, **kwargs):
@@ -63,19 +98,76 @@ def _get_sycl_namespace(*arrays):
     """Get namespace of sycl arrays."""
 
     # sycl support designed to work regardless of array_api_dispatch sklearn global value
-    sycl_type = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
+    sua_iface = {type(x): x for x in arrays if hasattr(x, "__sycl_usm_array_interface__")}
 
-    if len(sycl_type) > 1:
-        raise ValueError(f"Multiple SYCL types for array inputs: {sycl_type}")
+    if len(sua_iface) > 1:
+        raise ValueError(f"Multiple SYCL types for array inputs: {sua_iface}")
 
-    if sycl_type:
-        (X,) = sycl_type.values()
+    if sua_iface:
+        (X,) = sua_iface.values()
 
         if hasattr(X, "__array_namespace__"):
-            return sycl_type, X.__array_namespace__(), True
+            return sua_iface, X.__array_namespace__(), True
         elif dpnp_available and isinstance(X, dpnp.ndarray):
-            return sycl_type, dpnp, False
+            return sua_iface, dpnp, False
         else:
-            raise ValueError(f"SYCL type not recognized: {sycl_type}")
+            raise ValueError(f"SYCL type not recognized: {sua_iface}")
 
-    return sycl_type, None, False
+    return sua_iface, None, False
+
+
+# TODO:
+#
+sklearn_array_api_version = True
+
+
+def sklearn_array_api_dispatch(freefunc=False):
+    """
+    TBD
+    """
+
+    def decorator(func):
+        def wrapper_impl(obj, *args, **kwargs):
+            # if sklearn_array_api_version and not get_config["array_api_dispatch"]:
+            if sklearn_array_api_version:
+                with config_context(array_api_dispatch=True):
+                    return func(obj, *args, **kwargs)
+            return func(obj, *args, **kwargs)
+
+        if freefunc:
+
+            @wraps(func)
+            def wrapper_free(*args, **kwargs):
+                return wrapper_impl(None, *args, **kwargs)
+
+            return wrapper_free
+
+        @wraps(func)
+        def wrapper_with_self(self, *args, **kwargs):
+            return wrapper_impl(self, *args, **kwargs)
+
+        return wrapper_with_self
+
+    return decorator
+
+
+def get_namespace(*arrays):
+    """Get namespace of arrays.
+    TBD.
+    Parameters
+    ----------
+    *arrays : array objects
+        Array objects.
+    Returns
+    -------
+    namespace : module
+        Namespace shared by array objects.
+    is_array_api : bool
+        True of the arrays are containers that implement the Array API spec.
+    """
+    sycl_type, xp, is_array_api_compliant = _get_sycl_namespace(*arrays)
+
+    if sycl_type:
+        return xp, is_array_api_compliant
+    else:
+        return np, True
