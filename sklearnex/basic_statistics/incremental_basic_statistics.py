@@ -40,9 +40,7 @@ else:
     validate_data = BaseEstimator._validate_data
 
 
-@control_n_jobs(
-    decorated_methods=["partial_fit", "_onedal_finalize_fit"], non_sklearn_class=True
-)
+@control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
 class IncrementalBasicStatistics(BaseEstimator):
     """
     Calculates basic statistics on the given data, allows for computation when the data are split into

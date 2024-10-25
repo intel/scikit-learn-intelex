@@ -135,7 +135,7 @@ def _run_with_n_jobs(method):
     return n_jobs_wrapper
 
 
-def control_n_jobs(decorated_methods: list = [], non_sklearn_class: bool = False):
+def control_n_jobs(decorated_methods: list = []):
     """
     Decorator for controlling the 'n_jobs' parameter in an estimator class.
 
@@ -218,17 +218,13 @@ def control_n_jobs(decorated_methods: list = [], non_sklearn_class: bool = False
             and "n_jobs : int" not in original_class.__doc__
         ):
             parameters_doc_tail = "\n    Attributes"
-            if non_sklearn_class:
-                n_jobs_link = "`Glossary <https://scikit-learn.org/stable/glossary.html#term-n_jobs>`__"
-            else:
-                n_jobs_link = ":term:`Glossary <n_jobs>`"
             n_jobs_doc = f"""
     n_jobs : int, default=None
         The number of jobs to use in parallel for the computation.
         ``None`` means using all physical cores
         unless in a :obj:`joblib.parallel_backend` context.
         ``-1`` means using all logical cores.
-        See {n_jobs_link} for more details.
+        See :term:`Glossary <n_jobs>` for more details.
 """
             original_class.__doc__ = original_class.__doc__.replace(
                 parameters_doc_tail, n_jobs_doc + parameters_doc_tail

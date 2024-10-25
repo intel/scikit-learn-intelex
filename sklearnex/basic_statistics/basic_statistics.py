@@ -37,7 +37,7 @@ if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import StrOptions
 
 
-@control_n_jobs(decorated_methods=["fit"], non_sklearn_class=True)
+@control_n_jobs(decorated_methods=["fit"])
 class BasicStatistics(BaseEstimator):
     """
     Estimator for basic statistics.
