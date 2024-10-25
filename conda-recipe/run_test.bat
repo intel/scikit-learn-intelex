@@ -19,7 +19,13 @@ rem %1 - scikit-learn-intelex repo root (should end with '\', leave empty if it'
 
 set exitcode=0
 
-IF NOT DEFINED PYTHON (set "PYTHON=python")
+IF NOT DEFINED PYTHON (
+    set "PYTHON=python"
+    set NO_DIST=1
+)
+if %PYTHON% EQU "python" (
+    set NO_DIST=1
+)
 
 %PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
@@ -32,6 +38,7 @@ if "%~2"=="--json-report" (
     del /q .pytest_reports\*.json
 )
 
+echo "NO_DIST=%NO_DIST%"
 setlocal enabledelayedexpansion
 if "%with_json_report%"=="1" (
     pytest --verbose -s "%1tests" --json-report --json-report-file=.pytest_reports\legacy_report.json || set exitcode=1
@@ -39,11 +46,13 @@ if "%with_json_report%"=="1" (
     pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
     pytest --verbose --pyargs onedal --json-report --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
     pytest --verbose "%1.ci\scripts\test_global_patch.py" --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
-    %PYTHON% "%~p0\helper_mpi_tests.py"^
-        "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^""^
-        "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^" --json-report --json-report-file=.pytest_reports\legacy_report.json"
-    if !errorlevel! NEQ 0 (
-        set exitcode=1
+    if %NO_DIST% NEQ 1 (
+        %PYTHON% "%~p0\helper_mpi_tests.py"^
+            "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^""^
+            "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^" --json-report --json-report-file=.pytest_reports\legacy_report.json"
+        if !errorlevel! NEQ 0 (
+            set exitcode=1
+        )
     )
     if NOT EXIST .pytest_reports\legacy_report.json (
         echo "Error: JSON report files failed to be produced."
@@ -55,7 +64,9 @@ if "%with_json_report%"=="1" (
     pytest --verbose --pyargs sklearnex || set exitcode=1
     pytest --verbose --pyargs onedal || set exitcode=1
     pytest --verbose "%1.ci\scripts\test_global_patch.py" || set exitcode=1
-    %PYTHON% -m pytest --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
+    if %NO_DIST% NEQ 1 (
+        %PYTHON% -m pytest --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
+    )
 )
 
 EXIT /B %exitcode%
