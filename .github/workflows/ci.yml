@@ -195,7 +195,7 @@ jobs:
         shell: cmd
         run: |
           echo C:\msys64\usr\bin; >> %GITHUB_PATH%
-          echo NO_DIST=1 >> %GITHUB_ENV%
+          echo NO_DIST=YES >> %GITHUB_ENV%
           set DPCTL_TEMP="${{ env.DPCTL_PY_VERSIONS }}"
           if not %DPCTL_TEMP:${{ matrix.PYTHON_VERSION }}=%==%DPCTL_TEMP% (set DPCFLAG='') else (set DPCFLAG="0")
           echo DPCFLAG=%DPCFLAG% >> %GITHUB_OUTPUT%
@@ -232,8 +232,8 @@ jobs:
       - name: Build daal4py/sklearnex
         shell: cmd
         run: |
-          python -c "exec(\"import os\nfor i in os.environ: print(i,os.environ[i])\")"
-          echo ${{ steps.set-env.outputs.DPCFLAG == '' }}
+          python -c "exec(\"import os\nfor i in os.environ: print(i,os.environ[i],type(os.environ[i]))\")"
+          echo ${{ steps.set-env.outputs.DPCFLAG }}
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           set PREFIX=.
