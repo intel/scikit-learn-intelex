@@ -57,7 +57,7 @@ function json_report_name {
 ${PYTHON} -c "from sklearnex import patch_sklearn; patch_sklearn()"
 return_code=$(($return_code + $?))
 
-pytest --verbose -s ${sklex_root}/tests $@ $(json_report_name legacy)
+pytest --verbose -s "${sklex_root}/tests" $@ $(json_report_name legacy)
 return_code=$(($return_code + $?))
 
 pytest --verbose --pyargs daal4py $@ $(json_report_name daal4py)
@@ -69,13 +69,15 @@ return_code=$(($return_code + $?))
 pytest --verbose --pyargs onedal $@ $(json_report_name onedal)
 return_code=$(($return_code + $?))
 
-pytest --verbose -s ${sklex_root}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching)
+pytest --verbose -s "${sklex_root}/.ci/scripts/test_global_patch.py" $@ $(json_report_name global_patching)
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     mpirun --version
-    mpirun -n 4 pytest --verbose -s ${sklex_root}/tests/test*spmd*.py $@ $(json_report_name mpi_legacy)
+    mpirun -n 4 python "$(dirname $0)/helper_mpi_tests.py"  \
+        "pytest --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\"" \
+        "pytest --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\" $@ $(json_report_name mpi_legacy)"
     return_code=$(($return_code + $?))
 fi
 
