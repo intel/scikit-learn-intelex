@@ -40,7 +40,11 @@ else:
 from onedal.common.hyperparameters import get_hyperparameters
 
 from .._device_offload import dispatch, wrap_output_data
-from .._utils import PatchingConditionsChain, register_hyperparameters
+from .._utils import (
+    NonSKLearnAlgorithm,
+    PatchingConditionsChain,
+    register_hyperparameters,
+)
 
 
 @register_hyperparameters(
@@ -52,7 +56,9 @@ from .._utils import PatchingConditionsChain, register_hyperparameters
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "predict", "score", "_onedal_finalize_fit"]
 )
-class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimator):
+class IncrementalLinearRegression(
+    NonSKLearnAlgorithm, MultiOutputMixin, RegressorMixin, BaseEstimator
+):
     """
     Trains a linear regression model, allows for computation if the data are split into
     batches. The user can use the ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
