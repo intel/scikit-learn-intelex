@@ -194,12 +194,13 @@ jobs:
         id: set-env
         shell: cmd
         run: |
-          echo "C:\msys64\usr\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\bin;" >> %GITHUB_PATH%
-          echo NO_DIST=1 >> %GITHUB_PATH%
+          echo C:\msys64\usr\bin;"C:\Program Files (x86)\Common Files\Intel\Shared Libraries\bin"; >> %GITHUB_PATH%
+          echo NO_DIST=1 >> %GITHUB_ENV%
           set DPCTL_TEMP="${{ env.DPCTL_PY_VERSIONS }}"
-          if not x%DPCTL_TEMP:${{ matrix.PYTHON_VERSION }}=%==x%DPCTL_TMP% (set DPCFLAG="") else (set DPCFLAG="0")
+          if not %DPCTL_TEMP:${{ matrix.PYTHON_VERSION }}=%==%DPCTL_TEMP% (set DPCFLAG="") else (set DPCFLAG="0")
           echo DPCFLAG=%DPCFLAG% >> %GITHUB_OUTPUT%
           echo COVERAGE_RCFILE=%~dp0.coveragerc >> %GITHUB_ENV%
+          dir .
       - name: Download Intel OpenCL CPU Runtime artifact
         if: ${{ steps.set-env.outputs.DPCFLAG == '' }}
         uses: actions/download-artifact@v4
