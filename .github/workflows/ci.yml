@@ -116,22 +116,19 @@ jobs:
           source .github/scripts/activate_components.sh
           cd .ci
           ../conda-recipe/run_test.sh
-      - name: Archive sklearnex coverage data
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}_sklearnex
-          path: .ci/.coverage
-          include-hidden-files: true
+          mv .coverage .coverage.sklearnex
       - name: Sklearn testing
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
           bash .ci/scripts/run_sklearn_tests.sh
-      - name: Archive sklearn coverage data
+      - name: Archive coverage data
         uses: actions/upload-artifact@v4
         with:
-          name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}_sklearn
-          path: .ci/.coverage.sklearn
+          name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
+          path: |
+             .ci/.coverage.sklearn
+             .ci/.coverage.sklearnex
           include-hidden-files: true
       - name: Sklearn testing [preview]
         run: |
