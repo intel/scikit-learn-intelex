@@ -21,7 +21,7 @@ set exitcode=0
 
 IF NOT DEFINED PYTHON (set "PYTHON=python")
 
-IF DEFINED COVERAGE_RCFILE (set COVARGS=--cov=onedal --cov=sklearnex --cov-config=%COVERAGE_RCFILE% --cov-append --cov-report=) else (set COVARGS=)
+IF DEFINED COVERAGE_RCFILE (set COV_ARGS=--cov=onedal --cov=sklearnex --cov-config=%COVERAGE_RCFILE% --cov-append --cov-report=) else (set COV_ARGS=)
 
 %PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
@@ -35,21 +35,21 @@ if "%~2"=="--json-report" (
 )
 
 if "%with_json_report%"=="1" (
-    %PYTHON% -m pytest --verbose -s %1tests --json-report --json-report-file=.pytest_reports\legacy_report.json %COVARGS% || set exitcode=1
-    pytest --verbose --pyargs daal4py --json-report --json-report-file=.pytest_reports\daal4py_report.json %COVARGS% || set exitcode=1
-    pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json %COVARGS% || set exitcode=1
-    pytest --verbose --pyargs onedal --json-report --json-report-file=.pytest_reports\onedal_report.json %COVARGS% || set exitcode=1
-    pytest --verbose %1.ci\scripts\test_global_patch.py --json-report --json-report-file=.pytest_reports\global_patching_report.json %COVARGS% || set exitcode=1
+    %PYTHON% -m pytest --verbose -s %1tests --json-report --json-report-file=.pytest_reports\legacy_report.json %COV_ARGS% || set exitcode=1
+    pytest --verbose --pyargs daal4py --json-report --json-report-file=.pytest_reports\daal4py_report.json %COV_ARGS% || set exitcode=1
+    pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json %COV_ARGS% || set exitcode=1
+    pytest --verbose --pyargs onedal --json-report --json-report-file=.pytest_reports\onedal_report.json %COV_ARGS% || set exitcode=1
+    pytest --verbose %1.ci\scripts\test_global_patch.py --json-report --json-report-file=.pytest_reports\global_patching_report.json %COV_ARGS% || set exitcode=1
     if NOT EXIST .pytest_reports\legacy_report.json (
         echo "Error: JSON report files failed to be produced."
         set exitcode=1
     )
 ) else (
-    %PYTHON% -m pytest --verbose -s %1tests %COVARGS% || set exitcode=1
-    pytest --verbose --pyargs daal4py %COVARGS% || set exitcode=1
-    pytest --verbose --pyargs sklearnex %COVARGS% || set exitcode=1
-    pytest --verbose --pyargs onedal %COVARGS% || set exitcode=1
-    pytest --verbose %1.ci\scripts\test_global_patch.py %COVARGS% || set exitcode=1
+    %PYTHON% -m pytest --verbose -s %1tests %COV_ARGS% || set exitcode=1
+    pytest --verbose --pyargs daal4py %COV_ARGS% || set exitcode=1
+    pytest --verbose --pyargs sklearnex %COV_ARGS% || set exitcode=1
+    pytest --verbose --pyargs onedal %COV_ARGS% || set exitcode=1
+    pytest --verbose %1.ci\scripts\test_global_patch.py %COV_ARGS% || set exitcode=1
 )
 
 EXIT /B %exitcode%
