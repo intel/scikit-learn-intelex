@@ -213,7 +213,7 @@ def control_n_jobs(decorated_methods: list = []):
             and "n_jobs : int" not in original_class.__doc__
         ):
             parameters_doc_tail = "\n    Attributes"
-            n_jobs_doc = f"""
+            n_jobs_doc = """
     n_jobs : int, default=None
         The number of jobs to use in parallel for the computation.
         ``None`` means using all physical cores
