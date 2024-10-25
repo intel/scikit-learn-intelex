@@ -154,11 +154,6 @@ def control_n_jobs(decorated_methods: list = []):
     decorated_methods: list
         A list of method names to be executed with 'n_jobs'.
 
-    non_sklearn_class: bool
-        Indicator telling whether this is a class that exists in stock scikit-learn
-        or not, used in order to determine whether to place an internal or external
-        link to their glossary.
-
     Example
     -------
         @control_n_jobs(decorated_methods=['fit', 'predict'])
