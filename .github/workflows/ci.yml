@@ -201,6 +201,8 @@ jobs:
           DPCFLAG="0"
           if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
           echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
+          # enable coverage report generation
+          echo "COVERAGE_RCFILE=$(readlink -f .coveragerc)" >> "$GITHUB_ENV"
       - name: Download Intel OpenCL CPU Runtime artifact
         if: ${{ steps.set-env.outputs.DPCFLAG == '' }}
         uses: actions/download-artifact@v4
@@ -257,12 +259,16 @@ jobs:
           set PYTHON=python
           cd ..
           call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\ --json-report
+          dir .
+          dir .\scikit-learn-intelex
+          dir .\scikit-learn-intelex\.ci
       - name: Sklearn testing
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           bash .ci/scripts/run_sklearn_tests.sh
+          dir .\scikit-learn-intelex\.ci
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
