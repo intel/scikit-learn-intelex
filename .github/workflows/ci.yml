@@ -195,7 +195,7 @@ jobs:
         shell: cmd
         run: |
           echo C:\msys64\usr\bin; >> %GITHUB_PATH%
-          echo NO_DIST=1 >> %GITHUB_ENV%
+          echo "NO_DIST=1" >> %GITHUB_ENV%
           set DPCTL_TEMP="${{ env.DPCTL_PY_VERSIONS }}"
           if not %DPCTL_TEMP:${{ matrix.PYTHON_VERSION }}=%==%DPCTL_TEMP% (set DPCFLAG=) else (set DPCFLAG="0")
           echo DPCFLAG=%DPCFLAG% >> %GITHUB_OUTPUT%
