@@ -22,10 +22,6 @@ from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
 from ..utils import _is_csr
-from ..utils._dpep_helpers import dpctl_available, dpnp_available
-
-if dpctl_available:
-    import dpctl.tensor as dpt
 
 
 def _apply_and_pass(func, *args, **kwargs):
@@ -35,6 +31,14 @@ def _apply_and_pass(func, *args, **kwargs):
 
 
 if _is_dpc_backend:
+
+    from ..utils._dpep_helpers import dpctl_available, dpnp_available
+
+    if dpctl_available:
+        import dpctl.tensor as dpt
+
+    if dpnp_available:
+        import dpnp
 
     from ..common._policy import _HostInteropPolicy
 
@@ -89,7 +93,7 @@ if _is_dpc_backend:
                     # TODO:
                     # investigate why dpnp.array(table, copy=False) doesn't work.
                     # Work around with using dpctl.tensor.asarray.
-                    return xp.array(dpt.asarray(table), copy=False)
+                    return dpnp.array(dpt.asarray(table), copy=False)
                 else:
                     return xp.asarray(table)
         return _backend.from_table(table)
