@@ -14,7 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
-from onedal._device_offload import dpctl_available, dpnp_available
+from onedal.utils._dpep_helpers import dpctl_available, dpnp_available
 
 if dpnp_available:
     import dpnp
