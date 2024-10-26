@@ -152,12 +152,10 @@ dal::data_layout get_sua_iface_layout(const py::dict& sua_dict,
         return dal::data_layout::row_major;
     }
     else if (strides_len == 2l) {
-        auto r_strides = strides_tuple[0l].cast<std::int64_t>();
-        auto c_strides = strides_tuple[1l].cast<std::int64_t>();
-        using shape_t = std::decay_t<decltype(r_count)>;
-        using stride_t = std::decay_t<decltype(r_strides)>;
-        constexpr auto one = static_cast<shape_t>(1);
-        static_assert(std::is_same_v<shape_t, stride_t>);
+        using tuple_elem_t = std::int64_t;
+        auto r_strides = strides_tuple[0l].cast<tuple_elem_t>();
+        auto c_strides = strides_tuple[1l].cast<tuple_elem_t>();
+        constexpr auto one = static_cast<tuple_elem_t>(1);
         if (r_strides == c_count && c_strides == one) {
             return dal::data_layout::row_major;
         }
