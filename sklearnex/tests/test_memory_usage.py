@@ -375,4 +375,5 @@ def test_table_conversions_memory_leaks(dataframe, queue, order, data_shape, dty
         data_shape,
         queue,
         func,
+        dtype,
     )
