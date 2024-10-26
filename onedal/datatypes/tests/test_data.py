@@ -391,7 +391,7 @@ def test_to_table_non_contiguous_input(dataframe, queue):
             "Unable to convert from SUA interface: only 1D & 2D tensors are allowed"
         )
     else:
-        expected_err_msg = "[convert_to_table] Numpy input Could not convert Python object to onedal table."
+        expected_err_msg = "Numpy input Could not convert Python object to onedal table."
     with pytest.raises(ValueError, match=expected_err_msg):
         to_table(X, sua_iface=sua_iface)
 
