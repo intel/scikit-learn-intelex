@@ -114,21 +114,22 @@ jobs:
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
+          export COVERAGE_FILE=$(pwd)/.coverage.sklearnex
           cd .ci
           ../conda-recipe/run_test.sh
-          mv .coverage .coverage.sklearnex
       - name: Sklearn testing
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
+          export COVERAGE_FILE=$(pwd)/.coverage.sklearn
           bash .ci/scripts/run_sklearn_tests.sh
       - name: Archive coverage data
         uses: actions/upload-artifact@v4
         with:
-          name: coverage_Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
+          name: coverage_lnx_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
           path: |
-             .ci/.coverage.sklearn
-             .ci/.coverage.sklearnex
+             .coverage.sklearn
+             .coverage.sklearnex
           include-hidden-files: true
       - name: Sklearn testing [preview]
         run: |
@@ -255,18 +256,24 @@ jobs:
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           set PYTHON=python
+          set COVERAGE_FILE=%cd%\.coverage.sklearnex
           cd ..
           call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\ --json-report
-          dir .
-          dir .\scikit-learn-intelex
-          dir .\scikit-learn-intelex\.ci
       - name: Sklearn testing
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
+          set COVERAGE_FILE=%cd%\.coverage.sklearn
           bash .ci/scripts/run_sklearn_tests.sh
-          dir .\scikit-learn-intelex\.ci
+      - name: Archive coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage_win_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
+          path: |
+             .coverage.sklearn
+             .coverage.sklearnex
+          include-hidden-files: true
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
