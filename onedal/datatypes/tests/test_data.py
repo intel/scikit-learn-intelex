@@ -369,3 +369,46 @@ def test_sua_iface_interop_unsupported_dtypes(dataframe, queue, dtype):
     expected_err_msg = "Unable to convert from SUA interface: unknown data type"
     with pytest.raises(ValueError, match=expected_err_msg):
         to_table(X, sua_iface=sua_iface)
+
+
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("numpy,dpctl,dpnp", "cpu,gpu")
+)
+def test_to_table_non_contiguous_input(dataframe, queue):
+    if dataframe in "dpnp,dpctl" and not _is_dpc_backend:
+        pytest.skip("__sycl_usm_array_interface__ support requires DPC backend.")
+    X = np.mgrid[:10, :10]
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    X = X[:, :3]
+    sua_iface, _, _ = _get_sycl_namespace(X)
+    # X expected to be non-contiguous.
+    assert not X.flags.c_contiguous and not X.flags.f_contiguous
+
+    # TODO:
+    # consistent error message.
+    if dataframe in "dpnp,dpctl":
+        expected_err_msg = (
+            "Unable to convert from SUA interface: only 1D & 2D tensors are allowed"
+        )
+    else:
+        expected_err_msg = "[convert_to_table] Numpy input Could not convert Python object to onedal table."
+    with pytest.raises(ValueError, match=expected_err_msg):
+        to_table(X, sua_iface=sua_iface)
+
+
+@pytest.mark.skipif(
+    _is_dpc_backend,
+    reason="Required check should be done if no DPC backend.",
+)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
+)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sua_iface_interop_if_no_dpc_backend(dataframe, queue, dtype):
+    X = np.zeros((10, 20), dtype=dtype)
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    sua_iface, _, _ = _get_sycl_namespace(X)
+
+    expected_err_msg = "SYCL usm array conversion to table requires the DPC backend"
+    with pytest.raises(RuntimeError, match=expected_err_msg):
+        to_table(X, sua_iface=sua_iface)
