@@ -98,7 +98,7 @@ Enable Intel(R) GPU optimizations
    kaggle.rst
    
 .. toctree::
-   :caption: Developer Guide
+   :caption: User Guide
    :hidden:
    :maxdepth: 2
 
@@ -109,7 +109,6 @@ Enable Intel(R) GPU optimizations
    array_api.rst
    verbose.rst
    deprecation.rst
-   
 
 .. toctree::
    :caption: Performance
@@ -127,10 +126,22 @@ Enable Intel(R) GPU optimizations
    Medium Blogs <blogs.rst>
 
 .. toctree::
+   :caption: Developer’s Guide
+   :hidden:
+   :maxdepth: 2
+
+   developers/contribute.rst
+   developers/dispatching.rst
+   developers/estimators.rst
+   developers/pybind11.rst
+   developers/array_api.rst
+   developers/spmd.rst
+   developers/threading.rst
+
+.. toctree::
    :caption: More
    :hidden:
    :maxdepth: 2
    
    Support <support.rst>
-   contribute.rst
    license.rst
