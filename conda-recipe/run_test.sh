@@ -75,7 +75,15 @@ return_code=$(($return_code + $?))
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     mpirun --version
-    mpirun -n 2 python "${sklex_root}/tests/helper_mpi_tests.py" \
+    # Note: OpenMPI will not allow running more processes than there
+    # are cores in the machine, and Intel's MPI doesn't support the
+    # same command line options, hence this line.
+    if [[ ! -z $(mpirun -h | grep "Open MPI") ]]; then
+        export EXTRA_MPI_ARGS="-n 2 -oversubscribe"
+    else
+        export EXTRA_MPI_ARGS="-n 4"
+    fi
+    mpirun ${EXTRA_MPI_ARGS} python "${sklex_root}/tests/helper_mpi_tests.py" \
         "pytest --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\"" \
         "pytest --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\" $* $(json_report_name mpi_legacy)"
     return_code=$(($return_code + $?))
