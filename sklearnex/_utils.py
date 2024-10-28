@@ -117,7 +117,7 @@ def register_hyperparameters(hyperparameters_map):
 
 
 # This abstract class is meant to generate a clickable doc link for classses
-# in sklearnex that are not present in scikit-learn. It should be inherited
+# in sklearnex that are not part of base scikit-learn. It should be inherited
 # before inheriting from a scikit-learn estimator, otherwise will get overriden
 # by the estimator's original.
 class IntelEstimator(ABC):
