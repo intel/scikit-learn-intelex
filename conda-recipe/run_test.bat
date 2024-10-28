@@ -48,7 +48,7 @@ if %with_json_report% EQU 1 (
     pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
     pytest --verbose --pyargs onedal --json-report --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
     pytest --verbose "%1.ci\scripts\test_global_patch.py" --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
-    if %NO_DIST% NEQ 1 (
+    if NOT "%NO_DIST%"=="1" (
         %PYTHON% "%1conda-recipe\helper_mpi_tests.py"^
             "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^""^
             "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^" --json-report --json-report-file=.pytest_reports\legacy_report.json"
@@ -66,7 +66,7 @@ if %with_json_report% EQU 1 (
     pytest --verbose --pyargs sklearnex || set exitcode=1
     pytest --verbose --pyargs onedal || set exitcode=1
     pytest --verbose "%1.ci\scripts\test_global_patch.py" || set exitcode=1
-    if %NO_DIST% NEQ 1 (
+    if NOT "%NO_DIST%"=="1" (
         %PYTHON% -m pytest --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
     )
 )
