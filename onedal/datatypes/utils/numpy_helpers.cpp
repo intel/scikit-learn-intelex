@@ -14,7 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "onedal/datatypes/numpy_helpers.hpp"
+#include "onedal/datatypes/utils/numpy_helpers.hpp"
 
 namespace oneapi::dal::python {
 
