@@ -1,4 +1,4 @@
-@echo off
+@echo on
 rem ============================================================================
 rem Copyright 2018 Intel Corporation
 rem
