@@ -75,7 +75,7 @@ return_code=$(($return_code + $?))
 echo "NO_DIST=$NO_DIST"
 if [[ ! $NO_DIST ]]; then
     mpirun --version
-    mpirun -n 4 python "$(dirname $0)/helper_mpi_tests.py"  \
+    mpirun -n 4 python "${sklex_root}/conda-recipe/helper_mpi_tests.py" \
         "pytest --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\"" \
         "pytest --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\" $@ $(json_report_name mpi_legacy)"
     return_code=$(($return_code + $?))

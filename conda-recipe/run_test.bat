@@ -1,4 +1,4 @@
-@echo off
+@echo on
 rem ============================================================================
 rem Copyright 2018 Intel Corporation
 rem
@@ -39,15 +39,16 @@ if "%~2"=="--json-report" (
 )
 
 echo "NO_DIST=%NO_DIST%"
+echo "with_json_report=%with_json_report%"
 setlocal enabledelayedexpansion
-if "%with_json_report%"=="1" (
+if %with_json_report% EQU 1 (
     pytest --verbose -s "%1tests" --json-report --json-report-file=.pytest_reports\legacy_report.json || set exitcode=1
     pytest --verbose --pyargs daal4py --json-report --json-report-file=.pytest_reports\daal4py_report.json || set exitcode=1
     pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json || set exitcode=1
     pytest --verbose --pyargs onedal --json-report --json-report-file=.pytest_reports\onedal_report.json || set exitcode=1
     pytest --verbose "%1.ci\scripts\test_global_patch.py" --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
     if %NO_DIST% NEQ 1 (
-        %PYTHON% "%~p0\helper_mpi_tests.py"^
+        %PYTHON% "%1conda-recipe\helper_mpi_tests.py"^
             "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^""^
             "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^" --json-report --json-report-file=.pytest_reports\legacy_report.json"
         if !errorlevel! NEQ 0 (
