@@ -4,7 +4,7 @@
 # arguments:
 # - First argument is what gets executed by ranks other than '0'.
 # - Second argument is what gets executed by rank 0.
-# Note that the arguments might be multi-word comments, so it
+# Note that the arguments might be multi-word commands, so it
 # uses os.system instead of subprocess or similar.
 
 import os
