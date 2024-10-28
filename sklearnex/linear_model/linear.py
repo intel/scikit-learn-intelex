@@ -18,7 +18,6 @@ import logging
 from abc import ABC
 
 import numpy as np
-from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.utils.validation import check_array
@@ -34,7 +33,7 @@ if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
 
 from scipy.sparse import issparse
-from sklearn.utils.validation import check_X_y
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
@@ -112,14 +111,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     @wrap_output_data
     def predict(self, X):
-
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' with "
-                "appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -132,6 +124,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
