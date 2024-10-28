@@ -40,11 +40,7 @@ else:
 from onedal.common.hyperparameters import get_hyperparameters
 
 from .._device_offload import dispatch, wrap_output_data
-from .._utils import (
-    NonSKLearnAlgorithm,
-    PatchingConditionsChain,
-    register_hyperparameters,
-)
+from .._utils import IntelEstimator, PatchingConditionsChain, register_hyperparameters
 
 
 @register_hyperparameters(
@@ -57,7 +53,7 @@ from .._utils import (
     decorated_methods=["fit", "partial_fit", "predict", "score", "_onedal_finalize_fit"]
 )
 class IncrementalLinearRegression(
-    NonSKLearnAlgorithm, MultiOutputMixin, RegressorMixin, BaseEstimator
+    IntelEstimator, MultiOutputMixin, RegressorMixin, BaseEstimator
 ):
     """
     Trains a linear regression model, allows for computation if the data are split into

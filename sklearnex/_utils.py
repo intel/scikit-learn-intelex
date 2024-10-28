@@ -120,7 +120,7 @@ def register_hyperparameters(hyperparameters_map):
 # in sklearnex that are not present in scikit-learn. It should be inherited
 # before inheriting from a scikit-learn estimator, otherwise will get overriden
 # by the estimator's original.
-class NonSKLearnAlgorithm(ABC):
+class IntelEstimator(ABC):
     @property
     def _doc_link_module(self) -> str:
         return "sklearnex"

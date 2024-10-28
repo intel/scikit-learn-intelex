@@ -33,11 +33,7 @@ from onedal.covariance import (
 from sklearnex import config_context
 
 from .._device_offload import dispatch, wrap_output_data
-from .._utils import (
-    NonSKLearnAlgorithm,
-    PatchingConditionsChain,
-    register_hyperparameters,
-)
+from .._utils import IntelEstimator, PatchingConditionsChain, register_hyperparameters
 from ..metrics import pairwise_distances
 from ..utils._array_api import get_namespace
 
@@ -51,7 +47,7 @@ else:
 
 
 @control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
-class IncrementalEmpiricalCovariance(NonSKLearnAlgorithm, BaseEstimator):
+class IncrementalEmpiricalCovariance(IntelEstimator, BaseEstimator):
     """
     Maximum likelihood covariance estimator that allows for the estimation when the data are split into
     batches. The user can use the ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
