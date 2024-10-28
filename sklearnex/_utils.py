@@ -127,7 +127,8 @@ class IntelEstimator(ABC):
 
     @property
     def _doc_link_template(self) -> str:
-        module_path, _ = ".".join(self.__class__.__module__.rsplit(".", 1))
+        module_path, _ = self.__class__.__module__.rsplit(".", 1)
+
 
         class_name = self.__class__.__name__
         return f"https://intel.github.io/scikit-learn-intelex/latest/non-scikit-algorithms.html#{module_path}.{class_name}"
