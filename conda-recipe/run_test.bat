@@ -19,11 +19,12 @@ rem %1 - scikit-learn-intelex repo root (should end with '\', leave empty if it'
 
 set exitcode=0
 
+setlocal enableextensions
 IF NOT DEFINED PYTHON (
     set "PYTHON=python"
     set NO_DIST=1
 )
-if %PYTHON% EQU "python" (
+if "%PYTHON%"=="python" (
     set NO_DIST=1
 )
 
