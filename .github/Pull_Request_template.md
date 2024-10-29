@@ -10,6 +10,12 @@ _Benchmarks PR (if needed): https://github.com/IntelPython/scikit-learn_bench/pu
 
 ---
 
+PR should start as a draft, then move to ready for review state after CI is passed and all applicable checkboxes are closed.
+This approach ensures that reviewers don't spend extra time asking for regular requirements.
+
+You can remove a checkbox as not applicable only if it doesn't relate to this PR in any way.
+For example, PR with docs update doesn't require checkboxes for performance while PR with any change in actual code should have checkboxes and justify how this code change is expected to affect performance (or justification should be self-evident).
+
 Checklist to comply with **before moving PR from draft**:
 
 **PR completeness and readability**
