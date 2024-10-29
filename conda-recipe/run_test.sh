@@ -78,7 +78,7 @@ if [[ ! $NO_DIST ]]; then
     # Note: OpenMPI will not allow running more processes than there
     # are cores in the machine, and Intel's MPI doesn't support the
     # same command line options, hence this line.
-    if [[ ! -z $(mpirun -h | grep "Open MPI") ]]; then
+    if [[ ! -z "$(mpirun -h | grep "Open MPI")" ]]; then
         export EXTRA_MPI_ARGS="-n 2 -oversubscribe"
     else
         export EXTRA_MPI_ARGS="-n 4"
