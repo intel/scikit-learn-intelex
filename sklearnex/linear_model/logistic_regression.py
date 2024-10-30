@@ -36,6 +36,7 @@ if daal_check_version((2024, "P", 1)):
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
     from onedal.utils import _num_samples
 
+    from .._config import get_config
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
 
@@ -310,17 +311,21 @@ if daal_check_version((2024, "P", 1)):
                 )
 
             self._onedal_gpu_initialize_estimator()
-            try:
-                self._onedal_estimator.fit(X, y, queue=queue)
-                self._onedal_gpu_save_attributes()
-            except RuntimeError:
-                logging.getLogger("sklearnex").info(
-                    f"{self.__class__.__name__}.fit "
-                    + get_patch_message("sklearn_after_onedal")
-                )
+            if get_config()["allow_sklearn_after_onedal"]:
+                try:
+                    self._onedal_estimator.fit(X, y, queue=queue)
+                    self._save_attributes()
+                except RuntimeError:
+                    logging.getLogger("sklearnex").info(
+                        f"{self.__class__.__name__}.fit "
+                        + get_patch_message("sklearn_after_onedal")
+                    )
 
-                del self._onedal_estimator
-                super().fit(X, y)
+                    del self._onedal_estimator
+                    super().fit(X, y)
+            else:
+                self._onedal_estimator.fit(X, y, queue=queue)
+                self._save_attributes()
             #  coverage: gpu_stop
 
         def _onedal_predict(self, X, queue=None):
