@@ -138,7 +138,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     def _onedal_cpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
-            f"sklearn.linear_model.{self.__class__.__name__}.fit"
+            f"sklearn.linear_model.{self.__class__.__name__}.{method_name}"
         )
         return self._onedal_supported(patching_status, method_name, *data)
 
