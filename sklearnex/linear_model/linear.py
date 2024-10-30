@@ -144,7 +144,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     def _onedal_gpu_supported(self, method_name, *data):
         patching_status = PatchingConditionsChain(
-            f"sklearn.linear_model.{self.__class__.__name__}.fit"
+            f"sklearn.linear_model.{self.__class__.__name__}.{method_name}"
         )
 
         if method_name == "fit":
