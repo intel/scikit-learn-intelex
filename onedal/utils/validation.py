@@ -443,9 +443,9 @@ def _assert_all_finite(X, allow_nan=False, input_name=""):
     # is likely to cause a significant reduction in performance
     # requires extracting the queue to generate a policy for converting the data to fp32
     policy = _get_policy(None, X)
-    X = to_table(_convert_to_supported(policy, X))
+    X_table = to_table(_convert_to_supported(policy, X))
     if not _backend.finiteness_checker.compute(
-        policy, {"allow_nan": allow_nan}, X
+        policy, {"allow_nan": allow_nan}, X_table
     ).finite:
         type_err = "infinity" if allow_nan else "NaN, infinity"
         padded_input_name = input_name + " " if input_name else ""
