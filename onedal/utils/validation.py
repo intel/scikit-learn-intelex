@@ -441,7 +441,6 @@ def _is_csr(x):
 def _assert_all_finite(X, allow_nan=False, input_name=""):
     # NOTE: This function does not respond to target_offload, as the memory movement
     # is likely to cause a significant reduction in performance
-    # requires extracting the queue to generate a policy for converting the data to fp32
     policy = _get_policy(None, X)
     X_table = to_table(_convert_to_supported(policy, X))
     if not _backend.finiteness_checker.compute(
