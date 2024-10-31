@@ -50,8 +50,8 @@ if "%with_json_report%"=="1" (
     pytest --verbose "%1.ci\scripts\test_global_patch.py" --json-report --json-report-file=.pytest_reports\global_patching_report.json || set exitcode=1
     if NOT "%NO_DIST%"=="1" (
         %PYTHON% "%1tests\helper_mpi_tests.py"^
-            "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^""^
-            "pytest --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^" --json-report --json-report-file=.pytest_reports\legacy_report.json"
+            "pytest --with-mpi --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^""^
+            "pytest --with-mpi --verbose -s ^"%1tests\test_daal4py_spmd_examples.py^" --json-report --json-report-file=.pytest_reports\legacy_report.json"
         if !errorlevel! NEQ 0 (
             set exitcode=1
         )
@@ -67,7 +67,7 @@ if "%with_json_report%"=="1" (
     pytest --verbose --pyargs onedal || set exitcode=1
     pytest --verbose "%1.ci\scripts\test_global_patch.py" || set exitcode=1
     if NOT "%NO_DIST%"=="1" (
-        %PYTHON% -m pytest --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
+        %PYTHON% -m pytest --with-mpi --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
     )
 )
 
