@@ -20,6 +20,10 @@ from numbers import Integral
 
 import numpy as np
 from scipy import sparse as sp
+from onedal import _backend
+from ..common._policy import _get_policy
+from ..datatypes import _convert_to_supported, to_table
+
 
 if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
     # numpy_version >= 2.0
@@ -31,7 +35,9 @@ else:
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
-from daal4py.sklearn.utils.validation import _assert_all_finite
+from daal4py.sklearn.utils.validation import (
+    _assert_all_finite as _daal4py_assert_all_finite,
+)
 
 
 class DataConversionWarning(UserWarning):
@@ -135,10 +141,10 @@ def _check_array(
     if force_all_finite:
         if sp.issparse(array):
             if hasattr(array, "data"):
-                _assert_all_finite(array.data)
+                _daal4py_assert_all_finite(array.data)
                 force_all_finite = False
         else:
-            _assert_all_finite(array)
+            _daal4py_assert_all_finite(array)
             force_all_finite = False
     array = check_array(
         array=array,
@@ -200,7 +206,7 @@ def _check_X_y(
     if y_numeric and y.dtype.kind == "O":
         y = y.astype(np.float64)
     if force_all_finite:
-        _assert_all_finite(y)
+        _daal4py_assert_all_finite(y)
 
     lengths = [X.shape[0], y.shape[0]]
     uniques = np.unique(lengths)
@@ -285,7 +291,7 @@ def _type_of_target(y):
     # check float and contains non-integer float values
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
-        _assert_all_finite(y)
+        _daal4py_assert_all_finite(y)
         return "continuous" + suffix
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
@@ -429,4 +435,29 @@ def _is_csr(x):
     """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
     return isinstance(x, sp.csr_matrix) or (
         hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
+    )
+
+
+def _assert_all_finite(X, allow_nan=False, input_name=""):
+    # NOTE: This function does not respond to target_offload, as the memory movement
+    # is likely to cause a significant reduction in performance
+    # requires extracting the queue to generate a policy for converting the data to fp32
+    X = to_table(_convert_to_supported(_get_policy(None, X), X))
+    if not _backend.finiteness_checker(allow_nan=allow_nan).compute(X).finite:
+        type_err = "infinity" if allow_nan else "NaN, infinity"
+        padded_input_name = input_name + " " if input_name else ""
+        msg_err = f"Input {padded_input_name}contains {type_err}."
+        raise ValueError(msg_err)
+
+
+def assert_all_finite(
+    X,
+    *,
+    allow_nan=False,
+    input_name="",
+):
+    _assert_all_finite(
+        X.data if sp.issparse(X) else X,
+        allow_nan=allow_nan,
+        input_name=input_name,
     )
