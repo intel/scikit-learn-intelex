@@ -21,8 +21,8 @@ from numbers import Integral
 import numpy as np
 from scipy import sparse as sp
 from onedal import _backend
-from ..common._policy import _get_policy
-from ..datatypes import _convert_to_supported, to_table
+from onedal.common._policy import _get_policy
+from onedal.datatypes import _convert_to_supported, to_table
 
 
 if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
