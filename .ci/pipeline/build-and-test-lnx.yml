@@ -32,18 +32,19 @@ steps:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [ -z "$(DALROOT)" ]; then conda install -q -y -c conda-forge dal-devel; fi
+      if [ -z "$[variables.DALROOT]" ]; then conda install -q -y -c conda-forge dal-devel; fi
       pip install -r dependencies-dev
       pip list
     displayName: "Install develop requirements"
   - script: |
-      if [ -z "$(DPCPPROOT)" ]; then export DPCPPROOT=/opt/intel/oneapi/compiler/latest; else export DPCPPROOT=$(DPCPPROOT); fi
+      if [ -z "$[variables.DPCPPROOT)]" ]; then export DPCPPROOT=/opt/intel/oneapi/compiler/latest; else export DPCPPROOT=$(DPCPPROOT); fi
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [ -z "$(DALROOT)" ]; then export DALROOT=$CONDA_PREFIX; else export DALROOT=$(DALROOT); fi
-      if [ -n "$(NO_DPC)" ]; then export NO_DPC=1; fi # enable non-dpc builds in CI when var set
-      if [ -n "$(NO_DIST)" ]; then export NO_DIST=1; fi # enable non-mpi builds in CI when var set
+      if [ -z "$[variables.DALROOT]" ]; then export DALROOT=$CONDA_PREFIX; else export DALROOT=$(DALROOT); fi
       ./conda-recipe/build.sh
+    env:
+      NO_DPC: $[variables.NO_DPC]
+      NO_DIST: $[variables.NO_DIST]
     displayName: "Build daal4py/sklearnex"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
