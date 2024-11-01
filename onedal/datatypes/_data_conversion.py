@@ -17,11 +17,11 @@
 import warnings
 
 import numpy as np
+import scipy.sparse as sp
 
 from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
 
-from ..utils import _is_csr
 from ..utils._dpep_helpers import is_dpctl_available
 
 dpctl_available = is_dpctl_available("0.14")
@@ -46,7 +46,7 @@ def convert_one_to_table(arg):
         if isinstance(arg, dpt.usm_ndarray):
             return _backend.dpctl_to_table(arg)
 
-    if not _is_csr(arg):
+    if not sp.issparse(arg):
         arg = make2d(arg)
     return _backend.to_table(arg)
 
