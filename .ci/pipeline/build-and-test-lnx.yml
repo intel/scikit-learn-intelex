@@ -32,19 +32,23 @@ steps:
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [ -z "$[variables.DALROOT]" ]; then conda install -q -y -c conda-forge dal-devel; fi
+      if [ -z "${DALROOT}" ]; then conda install -q -y -c conda-forge dal-devel; fi
       pip install -r dependencies-dev
       pip list
     displayName: "Install develop requirements"
+    env:
+      DALROOT: $[variables.DALROOT]
   - script: |
-      if [ -z "$[variables.DPCPPROOT)]" ]; then export DPCPPROOT=/opt/intel/oneapi/compiler/latest; else export DPCPPROOT=$(DPCPPROOT); fi
+      if [ -z "${DPCPPROOT}" ]; then export DPCPPROOT=/opt/intel/oneapi/compiler/latest; fi
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [ -z "$[variables.DALROOT]" ]; then export DALROOT=$CONDA_PREFIX; else export DALROOT=$(DALROOT); fi
+      if [ -z "${DALROOT}" ]; then export DALROOT=$CONDA_PREFIX; fi
       ./conda-recipe/build.sh
     env:
       NO_DPC: $[variables.NO_DPC]
       NO_DIST: $[variables.NO_DIST]
+      DPCPPROOT: $[variables.DPCPPROOT]
+      DALROOT: $[variables.DALROOT]
     displayName: "Build daal4py/sklearnex"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
