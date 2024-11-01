@@ -35,9 +35,9 @@ steps:
       if [ -z "${DALROOT}" ]; then conda install -q -y -c conda-forge dal-devel; fi
       pip install -r dependencies-dev
       pip list
-    displayName: "Install develop requirements"
     env:
       DALROOT: ${{ variables.DALROOT }}
+    displayName: "Install develop requirements"
   - script: |
       if [ -z "${DPCPPROOT}" ]; then export DPCPPROOT=/opt/intel/oneapi/compiler/latest; fi
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -56,32 +56,40 @@ steps:
       bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt
       pip install $(python .ci/scripts/get_compatible_scipy_version.py)
-      if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.11') ] && [ $(SKLEARN_VERSION) != "1.0" ] && [ -z $(NO_DPC) ]; then conda install -q -y -c https://software.repos.intel.com/python/conda/ dpctl=0.17.0 dpnp=0.15.0; fi
+      if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.11') ] && [ $(SKLEARN_VERSION) != "1.0" ] && [ -z ${NO_DPC} ]; then conda install -q -y -c https://software.repos.intel.com/python/conda/ dpctl=0.17.0 dpnp=0.15.0; fi
       pip list
+    env:
+      NO_DPC: ${{ variables.NO_DPC }}
     displayName: "Install testing requirements"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
-      if [ -n "$(DALROOT)" ]; then export DALROOT=$(DALROOT); fi
-      if [ -n "$(TBBROOT)" ]; then export TBBROOT=$(TBBROOT); fi
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh --json-report
+    env:
+      DALROOT: ${{ variables.DALROOT }}
+      TBBROOT: ${{ variables.TBBROOT }}
     displayName: "Sklearnex testing"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [ -n "$(DALROOT)" ] && [ "$(DALROOT)" != "${CONDA_PREFIX}" ]; then source $(DALROOT)/env/vars.sh; fi
-      if [ -n "$(TBBROOT)" ] && [ "$(TBBROOT)" != "${CONDA_PREFIX}" ]; then source $(TBBROOT)/env/vars.sh; fi
+      if [ -n "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then source ${DALROOT}/env/vars.sh; fi
+      if [ -n "${TBBROOT}" ] && [ "${TBBROOT}" != "${CONDA_PREFIX}" ]; then source ${TBBROOT}/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
+    env:
+      DALROOT: ${{ variables.DALROOT }}
+      TBBROOT: ${{ variables.TBBROOT }}
     displayName: "Sklearn testing"
     condition: succeededOrFailed()
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
-      if [ -n "$(DALROOT)" ] && [ "$(DALROOT)" != "${CONDA_PREFIX}" ]; then source $(DALROOT)/env/vars.sh; fi
-      if [ -n "$(TBBROOT)" ] && [ "$(TBBROOT)" != "${CONDA_PREFIX}" ]; then source $(TBBROOT)/env/vars.sh; fi
+      if [ -n "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then source ${DALROOT}/env/vars.sh; fi
+      if [ -n "${TBBROOT}" ] && [ "${TBBROOT}" != "${CONDA_PREFIX}" ]; then source ${TBBROOT}/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
     env:
+      DALROOT: ${{ variables.DALROOT }}
+      TBBROOT: ${{ variables.TBBROOT }}
       SKLEARNEX_PREVIEW: "YES"
     displayName: "Sklearn testing [preview]"
     condition: succeededOrFailed()
