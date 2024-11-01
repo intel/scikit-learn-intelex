@@ -37,7 +37,7 @@ steps:
       pip list
     displayName: "Install develop requirements"
   - script: |
-      export DPCPPROOT=/opt/intel/oneapi/compiler/latest
+      if [ -z "$(DPCPPROOT)" ]; then export DPCPPROOT=/opt/intel/oneapi/compiler/latest; else export DPCPPROOT=$(DPCPPROOT); fi
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       if [ -z "$(DALROOT)" ]; then export DALROOT=$CONDA_PREFIX; else export DALROOT=$(DALROOT); fi
