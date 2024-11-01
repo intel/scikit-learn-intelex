@@ -37,7 +37,7 @@ steps:
       pip list
     displayName: "Install develop requirements"
     env:
-      DALROOT: $[variables.DALROOT]
+      DALROOT: ${{ variables.DALROOT }}
   - script: |
       if [ -z "${DPCPPROOT}" ]; then export DPCPPROOT=/opt/intel/oneapi/compiler/latest; fi
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -45,10 +45,10 @@ steps:
       if [ -z "${DALROOT}" ]; then export DALROOT=$CONDA_PREFIX; fi
       ./conda-recipe/build.sh
     env:
-      NO_DPC: $[variables.NO_DPC]
-      NO_DIST: $[variables.NO_DIST]
-      DPCPPROOT: $[variables.DPCPPROOT]
-      DALROOT: $[variables.DALROOT]
+      NO_DPC: ${{ variables.NO_DPC }}
+      NO_DIST: ${{ variables.NO_DIST }}
+      DPCPPROOT: ${{ variables.DPCPPROOT }}
+      DALROOT: ${{ variables.DALROOT }}
     displayName: "Build daal4py/sklearnex"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
