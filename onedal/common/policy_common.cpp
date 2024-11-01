@@ -32,7 +32,7 @@ constexpr const char get_capsule_name[] = "_get_capsule";
 constexpr const char queue_capsule_name[] = "SyclQueueRef";
 constexpr const char context_capsule_name[] = "SyclContextRef";
 constexpr const char device_name[] = "sycl_device";
-constexpr const char filter_name[] = "filter_selector";
+constexpr const char get_filter_name[] = "get_filter_string";
 
 
 
@@ -83,9 +83,9 @@ sycl::queue get_queue_from_python(const py::object& syclobj) {
         const auto caps = syclobj.cast<py::capsule>();
         return extract_from_capsule(std::move(caps));
     }
-    else if (py::hasattr(syclobj, device_name) && py::hasattr(syclobj.attr(device_name), filter_name)) {
-        auto attr = syclobj.attr(device_name).attr(filter_name);
-        return get_queue_by_filter_string(attr.cast<std::string>());
+    else if (py::hasattr(syclobj, device_name) && py::hasattr(syclobj.attr(device_name), get_filter_name)) {
+        auto attr = syclobj.attr(device_name).attr(get_filter_name);
+        return get_queue_by_filter_string(attr().cast<std::string>());
     }
     else
     {
