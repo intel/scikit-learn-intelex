@@ -18,12 +18,14 @@ steps:
     displayName: "apt-get"
   - script: |
       bash .ci/scripts/install_dpcpp.sh
-    condition: eq(variables.DPCPPROOT, '')
+    condition: eq(variables.NO_DPC, '')
     displayName: "dpcpp installation"
   - script: |
       source /opt/intel/oneapi/compiler/latest/env/vars.sh
       bash .ci/scripts/describe_system.sh
     displayName: "System info"
+    env:
+      NO_DPC: ${{ variables.NO_DPC }}
   - script: |
       conda config --add channels conda-forge
       conda config --set channel_priority strict
