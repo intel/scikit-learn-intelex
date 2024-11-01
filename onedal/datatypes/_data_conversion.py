@@ -103,7 +103,7 @@ if _is_dpc_backend:
         if sua_iface:
             return _backend.sua_iface_to_table(arg)
 
-        if not sp.sparse(arg):
+        if not sp.issparse(arg):
             arg = make2d(arg)
         return _backend.to_table(arg)
 
@@ -130,7 +130,7 @@ else:
                 "SYCL usm array conversion to table requires the DPC backend"
             )
 
-        if not sp.sparse(arg):
+        if not sp.issparse(arg):
             arg = make2d(arg)
         return _backend.to_table(arg)
 
