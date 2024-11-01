@@ -431,6 +431,13 @@ def _num_samples(x):
         raise TypeError(message) from type_error
 
 
+def _is_csr(x):
+    """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
+    return isinstance(x, sp.csr_matrix) or (
+        hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
+    )
+
+
 def _assert_all_finite(X, allow_nan=False, input_name=""):
     # NOTE: This function does not respond to target_offload, as the memory movement
     # is likely to cause a significant reduction in performance
