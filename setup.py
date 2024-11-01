@@ -91,7 +91,7 @@ mpi_root = None if no_dist else os.environ["MPIROOT"]
 dpcpp = (
     shutil.which("icpx") is not None
     and "onedal_dpc" in get_onedal_shared_libs(dal_root)
-    and no_dpc
+    and not no_dpc
     and not (IS_WIN and debug_build)
 )
 
