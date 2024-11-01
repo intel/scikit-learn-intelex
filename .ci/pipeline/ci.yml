@@ -136,8 +136,6 @@ jobs:
         SKLEARN_VERSION: '1.5'
   pool:
     vmImage: 'ubuntu-22.04'
-  variables:
-    DPCPPROOT: 'intel'
   steps:
   - template: build-and-test-lnx.yml
 - job: WindowsCondaEnv
