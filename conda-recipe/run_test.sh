@@ -41,6 +41,11 @@ if [ -n "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then
     source ${DALROOT}/env/vars.sh
 fi
 
+if [ -n "${TBBROOT}" ] && [ "${TBBROOT}" != "${CONDA_PREFIX}" ]; then
+# source TBB if TBBROOT is set outside of conda-build
+    source ${TBBROOT}/env/vars.sh
+fi
+
 # Note: execute with argument --json-report in order to produce
 # a JSON report under folder '.pytest_reports'. Other arguments
 # will also be forwarded to pytest.

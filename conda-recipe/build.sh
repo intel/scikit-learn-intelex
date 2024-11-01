@@ -30,6 +30,11 @@ elif [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then
     source ${DALROOT}/env/vars.sh
 fi
 
+if [ -n "${TBBROOT}" ] && [ "${TBBROOT}" != "${CONDA_PREFIX}" ]; then
+# source TBB if TBBROOT is set outside of conda-build
+    source ${TBBROOT}/env/vars.sh
+fi
+
 if [ -z "${MPIROOT}" ] && [ -z "${NO_DIST}" ]; then
     export MPIROOT=${PREFIX}
 fi

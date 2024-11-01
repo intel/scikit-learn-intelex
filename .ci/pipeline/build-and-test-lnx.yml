@@ -51,12 +51,13 @@ steps:
       bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
       pip install --upgrade -r requirements-test.txt
       pip install $(python .ci/scripts/get_compatible_scipy_version.py)
-      if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.11') ] && [ $(SKLEARN_VERSION) != "1.0" ]; then conda install -q -y -c https://software.repos.intel.com/python/conda/ dpctl=0.17.0 dpnp=0.15.0; fi
+      if [ $(echo $(PYTHON_VERSION) | grep '3.9\|3.11') ] && [ $(SKLEARN_VERSION) != "1.0" ] && [ -z $(NO_DPC) ]; then conda install -q -y -c https://software.repos.intel.com/python/conda/ dpctl=0.17.0 dpnp=0.15.0; fi
       pip list
     displayName: "Install testing requirements"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
       if [ -n "$(DALROOT)" ]; then export DALROOT=$(DALROOT); fi
+      if [ -n "$(TBBROOT)" ]; then export TBBROOT=$(TBBROOT); fi
       conda activate CB
       cd ..
       ./s/conda-recipe/run_test.sh --json-report
@@ -65,6 +66,7 @@ steps:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       if [ -n "$(DALROOT)" ] && [ "$(DALROOT)" != "${CONDA_PREFIX}" ]; then source $(DALROOT)/env/vars.sh; fi
+      if [ -n "$(TBBROOT)" ] && [ "$(TBBROOT)" != "${CONDA_PREFIX}" ]; then source $(TBBROOT)/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
     displayName: "Sklearn testing"
     condition: succeededOrFailed()
@@ -72,6 +74,7 @@ steps:
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       if [ -n "$(DALROOT)" ] && [ "$(DALROOT)" != "${CONDA_PREFIX}" ]; then source $(DALROOT)/env/vars.sh; fi
+      if [ -n "$(TBBROOT)" ] && [ "$(TBBROOT)" != "${CONDA_PREFIX}" ]; then source $(TBBROOT)/env/vars.sh; fi
       bash .ci/scripts/run_sklearn_tests.sh cpu
     env:
       SKLEARNEX_PREVIEW: "YES"
