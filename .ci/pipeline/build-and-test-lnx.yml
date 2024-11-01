@@ -18,6 +18,7 @@ steps:
     displayName: "apt-get"
   - script: |
       bash .ci/scripts/install_dpcpp.sh
+    condition: eq(variables.DPCPPROOT, '')
     displayName: "dpcpp installation"
   - script: |
       source /opt/intel/oneapi/compiler/latest/env/vars.sh
