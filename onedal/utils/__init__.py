@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import scipy.sparse as sp
 
+def _is_csr(x):
+    """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
+    return isinstance(x, sp.csr_matrix) or (
+        hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
+    )
 from .validation import (
     _check_array,
     _check_classification_targets,
@@ -23,6 +27,7 @@ from .validation import (
     _column_or_1d,
     _is_arraylike,
     _is_arraylike_not_scalar,
+    _is_csr,
     _is_integral_float,
     _is_multilabel,
     _num_features,
@@ -30,12 +35,6 @@ from .validation import (
     _type_of_target,
     _validate_targets,
 )
-
-def _is_csr(x):
-    """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
-    return isinstance(x, sp.csr_matrix) or (
-        hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
-    )
 
 __all__ = [
     "_column_or_1d",
