@@ -20,10 +20,6 @@ from numbers import Integral
 
 import numpy as np
 from scipy import sparse as sp
-from onedal import _backend
-from onedal.common._policy import _get_policy
-from onedal.datatypes import _convert_to_supported, to_table
-
 
 if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
     # numpy_version >= 2.0
@@ -435,31 +431,4 @@ def _is_csr(x):
     """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
     return isinstance(x, sp.csr_matrix) or (
         hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
-    )
-
-
-def _assert_all_finite(X, allow_nan=False, input_name=""):
-    # NOTE: This function does not respond to target_offload, as the memory movement
-    # is likely to cause a significant reduction in performance
-    policy = _get_policy(None, X)
-    X_table = to_table(_convert_to_supported(policy, X))
-    if not _backend.finiteness_checker.compute(
-        policy, {"allow_nan": allow_nan}, X_table
-    ).finite:
-        type_err = "infinity" if allow_nan else "NaN, infinity"
-        padded_input_name = input_name + " " if input_name else ""
-        msg_err = f"Input {padded_input_name}contains {type_err}."
-        raise ValueError(msg_err)
-
-
-def assert_all_finite(
-    X,
-    *,
-    allow_nan=False,
-    input_name="",
-):
-    _assert_all_finite(
-        X.data if sp.issparse(X) else X,
-        allow_nan=allow_nan,
-        input_name=input_name,
     )
