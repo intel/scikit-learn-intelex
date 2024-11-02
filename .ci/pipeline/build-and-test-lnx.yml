@@ -90,7 +90,6 @@ steps:
       if [ -n "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then source ${DALROOT}/env/vars.sh; fi
       if [ -n "${TBBROOT}" ] && [ "${TBBROOT}" != "${CONDA_PREFIX}" ]; then source ${TBBROOT}/env/vars.sh; fi
       if [ -z "${NO_DPC}" ]; then export CPU="cpu"; fi
-      echo $CPU
       bash .ci/scripts/run_sklearn_tests.sh $CPU
     env:
       DALROOT: ${{ variables.DALROOT }}
