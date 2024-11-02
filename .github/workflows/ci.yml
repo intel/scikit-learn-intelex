@@ -129,13 +129,15 @@ jobs:
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
-          bash .ci/scripts/run_sklearn_tests.sh
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU="cpu"; fi
+          bash .ci/scripts/run_sklearn_tests.sh $CPU
       - name: Sklearn testing [preview]
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
           export SKLEARNEX_PREVIEW='YES'
-          bash .ci/scripts/run_sklearn_tests.sh
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU="cpu"; fi
+          bash .ci/scripts/run_sklearn_tests.sh $CPU
 
   sklearn_win:
     strategy:
@@ -263,11 +265,13 @@ jobs:
         run: |
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
-          bash .ci/scripts/run_sklearn_tests.sh
+          if "${{ steps.set-env.outputs.DPCFLAG }}"=="" set CPU="cpu"
+          bash .ci/scripts/run_sklearn_tests.sh %CPU%
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
+          if "${{ steps.set-env.outputs.DPCFLAG }}"=="" set CPU="cpu"
           set SKLEARNEX_PREVIEW=YES
-          bash .ci/scripts/run_sklearn_tests.sh
+          bash .ci/scripts/run_sklearn_tests.sh %CPU%
