@@ -25,7 +25,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from onedal.utils.validation import assert_all_finite, _assert_all_finite
+from onedal.utils.validation import _assert_all_finite, assert_all_finite
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
