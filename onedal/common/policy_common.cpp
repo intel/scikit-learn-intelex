@@ -87,11 +87,10 @@ sycl::queue get_queue_by_device_id(std::uint32_t id) {
 }
 
 sycl::queue get_queue_from_python(const py::object& syclobj) {
-    static auto pycapsule = py::cast(py_capsule_name);
     if (py::hasattr(syclobj, get_capsule_name)) {
         return get_queue_by_get_capsule(syclobj);
     }
-    else if (py::isinstance(syclobj, pycapsule)) {
+    else if (py::isinstance(syclobj, py::capsule)) {
         const auto caps = syclobj.cast<py::capsule>();
         return extract_from_capsule(std::move(caps));
     }
