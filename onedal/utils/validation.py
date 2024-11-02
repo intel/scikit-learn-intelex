@@ -34,7 +34,6 @@ from sklearn.utils.validation import check_array
 from daal4py.sklearn.utils.validation import (
     _assert_all_finite as _daal4py_assert_all_finite,
 )
-
 from onedal import _backend
 from onedal.common._policy import _get_policy
 from onedal.datatypes import _convert_to_supported, to_table
