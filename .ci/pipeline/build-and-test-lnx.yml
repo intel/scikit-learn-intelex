@@ -76,10 +76,12 @@ steps:
       conda activate CB
       if [ -n "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then source ${DALROOT}/env/vars.sh; fi
       if [ -n "${TBBROOT}" ] && [ "${TBBROOT}" != "${CONDA_PREFIX}" ]; then source ${TBBROOT}/env/vars.sh; fi
-      bash .ci/scripts/run_sklearn_tests.sh cpu
+      if [ -z "${NO_DPC}" ]; then export CPU="cpu"; fi
+      bash .ci/scripts/run_sklearn_tests.sh $CPU
     env:
       DALROOT: ${{ variables.DALROOT }}
       TBBROOT: ${{ variables.TBBROOT }}
+      NO_DPC: ${{ variables.NO_DPC }}
     displayName: "Sklearn testing"
     condition: succeededOrFailed()
   - script: |
@@ -87,10 +89,13 @@ steps:
       conda activate CB
       if [ -n "${DALROOT}" ] && [ "${DALROOT}" != "${CONDA_PREFIX}" ]; then source ${DALROOT}/env/vars.sh; fi
       if [ -n "${TBBROOT}" ] && [ "${TBBROOT}" != "${CONDA_PREFIX}" ]; then source ${TBBROOT}/env/vars.sh; fi
-      bash .ci/scripts/run_sklearn_tests.sh cpu
+      if [ -z "${NO_DPC}" ]; then export CPU="cpu"; fi
+      echo $CPU
+      bash .ci/scripts/run_sklearn_tests.sh $CPU
     env:
       DALROOT: ${{ variables.DALROOT }}
       TBBROOT: ${{ variables.TBBROOT }}
+      NO_DPC: ${{ variables.NO_DPC }}
       SKLEARNEX_PREVIEW: "YES"
     displayName: "Sklearn testing [preview]"
     condition: succeededOrFailed()
