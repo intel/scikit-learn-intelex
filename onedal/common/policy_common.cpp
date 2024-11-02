@@ -34,8 +34,6 @@ constexpr const char context_capsule_name[] = "SyclContextRef";
 constexpr const char device_name[] = "sycl_device";
 constexpr const char get_filter_name[] = "get_filter_string";
 
-
-
 sycl::queue extract_queue(py::capsule capsule) {
     constexpr const char* gtr_name = queue_capsule_name;
     constexpr std::size_t gtr_size = sizeof(queue_capsule_name);
@@ -74,6 +72,20 @@ sycl::queue get_queue_by_get_capsule(const py::object& syclobj) {
     return extract_from_capsule(std::move(capsule));
 }
 
+sycl::queue get_queue_by_filter_string(const std::string& filter) {
+    filter_selector_wrapper selector{ filter };
+    return sycl::queue{ selector };
+}
+
+sycl::queue get_queue_by_device_id(std::uint32_t id) {
+    if (auto device = get_device_by_id(id)) {
+        return sycl::queue{ device.value() };
+    }
+    else {
+        throw std::runtime_error(unknown_device);
+    }
+}
+
 sycl::queue get_queue_from_python(const py::object& syclobj) {
     static auto pycapsule = py::cast(py_capsule_name);
     if (py::hasattr(syclobj, get_capsule_name)) {
@@ -90,20 +102,6 @@ sycl::queue get_queue_from_python(const py::object& syclobj) {
     else
     {
         throw std::runtime_error("Unable to interpret \"syclobj\"");
-    }
-}
-
-sycl::queue get_queue_by_filter_string(const std::string& filter) {
-    filter_selector_wrapper selector{ filter };
-    return sycl::queue{ selector };
-}
-
-sycl::queue get_queue_by_device_id(std::uint32_t id) {
-    if (auto device = get_device_by_id(id)) {
-        return sycl::queue{ device.value() };
-    }
-    else {
-        throw std::runtime_error(unknown_device);
     }
 }
 
