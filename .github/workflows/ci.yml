@@ -99,7 +99,7 @@ jobs:
           bash .ci/env/apt.sh dpcpp
       - name: describe system
         run: |
-          source .github/scripts/activate_components.sh ${{ steps.set-env.outputs.DPCFLAG }}
+          source /opt/intel/oneapi/setvars.sh
           bash .ci/scripts/describe_system.sh
       - name: Install develop requirements
         run: |
