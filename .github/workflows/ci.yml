@@ -129,14 +129,14 @@ jobs:
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
-          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU="cpu"; fi
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU=cpu; fi
           bash .ci/scripts/run_sklearn_tests.sh $CPU
       - name: Sklearn testing [preview]
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU=cpu; fi
           export SKLEARNEX_PREVIEW='YES'
-          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU="cpu"; fi
           bash .ci/scripts/run_sklearn_tests.sh $CPU
 
   sklearn_win:
