@@ -438,11 +438,12 @@ def _is_csr(x):
 
 
 def _assert_all_finite(X, allow_nan=False, input_name=""):
+    policy = _get_policy(None, X)
     params = {
         "fptype": "float" if X.dtype.name == "float32" else "double",
+        "method": "dense",
         "allow_nan": allow_nan,
     }
-    policy = _get_policy(None, X)
     X_t = to_table(_convert_to_supported(policy, X))
     if not _backend.finiteness_checker.compute.compute(policy, params, X_t).finite:
         type_err = "infinity" if allow_nan else "NaN, infinity"
