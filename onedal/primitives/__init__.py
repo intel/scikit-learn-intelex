@@ -14,17 +14,14 @@
 # limitations under the License.
 # ==============================================================================
 
-from .finiteness_checker import _assert_all_finite, assert_all_finite
 from .get_tree import get_tree_state_cls, get_tree_state_reg
 from .kernel_functions import linear_kernel, poly_kernel, rbf_kernel, sigmoid_kernel
 
 __all__ = [
-    "assert_all_finite",
     "get_tree_state_cls",
     "get_tree_state_reg",
     "linear_kernel",
     "rbf_kernel",
     "poly_kernel",
     "sigmoid_kernel",
-    "_assert_all_finite",
 ]
