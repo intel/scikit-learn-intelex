@@ -19,6 +19,7 @@
 #endif // ONEDAL_DATA_PARALLEL
 
 #include <pybind11/pybind11.h>
+
 #include "onedal/common/policy_common.hpp"
 
 namespace oneapi::dal::python {
