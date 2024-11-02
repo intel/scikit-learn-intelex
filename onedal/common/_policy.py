@@ -48,6 +48,7 @@ class _HostInteropPolicy(_backend.host_policy):
 
 
 if _is_dpc_backend:
+
     class _DataParallelInteropPolicy(_backend.data_parallel_policy):
         def __init__(self, queue):
             self._queue = queue

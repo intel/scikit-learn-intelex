@@ -31,13 +31,23 @@ def _apply_and_pass(func, *args, **kwargs):
 
 if _is_dpc_backend:
 
-    from ..utils._dpep_helpers import dpctl_available, dpnp_available
-
-    if dpctl_available:
-        import dpctl.tensor as dpt
-
-    if dpnp_available:
+    try:
         import dpnp
+
+        def _onedal_gpu_table_to_array(table, xp=None):
+            # By default DPNP ndarray created with a copy.
+            # TODO:
+            # investigate why dpnp.array(table, copy=False) doesn't work.
+            # Work around with using dpctl.tensor.asarray.
+            if xp == dpnp:
+                return dpnp.array(dpnp.dpctl.tensor.asarray(table), copy=False)
+            else:
+                return xp.asarray(table)
+
+    except ImportError:
+
+        def _onedal_gpu_table_to_array(table, xp=None):
+            return xp.asarray(table)
 
     from ..common._policy import _HostInteropPolicy
 
@@ -86,15 +96,8 @@ if _is_dpc_backend:
                     _backend.from_table(table), usm_type="device", sycl_queue=sycl_queue
                 )
             else:
-                xp_name = xp.__name__
-                if dpnp_available and xp_name == "dpnp":
-                    # By default DPNP ndarray created with a copy.
-                    # TODO:
-                    # investigate why dpnp.array(table, copy=False) doesn't work.
-                    # Work around with using dpctl.tensor.asarray.
-                    return dpnp.array(dpt.asarray(table), copy=False)
-                else:
-                    return xp.asarray(table)
+                return _onedal_gpu_table_to_array(table, xp=xp)
+
         return _backend.from_table(table)
 
     def convert_one_to_table(arg, sua_iface=None):
