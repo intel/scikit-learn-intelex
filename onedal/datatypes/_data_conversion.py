@@ -19,14 +19,28 @@ import warnings
 import numpy as np
 import scipy.sparse as sp
 
-from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
+
+
+def make2d(X):
+    # generalized for array-like inputs
+    if hasattr(X, "reshape") and hasattr(X, "ndim") and X.ndim == 1:
+        return X.reshape((-1, 1))
+    if np.isscalar(X):
+        return np.atleast_2d(X)
+    return X
 
 
 def _apply_and_pass(func, *args, **kwargs):
     if len(args) == 1:
         return func(args[0], **kwargs)
     return tuple(map(lambda arg: func(arg, **kwargs), args))
+
+def convert_one_to_table(arg):
+    return _backend.to_table(arg if sp.issparse(arg) else make2d(arg))
+
+def to_table(*args):
+    return _apply_and_pass(convert_one_to_table, *args)
 
 
 if _is_dpc_backend:
@@ -100,16 +114,6 @@ if _is_dpc_backend:
 
         return _backend.from_table(table)
 
-    def convert_one_to_table(arg, sua_iface=None):
-        # Note: currently only oneDAL homogen tables are supported and the
-        # contiuginity of the input array should be checked in advance.
-        if sua_iface:
-            return _backend.sua_iface_to_table(arg)
-
-        if not sp.issparse(arg):
-            arg = make2d(arg)
-        return _backend.to_table(arg)
-
 else:
 
     def _convert_to_supported(policy, *data):
@@ -127,22 +131,9 @@ else:
             )
         return _backend.from_table(table)
 
-    def convert_one_to_table(arg, sua_iface=None):
-        if sua_iface:
-            raise RuntimeError(
-                "SYCL usm array conversion to table requires the DPC backend"
-            )
-
-        if not sp.issparse(arg):
-            arg = make2d(arg)
-        return _backend.to_table(arg)
-
 
 def from_table(*args, sycl_queue=None, sua_iface=None, xp=None):
     return _apply_and_pass(
         convert_one_from_table, *args, sycl_queue=sycl_queue, sua_iface=sua_iface, xp=xp
     )
 
-
-def to_table(*args, sua_iface=None):
-    return _apply_and_pass(convert_one_to_table, *args, sua_iface=sua_iface)
