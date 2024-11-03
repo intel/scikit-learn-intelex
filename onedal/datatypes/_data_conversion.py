@@ -17,7 +17,6 @@
 import warnings
 
 import numpy as np
-import scipy.sparse as sp
 
 from onedal import _backend, _is_dpc_backend
 

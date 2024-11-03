@@ -142,14 +142,6 @@ if _is_dpc_backend:
 
         def fit(self, X, y=None):
             sua_iface, xp, _ = _get_sycl_namespace(X)
-            assert X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]
-            assert y.flags["C_CONTIGUOUS"] or y.flags["F_CONTIGUOUS"]
-            if not (X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]):
-                X = xp.copy(X)
-            if not (y.flags["C_CONTIGUOUS"] or y.flags["F_CONTIGUOUS"]):
-                y = xp.copy(y)
-            assert X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]
-            assert y.flags["C_CONTIGUOUS"] or y.flags["F_CONTIGUOUS"]
             X_table = to_table(X)
             y_table = to_table(y)
             # The presence of the fitted attributes (ending with a trailing
@@ -168,10 +160,6 @@ if _is_dpc_backend:
             # fitted attributes (ending with a trailing underscore).
             check_is_fitted(self)
             sua_iface, xp, _ = _get_sycl_namespace(X)
-            assert X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]
-            if not (X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]):
-                X = xp.copy(X)
-            assert X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]
             X_table = to_table(X)
             returned_X = from_table(
                 X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
