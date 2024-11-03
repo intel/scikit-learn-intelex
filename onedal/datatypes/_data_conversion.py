@@ -22,16 +22,6 @@ import scipy.sparse as sp
 from onedal import _backend, _is_dpc_backend
 
 
-def make2d(X):
-    # generalized for array-like inputs
-    # dpnp -1 indexing is broken, use size
-    if hasattr(X, "reshape") and hasattr(X, "ndim") and X.ndim == 1:
-        return X.reshape((X.size, 1))
-    if np.isscalar(X):
-        return np.atleast_2d(X)
-    return X
-
-
 def _apply_and_pass(func, *args, **kwargs):
     if len(args) == 1:
         return func(args[0], **kwargs)
@@ -39,7 +29,7 @@ def _apply_and_pass(func, *args, **kwargs):
 
 
 def convert_one_to_table(arg):
-    return _backend.to_table(arg if sp.issparse(arg) else make2d(arg))
+    return _backend.to_table(np.atleast_2d(arg) if np.isscalar(arg) else arg)
 
 
 def to_table(*args):
