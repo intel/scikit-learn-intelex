@@ -36,8 +36,10 @@ def _apply_and_pass(func, *args, **kwargs):
         return func(args[0], **kwargs)
     return tuple(map(lambda arg: func(arg, **kwargs), args))
 
+
 def convert_one_to_table(arg):
     return _backend.to_table(arg if sp.issparse(arg) else make2d(arg))
+
 
 def to_table(*args):
     return _apply_and_pass(convert_one_to_table, *args)
@@ -136,4 +138,3 @@ def from_table(*args, sycl_queue=None, sua_iface=None, xp=None):
     return _apply_and_pass(
         convert_one_from_table, *args, sycl_queue=sycl_queue, sua_iface=sua_iface, xp=xp
     )
-

@@ -92,7 +92,6 @@ ONEDAL_PY_INIT_MODULE(table) {
         auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
-
 }
 
 } // namespace oneapi::dal::python
