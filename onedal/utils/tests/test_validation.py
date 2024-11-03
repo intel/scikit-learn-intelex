@@ -78,11 +78,12 @@ def test_assert_finite_random_location(
 ):
     rand.seed(seed)
     X = rand.uniform(high=np.finfo(dtype).max, size=shape).astype(dtype)
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
 
     if check:
         loc = rand.randint(0, X.size - 1)
         X.reshape((-1,))[loc] = float(check)
+
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
 
     if check is None or (allow_nan and check == "NaN"):
         _assert_all_finite(X, allow_nan=allow_nan)
@@ -103,11 +104,12 @@ def test_assert_finite_random_shape_and_location(
     lb, ub = 2, 1048576  # lb is a patching condition, ub 2^20
     rand.seed(seed)
     X = rand.uniform(high=np.finfo(dtype).max, size=rand.randint(lb, ub)).astype(dtype)
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
 
     if check:
         loc = rand.randint(0, X.size - 1)
         X[loc] = float(check)
+
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
 
     if check is None or (allow_nan and check == "NaN"):
         _assert_all_finite(X, allow_nan=allow_nan)
