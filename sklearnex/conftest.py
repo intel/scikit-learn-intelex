@@ -76,3 +76,9 @@ def with_sklearnex():
 #            yield
 #    else:
 #        yield
+
+
+@pytest.fixture
+def without_allow_sklearn_after_onedal():
+    with config_context(allow_sklearn_after_onedal=False):
+        yield
