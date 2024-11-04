@@ -29,7 +29,6 @@ args_json_report = [
 ]
 
 if is_rank_zero:
-    json_report_plugin = JSONReport()
     pytest.main(args_base + args_json_report)
 else:
     pytest.main(args_base)
