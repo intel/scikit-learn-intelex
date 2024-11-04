@@ -84,13 +84,11 @@ if [[ ! $NO_DIST ]]; then
         export EXTRA_MPI_ARGS="-n 4"
     fi
     mpirun ${EXTRA_MPI_ARGS} python "${sklex_root}/tests/helper_mpi_tests.py" \
-        "pytest -k spmd --with-mpi --verbose --pyargs sklearnex" \
-        "pytest -k spmd --with-mpi --verbose --pyargs sklearnex $@ $(json_report_name sklearnex_spmd)"
+        pytest -k spmd --with-mpi --verbose --pyargs sklearnex $@ $(json_report_name sklearnex_spmd)
     return_code=$(($return_code + $?))
     # TODO: this currently doesn't seem to work with pytest+OMPI. Uncomment later if it gets fixed.
     # mpirun ${EXTRA_MPI_ARGS} python "${sklex_root}/tests/helper_mpi_tests.py" \
-    #     "pytest --with-mpi --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\"" \
-    #     "pytest --with-mpi --verbose -s \"${sklex_root}/tests/test_daal4py_spmd_examples.py\" $* $(json_report_name mpi_legacy)"
+    #     pytest --with-mpi --verbose -s "${sklex_root}/tests/test_daal4py_spmd_examples.py" $@ $(json_report_name mpi_legacy)
     # return_code=$(($return_code + $?))
 fi
 
