@@ -57,6 +57,8 @@ from onedal.ensemble import RandomForestClassifier as onedal_RandomForestClassif
 from onedal.ensemble import RandomForestRegressor as onedal_RandomForestRegressor
 from onedal.primitives import get_tree_state_cls, get_tree_state_reg
 from onedal.utils import _num_features, _num_samples
+from sklearnex import get_hyperparameters
+from sklearnex._utils import register_hyperparameters
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
@@ -598,6 +600,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -613,7 +616,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         # TODO:
         # _check_proba()
         # self._check_proba()
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict_proba",
@@ -639,6 +642,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
@@ -786,7 +790,6 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
-        check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
             X = validate_data(
@@ -822,7 +825,6 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
-        check_is_fitted(self, "_onedal_estimator")
 
         if sklearn_check_version("1.0"):
             X = validate_data(
@@ -1166,6 +1168,7 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -1178,6 +1181,7 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
@@ -1195,6 +1199,7 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
     score.__doc__ = _sklearn_ForestRegressor.score.__doc__
 
 
+@register_hyperparameters({"infer": get_hyperparameters("decision_forest", "infer")})
 @control_n_jobs(decorated_methods=["fit", "predict", "predict_proba", "score"])
 class RandomForestClassifier(ForestClassifier):
     __doc__ = _sklearn_RandomForestClassifier.__doc__

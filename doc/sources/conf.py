@@ -42,9 +42,9 @@ copyright = "Intel"
 author = "Intel"
 
 # The short X.Y version
-version = "2024.3.0"
+version = "2025.0.0"
 # The full version, including alpha/beta/rc tags
-release = "2024.3.0"
+release = "2025.0.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -128,7 +128,7 @@ html_favicon = "_static/favicons.png"
 
 html_theme_options = {
     "logo_only": False,
-    "display_version": True,
+    "version_selector": True,
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,
     "vcs_pageview_mode": "",

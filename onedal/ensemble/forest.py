@@ -18,14 +18,13 @@ import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
 from math import ceil
-from numbers import Number
 
 import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version
-from onedal import _backend
+from sklearnex import get_hyperparameters
 
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
@@ -346,7 +345,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         # upate error msg.
         raise NotImplementedError("Creating model is not supported.")
 
-    def _predict(self, X, module, queue):
+    def _predict(self, X, module, queue, hparams=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
@@ -357,7 +356,11 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         model = self._onedal_model
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X)
-        result = module.infer(policy, params, model, to_table(X))
+        if hparams is not None and not hparams.is_default:
+            result = module.infer(policy, params, hparams.backend, model, to_table(X))
+        else:
+            result = module.infer(policy, params, model, to_table(X))
+
         y = from_table(result.responses)
         return y
 
@@ -458,8 +461,12 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         )
 
     def predict(self, X, queue=None):
+        hparams = get_hyperparameters("decision_forest", "infer")
         pred = super()._predict(
-            X, self._get_backend("decision_forest", "classification", None), queue
+            X,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
+            hparams,
         )
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))

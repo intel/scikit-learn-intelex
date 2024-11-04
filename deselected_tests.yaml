@@ -403,6 +403,9 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
 
+  # Fails in stock scikit-learn: checks that data is modified in-place when not strictly required
+  - linear_model/tests/test_base.py::test_inplace_data_preprocessing
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:
