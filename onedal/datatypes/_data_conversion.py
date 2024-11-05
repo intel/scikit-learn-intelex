@@ -49,7 +49,7 @@ if _is_dpc_backend:
             if xp == dpnp:
                 return dpnp.array(dpnp.dpctl.tensor.asarray(table), copy=False)
             else:
-                return xp.asarray(table)       
+                return xp.asarray(table)
 
     except ImportError:
 
