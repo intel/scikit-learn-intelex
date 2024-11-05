@@ -74,7 +74,7 @@ if "%with_json_report%"=="1" (
     pytest --verbose "%1.ci\scripts\test_global_patch.py" || set exitcode=1
     if NOT "%NO_DIST%"=="1" (
         %PYTHON% -m pytest -k spmd --with-mpi --verbose --pyargs sklearnex || set exitcode=1
-        %PYTHON% -m pytest --with-mpi --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
+        %PYTHON% -m pytest --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
     )
 )
 
