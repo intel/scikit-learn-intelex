@@ -132,7 +132,6 @@ deselected_tests:
   - linear_model/tests/test_logistic.py::test_warm_start[multinomial-False-True-lbfgs]
 
   # Difference of assigned dtype: int64 (scikit-learn) vs. int32 (oneDAL/scikit-learn-intelex)
-  - cluster/_dbscan.py::sklearn.cluster._dbscan.DBSCAN
   - neighbors/_base.py::sklearn.neighbors._base.KNeighborsMixin.kneighbors
 
   # Difference between scikit-learn and scikit-learn-intelex methods of kNN
