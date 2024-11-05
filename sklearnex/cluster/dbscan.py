@@ -90,7 +90,7 @@ class DBSCAN(_sklearn_DBSCAN, BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        use_raw_input = _get_config().get("use_raw_input", False) is True
+        use_raw_input = get_config().get("use_raw_input", False) is True
         if use_raw_input:
             if sklearn_check_version("1.0"):
                 X = validate_data(self, X, force_all_finite=False)
@@ -143,7 +143,7 @@ class DBSCAN(_sklearn_DBSCAN, BaseDBSCAN):
         return self._onedal_supported(method_name, *data)
 
     def fit(self, X, y=None, sample_weight=None):
-        use_raw_input = _get_config().get("use_raw_input", False) is True
+        use_raw_input = get_config().get("use_raw_input", False) is True
         if sklearn_check_version("1.2"):
             self._validate_params()
         elif sklearn_check_version("1.1"):
