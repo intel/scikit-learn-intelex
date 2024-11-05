@@ -18,11 +18,13 @@ from abc import ABCMeta
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal.utils import _check_array
 
 from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
+from .._config import _get_config
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils._array_api import _get_sycl_namespace
+from ..utils.validation import _check_array
 
 
 class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
@@ -93,9 +95,19 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         self : object
             Returns the instance itself.
         """
+        use_raw_input = _get_config()["use_raw_input"]
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        if use_raw_input and sua_iface:
+            queue = X.sycl_queue
+
         policy = self._get_policy(queue, X)
-        X = _check_array(X, dtype=[np.float64, np.float32])
+
+        if not use_raw_input:
+            X = _check_array(X, dtype=[np.float64, np.float32])
+
         X = _convert_to_supported(policy, X)
+        X_table = to_table(X, sua_iface=sua_iface)
+
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
@@ -107,19 +119,19 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
                 policy,
                 params,
                 hparams.backend,
-                to_table(X),
+                X_table,
             )
         else:
             result = self._get_backend(
-                "covariance", None, "compute", policy, params, to_table(X)
+                "covariance", None, "compute", policy, params, X_table
             )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
-            self.covariance_ = from_table(result.cov_matrix)
+            self.covariance_ = from_table(result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp)
         else:
             self.covariance_ = (
-                from_table(result.cov_matrix) * (X.shape[0] - 1) / X.shape[0]
+                from_table(result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp) * (X.shape[0] - 1) / X.shape[0]
             )
 
-        self.location_ = from_table(result.means).ravel()
+        self.location_ = xp.reshape(from_table(result.means, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1)
 
         return self
