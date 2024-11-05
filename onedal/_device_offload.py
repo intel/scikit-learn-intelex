@@ -198,7 +198,9 @@ def support_input_format(freefunc=False, queue_param=True):
                     return result
                 config = get_config()
                 if not ("transform_output" in config and config["transform_output"]):
-                    input_array_api = getattr(data[0], "__array_namespace__", lambda: None)()
+                    input_array_api = getattr(
+                        data[0], "__array_namespace__", lambda: None
+                    )()
                     if input_array_api:
                         input_array_api_device = data[0].device
                         result = _asarray(

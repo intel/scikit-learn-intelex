@@ -63,7 +63,7 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
         has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
         has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(q, *kwargs.values())
         hostkwargs = dict(zip(kwargs.keys(), hostvalues))
-    
+
         backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
         has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
         if backend == "onedal":

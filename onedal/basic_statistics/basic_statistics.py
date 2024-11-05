@@ -19,12 +19,12 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
+from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
-from ..utils.validation import _check_array
-from .._config import _get_config
 from ..utils._array_api import _get_sycl_namespace
+from ..utils.validation import _check_array
 
 
 class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
@@ -74,7 +74,7 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def fit(self, data, sample_weight=None, queue=None):
-        use_raw_input =  _get_config()["use_raw_input"]
+        use_raw_input = _get_config()["use_raw_input"]
         # All data should use the same sycl queue.
         sua_iface, xp, _ = _get_sycl_namespace(data)
         # TODO:
@@ -100,7 +100,11 @@ class BasicStatistics(BaseBasicStatistics):
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
         for opt, raw_value in raw_result.items():
             # value = from_table(raw_value.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp).reshape(-1)
-            value = xp.ravel(from_table(raw_value.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp))
+            value = xp.ravel(
+                from_table(
+                    raw_value.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp
+                )
+            )
             if is_single_dim:
                 setattr(self, opt, value[0])
             else:
