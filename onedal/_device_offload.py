@@ -180,9 +180,17 @@ def support_input_format(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            if not get_config()["use_raw_input"] == True:
-                if len(args) == 0 and len(kwargs) == 0:
-                    return _run_on_device(func, obj, *args, **kwargs)
+            if _get_config()["use_raw_input"] is True:
+                if "queue" not in kwargs:
+                    usm_iface = getattr(args[0], "__sycl_usm_array_interface__", None)
+                    data_queue = usm_iface["syclobj"] if usm_iface is not None else data_queue
+                    kwargs["queue"] = data_queue
+                return _run_on_device(func, obj, *args, **kwargs)
+
+            elif len(args) == 0 and len(kwargs) == 0:
+                return _run_on_device(func, obj, *args, **kwargs)
+
+            else:
                 data = (*args, *kwargs.values())
                 data_queue, hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
                 if queue_param and not (
@@ -196,8 +204,7 @@ def support_input_format(freefunc=False, queue_param=True):
                     if dpnp_available and isinstance(data[0], dpnp.ndarray):
                         result = _convert_to_dpnp(result)
                     return result
-                config = get_config()
-                if not ("transform_output" in config and config["transform_output"]):
+                if not get_config().get("transform_output", False):
                     input_array_api = getattr(
                         data[0], "__array_namespace__", lambda: None
                     )()
@@ -207,8 +214,6 @@ def support_input_format(freefunc=False, queue_param=True):
                             result, input_array_api, device=input_array_api_device
                         )
                 return result
-            else:
-                return _run_on_device(func, obj, *args, **kwargs)
 
         if freefunc:
 

@@ -74,41 +74,33 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def fit(self, data, sample_weight=None, queue=None):
-        use_raw_input = _get_config()["use_raw_input"]
-        # All data should use the same sycl queue.
-        sua_iface, xp, _ = _get_sycl_namespace(data)
-        # TODO:
-        # update support_input_format.
-        if use_raw_input and sua_iface:
-            queue = data.sycl_queue
         policy = self._get_policy(queue, data, sample_weight)
-        if not use_raw_input:
-            is_csr = _is_csr(data)
+        is_csr = _is_csr(data)
 
+        use_raw_input = _get_config().get("use_raw_input", False) is True
+
+        # All data should use the same sycl queue
+        if use_raw_input and _get_sycl_namespace(data)[0] is not None:
+            queue = data.sycl_queue
+
+        if not use_raw_input:
             if data is not None and not is_csr:
                 data = _check_array(data, ensure_2d=False)
             if sample_weight is not None:
                 sample_weight = _check_array(sample_weight, ensure_2d=False)
+
         # TODO
         # use xp for dtype.
         data, sample_weight = _convert_to_supported(policy, data, sample_weight)
-        is_single_dim = data.ndim == 1
-        data_table = to_table(data, sua_iface=sua_iface)
-        weights_table = to_table(sample_weight, sua_iface=sua_iface)
+
+        data_table = to_table(data, sua_iface=_get_sycl_namespace(data)[0])
+        weights_table = to_table(sample_weight, sua_iface=_get_sycl_namespace(sample_weight)[0])
 
         dtype = data.dtype
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
         for opt, raw_value in raw_result.items():
-            # value = from_table(raw_value.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp).reshape(-1)
-            value = xp.ravel(
-                from_table(
-                    raw_value.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp
-                )
-            )
-            if is_single_dim:
-                setattr(self, opt, value[0])
-            else:
-                setattr(self, opt, value)
+            value = from_table(raw_value).ravel()
+            setattr(self, opt, value[0]) if data.ndim == 1 else setattr(self, opt, value)
 
         return self
 
