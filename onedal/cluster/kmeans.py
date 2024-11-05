@@ -36,6 +36,8 @@ from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
+from ..utils._array_api import _get_sycl_namespace
+from .._config import _get_config
 
 
 class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
@@ -80,7 +82,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _get_basic_statistics_backend(self, result_options):
         return BasicStatistics(result_options)
 
-    def _tolerance(self, X_table, rtol, is_csr, policy, dtype):
+    def _tolerance(self, X_table, rtol, is_csr, policy, dtype, sua_iface):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
@@ -94,7 +96,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         return mean_var * rtol
 
     def _check_params_vs_input(
-        self, X_table, is_csr, policy, default_n_init=10, dtype=np.float32
+        self, X_table, is_csr, policy, default_n_init=10, dtype=np.float32, sua_iface=None
     ):
         # n_clusters
         if X_table.shape[0] < self.n_clusters:
@@ -103,7 +105,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             )
 
         # tol
-        self._tol = self._tolerance(X_table, self.tol, is_csr, policy, dtype)
+        self._tol = self._tolerance(X_table, self.tol, is_csr, policy, dtype, sua_iface)
 
         # n-init
         # TODO(1.4): Remove
@@ -261,18 +263,28 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         )
 
     def _fit(self, X, module, queue=None):
-        policy = self._get_policy(queue, X)
         is_csr = _is_csr(X)
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
-        )
+
+        use_raw_input = _get_config().get("use_raw_input") is True
+        if use_raw_input and _get_sycl_namespace(X)[0] is not None:
+            queue = X.sycl_queue
+
+        if not use_raw_input:
+            X = _check_array(
+                X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
+            )
+
+        policy = self._get_policy(queue, X)
+
         X = _convert_to_supported(policy, X)
         dtype = get_dtype(X)
-        X_table = to_table(X)
+        sua_iface = _get_sycl_namespace(X)[0]
+        X_table = to_table(X, sua_iface=sua_iface)
 
-        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
+        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype, sua_iface=sua_iface)
 
-        params = self._get_onedal_params(is_csr, dtype)
+        # not used?
+        # params = self._get_onedal_params(is_csr, dtype)
 
         self.n_features_in_ = X_table.column_count
 

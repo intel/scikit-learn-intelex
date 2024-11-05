@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -74,7 +73,6 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def fit(self, data, sample_weight=None, queue=None):
-        policy = self._get_policy(queue, data, sample_weight)
         is_csr = _is_csr(data)
 
         use_raw_input = _get_config().get("use_raw_input", False) is True
@@ -91,6 +89,7 @@ class BasicStatistics(BaseBasicStatistics):
 
         # TODO
         # use xp for dtype.
+        policy = self._get_policy(queue, data, sample_weight)
         data, sample_weight = _convert_to_supported(policy, data, sample_weight)
 
         data_table = to_table(data, sua_iface=_get_sycl_namespace(data)[0])
