@@ -21,8 +21,10 @@ import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
 from sklearn.utils.extmath import stable_cumsum
 
+from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
+from ..utils._array_api import _get_sycl_namespace
 
 
 class BasePCA(BaseEstimator, metaclass=ABCMeta):
@@ -128,20 +130,34 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         return m
 
     def predict(self, X, queue=None):
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        if xp is None:
+            xp = np
+        use_raw_input = _get_config().get("use_raw_input") is True
+        if use_raw_input and sua_iface:
+            queue = X.sycl_queue
+
         policy = self._get_policy(queue, X)
         model = self._create_model()
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X, stage="predict")
 
+        X_table = to_table(X, sua_iface=sua_iface)
+
         result = self._get_backend(
-            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
+            "decomposition", "dim_reduction", "infer", policy, params, model, X_table
         )
-        return from_table(result.transformed_data)
+        return from_table(result.transformed_data, sua_iface=sua_iface, sycl_queue=queue, xp=xp)
 
 
 class PCA(BasePCA):
 
     def fit(self, X, y=None, queue=None):
+        use_raw_input = _get_config()["use_raw_input"]
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        if use_raw_input and sua_iface:
+            queue = X.sycl_queue
+
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
         self._validate_n_components(self.n_components, n_samples, n_features)
@@ -152,14 +168,16 @@ class PCA(BasePCA):
         if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
             X = X.copy()
         X = _convert_to_supported(policy, X)
+        X_table = to_table(X, sua_iface=sua_iface)
 
         params = self._get_onedal_params(X)
         result = self._get_backend(
-            "decomposition", "dim_reduction", "train", policy, params, to_table(X)
+            "decomposition", "dim_reduction", "train", policy, params, X_table
         )
 
-        self.mean_ = from_table(result.means).ravel()
-        self.variances_ = from_table(result.variances)
+        self.mean_ = xp.reshape(from_table(result.means, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1)
+        self.variances_ = from_table(result.variances, sua_iface=sua_iface, sycl_queue=queue, xp=xp)
+        # TODO: why are there errors when using sua_iface and sycl_queue on following from_table calls?
         self.components_ = from_table(result.eigenvectors)
         self.singular_values_ = from_table(result.singular_values).ravel()
         self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
