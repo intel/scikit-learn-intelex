@@ -91,7 +91,7 @@ class DBSCAN(_sklearn_DBSCAN, BaseDBSCAN):
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         use_raw_input = get_config().get("use_raw_input", False) is True
-        if use_raw_input:
+        if not use_raw_input:
             if sklearn_check_version("1.0"):
                 X = validate_data(self, X, force_all_finite=False)
 
@@ -182,7 +182,7 @@ class DBSCAN(_sklearn_DBSCAN, BaseDBSCAN):
             if self.eps <= 0.0:
                 raise ValueError(f"eps == {self.eps}, must be > 0.0.")
 
-        if use_raw_input:
+        if not use_raw_input:
             if sample_weight is not None:
                 sample_weight = _check_sample_weight(sample_weight, X)
         dispatch(
