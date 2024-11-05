@@ -404,6 +404,9 @@ deselected_tests:
   - ensemble/tests/test_forest.py::test_importances[ExtraTreesRegressor-squared_error-float64]
   - cluster/tests/test_k_means.py::test_kmeans_elkan_results
 
+  # Fails in stock scikit-learn: checks that data is modified in-place when not strictly required
+  - linear_model/tests/test_base.py::test_inplace_data_preprocessing
+
   # --------------------------------------------------------
   # No need to test daal4py patching
 reduced_tests:
@@ -748,3 +751,8 @@ gpu:
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   - svm/tests/test_svm.py::test_unfitted
   - tests/test_common.py::test_estimators[SVC()-check_estimators_unfitted]
+
+  # Failed on the onedal's LinearRegression call.
+  # RuntimeError: oneapi::mkl::lapack::potrf: computation error: info = 2: Leading principal minor of order
+  # 2 is not positive, and the factorization could not be completed.
+  - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]
