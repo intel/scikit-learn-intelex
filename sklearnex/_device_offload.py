@@ -96,7 +96,7 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
             f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
         )
     else:
-        return branches["onedal"](obj, *args, **kwargs, queue=q)
+        return branches["onedal"](obj, *args, **kwargs)
 
 
 # TODO:
