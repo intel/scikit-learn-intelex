@@ -101,7 +101,7 @@ if _is_dpc_backend:
     def convert_one_to_table(arg, sua_iface=None):
         # Note: currently only oneDAL homogen tables are supported and the
         # contiuginity of the input array should be checked in advance.
-        if sua_iface:
+        if arg is not None and sua_iface:
             return _backend.sua_iface_to_table(arg)
 
         if not _is_csr(arg):
