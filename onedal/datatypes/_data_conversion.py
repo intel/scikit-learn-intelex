@@ -33,7 +33,7 @@ def _convert_one_to_table(arg):
 
 
 def to_table(*args):
-    """Convert scalars and/or arrays into oneDAL tables.
+    """Create oneDAL tables from scalars and/or arrays.
 
     Note: this implementation can be used with contiguous scipy.sparse, numpy
     arrays, sycl_usm_ndarrays, and scalars. Tables will use pointers to the
