@@ -160,7 +160,7 @@ if _is_dpc_backend:
             # fitted attributes (ending with a trailing underscore).
             check_is_fitted(self)
             sua_iface, xp, _ = _get_sycl_namespace(X)
-            X_table = to_table(X, sua_iface=sua_iface)
+            X_table = to_table(X)
             returned_X = from_table(
                 X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
             )
