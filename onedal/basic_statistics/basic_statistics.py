@@ -23,6 +23,8 @@ from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
 from ..utils.validation import _check_array
+from .._config import _get_config
+from ..utils._array_api import _get_sycl_namespace
 
 
 class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
@@ -72,23 +74,33 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def fit(self, data, sample_weight=None, queue=None):
+        use_raw_input =  _get_config()["use_raw_input"]
+        # All data should use the same sycl queue.
+        sua_iface, xp, _ = _get_sycl_namespace(data)
+        # TODO:
+        # update support_input_format.
+        if use_raw_input and sua_iface:
+            queue = data.sycl_queue
         policy = self._get_policy(queue, data, sample_weight)
+        if not use_raw_input:
+            is_csr = _is_csr(data)
 
-        is_csr = _is_csr(data)
-
-        if data is not None and not is_csr:
-            data = _check_array(data, ensure_2d=False)
-        if sample_weight is not None:
-            sample_weight = _check_array(sample_weight, ensure_2d=False)
-
+            if data is not None and not is_csr:
+                data = _check_array(data, ensure_2d=False)
+            if sample_weight is not None:
+                sample_weight = _check_array(sample_weight, ensure_2d=False)
+        # TODO
+        # use xp for dtype.
         data, sample_weight = _convert_to_supported(policy, data, sample_weight)
         is_single_dim = data.ndim == 1
-        data_table, weights_table = to_table(data, sample_weight)
+        data_table = to_table(data, sua_iface=sua_iface)
+        weights_table = to_table(sample_weight, sua_iface=sua_iface)
 
         dtype = data.dtype
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
         for opt, raw_value in raw_result.items():
-            value = from_table(raw_value).ravel()
+            # value = from_table(raw_value.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp).reshape(-1)
+            value = xp.ravel(from_table(raw_value.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp))
             if is_single_dim:
                 setattr(self, opt, value[0])
             else:
