@@ -60,9 +60,9 @@ from onedal.utils import _num_features, _num_samples
 from sklearnex import get_hyperparameters
 from sklearnex._utils import register_hyperparameters
 
+from .._config import get_config
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain
-from ..config import get_config
 from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.2"):

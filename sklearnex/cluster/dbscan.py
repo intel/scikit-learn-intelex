@@ -25,9 +25,9 @@ from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.cluster import DBSCAN as onedal_DBSCAN
 
+from .._config import get_config
 from .._device_offload import dispatch
 from .._utils import PatchingConditionsChain
-from ..config import get_config
 
 if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
     from sklearn.utils import check_scalar
