@@ -27,13 +27,30 @@ def _apply_and_pass(func, *args, **kwargs):
     return tuple(map(lambda arg: func(arg, **kwargs), args))
 
 
-def convert_one_to_table(arg):
+def _convert_one_to_table(arg):
     # All inputs for table conversion must be array-like or sparse, not scalars
     return _backend.to_table(np.atleast_2d(arg) if np.isscalar(arg) else arg)
 
 
 def to_table(*args):
-    return _apply_and_pass(convert_one_to_table, *args)
+    """Convert scalars and/or arrays into oneDAL tables.
+
+    Note: this implementation can be used with contiguous scipy.sparse, numpy
+    arrays, sycl_usm_ndarrays, and scalars. Tables will use pointers to the
+    original array data. Scalars will be copies. Arrays may be modified in-
+    place by oneDAL during computation. This works for data located on CPU and
+    DPC++-enabled Intel GPUs. Only singular datatypes are allowed.
+
+    Parameters
+    ----------
+    *args : {scalar, numpy array, sycl_usm_ndarray, csr matrix, or csr array}
+        arg1, arg2... The arrays should be given as arguments.
+
+    Returns
+    -------
+    tables: {oneDAL homogeneous tables}
+    """
+    return _apply_and_pass(_convert_one_to_table, *args)
 
 
 if _is_dpc_backend:
