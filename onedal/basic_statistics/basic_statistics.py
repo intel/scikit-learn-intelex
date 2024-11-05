@@ -93,7 +93,9 @@ class BasicStatistics(BaseBasicStatistics):
         data, sample_weight = _convert_to_supported(policy, data, sample_weight)
 
         data_table = to_table(data, sua_iface=_get_sycl_namespace(data)[0])
-        weights_table = to_table(sample_weight, sua_iface=_get_sycl_namespace(sample_weight)[0])
+        weights_table = to_table(
+            sample_weight, sua_iface=_get_sycl_namespace(sample_weight)[0]
+        )
 
         dtype = data.dtype
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)

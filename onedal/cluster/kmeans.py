@@ -32,12 +32,12 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_random_state
 
+from .._config import _get_config
 from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 from ..utils._array_api import _get_sycl_namespace
-from .._config import _get_config
 
 
 class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
@@ -271,7 +271,10 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         if not use_raw_input:
             X = _check_array(
-                X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
+                X,
+                dtype=[np.float64, np.float32],
+                accept_sparse="csr",
+                force_all_finite=False,
             )
 
         policy = self._get_policy(queue, X)
@@ -281,7 +284,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         sua_iface = _get_sycl_namespace(X)[0]
         X_table = to_table(X, sua_iface=sua_iface)
 
-        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype, sua_iface=sua_iface)
+        self._check_params_vs_input(
+            X_table, is_csr, policy, dtype=dtype, sua_iface=sua_iface
+        )
 
         # not used?
         # params = self._get_onedal_params(is_csr, dtype)

@@ -19,9 +19,9 @@ import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 
+from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
-from .._config import _get_config
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils._array_api import _get_sycl_namespace
 from ..utils.validation import _check_array
@@ -126,12 +126,20 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
                 "covariance", None, "compute", policy, params, X_table
             )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
-            self.covariance_ = from_table(result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp)
+            self.covariance_ = from_table(
+                result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp
+            )
         else:
             self.covariance_ = (
-                from_table(result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp) * (X.shape[0] - 1) / X.shape[0]
+                from_table(
+                    result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp
+                )
+                * (X.shape[0] - 1)
+                / X.shape[0]
             )
 
-        self.location_ = xp.reshape(from_table(result.means, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1)
+        self.location_ = xp.reshape(
+            from_table(result.means, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1
+        )
 
         return self
