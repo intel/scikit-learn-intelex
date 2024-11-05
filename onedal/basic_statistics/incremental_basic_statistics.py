@@ -18,8 +18,10 @@ import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 
+from .._config import _get_config
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
+from ..utils._array_api import _get_sycl_namespace
 from .basic_statistics import BaseBasicStatistics
 
 
@@ -93,26 +95,39 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
+        use_raw_input = _get_config().get("use_raw_input", False) is True
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        # Saving input array namespace and sua_iface, that will be used in
+        # finalize_fit.
+        self._input_sua_iface = sua_iface
+        self._input_xp = xp
+
+        # All data should use the same sycl queue
+        if use_raw_input and sua_iface is not None:
+            queue = X.sycl_queue
+
         self._queue = queue
         policy = self._get_policy(queue, X)
         X, weights = _convert_to_supported(policy, X, weights)
 
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], ensure_2d=False, force_all_finite=False
-        )
-        if weights is not None:
-            weights = _check_array(
-                weights,
-                dtype=[np.float64, np.float32],
-                ensure_2d=False,
-                force_all_finite=False,
+        if not use_raw_input:
+            X = _check_array(
+                X, dtype=[np.float64, np.float32], ensure_2d=False, force_all_finite=False
             )
+            if weights is not None:
+                weights = _check_array(
+                    weights,
+                    dtype=[np.float64, np.float32],
+                    ensure_2d=False,
+                    force_all_finite=False,
+                )
 
         if not hasattr(self, "_onedal_params"):
             dtype = get_dtype(X)
             self._onedal_params = self._get_onedal_params(False, dtype=dtype)
 
-        X_table, weights_table = to_table(X, weights)
+        X_table = to_table(X, sua_iface=sua_iface)
+        weights_table = to_table(weights, sua_iface=_get_sycl_namespace(weights)[0])
         self._partial_result = self._get_backend(
             "basic_statistics",
             None,
@@ -140,10 +155,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             Returns the instance itself.
         """
 
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
+        queue = queue if queue is not None else self._queue
+        policy = self._get_policy(queue)
 
         result = self._get_backend(
             "basic_statistics",
@@ -155,6 +168,14 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         )
         options = self._get_result_options(self.options).split("|")
         for opt in options:
-            setattr(self, opt, from_table(getattr(result, opt)).ravel())
+            opt_value = self._input_xp.ravel(
+                from_table(
+                    getattr(result, opt),
+                    sua_iface=self._input_sua_iface,
+                    sycl_queue=queue,
+                    xp=self._input_xp,
+                )
+            )
+            setattr(self, opt, opt_value)
 
         return self
