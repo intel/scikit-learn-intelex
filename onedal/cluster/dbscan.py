@@ -59,13 +59,14 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         }
 
     def _fit(self, X, y, sample_weight, module, queue):
-        policy = self._get_policy(queue, X)
         use_raw_input = _get_config().get("use_raw_input", False) is True
         sua_iface, xp, _ = _get_sycl_namespace(X)
 
         # All data should use the same sycl queue
         if use_raw_input and sua_iface is not None:
             queue = X.sycl_queue
+
+        policy = self._get_policy(queue, X)
 
         if not use_raw_input:
             X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
