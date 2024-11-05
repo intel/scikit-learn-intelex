@@ -31,6 +31,8 @@ constexpr const char py_capsule_name[] = "PyCapsule";
 constexpr const char get_capsule_name[] = "_get_capsule";
 constexpr const char queue_capsule_name[] = "SyclQueueRef";
 constexpr const char context_capsule_name[] = "SyclContextRef";
+constexpr const char device_name[] = "sycl_device";
+constexpr const char get_filter_name[] = "get_filter_string";
 
 sycl::queue extract_queue(py::capsule capsule) {
     constexpr const char* gtr_name = queue_capsule_name;
@@ -70,20 +72,6 @@ sycl::queue get_queue_by_get_capsule(const py::object& syclobj) {
     return extract_from_capsule(std::move(capsule));
 }
 
-sycl::queue get_queue_from_python(const py::object& syclobj) {
-    static auto pycapsule = py::cast(py_capsule_name);
-    if (py::hasattr(syclobj, get_capsule_name)) {
-        return get_queue_by_get_capsule(syclobj);
-    }
-    else if (py::isinstance(syclobj, pycapsule)) {
-        const auto caps = syclobj.cast<py::capsule>();
-        return extract_from_capsule(std::move(caps));
-    }
-    else {
-        throw std::runtime_error("Unable to interpret \"syclobj\"");
-    }
-}
-
 sycl::queue get_queue_by_filter_string(const std::string& filter) {
     filter_selector_wrapper selector{ filter };
     return sycl::queue{ selector };
@@ -95,6 +83,24 @@ sycl::queue get_queue_by_device_id(std::uint32_t id) {
     }
     else {
         throw std::runtime_error(unknown_device);
+    }
+}
+
+sycl::queue get_queue_from_python(const py::object& syclobj) {
+    if (py::hasattr(syclobj, get_capsule_name)) {
+        return get_queue_by_get_capsule(syclobj);
+    }
+    else if (py::isinstance<py::capsule>(syclobj)) {
+        const auto caps = syclobj.cast<py::capsule>();
+        return extract_from_capsule(std::move(caps));
+    }
+    else if (py::hasattr(syclobj, device_name) && py::hasattr(syclobj.attr(device_name), get_filter_name)) {
+        auto attr = syclobj.attr(device_name).attr(get_filter_name);
+        return get_queue_by_filter_string(attr().cast<std::string>());
+    }
+    else
+    {
+        throw std::runtime_error("Unable to interpret \"syclobj\"");
     }
 }
 
