@@ -147,7 +147,9 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         result = self._get_backend(
             "decomposition", "dim_reduction", "infer", policy, params, model, X_table
         )
-        return from_table(result.transformed_data, sua_iface=sua_iface, sycl_queue=queue, xp=xp)
+        return from_table(
+            result.transformed_data, sua_iface=sua_iface, sycl_queue=queue, xp=xp
+        )
 
 
 class PCA(BasePCA):
@@ -175,8 +177,12 @@ class PCA(BasePCA):
             "decomposition", "dim_reduction", "train", policy, params, X_table
         )
 
-        self.mean_ = xp.reshape(from_table(result.means, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1)
-        self.variances_ = from_table(result.variances, sua_iface=sua_iface, sycl_queue=queue, xp=xp)
+        self.mean_ = xp.reshape(
+            from_table(result.means, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1
+        )
+        self.variances_ = from_table(
+            result.variances, sua_iface=sua_iface, sycl_queue=queue, xp=xp
+        )
         # TODO: why are there errors when using sua_iface and sycl_queue on following from_table calls?
         self.components_ = from_table(result.eigenvectors)
         self.singular_values_ = from_table(result.singular_values).ravel()
