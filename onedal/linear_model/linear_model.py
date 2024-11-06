@@ -207,6 +207,8 @@ class LinearRegression(BaseLinearRegression):
         if xp is None:
             xp = np
         use_raw_input = _get_config().get("use_raw_input") is True
+        if use_raw_input and sua_iface is not None:
+            queue = X.sycl_queue
 
         if not use_raw_input:
             # TODO Fix _check_X_y to make sure this conversion is there
@@ -314,6 +316,8 @@ class Ridge(BaseLinearRegression):
         if xp is None:
             xp = np
         use_raw_input = _get_config().get("use_raw_input") is True
+        if use_raw_input and sua_iface is not None:
+            queue = X.sycl_queue
 
         if not use_raw_input:
             X = _check_array(

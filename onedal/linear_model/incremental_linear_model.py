@@ -18,9 +18,11 @@ import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 
+from .._config import _get_config
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_X_y, _num_features
+from ..utils._array_api import _get_sycl_namespace
 from .linear_model import BaseLinearRegression
 
 
@@ -74,6 +76,13 @@ class IncrementalLinearRegression(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
+        self._sua_iface, self._xp, _ = _get_sycl_namespace(X, y)
+        if self._xp is None:
+            self._xp = np
+        use_raw_input = _get_config().get("use_raw_input") is True
+        if use_raw_input and self._sua_iface is not None:
+            queue = X.sycl_queue
+
         self._queue = queue
         policy = self._get_policy(queue, X)
 
@@ -83,14 +92,19 @@ class IncrementalLinearRegression(BaseLinearRegression):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        y = np.asarray(y, dtype=self._dtype)
+        if not use_raw_input:
+            y = np.asarray(y, dtype=self._dtype)
 
-        X, y = _check_X_y(
-            X, y, dtype=[np.float64, np.float32], accept_2d_y=True, force_all_finite=False
-        )
+            X, y = _check_X_y(
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                accept_2d_y=True,
+                force_all_finite=False,
+            )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
-        X_table, y_table = to_table(X, y)
+        X_table, y_table = to_table(X, y, sua_iface=self._sua_iface)
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             self._partial_result = module.partial_train(
@@ -138,10 +152,15 @@ class IncrementalLinearRegression(BaseLinearRegression):
 
         self._onedal_model = result.model
 
-        packed_coefficients = from_table(result.model.packed_coefficients)
+        packed_coefficients = from_table(
+            result.model.packed_coefficients,
+            sua_iface=self._sua_iface,
+            sycl_queue=self._queue,
+            xp=self._xp,
+        )
         self.coef_, self.intercept_ = (
-            packed_coefficients[:, 1:].squeeze(),
-            packed_coefficients[:, 0].squeeze(),
+            self._xp.squeeze(packed_coefficients[:, 1:]),
+            self._xp.squeeze(packed_coefficients[:, 0]),
         )
 
         return self
@@ -204,6 +223,13 @@ class IncrementalRidge(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
+        self._sua_iface, self._xp, _ = _get_sycl_namespace(X)
+        if self._xp is None:
+            self._xp = np
+        use_raw_input = _get_config().get("use_raw_input") is True
+        if use_raw_input and self._sua_iface is not None:
+            queue = X.sycl_queue
+
         self._queue = queue
         policy = self._get_policy(queue, X)
 
@@ -213,14 +239,19 @@ class IncrementalRidge(BaseLinearRegression):
             self._dtype = get_dtype(X)
             self._params = self._get_onedal_params(self._dtype)
 
-        y = np.asarray(y, dtype=self._dtype)
+        if not use_raw_input:
+            y = np.asarray(y, dtype=self._dtype)
 
-        X, y = _check_X_y(
-            X, y, dtype=[np.float64, np.float32], accept_2d_y=True, force_all_finite=False
-        )
+            X, y = _check_X_y(
+                X,
+                y,
+                dtype=[np.float64, np.float32],
+                accept_2d_y=True,
+                force_all_finite=False,
+            )
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
-        X_table, y_table = to_table(X, y)
+        X_table, y_table = to_table(X, y, sua_iface=self._sua_iface)
         self._partial_result = module.partial_train(
             policy, self._params, self._partial_result, X_table, y_table
         )
@@ -249,10 +280,15 @@ class IncrementalRidge(BaseLinearRegression):
 
         self._onedal_model = result.model
 
-        packed_coefficients = from_table(result.model.packed_coefficients)
+        packed_coefficients = from_table(
+            result.model.packed_coefficients,
+            sua_iface=self._sua_iface,
+            sycl_queue=self._queue,
+            xp=self._xp,
+        )
         self.coef_, self.intercept_ = (
-            packed_coefficients[:, 1:].squeeze(),
-            packed_coefficients[:, 0].squeeze(),
+            self._xp.squeeze(packed_coefficients[:, 1:]),
+            self._xp.squeeze(packed_coefficients[:, 0]),
         )
 
         return self

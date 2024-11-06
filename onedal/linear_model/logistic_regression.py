@@ -67,7 +67,8 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
     def _fit(self, X, y, module, queue):
         use_raw_input = _get_config().get("use_raw_input") is True
-        if use_raw_input and _get_sycl_namespace(X)[0] is not None:
+        sua_iface = _get_sycl_namespace(X, y)[0]
+        if use_raw_input and sua_iface is not None:
             queue = X.sycl_queue
 
         sparsity_enabled = daal_check_version((2024, "P", 700))
@@ -96,7 +97,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(is_csr, get_dtype(X))
-        sua_iface = _get_sycl_namespace(X, y)[0]
+
         X_table, y_table = to_table(X, y, sua_iface=sua_iface)
 
         result = module.train(policy, params, X_table, y_table)
