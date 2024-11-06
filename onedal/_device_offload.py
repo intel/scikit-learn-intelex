@@ -184,7 +184,7 @@ def support_input_format(freefunc=False, queue_param=True):
                 if "queue" not in kwargs:
                     usm_iface = getattr(args[0], "__sycl_usm_array_interface__", None)
                     data_queue = (
-                        usm_iface["syclobj"] if usm_iface is not None else data_queue
+                        usm_iface["syclobj"] if usm_iface is not None else None
                     )
                     kwargs["queue"] = data_queue
                 return _run_on_device(func, obj, *args, **kwargs)
