@@ -368,7 +368,7 @@ def test_sua_iface_interop_unsupported_dtypes(dataframe, queue, dtype):
 
     expected_err_msg = "Unable to convert from SUA interface: unknown data type"
     with pytest.raises(ValueError, match=expected_err_msg):
-        to_table(X, sua_iface=sua_iface)
+        to_table(X)
 
 
 @pytest.mark.parametrize(
