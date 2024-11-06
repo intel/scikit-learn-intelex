@@ -43,7 +43,7 @@ def to_table(*args):
 
     Parameters
     ----------
-    *args : {scalar, numpy array, sycl_usm_ndarray, csr matrix, or csr array}
+    *args : {scalar, numpy array, sycl_usm_ndarray, csr_matrix, or csr_array}
         arg1, arg2... The arrays should be given as arguments.
 
     Returns
