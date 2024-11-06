@@ -28,7 +28,7 @@ from onedal.tests.utils._dataframes_support import (
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_ridge(dataframe, queue):
-    from sklearnex.preview.linear_model import Ridge
+    from sklearnex.linear_model import Ridge
 
     X = numpy.array([[1, 1], [1, 2], [2, 2], [2, 3]])
     y = numpy.dot(X, numpy.array([1, 2])) + 3
@@ -37,7 +37,7 @@ def test_sklearnex_import_ridge(dataframe, queue):
     ridge_reg = Ridge(alpha=0.5).fit(X_c, y_c)
 
     if daal_check_version((2024, "P", 600)):
-        assert "preview" in ridge_reg.__module__
+        assert "sklearnex" in ridge_reg.__module__
     else:
         assert "daal4py" in ridge_reg.__module__
 
@@ -50,7 +50,7 @@ def test_sklearnex_import_ridge(dataframe, queue):
 @pytest.mark.parametrize("feature_size", [10, 50])
 @pytest.mark.parametrize("alpha", [0.1, 0.5, 1.0])
 def test_ridge_coefficients(dataframe, queue, sample_size, feature_size, alpha):
-    from sklearnex.preview.linear_model import Ridge
+    from sklearnex.linear_model import Ridge
 
     X = numpy.random.rand(sample_size, feature_size)
     y = numpy.random.rand(sample_size)
@@ -72,7 +72,7 @@ if daal_check_version((2024, "P", 600)):
 
     @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
     def test_ridge_score_before_fit(dataframe, queue):
-        from sklearnex.preview.linear_model import Ridge
+        from sklearnex.linear_model import Ridge
 
         sample_count, feature_count = 10, 5
 
@@ -89,7 +89,7 @@ if daal_check_version((2024, "P", 600)):
 
     @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
     def test_ridge_predict_before_fit(dataframe, queue):
-        from sklearnex.preview.linear_model import Ridge
+        from sklearnex.linear_model import Ridge
 
         sample_count, feature_count = 10, 5
 
