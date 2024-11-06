@@ -23,7 +23,7 @@ from ..common._base import BaseEstimator
 from ..common._mixin import ClusterMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
-from ..utils._array_api import _get_sycl_namespace
+from ..utils._array_api import _asarray, _get_sycl_namespace
 
 
 class BaseDBSCAN(BaseEstimator, ClusterMixin):
@@ -90,18 +90,28 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         self.labels_ = xp.reshape(
             from_table(result.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1
         )
-        if result.core_observation_indices is not None:
+        if (
+            result.core_observation_indices is not None
+            and not result.core_observation_indices.kind == "empty"
+        ):
             self.core_sample_indices_ = xp.reshape(
                 from_table(
                     result.core_observation_indices,
-                    sua_iface=sua_iface,
                     sycl_queue=queue,
+                    sua_iface=sua_iface,
                     xp=xp,
                 ),
                 -1,
             )
         else:
-            self.core_sample_indices_ = xp.array([], dtype=xp.int32)
+            # TODO:
+            # self.core_sample_indices_ = _asarray([], xp, sycl_queue=queue, dtype=xp.int32)
+            if sua_iface:
+                self.core_sample_indices_ = xp.asarray(
+                    [], sycl_queue=queue, dtype=xp.int32
+                )
+            else:
+                self.core_sample_indices_ = xp.asarray([], dtype=xp.int32)
         self.components_ = xp.take(X, self.core_sample_indices_, axis=0)
         self.n_features_in_ = X.shape[1]
         return self
