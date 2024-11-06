@@ -39,7 +39,8 @@ def to_table(*args):
     arrays, sycl_usm_ndarrays, and scalars. Tables will use pointers to the
     original array data. Scalars will be copies. Arrays may be modified in-
     place by oneDAL during computation. This works for data located on CPU and
-    SYCL-enabled Intel GPUs. Only singular datatypes are allowed.
+    SYCL-enabled Intel GPUs. Data may only be of a single type per array (i.e.
+    must be homogeneous).
 
     Parameters
     ----------
