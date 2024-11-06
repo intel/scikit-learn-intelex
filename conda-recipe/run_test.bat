@@ -45,7 +45,7 @@ echo "NO_DIST=%NO_DIST%"
 echo "with_json_report=%with_json_report%"
 setlocal enabledelayedexpansion
 if "%with_json_report%"=="1" (
-    pytest -s "%1tests" --json-report --json-report-file=.pytest_reports\legacy_report.json %COV_ARGS% || set exitcode=1
+    pytest --verbose -s "%1tests" --json-report --json-report-file=.pytest_reports\legacy_report.json %COV_ARGS% || set exitcode=1
     pytest --verbose --pyargs daal4py --json-report --json-report-file=.pytest_reports\daal4py_report.json %COV_ARGS% || set exitcode=1
     pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json %COV_ARGS% || set exitcode=1
     pytest --verbose --pyargs onedal --json-report --json-report-file=.pytest_reports\onedal_report.json %COV_ARGS% || set exitcode=1
