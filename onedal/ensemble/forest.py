@@ -307,6 +307,10 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
                 accept_sparse="csr",
             )
             y = self._validate_targets(y, X.dtype)
+        else:
+            # TODO:
+            # check it first.
+            self.classes_ = None
 
         self.n_features_in_ = X.shape[1]
 

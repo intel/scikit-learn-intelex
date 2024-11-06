@@ -81,6 +81,7 @@ class BaseForest(ABC):
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         use_raw_input = get_config().get("use_raw_input", False) is True
+        xp, _ = get_namespace(X)
         if not use_raw_input:
             X, y = validate_data(
                 self,
@@ -105,11 +106,11 @@ class BaseForest(ABC):
                 stacklevel=2,
             )
 
-        if not use_raw_input:
-            if y.ndim == 1:
-                # reshape is necessary to preserve the data contiguity against vs
-                # [:, np.newaxis] that does not.
-                y = np.reshape(y, (-1, 1))
+        # if not use_raw_input:
+        if y.ndim == 1:
+            # reshape is necessary to preserve the data contiguity against vs
+            # [:, np.newaxis] that does not.
+            y = xp.reshape(y, (-1, 1))
 
         self._n_samples, self.n_outputs_ = y.shape
 
@@ -123,6 +124,7 @@ class BaseForest(ABC):
                     sample_weight = expanded_class_weight
         if sample_weight is not None:
             sample_weight = [sample_weight]
+        self.n_features_in_ = X.shape[1]
 
         onedal_params = {
             "n_estimators": self.n_estimators,
