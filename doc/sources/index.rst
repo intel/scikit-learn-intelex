@@ -109,6 +109,7 @@ Enable Intel(R) GPU optimizations
    input-types.rst
    array_api.rst
    verbose.rst
+   preview.rst
    deprecation.rst
    
 
