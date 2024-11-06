@@ -19,9 +19,7 @@ rem %1 - dpcpp activate flag
 
 rem prepare vc
 call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall" x64
-rem prepare icx only if no parameter is given.
-if "%1"=="" call .\oneapi\compiler\latest\env\vars.bat
-rem prepare tbb
-call .\oneapi\tbb\latest\env\vars.bat
+rem prepare only TBB from oneAPI if a parameter is given.
+IF "%1"=="" (call .\oneapi\setvars.bat) ELSE (call .\oneapi\tbb\latest\env\vars.bat)
 rem prepare oneDAL
 call .\__release_win\daal\latest\env\vars.bat
