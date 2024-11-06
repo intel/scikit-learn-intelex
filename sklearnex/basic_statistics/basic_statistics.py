@@ -24,6 +24,7 @@ from sklearn.utils.validation import _check_sample_weight
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.basic_statistics import BasicStatistics as onedal_BasicStatistics
+from onedal.utils import _is_csr
 
 from .._device_offload import dispatch
 from .._utils import IntelEstimator, PatchingConditionsChain
@@ -170,6 +171,16 @@ class BasicStatistics(IntelEstimator, BaseEstimator):
         patching_status = PatchingConditionsChain(
             f"sklearnex.basic_statistics.{self.__class__.__name__}.{method_name}"
         )
+
+        X, sample_weight = data[0], data[1]
+        patching_status.and_conditions(
+            [
+                (
+                    _is_csr(X) and sample_weight is not None,
+                    "sample_weight is not supported for CSR data format.",
+                ),
+            ]
+        )
         return patching_status
 
     _onedal_cpu_supported = _onedal_supported
@@ -180,7 +191,13 @@ class BasicStatistics(IntelEstimator, BaseEstimator):
             self._validate_params()
 
         if sklearn_check_version("1.0"):
-            X = validate_data(self, X, dtype=[np.float64, np.float32], ensure_2d=False)
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                ensure_2d=False,
+                accept_sparse="csr",
+            )
         else:
             X = check_array(X, dtype=[np.float64, np.float32])
 
