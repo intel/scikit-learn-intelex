@@ -65,18 +65,21 @@ void instantiate_data_parallel_policy(py::module& m) {
     m.def("get_used_memory", &get_used_memory, py::return_value_policy::take_ownership);
 }
 
-struct DummyQueue {
-    DummyQueue(sycl::queue &queue){
-        _queue = queue;
-        sycl_device = queue.get_device();
-    }
-    py::capsule _get_capsule(){
-        return pack_queue(std::make_shared<sycl::queue>(_queue));
-    }
+class DummyQueue {
+    public:
+        DummyQueue(sycl::queue &queue){
+            _queue = queue;
+            sycl_device = queue.get_device();
+        }
+        py::capsule _get_capsule(){
+            return pack_queue(std::make_shared<sycl::queue>(_queue));
+        }
 
-    sycl::device sycl_device;
-    sycl::queue _queue;
-}
+        sycl::device sycl_device;
+
+    private:
+        sycl::queue _queue;
+};
 
 void instantiate_sycl_queue(py::module& m){
     py::class_<DummyQueue> syclqueue(m, "SyclQueue");
@@ -84,10 +87,11 @@ void instantiate_sycl_queue(py::module& m){
                 return DummyQueue(get_queue_from_python(syclobj));
             })
         )
-        .def("_get_capsule", &DummyQueue::_get_capsule);
+        .def("_get_capsule", &DummyQueue::_get_capsule)
+        .def_property_readonly("sycl_device", &DummyQueue::sycl_device);
 
     // expose limited sycl device features to python for oneDAL analysis
-    py::class_<sycl::device> sycldevice(syclqueue, "sycl_device");
+    py::class_<sycl::device> sycldevice(m, "SyclDevice");
         .def(py::init<sycl::device>())
         .def_property_readonly("has_aspect_fp64",[](const sycl::device& device) {
             return device.has(sycl::aspect::fp64);
