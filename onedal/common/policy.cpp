@@ -99,8 +99,8 @@ void instantiate_sycl_queue(py::module& m){
         .def_property_readonly("has_aspect_fp16",[](const sycl::device& device) {
             return device.has(sycl::aspect::fp16);
         }
-    );
-        .def_property_readonly("is_cpu", &sycl::device::is_cpu);
+    )
+        .def_property_readonly("is_cpu", &sycl::device::is_cpu)
         .def_property_readonly("is_gpu", &sycl::device::is_gpu);
 }
 
