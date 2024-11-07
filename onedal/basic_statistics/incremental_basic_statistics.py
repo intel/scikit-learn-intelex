@@ -95,7 +95,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
-        use_raw_input = _get_config().get("use_raw_input", False) is True
+        use_raw_input = _get_config().get("use_raw_input", False)
         sua_iface, xp, _ = _get_sycl_namespace(X)
         # Saving input array namespace and sua_iface, that will be used in
         # finalize_fit.
@@ -103,7 +103,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self._input_xp = xp
 
         # All data should use the same sycl queue
-        if use_raw_input and sua_iface is not None:
+        if use_raw_input and sua_iface:
             queue = X.sycl_queue
 
         self._queue = queue
