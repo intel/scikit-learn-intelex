@@ -67,7 +67,7 @@ void instantiate_data_parallel_policy(py::module& m) {
 
 class DummyQueue {
     public:
-        DummyQueue(sycl::queue &queue){
+        DummyQueue(sycl::queue queue){
             _queue = queue;
             sycl_device = queue.get_device();
         }
