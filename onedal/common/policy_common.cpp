@@ -27,7 +27,6 @@ namespace oneapi::dal::python {
 #ifdef ONEDAL_DATA_PARALLEL
 
 constexpr const char unknown_device[] = "Unknown device";
-constexpr const char py_capsule_name[] = "PyCapsule";
 constexpr const char get_capsule_name[] = "_get_capsule";
 constexpr const char queue_capsule_name[] = "SyclQueueRef";
 constexpr const char context_capsule_name[] = "SyclContextRef";
