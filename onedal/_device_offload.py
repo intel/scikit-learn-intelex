@@ -180,7 +180,9 @@ def support_input_format(freefunc=False, queue_param=True):
 
     def decorator(func):
         def wrapper_impl(obj, *args, **kwargs):
-            if _get_config()["use_raw_input"] is True:
+            # Check if the function is KNeighborsClassifier.fit
+            override_raw_input = obj.__class__.__name__ == "KNeighborsClassifier" and func.__name__ == "fit"
+            if _get_config()["use_raw_input"] is True and not override_raw_input:
                 if "queue" not in kwargs:
                     usm_iface = getattr(args[0], "__sycl_usm_array_interface__", None)
                     data_queue = (

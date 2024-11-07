@@ -596,7 +596,9 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         train_alg_srch = self._get_backend("neighbors", "search", None)
 
         if gpu_device:
-            return train_alg_regr.train(policy, params, *to_table(X, y)).model
+            X_table = to_table(X, sua_iface=_get_sycl_namespace(X)[0])
+            y_table = to_table(X, sua_iface=_get_sycl_namespace(y)[0])
+            return train_alg_regr.train(policy, params, X_table, y_table).model
         return train_alg_srch.train(policy, params, to_table(X)).model
 
     def _onedal_predict(self, model, X, params, queue):
