@@ -21,10 +21,6 @@ from scipy.linalg import lstsq
 from sklearn.datasets import make_regression
 
 from daal4py.sklearn._utils import daal_check_version
-from daal4py.sklearn.linear_model.tests.test_ridge import (
-    _test_multivariate_ridge_alpha_shape,
-    _test_multivariate_ridge_coefficients,
-)
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
@@ -87,20 +83,6 @@ def test_sklearnex_import_linear(
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import_ridge(dataframe, queue):
-    from sklearnex.linear_model import Ridge
-
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
-    ridgereg = Ridge().fit(X, y)
-    assert "daal4py" in ridgereg.__module__
-    assert_allclose(ridgereg.intercept_, 4.5)
-    assert_allclose(ridgereg.coef_, [0.8, 1.4])
-
-
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_import_lasso(dataframe, queue):
     from sklearnex.linear_model import Lasso
 
@@ -153,15 +135,3 @@ def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
 
     tol = 1e-5 if _as_numpy(y_pred).dtype == np.float32 else 1e-7
     assert_allclose(gtr, _as_numpy(y_pred), rtol=tol)
-
-
-def test_sklearnex_multivariate_ridge_coefs():
-    from sklearnex.linear_model import Ridge
-
-    _test_multivariate_ridge_coefficients(Ridge, random_state=0)
-
-
-def test_sklearnex_multivariate_ridge_alpha_shape():
-    from sklearnex.linear_model import Ridge
-
-    _test_multivariate_ridge_alpha_shape(Ridge, random_state=0)

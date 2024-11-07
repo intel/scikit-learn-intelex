@@ -20,6 +20,10 @@ from numpy.testing import assert_allclose
 from sklearn.exceptions import NotFittedError
 
 from daal4py.sklearn._utils import daal_check_version
+from daal4py.sklearn.linear_model.tests.test_ridge import (
+    _test_multivariate_ridge_alpha_shape,
+    _test_multivariate_ridge_coefficients,
+)
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -100,3 +104,15 @@ if daal_check_version((2024, "P", 600)):
 
         with pytest.raises(NotFittedError):
             model.predict(X_c)
+
+
+def test_sklearnex_multivariate_ridge_coefs():
+    from sklearnex.linear_model import Ridge
+
+    _test_multivariate_ridge_coefficients(Ridge, random_state=0)
+
+
+def test_sklearnex_multivariate_ridge_alpha_shape():
+    from sklearnex.linear_model import Ridge
+
+    _test_multivariate_ridge_alpha_shape(Ridge, random_state=0)
