@@ -15,7 +15,10 @@
 # limitations under the License.
 #===============================================================================
 
-# if any parameter is given, then do not source the compiler
-if [ $# -eq 0 ]; then source /opt/intel/oneapi/compiler/latest/env/vars.sh; fi # prepare icpx
-source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+# if any parameter is given then only source TBB from the oneAPI install
+if [ $# -eq 0 ]; then
+  source /opt/intel/oneapi/setvars.sh
+else
+  source /opt/intel/oneapi/tbb/latest/env/vars.sh # prepare tbb
+fi
 source ./__release_lnx/daal/latest/env/vars.sh # prepare oneDAL
