@@ -17,6 +17,7 @@
 import numbers
 import warnings
 from abc import ABC
+from collections.abc import Iterable
 
 import numpy as np
 from scipy import sparse as sp
@@ -177,7 +178,11 @@ class BaseForest(ABC):
 
         # Decapsulate classes_ attributes
         if hasattr(self, "classes_") and self.n_outputs_ == 1:
-            self.n_classes_ = self.n_classes_[0]
+            self.n_classes_ = (
+                self.n_classes_[0]
+                if isinstance(self.n_classes_, Iterable)
+                else self.n_classes_
+            )
             self.classes_ = self.classes_[0]
 
         return self
