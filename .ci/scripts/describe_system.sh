@@ -57,3 +57,8 @@ if [ -x "$(command -v icpx)" ]; then
     echo "ICPX:"
     icpx --version
 fi
+echo
+# SYCL devices
+if [ -x "$(command -v sycl-ls)" ]; then
+    sycl-ls
+fi
