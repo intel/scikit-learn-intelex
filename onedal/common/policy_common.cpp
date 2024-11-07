@@ -159,6 +159,27 @@ std::string get_device_name(const dp_policy_t& policy) {
     return get_device_name(queue);
 }
 
+// Create `SyclQueueRef` PyCapsule that represents an opaque value of
+// sycl::queue.
+py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue) {
+    static const char queue_capsule_name[] = "SyclQueueRef";
+    if (queue.get() == nullptr) {
+        throw std::runtime_error("Empty queue");
+    }
+    else {
+        void (*deleter)(void*) = [](void* const queue) -> void {
+            delete reinterpret_cast<sycl::queue* const>(queue);
+        };
+
+        sycl::queue* ptr = new sycl::queue{ *queue };
+        void* const raw = reinterpret_cast<void*>(ptr);
+
+        py::capsule capsule(raw, deleter);
+        capsule.set_name(queue_capsule_name);
+        return capsule;
+    }
+}
+
 #endif // ONEDAL_DATA_PARALLEL
 
 } // namespace oneapi::dal::python

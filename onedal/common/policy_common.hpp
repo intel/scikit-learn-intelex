@@ -68,6 +68,8 @@ private:
     sycl::ext::oneapi::filter_selector filter_selector_;
 };
 
+py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue);
+
 #endif // ONEDAL_DATA_PARALLEL
 
 template <typename Policy>

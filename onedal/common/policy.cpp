@@ -39,6 +39,43 @@ void instantiate_default_host_policy(py::module& m) {
     instantiate_host_policy(policy);
 }
 
+struct DummyQueue {
+    DummyQueue(sycl::queue &queue){
+        _queue = queue;
+        sycl_device = queue.get_device();
+    }
+    py::capsule _get_capsule(){
+        return pack_queue(std::make_shared<sycl::queue>(_queue));
+    }
+
+    sycl::device sycl_device;
+    sycl::queue _queue;
+}
+
+void instantiate_sycl_queue(py::module& m){
+    py::class_<DummyQueue> syclqueue(m, "SyclQueue");
+    syclqueue.def(py::init<sycl:queue &>())
+        .def(py::init([](const py::object& syclobj) {
+                return DummyQueue(get_queue_from_python(syclobj));
+            })
+        )
+        .def("_get_capsule", &DummyQueue::_get_capsule);
+
+    // expose limited sycl device features to python for oneDAL analysis
+    py::class_<sycl::device> sycldevice(syclqueue, "sycl_device");
+        .def(py::init<sycl::device>())
+        .def_property_readonly("has_aspect_fp64",[](const sycl::device& device) {
+            return device.has(sycl::aspect::fp64);
+        }
+    )
+        .def_property_readonly("has_aspect_fp16",[](const sycl::device& device) {
+            return device.has(sycl::aspect::fp16);
+        }
+    )
+        .def_property_readonly("is_cpu", &sycl::device::is_cpu)
+        .def_property_readonly("is_gpu", &sycl::device::is_gpu);
+}
+
 #ifdef ONEDAL_DATA_PARALLEL
 
 using data_parallel_policy_t = dal::detail::data_parallel_policy;
@@ -70,8 +107,10 @@ void instantiate_data_parallel_policy(py::module& m) {
 ONEDAL_PY_INIT_MODULE(policy) {
     instantiate_host_policy(m);
     instantiate_default_host_policy(m);
+    
 #ifdef ONEDAL_DATA_PARALLEL
     instantiate_data_parallel_policy(m);
+    instantiate_sycl_queue(m);
 #endif // ONEDAL_DATA_PARALLEL
 }
 

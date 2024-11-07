@@ -62,8 +62,6 @@ py::tuple get_npy_strides(const dal::data_layout& data_layout,
                           npy_intp row_count,
                           npy_intp column_count);
 
-py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue);
-
 } // namespace oneapi::dal::python
 
 #endif // ONEDAL_DATA_PARALLEL
