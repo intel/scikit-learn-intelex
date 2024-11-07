@@ -23,7 +23,6 @@ import warnings
 from inspect import isclass
 
 import numpy as np
-import pandas as pd
 import pytest
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, clone
@@ -36,9 +35,17 @@ from onedal.tests.utils._dataframes_support import (
     get_dataframes_and_queues,
 )
 from onedal.tests.utils._device_selection import get_queues, is_dpctl_device_available
+from onedal.utils._array_api import _get_sycl_namespace
+from onedal.utils._dpep_helpers import dpctl_available, dpnp_available
 from sklearnex import config_context
 from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
 from sklearnex.utils._array_api import get_namespace
+
+if dpctl_available:
+    from dpctl.tensor import usm_ndarray
+
+if dpnp_available:
+    import dpnp
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -127,10 +134,47 @@ N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
-def gen_clsf_data(n_samples, n_features):
+if _is_dpc_backend:
+
+    from sklearn.utils.validation import check_is_fitted
+
+    from onedal.datatypes import from_table, to_table
+
+    class DummyEstimatorWithTableConversions(BaseEstimator):
+
+        def fit(self, X, y=None):
+            sua_iface, xp, _ = _get_sycl_namespace(X)
+            X_table = to_table(X, sua_iface=sua_iface)
+            y_table = to_table(y, sua_iface=sua_iface)
+            # The presence of the fitted attributes (ending with a trailing
+            # underscore) is required for the correct check. The cleanup of
+            # the memory will occur at the estimator instance deletion.
+            self.x_attr_ = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
+            self.y_attr_ = from_table(
+                y_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
+            return self
+
+        def predict(self, X):
+            # Checks if the estimator is fitted by verifying the presence of
+            # fitted attributes (ending with a trailing underscore).
+            check_is_fitted(self)
+            sua_iface, xp, _ = _get_sycl_namespace(X)
+            X_table = to_table(X, sua_iface=sua_iface)
+            returned_X = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
+            return returned_X
+
+
+def gen_clsf_data(n_samples, n_features, dtype=None):
     data, label = make_classification(
         n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777
     )
+    if dtype:
+        data, label = data.astype(dtype), label.astype(dtype)
     return (
         data,
         label,
@@ -147,8 +191,18 @@ def get_traced_memory(queue=None):
 
 def take(x, index, axis=0, queue=None):
     xp, array_api = get_namespace(x)
-    if array_api:
-        return xp.take(x, xp.asarray(index, device=queue), axis=axis)
+    if (
+        dpnp_available
+        and isinstance(x, dpnp.ndarray)
+        or dpctl_available
+        and isinstance(x, usm_ndarray)
+    ):
+        # Using the same sycl queue for dpnp.ndarray or usm_ndarray.
+        return xp.take(
+            x, xp.asarray(index, usm_type="device", sycl_queue=x.sycl_queue), axis=axis
+        )
+    elif array_api:
+        return xp.take(x, xp.asarray(index, device=x.device), axis=axis)
     else:
         return x.take(index, axis=axis)
 
@@ -187,11 +241,13 @@ def split_train_inference(kf, x, y, estimator, queue=None):
     return mem_tracks
 
 
-def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
+def _kfold_function_template(
+    estimator, dataframe, data_shape, queue=None, func=None, dtype=None
+):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
+    X, y, data_memory_size = gen_clsf_data(n_samples, n_features, dtype=dtype)
     kf = KFold(n_splits=N_SPLITS)
     if func:
         X = func(X)
@@ -295,3 +351,31 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 
     with config_context(target_offload=queue):
         _kfold_function_template(GPU_ESTIMATORS[estimator], None, data_shape, queue, func)
+
+
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
+)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
+)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("data_shape", data_shapes)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_table_conversions_memory_leaks(dataframe, queue, order, data_shape, dtype):
+    func = ORDER_DICT[order]
+
+    if queue.sycl_device.is_gpu and (
+        os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_device_available("gpu")
+    ):
+        pytest.skip("SYCL device memory leak check requires the level zero sysman")
+
+    _kfold_function_template(
+        DummyEstimatorWithTableConversions,
+        dataframe,
+        data_shape,
+        queue,
+        func,
+        dtype,
+    )

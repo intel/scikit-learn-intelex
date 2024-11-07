@@ -151,7 +151,8 @@ def control_n_jobs(decorated_methods: list = []):
 
     Parameters
     ----------
-        decorated_methods (list): A list of method names to be executed with 'n_jobs'.
+    decorated_methods: list
+        A list of method names to be executed with 'n_jobs'.
 
     Example
     -------

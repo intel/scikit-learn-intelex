@@ -16,7 +16,7 @@
 
 #include "oneapi/dal/table/common.hpp"
 
-#include "onedal/datatypes/numpy_helpers.hpp"
+#include "onedal/datatypes/utils/numpy_helpers.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "onedal/version.hpp"
 

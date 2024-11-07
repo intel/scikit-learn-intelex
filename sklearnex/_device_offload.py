@@ -17,13 +17,9 @@
 from functools import wraps
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal._device_offload import (
-    _copy_to_usm,
-    _get_global_queue,
-    _transfer_to_host,
-    dpnp_available,
-)
+from onedal._device_offload import _copy_to_usm, _get_global_queue, _transfer_to_host
 from onedal.utils._array_api import _asarray
+from onedal.utils._dpep_helpers import dpnp_available
 
 if dpnp_available:
     import dpnp
