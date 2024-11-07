@@ -57,6 +57,11 @@ def to_table(*args):
 if _is_dpc_backend:
 
     try:
+        # try/catch is used here instead of dpep_helpers because
+        # of circular import issues of _data_conversion.py and
+        # utils/validation.py. This is a temporary fix until the
+        # issue with dpnp is addressed, at which point this can
+        # be removed entirely.
         import dpnp
 
         def _onedal_gpu_table_to_array(table, xp=None):
