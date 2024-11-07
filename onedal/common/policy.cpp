@@ -100,8 +100,8 @@ void instantiate_sycl_queue(py::module& m){
             return device.has(sycl::aspect::fp16);
         }
     );
-        sycldevice.def_readonly("is_cpu", &sycl::device::is_cpu);
-        sycldevice.def_readonly("is_gpu", &sycl::device::is_gpu);
+        sycldevice.def_property_readonly("is_cpu", &sycl::device::is_cpu);
+        sycldevice.def_property_readonly("is_gpu", &sycl::device::is_gpu);
 }
 
 
