@@ -27,6 +27,7 @@ if daal_check_version((2024, "P", 600)):
     from sklearn.metrics import r2_score
     from sklearn.utils.validation import check_is_fitted, check_X_y
 
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
     from daal4py.sklearn.linear_model._ridge import _fit_ridge as daal4py_fit_ridge
 
     if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
@@ -57,6 +58,7 @@ if daal_check_version((2024, "P", 600)):
         """
         return isinstance(value, numbers.Real)
 
+    @control_n_jobs(decorated_methods=["fit", "predict", "score"])
     class Ridge(_sklearn_Ridge):
         __doc__ = _sklearn_Ridge.__doc__
 
