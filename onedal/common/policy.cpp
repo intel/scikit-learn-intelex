@@ -88,11 +88,10 @@ void instantiate_sycl_queue(py::module& m){
             })
         )
         .def("_get_capsule", &DummyQueue::_get_capsule)
-        .def_property_readonly("sycl_device", &DummyQueue::sycl_device);
+        .def_readonly("sycl_device", &DummyQueue::sycl_device);
 
     // expose limited sycl device features to python for oneDAL analysis
     py::class_<sycl::device> sycldevice(m, "SyclDevice");
-        .def(py::init<sycl::device>())
         .def_property_readonly("has_aspect_fp64",[](const sycl::device& device) {
             return device.has(sycl::aspect::fp64);
         }
@@ -101,8 +100,8 @@ void instantiate_sycl_queue(py::module& m){
             return device.has(sycl::aspect::fp16);
         }
     )
-        .def_property_readonly("is_cpu", &sycl::device::is_cpu)
-        .def_property_readonly("is_gpu", &sycl::device::is_gpu);
+        .def_readonly("is_cpu", &sycl::device::is_cpu)
+        .def_readonly("is_gpu", &sycl::device::is_gpu);
 }
 
 
