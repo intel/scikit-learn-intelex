@@ -81,7 +81,7 @@ class BaseForest(ABC):
     _onedal_factory = None
 
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
-        use_raw_input = get_config().get("use_raw_input", False) is True
+        use_raw_input = get_config()["use_raw_input"]
         xp, _ = get_namespace(X)
         if not use_raw_input:
             X, y = validate_data(
@@ -813,7 +813,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
 
     def _onedal_predict(self, X, queue=None):
         xp, _ = get_namespace(X)
-        use_raw_input = get_config().get("use_raw_input", False) is True
+        use_raw_input = get_config()["use_raw_input"]
         if not use_raw_input:
             if sklearn_check_version("1.0"):
                 X = validate_data(
@@ -851,7 +851,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
 
     def _onedal_predict_proba(self, X, queue=None):
         xp, _ = get_namespace(X)
-        use_raw_input = get_config().get("use_raw_input", False) is True
+        use_raw_input = get_config()["use_raw_input"]
         if not use_raw_input:
             if sklearn_check_version("1.0"):
                 X = validate_data(
@@ -1158,6 +1158,7 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
 
     def _onedal_predict(self, X, queue=None):
         check_is_fitted(self, "_onedal_estimator")
+        use_raw_input = get_config()["use_raw_input"]
 
         if not use_raw_input:
             if sklearn_check_version("1.0"):

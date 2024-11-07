@@ -291,7 +291,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         return sample_weight
 
     def _fit(self, X, y, sample_weight, module, queue):
-        use_raw_input = _get_config().get("use_raw_input", False) is True
+        use_raw_input = _get_config()["use_raw_input"]
         sua_iface, xp, _ = _get_sycl_namespace(X)
 
         # All data should use the same sycl queue
@@ -399,7 +399,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
     def _predict(self, X, module, queue, hparams=None):
         _check_is_fitted(self)
 
-        use_raw_input = _get_config().get("use_raw_input", False) is True
+        use_raw_input = _get_config()["use_raw_input"]
         sua_iface, xp, _ = _get_sycl_namespace(X)
 
         # All data should use the same sycl queue
@@ -430,7 +430,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
 
     def _predict_proba(self, X, module, queue):
         _check_is_fitted(self)
-        use_raw_input = _get_config().get("use_raw_input", False) is True
+        use_raw_input = _get_config()["use_raw_input"]
         sua_iface, xp, _ = _get_sycl_namespace(X)
 
         # All data should use the same sycl queue
@@ -617,7 +617,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         )
 
     def fit(self, X, y, sample_weight=None, queue=None):
-        use_raw_input = get_config().get("use_raw_input", False) is True
+        use_raw_input = _get_config()["use_raw_input"]
         # TODO:
         # check if required.
         if not use_raw_input:
