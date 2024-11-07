@@ -64,7 +64,7 @@ if _is_dpc_backend:
         # be removed entirely.
         import dpnp
 
-        def _onedal_gpu_table_to_array(table, xp=None):
+        def _table_to_array(table, xp=None):
             # By default DPNP ndarray created with a copy.
             # TODO:
             # investigate why dpnp.array(table, copy=False) doesn't work.
@@ -76,7 +76,7 @@ if _is_dpc_backend:
 
     except ImportError:
 
-        def _onedal_gpu_table_to_array(table, xp=None):
+        def _table_to_array(table, xp=None):
             return xp.asarray(table)
 
     from ..common._policy import _HostInteropPolicy
@@ -126,7 +126,7 @@ if _is_dpc_backend:
                     _backend.from_table(table), usm_type="device", sycl_queue=sycl_queue
                 )
             else:
-                return _onedal_gpu_table_to_array(table, xp=xp)
+                return _table_to_array(table, xp=xp)
 
         return _backend.from_table(table)
 
