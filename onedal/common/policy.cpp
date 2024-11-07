@@ -92,11 +92,11 @@ void instantiate_sycl_queue(py::module& m){
 
     // expose limited sycl device features to python for oneDAL analysis
     py::class_<sycl::device> sycldevice(m, "SyclDevice");
-        .def_property_readonly("has_aspect_fp64",[](const sycl::device& device) {
+        sycldevice.def_property_readonly("has_aspect_fp64",[](const sycl::device& device) {
             return device.has(sycl::aspect::fp64);
         }
-    )
-        .def_property_readonly("has_aspect_fp16",[](const sycl::device& device) {
+    );
+        sycldevice.def_property_readonly("has_aspect_fp16",[](const sycl::device& device) {
             return device.has(sycl::aspect::fp16);
         }
     )
