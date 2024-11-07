@@ -18,8 +18,10 @@ import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
 
+from .._config import _get_config
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
+from ..utils._array_api import _get_sycl_namespace
 from .pca import BasePCA
 
 
@@ -122,7 +124,21 @@ class IncrementalPCA(BasePCA):
         self : object
             Returns the instance itself.
         """
-        X = _check_array(X)
+
+        use_raw_input = _get_config().get("use_raw_input", False)
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        # Saving input array namespace and sua_iface, that will be used in
+        # finalize_fit.
+        self._input_sua_iface = sua_iface
+        self._input_xp = xp
+
+        # All data should use the same sycl queue
+        if use_raw_input and sua_iface:
+            queue = X.sycl_queue
+
+        if not use_raw_input or True:
+            X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
+
         n_samples, n_features = X.shape
 
         first_pass = not hasattr(self, "components_")
@@ -189,13 +205,46 @@ class IncrementalPCA(BasePCA):
             self._params,
             self._partial_result,
         )
-        self.mean_ = from_table(result.means).ravel()
-        self.var_ = from_table(result.variances).ravel()
-        self.components_ = from_table(result.eigenvectors)
-        self.singular_values_ = np.nan_to_num(from_table(result.singular_values).ravel())
-        self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
+        self.mean_ = from_table(
+            result.means,
+            sua_iface=self._input_sua_iface,
+            sycl_queue=queue,
+            xp=self._input_xp,
+        ).ravel()
+        self.var_ = from_table(
+            result.variances,
+            sua_iface=self._input_sua_iface,
+            sycl_queue=queue,
+            xp=self._input_xp,
+        ).ravel()
+        self.components_ = from_table(
+            result.eigenvectors,
+            sua_iface=self._input_sua_iface,
+            sycl_queue=queue,
+            xp=self._input_xp,
+        )
+        self.singular_values_ = np.nan_to_num(
+            from_table(
+                result.singular_values,
+                sua_iface=self._input_sua_iface,
+                sycl_queue=queue,
+                xp=self._input_xp,
+            ).ravel()
+        )
+        self.explained_variance_ = np.maximum(
+            from_table(
+                result.eigenvalues,
+                sua_iface=self._input_sua_iface,
+                sycl_queue=queue,
+                xp=self._input_xp,
+            ).ravel(),
+            0,
+        )
         self.explained_variance_ratio_ = from_table(
-            result.explained_variances_ratio
+            result.explained_variances_ratio,
+            sua_iface=self._input_sua_iface,
+            sycl_queue=queue,
+            xp=self._input_xp,
         ).ravel()
         self.noise_variance_ = self._compute_noise_variance(
             self.n_components_, min(self.n_samples_seen_, self.n_features_in_)
