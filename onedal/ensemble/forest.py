@@ -310,7 +310,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         else:
             # TODO:
             # check it first.
-            self.classes_ = None
+            self.classes_ = xp.unique_all(y).values
 
         self.n_features_in_ = X.shape[1]
 
@@ -320,12 +320,26 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             data = (X, y, sample_weight)
         else:
             data = (X, y)
+
         policy = self._get_policy(queue, *data)
         data = _convert_to_supported(policy, *data)
         params = self._get_onedal_params(data[0])
-        # TODO:
-        # check for None sample_weight.
-        train_result = module.train(policy, params, *to_table(*data, sua_iface=sua_iface))
+
+        if sample_weight is not None and len(sample_weight) > 0:
+            train_result = train_result = module.train(
+                policy,
+                params,
+                to_table(X, sua_iface=sua_iface),
+                to_table(y, sua_iface=sua_iface),
+                to_table(sample_weight, _get_sycl_namespace(sample_weight)[0]),
+            )
+        else:
+            train_result = train_result = module.train(
+                policy,
+                params,
+                to_table(X, sua_iface=sua_iface),
+                to_table(y, sua_iface=sua_iface),
+            )
 
         self._onedal_model = train_result.model
 
@@ -534,7 +548,9 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             -1,
         )
 
-        return xp.take(self.classes_, pred.astype(xp.int64, casting="unsafe"))
+        # return xp.take(self.classes_, pred.astype(xp.int64, casting="unsafe"))
+        pred = xp.astype(pred, xp.int64)
+        return xp.take(self.classes_, pred)
 
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(

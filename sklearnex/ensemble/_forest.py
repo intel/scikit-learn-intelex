@@ -96,6 +96,9 @@ class BaseForest(ABC):
 
             if sample_weight is not None:
                 sample_weight = _check_sample_weight(sample_weight, X)
+        else:
+            self.classes_ = xp.unique_all(y).values
+            self.n_classes_ = len(self.classes_)
 
         if y.ndim == 2 and y.shape[1] == 1:
             warnings.warn(
@@ -106,13 +109,16 @@ class BaseForest(ABC):
                 stacklevel=2,
             )
 
-        # if not use_raw_input:
-        if y.ndim == 1:
-            # reshape is necessary to preserve the data contiguity against vs
-            # [:, np.newaxis] that does not.
-            y = xp.reshape(y, (-1, 1))
+        if not use_raw_input:
+            if y.ndim == 1:
+                # reshape is necessary to preserve the data contiguity against vs
+                # [:, np.newaxis] that does not.
+                y = xp.reshape(y, (-1, 1))
 
-        self._n_samples, self.n_outputs_ = y.shape
+        if y.ndim == 1:
+            self._n_samples, self.n_outputs_ = y.shape[0], 1
+        else:
+            self._n_samples, self.n_outputs_ = y.shape
 
         if not use_raw_input:
             y, expanded_class_weight = self._validate_y_class_weight(y)
@@ -122,8 +128,8 @@ class BaseForest(ABC):
                     sample_weight = sample_weight * expanded_class_weight
                 else:
                     sample_weight = expanded_class_weight
-        if sample_weight is not None:
-            sample_weight = [sample_weight]
+            if sample_weight is not None:
+                sample_weight = [sample_weight]
         self.n_features_in_ = X.shape[1]
 
         onedal_params = {
@@ -834,9 +840,9 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         #                 )
         #             )
         #     self._check_n_features(X, reset=False)
-
         res = xp.reshape(self._onedal_estimator.predict(X, queue=queue), -1)
-        return xp.take(self.classes_, res.astype(xp.int64, casting="unsafe"))
+        res = xp.astype(res, xp.int64)
+        return xp.take(self.classes_, res)
 
     def _onedal_predict_proba(self, X, queue=None):
         xp, _ = get_namespace(X)
