@@ -80,8 +80,7 @@ struct DummyQueue {
 
 void instantiate_sycl_queue(py::module& m){
     py::class_<DummyQueue> syclqueue(m, "SyclQueue");
-    syclqueue.def(py::init<sycl:queue &>())
-        .def(py::init([](const py::object& syclobj) {
+    syclqueue.def(py::init([](const py::object& syclobj) {
                 return DummyQueue(get_queue_from_python(syclobj));
             })
         )
