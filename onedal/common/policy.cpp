@@ -39,6 +39,32 @@ void instantiate_default_host_policy(py::module& m) {
     instantiate_host_policy(policy);
 }
 
+#ifdef ONEDAL_DATA_PARALLEL
+
+using data_parallel_policy_t = dal::detail::data_parallel_policy;
+
+void instantiate_data_parallel_policy(py::module& m) {
+    constexpr const char name[] = "data_parallel_policy";
+    py::class_<data_parallel_policy_t> policy(m, name);
+    policy.def(py::init<data_parallel_policy_t>());
+    policy.def(py::init([](std::uint32_t id) {
+        return make_dp_policy(id);
+    }));
+    policy.def(py::init([](const std::string& filter) {
+        return make_dp_policy(filter);
+    }));
+    policy.def(py::init([](const py::object& syclobj) {
+        return make_dp_policy(syclobj);
+    }));
+    policy.def("get_device_id", [](const data_parallel_policy_t& policy) {
+        return get_device_id(policy);
+    });
+    policy.def("get_device_name", [](const data_parallel_policy_t& policy) {
+        return get_device_name(policy);
+    });
+    m.def("get_used_memory", &get_used_memory, py::return_value_policy::take_ownership);
+}
+
 struct DummyQueue {
     DummyQueue(sycl::queue &queue){
         _queue = queue;
@@ -76,31 +102,6 @@ void instantiate_sycl_queue(py::module& m){
         .def_property_readonly("is_gpu", &sycl::device::is_gpu);
 }
 
-#ifdef ONEDAL_DATA_PARALLEL
-
-using data_parallel_policy_t = dal::detail::data_parallel_policy;
-
-void instantiate_data_parallel_policy(py::module& m) {
-    constexpr const char name[] = "data_parallel_policy";
-    py::class_<data_parallel_policy_t> policy(m, name);
-    policy.def(py::init<data_parallel_policy_t>());
-    policy.def(py::init([](std::uint32_t id) {
-        return make_dp_policy(id);
-    }));
-    policy.def(py::init([](const std::string& filter) {
-        return make_dp_policy(filter);
-    }));
-    policy.def(py::init([](const py::object& syclobj) {
-        return make_dp_policy(syclobj);
-    }));
-    policy.def("get_device_id", [](const data_parallel_policy_t& policy) {
-        return get_device_id(policy);
-    });
-    policy.def("get_device_name", [](const data_parallel_policy_t& policy) {
-        return get_device_name(policy);
-    });
-    m.def("get_used_memory", &get_used_memory, py::return_value_policy::take_ownership);
-}
 
 #endif // ONEDAL_DATA_PARALLEL
 
