@@ -95,6 +95,17 @@ def _asarray(data, xp, *args, **kwargs):
     return data
 
 
+def _ravel(array, xp):
+    """Return a flattened array.
+
+    Note
+    ----
+    Input array expected to be contiguous.
+    """
+
+    return xp.reshape(array, (array.size,))
+
+
 def _is_numpy_namespace(xp):
     """Return True if xp is backed by NumPy."""
     return xp.__name__ in {"numpy", "array_api_compat.numpy", "numpy.array_api"}

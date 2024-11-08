@@ -25,6 +25,7 @@ from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils._array_api import (
     _asarray,
     _convert_to_numpy,
+    _ravel,
     get_dtype,
     get_namespace,
     make2d,
@@ -67,8 +68,6 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
     @sklearn_array_api_dispatch()
     def _fit(self, X, sua_iface, xp, is_array_api_compliant, y, sample_weight, queue):
         policy = self._get_policy(queue, X)
-        if not is_array_api_compliant:
-            xp = np
         # TODO:
         # check on dispatching and warn.
         # using scikit-learn primitives will require array_api_dispatch=True
@@ -106,22 +105,21 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         result = self._get_backend("dbscan", "clustering", None).compute(
             policy, params, X_table, sample_weight_table
         )
-
-        self.labels_ = xp.reshape(
-            from_table(result.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1
+        self.labels_ = _ravel(
+            from_table(result.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp), xp
         )
         if (
             result.core_observation_indices is not None
             and not result.core_observation_indices.kind == "empty"
         ):
-            self.core_sample_indices_ = xp.reshape(
+            self.core_sample_indices_ = _ravel(
                 from_table(
                     result.core_observation_indices,
                     sycl_queue=queue,
                     sua_iface=sua_iface,
                     xp=xp,
                 ),
-                -1,
+                xp,
             )
         else:
             # TODO:
