@@ -52,7 +52,6 @@ except ImportError:
 for mod in sys.modules.copy():
     if mod.startswith(text):
         sys.modules[mod.replace(_backend.__name__, "onedal._backend")] = sys.modules[mod]
-del text
 
 _is_spmd_backend = False
 
@@ -60,11 +59,9 @@ if _is_dpc_backend:
     try:
         import onedal._onedal_py_spmd_dpc as _spmd_backend
 
-        text = "onedal._onedal_py_spmd_dpc"
         for mod in sys.modules.copy():
-            if mod.startswith(text):
-                sys.modules[mod.replace(text, "onedal._spmd_backend")] = sys.modules[mod]
-        del text
+            if mod.startswith(_spmd_backend.__name__):
+                sys.modules[mod.replace(_spmd_backend.__name__, "onedal._spmd_backend")] = sys.modules[mod]
 
         _is_spmd_backend = True
     except ImportError:
