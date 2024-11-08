@@ -25,6 +25,19 @@ namespace oneapi::dal::python {
 using host_policy_t = dal::detail::host_policy;
 using default_host_policy_t = dal::detail::default_host_policy;
 
+template <typename Policy>
+inline auto& instantiate_host_policy(py::class_<Policy>& policy) {
+    policy.def(py::init<>());
+    policy.def(py::init<Policy>());
+    policy.def("get_device_id", [](const Policy&) -> std::uint32_t {
+        return std::uint32_t{ 0u };
+    });
+    policy.def("get_device_name", [](const Policy&) -> std::string {
+        return std::string{ "cpu" };
+    });
+    return policy;
+}
+
 void instantiate_host_policy(py::module& m) {
     constexpr const char name[] = "host_policy";
     py::class_<host_policy_t> policy(m, name);
@@ -84,23 +97,7 @@ void instantiate_data_parallel_policy(py::module& m) {
     m.def("get_used_memory", &get_used_memory, py::return_value_policy::take_ownership);
 }
 
-
 #endif // ONEDAL_DATA_PARALLEL
-
-
-template <typename Policy>
-inline auto& instantiate_host_policy(py::class_<Policy>& policy) {
-    policy.def(py::init<>());
-    policy.def(py::init<Policy>());
-    policy.def("get_device_id", [](const Policy&) -> std::uint32_t {
-        return std::uint32_t{ 0u };
-    });
-    policy.def("get_device_name", [](const Policy&) -> std::string {
-        return std::string{ "cpu" };
-    });
-    return policy;
-}
-
 
 ONEDAL_PY_INIT_MODULE(policy) {
     instantiate_host_policy(m);
