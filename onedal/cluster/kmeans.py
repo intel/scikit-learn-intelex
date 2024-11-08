@@ -32,7 +32,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_random_state
 
-from ..common._base import BaseEstimator as onedal_BaseEstimator
+from .._base import BaseEstimator as onedal_BaseEstimator
 from ..common._mixin import ClusterMixin, TransformerMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr

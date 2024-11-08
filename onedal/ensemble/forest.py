@@ -26,7 +26,7 @@ from sklearn.utils import check_random_state
 from daal4py.sklearn._utils import daal_check_version
 from sklearnex import get_hyperparameters
 
-from ..common._base import BaseEstimator
+from .._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..datatypes import _convert_to_supported, from_table, to_table

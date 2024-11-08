@@ -28,7 +28,7 @@ from daal4py import (
     kdtree_knn_classification_training,
 )
 
-from ..common._base import BaseEstimator
+from .._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..datatypes import _convert_to_supported, from_table, to_table

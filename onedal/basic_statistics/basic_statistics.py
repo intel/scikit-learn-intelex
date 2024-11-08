@@ -19,7 +19,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from ..common._base import BaseEstimator
+from .._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
 from ..utils.validation import _check_array

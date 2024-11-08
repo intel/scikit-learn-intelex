@@ -20,7 +20,7 @@ from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 
-from ..common._base import BaseEstimator as onedal_BaseEstimator
+from .._base import BaseEstimator as onedal_BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
 
@@ -91,11 +91,11 @@ if daal_check_version((2023, "P", 200)):
 
         def compute_raw(self, X_table, policy, dtype=np.float32):
             return self._compute_raw(
-                X_table, self._get_backend("kmeans_init", "init", None), policy, dtype
+                X_table, self._backend.kmeans_init.init, policy, dtype
             )
 
         def compute(self, X, queue=None):
-            return self._compute(X, self._get_backend("kmeans_init", "init", None), queue)
+            return self._compute(X, self._backend.kmeans_init.init, queue)
 
     def kmeans_plusplus(
         X,
