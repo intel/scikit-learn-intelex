@@ -16,13 +16,13 @@
 
 import numpy as np
 
+import onedal._backend.dbscan.clustering as onedal_backend
 from daal4py.sklearn._utils import get_dtype, make2d
 
 from .._base import BaseEstimator
 from ..common._mixin import ClusterMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
-import onedal._backend.dbscan.clustering as onedal_backend
 
 
 class BaseDBSCAN(BaseEstimator, ClusterMixin):

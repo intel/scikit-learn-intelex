@@ -14,11 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.basic_statistics as onedal_spmd_backend
 from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.basic_statistics as onedal_spmd_backend
 
 
 class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):

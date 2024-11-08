@@ -14,13 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.decomposition.dim_reduction as onedal_backend
 from daal4py.sklearn._utils import get_dtype
 
 from ...datatypes import _convert_to_supported, from_table, to_table
 from ...decomposition import IncrementalPCA as base_IncrementalPCA
 from ...utils import _check_array
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.decomposition.dim_reduction as onedal_backend
 
 
 class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):

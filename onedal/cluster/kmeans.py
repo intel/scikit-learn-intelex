@@ -20,8 +20,8 @@ from abc import ABC
 
 import numpy as np
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype
 import onedal._backend as onedal_backend
+from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal.basic_statistics import BasicStatistics
 
 if daal_check_version((2023, "P", 200)):

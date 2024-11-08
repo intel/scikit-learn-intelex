@@ -14,6 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._backend.basic_statistics as onedal_backend
+import onedal._spmd_backend.basic_statistics as onedal_spmd_backend
 from daal4py.sklearn._utils import get_dtype
 
 from ...basic_statistics import (
@@ -21,9 +23,6 @@ from ...basic_statistics import (
 )
 from ...datatypes import _convert_to_supported, to_table
 from .._base import BaseEstimatorSPMD
-import onedal._backend.basic_statistics as onedal_backend
-import onedal._spmd_backend.basic_statistics as onedal_spmd_backend
-
 
 
 class IncrementalBasicStatistics(BaseEstimatorSPMD, base_IncrementalBasicStatistics):

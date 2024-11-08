@@ -14,11 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.covariance as onedal_spmd_backend
 from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.covariance as onedal_spmd_backend
 
 
 class EmpiricalCovariance(BaseEstimatorSPMD, EmpiricalCovariance_Batch):

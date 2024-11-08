@@ -23,6 +23,7 @@ import numpy as np
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
+import onedal._backend.decision_forest as onedal_backend
 from daal4py.sklearn._utils import daal_check_version
 from sklearnex import get_hyperparameters
 
@@ -37,7 +38,6 @@ from ..utils import (
     _column_or_1d,
     _validate_targets,
 )
-import onedal._backend.decision_forest as onedal_backend
 
 
 class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):

@@ -14,11 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.linear_model.regression as onedal_backend
 from onedal.linear_model import LinearRegression as LinearRegression_Batch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.linear_model.regression as onedal_backend
 
 
 class LinearRegression(BaseEstimatorSPMD, LinearRegression_Batch):

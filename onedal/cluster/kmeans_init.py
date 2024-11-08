@@ -18,12 +18,12 @@ import numpy as np
 from scipy.sparse import issparse
 from sklearn.utils import check_random_state
 
+import onedal._backend.kmeans_init as onedal_backend
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 
 from .._base import BaseEstimator as onedal_BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
-import onedal._backend.kmeans_init as onedal_backend
 
 if daal_check_version((2023, "P", 200)):
 

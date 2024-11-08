@@ -14,11 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.logistic_regression.classification as onedal_backend
 from onedal.linear_model import LogisticRegression as LogisticRegression_Batch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.logistic_regression.classification as onedal_backend
 
 
 class LogisticRegression(BaseEstimatorSPMD, LogisticRegression_Batch):

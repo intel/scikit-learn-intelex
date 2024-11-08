@@ -14,12 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.neighbors as onedal_backend
 from onedal.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
 from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.neighbors as onedal_backend
 
 
 class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):

@@ -14,11 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.decomposition.dim_reduction as onedal_backend
 from onedal.decomposition.pca import PCA as PCABatch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.decomposition.dim_reduction as onedal_backend
 
 
 class PCA(BaseEstimatorSPMD, PCABatch):

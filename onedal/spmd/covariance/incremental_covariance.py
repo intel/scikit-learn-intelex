@@ -16,6 +16,8 @@
 
 import numpy as np
 
+import onedal._spmd_backend.covariance as onedal_backend
+import onedal._spmd_backend.covariance as onedal_spmd_backend
 from daal4py.sklearn._utils import get_dtype
 
 from ...covariance import (
@@ -24,8 +26,6 @@ from ...covariance import (
 from ...datatypes import _convert_to_supported, to_table
 from ...utils import _check_array
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.covariance as onedal_backend
-import onedal._spmd_backend.covariance as onedal_spmd_backend
 
 
 class IncrementalEmpiricalCovariance(

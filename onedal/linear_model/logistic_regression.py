@@ -19,6 +19,7 @@ from numbers import Number
 
 import numpy as np
 
+import onedal._backend.logistic_regression.classification as onedal_backend
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 
 from .._base import BaseEstimator as onedal_BaseEstimator
@@ -33,7 +34,6 @@ from ..utils import (
     _num_features,
     _type_of_target,
 )
-import onedal._backend.logistic_regression.classification as onedal_backend
 
 
 class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):

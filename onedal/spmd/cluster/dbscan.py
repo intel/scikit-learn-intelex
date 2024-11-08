@@ -14,10 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._spmd_backend.dbscan.clustering as onedal_spmd_backend
 from onedal.cluster import DBSCAN as DBSCAN_Batch
 
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.dbscan.clustering as onedal_spmd_backend
 
 
 class DBSCAN(BaseEstimatorSPMD, DBSCAN_Batch):

@@ -19,6 +19,7 @@ from numbers import Number
 
 import numpy as np
 
+import onedal._backend.linear_model.regression as onedal_backend
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 
 from .._base import BaseEstimator
@@ -26,7 +27,6 @@ from ..common._estimator_checks import _check_is_fitted
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
-import onedal._backend.linear_model.regression as onedal_backend
 
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):

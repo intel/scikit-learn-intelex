@@ -19,6 +19,7 @@ from numbers import Integral
 
 import numpy as np
 
+import onedal._backend.neighbors as onedal_backend
 from daal4py import (
     bf_knn_classification_model,
     bf_knn_classification_prediction,
@@ -40,7 +41,6 @@ from ..utils import (
     _column_or_1d,
     _num_samples,
 )
-import onedal._backend.neighbors as onedal_backend
 
 
 class NeighborsCommonBase(BaseEstimator, metaclass=ABCMeta):

@@ -16,6 +16,8 @@
 
 import numpy as np
 
+import onedal._spmd_backend.linear_model.regression as onedal_backend
+import onedal._spmd_backend.linear_model.regression as onedal_spmd_backend
 from daal4py.sklearn._utils import get_dtype
 
 from ...common.hyperparameters import get_hyperparameters
@@ -25,8 +27,6 @@ from ...linear_model import (
 )
 from ...utils import _check_X_y, _num_features
 from .._base import BaseEstimatorSPMD
-import onedal._spmd_backend.linear_model.regression as onedal_backend
-import onedal._spmd_backend.linear_model.regression as onedal_spmd_backend
 
 
 class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegression):
