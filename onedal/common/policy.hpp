@@ -37,24 +37,11 @@ namespace oneapi::dal::python {
 
 using dp_policy_t = detail::data_parallel_policy;
 
-
+dp_policy_t make_dp_policy(std::uint32_t id);
+dp_policy_t make_dp_policy(const py::object& syclobj);
+dp_policy_t make_dp_policy(const std::string& filter);
 inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
     return dp_policy_t{ policy };
-}
-
-dp_policy_t make_dp_policy(std::uint32_t id) {
-    sycl::queue queue = get_queue_by_device_id(id);
-    return dp_policy_t{ std::move(queue) };
-}
-
-dp_policy_t make_dp_policy(const py::object& syclobj) {
-    sycl::queue queue = get_queue_from_python(syclobj);
-    return dp_policy_t{ std::move(queue) };
-}
-
-dp_policy_t make_dp_policy(const std::string& filter) {
-    sycl::queue queue = get_queue_by_filter_string(filter);
-    return dp_policy_t{ std::move(queue) };
 }
 
 #endif // ONEDAL_DATA_PARALLEL

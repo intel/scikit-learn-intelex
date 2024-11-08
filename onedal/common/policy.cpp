@@ -43,6 +43,20 @@ void instantiate_default_host_policy(py::module& m) {
 
 using dp_policy_t = dal::detail::data_parallel_policy;
 
+dp_policy_t make_dp_policy(std::uint32_t id) {
+    sycl::queue queue = get_queue_by_device_id(id);
+    return dp_policy_t{ std::move(queue) };
+}
+
+dp_policy_t make_dp_policy(const py::object& syclobj) {
+    sycl::queue queue = get_queue_from_python(syclobj);
+    return dp_policy_t{ std::move(queue) };
+}
+
+dp_policy_t make_dp_policy(const std::string& filter) {
+    sycl::queue queue = get_queue_by_filter_string(filter);
+    return dp_policy_t{ std::move(queue) };
+}
 
 void instantiate_data_parallel_policy(py::module& m) {
     constexpr const char name[] = "data_parallel_policy";
