@@ -14,7 +14,6 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "oneapi/dal/detail/policy.hpp"
 #include "onedal/common/sycl_interfaces.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
