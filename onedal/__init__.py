@@ -49,10 +49,9 @@ except ImportError:
 
     _is_dpc_backend = False
 
-text = f"onedal.{_backend.__name__}"
 for mod in sys.modules.copy():
     if mod.startswith(text):
-        sys.modules[mod.replace(text, "onedal._backend")] = sys.modules[mod]
+        sys.modules[mod.replace(_backend.__name__, "onedal._backend")] = sys.modules[mod]
 del text
 
 _is_spmd_backend = False
