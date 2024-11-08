@@ -55,6 +55,8 @@ inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
 std::uint32_t get_device_id(const dp_policy_t& policy);
 std::size_t get_used_memory(const py::object& syclobj);
 std::string get_device_name(const dp_policy_t& policy);
+std::string get_device_name(const sycl::device& device);
+
 
 /// TODO: This is a workaround class.
 /// It hides deprecated ``sycl::ext::oneapi::filter_selector`` to get rid of build warnings

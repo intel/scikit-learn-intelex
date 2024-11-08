@@ -83,11 +83,7 @@ class DummyQueue {
 
 void instantiate_sycl_queue(py::module& m){
     py::class_<DummyQueue> syclqueue(m, "SyclQueue");
-    syclqueue.def(py::init([](const py::object& syclobj) {
-                return DummyQueue(get_queue_from_python(syclobj));
-            })
-        )
-        .def(py::init([](const sycl::device& sycldevice) {
+    syclqueue.def(py::init([](const sycl::device& sycldevice) {
                 return DummyQueue(sycl::queue{sycldevice});
             })
         )
@@ -95,6 +91,7 @@ void instantiate_sycl_queue(py::module& m){
                 return DummyQueue(get_queue_by_filter_string(filter));
             })
         )
+        
         .def("_get_capsule", &DummyQueue::_get_capsule)
         .def_readonly("sycl_device", &DummyQueue::sycl_device);
 
@@ -114,7 +111,7 @@ void instantiate_sycl_queue(py::module& m){
         )
         .def_property_readonly("filter_string",[](const sycl::device& device) {
                 // assumes we are not working with accelerators
-                std::string filter = device.is_cpu() ? "cpu:" : "gpu:";
+                std::string filter = get_device_name(device);
                 py::int_ id(get_device_id(device).value());
                 return py::str(filter) + py::str(id);
             }
