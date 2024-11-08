@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-import onedal._spmd_backend.neighbors as onedal_backend
+import onedal._spmd_backend.neighbors as onedal_spmd_backend
 from onedal.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
 from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
@@ -23,7 +23,7 @@ from .._base import BaseEstimatorSPMD
 
 
 class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
 
     @support_input_format()
     def fit(self, X, y, queue=None):
@@ -43,7 +43,7 @@ class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
 
 
 class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
 
     @support_input_format()
     def fit(self, X, y, queue=None):
@@ -71,7 +71,7 @@ class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
 
 
 class NearestNeighbors(BaseEstimatorSPMD):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
 
     @support_input_format()
     def fit(self, X, y, queue=None):

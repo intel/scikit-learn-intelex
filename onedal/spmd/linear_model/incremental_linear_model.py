@@ -16,7 +16,7 @@
 
 import numpy as np
 
-import onedal._spmd_backend.linear_model.regression as onedal_backend
+import onedal._backend.linear_model.regression as onedal_backend
 import onedal._spmd_backend.linear_model.regression as onedal_spmd_backend
 from daal4py.sklearn._utils import get_dtype
 
