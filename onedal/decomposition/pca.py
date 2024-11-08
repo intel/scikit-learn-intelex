@@ -119,7 +119,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
             return 0.0
 
     def _create_model(self):
-        m = self._backend.decomposition.dim_reduction.model
+        m = self._backend.decomposition.dim_reduction.model()
         m.eigenvectors = to_table(self.components_)
         m.means = to_table(self.mean_)
         if self.whiten:
