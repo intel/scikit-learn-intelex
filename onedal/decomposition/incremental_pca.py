@@ -99,8 +99,8 @@ class IncrementalPCA(BasePCA):
         self._reset()
 
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "decomposition", "dim_reduction", "partial_train_result"
+        self._partial_result = (
+            self._backend.decomposition.dim_reduction.partial_train_result()
         )
         if hasattr(self, "components_"):
             del self.components_
@@ -151,10 +151,7 @@ class IncrementalPCA(BasePCA):
             self._params = self._get_onedal_params(X)
 
         X_table = to_table(X)
-        self._partial_result = self._get_backend(
-            "decomposition",
-            "dim_reduction",
-            "partial_train",
+        self._partial_result = self._backend.decomposition.dim_reduction.partial_train(
             policy,
             self._params,
             self._partial_result,
@@ -181,10 +178,7 @@ class IncrementalPCA(BasePCA):
             policy = self._get_policy(queue)
         else:
             policy = self._get_policy(self._queue)
-        result = self._get_backend(
-            "decomposition",
-            "dim_reduction",
-            "finalize_train",
+        result = self._backend.decomposition.dim_reduction.finalize_train(
             policy,
             self._params,
             self._partial_result,

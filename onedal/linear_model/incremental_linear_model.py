@@ -47,8 +47,8 @@ class IncrementalLinearRegression(BaseLinearRegression):
         self._reset()
 
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "linear_model", "regression", "partial_train_result"
+        self._partial_result = (
+            self._backend.linear_model.regression.partial_train_result()
         )
 
     def partial_fit(self, X, y, queue=None):
@@ -72,7 +72,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
 
         self._queue = queue
         policy = self._get_policy(queue, X)
@@ -127,7 +127,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
         else:
             policy = self._get_policy(self._queue)
 
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             result = module.finalize_train(
@@ -171,14 +171,14 @@ class IncrementalRidge(BaseLinearRegression):
     """
 
     def __init__(self, alpha=1.0, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
         super().__init__(
             fit_intercept=fit_intercept, alpha=alpha, copy_X=copy_X, algorithm=algorithm
         )
         self._partial_result = module.partial_train_result()
 
     def _reset(self):
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
         self._partial_result = module.partial_train_result()
 
     def partial_fit(self, X, y, queue=None):
@@ -202,7 +202,7 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
 
         self._queue = queue
         policy = self._get_policy(queue, X)
@@ -240,7 +240,7 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
         if queue is not None:
             policy = self._get_policy(queue)
         else:

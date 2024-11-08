@@ -99,9 +99,10 @@ class BasicStatistics(BaseBasicStatistics):
     def _compute_raw(
         self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
     ):
-        module = self._get_backend("basic_statistics")
         params = self._get_onedal_params(is_csr, dtype)
-        result = module.compute(policy, params, data_table, weights_table)
+        result = self._backend.basic_statistics.compute(
+            policy, params, data_table, weights_table
+        )
         options = self._get_result_options(self.options).split("|")
 
         return {opt: getattr(result, opt) for opt in options}

@@ -226,24 +226,20 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
         )
 
     def fit(self, X, y, queue=None):
-        return super()._fit(
-            X, y, self._get_backend("logistic_regression", "classification", None), queue
-        )
+        return super()._fit(X, y, self._backend.logistic_regression.classification, queue)
 
     def predict(self, X, queue=None):
-        y = super()._predict(
-            X, self._get_backend("logistic_regression", "classification", None), queue
-        )
+        y = super()._predict(X, self._backend.logistic_regression.classification, queue)
         return y
 
     def predict_proba(self, X, queue=None):
         y = super()._predict_proba(
-            X, self._get_backend("logistic_regression", "classification", None), queue
+            X, self._backend.logistic_regression.classification, queue
         )
         return y
 
     def predict_log_proba(self, X, queue=None):
         y = super()._predict_log_proba(
-            X, self._get_backend("logistic_regression", "classification", None), queue
+            X, self._backend.logistic_regression.classification, queue
         )
         return y

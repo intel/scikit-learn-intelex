@@ -70,9 +70,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self._reset()
 
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "basic_statistics", None, "partial_compute_result"
-        )
+        self._partial_result = self._backend.basic_statistics.partial_compute_result()
 
     def partial_fit(self, X, weights=None, queue=None):
         """
@@ -113,10 +111,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             self._onedal_params = self._get_onedal_params(False, dtype=dtype)
 
         X_table, weights_table = to_table(X, weights)
-        self._partial_result = self._get_backend(
-            "basic_statistics",
-            None,
-            "partial_compute",
+        self._partial_result = self._backend.basic_statistics.partial_compute(
             policy,
             self._onedal_params,
             self._partial_result,
@@ -145,10 +140,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         else:
             policy = self._get_policy(self._queue)
 
-        result = self._get_backend(
-            "basic_statistics",
-            None,
-            "finalize_compute",
+        result = self._backend.basic_statistics.finalize_compute(
             policy,
             self._onedal_params,
             self._partial_result,

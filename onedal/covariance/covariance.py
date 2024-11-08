@@ -100,19 +100,14 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = self._get_backend(
-                "covariance",
-                None,
-                "compute",
+            result = self._backend.covariance.compute(
                 policy,
                 params,
                 hparams.backend,
                 to_table(X),
             )
         else:
-            result = self._get_backend(
-                "covariance", None, "compute", policy, params, to_table(X)
-            )
+            result = self._backend.covariance.compute(policy, params, to_table(X))
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

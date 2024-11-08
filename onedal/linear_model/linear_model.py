@@ -54,7 +54,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         return params
 
     def _create_model(self, policy):
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
         model = module.model()
 
         coefficients = self.coef_
@@ -115,7 +115,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         C : array, shape (n_samples, n_targets)
             Returns predicted values.
         """
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
 
         _check_is_fitted(self)
 
@@ -192,7 +192,7 @@ class LinearRegression(BaseLinearRegression):
         self : object
             Fitted Estimator.
         """
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
 
         # TODO Fix _check_X_y to make sure this conversion is there
         if not isinstance(X, np.ndarray):
@@ -291,7 +291,7 @@ class Ridge(BaseLinearRegression):
         self : object
             Fitted Estimator.
         """
-        module = self._get_backend("linear_model", "regression")
+        module = self._backend.linear_model.regression
 
         X = _check_array(
             X,

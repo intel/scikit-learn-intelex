@@ -119,7 +119,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
             return 0.0
 
     def _create_model(self):
-        m = self._get_backend("decomposition", "dim_reduction", "model")
+        m = self._backend.decomposition.dim_reduction.model
         m.eigenvectors = to_table(self.components_)
         m.means = to_table(self.mean_)
         if self.whiten:
@@ -133,8 +133,8 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X, stage="predict")
 
-        result = self._get_backend(
-            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
+        result = self._backend.decomposition.dim_reduction.infer(
+            policy, params, model, to_table(X)
         )
         return from_table(result.transformed_data)
 
@@ -154,8 +154,8 @@ class PCA(BasePCA):
         X = _convert_to_supported(policy, X)
 
         params = self._get_onedal_params(X)
-        result = self._get_backend(
-            "decomposition", "dim_reduction", "train", policy, params, to_table(X)
+        result = self._backend.decomposition.dim_reduction.train(
+            policy, params, to_table(X)
         )
 
         self.mean_ = from_table(result.means).ravel()

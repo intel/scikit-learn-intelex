@@ -18,13 +18,11 @@ from abc import ABC
 
 from onedal import _spmd_backend
 
-from ..common._base import _get_backend
 from ..common._spmd_policy import _get_spmd_policy
 
 
 class BaseEstimatorSPMD(ABC):
-    def _get_backend(self, module, submodule=None, method=None, *args, **kwargs):
-        return _get_backend(_spmd_backend, module, submodule, method, *args, **kwargs)
+    _backend = _spmd_backend
 
     def _get_policy(self, queue, *data):
         return _get_spmd_policy(queue)

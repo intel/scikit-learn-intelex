@@ -105,6 +105,4 @@ class DBSCAN(BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
-        return super()._fit(
-            X, y, sample_weight, self._get_backend("dbscan", "clustering", None), queue
-        )
+        return super()._fit(X, y, sample_weight, self._backend.dbscan.clustering, queue)

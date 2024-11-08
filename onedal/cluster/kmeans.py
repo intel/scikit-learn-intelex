@@ -283,7 +283,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             if best_inertia is None:
                 return True
             else:
-                mod = self._get_backend("kmeans_common", None, None)
+                mod = self._backend.kmeans_common
                 better_inertia = inertia < best_inertia
                 same_clusters = mod._is_same_clustering(
                     labels, best_labels, self.n_clusters
@@ -366,7 +366,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         self.n_iter_ = 0
         self.inertia_ = 0
 
-        self.model_ = self._get_backend("kmeans", "clustering", "model")
+        self.model_ = self._backend.kmeans.clustering.model
         self.model_.centroids = to_table(self._cluster_centers_)
         self.n_features_in_ = self.model_.centroids.column_count
         self.labels_ = np.arange(self.model_.centroids.row_count)
@@ -397,9 +397,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _score(self, X, module, queue=None):
         result_options = "compute_exact_objective_function"
 
-        return self._predict(
-            X, self._get_backend("kmeans", "clustering", None), queue, result_options
-        )
+        return self._predict(X, self._backend.kmeans.clustering, queue, result_options)
 
     def _transform(self, X):
         return euclidean_distances(X, self.cluster_centers_)
@@ -434,7 +432,7 @@ class KMeans(_BaseKMeans):
         assert self.algorithm == "lloyd"
 
     def fit(self, X, y=None, queue=None):
-        return super()._fit(X, self._get_backend("kmeans", "clustering", None), queue)
+        return super()._fit(X, self._backend.kmeans.clustering, queue)
 
     def predict(self, X, queue=None):
         """Predict the closest cluster each sample in X belongs to.
@@ -453,7 +451,7 @@ class KMeans(_BaseKMeans):
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        return super()._predict(X, self._get_backend("kmeans", "clustering", None), queue)
+        return super()._predict(X, self._backend.kmeans.clustering, queue)
 
     def fit_predict(self, X, y=None, queue=None):
         """Compute cluster centers and predict cluster index for each sample.
@@ -529,7 +527,7 @@ class KMeans(_BaseKMeans):
         score: float
             Opposite of the value of X on the K-means objective.
         """
-        return super()._score(X, self._get_backend("kmeans", "clustering", None), queue)
+        return super()._score(X, self._backend.kmeans.clustering, queue)
 
 
 def k_means(

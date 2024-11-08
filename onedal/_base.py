@@ -16,23 +16,12 @@
 
 from abc import ABC
 
-from onedal import _backend
-
-from ._policy import _get_policy
-
-
-def _get_backend(backend, module, submodule=None, method=None, *args, **kwargs):
-    result = getattr(backend, module)
-    if submodule:
-        result = getattr(result, submodule)
-    if method:
-        return getattr(result, method)(*args, **kwargs)
-    return result
+from onedal import _backend as onedal_backend
+from .common._policy import _get_policy
 
 
 class BaseEstimator(ABC):
-    def _get_backend(self, module, submodule=None, method=None, *args, **kwargs):
-        return _get_backend(_backend, module, submodule, method, *args, **kwargs)
+    _backend = onedal_backend
 
     def _get_policy(self, queue, *data):
         return _get_policy(queue, *data)

@@ -57,9 +57,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self._reset()
 
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "covariance", None, "partial_compute_result"
-        )
+        self._partial_result = self._backend.covariance.partial_compute_result()
 
     def partial_fit(self, X, y=None, queue=None):
         """
@@ -96,10 +94,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
 
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
-        self._partial_result = self._get_backend(
-            "covariance",
-            None,
-            "partial_compute",
+        self._partial_result = self._backend.covariance.partial_compute(
             policy,
             params,
             self._partial_result,
@@ -127,10 +122,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         else:
             policy = self._get_policy(self._queue)
 
-        result = self._get_backend(
-            "covariance",
-            None,
-            "finalize_compute",
+        result = self._backend.covariance.finalize_compute(
             policy,
             params,
             self._partial_result,
