@@ -459,7 +459,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             X,
             y,
             sample_weight,
-            self._backend.decision_forest.classification,
+            self._backend.classification,
             queue,
         )
 
@@ -467,7 +467,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         hparams = get_hyperparameters("decision_forest", "infer")
         pred = super()._predict(
             X,
-            self._backend.decision_forest.classification,
+            self._backend.classification,
             queue,
             hparams,
         )
@@ -475,9 +475,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(
-            X, self._backend.decision_forest.classification, queue
-        )
+        return super()._predict_proba(X, self._backend.classification, queue)
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -547,14 +545,12 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             X,
             y,
             sample_weight,
-            self._backend.decision_forest.regression,
+            self._backend.regression,
             queue,
         )
 
     def predict(self, X, queue=None):
-        return (
-            super()._predict(X, self._backend.decision_forest.regression, queue).ravel()
-        )
+        return super()._predict(X, self._backend.regression, queue).ravel()
 
 
 class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
@@ -632,19 +628,17 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             X,
             y,
             sample_weight,
-            self._backend.decision_forest.classification,
+            self._backend.classification,
             queue,
         )
 
     def predict(self, X, queue=None):
-        pred = super()._predict(X, self._backend.decision_forest.classification, queue)
+        pred = super()._predict(X, self._backend.classification, queue)
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(
-            X, self._backend.decision_forest.classification, queue
-        )
+        return super()._predict_proba(X, self._backend.classification, queue)
 
 
 class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -714,11 +708,9 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
             X,
             y,
             sample_weight,
-            self._backend.decision_forest.regression,
+            self._backend.regression,
             queue,
         )
 
     def predict(self, X, queue=None):
-        return (
-            super()._predict(X, self._backend.decision_forest.regression, queue).ravel()
-        )
+        return super()._predict(X, self._backend.regression, queue).ravel()

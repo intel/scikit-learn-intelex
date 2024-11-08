@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-import onedal._spmd_backend.decision_forest as onedal_backend
+import onedal._spmd_backend.decision_forest as onedal_spmd_backend
 from onedal.ensemble import RandomForestClassifier as RandomForestClassifier_Batch
 from onedal.ensemble import RandomForestRegressor as RandomForestRegressor_Batch
 
@@ -22,8 +22,8 @@ from .._base import BaseEstimatorSPMD
 
 
 class RandomForestClassifier(BaseEstimatorSPMD, RandomForestClassifier_Batch):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
 
 
 class RandomForestRegressor(BaseEstimatorSPMD, RandomForestRegressor_Batch):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
