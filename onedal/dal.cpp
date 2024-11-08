@@ -102,6 +102,7 @@ namespace oneapi::dal::python {
 #else
     #ifdef ONEDAL_DATA_PARALLEL
     PYBIND11_MODULE(_onedal_py_dpc, m) {
+        init_sycl(m);
     #else
     PYBIND11_MODULE(_onedal_py_host, m) {
     #endif
