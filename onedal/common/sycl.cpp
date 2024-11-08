@@ -79,8 +79,6 @@ void instantiate_sycl_interfaces(py::module& m){
         .def_property_readonly("is_gpu", &sycl::device::is_gpu);
 }
 
-
-
 ONEDAL_PY_INIT_MODULE(sycl) {
     instantiate_sycl_interfaces(m);
 }

@@ -46,7 +46,7 @@ namespace oneapi::dal::python {
 #else // ONEDAL_DATA_PARALLEL_SPMD
     #ifdef ONEDAL_DATA_PARALLEL
     ONEDAL_PY_INIT_MODULE(sycl);
-    #endif
+    #endif // ONEDAL_DATA_PARALLEL
 
     ONEDAL_PY_INIT_MODULE(policy);
     /* datatypes*/
