@@ -15,7 +15,7 @@
 *******************************************************************************/
 
 #include "oneapi/dal/detail/policy.hpp"
-#include "onedal/common/sycl_interfaces.hpp"
+#include "onedal/common/policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
 namespace py = pybind11;
@@ -24,19 +24,6 @@ namespace oneapi::dal::python {
 
 using host_policy_t = dal::detail::host_policy;
 using default_host_policy_t = dal::detail::default_host_policy;
-
-template <typename Policy>
-inline auto& instantiate_host_policy(py::class_<Policy>& policy) {
-    policy.def(py::init<>());
-    policy.def(py::init<Policy>());
-    policy.def("get_device_id", [](const Policy&) -> std::uint32_t {
-        return std::uint32_t{ 0u };
-    });
-    policy.def("get_device_name", [](const Policy&) -> std::string {
-        return std::string{ "cpu" };
-    });
-    return policy;
-}
 
 void instantiate_host_policy(py::module& m) {
     constexpr const char name[] = "host_policy";
@@ -56,24 +43,6 @@ void instantiate_default_host_policy(py::module& m) {
 
 using dp_policy_t = dal::detail::data_parallel_policy;
 
-inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
-    return dp_policy_t{ policy };
-}
-
-dp_policy_t make_dp_policy(std::uint32_t id) {
-    sycl::queue queue = get_queue_by_device_id(id);
-    return dp_policy_t{ std::move(queue) };
-}
-
-dp_policy_t make_dp_policy(const py::object& syclobj) {
-    sycl::queue queue = get_queue_from_python(syclobj);
-    return dp_policy_t{ std::move(queue) };
-}
-
-dp_policy_t make_dp_policy(const std::string& filter) {
-    sycl::queue queue = get_queue_by_filter_string(filter);
-    return dp_policy_t{ std::move(queue) };
-}
 
 void instantiate_data_parallel_policy(py::module& m) {
     constexpr const char name[] = "data_parallel_policy";

@@ -1,0 +1,75 @@
+/*******************************************************************************
+* Copyright 2024 Intel Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
+
+#pragma once
+
+#include <string>
+#include <cstdint>
+
+#ifdef ONEDAL_DATA_PARALLEL
+#include <sycl/sycl.hpp>
+#endif // ONEDAL_DATA_PARALLEL
+
+#include <pybind11/pybind11.h>
+
+#include "oneapi/dal/detail/policy.hpp"
+
+#include "onedal/common/sycl_interfaces.hpp"
+
+namespace py = pybind11;
+
+namespace oneapi::dal::python {
+
+#ifdef ONEDAL_DATA_PARALLEL
+
+using dp_policy_t = detail::data_parallel_policy;
+
+
+inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
+    return dp_policy_t{ policy };
+}
+
+dp_policy_t make_dp_policy(std::uint32_t id) {
+    sycl::queue queue = get_queue_by_device_id(id);
+    return dp_policy_t{ std::move(queue) };
+}
+
+dp_policy_t make_dp_policy(const py::object& syclobj) {
+    sycl::queue queue = get_queue_from_python(syclobj);
+    return dp_policy_t{ std::move(queue) };
+}
+
+dp_policy_t make_dp_policy(const std::string& filter) {
+    sycl::queue queue = get_queue_by_filter_string(filter);
+    return dp_policy_t{ std::move(queue) };
+}
+
+#endif // ONEDAL_DATA_PARALLEL
+
+template <typename Policy>
+inline auto& instantiate_host_policy(py::class_<Policy>& policy) {
+    policy.def(py::init<>());
+    policy.def(py::init<Policy>());
+    policy.def("get_device_id", [](const Policy&) -> std::uint32_t {
+        return std::uint32_t{ 0u };
+    });
+    policy.def("get_device_name", [](const Policy&) -> std::string {
+        return std::string{ "cpu" };
+    });
+    return policy;
+}
+
+} // namespace oneapi::dal::python

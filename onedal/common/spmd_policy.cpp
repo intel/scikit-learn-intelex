@@ -19,7 +19,7 @@
 #include "oneapi/dal/detail/spmd_policy.hpp"
 #include "oneapi/dal/spmd/mpi/communicator.hpp"
 
-#include "onedal/common/sycl_interfaces.hpp"
+#include "onedal/common/policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
 namespace py = pybind11;
@@ -28,6 +28,7 @@ namespace oneapi::dal::python {
 
 using dp_policy_t = dal::detail::data_parallel_policy;
 using spmd_policy_t = dal::detail::spmd_policy<dp_policy_t>;
+
 
 inline spmd_policy_t make_spmd_policy(dp_policy_t&& local) {
     sycl::queue& queue = local.get_queue();
