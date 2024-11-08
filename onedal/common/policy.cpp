@@ -87,19 +87,37 @@ void instantiate_sycl_queue(py::module& m){
                 return DummyQueue(get_queue_from_python(syclobj));
             })
         )
+        .def(py::init([](const sycl::device& sycldevice) {
+                return DummyQueue(sycl::queue{sycldevice});
+            })
+        )
+        .def(py::init([](const std::string& filter) {
+                return DummyQueue(get_queue_by_filter_string(filter));
+            })
+        )
         .def("_get_capsule", &DummyQueue::_get_capsule)
         .def_readonly("sycl_device", &DummyQueue::sycl_device);
 
     // expose limited sycl device features to python for oneDAL analysis
     py::class_<sycl::device> sycldevice(m, "SyclDevice");
-        sycldevice.def_property_readonly("has_aspect_fp64",[](const sycl::device& device) {
-            return device.has(sycl::aspect::fp64);
-        }
-    )
+        sycldevice.def(py::init([](std::uint32_t id) {
+                return get_device_by_id(id);
+            })
+        )
+        .def_property_readonly("has_aspect_fp64",[](const sycl::device& device) {
+                return device.has(sycl::aspect::fp64);
+            }
+        )
         .def_property_readonly("has_aspect_fp16",[](const sycl::device& device) {
-            return device.has(sycl::aspect::fp16);
-        }
-    )
+                return device.has(sycl::aspect::fp16);
+            }
+        )
+        .def_property_readonly("filter_string",[](const sycl::device& device) {
+                // assumes we are not working with accelerators
+                std::string filter = device.is_cpu() ? "cpu:" : "gpu:";
+                return filter + std::to_string(get_device_id(device));
+            }
+        )
         .def_property_readonly("is_cpu", &sycl::device::is_cpu)
         .def_property_readonly("is_gpu", &sycl::device::is_gpu);
 }

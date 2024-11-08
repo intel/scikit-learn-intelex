@@ -18,6 +18,7 @@
 #include <sycl/sycl.hpp>
 #endif // ONEDAL_DATA_PARALLEL
 
+#include <Python.h>
 #include <pybind11/pybind11.h>
 
 #include "onedal/common/policy_common.hpp"
@@ -71,6 +72,13 @@ sycl::queue get_queue_by_get_capsule(const py::object& syclobj) {
     return extract_from_capsule(std::move(capsule));
 }
 
+sycl::queue get_queue_by_pylong_pointer(const py::int_& syclobj) {
+    // requires Python.h to access
+    void *ptr = PyLong_AsVoidPtr(syclobj);
+    // assumes that the PyLong is a pointer to a queue
+    return reinterpret_cast<sycl::queue>(ptr);
+}
+
 sycl::queue get_queue_by_filter_string(const std::string& filter) {
     filter_selector_wrapper selector{ filter };
     return sycl::queue{ selector };
@@ -88,6 +96,9 @@ sycl::queue get_queue_by_device_id(std::uint32_t id) {
 sycl::queue get_queue_from_python(const py::object& syclobj) {
     if (py::hasattr(syclobj, get_capsule_name)) {
         return get_queue_by_get_capsule(syclobj);
+    }
+    else if (py::isinstance<py::int_>(syclobj)) {
+        return get_queue_by_pylong_pointer(syclobj);
     }
     else if (py::isinstance<py::capsule>(syclobj)) {
         const auto caps = syclobj.cast<py::capsule>();
