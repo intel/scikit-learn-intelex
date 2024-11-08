@@ -19,11 +19,17 @@
 from collections.abc import Iterable
 from functools import wraps
 
+from daal4py.sklearn._utils import sklearn_check_version
+
+if sklearn_check_version("1.4"):
+    from sklearn.utils._array_api import get_namespace as sklearn_get_namespace
+
 import numpy as np
 from sklearn import config_context, get_config
 
 from daal4py.sklearn._utils import get_dtype
 from daal4py.sklearn._utils import make2d as d4p_make2d
+from daal4py.sklearn._utils import sklearn_check_version
 
 from ._dpep_helpers import dpctl_available, dpnp_available
 
@@ -151,23 +157,103 @@ def sklearn_array_api_dispatch(freefunc=False):
     return decorator
 
 
-def get_namespace(*arrays):
-    """Get namespace of arrays.
-    TBD.
-    Parameters
-    ----------
-    *arrays : array objects
-        Array objects.
-    Returns
-    -------
-    namespace : module
-        Namespace shared by array objects.
-    is_array_api : bool
-        True of the arrays are containers that implement the Array API spec.
-    """
-    sycl_type, xp, is_array_api_compliant = _get_sycl_namespace(*arrays)
+if sklearn_check_version("1.5"):
 
-    if sycl_type:
-        return xp, is_array_api_compliant
-    else:
-        return np, True
+    def get_namespace(*arrays, remove_none=True, remove_types=(str,), xp=None):
+        """Get namespace of arrays.
+
+        Extends stock scikit-learn's `get_namespace` primitive to support DPCTL usm_ndarrays
+        and DPNP ndarrays.
+        If no DPCTL usm_ndarray or DPNP ndarray inputs and backend scikit-learn version supports
+        Array API then :obj:`sklearn.utils._array_api.get_namespace` results are drawn.
+        Otherwise, numpy namespace will be returned.
+
+        Designed to work for numpy.ndarray, DPCTL usm_ndarrays and DPNP ndarrays without
+        `array-api-compat` or backend scikit-learn Array API support.
+
+        For full documentation refer to :obj:`sklearn.utils._array_api.get_namespace`.
+
+        Parameters
+        ----------
+        *arrays : array objects
+            Array objects.
+
+        remove_none : bool, default=True
+            Whether to ignore None objects passed in arrays.
+
+        remove_types : tuple or list, default=(str,)
+            Types to ignore in the arrays.
+
+        xp : module, default=None
+            Precomputed array namespace module. When passed, typically from a caller
+            that has already performed inspection of its own inputs, skips array
+            namespace inspection.
+
+        Returns
+        -------
+        usm_iface : TBD
+
+        namespace : module
+            Namespace shared by array objects.
+
+        is_array_api : bool
+            True of the arrays are containers that implement the Array API spec.
+        """
+
+        usm_iface, xp_sycl_namespace, is_array_api_compliant = _get_sycl_namespace(
+            *arrays
+        )
+
+        if usm_iface:
+            return usm_iface, xp_sycl_namespace, is_array_api_compliant
+        elif sklearn_check_version("1.4"):
+            xp, is_array_api_compliant = sklearn_get_namespace(
+                *arrays, remove_none=remove_none, remove_types=remove_types, xp=xp
+            )
+            return usm_iface, xp, is_array_api_compliant
+        else:
+            return usm_iface, np, False
+
+else:
+
+    def get_namespace(*arrays):
+        """Get namespace of arrays.
+
+        Extends stock scikit-learn's `get_namespace` primitive to support DPCTL usm_ndarrays
+        and DPNP ndarrays.
+        If no DPCTL usm_ndarray or DPNP ndarray inputs and backend scikit-learn version supports
+        Array API then :obj:`sklearn.utils._array_api.get_namespace(*arrays)` results are drawn.
+        Otherwise, numpy namespace will be returned.
+
+        Designed to work for numpy.ndarray, DPCTL usm_ndarrays and DPNP ndarrays without
+        `array-api-compat` or backend scikit-learn Array API support.
+
+        For full documentation refer to :obj:`sklearn.utils._array_api.get_namespace`.
+
+        Parameters
+        ----------
+        *arrays : array objects
+            Array objects.
+
+        Returns
+        -------
+        usm_iface : TBD
+
+        namespace : module
+            Namespace shared by array objects.
+
+        is_array_api : bool
+            True of the arrays are containers that implement the Array API spec.
+        """
+
+        usm_iface, xp_sycl_namespace, is_array_api_compliant = _get_sycl_namespace(
+            *arrays
+        )
+
+        if usm_iface:
+            return usm_iface, xp_sycl_namespace, is_array_api_compliant
+        elif sklearn_check_version("1.4"):
+            xp, is_array_api_compliant = sklearn_get_namespace(*arrays)
+            return usm_iface, xp, is_array_api_compliant
+        else:
+            return usm_iface, np, False

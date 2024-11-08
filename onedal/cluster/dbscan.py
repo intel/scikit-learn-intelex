@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+import numpy as np
 from sklearn.utils import check_array
 
 from onedal.utils._array_api import get_dtype, make2d
@@ -64,12 +65,15 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         }
 
     @sklearn_array_api_dispatch()
-    def _fit(self, X, xp, is_array_api_compliant, y, sample_weight, queue):
+    def _fit(self, X, sua_iface, xp, is_array_api_compliant, y, sample_weight, queue):
         policy = self._get_policy(queue, X)
+        if not is_array_api_compliant:
+            xp = np
         # TODO:
         # check on dispatching and warn.
         # using scikit-learn primitives will require array_api_dispatch=True
         X = check_array(X, accept_sparse="csr", dtype=[xp.float64, xp.float32])
+
         sample_weight = make2d(sample_weight) if sample_weight is not None else None
         X = make2d(X)
         # X_device = X.device if xp else None
@@ -78,6 +82,7 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         # move to _convert_to_supported to do astype conversion
         # at once.
         types = [xp.float32, xp.float64]
+
         if get_dtype(X) not in types:
             X = X.astype(xp.float64)
         X = _convert_to_supported(policy, X, xp=xp)
@@ -90,27 +95,43 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         )
         dtype = get_dtype(X)
         params = self._get_onedal_params(xp, dtype)
+        X_table = to_table(X, sua_iface=sua_iface)
+        sample_weight_table = to_table(
+            sample_weight,
+            sua_iface=(
+                get_namespace(sample_weight)[0] if sample_weight is not None else None
+            ),
+        )
 
-        # Since `to_table` data management enabled only for numpy host inputs,
-        # copy data into numpy host for to_table conversion.
         result = self._get_backend("dbscan", "clustering", None).compute(
-            policy, params, to_table(_convert_to_numpy(X, xp=xp)), to_table(None)
+            policy, params, X_table, sample_weight_table
         )
 
-        # Since `from_table` data management enabled only for numpy host,
-        # copy data from numpy host output to xp namespace array.
-        self.labels_ = _asarray(
-            from_table(result.responses).reshape(-1), xp=xp, sycl_queue=queue
+        self.labels_ = xp.reshape(
+            from_table(result.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1
         )
-        if result.core_observation_indices is not None:
-            # self.core_sample_indices_ = _asarray(from_table(result.core_observation_indices).reshape(-1), xp=xp, sycl_queue=queue)
-            self.core_sample_indices_ = xp.asarray(
-                from_table(result.core_observation_indices).reshape(-1),
-                usm_type="device",
-                sycl_queue=queue,
+        if (
+            result.core_observation_indices is not None
+            and not result.core_observation_indices.kind == "empty"
+        ):
+            self.core_sample_indices_ = xp.reshape(
+                from_table(
+                    result.core_observation_indices,
+                    sycl_queue=queue,
+                    sua_iface=sua_iface,
+                    xp=xp,
+                ),
+                -1,
             )
         else:
-            self.core_sample_indices_ = xp.array([], dtype=xp.int32)
+            # TODO:
+            # self.core_sample_indices_ = _asarray([], xp, sycl_queue=queue, dtype=xp.int32)
+            if sua_iface:
+                self.core_sample_indices_ = xp.asarray(
+                    [], sycl_queue=queue, dtype=xp.int32
+                )
+            else:
+                self.core_sample_indices_ = xp.asarray([], dtype=xp.int32)
         self.components_ = xp.take(X, self.core_sample_indices_, axis=0)
         self.n_features_in_ = X.shape[1]
         return self
@@ -139,8 +160,11 @@ class DBSCAN(BaseDBSCAN):
         self.n_jobs = n_jobs
 
     def fit(self, X, y=None, sample_weight=None, queue=None):
-        xp, is_array_api_compliant = get_namespace(X)
+        sua_iface, xp, is_array_api_compliant = get_namespace(X)
         # TODO:
         # update for queue getting.
-        queue = X.sycl_queue
-        return super()._fit(X, xp, is_array_api_compliant, y, sample_weight, queue)
+        if sua_iface:
+            queue = X.sycl_queue
+        return super()._fit(
+            X, sua_iface, xp, is_array_api_compliant, y, sample_weight, queue
+        )
