@@ -30,7 +30,8 @@ if dpctl_available:
     from dpctl.memory import MemoryUSMDevice, as_usm_memory
     from dpctl.tensor import usm_ndarray
 else:
-    from onedal._backend import SyclQueue
+    import onedal._backend 
+    SyclQueue = onedal._backend.SyclQueue
 
 if dpnp_available:
     import dpnp
