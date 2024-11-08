@@ -76,7 +76,7 @@ sycl::queue get_queue_by_pylong_pointer(const py::int_& syclobj) {
     // requires Python.h to access
     void *ptr = PyLong_AsVoidPtr(syclobj);
     // assumes that the PyLong is a pointer to a queue
-    return reinterpret_cast<sycl::queue>(ptr);
+    return static_cast<sycl::queue>(ptr);
 }
 
 sycl::queue get_queue_by_filter_string(const std::string& filter) {
