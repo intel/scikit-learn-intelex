@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-import onedal._spmd_backend.logistic_regression.classification as onedal_backend
+import onedal._spmd_backend.logistic_regression.classification as onedal_spmd_backend
 from onedal.linear_model import LogisticRegression as LogisticRegression_Batch
 
 from ..._device_offload import support_input_format
@@ -22,7 +22,7 @@ from .._base import BaseEstimatorSPMD
 
 
 class LogisticRegression(BaseEstimatorSPMD, LogisticRegression_Batch):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
 
     @support_input_format()
     def fit(self, X, y, queue=None):
