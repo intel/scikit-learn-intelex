@@ -457,7 +457,7 @@ def _check_sample_weight(
         dtype = xp.float64
 
     if sample_weight is None:
-        sample_weight = np.ones(n_samples, dtype=dtype)
+        sample_weight = xp.ones(n_samples, dtype=dtype)
     elif isinstance(sample_weight, Number):
         sample_weight = xp.full(n_samples, sample_weight, dtype=dtype)
     else:
