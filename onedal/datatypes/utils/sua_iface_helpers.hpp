@@ -26,7 +26,7 @@
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
-#include "onedal/common/policy_common.hpp"
+#include "onedal/common/sycl_interfaces.hpp"
 #include "onedal/datatypes/data_conversion_sua_iface.hpp"
 #include "onedal/datatypes/utils/dtype_conversions.hpp"
 #include "onedal/datatypes/utils/dtype_dispatcher.hpp"

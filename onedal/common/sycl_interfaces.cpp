@@ -21,7 +21,7 @@
 #include <Python.h>
 #include <pybind11/pybind11.h>
 
-#include "onedal/common/policy_common.hpp"
+#include "onedal/common/sycl_interfaces.hpp"
 
 namespace oneapi::dal::python {
 
@@ -33,6 +33,41 @@ constexpr const char queue_capsule_name[] = "SyclQueueRef";
 constexpr const char context_capsule_name[] = "SyclContextRef";
 constexpr const char device_name[] = "sycl_device";
 constexpr const char filter_name[] = "filter_string";
+
+const std::vector<sycl::device>& get_devices() {
+    static const auto devices = sycl::device::get_devices();
+    return devices;
+}
+
+template <typename Iter>
+inline std::uint32_t get_id(Iter first, Iter it) {
+    const auto raw_id = std::distance(first, it);
+    return detail::integral_cast<std::uint32_t>(raw_id);
+}
+
+std::optional<std::uint32_t> get_device_id(const sycl::device& device) {
+    const auto devices = get_devices();
+    const auto first = devices.cbegin();
+    const auto sentinel = devices.cend();
+    auto iter = std::find(first, sentinel, device);
+    if (iter != sentinel) {
+        return get_id(first, iter);
+    }
+    else {
+        return {};
+    }
+}
+
+std::optional<sycl::device> get_device_by_id(std::uint32_t device_id) {
+    auto casted = detail::integral_cast<std::size_t>(device_id);
+    const auto devices = get_devices();
+    if (casted < devices.size()) {
+        return devices.at(casted);
+    }
+    else {
+        return {};
+    }
+}
 
 sycl::queue extract_queue(py::capsule capsule) {
     constexpr const char* gtr_name = queue_capsule_name;
@@ -145,21 +180,6 @@ std::size_t get_used_memory(const py::object& syclobj){
     std::size_t total_memory = device.get_info<sycl::info::device::global_mem_size>();
     std::size_t free_memory = device.get_info<sycl::ext::intel::info::device::free_memory>();
     return total_memory - free_memory;
-}
-
-dp_policy_t make_dp_policy(std::uint32_t id) {
-    sycl::queue queue = get_queue_by_device_id(id);
-    return dp_policy_t{ std::move(queue) };
-}
-
-dp_policy_t make_dp_policy(const py::object& syclobj) {
-    sycl::queue queue = get_queue_from_python(syclobj);
-    return dp_policy_t{ std::move(queue) };
-}
-
-dp_policy_t make_dp_policy(const std::string& filter) {
-    sycl::queue queue = get_queue_by_filter_string(filter);
-    return dp_policy_t{ std::move(queue) };
 }
 
 std::uint32_t get_device_id(const dp_policy_t& policy) {

@@ -15,7 +15,7 @@
 *******************************************************************************/
 
 #include "oneapi/dal/detail/policy.hpp"
-#include "onedal/common/policy_common.hpp"
+#include "onedal/common/sycl_interfaces.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
 namespace py = pybind11;
@@ -41,12 +41,31 @@ void instantiate_default_host_policy(py::module& m) {
 
 #ifdef ONEDAL_DATA_PARALLEL
 
-using data_parallel_policy_t = dal::detail::data_parallel_policy;
+using dp_policy_t = dal::detail::data_parallel_policy;
+
+inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
+    return dp_policy_t{ policy };
+}
+
+dp_policy_t make_dp_policy(std::uint32_t id) {
+    sycl::queue queue = get_queue_by_device_id(id);
+    return dp_policy_t{ std::move(queue) };
+}
+
+dp_policy_t make_dp_policy(const py::object& syclobj) {
+    sycl::queue queue = get_queue_from_python(syclobj);
+    return dp_policy_t{ std::move(queue) };
+}
+
+dp_policy_t make_dp_policy(const std::string& filter) {
+    sycl::queue queue = get_queue_by_filter_string(filter);
+    return dp_policy_t{ std::move(queue) };
+}
 
 void instantiate_data_parallel_policy(py::module& m) {
     constexpr const char name[] = "data_parallel_policy";
-    py::class_<data_parallel_policy_t> policy(m, name);
-    policy.def(py::init<data_parallel_policy_t>());
+    py::class_<dp_policy_t> policy(m, name);
+    policy.def(py::init<dp_policy_t>());
     policy.def(py::init([](std::uint32_t id) {
         return make_dp_policy(id);
     }));
@@ -56,10 +75,10 @@ void instantiate_data_parallel_policy(py::module& m) {
     policy.def(py::init([](const py::object& syclobj) {
         return make_dp_policy(syclobj);
     }));
-    policy.def("get_device_id", [](const data_parallel_policy_t& policy) {
+    policy.def("get_device_id", [](const dp_policy_t& policy) {
         return get_device_id(policy);
     });
-    policy.def("get_device_name", [](const data_parallel_policy_t& policy) {
+    policy.def("get_device_name", [](const dp_policy_t& policy) {
         return get_device_name(policy);
     });
     m.def("get_used_memory", &get_used_memory, py::return_value_policy::take_ownership);
@@ -122,6 +141,21 @@ void instantiate_sycl_queue(py::module& m){
 
 
 #endif // ONEDAL_DATA_PARALLEL
+
+
+template <typename Policy>
+inline auto& instantiate_host_policy(py::class_<Policy>& policy) {
+    policy.def(py::init<>());
+    policy.def(py::init<Policy>());
+    policy.def("get_device_id", [](const Policy&) -> std::uint32_t {
+        return std::uint32_t{ 0u };
+    });
+    policy.def("get_device_name", [](const Policy&) -> std::string {
+        return std::string{ "cpu" };
+    });
+    return policy;
+}
+
 
 ONEDAL_PY_INIT_MODULE(policy) {
     instantiate_host_policy(m);
