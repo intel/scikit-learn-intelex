@@ -39,8 +39,8 @@ sycl::queue extract_queue(py::capsule capsule);
 sycl::context extract_context(py::capsule capsule);
 sycl::queue extract_from_capsule(py::capsule capsule);
 sycl::queue get_queue_by_get_capsule(const py::object& syclobj);
-sycl::queue get_queue_by_pylong_pointer(const py::int_& syclobj)
-sycl::queue get_queue_by_filter_string(const std::string& filter)
+sycl::queue get_queue_by_pylong_pointer(const py::int_& syclobj);
+sycl::queue get_queue_by_filter_string(const std::string& filter);
 sycl::queue get_queue_from_python(const py::object& syclobj);
 
 using dp_policy_t = detail::data_parallel_policy;

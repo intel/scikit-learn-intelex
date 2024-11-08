@@ -115,7 +115,8 @@ void instantiate_sycl_queue(py::module& m){
         .def_property_readonly("filter_string",[](const sycl::device& device) {
                 // assumes we are not working with accelerators
                 std::string filter = device.is_cpu() ? "cpu:" : "gpu:";
-                return py::str(filter) + py::str(py::int_(get_device_id(device)));
+                py::int_ id(get_device_id(device).value());
+                return py::str(filter) + py::str(id);
             }
         )
         .def_property_readonly("is_cpu", &sycl::device::is_cpu)
