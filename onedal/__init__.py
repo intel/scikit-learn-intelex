@@ -50,7 +50,7 @@ except ImportError:
     _is_dpc_backend = False
 
 for mod in sys.modules.copy():
-    if mod.startswith(text):
+    if mod.startswith(_backend.__name__):
         sys.modules[mod.replace(_backend.__name__, "onedal._backend")] = sys.modules[mod]
 
 _is_spmd_backend = False
