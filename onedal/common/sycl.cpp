@@ -18,6 +18,10 @@
 #include "onedal/common/sycl_interfaces.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
+namespace py = pybind11;
+
+namespace oneapi::dal::python {
+
 #ifdef ONEDAL_DATA_PARALLEL
 
 class SyclQueue {
@@ -81,3 +85,5 @@ ONEDAL_PY_INIT_MODULE(sycl) {
     instantiate_sycl_interfaces(m);
 }
 #endif
+
+} // namespace oneapi::dal::python
