@@ -16,13 +16,13 @@
 # ==============================================================================
 
 import platform
+import sys
 
 from daal4py.sklearn._utils import daal_check_version
 
 if "Windows" in platform.system():
     import os
     import site
-    import sys
 
     arch_dir = platform.machine()
     plt_dict = {"x86_64": "intel64", "AMD64": "intel64", "aarch64": "arm"}
@@ -49,11 +49,23 @@ except ImportError:
 
     _is_dpc_backend = False
 
+text = f"onedal.{_backend.__name__}"
+for mod in sys.modules.copy():
+    if mod.startswith(text):
+        sys.modules[mod.replace(text, "onedal._backend")] = sys.modules[mod]
+del text
+
 _is_spmd_backend = False
 
 if _is_dpc_backend:
     try:
         import onedal._onedal_py_spmd_dpc as _spmd_backend
+
+        text = "onedal._onedal_py_spmd_dpc"
+        for mod in sys.modules.copy():
+            if mod.startswith(text):
+                sys.modules[mod.replace(text, "onedal._spmd_backend")] = sys.modules[mod]
+        del text
 
         _is_spmd_backend = True
     except ImportError:

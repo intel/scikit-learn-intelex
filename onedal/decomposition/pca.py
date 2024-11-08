@@ -21,6 +21,7 @@ import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
 from sklearn.utils.extmath import stable_cumsum
 
+import .._backend.decomposition.dim_reduction as onedal_backend
 from .._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 
@@ -29,6 +30,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
     """
     Base class for PCA oneDAL implementation.
     """
+    _backend = onedal_backend
 
     def __init__(
         self,
@@ -119,7 +121,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
             return 0.0
 
     def _create_model(self):
-        m = self._backend.decomposition.dim_reduction.model()
+        m = self._backend.model()
         m.eigenvectors = to_table(self.components_)
         m.means = to_table(self.mean_)
         if self.whiten:
@@ -133,7 +135,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X, stage="predict")
 
-        result = self._backend.decomposition.dim_reduction.infer(
+        result = self._backend.infer(
             policy, params, model, to_table(X)
         )
         return from_table(result.transformed_data)
@@ -154,7 +156,7 @@ class PCA(BasePCA):
         X = _convert_to_supported(policy, X)
 
         params = self._get_onedal_params(X)
-        result = self._backend.decomposition.dim_reduction.train(
+        result = self._backend.train(
             policy, params, to_table(X)
         )
 
