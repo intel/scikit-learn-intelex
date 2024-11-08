@@ -31,7 +31,7 @@ if dpctl_available:
     from dpctl.tensor import usm_ndarray
 else:
     import onedal
-    SyclQueue = onedal._backend.SyclQueue if hasattr(onedal._backend,"SyclQueue") else None
+    SyclQueue = onedal._backend.SyclQueue if hasattr(onedal._backend, "SyclQueue") else None
 
 if dpnp_available:
     import dpnp
@@ -121,7 +121,7 @@ def _get_global_queue():
     if target != "auto":
         if isinstance(target, SyclQueue):
             return target
-        return QueueClass(target)
+        return SyclQueue(target)
     return None
 
 
