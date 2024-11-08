@@ -14,7 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-import onedal._spmd_backend.decomposition.dim_reduction as onedal_backend
+import onedal._backend.decomposition.dim_reduction as onedal_backend
+import onedal._spmd_backend.decomposition.dim_reduction as onedal_spmd_backend
 from daal4py.sklearn._utils import get_dtype
 
 from ...datatypes import _convert_to_supported, from_table, to_table
@@ -24,7 +25,7 @@ from .._base import BaseEstimatorSPMD
 
 
 class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
     """
     Distributed incremental estimator for PCA based on oneDAL implementation.
     Allows for distributed PCA computation if data is split into batches.
@@ -33,9 +34,7 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
     """
 
     def _reset(self):
-        self._partial_result = super(base_IncrementalPCA, self)._get_backend(
-            "decomposition", "dim_reduction", "partial_train_result"
-        )
+        self._partial_result = onedal_backend.partial_train_result()
         if hasattr(self, "components_"):
             del self.components_
 
@@ -85,10 +84,7 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
             self._params = self._get_onedal_params(X)
 
         X_table = to_table(X)
-        self._partial_result = super(base_IncrementalPCA, self)._get_backend(
-            "decomposition",
-            "dim_reduction",
-            "partial_train",
+        self._partial_result = onedal_backend.partial_train(
             policy,
             self._params,
             self._partial_result,
@@ -97,9 +93,7 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
         return self
 
     def _create_model(self):
-        m = super(base_IncrementalPCA, self)._get_backend(
-            "decomposition", "dim_reduction", "model"
-        )
+        m = onedal_backend.model()
         m.eigenvectors = to_table(self.components_)
         m.means = to_table(self.mean_)
         if self.whiten:
@@ -113,7 +107,5 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(X, stage="predict")
 
-        result = super(base_IncrementalPCA, self)._get_backend(
-            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
-        )
+        result = onedal_backend.infer(policy, params, model, to_table(X))
         return from_table(result.transformed_data)

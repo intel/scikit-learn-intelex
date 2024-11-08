@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-import onedal._spmd_backend.decomposition.dim_reduction as onedal_backend
+import onedal._spmd_backend.decomposition.dim_reduction as onedal_spmd_backend
 from onedal.decomposition.pca import PCA as PCABatch
 
 from ..._device_offload import support_input_format
@@ -22,7 +22,7 @@ from .._base import BaseEstimatorSPMD
 
 
 class PCA(BaseEstimatorSPMD, PCABatch):
-    _backend = onedal_backend
+    _backend = onedal_spmd_backend
 
     @support_input_format()
     def fit(self, X, y=None, queue=None):
