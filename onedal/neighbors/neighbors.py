@@ -746,7 +746,7 @@ class NearestNeighbors(NeighborsBase):
             model = self._create_model(self._backend.search)
 
         params["fptype"] = "float" if X.dtype == np.float32 else "double"
-        result = self._backend.infer(policy, params, model, to_table(X))
+        result = self._backend.search.infer(policy, params, model, to_table(X))
 
         return result
 
