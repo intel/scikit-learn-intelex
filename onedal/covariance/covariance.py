@@ -23,9 +23,12 @@ from onedal.utils import _check_array
 from .._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
+import onedal._backend.covariance as onedal_backend
 
 
 class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
+    _backend = onedal_backend
+
     def __init__(self, method="dense", bias=False, assume_centered=False):
         self.method = method
         self.bias = bias
@@ -100,14 +103,14 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = self._backend.covariance.compute(
+            result = self._backend.compute(
                 policy,
                 params,
                 hparams.backend,
                 to_table(X),
             )
         else:
-            result = self._backend.covariance.compute(policy, params, to_table(X))
+            result = self._backend.compute(policy, params, to_table(X))
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

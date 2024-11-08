@@ -37,9 +37,12 @@ from ..utils import (
     _column_or_1d,
     _validate_targets,
 )
+import onedal._backend.decision_forest as onedal_backend
 
 
 class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
+    _backend = onedal_backend
+
     @abstractmethod
     def __init__(
         self,

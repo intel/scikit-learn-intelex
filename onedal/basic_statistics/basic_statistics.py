@@ -23,9 +23,12 @@ from .._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
 from ..utils.validation import _check_array
+from .._backend import basic_statistics as onedal_backend
 
 
 class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
+    _backend = onedal_backend
+
     @abstractmethod
     def __init__(self, result_options, algorithm):
         self.options = result_options
@@ -100,9 +103,7 @@ class BasicStatistics(BaseBasicStatistics):
         self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
     ):
         params = self._get_onedal_params(is_csr, dtype)
-        result = self._backend.basic_statistics.compute(
-            policy, params, data_table, weights_table
-        )
+        result = self._backend.compute(policy, params, data_table, weights_table)
         options = self._get_result_options(self.options).split("|")
 
         return {opt: getattr(result, opt) for opt in options}

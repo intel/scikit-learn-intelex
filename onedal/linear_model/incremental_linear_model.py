@@ -47,9 +47,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
         self._reset()
 
     def _reset(self):
-        self._partial_result = (
-            self._backend.linear_model.regression.partial_train_result()
-        )
+        self._partial_result = self._backend.partial_train_result()
 
     def partial_fit(self, X, y, queue=None):
         """
@@ -72,7 +70,6 @@ class IncrementalLinearRegression(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._backend.linear_model.regression
 
         self._queue = queue
         policy = self._get_policy(queue, X)
@@ -93,7 +90,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
         X_table, y_table = to_table(X, y)
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
-            self._partial_result = module.partial_train(
+            self._partial_result = self._backend.partial_train(
                 policy,
                 self._params,
                 hparams.backend,
@@ -102,7 +99,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
                 y_table,
             )
         else:
-            self._partial_result = module.partial_train(
+            self._partial_result = self._backend.partial_train(
                 policy, self._params, self._partial_result, X_table, y_table
             )
 
@@ -127,14 +124,15 @@ class IncrementalLinearRegression(BaseLinearRegression):
         else:
             policy = self._get_policy(self._queue)
 
-        module = self._backend.linear_model.regression
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
-            result = module.finalize_train(
+            result = self._backend.finalize_train(
                 policy, self._params, hparams.backend, self._partial_result
             )
         else:
-            result = module.finalize_train(policy, self._params, self._partial_result)
+            result = self._backend.finalize_train(
+                policy, self._params, self._partial_result
+            )
 
         self._onedal_model = result.model
 
@@ -171,15 +169,13 @@ class IncrementalRidge(BaseLinearRegression):
     """
 
     def __init__(self, alpha=1.0, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
-        module = self._backend.linear_model.regression
         super().__init__(
             fit_intercept=fit_intercept, alpha=alpha, copy_X=copy_X, algorithm=algorithm
         )
-        self._partial_result = module.partial_train_result()
+        self._partial_result = self._backend.partial_train_result()
 
     def _reset(self):
-        module = self._backend.linear_model.regression
-        self._partial_result = module.partial_train_result()
+        self._partial_result = self._backend.partial_train_result()
 
     def partial_fit(self, X, y, queue=None):
         """
@@ -202,7 +198,6 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._backend.linear_model.regression
 
         self._queue = queue
         policy = self._get_policy(queue, X)
@@ -221,7 +216,7 @@ class IncrementalRidge(BaseLinearRegression):
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
         X_table, y_table = to_table(X, y)
-        self._partial_result = module.partial_train(
+        self._partial_result = self._backend.partial_train(
             policy, self._params, self._partial_result, X_table, y_table
         )
 
@@ -240,12 +235,11 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._backend.linear_model.regression
         if queue is not None:
             policy = self._get_policy(queue)
         else:
             policy = self._get_policy(self._queue)
-        result = module.finalize_train(policy, self._params, self._partial_result)
+        result = self._backend.finalize_train(policy, self._params, self._partial_result)
 
         self._onedal_model = result.model
 

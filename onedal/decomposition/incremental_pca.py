@@ -99,9 +99,7 @@ class IncrementalPCA(BasePCA):
         self._reset()
 
     def _reset(self):
-        self._partial_result = (
-            self._backend.partial_train_result()
-        )
+        self._partial_result = self._backend.partial_train_result()
         if hasattr(self, "components_"):
             del self.components_
 

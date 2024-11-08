@@ -19,9 +19,12 @@ from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
+import onedal._spmd_backend.neighbors as onedal_backend
 
 
 class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
+    _backend = onedal_backend
+
     @support_input_format()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
@@ -40,6 +43,8 @@ class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
 
 
 class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
+    _backend = onedal_backend
+
     @support_input_format()
     def fit(self, X, y, queue=None):
         if queue is not None and queue.sycl_device.is_gpu:
@@ -66,6 +71,8 @@ class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
 
 
 class NearestNeighbors(BaseEstimatorSPMD):
+    _backend = onedal_backend
+
     @support_input_format()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)

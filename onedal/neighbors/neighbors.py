@@ -40,9 +40,13 @@ from ..utils import (
     _column_or_1d,
     _num_samples,
 )
+import onedal._backend.neighbors as onedal_backend
 
 
 class NeighborsCommonBase(BaseEstimator, metaclass=ABCMeta):
+
+    _backend = onedal_backend
+
     def _parse_auto_method(self, method, n_samples, n_features):
         result_method = method
 
@@ -429,9 +433,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(X, y)
-        train_alg = self._backend.neighbors.classification.train(
-            policy, params, *to_table(X, y)
-        )
+        train_alg = self._backend.classification.train(policy, params, *to_table(X, y))
 
         return train_alg.model
 
@@ -446,13 +448,11 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
-            model = self._create_model(self._backend.neighbors.classification)
+            model = self._create_model(self._backend.classification)
         if "responses" not in params["result_option"]:
             params["result_option"] += "|responses"
         params["fptype"] = "float" if X.dtype == np.float32 else "double"
-        result = self._backend.neighbors.classification.infer(
-            policy, params, model, to_table(X)
-        )
+        result = self._backend.classification.infer(policy, params, model, to_table(X))
 
         return result
 
@@ -585,8 +585,8 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(X, y)
-        train_alg_regr = self._backend.neighbors.regression
-        train_alg_srch = self._backend.neighbors.search
+        train_alg_regr = self._backend.regression
+        train_alg_srch = self._backend.search
 
         if gpu_device:
             return train_alg_regr.train(policy, params, *to_table(X, y)).model
@@ -601,11 +601,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         gpu_device = queue is not None and queue.sycl_device.is_gpu
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
-        backend = (
-            self._backend.neighbors.regression
-            if gpu_device
-            else self._backend.neighbors.search
-        )
+        backend = self._backend.regression if gpu_device else self._backend.search
 
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
@@ -732,7 +728,7 @@ class NearestNeighbors(NeighborsBase):
         policy = self._get_policy(queue, X, y)
         X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(X, y)
-        train_alg = self._backend.neighbors.search.train(policy, params, to_table(X))
+        train_alg = self._backend.search.train(policy, params, to_table(X))
 
         return train_alg.model
 
@@ -747,10 +743,10 @@ class NearestNeighbors(NeighborsBase):
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
-            model = self._create_model(self._backend.neighbors.search)
+            model = self._create_model(self._backend.search)
 
         params["fptype"] = "float" if X.dtype == np.float32 else "double"
-        result = self._backend.neighbors.search.infer(policy, params, model, to_table(X))
+        result = self._backend.neighbors.infer(policy, params, model, to_table(X))
 
         return result
 

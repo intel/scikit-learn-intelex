@@ -24,15 +24,17 @@ from ...covariance import (
 from ...datatypes import _convert_to_supported, to_table
 from ...utils import _check_array
 from .._base import BaseEstimatorSPMD
+import onedal._spmd_backend.covariance as onedal_backend
+import onedal._spmd_backend.covariance as onedal_spmd_backend
 
 
 class IncrementalEmpiricalCovariance(
     BaseEstimatorSPMD, base_IncrementalEmpiricalCovariance
 ):
+    _backend = onedal_spmd_backend
+
     def _reset(self):
-        self._partial_result = super(
-            base_IncrementalEmpiricalCovariance, self
-        )._get_backend("covariance", None, "partial_compute_result")
+        self._partial_result = onedal_backend.partial_compute_result()
 
     def partial_fit(self, X, y=None, queue=None):
         """
@@ -69,12 +71,7 @@ class IncrementalEmpiricalCovariance(
 
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
-        self._partial_result = super(
-            base_IncrementalEmpiricalCovariance, self
-        )._get_backend(
-            "covariance",
-            None,
-            "partial_compute",
+        self._partial_result = onedal_backend.partial_compute(
             policy,
             params,
             self._partial_result,

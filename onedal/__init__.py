@@ -61,7 +61,9 @@ if _is_dpc_backend:
 
         for mod in sys.modules.copy():
             if mod.startswith(_spmd_backend.__name__):
-                sys.modules[mod.replace(_spmd_backend.__name__, "onedal._spmd_backend")] = sys.modules[mod]
+                sys.modules[
+                    mod.replace(_spmd_backend.__name__, "onedal._spmd_backend")
+                ] = sys.modules[mod]
 
         _is_spmd_backend = True
     except ImportError:

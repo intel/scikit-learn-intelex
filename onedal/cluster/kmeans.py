@@ -21,7 +21,7 @@ from abc import ABC
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal import _backend
+import onedal._backend as onedal_backend
 from onedal.basic_statistics import BasicStatistics
 
 if daal_check_version((2023, "P", 200)):
@@ -39,6 +39,8 @@ from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 
 
 class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
+    _backend = onedal_backend
+
     def __init__(
         self,
         n_clusters,
@@ -248,7 +250,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     ):
         params = self._get_onedal_params(is_csr, dtype)
 
-        meta = _backend.get_table_metadata(X_table)
+        meta = self._backend.get_table_metadata(X_table)
         assert meta.get_npy_dtype(0) == dtype
 
         result = module.train(policy, params, X_table, centroids_table)

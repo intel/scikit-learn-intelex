@@ -21,13 +21,16 @@ from ...basic_statistics import (
 )
 from ...datatypes import _convert_to_supported, to_table
 from .._base import BaseEstimatorSPMD
+import onedal._backend.basic_statistics as onedal_backend
+import onedal._spmd_backend.basic_statistics as onedal_spmd_backend
+
 
 
 class IncrementalBasicStatistics(BaseEstimatorSPMD, base_IncrementalBasicStatistics):
+    _backend = onedal_spmd_backend
+
     def _reset(self):
-        self._partial_result = super(base_IncrementalBasicStatistics, self)._get_backend(
-            "basic_statistics", None, "partial_compute_result"
-        )
+        self._partial_result = onedal_backend.partial_compute_result()
 
     def partial_fit(self, X, weights=None, queue=None):
         """
@@ -57,10 +60,7 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, base_IncrementalBasicStatist
             self._onedal_params = self._get_onedal_params(False, dtype=dtype)
 
         X_table, weights_table = to_table(X, weights)
-        self._partial_result = super(base_IncrementalBasicStatistics, self)._get_backend(
-            "basic_statistics",
-            None,
-            "partial_compute",
+        self._partial_result = onedal_backend.partial_compute(
             policy,
             self._onedal_params,
             self._partial_result,

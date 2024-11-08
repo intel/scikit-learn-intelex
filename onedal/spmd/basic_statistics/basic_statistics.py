@@ -18,9 +18,12 @@ from onedal.basic_statistics import BasicStatistics as BasicStatistics_Batch
 
 from ..._device_offload import support_input_format
 from .._base import BaseEstimatorSPMD
+import onedal._spmd_backend.basic_statistics as onedal_spmd_backend
 
 
 class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
+    _backend = onedal_spmd_backend
+
     @support_input_format()
     def compute(self, data, weights=None, queue=None):
         return super().compute(data, weights=weights, queue=queue)

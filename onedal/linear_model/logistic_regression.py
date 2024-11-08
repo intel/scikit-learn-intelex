@@ -33,9 +33,12 @@ from ..utils import (
     _num_features,
     _type_of_target,
 )
+import onedal._backend.logistic_regression.classification as onedal_backend
 
 
 class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
+    _backend = onedal_backend
+
     @abstractmethod
     def __init__(self, tol, C, fit_intercept, solver, max_iter, algorithm):
         self.tol = tol
@@ -226,20 +229,16 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
         )
 
     def fit(self, X, y, queue=None):
-        return super()._fit(X, y, self._backend.logistic_regression.classification, queue)
+        return super()._fit(X, y, self._backend, queue)
 
     def predict(self, X, queue=None):
-        y = super()._predict(X, self._backend.logistic_regression.classification, queue)
+        y = super()._predict(X, self._backend, queue)
         return y
 
     def predict_proba(self, X, queue=None):
-        y = super()._predict_proba(
-            X, self._backend.logistic_regression.classification, queue
-        )
+        y = super()._predict_proba(X, self._backend, queue)
         return y
 
     def predict_log_proba(self, X, queue=None):
-        y = super()._predict_log_proba(
-            X, self._backend.logistic_regression.classification, queue
-        )
+        y = super()._predict_log_proba(X, self._backend, queue)
         return y

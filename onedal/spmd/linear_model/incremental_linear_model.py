@@ -25,6 +25,8 @@ from ...linear_model import (
 )
 from ...utils import _check_X_y, _num_features
 from .._base import BaseEstimatorSPMD
+import onedal._spmd_backend.linear_model.regression as onedal_backend
+import onedal._spmd_backend.linear_model.regression as onedal_spmd_backend
 
 
 class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegression):
@@ -34,10 +36,10 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegre
     API is the same as for `onedal.linear_model.IncrementalLinearRegression`.
     """
 
+    _backend = onedal_spmd_backend
+
     def _reset(self):
-        self._partial_result = super(base_IncrementalLinearRegression, self)._get_backend(
-            "linear_model", "regression", "partial_train_result"
-        )
+        self._partial_result = onedal_backend.partial_train_result()
 
     def partial_fit(self, X, y, queue=None):
         """
@@ -60,9 +62,6 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegre
         self : object
             Returns the instance itself.
         """
-        module = super(base_IncrementalLinearRegression, self)._get_backend(
-            "linear_model", "regression"
-        )
 
         self._queue = queue
         policy = super(base_IncrementalLinearRegression, self)._get_policy(queue, X)
@@ -83,7 +82,7 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegre
         X_table, y_table = to_table(X, y)
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
-            self._partial_result = module.partial_train(
+            self._partial_result = onedal_backend.partial_train(
                 policy,
                 self._params,
                 hparams.backend,
@@ -92,6 +91,6 @@ class IncrementalLinearRegression(BaseEstimatorSPMD, base_IncrementalLinearRegre
                 y_table,
             )
         else:
-            self._partial_result = module.partial_train(
+            self._partial_result = onedal_backend.partial_train(
                 policy, self._params, self._partial_result, X_table, y_table
             )
