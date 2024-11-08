@@ -31,7 +31,10 @@ if dpctl_available:
     from dpctl.tensor import usm_ndarray
 else:
     import onedal
-    SyclQueue = onedal._backend.SyclQueue if hasattr(onedal._backend, "SyclQueue") else None
+
+    SyclQueue = (
+        onedal._backend.SyclQueue if hasattr(onedal._backend, "SyclQueue") else None
+    )
 
 if dpnp_available:
     import dpnp
