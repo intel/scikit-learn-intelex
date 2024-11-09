@@ -25,10 +25,7 @@ namespace oneapi::dal::python {
 
 void instantiate_sycl_interfaces(py::module& m){
     py::class_<sycl::queue> syclqueue(m, "SyclQueue");
-    syclqueue.def(py::init([](const sycl::device& sycldevice) {
-                return sycl::queue{sycldevice};
-            })
-        )
+    syclqueue.def(py::init<const sycl::device&>())
         .def(py::init([](const std::string& filter) {
                 return get_queue_by_filter_string(filter);
             })
