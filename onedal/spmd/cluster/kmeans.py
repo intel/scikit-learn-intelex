@@ -14,6 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import onedal._backend.kmeans_init as onedal_spmd_backend
 from onedal.cluster import KMeans as KMeans_Batch
 from onedal.cluster import KMeansInit as KMeansInit_Batch
 from onedal.spmd.basic_statistics import BasicStatistics
@@ -26,8 +27,7 @@ class KMeansInit(BaseEstimatorSPMD, KMeansInit_Batch):
     """
     KMeansInit oneDAL implementation for SPMD iface.
     """
-
-    pass
+    _backend = onedal_spmd_backend
 
 
 class KMeans(BaseEstimatorSPMD, KMeans_Batch):
