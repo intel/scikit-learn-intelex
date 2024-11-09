@@ -26,7 +26,7 @@ from onedal.basic_statistics import (
 )
 
 from .._device_offload import dispatch
-from .._utils import PatchingConditionsChain
+from .._utils import IntelEstimator, PatchingConditionsChain
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval, StrOptions
@@ -41,7 +41,7 @@ else:
 
 
 @control_n_jobs(decorated_methods=["partial_fit", "_onedal_finalize_fit"])
-class IncrementalBasicStatistics(BaseEstimator):
+class IncrementalBasicStatistics(IntelEstimator, BaseEstimator):
     """
     Calculates basic statistics on the given data, allows for computation when the data are split into
     batches. The user can use ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
@@ -105,7 +105,7 @@ class IncrementalBasicStatistics(BaseEstimator):
 
     Note
     ----
-    Attributes' names without the trailing underscore are
+    Names of attributes without the trailing underscore are
     supported currently but deprecated in 2025.1 and will be removed in 2026.0
 
     Examples

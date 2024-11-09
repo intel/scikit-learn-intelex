@@ -36,6 +36,7 @@ if daal_check_version((2024, "P", 1)):
     from onedal.linear_model import LogisticRegression as onedal_LogisticRegression
     from onedal.utils import _num_samples
 
+    from .._config import get_config
     from .._device_offload import dispatch, wrap_output_data
     from .._utils import PatchingConditionsChain, get_patch_message
 
@@ -129,6 +130,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict",
@@ -141,6 +143,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_proba(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict_proba",
@@ -153,6 +156,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def predict_log_proba(self, X):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "predict_log_proba",
@@ -165,6 +169,7 @@ if daal_check_version((2024, "P", 1)):
 
         @wrap_output_data
         def score(self, X, y, sample_weight=None):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "score",
@@ -305,23 +310,26 @@ if daal_check_version((2024, "P", 1)):
                 )
 
             self._initialize_onedal_estimator()
-            try:
+            if get_config()["allow_sklearn_after_onedal"]:
+                try:
+                    self._onedal_estimator.fit(X, y, queue=queue)
+                    self._save_attributes()
+                except RuntimeError:
+                    logging.getLogger("sklearnex").info(
+                        f"{self.__class__.__name__}.fit "
+                        + get_patch_message("sklearn_after_onedal")
+                    )
+
+                    del self._onedal_estimator
+                    super().fit(X, y)
+            else:
                 self._onedal_estimator.fit(X, y, queue=queue)
                 self._save_attributes()
-            except RuntimeError:
-                logging.getLogger("sklearnex").info(
-                    f"{self.__class__.__name__}.fit "
-                    + get_patch_message("sklearn_after_onedal")
-                )
-
-                del self._onedal_estimator
-                super().fit(X, y)
 
         def _onedal_predict(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLabels")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -346,7 +354,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,
@@ -371,7 +378,6 @@ if daal_check_version((2024, "P", 1)):
             if queue is None or queue.sycl_device.is_cpu:
                 return daal4py_predict(self, X, "computeClassLogProbabilities")
 
-            check_is_fitted(self)
             if sklearn_check_version("1.0"):
                 X = validate_data(
                     self,

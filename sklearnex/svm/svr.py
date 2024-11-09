@@ -16,7 +16,7 @@
 
 import numpy as np
 from sklearn.svm import SVR as _sklearn_SVR
-from sklearn.utils.validation import _deprecate_positional_args
+from sklearn.utils.validation import _deprecate_positional_args, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -98,6 +98,7 @@ class SVR(_sklearn_SVR, BaseSVR):
 
     @wrap_output_data
     def predict(self, X):
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -110,6 +111,7 @@ class SVR(_sklearn_SVR, BaseSVR):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",

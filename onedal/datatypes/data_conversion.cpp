@@ -25,7 +25,7 @@
 #include "oneapi/dal/detail/memory.hpp"
 
 #include "onedal/datatypes/data_conversion.hpp"
-#include "onedal/datatypes/numpy_helpers.hpp"
+#include "onedal/datatypes/utils/numpy_helpers.hpp"
 #include "onedal/version.hpp"
 
 #if ONEDAL_VERSION <= 20230100
