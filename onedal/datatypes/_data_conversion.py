@@ -28,9 +28,10 @@ def _apply_and_pass(func, *args, **kwargs):
     if len(args) == 1:
         return func(args[0], **kwargs)
     return tuple(map(lambda arg: func(arg, **kwargs), args))
-to_graph = _backend.to_graph
 
-   
+
+to_graph = _backend.to_graph
+ 
 
 if _is_dpc_backend:
 
@@ -117,8 +118,6 @@ else:
             return x
 
         return _apply_and_pass(func, *data)
-
-
 
 
   def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
