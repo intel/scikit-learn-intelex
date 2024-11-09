@@ -132,9 +132,6 @@ sycl::queue get_queue_from_python(const py::object& syclobj) {
     if (py::hasattr(syclobj, get_capsule_name)) {
         return get_queue_by_get_capsule(syclobj);
     }
-    else if (py::isinstance<py::int_>(syclobj)) {
-        return get_queue_by_pylong_pointer(syclobj);
-    }
     else if (py::isinstance<py::capsule>(syclobj)) {
         const auto caps = syclobj.cast<py::capsule>();
         return extract_from_capsule(std::move(caps));

@@ -23,35 +23,32 @@ namespace oneapi::dal::python {
 
 #ifdef ONEDAL_DATA_PARALLEL
 
-class SyclQueue {
-    public:
-        SyclQueue(sycl::queue queue){
-            _queue = queue;
-            sycl_device = queue.get_device();
-        }
-        py::capsule _get_capsule(){
-            return pack_queue(std::make_shared<sycl::queue>(_queue));
-        }
-
-        sycl::device sycl_device;
-
-    private:
-        sycl::queue _queue;
-};
-
 void instantiate_sycl_interfaces(py::module& m){
     py::class_<SyclQueue> syclqueue(m, "SyclQueue");
     syclqueue.def(py::init([](const sycl::device& sycldevice) {
-                return SyclQueue(sycl::queue{sycldevice});
+                return sycl::queue{sycldevice};
             })
         )
         .def(py::init([](const std::string& filter) {
-                return SyclQueue(get_queue_by_filter_string(filter));
+                return get_queue_by_filter_string(filter);
             })
         )
-        
-        .def("_get_capsule", &SyclQueue::_get_capsule)
-        .def_readonly("sycl_device", &SyclQueue::sycl_device);
+        .def(py::init([](const py::int_& obj) {
+                return get_queue_by_pylong(obj);
+            })
+        )
+        .def(py::init([](const py::object& syclobj) {
+                return get_queue_from_python(syclobj);
+            })
+        )
+        .def("_get_capsule",[](const sycl::queue& queue) {
+                return pack_queue(std::make_shared<sycl::queue>(queue));
+            }
+        )
+        .def_property_readonly("sycl_device", [](const sycl::queue& queue) {
+                return queue.get_device();
+            }
+        );
 
     // expose limited sycl device features to python for oneDAL analysis
     py::class_<sycl::device> sycldevice(m, "SyclDevice");
