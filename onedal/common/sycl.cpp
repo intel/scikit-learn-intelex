@@ -34,7 +34,7 @@ void instantiate_sycl_interfaces(py::module& m){
             })
         )
         .def(py::init([](const py::int_& obj) {
-                return get_queue_by_pylong(obj);
+                return get_queue_by_pylong_pointer(obj);
             })
         )
         .def(py::init([](const py::object& syclobj) {
