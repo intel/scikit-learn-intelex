@@ -368,7 +368,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         self.n_iter_ = 0
         self.inertia_ = 0
 
-        self.model_ = self._backend.kmeans.clustering.model
+        self.model_ = self._backend.kmeans.clustering.model()
         self.model_.centroids = to_table(self._cluster_centers_)
         self.n_features_in_ = self.model_.centroids.column_count
         self.labels_ = np.arange(self.model_.centroids.row_count)
