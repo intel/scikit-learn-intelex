@@ -42,10 +42,7 @@ void instantiate_sycl_interfaces(py::module& m){
                 return pack_queue(std::make_shared<sycl::queue>(queue));
             }
         )
-        .def_property_readonly("sycl_device", [](const sycl::queue& queue) {
-                return queue.get_device();
-            }
-        );
+        .def_property_readonly("sycl_device", &sycl::queue::get_device);
 
     // expose limited sycl device features to python for oneDAL analysis
     py::class_<sycl::device> sycldevice(m, "SyclDevice");
