@@ -120,7 +120,7 @@ else:
         return _apply_and_pass(func, *data)
 
 
-  def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
+    def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to
         # convert into dpnp/dpctl tensors.
         if sua_iface:
