@@ -24,7 +24,7 @@ namespace oneapi::dal::python {
 #ifdef ONEDAL_DATA_PARALLEL
 
 void instantiate_sycl_interfaces(py::module& m){
-    py::class_<SyclQueue> syclqueue(m, "SyclQueue");
+    py::class_<sycl::queue> syclqueue(m, "SyclQueue");
     syclqueue.def(py::init([](const sycl::device& sycldevice) {
                 return sycl::queue{sycldevice};
             })
