@@ -53,7 +53,9 @@ void instantiate_spmd_policy(py::module& m) {
     constexpr const char name[] = "spmd_data_parallel_policy";
     py::class_<spmd_policy_t> policy(m, name);
     policy.def(py::init<spmd_policy_t>());
-    policy.def(py::init<const sycl::queue&>());
+    policy.def(py::init([](const sycl::queue& queue) {
+        return make_spmd_policy(queue);
+    }));
     policy.def(py::init([](const dp_policy_t& local) {
         return make_spmd_policy(local);
     }));
