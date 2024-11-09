@@ -62,6 +62,7 @@ void instantiate_data_parallel_policy(py::module& m) {
     constexpr const char name[] = "data_parallel_policy";
     py::class_<dp_policy_t> policy(m, name);
     policy.def(py::init<dp_policy_t>());
+    policy.def(py::init<const sycl::queue&>());
     policy.def(py::init([](std::uint32_t id) {
         return make_dp_policy(id);
     }));
