@@ -52,8 +52,8 @@ if __name__ == "__main__":
 
     if rc := os.getenv("COVERAGE_RCFILE"):
         pytest_args += (
-            f"--cov=onedal --cov=sklearnex --cov-config={rc} "
-            "--cov-report=term".split(" ")
+            "--cov=onedal", "--cov=sklearnex, f"--cov-config={rc}",
+            "--cov-report=",
         )
 
     while "" in pytest_args:
