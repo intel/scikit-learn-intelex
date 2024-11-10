@@ -79,7 +79,7 @@ return_code=$(($return_code + $?))
 pytest --verbose --pyargs onedal $@ $(json_report_name onedal) "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
-pytest --verbose -s ${sklex_root}/.ci/scripts/test_global_patch.py $@ $(json_report_name global_patching) "${COV_ARGS[@]}"
+pytest --verbose -s "${sklex_root}/.ci/scripts/test_global_patch.py" $@ $(json_report_name global_patching) "${COV_ARGS[@]}"
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
