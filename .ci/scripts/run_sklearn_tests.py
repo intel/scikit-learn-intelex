@@ -52,7 +52,9 @@ if __name__ == "__main__":
 
     if rc := os.getenv("COVERAGE_RCFILE"):
         pytest_args += (
-            "--cov=onedal", "--cov=sklearnex, f"--cov-config={rc}",
+            "--cov=onedal",
+            "--cov=sklearnex",
+            f"--cov-config={rc}",
             "--cov-report=",
         )
 
