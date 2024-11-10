@@ -27,6 +27,7 @@ class KMeansInit(BaseEstimatorSPMD, KMeansInit_Batch):
     """
     KMeansInit oneDAL implementation for SPMD iface.
     """
+
     _backend = onedal_spmd_backend
 
 
