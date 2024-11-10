@@ -212,7 +212,7 @@ jobs:
         shell: cmd
         run: |
           echo C:\msys64\usr\bin;>> %GITHUB_PATH%
-          echo "NO_DIST=1">> %GITHUB_ENV%
+          echo NO_DIST=YES>> %GITHUB_ENV%
           set DPCTL_TEMP="${{ env.DPCTL_PY_VERSIONS }}"
           if not %DPCTL_TEMP:${{ matrix.PYTHON_VERSION }}=%==%DPCTL_TEMP% (echo DPCFLAG=>> %GITHUB_OUTPUT%) else (echo DPCFLAG="0">> %GITHUB_OUTPUT%)
           echo COVERAGE_RCFILE=%cd%\.coveragerc>> %GITHUB_ENV%
