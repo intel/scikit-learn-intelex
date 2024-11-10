@@ -271,7 +271,7 @@ jobs:
           set PYTHON=python
           set COVERAGE_FILE=%cd%\.coverage.sklearnex
           cd ..
-          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\ --json-report
+          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\
       - name: Sklearn testing
         shell: cmd
         run: |
