@@ -19,6 +19,9 @@ from numbers import Integral
 
 import numpy as np
 
+from .._config import _get_config
+from ..utils._array_api import _get_sycl_namespace
+
 from daal4py import (
     bf_knn_classification_model,
     bf_knn_classification_prediction,
@@ -452,8 +455,9 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         if "responses" not in params["result_option"]:
             params["result_option"] += "|responses"
         params["fptype"] = "float" if X.dtype == np.float32 else "double"
+        X_table = to_table(X, sua_iface=_get_sycl_namespace(X)[0])
         result = self._get_backend(
-            "neighbors", "classification", "infer", policy, params, model, to_table(X)
+            "neighbors", "classification", "infer", policy, params, model, X_table
         )
 
         return result
@@ -462,7 +466,8 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         return super()._fit(X, y, queue=queue)
 
     def predict(self, X, queue=None):
-        X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
+        if not _get_config()["use_raw_input"]:
+            X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         onedal_model = getattr(self, "_onedal_model", None)
         n_features = getattr(self, "n_features_in_", None)
         n_samples_fit_ = getattr(self, "n_samples_fit_", None)
@@ -591,7 +596,9 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         train_alg_srch = self._get_backend("neighbors", "search", None)
 
         if gpu_device:
-            return train_alg_regr.train(policy, params, *to_table(X, y)).model
+            X_table = to_table(X, sua_iface=_get_sycl_namespace(X)[0])
+            y_table = to_table(X, sua_iface=_get_sycl_namespace(y)[0])
+            return train_alg_regr.train(policy, params, X_table, y_table).model
         return train_alg_srch.train(policy, params, to_table(X)).model
 
     def _onedal_predict(self, model, X, params, queue):

@@ -17,8 +17,10 @@ import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 
+from .._config import _get_config
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
+from ..utils._array_api import _get_sycl_namespace
 from .covariance import BaseEmpiricalCovariance
 
 
@@ -83,7 +85,19 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self : object
             Returns the instance itself.
         """
-        X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
+        use_raw_input = _get_config().get("use_raw_input", False)
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        # Saving input array namespace and sua_iface, that will be used in
+        # finalize_fit.
+        self._input_sua_iface = sua_iface
+        self._input_xp = xp
+
+        # All data should use the same sycl queue
+        if use_raw_input and sua_iface:
+            queue = X.sycl_queue
+
+        if not use_raw_input or True:
+            X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
 
         self._queue = queue
 
@@ -122,10 +136,8 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             Returns the instance itself.
         """
         params = self._get_onedal_params(self._dtype)
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
+        queue = queue if queue is not None else self._queue
+        policy = self._get_policy(queue)
 
         result = self._get_backend(
             "covariance",
@@ -136,7 +148,12 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             self._partial_result,
         )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
-            self.covariance_ = from_table(result.cov_matrix)
+            self.covariance_ = from_table(
+                result.cov_matrix,
+                sua_iface=self._input_sua_iface,
+                sycl_queue=queue,
+                xp=self._input_xp,
+            )
         else:
             n_rows = self._partial_result.partial_n_rows
             self.covariance_ = from_table(result.cov_matrix) * (n_rows - 1) / n_rows
