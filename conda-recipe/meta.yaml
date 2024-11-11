@@ -46,6 +46,7 @@ requirements:
   build:
     - make  # [linux]
     - dpcpp_linux-64  # [linux64]
+    - kernel-headers_linux-64 ==4.18.0  # [linux64]
     # - dpcpp_win-64  # [win]
     - {{ compiler('cxx') }}  # [linux64 or win]
     # conda-forge feedstock specific
