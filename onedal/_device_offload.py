@@ -32,9 +32,7 @@ if dpctl_available:
 else:
     import onedal
 
-    SyclQueue = (
-        onedal._backend.SyclQueue if hasattr(onedal._backend, "SyclQueue") else None
-    )
+    SyclQueue = getattr(onedal._backend, "SyclQueue", None)
 
 if dpnp_available:
     import dpnp
