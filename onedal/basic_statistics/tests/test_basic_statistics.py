@@ -21,7 +21,7 @@ from scipy import sparse as sp
 
 from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics import BasicStatistics
-from onedal.tests.utils import basicstats_options_and_tests as options_and_tests
+from onedal.basic_statistics.tests.utils import options_and_tests
 from onedal.tests.utils import get_queues
 
 options_and_tests_csr = [

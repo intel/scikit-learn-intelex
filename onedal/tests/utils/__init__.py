@@ -14,8 +14,6 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
-
 from ._dataframes_support import get_dataframes_and_queues
 from ._device_selection import (
     get_memory_usm,
@@ -24,25 +22,7 @@ from ._device_selection import (
     pass_if_not_implemented_for_gpu,
 )
 
-basicstats_options_and_tests = {
-    "sum": (lambda X: np.sum(X, axis=0), (5e-4, 1e-7)),
-    "min": (lambda X: np.min(X, axis=0), (1e-7, 1e-7)),
-    "max": (lambda X: np.max(X, axis=0), (1e-7, 1e-7)),
-    "mean": (lambda X: np.mean(X, axis=0), (5e-7, 1e-7)),
-    "variance": (lambda X: np.var(X, axis=0), (2e-3, 2e-3)),
-    "variation": (lambda X: np.std(X, axis=0) / np.mean(X, axis=0), (5e-2, 5e-2)),
-    "sum_squares": (lambda X: np.sum(np.square(X), axis=0), (2e-4, 1e-7)),
-    "sum_squares_centered": (
-        lambda X: np.sum(np.square(X - np.mean(X, axis=0)), axis=0),
-        (2e-4, 1e-7),
-    ),
-    "standard_deviation": (lambda X: np.std(X, axis=0), (2e-3, 2e-3)),
-    "second_order_raw_moment": (lambda X: np.mean(np.square(X), axis=0), (1e-6, 1e-7)),
-}
-
-
 __all__ = [
-    "basicstats_options_and_tests",
     "get_dataframes_and_queues",
     "get_queues",
     "get_memory_usm",

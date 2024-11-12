@@ -19,7 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.basic_statistics import IncrementalBasicStatistics
-from onedal.tests.utils import basicstats_options_and_tests as options_and_tests
+from onedal.basic_statistics.tests.utils import options_and_tests
 from onedal.tests.utils import get_queues
 
 

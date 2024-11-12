@@ -6,6 +6,7 @@ source =
 parallel = True
 omit =
     */onedal/tests/*
+    */onedal/basic_statistics/tests/utils.py
     */sklearnex/conftest.py
     */sklearnex/tests/*
     */sklearnex/preview/*

@@ -19,7 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
-from onedal.tests.utils import basicstats_options_and_tests as options_and_tests
+from onedal.basic_statistics.tests.utils import options_and_tests
 from onedal.tests.utils import get_dataframes_and_queues
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex.basic_statistics import IncrementalBasicStatistics
