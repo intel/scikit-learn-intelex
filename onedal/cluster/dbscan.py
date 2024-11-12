@@ -97,13 +97,8 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         )
         dtype = get_dtype(X)
         params = self._get_onedal_params(xp, dtype)
-        X_table = to_table(X, sua_iface=sua_iface)
-        sample_weight_table = to_table(
-            sample_weight,
-            sua_iface=(
-                get_namespace(sample_weight)[0] if sample_weight is not None else None
-            ),
-        )
+        X_table = to_table(X)
+        sample_weight_table = to_table(sample_weight)
 
         result = self._get_backend("dbscan", "clustering", None).compute(
             policy, params, X_table, sample_weight_table
