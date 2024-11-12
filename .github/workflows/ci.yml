@@ -260,7 +260,7 @@ jobs:
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           set PYTHON=python
           cd ..
-          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\ --json-report
+          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\
       - name: Sklearn testing
         shell: cmd
         run: |

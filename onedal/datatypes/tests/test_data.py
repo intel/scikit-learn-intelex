@@ -68,7 +68,7 @@ if _is_dpc_backend:
                 X = xp.astype(X, dtype=xp.float64)
             dtype = get_dtype(X)
             params = bs_DBSCAN._get_onedal_params(dtype)
-            X_table = to_table(X, sua_iface=sua_iface)
+            X_table = to_table(X)
             # TODO:
             # check other candidates for the dummy base oneDAL func.
             # oneDAL backend func is needed to check result table checks.
@@ -251,7 +251,7 @@ def test_input_sua_iface_zero_copy(dataframe, queue, order, dtype):
 
     sua_iface, X_dp_namespace, _ = _get_sycl_namespace(X_dp)
 
-    X_table = to_table(X_dp, sua_iface=sua_iface)
+    X_table = to_table(X_dp)
     _assert_sua_iface_fields(X_dp, X_table)
 
     X_dp_from_table = from_table(
@@ -339,7 +339,7 @@ def test_sua_iface_interop_invalid_shape(dataframe, queue, data_shape):
         "Unable to convert from SUA interface: only 1D & 2D tensors are allowed"
     )
     with pytest.raises(ValueError, match=expected_err_msg):
-        to_table(X, sua_iface=sua_iface)
+        to_table(X)
 
 
 @pytest.mark.skipif(
@@ -368,7 +368,7 @@ def test_sua_iface_interop_unsupported_dtypes(dataframe, queue, dtype):
 
     expected_err_msg = "Unable to convert from SUA interface: unknown data type"
     with pytest.raises(ValueError, match=expected_err_msg):
-        to_table(X, sua_iface=sua_iface)
+        to_table(X)
 
 
 @pytest.mark.parametrize(
@@ -393,7 +393,7 @@ def test_to_table_non_contiguous_input(dataframe, queue):
     else:
         expected_err_msg = "Numpy input Could not convert Python object to onedal table."
     with pytest.raises(ValueError, match=expected_err_msg):
-        to_table(X, sua_iface=sua_iface)
+        to_table(X)
 
 
 @pytest.mark.skipif(
@@ -411,4 +411,4 @@ def test_sua_iface_interop_if_no_dpc_backend(dataframe, queue, dtype):
 
     expected_err_msg = "SYCL usm array conversion to table requires the DPC backend"
     with pytest.raises(RuntimeError, match=expected_err_msg):
-        to_table(X, sua_iface=sua_iface)
+        to_table(X)
