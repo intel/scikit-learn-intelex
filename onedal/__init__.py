@@ -49,6 +49,14 @@ except ImportError:
 
     _is_dpc_backend = False
 
+# Aliasing of the _backend package is only local, making access of
+# submodules impossible with 'from - import' syntax. Adding it to
+# sys.modules makes this possible adding the alias globally. This is
+# generally not a sound approach due to the impact of dynamic module
+# reloading via importlib.reload, but the shared object is generally
+# static, contains few if any modifiable constants, and without any
+# monkeypatching.
+
 for mod in sys.modules.copy():
     if mod.startswith(_backend.__name__):
         sys.modules[mod.replace(_backend.__name__, "onedal._backend")] = sys.modules[mod]
