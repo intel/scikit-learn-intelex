@@ -82,6 +82,9 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         # at once.
         types = [xp.float32, xp.float64]
 
+        # TODO:
+        # could be impossible, if device doesn't support fp65
+        # make sense update _convert_to_supported for it.
         if get_dtype(X) not in types:
             X = X.astype(xp.float64)
         X = _convert_to_supported(policy, X, xp=xp)

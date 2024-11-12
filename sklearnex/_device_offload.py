@@ -28,7 +28,7 @@ if dpnp_available:
 from ._config import get_config
 
 
-def _get_backend(obj, queue, method_name, *data):
+def _get_backend(obj, queue, method_name, sua_iface, xp, is_array_api_compliant, *data):
     cpu_device = queue is None or queue.sycl_device.is_cpu
     gpu_device = queue is not None and queue.sycl_device.is_gpu
 
@@ -58,43 +58,58 @@ def _get_backend(obj, queue, method_name, *data):
     raise RuntimeError("Device support is not implemented")
 
 
-def dispatch(obj, method_name, branches, *args, **kwargs):
+# TODO:
+# update.
+def dispatch(
+    obj,
+    method_name,
+    branches,
+    sua_iface=None,
+    xp=None,
+    is_array_api_compliant=None,
+    *args,
+    **kwargs,
+):
+    is_array_api_dispatch = get_config()["array_api_dispatch"]
     q = _get_global_queue()
-    has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
-    has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(q, *kwargs.values())
-    hostkwargs = dict(zip(kwargs.keys(), hostvalues))
+    if is_array_api_dispatch:
+        backend, q, patching_status = _get_backend(obj, q, method_name, *args)
+    else:
+        has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
+        has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(q, *kwargs.values())
+        hostkwargs = dict(zip(kwargs.keys(), hostvalues))
 
-    backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
-    has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
-    if backend == "onedal":
-        # Host args only used before onedal backend call.
-        # Device will be offloaded when onedal backend will be called.
-        patching_status.write_log(queue=q, transferred_to_host=False)
-        return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
-    if backend == "sklearn":
-        if (
-            sklearn_check_version("1.4")
-            and get_config()["array_api_dispatch"]
-            and "array_api_support" in obj._get_tags()
-            and obj._get_tags()["array_api_support"]
-            and not has_usm_data
-        ):
-            # USM ndarrays are also excluded for the fallback Array API. Currently, DPNP.ndarray is
-            # not compliant with the Array API standard, and DPCTL usm_ndarray Array API is compliant,
-            # except for the linalg module. There is no guarantee that stock scikit-learn will
-            # work with such input data. The condition will be updated after DPNP.ndarray and
-            # DPCTL usm_ndarray enabling for conformance testing and these arrays supportance
-            # of the fallback cases.
-            # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
-            # then raw inputs are used for the fallback.
-            patching_status.write_log(transferred_to_host=False)
-            return branches[backend](obj, *args, **kwargs)
-        else:
-            patching_status.write_log()
-            return branches[backend](obj, *hostargs, **hostkwargs)
-    raise RuntimeError(
-        f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
-    )
+        backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
+        has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
+        if backend == "onedal":
+            # Host args only used before onedal backend call.
+            # Device will be offloaded when onedal backend will be called.
+            patching_status.write_log(queue=q, transferred_to_host=False)
+            return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
+        if backend == "sklearn":
+            if (
+                sklearn_check_version("1.4")
+                and get_config()["array_api_dispatch"]
+                and "array_api_support" in obj._get_tags()
+                and obj._get_tags()["array_api_support"]
+                and not has_usm_data
+            ):
+                # USM ndarrays are also excluded for the fallback Array API. Currently, DPNP.ndarray is
+                # not compliant with the Array API standard, and DPCTL usm_ndarray Array API is compliant,
+                # except for the linalg module. There is no guarantee that stock scikit-learn will
+                # work with such input data. The condition will be updated after DPNP.ndarray and
+                # DPCTL usm_ndarray enabling for conformance testing and these arrays supportance
+                # of the fallback cases.
+                # If `array_api_dispatch` enabled and array api is supported for the stock scikit-learn,
+                # then raw inputs are used for the fallback.
+                patching_status.write_log(transferred_to_host=False)
+                return branches[backend](obj, *args, **kwargs)
+            else:
+                patching_status.write_log()
+                return branches[backend](obj, *hostargs, **hostkwargs)
+        raise RuntimeError(
+            f"Undefined backend {backend} in " f"{obj.__class__.__name__}.{method_name}"
+        )
 
 
 def wrap_output_data(func):
