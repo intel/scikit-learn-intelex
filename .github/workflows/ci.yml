@@ -23,6 +23,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}
   cancel-in-progress: true
