@@ -399,7 +399,9 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
-        X_table, dtype = to_table(X), X.dtype
+        sua_iface = _get_sycl_namespace(X)[0]
+        dtype = X.dtype
+        X_table = to_table(X, sua_iface=sua_iface)
         params = self._get_onedal_params(is_csr, dtype, result_options)
 
         result = module.infer(policy, params, self.model_, X_table)
