@@ -54,8 +54,8 @@ except ImportError:
 # sys.modules makes this possible adding the alias globally. This is
 # generally not a sound approach due to the impact of dynamic module
 # reloading via importlib.reload, but the shared object is generally
-# static, contains few if any modifiable constants, and without any
-# monkeypatching.
+# static, contains few if any modifiable constants, and is not
+# monkeypatched by any internal call.
 
 for mod in sys.modules.copy():
     if mod.startswith(_backend.__name__):
