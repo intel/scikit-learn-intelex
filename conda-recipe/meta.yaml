@@ -77,7 +77,7 @@ requirements:
 test:
   requires:
     - pyyaml
-    - impi_rt  # [not win]
+    - mpich  # [not win]
     # DPC part of sklearnex is optional
     - dpcpp-cpp-rt  # [linux64]
     # TODO: enable data parallel frameworks when they are available on conda-forge
