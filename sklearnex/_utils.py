@@ -148,15 +148,18 @@ def register_hyperparameters(hyperparameters_map):
     def decorator(cls):
         """Add `get_hyperparameters()` static method"""
 
-        @StaticOnlyMethod(
-            instance_call_behavior=Warning(
-                "Hyperparameters are static variables and can not be modified per instance."
-            )
-        )
-        def get_hyperparameters(op):
-            return hyperparameters_map[op]
+        class StaticHyperparametersAccessor:
+            def __get__(self, instance, _):
+                if instance is not None:
+                    warnings.warn(
+                        "Hyperparameters are static variables and can not be modified per instance."
+                    )
+                return self.get_hyperparameters
 
-        cls.get_hyperparameters = get_hyperparameters
+            def get_hyperparameters(self, op):
+                return hyperparameters_map[op]
+
+        cls.get_hyperparameters = StaticHyperparametersAccessor()
         return cls
 
     return decorator

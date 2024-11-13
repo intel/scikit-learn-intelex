@@ -11,6 +11,15 @@ def test_register_hyperparameters():
 
     # assert the correct value is returned
     assert Test.get_hyperparameters("op") == "hyperparameters"
+
+
+def test_register_hyperparameters_issues_warning():
+    hyperparameters_map = {"op": "hyperparameters"}
+
+    @register_hyperparameters(hyperparameters_map)
+    class Test:
+        pass
+
     # assert a warning is issued when trying to modify the hyperparameters per instance
     with pytest.warns(Warning):
         Test().get_hyperparameters("op")
