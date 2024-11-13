@@ -106,14 +106,17 @@ def register_hyperparameters(hyperparameters_map):
     Adds `get_hyperparameters` method to class.
     """
 
-    def wrap_class(estimator_class):
-        def get_hyperparameters(self, op):
+    def decorator(cls):
+        """Add `get_hyperparameters()` static method"""
+
+        @staticmethod
+        def get_hyperparameters(op):
             return hyperparameters_map[op]
 
-        estimator_class.get_hyperparameters = get_hyperparameters
-        return estimator_class
+        cls.get_hyperparameters = get_hyperparameters
+        return cls
 
-    return wrap_class
+    return decorator
 
 
 # This abstract class is meant to generate a clickable doc link for classses
