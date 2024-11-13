@@ -138,6 +138,9 @@ if daal_check_version((2024, "P", 600)):
                 )
 
         def fit(self, X, y, sample_weight=None):
+            if sklearn_check_version("1.2"):
+                self._validate_params()
+
             # It is necessary to properly update coefs for predict if we
             # fallback to sklearn in dispatch
             if hasattr(self, "_onedal_estimator"):
