@@ -16,7 +16,6 @@
 
 import logging
 import os
-import sys
 import warnings
 from abc import ABC
 
