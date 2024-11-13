@@ -25,6 +25,46 @@ from daal4py.sklearn._utils import (
 from daal4py.sklearn._utils import daal_check_version
 
 
+class StaticOnlyMethod:
+    """Descriptor for static methods only. Raises an exception if called on an instance.
+
+    Parameters
+    ----------
+    func : callable
+        The function to be decorated.
+    instance_call_behavior : None or Exception or Warning, default=None
+        The behavior when the method is called on an instance.
+        If None, AttributeError is raised.
+        If an Exception or Warning, it is raised or warned respectively.
+    """
+
+    def __init__(self, func=None, instance_call_behavior=None):
+        self.func = func
+        if instance_call_behavior is None:
+            self.on_instance_call = AttributeError(
+                "This method can only be called on the class, not on an instance."
+            )
+        elif isinstance(instance_call_behavior, (Exception, Warning)):
+            self.on_instance_call = instance_call_behavior
+        else:
+            raise ValueError(
+                f"Invalid input - expected None or an Exception, got {instance_call_behavior}"
+            )
+
+    def __call__(self, func):
+        self.func = func
+        return self
+
+    def __get__(self, instance, _):
+        if instance is not None:
+            if isinstance(self.on_instance_call, Warning):
+                warnings.warn(self.on_instance_call)
+            else:
+                raise self.on_instance_call
+
+        return self.func
+
+
 class PatchingConditionsChain(daal4py_PatchingConditionsChain):
     def get_status(self):
         return self.patching_is_enabled
@@ -108,7 +148,11 @@ def register_hyperparameters(hyperparameters_map):
     def decorator(cls):
         """Add `get_hyperparameters()` static method"""
 
-        @staticmethod
+        @StaticOnlyMethod(
+            instance_call_behavior=Warning(
+                "Hyperparameters are static variables and can not be modified per instance."
+            )
+        )
         def get_hyperparameters(op):
             return hyperparameters_map[op]
 

@@ -16,20 +16,19 @@
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
-from scipy.linalg import lstsq
-from sklearn.datasets import make_regression
-
 from daal4py.sklearn._utils import daal_check_version
 from daal4py.sklearn.linear_model.tests.test_ridge import (
     _test_multivariate_ridge_alpha_shape,
     _test_multivariate_ridge_coefficients,
 )
+from numpy.testing import assert_allclose
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from scipy.linalg import lstsq
+from sklearn.datasets import make_regression
 from sklearnex.tests.utils import _IS_INTEL
 
 
@@ -61,7 +60,7 @@ def test_sklearnex_import_linear(
 
     linreg = LinearRegression()
     if daal_check_version((2024, "P", 0)) and macro_block is not None:
-        hparams = linreg.get_hyperparameters("fit")
+        hparams = LinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 

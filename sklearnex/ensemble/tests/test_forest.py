@@ -15,15 +15,14 @@
 # ===============================================================================
 
 import pytest
-from numpy.testing import assert_allclose
-from sklearn.datasets import make_classification, make_regression
-
 from daal4py.sklearn._utils import daal_check_version
+from numpy.testing import assert_allclose
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from sklearn.datasets import make_classification, make_regression
 
 hparam_values = [
     (None, None, None, None),
@@ -51,7 +50,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue, block, trees, rows, sc
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    hparams = rf.get_hyperparameters("infer")
+    hparams = RandomForestClassifier.get_hyperparameters("infer")
     if hparams and block is not None:
         hparams.block_size = block
         hparams.min_trees_for_threading = trees

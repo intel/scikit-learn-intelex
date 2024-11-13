@@ -17,7 +17,6 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
@@ -41,7 +40,7 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, fit_intercept, macro_block
 
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     inclin.fit(X_df, y_df)
@@ -72,7 +71,7 @@ def test_sklearnex_partial_fit_on_gold_data(
 
     inclin = IncrementalLinearRegression()
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     for i in range(2):
@@ -113,7 +112,7 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
 
     inclin = IncrementalLinearRegression()
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     for i in range(2):
@@ -176,7 +175,7 @@ def test_sklearnex_partial_fit_on_random_data(
 
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     for i in range(num_blocks):
