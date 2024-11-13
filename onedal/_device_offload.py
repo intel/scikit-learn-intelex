@@ -33,6 +33,7 @@ else:
     import onedal
 
     SyclQueue = getattr(onedal._backend, "SyclQueue", None)
+    assert SyclQueue is not None
 
 if dpnp_available:
     import dpnp
