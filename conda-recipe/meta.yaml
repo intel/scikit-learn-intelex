@@ -41,12 +41,14 @@ build:
   - DPCPPROOT
   - DALROOT
   - NO_DIST=1  # [win]
+  ignore_run_exports:
+  - dpcpp_linux-64  # [linux64]
+  # - dpcpp_win-64  # [win]
 
 requirements:
   build:
     - make  # [linux]
     - dpcpp_linux-64  # [linux64]
-    - kernel-headers_linux-64 ==4.18.0  # [linux64]
     # - dpcpp_win-64  # [win]
     - {{ compiler('cxx') }}  # [linux64 or win]
     # conda-forge feedstock specific
@@ -59,14 +61,15 @@ requirements:
     - cython
     - jinja2
     - pybind11
-    - numpy {{ numpy }}
-    - impi-devel  # [not win]
+    - numpy
+    - mpich  # [not win]
     # dal-devel pinning depends on the recipe location (repo or feedstock)
     - dal-devel
     # - dal-devel =={{ version }}
   run:
     - python
-    - {{ pin_compatible('numpy') }}
+    - numpy
+    - scikit-learn
     # dal pinning depends on the recipe location (repo or feedstock)
     - dal
     # - dal =={{ version }}
@@ -82,7 +85,6 @@ test:
     # - dpnp
     # next deps are synced with requirements-test.txt
     - pytest
-    - scikit-learn
     - pandas
     - xgboost
     - lightgbm
