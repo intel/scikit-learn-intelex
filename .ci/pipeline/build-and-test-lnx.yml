@@ -27,7 +27,7 @@ steps:
       conda config --add channels conda-forge
       conda config --set channel_priority strict
       conda update -y -q conda
-      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel=2025 mpich pyyaml dpcpp-cpp-rt=2025.0
+      conda create -q -y -n CB -c conda-forge python=$(PYTHON_VERSION) dal-devel=2025 mpich pyyaml
     displayName: "Conda create"
   - script: |
       . /usr/share/miniconda/etc/profile.d/conda.sh
@@ -43,6 +43,7 @@ steps:
       ./conda-recipe/build.sh
     displayName: "Build daal4py/sklearnex"
   - script: |
+      . /opt/intel/oneapi/setvars.sh
       . /usr/share/miniconda/etc/profile.d/conda.sh
       conda activate CB
       bash .ci/scripts/setup_sklearn.sh $(SKLEARN_VERSION)
