@@ -40,12 +40,12 @@ def test_sycl_queue_string_creation(device_type, device_number):
 
     try:
         dpctl_queue = SyclQueue(device)
-    except:
-        raised_exception_dpctl = True
+    # except:
+    #    raised_exception_dpctl = True
 
     try:
         onedal_queue = onedal_SyclQueue(device)
-    except:
+    except RuntimeError:
         raised_exception_backend = True
 
     assert raised_exception_dpctl == raised_exception_backend
@@ -61,6 +61,8 @@ def test_sycl_queue_string_creation(device_type, device_number):
 )
 @pytest.mark.parametrize("queue", get_queues())
 def test_sycl_queue_conversion(queue):
+    if queue is None:
+        pytest.skip("Not a DPCtl queue")
     SyclQueue = queue.__class__
     onedal_SyclQueue = _backend.SyclQueue
     # convert back and forth to test `_get_capsule` attribute
@@ -82,7 +84,8 @@ def test_sycl_queue_conversion(queue):
 @pytest.mark.parametrize("queue", get_queues())
 def test_sycl_device_attributes(queue):
     from dpctl import SyclQueue
-
+    if queue is None:
+        pytest.skip("Not a DPCtl queue")
     onedal_SyclQueue = _backend.SyclQueue
 
     onedal_queue = onedal_SyclQueue(queue)
