@@ -78,6 +78,12 @@ ONEDAL_PY_INIT_MODULE(table) {
 #endif // ONEDAL_DATA_PARALLEL
 
     m.def("to_table", [](py::object obj) {
+        #ifdef ONEDAL_DATA_PARALLEL
+        if (py::hasattr(obj, "__sycl_usm_array_interface__")) {
+            return convert_from_sua_iface(obj);
+        }
+        #endif // ONEDAL_DATA_PARALLEL
+
         auto* obj_ptr = obj.ptr();
         return convert_to_table(obj_ptr);
     });
@@ -86,12 +92,6 @@ ONEDAL_PY_INIT_MODULE(table) {
         auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
-
-#ifdef ONEDAL_DATA_PARALLEL
-    m.def("sua_iface_to_table", [](py::object obj) {
-        return convert_from_sua_iface(obj);
-    });
-#endif // ONEDAL_DATA_PARALLEL
 }
 
 } // namespace oneapi::dal::python
