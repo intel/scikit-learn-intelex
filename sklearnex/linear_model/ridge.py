@@ -417,7 +417,7 @@ if daal_check_version((2024, "P", 600)):
         score.__doc__ = _sklearn_Ridge.score.__doc__
 
 else:
-    from daal4py.sklearn.linear_model._ridge import Ridge
+    from daal4py.sklearn.linear_model import Ridge
     from onedal._device_offload import support_input_format
 
     Ridge.fit = support_input_format(queue_param=False)(Ridge.fit)
