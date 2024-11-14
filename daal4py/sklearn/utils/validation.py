@@ -100,7 +100,10 @@ def _assert_all_finite(
         [
             (X.ndim in [1, 2], f"Input {input_name} does not have 1 or 2 dimensions."),
             (not np.any(np.equal(X.shape, 0)), f"Input {input_name} shape contains a 0."),
-            (dt in [np.float32, np.float64], f"Input {input_name} dtype is not float32 or float64."),
+            (
+                dt in [np.float32, np.float64],
+                f"Input {input_name} dtype is not float32 or float64.",
+            ),
         ]
     )
     _patching_status.write_log()
