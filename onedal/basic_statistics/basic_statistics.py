@@ -14,22 +14,27 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from ..common._base import BaseEstimator
+from ..common._backend import bind_default_backend
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
 from ..utils.validation import _check_array
 
 
-class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
+class BaseBasicStatistics(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, result_options, algorithm):
         self.options = result_options
         self.algorithm = algorithm
+
+    @bind_default_backend("basic_statistics")
+    def _get_policy(self, queue, *data): ...
+
+    @bind_default_backend("basic_statistics")
+    def compute(self, policy, params, data_table, weights_table): ...
 
     @staticmethod
     def get_all_result_options():
@@ -99,9 +104,8 @@ class BasicStatistics(BaseBasicStatistics):
     def _compute_raw(
         self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
     ):
-        module = self._get_backend("basic_statistics")
         params = self._get_onedal_params(is_csr, dtype)
-        result = module.compute(policy, params, data_table, weights_table)
+        result = self.compute(policy, params, data_table, weights_table)
         options = self._get_result_options(self.options).split("|")
 
         return {opt: getattr(result, opt) for opt in options}

@@ -14,9 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
+from abc import abstractmethod
+
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
+from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
@@ -69,10 +72,18 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm="by_default")
         self._reset()
 
+    @bind_default_backend("basic_statistics")
+    def partial_compute_result(self): ...
+
+    @bind_default_backend("basic_statistics")
+    def partial_compute(self, *args, **kwargs): ...
+
+    @bind_default_backend("basic_statistics")
+    def finalize_compute(self, *args, **kwargs): ...
+
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "basic_statistics", None, "partial_compute_result"
-        )
+        # get the _partial_result pointer from backend
+        self._partial_result = self.partial_compute_result()
 
     def partial_fit(self, X, weights=None, queue=None):
         """
@@ -113,15 +124,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             self._onedal_params = self._get_onedal_params(False, dtype=dtype)
 
         X_table, weights_table = to_table(X, weights)
-        self._partial_result = self._get_backend(
-            "basic_statistics",
-            None,
-            "partial_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-            X_table,
-            weights_table,
+        self._partial_result = self.partial_compute(
+            policy, self._onedal_params, self._partial_result, X_table, weights_table
         )
 
     def finalize_fit(self, queue=None):
@@ -145,14 +149,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         else:
             policy = self._get_policy(self._queue)
 
-        result = self._get_backend(
-            "basic_statistics",
-            None,
-            "finalize_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-        )
+        result = self.finalize_compute(policy, self._onedal_params, self._partial_result)
+
         options = self._get_result_options(self.options).split("|")
         for opt in options:
             setattr(self, opt, from_table(getattr(result, opt)).ravel())

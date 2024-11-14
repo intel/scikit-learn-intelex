@@ -14,13 +14,21 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
-
 from ..._device_offload import support_input_format
-from .._base import BaseEstimatorSPMD
+from ...common._backend import bind_spmd_backend
+from ...covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
 
 
-class EmpiricalCovariance(BaseEstimatorSPMD, EmpiricalCovariance_Batch):
+class EmpiricalCovariance(EmpiricalCovariance_Batch):
+    @bind_spmd_backend("covariance")
+    def _get_policy(self, queue, *data): ...
+
+    @bind_spmd_backend("covariance")
+    def compute(self, *args, **kwargs): ...
+
+    @bind_spmd_backend("covariance")
+    def finalize_compute(self, policy, params, partial_result): ...
+
     @support_input_format()
     def fit(self, X, y=None, queue=None):
         return super().fit(X, queue=queue)

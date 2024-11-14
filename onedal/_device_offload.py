@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import logging
 from collections.abc import Iterable
 from functools import wraps
 
@@ -36,7 +35,7 @@ else:
     # in _get_global_queue always true for situations without the
     # dpc backend when `device_offload` is used. Instead, it will
     # fail at the policy check phase yielding a RuntimeError
-    SyclQueue = getattr(onedal._backend, "SyclQueue", object)
+    SyclQueue = getattr(onedal._dpc_backend, "SyclQueue", object)
 
 if dpnp_available:
     import dpnp

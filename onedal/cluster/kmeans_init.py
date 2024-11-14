@@ -19,14 +19,14 @@ from scipy.sparse import issparse
 from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
+from onedal.common._backend import bind_default_backend
 
-from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
 
 if daal_check_version((2023, "P", 200)):
 
-    class KMeansInit(onedal_BaseEstimator):
+    class KMeansInit:
         """
         KMeansInit oneDAL implementation.
         """
@@ -47,6 +47,12 @@ if daal_check_version((2023, "P", 200)):
                 self.local_trials_count = 2 + int(np.log(cluster_count))
             else:
                 self.local_trials_count = local_trials_count
+
+        @bind_default_backend("kmeans_init")
+        def _get_policy(self, policy, params, X_table): ...
+
+        @bind_default_backend("kmeans_init.init", lookup_name="compute")
+        def backend_compute(self, policy, params, X_table): ...
 
         def _get_onedal_params(self, dtype=np.float32):
             return {
@@ -71,31 +77,21 @@ if daal_check_version((2023, "P", 200)):
             params = self._get_onedal_params(dtype)
             return (params, to_table(X), dtype)
 
-        def _compute_raw(self, X_table, module, policy, dtype=np.float32):
-            params = self._get_onedal_params(dtype)
-
-            result = module.compute(policy, params, X_table)
-
-            return result.centroids
-
-        def _compute(self, X, module, queue):
+        def compute(self, X, queue=None):
             policy = self._get_policy(queue, X)
             # oneDAL KMeans Init for sparse data does not have GPU support
             if issparse(X):
                 policy = self._get_policy(None, None)
             _, X_table, dtype = self._get_params_and_input(X, policy)
 
-            centroids = self._compute_raw(X_table, module, policy, dtype)
+            centroids = self.compute_raw(X_table, policy, dtype)
 
             return from_table(centroids)
 
         def compute_raw(self, X_table, policy, dtype=np.float32):
-            return self._compute_raw(
-                X_table, self._get_backend("kmeans_init", "init", None), policy, dtype
-            )
-
-        def compute(self, X, queue=None):
-            return self._compute(X, self._get_backend("kmeans_init", "init", None), queue)
+            params = self._get_onedal_params(dtype)
+            result = self.backend_compute(policy, params, X_table)
+            return result.centroids
 
     def kmeans_plusplus(
         X,

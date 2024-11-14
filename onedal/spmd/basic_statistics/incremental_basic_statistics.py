@@ -19,51 +19,29 @@ from daal4py.sklearn._utils import get_dtype
 from ...basic_statistics import (
     IncrementalBasicStatistics as base_IncrementalBasicStatistics,
 )
+from ...common._backend import bind_default_backend, bind_spmd_backend
 from ...datatypes import _convert_to_supported, to_table
-from .._base import BaseEstimatorSPMD
 
 
-class IncrementalBasicStatistics(BaseEstimatorSPMD, base_IncrementalBasicStatistics):
-    def _reset(self):
-        self._partial_result = super(base_IncrementalBasicStatistics, self)._get_backend(
-            "basic_statistics", None, "partial_compute_result"
-        )
+class IncrementalBasicStatistics(base_IncrementalBasicStatistics):
+    @bind_default_backend("basic_statistics", lookup_name="_get_policy")
+    def _get_default_policy(self, queue, *data): ...
 
-    def partial_fit(self, X, weights=None, queue=None):
-        """
-        Computes partial data for basic statistics
-        from data batch X and saves it to `_partial_result`.
+    @bind_spmd_backend("basic_statistics", lookup_name="_get_policy")
+    def _get_spmd_policy(self, queue, *data): ...
 
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Training data batch, where `n_samples` is the number of samples
-            in the batch, and `n_features` is the number of features.
+    @bind_spmd_backend("basic_statistics")
+    def compute(self, *args, **kwargs): ...
 
-        queue : dpctl.SyclQueue
-            If not None, use this queue for computations.
+    @bind_spmd_backend("basic_statistics")
+    def finalize_compute(self, *args, **kwargs): ...
 
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
-        self._queue = queue
-        policy = super(base_IncrementalBasicStatistics, self)._get_policy(queue, X)
-        X, weights = _convert_to_supported(policy, X, weights)
+    def partial_fit(self, *args, **kwargs):
+        # base class partial_fit is using `compute()`, which requires host or parallel policy, but not SPMD
+        self._get_policy = self._get_default_policy
+        return super().partial_fit(*args, **kwargs)
 
-        if not hasattr(self, "_onedal_params"):
-            dtype = get_dtype(X)
-            self._onedal_params = self._get_onedal_params(False, dtype=dtype)
-
-        X_table, weights_table = to_table(X, weights)
-        self._partial_result = super(base_IncrementalBasicStatistics, self)._get_backend(
-            "basic_statistics",
-            None,
-            "partial_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-            X_table,
-            weights_table,
-        )
+    def finalize_fit(self, *args, **kwargs):
+        # base class finalize_fit is using `finalize_compute()`, which requires SPMD policy
+        self._get_policy = self._get_spmd_policy
+        return super().finalize_fit(*args, **kwargs)

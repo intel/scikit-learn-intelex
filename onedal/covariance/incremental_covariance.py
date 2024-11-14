@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from abc import abstractmethod
+
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
+from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
@@ -56,10 +59,17 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         super().__init__(method, bias, assume_centered)
         self._reset()
 
+    @bind_default_backend("covariance")
+    def partial_compute(self, policy, params, partial_result, X_table): ...
+
+    @bind_default_backend("covariance")
+    def partial_compute_result(self): ...
+
+    @bind_default_backend("covariance")
+    def finalize_compute(self, policy, params, partial_result): ...
+
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "covariance", None, "partial_compute_result"
-        )
+        self._partial_result = self.partial_compute_result()
 
     def partial_fit(self, X, y=None, queue=None):
         """
@@ -96,14 +106,8 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
 
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
-        self._partial_result = self._get_backend(
-            "covariance",
-            None,
-            "partial_compute",
-            policy,
-            params,
-            self._partial_result,
-            table_X,
+        self._partial_result = self.partial_compute(
+            policy, params, self._partial_result, table_X
         )
 
     def finalize_fit(self, queue=None):
@@ -127,10 +131,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         else:
             policy = self._get_policy(self._queue)
 
-        result = self._get_backend(
-            "covariance",
-            None,
-            "finalize_compute",
+        result = self.finalize_compute(
             policy,
             params,
             self._partial_result,

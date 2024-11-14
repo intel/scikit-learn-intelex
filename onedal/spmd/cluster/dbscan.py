@@ -14,10 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.cluster import DBSCAN as DBSCAN_Batch
+from ...cluster import DBSCAN as DBSCAN_Batch
+from ...common._backend import bind_spmd_backend
 
-from .._base import BaseEstimatorSPMD
 
+class DBSCAN(DBSCAN_Batch):
+    @bind_spmd_backend("dbscan")
+    def _get_policy(self, queue, *data): ...
 
-class DBSCAN(BaseEstimatorSPMD, DBSCAN_Batch):
-    pass
+    @bind_spmd_backend("dbscan.clustering")
+    def compute(self, policy, params, data_table, weights_table): ...

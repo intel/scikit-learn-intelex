@@ -14,13 +14,21 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.decomposition.pca import PCA as PCABatch
-
 from ..._device_offload import support_input_format
-from .._base import BaseEstimatorSPMD
+from ...common._backend import bind_spmd_backend
+from ...decomposition.pca import PCA as PCABatch
 
 
-class PCA(BaseEstimatorSPMD, PCABatch):
+class PCA(PCABatch):
+    @bind_spmd_backend("decomposition.dim_reduction")
+    def _get_policy(self, queue, *data): ...
+
+    @bind_spmd_backend("decomposition.dim_reduction")
+    def train(self, policy, params, X): ...
+
+    @bind_spmd_backend("decomposition.dim_reduction")
+    def finalize_train(self, *args, **kwargs): ...
+
     @support_input_format()
     def fit(self, X, y=None, queue=None):
         return super().fit(X, queue=queue)

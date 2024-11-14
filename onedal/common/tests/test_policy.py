@@ -17,7 +17,8 @@
 import numpy as np
 import pytest
 
-from onedal.common._policy import _get_policy
+from onedal import _default_backend, _dpc_backend
+from onedal.common.policy_manager import PolicyManager
 from onedal.tests.utils._device_selection import (
     device_type_to_str,
     get_memory_usm,
@@ -26,11 +27,13 @@ from onedal.tests.utils._device_selection import (
 )
 from onedal.utils._dpep_helpers import dpctl_available
 
+policy_manager = PolicyManager(_dpc_backend or _default_backend)
+
 
 @pytest.mark.parametrize("queue", get_queues())
 def test_queue_passed_directly(queue):
     device_name = device_type_to_str(queue)
-    test_queue = _get_policy(queue)
+    test_queue = policy_manager.get_policy(queue)
     test_device_name = test_queue.get_device_name()
     assert test_device_name == device_name
 
@@ -41,7 +44,7 @@ def test_with_numpy_data(queue):
     y = np.zeros(3)
 
     device_name = device_type_to_str(queue)
-    assert _get_policy(queue, X, y).get_device_name() == device_name
+    assert policy_manager.get_policy(queue, X, y).get_device_name() == device_name
 
 
 @pytest.mark.skipif(not dpctl_available, reason="depends on dpctl")
@@ -58,7 +61,7 @@ def test_with_usm_ndarray_data(queue, memtype):
     device_name = device_type_to_str(queue)
     X = usm_ndarray((5, 3), buffer=memtype(5 * 3 * 8, queue=queue))
     y = usm_ndarray((3,), buffer=memtype(3 * 8, queue=queue))
-    assert _get_policy(None, X, y).get_device_name() == device_name
+    assert policy_manager.get_policy(None, X, y).get_device_name() == device_name
 
 
 @pytest.mark.skipif(
@@ -73,4 +76,4 @@ def test_queue_parameter_with_usm_ndarray(memtype):
     q2 = SyclQueue("gpu")
 
     X = usm_ndarray((5, 3), buffer=memtype(5 * 3 * 8, queue=q1))
-    assert _get_policy(q2, X).get_device_name() == device_type_to_str(q2)
+    assert policy_manager.get_policy(q2, X).get_device_name() == device_type_to_str(q2)

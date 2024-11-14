@@ -16,13 +16,14 @@
 
 import logging
 import warnings
-from abc import ABC
+from abc import ABC, abstractmethod
+from types import ModuleType
 
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal import _backend
 from onedal.basic_statistics import BasicStatistics
+from onedal.common._backend import bind_default_backend
 
 if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
@@ -32,13 +33,14 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_random_state
 
-from ..common._base import BaseEstimator as onedal_BaseEstimator
+from onedal import _default_backend
+
 from ..common._mixin import ClusterMixin, TransformerMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _is_arraylike_not_scalar, _is_csr
 
 
-class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
+class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
     def __init__(
         self,
         n_clusters,
@@ -59,6 +61,18 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         self.verbose = verbose
         self.random_state = random_state
         self.n_local_trials = n_local_trials
+
+    @bind_default_backend("kmeans_common")
+    def _get_policy(self, queue, X): ...
+
+    @bind_default_backend("kmeans_common")
+    def _is_same_clustering(self, labels, best_labels, n_clusters): ...
+
+    @bind_default_backend("kmeans.clustering")
+    def train(self, policy, params, X_table, centroids_table): ...
+
+    @bind_default_backend("kmeans.clustering")
+    def infer(self, policy, params, model, centroids_table): ...
 
     def _validate_center_shape(self, X, centers):
         """Check if centers is compatible with X and n_clusters."""
@@ -244,14 +258,14 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         return to_table(centers)
 
     def _fit_backend(
-        self, X_table, centroids_table, module, policy, dtype=np.float32, is_csr=False
+        self, X_table, centroids_table, policy, dtype=np.float32, is_csr=False
     ):
         params = self._get_onedal_params(is_csr, dtype)
 
-        meta = _backend.get_table_metadata(X_table)
+        meta = _default_backend.get_table_metadata(X_table)
         assert meta.get_npy_dtype(0) == dtype
 
-        result = module.train(policy, params, X_table, centroids_table)
+        result = self.train(policy, params, X_table, centroids_table)
 
         return (
             result.responses,
@@ -260,7 +274,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             result.iteration_count,
         )
 
-    def _fit(self, X, module, queue=None):
+    def _fit(self, X, queue=None):
         policy = self._get_policy(queue, X)
         is_csr = _is_csr(X)
         X = _check_array(
@@ -272,8 +286,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
 
-        params = self._get_onedal_params(is_csr, dtype)
-
         self.n_features_in_ = X_table.column_count
 
         best_model, best_n_iter = None, None
@@ -283,12 +295,10 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             if best_inertia is None:
                 return True
             else:
-                mod = self._get_backend("kmeans_common", None, None)
                 better_inertia = inertia < best_inertia
-                same_clusters = mod._is_same_clustering(
+                return better_inertia and not self._is_same_clustering(
                     labels, best_labels, self.n_clusters
                 )
-                return better_inertia and not same_clusters
 
         random_state = check_random_state(self.random_state)
 
@@ -317,7 +327,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 print("Initialization complete")
 
             labels, inertia, model, n_iter = self._fit_backend(
-                X_table, centroids_table, module, policy, dtype, is_csr
+                X_table, centroids_table, policy, dtype, is_csr
             )
 
             if self.verbose:
@@ -356,7 +366,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 centroids = self.model_.centroids
                 self._cluster_centers_ = from_table(centroids)
             else:
-                raise NameError("This model have not been trained")
+                raise NameError("This model has not been trained")
         return self._cluster_centers_
 
     @cluster_centers_.setter
@@ -366,7 +376,6 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         self.n_iter_ = 0
         self.inertia_ = 0
 
-        self.model_ = self._get_backend("kmeans", "clustering", "model")
         self.model_.centroids = to_table(self._cluster_centers_)
         self.n_features_in_ = self.model_.centroids.column_count
         self.labels_ = np.arange(self.model_.centroids.row_count)
@@ -377,7 +386,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def cluster_centers_(self):
         del self._cluster_centers_
 
-    def _predict(self, X, module, queue=None, result_options=None):
+    def _predict(self, X, queue=None, result_options=None):
         is_csr = _is_csr(X)
 
         policy = self._get_policy(queue, X)
@@ -385,20 +394,21 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         X_table = to_table(X)
         params = self._get_onedal_params(is_csr, X_table.dtype, result_options)
 
-        result = module.infer(policy, params, self.model_, X_table)
+        result = self.infer(policy, params, self.model_, X_table)
 
-        if (
-            result_options == "compute_exact_objective_function"
-        ):  # This is only set for score function
-            return result.objective_function_value * (-1)
+        if result_options == "compute_exact_objective_function":
+            # This is only set for score function
+            return -1 * result.objective_function_value
         else:
             return from_table(result.responses).ravel()
 
-    def _score(self, X, module, queue=None):
+    def _score(self, X, queue=None):
         result_options = "compute_exact_objective_function"
 
         return self._predict(
-            X, self._get_backend("kmeans", "clustering", None), queue, result_options
+            X,
+            queue,
+            result_options,
         )
 
     def _transform(self, X):
@@ -434,7 +444,7 @@ class KMeans(_BaseKMeans):
         assert self.algorithm == "lloyd"
 
     def fit(self, X, y=None, queue=None):
-        return super()._fit(X, self._get_backend("kmeans", "clustering", None), queue)
+        return self._fit(X, queue)
 
     def predict(self, X, queue=None):
         """Predict the closest cluster each sample in X belongs to.
@@ -453,7 +463,7 @@ class KMeans(_BaseKMeans):
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        return super()._predict(X, self._get_backend("kmeans", "clustering", None), queue)
+        return self._predict(X, queue)
 
     def fit_predict(self, X, y=None, queue=None):
         """Compute cluster centers and predict cluster index for each sample.
@@ -529,7 +539,7 @@ class KMeans(_BaseKMeans):
         score: float
             Opposite of the value of X on the K-means objective.
         """
-        return super()._score(X, self._get_backend("kmeans", "clustering", None), queue)
+        return self._score(X, queue)
 
 
 def k_means(

@@ -16,11 +16,14 @@
 
 import numpy as np
 
-from onedal import _backend
+from onedal import _default_backend, _dpc_backend
 
-from ..common._policy import _get_policy
+from ..common.policy_manager import PolicyManager
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
+
+backend = _dpc_backend or _default_backend
+policy_manager = PolicyManager(backend)
 
 
 def _check_inputs(X, Y):
@@ -33,7 +36,7 @@ def _check_inputs(X, Y):
 
 
 def _compute_kernel(params, submodule, X, Y, queue):
-    policy = _get_policy(queue, X, Y)
+    policy = policy_manager.get_policy(queue, X, Y)
     X, Y = _convert_to_supported(policy, X, Y)
     params["fptype"] = X.dtype
     X, Y = to_table(X, Y)
@@ -61,7 +64,7 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0, queue=None):
     X, Y = _check_inputs(X, Y)
     return _compute_kernel(
         {"method": "dense", "scale": scale, "shift": shift},
-        _backend.linear_kernel,
+        backend.linear_kernel,
         X,
         Y,
         queue,
@@ -92,7 +95,7 @@ def rbf_kernel(X, Y=None, gamma=None, queue=None):
     sigma = np.sqrt(0.5 / gamma)
 
     return _compute_kernel(
-        {"method": "dense", "sigma": sigma}, _backend.rbf_kernel, X, Y, queue
+        {"method": "dense", "sigma": sigma}, backend.rbf_kernel, X, Y, queue
     )
 
 
@@ -118,7 +121,7 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3, queue=None):
     X, Y = _check_inputs(X, Y)
     return _compute_kernel(
         {"method": "dense", "scale": gamma, "shift": coef0, "degree": degree},
-        _backend.polynomial_kernel,
+        backend.polynomial_kernel,
         X,
         Y,
         queue,
@@ -146,7 +149,7 @@ def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0, queue=None):
     X, Y = _check_inputs(X, Y)
     return _compute_kernel(
         {"method": "dense", "scale": gamma, "shift": coef0},
-        _backend.sigmoid_kernel,
+        backend.sigmoid_kernel,
         X,
         Y,
         queue,

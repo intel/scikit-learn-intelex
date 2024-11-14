@@ -20,15 +20,15 @@ from numbers import Number
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
+from onedal.common._backend import bind_default_backend
 
-from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 
 
-class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
+class BaseLinearRegression(metaclass=ABCMeta):
     """
     Base class for LinearRegression oneDAL implementation.
     """
@@ -39,6 +39,19 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         self.alpha = alpha
         self.copy_X = copy_X
         self.algorithm = algorithm
+
+    @bind_default_backend("linear_model")
+    def _get_policy(self, queue, *data): ...
+
+    @bind_default_backend("linear_model.regression")
+    def train(self, *args, **kwargs): ...
+
+    @bind_default_backend("linear_model.regression")
+    def infer(self, policy, params, model, X): ...
+
+    # direct access to the backend model class
+    @bind_default_backend("linear_model.regression")
+    def model(self): ...
 
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
@@ -54,8 +67,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         return params
 
     def _create_model(self, policy):
-        module = self._get_backend("linear_model", "regression")
-        model = module.model()
+        model = self.model()
 
         coefficients = self.coef_
         dtype = get_dtype(coefficients)
@@ -115,7 +127,6 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         C : array, shape (n_samples, n_targets)
             Returns predicted values.
         """
-        module = self._get_backend("linear_model", "regression")
 
         _check_is_fitted(self)
 
@@ -136,7 +147,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         params = self._get_onedal_params(get_dtype(X))
 
         X_table = to_table(X)
-        result = module.infer(policy, params, model, X_table)
+        result = self.infer(policy, params, model, X_table)
         y = from_table(result.responses)
 
         if y.shape[1] == 1 and self.coef_.ndim == 1:
@@ -192,7 +203,6 @@ class LinearRegression(BaseLinearRegression):
         self : object
             Fitted Estimator.
         """
-        module = self._get_backend("linear_model", "regression")
 
         # TODO Fix _check_X_y to make sure this conversion is there
         if not isinstance(X, np.ndarray):
@@ -217,9 +227,9 @@ class LinearRegression(BaseLinearRegression):
 
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
-            result = module.train(policy, params, hparams.backend, X_table, y_table)
+            result = self.train(policy, params, hparams.backend, X_table, y_table)
         else:
-            result = module.train(policy, params, X_table, y_table)
+            result = self.train(policy, params, X_table, y_table)
 
         self._onedal_model = result.model
 
@@ -291,8 +301,6 @@ class Ridge(BaseLinearRegression):
         self : object
             Fitted Estimator.
         """
-        module = self._get_backend("linear_model", "regression")
-
         X = _check_array(
             X,
             dtype=[np.float64, np.float32],
@@ -313,7 +321,7 @@ class Ridge(BaseLinearRegression):
         params = self._get_onedal_params(get_dtype(X))
         X_table, y_table = to_table(X, y)
 
-        result = module.train(policy, params, X_table, y_table)
+        result = self.train(policy, params, X_table, y_table)
         self._onedal_model = result.model
 
         packed_coefficients = from_table(result.model.packed_coefficients)

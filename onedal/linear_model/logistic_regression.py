@@ -20,8 +20,8 @@ from numbers import Number
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
+from onedal.common._backend import bind_default_backend
 
-from ..common._base import BaseEstimator as onedal_BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -35,7 +35,7 @@ from ..utils import (
 )
 
 
-class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
+class BaseLogisticRegression(metaclass=ABCMeta):
     @abstractmethod
     def __init__(self, tol, C, fit_intercept, solver, max_iter, algorithm):
         self.tol = tol
@@ -44,6 +44,19 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         self.solver = solver
         self.max_iter = max_iter
         self.algorithm = algorithm
+
+    @bind_default_backend("logistic_regression")
+    def _get_policy(self, queue, *data): ...
+
+    @abstractmethod
+    def train(self, policy, params, X, y): ...
+
+    @abstractmethod
+    def infer(self, policy, params, X): ...
+
+    # direct access to the backend model constructor
+    @abstractmethod
+    def model(self): ...
 
     def _get_onedal_params(self, is_csr, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
@@ -62,7 +75,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
             ),
         }
 
-    def _fit(self, X, y, module, queue):
+    def _fit(self, X, y, queue):
         sparsity_enabled = daal_check_version((2024, "P", 700))
         X, y = _check_X_y(
             X,
@@ -87,7 +100,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         params = self._get_onedal_params(is_csr, get_dtype(X))
         X_table, y_table = to_table(X, y)
 
-        result = module.train(policy, params, X_table, y_table)
+        result = self.train(policy, params, X_table, y_table)
 
         self._onedal_model = result.model
         self.n_iter_ = np.array([result.iterations_count])
@@ -101,8 +114,8 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def _create_model(self, module, policy):
-        m = module.model()
+    def _create_model(self, policy):
+        m = self.model()
 
         coefficients = self.coef_
         dtype = get_dtype(coefficients)
@@ -152,7 +165,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
         return m
 
-    def _infer(self, X, module, queue):
+    def _infer(self, X, queue):
         _check_is_fitted(self)
         sparsity_enabled = daal_check_version((2024, "P", 700))
 
@@ -173,30 +186,30 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
-            model = self._create_model(module, policy)
+            model = self._create_model(policy)
 
         X = _convert_to_supported(policy, X)
         params = self._get_onedal_params(is_csr, get_dtype(X))
 
         X_table = to_table(X)
-        result = module.infer(policy, params, model, X_table)
+        result = self.infer(policy, params, model, X_table)
         return result
 
-    def _predict(self, X, module, queue):
-        result = self._infer(X, module, queue)
+    def _predict(self, X, queue):
+        result = self._infer(X, queue)
         y = from_table(result.responses)
         y = np.take(self.classes_, y.ravel(), axis=0)
         return y
 
-    def _predict_proba(self, X, module, queue):
-        result = self._infer(X, module, queue)
+    def _predict_proba(self, X, queue):
+        result = self._infer(X, queue)
 
         y = from_table(result.probabilities)
         y = y.reshape(-1, 1)
         return np.hstack([1 - y, y])
 
-    def _predict_log_proba(self, X, module, queue):
-        y_proba = self._predict_proba(X, module, queue)
+    def _predict_log_proba(self, X, queue):
+        y_proba = self._predict_proba(X, queue)
         return np.log(y_proba)
 
 
@@ -225,25 +238,26 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
             algorithm=algorithm,
         )
 
+    @bind_default_backend("logistic_regression.classification")
+    def train(self, policy, params, X, y): ...
+
+    @bind_default_backend("logistic_regression.classification")
+    def infer(self, policy, params, X, model): ...
+
+    @bind_default_backend("logistic_regression.classification")
+    def model(self): ...
+
     def fit(self, X, y, queue=None):
-        return super()._fit(
-            X, y, self._get_backend("logistic_regression", "classification", None), queue
-        )
+        return self._fit(X, y, queue)
 
     def predict(self, X, queue=None):
-        y = super()._predict(
-            X, self._get_backend("logistic_regression", "classification", None), queue
-        )
+        y = self._predict(X, queue)
         return y
 
     def predict_proba(self, X, queue=None):
-        y = super()._predict_proba(
-            X, self._get_backend("logistic_regression", "classification", None), queue
-        )
+        y = self._predict_proba(X, queue)
         return y
 
     def predict_log_proba(self, X, queue=None):
-        y = super()._predict_log_proba(
-            X, self._get_backend("logistic_regression", "classification", None), queue
-        )
+        y = self._predict_log_proba(X, queue)
         return y

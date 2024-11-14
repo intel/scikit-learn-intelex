@@ -19,7 +19,6 @@ import pytest
 from numpy.testing import assert_allclose
 from scipy import sparse as sp
 
-from daal4py.sklearn._utils import daal_check_version
 from onedal.basic_statistics import BasicStatistics
 from onedal.basic_statistics.tests.utils import options_and_tests
 from onedal.tests.utils._device_selection import get_queues

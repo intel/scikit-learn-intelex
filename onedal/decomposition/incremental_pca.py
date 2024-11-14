@@ -14,9 +14,12 @@
 # limitations under the License.
 # ==============================================================================
 
+from abc import abstractmethod
+
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
+from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
@@ -98,10 +101,17 @@ class IncrementalPCA(BasePCA):
         self.whiten = whiten
         self._reset()
 
+    @bind_default_backend("decomposition.dim_reduction")
+    def finalize_train(self, policy, params, partial_result): ...
+
+    @bind_default_backend("decomposition.dim_reduction")
+    def partial_train(self, policy, params, partial_result, X_table): ...
+
+    @bind_default_backend("decomposition.dim_reduction")
+    def partial_train_result(self): ...
+
     def _reset(self):
-        self._partial_result = self._get_backend(
-            "decomposition", "dim_reduction", "partial_train_result"
-        )
+        self._partial_result = self.partial_train_result()
         if hasattr(self, "components_"):
             del self.components_
 
@@ -151,14 +161,8 @@ class IncrementalPCA(BasePCA):
             self._params = self._get_onedal_params(X)
 
         X_table = to_table(X)
-        self._partial_result = self._get_backend(
-            "decomposition",
-            "dim_reduction",
-            "partial_train",
-            policy,
-            self._params,
-            self._partial_result,
-            X_table,
+        self._partial_result = self.partial_train(
+            policy, self._params, self._partial_result, X_table
         )
         return self
 
@@ -181,10 +185,7 @@ class IncrementalPCA(BasePCA):
             policy = self._get_policy(queue)
         else:
             policy = self._get_policy(self._queue)
-        result = self._get_backend(
-            "decomposition",
-            "dim_reduction",
-            "finalize_train",
+        result = self.finalize_train(
             policy,
             self._params,
             self._partial_result,

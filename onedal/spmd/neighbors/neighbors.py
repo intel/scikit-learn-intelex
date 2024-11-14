@@ -14,14 +14,22 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
-from onedal.neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
-
 from ..._device_offload import support_input_format
-from .._base import BaseEstimatorSPMD
+from ...common._backend import bind_spmd_backend
+from ...neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
+from ...neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 
 
-class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
+class KNeighborsClassifier(KNeighborsClassifier_Batch):
+    @bind_spmd_backend("neighbors")
+    def _get_policy(self): ...
+
+    @bind_spmd_backend("neighbors.classification")
+    def train(self, *args, **kwargs): ...
+
+    @bind_spmd_backend("neighbors.classification")
+    def infer(self, *args, **kwargs): ...
+
     @support_input_format()
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
@@ -39,11 +47,26 @@ class KNeighborsClassifier(BaseEstimatorSPMD, KNeighborsClassifier_Batch):
         return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
 
-class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
+class KNeighborsRegressor(KNeighborsRegressor_Batch):
+    @bind_spmd_backend("neighbors")
+    def _get_policy(self): ...
+
+    @bind_spmd_backend("neighbors.search", lookup_name="train")
+    def train_search(self, *args, **kwargs): ...
+
+    @bind_spmd_backend("neighbors.search", lookup_name="infer")
+    def infer_search(self, *args, **kwargs): ...
+
+    @bind_spmd_backend("neighbors.regression")
+    def train(self, *args, **kwargs): ...
+
+    @bind_spmd_backend("neighbors.regression")
+    def infer(self, *args, **kwargs): ...
+
     @support_input_format()
     def fit(self, X, y, queue=None):
         if queue is not None and queue.sycl_device.is_gpu:
-            return super()._fit(X, y, queue=queue)
+            return self._fit(X, y, queue=queue)
         else:
             raise ValueError(
                 "SPMD version of kNN is not implemented for "
@@ -63,13 +86,3 @@ class KNeighborsRegressor(BaseEstimatorSPMD, KNeighborsRegressor_Batch):
         if "responses" not in params["result_option"]:
             params["result_option"] += "|responses"
         return params
-
-
-class NearestNeighbors(BaseEstimatorSPMD):
-    @support_input_format()
-    def fit(self, X, y, queue=None):
-        return super().fit(X, y, queue=queue)
-
-    @support_input_format()
-    def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
-        return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
