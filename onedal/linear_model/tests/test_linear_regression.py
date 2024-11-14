@@ -158,7 +158,7 @@ def test_reconstruct_model(queue, dtype):
     reason="Functionality introduced in later versions",
 )
 def test_overdetermined_system(queue, dtype, fit_intercept):
-    if queue and queue.sycl_device.is_gpu and not daal_check_version((2025, "P", 2)):
+    if queue and queue.sycl_device.is_gpu and not daal_check_version((2025, "P", 200)):
         pytest.skip("Functionality introduced in later versions")
     gen = np.random.default_rng(seed=123)
     X = gen.standard_normal(size=(10, 20))
@@ -186,7 +186,7 @@ def test_overdetermined_system(queue, dtype, fit_intercept):
     reason="Functionality introduced in later versions",
 )
 def test_singular_matrix(queue, dtype, fit_intercept):
-    if queue and queue.sycl_device.is_gpu and not daal_check_version((2025, "P", 2)):
+    if queue and queue.sycl_device.is_gpu and not daal_check_version((2025, "P", 200)):
         pytest.skip("Functionality introduced in later versions")
     gen = np.random.default_rng(seed=123)
     X = gen.standard_normal(size=(20, 4))
@@ -220,7 +220,7 @@ def test_multioutput_regression(queue, dtype, fit_intercept, problem_type):
         problem_type != "regular"
         and queue
         and queue.sycl_device.is_gpu
-        and not daal_check_version((2025, "P", 2))
+        and not daal_check_version((2025, "P", 200))
     ):
         pytest.skip("Functionality introduced in later versions")
     gen = np.random.default_rng(seed=123)
