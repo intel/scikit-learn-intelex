@@ -33,7 +33,7 @@ def test_sycl_queue_string_creation(device_type, device_number):
 
     onedal_SyclQueue = _backend.SyclQueue
 
-    device = ":".join([device_type, device_number]) if device_number else device_type
+    device = ":".join([device_type, str(device_number)]) if device_number else device_type
 
     raised_exception_dpctl = False
     raised_exception_backend = False
