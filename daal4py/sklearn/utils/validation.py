@@ -98,9 +98,9 @@ def _assert_all_finite(
     )
     _dal_ready = _patching_status.and_conditions(
         [
-            (X.ndim in [1, 2], "X has not 1 or 2 dimensions."),
-            (not np.any(np.equal(X.shape, 0)), "X shape contains 0."),
-            (dt in [np.float32, np.float64], "X dtype is not float32 or float64."),
+            (X.ndim in [1, 2], f"Input {input_name} does not have 1 or 2 dimensions."),
+            (not np.any(np.equal(X.shape, 0)), f"Input {input_name} shape contains a 0."),
+            (dt in [np.float32, np.float64], f"Input {input_name} dtype is not float32 or float64."),
         ]
     )
     _patching_status.write_log()
