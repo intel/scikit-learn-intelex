@@ -66,9 +66,10 @@ def test_sycl_queue_conversion(queue):
     # convert back and forth to test `_get_capsule` attribute
 
     q = onedal_SyclQueue(queue)
+    assert q.sycl_device.filter_string in queue.sycl_device.filter_string
 
     for i in range(10):
-        q = SyclQueue(q)
+        q = SyclQueue(q.sycl_device.filter_string)
         q = onedal_SyclQueue(q)
 
     # verify the device is the same
