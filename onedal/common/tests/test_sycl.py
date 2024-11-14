@@ -26,7 +26,7 @@ from onedal.utils._dpep_helpers import dpctl_available
     not _is_dpc_backend or not dpctl_available, reason="requires dpc backend and dpctl"
 )
 @pytest.mark.parametrize("device_type", ["cpu", "gpu"])
-@pytest.mark.parameterize("device_number", [None, 0, 1, 2, 3])
+@pytest.mark.parametrize("device_number", [None, 0, 1, 2, 3])
 def test_sycl_queue_string_creation(device_type, device_number):
     # create devices from strings
     from dpctl import SyclQueue
