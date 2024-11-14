@@ -62,7 +62,7 @@ requirements:
     - jinja2
     - pybind11
     - numpy
-    - mpich  # [not win]
+    - impi-devel  # [not win]
     # dal-devel pinning depends on the recipe location (repo or feedstock)
     - dal-devel
     # - dal-devel =={{ version }}
@@ -77,7 +77,7 @@ requirements:
 test:
   requires:
     - pyyaml
-    - mpich  # [not win]
+    - impi_rt  # [not win]
     # DPC part of sklearnex is optional
     - dpcpp-cpp-rt  # [linux64]
     # TODO: enable data parallel frameworks when they are available on conda-forge
