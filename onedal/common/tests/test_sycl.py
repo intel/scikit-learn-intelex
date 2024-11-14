@@ -40,8 +40,8 @@ def test_sycl_queue_string_creation(device_type, device_number):
 
     try:
         dpctl_queue = SyclQueue(device)
-    # except:
-    #    raised_exception_dpctl = True
+    finally:
+        raised_exception_dpctl = True
 
     try:
         onedal_queue = onedal_SyclQueue(device)
