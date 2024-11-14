@@ -30,6 +30,7 @@ from onedal.utils._dpep_helpers import dpctl_available
 def test_sycl_queue_string_creation(device_type, device_number):
     # create devices from strings
     from dpctl import SyclQueue
+    from dpctl._sycl_queue import SyclQueueCreationError
 
     onedal_SyclQueue = _backend.SyclQueue
 
@@ -40,7 +41,7 @@ def test_sycl_queue_string_creation(device_type, device_number):
 
     try:
         dpctl_queue = SyclQueue(device)
-    finally:
+    except SyclQueueCreationError:
         raised_exception_dpctl = True
 
     try:
