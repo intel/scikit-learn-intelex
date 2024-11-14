@@ -33,11 +33,6 @@ fi
 declare -a COV_ARGS=()
 if [ -n "$COVERAGE_RCFILE" ]; then
     COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config=$COVERAGE_RCFILE --cov-append --cov-report=)
-    # if a sycl gpu isn't available, uncomment gpu skips in .coveragerc
-    if !(command -v sycl-ls 2>&1 >/dev/null) || !(sycl-ls | grep -q "gpu"); then
-        echo "no SYCL GPU is available, sklearnex GPU code coverage metrics will be excluded"
-        sed -i -i 's/#//g' $COVERAGE_RCFILE
-    fi
 fi
 
 return_code=0
