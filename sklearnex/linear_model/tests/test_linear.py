@@ -42,9 +42,14 @@ def test_sklearnex_import_linear(
     dataframe, queue, dtype, macro_block, overdetermined, multi_output
 ):
     if (overdetermined or multi_output) and not daal_check_version((2025, "P", 1)):
-        pytest.skip()
-    if overdetermined and queue and queue.sycl_device.is_gpu:
-        pytest.skip()
+        pytest.skip("Functionality introduced in later versions")
+    if (
+        overdetermined
+        and queue
+        and queue.sycl_device.is_gpu
+        and not daal_check_version((2025, "P", 2))
+    ):
+        pytest.skip("Functionality introduced in later versions")
 
     from sklearnex.linear_model import LinearRegression
 
