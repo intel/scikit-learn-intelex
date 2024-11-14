@@ -32,7 +32,11 @@ if dpctl_available:
 else:
     import onedal
 
-    SyclQueue = getattr(onedal._backend, "SyclQueue", None)
+    # setting fallback to `object` will make isinstance call in
+    # _get_global_queue a no-op, for situations without the
+    # dpc backend where device_offload is used, it will fail
+    # at the policy check phase yielding a RuntimeError
+    SyclQueue = getattr(onedal._backend, "SyclQueue", object)
 
 if dpnp_available:
     import dpnp
