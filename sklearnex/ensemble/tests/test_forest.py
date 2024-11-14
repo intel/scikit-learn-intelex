@@ -15,14 +15,15 @@
 # ===============================================================================
 
 import pytest
-from daal4py.sklearn._utils import daal_check_version
 from numpy.testing import assert_allclose
+from sklearn.datasets import make_classification, make_regression
+
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from sklearn.datasets import make_classification, make_regression
 
 hparam_values = [
     (None, None, None, None),

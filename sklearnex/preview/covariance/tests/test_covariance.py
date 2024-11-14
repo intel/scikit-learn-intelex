@@ -16,8 +16,9 @@
 
 import numpy as np
 import pytest
-from daal4py.sklearn._utils import daal_check_version
 from numpy.testing import assert_allclose
+
+from daal4py.sklearn._utils import daal_check_version
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,

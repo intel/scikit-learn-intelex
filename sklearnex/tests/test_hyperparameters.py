@@ -1,4 +1,5 @@
 import pytest
+
 from sklearnex._utils import register_hyperparameters
 
 
