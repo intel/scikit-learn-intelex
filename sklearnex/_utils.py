@@ -109,6 +109,8 @@ def register_hyperparameters(hyperparameters_map):
         """Add `get_hyperparameters()` static method"""
 
         class StaticHyperparametersAccessor:
+            """Like a @staticmethod, but additionally raises a Warning when called on an instance."""
+
             def __get__(self, instance, _):
                 if instance is not None:
                     warnings.warn(
