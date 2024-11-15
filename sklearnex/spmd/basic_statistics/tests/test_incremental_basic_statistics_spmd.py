@@ -87,7 +87,7 @@ def test_incremental_basic_statistics_fit_spmd_gold(dataframe, queue, weighted, 
         dpt_data, sample_weight=dpt_weights if weighted else None
     )
 
-    for option, _, _ in options_and_tests:
+    for option in options_and_tests:
         assert_allclose(
             getattr(incbs_spmd, option),
             getattr(incbs, option),
@@ -160,7 +160,7 @@ def test_incremental_basic_statistics_partial_fit_spmd_gold(
 
     incbs.fit(dpt_data, sample_weight=dpt_weights if weighted else None)
 
-    for option, _, _ in options_and_tests:
+    for option in options_and_tests:
         assert_allclose(
             getattr(incbs_spmd, option),
             getattr(incbs, option),
@@ -178,11 +178,11 @@ def test_incremental_basic_statistics_partial_fit_spmd_gold(
 )
 @pytest.mark.parametrize("num_blocks", [1, 2])
 @pytest.mark.parametrize("weighted", [True, False])
-@pytest.mark.parametrize("result_option", options_and_tests)
+@pytest.mark.parametrize("option", options_and_tests.keys())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.mpi
 def test_incremental_basic_statistics_single_option_partial_fit_spmd_gold(
-    dataframe, queue, num_blocks, weighted, result_option, dtype
+    dataframe, queue, num_blocks, weighted, option, dtype
 ):
     # Import spmd and batch algo
     from sklearnex.basic_statistics import IncrementalBasicStatistics
@@ -217,7 +217,6 @@ def test_incremental_basic_statistics_single_option_partial_fit_spmd_gold(
         local_weights = _get_local_tensor(weights)
         split_local_weights = np.array_split(local_weights, num_blocks)
 
-    option, _, _ = result_option
     incbs_spmd = IncrementalBasicStatistics_SPMD(result_options=option)
     incbs = IncrementalBasicStatistics(result_options=option)
 
