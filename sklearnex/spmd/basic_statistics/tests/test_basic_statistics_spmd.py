@@ -19,8 +19,10 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.basic_statistics.tests.utils import options_and_tests
-from onedal.tests.utils import get_dataframes_and_queues
-from onedal.tests.utils._dataframes_support import _convert_to_dataframe
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from sklearnex.tests.utils.spmd import (
     _generate_statistic_data,
     _get_local_tensor,
