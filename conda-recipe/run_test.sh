@@ -31,7 +31,7 @@ if [[ count -eq 0 ]]; then
 fi
 
 declare -a COV_ARGS=()
-if [ -n "$COVERAGE_RCFILE" ]; then
+if [ -n "${COVERAGE_RCFILE}" ]; then
     COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config="${COVERAGE_RCFILE}" --cov-append --cov-report=)
 fi
 
