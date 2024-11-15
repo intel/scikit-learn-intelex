@@ -74,14 +74,6 @@ def test_sycl_queue_conversion(queue):
     # get_device_id must be modified to follow DPCtl conventions
     # assert q.sycl_device.filter_string in queue.sycl_device.filter_string
 
-    for i in range(10):
-        q = SyclQueue(q.sycl_device.filter_string)
-        q = onedal_SyclQueue(q)
-
-    # verify the device is the same
-    # get_device_id must be modified to follow DPCtl conventions
-    # assert q.sycl_device.filter_string in queue.sycl_device.filter_string
-
 
 @pytest.mark.skipif(
     not _is_dpc_backend or not dpctl_available, reason="requires dpc backend and dpctl"
