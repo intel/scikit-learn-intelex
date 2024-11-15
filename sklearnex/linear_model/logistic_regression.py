@@ -313,7 +313,7 @@ if daal_check_version((2024, "P", 1)):
             if get_config()["allow_sklearn_after_onedal"]:
                 try:
                     self._onedal_estimator.fit(X, y, queue=queue)
-                    self._save_attributes()
+                    self._onedal_gpu_save_attributes()
                 except RuntimeError:
                     logging.getLogger("sklearnex").info(
                         f"{self.__class__.__name__}.fit "
