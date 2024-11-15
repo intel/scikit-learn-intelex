@@ -297,7 +297,7 @@ def test_incremental_basic_statistics_partial_fit_spmd_synthetic(
         )
         incbs.partial_fit(dpt_data, sample_weight=dpt_weights if weighted else None)
 
-    for option, _, _ in options_and_tests:
+    for option in options_and_tests:
         assert_allclose(
             getattr(incbs_spmd, option),
             getattr(incbs, option),
