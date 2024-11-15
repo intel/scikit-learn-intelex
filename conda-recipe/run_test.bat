@@ -28,7 +28,7 @@ if "%PYTHON%"=="python" (
     set NO_DIST=1
 )
 
-IF DEFINED COVERAGE_RCFILE (set COV_ARGS=--cov=onedal --cov=sklearnex --cov-config=%COVERAGE_RCFILE% --cov-append --cov-report=) else (set COV_ARGS=)
+IF DEFINED %COVERAGE_RCFILE% (set COV_ARGS=--cov=onedal --cov=sklearnex --cov-config=%COVERAGE_RCFILE% --cov-append --cov-report=) else (set COV_ARGS=)
 
 %PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
