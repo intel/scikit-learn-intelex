@@ -85,6 +85,7 @@ def test_sycl_queue_conversion(queue):
 @pytest.mark.parametrize("queue", get_queues())
 def test_sycl_device_attributes(queue):
     from dpctl import SyclQueue
+
     if queue is None:
         pytest.skip("Not a DPCtl queue")
     onedal_SyclQueue = _backend.SyclQueue
