@@ -41,7 +41,6 @@ void instantiate_default_host_policy(py::module& m) {
 
 #ifdef ONEDAL_DATA_PARALLEL
 
-using dp_policy_t = dal::detail::data_parallel_policy;
 
 dp_policy_t make_dp_policy(std::uint32_t id) {
     sycl::queue queue = get_queue_by_device_id(id);
