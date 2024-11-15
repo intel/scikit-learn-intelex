@@ -37,7 +37,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    cwd = os.getcwd()
     sklearn_file_dir = os.path.dirname(sklearn.__file__)
     os.chdir(sklearn_file_dir)
 
