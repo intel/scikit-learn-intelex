@@ -122,5 +122,4 @@ def test_backend_queue():
     assert all([queue.sycl_device.has_aspect_fp16 for queue in q_array])
     assert all([queue.sycl_device.is_cpu for queue in q_array])
     assert all([not queue.sycl_device.is_gpu for queue in q_array])
-    # get_device_id must be modified to follow DPCtl conventions
-    # assert all(["cpu" in queue.sycl_device.filter_string for queue in q_array])
+    assert all(["cpu" in queue.sycl_device.filter_string for queue in q_array])
