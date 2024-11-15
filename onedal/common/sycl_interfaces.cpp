@@ -108,6 +108,10 @@ sycl::queue get_queue_by_get_capsule(const py::object& syclobj) {
 }
 
 sycl::queue get_queue_by_pylong_pointer(const py::int_& syclobj) {
+    // PyTorch XPU streams have a sycl_queue attribute which is
+    // a void pointer as PyLong (Python integer). It can be read and 
+    // converted into a sycl::queue.  This function allows 
+    // consumption of these objects for use in oneDAL.
     void *ptr = PyLong_AsVoidPtr(syclobj.ptr());
     // assumes that the PyLong is a pointer to a queue
     return sycl::queue{ *static_cast<sycl::queue*>(ptr) };
