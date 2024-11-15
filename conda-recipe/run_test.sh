@@ -32,7 +32,7 @@ fi
 
 declare -a COV_ARGS=()
 if [ -n "$COVERAGE_RCFILE" ]; then
-    COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config=$COVERAGE_RCFILE --cov-append --cov-report=)
+    COV_ARGS=(--cov=onedal --cov=sklearnex --cov-config="${COVERAGE_RCFILE}" --cov-append --cov-report=)
 fi
 
 return_code=0
