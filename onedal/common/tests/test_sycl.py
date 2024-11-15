@@ -34,7 +34,7 @@ def test_sycl_queue_string_creation(device_type, device_number):
 
     onedal_SyclQueue = _backend.SyclQueue
 
-    device = ":".join([device_type, str(device_number)]) if device_number else device_type
+    device = ":".join([device_type, str(device_number)]) if device_number is not None else device_type
 
     raised_exception_dpctl = False
     raised_exception_backend = False
@@ -65,7 +65,7 @@ def test_sycl_queue_string_creation(device_type, device_number):
 @pytest.mark.parametrize("queue", get_queues())
 def test_sycl_queue_conversion(queue):
     if queue is None:
-        pytest.skip("Not a DPCtl queue")
+        pytest.skip("Not a dpctl queue")
     SyclQueue = queue.__class__
     onedal_SyclQueue = _backend.SyclQueue
     # convert back and forth to test `_get_capsule` attribute
