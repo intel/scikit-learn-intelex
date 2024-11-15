@@ -49,7 +49,7 @@ For example, you can set the environment variable in the following way:
 Then, you can import Scikit-learn estimator patched with a preview one from `sklearnex.preview` module::
 
      from sklearnex import patch_sklearn
-     patch_sklearn(preview=True)
+     patch_sklearn()
      from sklearn.decomposition import IncrementalPCA
      print(IncrementalPCA.__module__)
      # output:

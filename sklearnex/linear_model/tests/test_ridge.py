@@ -41,7 +41,9 @@ def test_sklearnex_import_ridge(dataframe, queue):
     ridge_reg = Ridge(alpha=0.5).fit(X_c, y_c)
 
     if daal_check_version((2024, "P", 600)):
-        assert "sklearnex" in ridge_reg.__module__ and "preview" not in ridge_reg.__module__
+        assert (
+            "sklearnex" in ridge_reg.__module__ and "preview" not in ridge_reg.__module__
+        )
     else:
         assert "daal4py" in ridge_reg.__module__
 
