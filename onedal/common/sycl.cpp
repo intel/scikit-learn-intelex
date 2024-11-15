@@ -24,8 +24,8 @@ namespace oneapi::dal::python {
 #ifdef ONEDAL_DATA_PARALLEL
 
 void instantiate_sycl_interfaces(py::module& m){
-    // These classes mirror a subset of functionality of the DPCtl python
-    // package's `SyclQueue` and `SyclDevice` objects.  In the case that DPCtl
+    // These classes mirror a subset of functionality of the dpctl python
+    // package's `SyclQueue` and `SyclDevice` objects.  In the case that dpctl
     // is not installed, these classes will enable scikit-learn-intelex to still
     // properly offload to other devices when built with the dpc backend.
     py::class_<sycl::queue> syclqueue(m, "SyclQueue");
