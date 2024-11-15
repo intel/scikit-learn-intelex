@@ -310,11 +310,12 @@ if daal_check_version((2024, "P", 1)):
                 )
 
             self._onedal_gpu_initialize_estimator()
-            if get_config()["allow_sklearn_after_onedal"]:
-                try:
-                    self._onedal_estimator.fit(X, y, queue=queue)
-                    self._onedal_gpu_save_attributes()
-                except RuntimeError:
+            try:
+                self._onedal_estimator.fit(X, y, queue=queue)
+                self._onedal_gpu_save_attributes()
+            except RuntimeError as err:
+                if get_config()["allow_sklearn_after_onedal"]:
+
                     logging.getLogger("sklearnex").info(
                         f"{self.__class__.__name__}.fit "
                         + get_patch_message("sklearn_after_onedal")
@@ -322,9 +323,8 @@ if daal_check_version((2024, "P", 1)):
 
                     del self._onedal_estimator
                     super().fit(X, y)
-            else:
-                self._onedal_estimator.fit(X, y, queue=queue)
-                self._save_attributes()
+                else:
+                    raise err
 
         def _onedal_predict(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:
