@@ -57,7 +57,7 @@ function generate_pytest_args {
     if [ -n "${COVERAGE_RCFILE}" ]; then
         ARGS+=(--cov=onedal --cov=sklearnex --cov-config="${COVERAGE_RCFILE}" --cov-append --cov-report=)
     fi
-    "${ARGS[@]}"
+    printf -- "${ARGS[@]}"
 }
 
 ${PYTHON} -c "from sklearnex import patch_sklearn; patch_sklearn()"
