@@ -64,12 +64,13 @@ void instantiate_sycl_interfaces(py::module& m){
         )
         .def_property_readonly("filter_string",[](const sycl::device& device) {
                 // assumes we are not working with accelerators
+                // This is a minimal reproduction of dpctl's DPCTL_GetRelativeDeviceId
                 std::uint32_t id = 0;
                 std::string filter = get_device_name(device);
                 auto devtype = device.get_info<sycl::info::device::device_type>();
-                auto devices = device.get_devices(devtype);
+                auto devs = device.get_devices(devtype);
                 auto be = device.get_platorm().get_backend();
-                for(;devices[id] != device; be == devices[id].get_platform().get_backend() && ++id);
+                for(;devs[id] != device; be == devs[id].get_platform().get_backend() && ++id);
                 return py::str(filter + ":") + py::str(py::int_(id));
             }
         )
