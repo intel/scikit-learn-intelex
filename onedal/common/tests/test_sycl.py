@@ -55,8 +55,11 @@ def test_sycl_queue_string_creation(device_type, device_number):
 
     assert raised_exception_dpctl == raised_exception_backend
     if not raised_exception_backend:
+        # dpctl filter string converts simple sycl filter_strings
+        # i.e. "gpu:1" -> "opencl:gpu:0", therefore only check the
+        # device as the backend is irrelevant to use in oneDAL
         assert (
-            onedal_queue.sycl_device.filter_string
+            onedal_queue.sycl_device.filter_string.split(":")[0]
             in dpctl_queue.sycl_device.filter_string
         )
 
