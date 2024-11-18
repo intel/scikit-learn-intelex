@@ -51,7 +51,7 @@ def test_sklearnex_import_rf_classifier(dataframe, queue, block, trees, rows, sc
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     rf = RandomForestClassifier(max_depth=2, random_state=0).fit(X, y)
-    hparams = rf.get_hyperparameters("infer")
+    hparams = RandomForestClassifier.get_hyperparameters("infer")
     if hparams and block is not None:
         hparams.block_size = block
         hparams.min_trees_for_threading = trees

@@ -363,6 +363,8 @@ def _check_n_features(self, X, reset):
 
 
 def _num_features(X, fallback_1d=False):
+    if X is None:
+        raise ValueError("Expected array-like (array or non-string sequence), got None")
     type_ = type(X)
     if type_.__module__ == "builtins":
         type_name = type_.__qualname__
@@ -371,7 +373,7 @@ def _num_features(X, fallback_1d=False):
     message = "Unable to find the number of features from X of type " f"{type_name}"
     if not hasattr(X, "__len__") and not hasattr(X, "shape"):
         if not hasattr(X, "__array__"):
-            raise TypeError(message)
+            raise ValueError(message)
         # Only convert X to a numpy array if there is no cheaper, heuristic
         # option.
         X = np.asarray(X)
@@ -380,15 +382,21 @@ def _num_features(X, fallback_1d=False):
         ndim_thr = 1 if fallback_1d else 2
         if not hasattr(X.shape, "__len__") or len(X.shape) < ndim_thr:
             message += f" with shape {X.shape}"
-            raise TypeError(message)
-        return X.shape[-1]
+            raise ValueError(message)
+        if len(X.shape) <= 1:
+            return 1
+        else:
+            return X.shape[-1]
 
-    first_sample = X[0]
+    try:
+        first_sample = X[0]
+    except IndexError:
+        raise ValueError("Passed empty data.")
 
     # Do not consider an array-like of strings or dicts to be a 2D array
     if isinstance(first_sample, (str, bytes, dict)):
         message += f" where the samples are of type " f"{type(first_sample).__qualname__}"
-        raise TypeError(message)
+        raise ValueError(message)
 
     try:
         # If X is a list of lists, for instance, we assume that all nested
@@ -399,7 +407,7 @@ def _num_features(X, fallback_1d=False):
         else:
             return 1
     except Exception as err:
-        raise TypeError(message) from err
+        raise ValueError(message) from err
 
 
 def _num_samples(x):

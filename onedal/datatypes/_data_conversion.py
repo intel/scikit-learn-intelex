@@ -27,20 +27,44 @@ def _apply_and_pass(func, *args, **kwargs):
     return tuple(map(lambda arg: func(arg, **kwargs), args))
 
 
-def convert_one_to_table(arg):
+def _convert_one_to_table(arg):
+    # All inputs for table conversion must be array-like or sparse, not scalars
     return _backend.to_table(np.atleast_2d(arg) if np.isscalar(arg) else arg)
 
 
 def to_table(*args):
-    return _apply_and_pass(convert_one_to_table, *args)
+    """Create oneDAL tables from scalars and/or arrays.
+
+    Note: this implementation can be used with contiguous scipy.sparse, numpy
+    ndarrays, DPCTL/DPNP usm_ndarrays and scalars. Tables will use pointers to the
+    original array data. Scalars will be copies. Arrays may be modified in-
+    place by oneDAL during computation. This works for data located on CPU and
+    SYCL-enabled Intel GPUs. Each array may only be of a single datatype (i.e.
+    each must be homogeneous).
+
+    Parameters
+    ----------
+    *args : {scalar, numpy array, sycl_usm_ndarray, csr_matrix, or csr_array}
+        arg1, arg2... The arrays should be given as arguments.
+
+    Returns
+    -------
+    tables: {oneDAL homogeneous tables}
+    """
+    return _apply_and_pass(_convert_one_to_table, *args)
 
 
 if _is_dpc_backend:
 
     try:
+        # try/catch is used here instead of dpep_helpers because
+        # of circular import issues of _data_conversion.py and
+        # utils/validation.py. This is a temporary fix until the
+        # issue with dpnp is addressed, at which point this can
+        # be removed entirely.
         import dpnp
 
-        def _onedal_gpu_table_to_array(table, xp=None):
+        def _table_to_array(table, xp=None):
             # By default DPNP ndarray created with a copy.
             # TODO:
             # investigate why dpnp.array(table, copy=False) doesn't work.
@@ -52,7 +76,7 @@ if _is_dpc_backend:
 
     except ImportError:
 
-        def _onedal_gpu_table_to_array(table, xp=None):
+        def _table_to_array(table, xp=None):
             return xp.asarray(table)
 
     from ..common._policy import _HostInteropPolicy
@@ -102,7 +126,7 @@ if _is_dpc_backend:
                     _backend.from_table(table), usm_type="device", sycl_queue=sycl_queue
                 )
             else:
-                return _onedal_gpu_table_to_array(table, xp=xp)
+                return _table_to_array(table, xp=xp)
 
         return _backend.from_table(table)
 
