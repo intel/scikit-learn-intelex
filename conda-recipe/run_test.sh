@@ -48,6 +48,7 @@ if [[ "$*" == *"--json-report"* ]]; then
         rm .pytest_reports/*.json
     fi
 fi
+
 function generate_pytest_args {
     declare -a ARGS=()
     if [[ "${with_json_report}" == "1" ]]; then
