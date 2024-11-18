@@ -18,6 +18,7 @@
 
 #include <string>
 #include <cstdint>
+#include <optional>
 
 #ifdef ONEDAL_DATA_PARALLEL
 #include <sycl/sycl.hpp>
@@ -27,32 +28,32 @@
 
 #include "oneapi/dal/detail/policy.hpp"
 
-#include "onedal/common/device_lookup.hpp"
-
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
 
 #ifdef ONEDAL_DATA_PARALLEL
 
+std::optional<sycl::device> get_device_by_id(std::uint32_t id);
+std::optional<std::uint32_t> get_device_id(const sycl::device& device);
+
 sycl::queue extract_queue(py::capsule capsule);
 sycl::context extract_context(py::capsule capsule);
 sycl::queue extract_from_capsule(py::capsule capsule);
+
 sycl::queue get_queue_by_get_capsule(const py::object& syclobj);
+sycl::queue get_queue_by_pylong_pointer(const py::int_& syclobj);
+sycl::queue get_queue_by_filter_string(const std::string& filter);
+sycl::queue get_queue_by_device_id(std::uint32_t id);
 sycl::queue get_queue_from_python(const py::object& syclobj);
 
 using dp_policy_t = detail::data_parallel_policy;
 
-dp_policy_t make_dp_policy(std::uint32_t id);
-dp_policy_t make_dp_policy(const py::object& syclobj);
-dp_policy_t make_dp_policy(const std::string& filter);
-inline dp_policy_t make_dp_policy(const dp_policy_t& policy) {
-    return dp_policy_t{ policy };
-}
-
 std::uint32_t get_device_id(const dp_policy_t& policy);
 std::size_t get_used_memory(const py::object& syclobj);
 std::string get_device_name(const dp_policy_t& policy);
+std::string get_device_name(const sycl::device& device);
+
 
 /// TODO: This is a workaround class.
 /// It hides deprecated ``sycl::ext::oneapi::filter_selector`` to get rid of build warnings
@@ -68,19 +69,8 @@ private:
     sycl::ext::oneapi::filter_selector filter_selector_;
 };
 
-#endif // ONEDAL_DATA_PARALLEL
+py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue);
 
-template <typename Policy>
-inline auto& instantiate_host_policy(py::class_<Policy>& policy) {
-    policy.def(py::init<>());
-    policy.def(py::init<Policy>());
-    policy.def("get_device_id", [](const Policy&) -> std::uint32_t {
-        return std::uint32_t{ 0u };
-    });
-    policy.def("get_device_name", [](const Policy&) -> std::string {
-        return std::string{ "cpu" };
-    });
-    return policy;
-}
+#endif // ONEDAL_DATA_PARALLEL
 
 } // namespace oneapi::dal::python
