@@ -33,6 +33,7 @@ sklearnex =
 onedal =
     onedal/
     */onedal
+#Uncomment lines below for report generation when an Intel GPU is unavailable
 #[report]
 #exclude_also =
 #    def _onedal_gpu.*
