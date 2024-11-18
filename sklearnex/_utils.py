@@ -16,7 +16,6 @@
 
 import logging
 import os
-import sys
 import warnings
 from abc import ABC
 
@@ -106,14 +105,26 @@ def register_hyperparameters(hyperparameters_map):
     Adds `get_hyperparameters` method to class.
     """
 
-    def wrap_class(estimator_class):
-        def get_hyperparameters(self, op):
-            return hyperparameters_map[op]
+    def decorator(cls):
+        """Add `get_hyperparameters()` static method"""
 
-        estimator_class.get_hyperparameters = get_hyperparameters
-        return estimator_class
+        class StaticHyperparametersAccessor:
+            """Like a @staticmethod, but additionally raises a Warning when called on an instance."""
 
-    return wrap_class
+            def __get__(self, instance, _):
+                if instance is not None:
+                    warnings.warn(
+                        "Hyperparameters are static variables and can not be modified per instance."
+                    )
+                return self.get_hyperparameters
+
+            def get_hyperparameters(self, op):
+                return hyperparameters_map[op]
+
+        cls.get_hyperparameters = StaticHyperparametersAccessor()
+        return cls
+
+    return decorator
 
 
 # This abstract class is meant to generate a clickable doc link for classses
