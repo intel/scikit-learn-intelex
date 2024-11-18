@@ -86,11 +86,11 @@ def test_incremental_linear_regression_fit_spmd_gold(
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
 
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 
-        hparams_spmd = inclin_spmd.get_hyperparameters("fit")
+        hparams_spmd = IncrementalLinearRegression_SPMD.get_hyperparameters("fit")
         hparams_spmd.cpu_macro_block = macro_block
         hparams_spmd.gpu_macro_block = macro_block
 
@@ -159,11 +159,11 @@ def test_incremental_linear_regression_partial_fit_spmd_gold(
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
 
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 
-        hparams_spmd = inclin_spmd.get_hyperparameters("fit")
+        hparams_spmd = IncrementalLinearRegression_SPMD.get_hyperparameters("fit")
         hparams_spmd.cpu_macro_block = macro_block
         hparams_spmd.gpu_macro_block = macro_block
 
@@ -225,11 +225,11 @@ def test_incremental_linear_regression_fit_spmd_random(
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
 
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 
-        hparams_spmd = inclin_spmd.get_hyperparameters("fit")
+        hparams_spmd = IncrementalLinearRegression_SPMD.get_hyperparameters("fit")
         hparams_spmd.cpu_macro_block = macro_block
         hparams_spmd.gpu_macro_block = macro_block
 
@@ -298,11 +298,11 @@ def test_incremental_linear_regression_partial_fit_spmd_random(
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
 
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 
-        hparams_spmd = inclin_spmd.get_hyperparameters("fit")
+        hparams_spmd = IncrementalLinearRegression_SPMD.get_hyperparameters("fit")
         hparams_spmd.cpu_macro_block = macro_block
         hparams_spmd.gpu_macro_block = macro_block
 
