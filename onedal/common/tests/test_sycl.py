@@ -70,12 +70,14 @@ def test_sycl_queue_conversion(queue):
         pytest.skip("Not a dpctl queue")
     SyclQueue = queue.__class__
     onedal_SyclQueue = _backend.SyclQueue
+
+    q = onedal_SyclQueue(queue)
+
     # convert back and forth to test `_get_capsule` attribute
     for i in range(10):
         q = SyclQueue(q.sycl_device.filter_string)
         q = onedal_SyclQueue(q)
 
-    q = onedal_SyclQueue(queue)
     assert q.sycl_device.filter_string in queue.sycl_device.filter_string
 
 

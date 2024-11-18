@@ -64,7 +64,7 @@ void instantiate_sycl_interfaces(py::module& m){
         )
         .def_property_readonly("filter_string",[](const sycl::device& device) {
                 // assumes we are not working with accelerators
-                // This is a minimal reproduction of 
+                // This is a minimal reproduction of DPCTL_GetRelativeDeviceId
                 std::uint32_t outidx = 0;
                 std::string filter = get_device_name(device);
                 auto devtype = device.get_info<sycl::info::device::device_type>();
