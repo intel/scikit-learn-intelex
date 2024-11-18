@@ -70,7 +70,7 @@ void instantiate_sycl_interfaces(py::module& m){
                 auto devtype = device.get_info<sycl::info::device::device_type>();
                 auto devs = device.get_devices(devtype);
                 auto be = device.get_platform().get_backend();
-                for(std::unit32_t id = 0; devs[outidx] != device; ++id){
+                for(std::uint32_t id = 0; devs[outidx] != device; ++id){
                     if (devs[id].get_platform().get_backend() == be) ++outidx;
                 }
                 return py::str(filter + ":") + py::str(py::int_(outidx));
