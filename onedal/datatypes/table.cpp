@@ -17,12 +17,12 @@
 #include "oneapi/dal/table/common.hpp"
 #include "oneapi/dal/table/homogen.hpp"
 
-#ifdef ONEDAL_DPCTL_INTEGRATION
-#include "onedal/datatypes/data_conversion_dpctl.hpp"
-#endif // ONEDAL_DPCTL_INTEGRATION
+#ifdef ONEDAL_DATA_PARALLEL
+#include "onedal/datatypes/data_conversion_sua_iface.hpp"
+#endif // ONEDAL_DATA_PARALLEL
 
 #include "onedal/datatypes/data_conversion.hpp"
-#include "onedal/datatypes/numpy_helpers.hpp"
+#include "onedal/datatypes/utils/numpy_helpers.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "onedal/version.hpp"
 
@@ -73,11 +73,17 @@ ONEDAL_PY_INIT_MODULE(table) {
         return py::make_tuple(row_count, column_count);
     });
 
-#ifdef ONEDAL_DPCTL_INTEGRATION
+#ifdef ONEDAL_DATA_PARALLEL
     define_sycl_usm_array_property(table_obj);
-#endif // ONEDAL_DPCTL_INTEGRATION
+#endif // ONEDAL_DATA_PARALLEL
 
     m.def("to_table", [](py::object obj) {
+        #ifdef ONEDAL_DATA_PARALLEL
+        if (py::hasattr(obj, "__sycl_usm_array_interface__")) {
+            return convert_from_sua_iface(obj);
+        }
+        #endif // ONEDAL_DATA_PARALLEL
+
         auto* obj_ptr = obj.ptr();
         return convert_to_table(obj_ptr);
     });
@@ -86,12 +92,6 @@ ONEDAL_PY_INIT_MODULE(table) {
         auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
-
-#ifdef ONEDAL_DPCTL_INTEGRATION
-    m.def("dpctl_to_table", [](py::object obj) {
-        return convert_from_dptensor(obj);
-    });
-#endif // ONEDAL_DPCTL_INTEGRATION
 }
 
 } // namespace oneapi::dal::python

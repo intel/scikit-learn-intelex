@@ -26,7 +26,7 @@ from daal4py.sklearn._utils import sklearn_check_version
 from onedal.basic_statistics import BasicStatistics as onedal_BasicStatistics
 
 from .._device_offload import dispatch
-from .._utils import PatchingConditionsChain
+from .._utils import IntelEstimator, PatchingConditionsChain
 
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
@@ -38,7 +38,7 @@ if sklearn_check_version("1.2"):
 
 
 @control_n_jobs(decorated_methods=["fit"])
-class BasicStatistics(BaseEstimator):
+class BasicStatistics(IntelEstimator, BaseEstimator):
     """
     Estimator for basic statistics.
     Allows to compute basic statistics for provided data.
@@ -80,7 +80,7 @@ class BasicStatistics(BaseEstimator):
 
     Note
     ----
-    Attributes' names without the trailing underscore are
+    Names of attributes without the trailing underscore are
     supported currently but deprecated in 2025.1 and will be removed in 2026.0
 
     Note
