@@ -44,24 +44,22 @@ def test_sycl_queue_string_creation(device_type, device_number):
     raised_exception_backend = False
 
     try:
-        dpctl_queue = SyclQueue(device)
+        dpctl_string = SyclQueue(device).sycl_device.filter_string
     except SyclQueueCreationError:
         raised_exception_dpctl = True
 
     try:
-        onedal_queue = onedal_SyclQueue(device)
+        onedal_string = onedal_SyclQueue(device).sycl_device.filter_string
     except RuntimeError:
         raised_exception_backend = True
 
     assert raised_exception_dpctl == raised_exception_backend
     if not raised_exception_backend:
         # dpctl filter string converts simple sycl filter_strings
-        # i.e. "gpu:1" -> "opencl:gpu:0", therefore only check the
-        # device as the backend is irrelevant to use in oneDAL
-        assert (
-            onedal_queue.sycl_device.filter_string.split(":")[0]
-            in dpctl_queue.sycl_device.filter_string
-        )
+        # i.e. "gpu:1" -> "opencl:gpu:0", use SyclQueue to convert
+        # for matching, as oneDAL sycl queue only returns simple
+        # strings as these are operationally sufficient
+        assert SyclQueue(onedal_string).sycl_device.filter_string == dpctl_string
 
 
 @pytest.mark.skipif(
