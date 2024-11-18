@@ -204,8 +204,10 @@ if daal_check_version((2024, "P", 600)):
             n_samples = _num_samples(X)
             n_features = _num_features(X, fallback_1d=True)
 
-            # Check if equations are well defined
+            # Check if equations are well defined, see LinReg for further explanation
             is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+            supports_all_variants = daal_check_version((2025, "P", 1))
+            is_multi_output = _num_features(data[1], fallback_1d=True) > 1
 
             patching_status.and_conditions(
                 [
@@ -219,7 +221,7 @@ if daal_check_version((2024, "P", 600)):
                         "Sparse input is not supported.",
                     ),
                     (
-                        not is_underdetermined,
+                        not is_underdetermined or supports_all_variants,
                         "The shape of X (fitting) does not satisfy oneDAL requirements:"
                         "Number of features + 1 >= number of samples.",
                     ),
@@ -228,6 +230,10 @@ if daal_check_version((2024, "P", 600)):
                     (
                         not positive_is_set,
                         "Forced positive coefficients are not supported.",
+                    ),
+                    (
+                        not is_multi_output or supports_all_variants,
+                        "Multi-output regression is not supported.",
                     ),
                 ]
             )
@@ -259,13 +265,25 @@ if daal_check_version((2024, "P", 600)):
 
         def _onedal_gpu_supported(self, method_name, *data):
             patching_status = PatchingConditionsChain(
-                f"sklearn.linear_model.{self.__class__.__name__}.fit"
+                f"sklearn.linear_model.{self.__class__.__name__}.{method_name}"
             )
 
             if method_name == "fit":
-                patching_status.and_condition(
-                    _is_numeric_scalar(self.alpha),
-                    "Non-scalar alpha is not supported for GPU.",
+                n_samples = _num_samples(data[0])
+                n_features = _num_features(data[0], fallback_1d=True)
+                is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+                patching_status.and_conditions(
+                    [
+                        (
+                            _is_numeric_scalar(self.alpha),
+                            "Non-scalar alpha is not supported for GPU.",
+                        ),
+                        (
+                            not is_underdetermined,
+                            "The shape of X (fitting) does not satisfy oneDAL requirements:"
+                            "Number of features + 1 >= number of samples.",
+                        ),
+                    ]
                 )
 
                 return self._onedal_fit_supported(patching_status, method_name, *data)
@@ -279,7 +297,7 @@ if daal_check_version((2024, "P", 600)):
 
         def _onedal_cpu_supported(self, method_name, *data):
             patching_status = PatchingConditionsChain(
-                f"sklearn.linear_model.{self.__class__.__name__}.fit"
+                f"sklearn.linear_model.{self.__class__.__name__}.{method_name}"
             )
 
             if method_name == "fit":
@@ -331,13 +349,14 @@ if daal_check_version((2024, "P", 600)):
                         include_boundaries="left",
                     )
 
+            supports_multi_output = daal_check_version((2025, "P", 1))
             check_params = {
                 "X": X,
                 "y": y,
                 "dtype": [np.float64, np.float32],
                 "accept_sparse": ["csr", "csc", "coo"],
                 "y_numeric": True,
-                "multi_output": True,
+                "multi_output": supports_multi_output,
             }
             if sklearn_check_version("1.0"):
                 X, y = validate_data(self, **check_params)
@@ -424,6 +443,4 @@ else:
     Ridge.predict = support_input_format(queue_param=False)(Ridge.predict)
     Ridge.score = support_input_format(queue_param=False)(Ridge.score)
 
-    logging.warning(
-        "Preview Ridge requires oneDAL version >= 2024.6 but it was not found"
-    )
+    logging.warning("Ridge requires oneDAL version >= 2024.6 but it was not found")

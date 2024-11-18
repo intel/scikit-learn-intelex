@@ -118,3 +118,32 @@ def test_sklearnex_multivariate_ridge_alpha_shape():
     from sklearnex.linear_model import Ridge
 
     _test_multivariate_ridge_alpha_shape(Ridge, random_state=0)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("overdetermined", [True, False])
+@pytest.mark.parametrize("alpha", [0.1, 0.5, 1.0])
+def test_ridge_overdetermined_system(dataframe, queue, overdetermined, alpha):
+    if not overdetermined and queue and queue.sycl_device.is_gpu:
+        pytest.skip()
+
+    from sklearnex.linear_model import Ridge
+
+    if overdetermined:
+        X = numpy.random.rand(100, 10)
+        y = numpy.random.rand(100)
+    else:
+        X = numpy.random.rand(10, 100)
+        y = numpy.random.rand(10)
+
+    X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    ridge_reg = Ridge(alpha=alpha, fit_intercept=False).fit(X_c, y_c)
+
+    # computing the coefficients manually
+    lambda_identity = alpha * numpy.eye(X.shape[1])
+    inverse_term = numpy.linalg.inv(numpy.dot(X.T, X) + lambda_identity)
+    xt_y = numpy.dot(X.T, y)
+    coefficients_manual = numpy.dot(inverse_term, xt_y)
+
+    assert_allclose(ridge_reg.coef_, coefficients_manual, rtol=1e-6, atol=1e-6)
