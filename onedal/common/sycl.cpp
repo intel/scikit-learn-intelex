@@ -64,9 +64,18 @@ void instantiate_sycl_interfaces(py::module& m){
         )
         .def_property_readonly("filter_string",[](const sycl::device& device) {
                 // assumes we are not working with accelerators
+                std::uint32_t id = 0;
                 std::string filter = get_device_name(device);
-                py::int_ id(get_device_id(device).value());
-                return py::str(filter + ":") + py::str(id);
+                auto devtype = device.get_info<sycl::info::device::device_type>();
+                auto devices = device.get_devices(devtype);
+                for(;devices[id] != device; ++id);
+                return py::str(filter + ":") + py::str(py::int_(id));
+            }
+        )
+        .def_property_readonly("device_id",[](const sycl::device& device) {
+                // assumes we are not working with accelerators
+                std::string filter = get_device_name(device);
+                return get_device_id(device).value();
             }
         )
         .def_property_readonly("is_cpu", &sycl::device::is_cpu)

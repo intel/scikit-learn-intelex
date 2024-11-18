@@ -34,7 +34,11 @@ def test_sycl_queue_string_creation(device_type, device_number):
 
     onedal_SyclQueue = _backend.SyclQueue
 
-    device = ":".join([device_type, str(device_number)]) if device_number is not None else device_type
+    device = (
+        ":".join([device_type, str(device_number)])
+        if device_number is not None
+        else device_type
+    )
 
     raised_exception_dpctl = False
     raised_exception_backend = False
@@ -50,13 +54,11 @@ def test_sycl_queue_string_creation(device_type, device_number):
         raised_exception_backend = True
 
     assert raised_exception_dpctl == raised_exception_backend
-    # get_device_id must be modified to follow dpctl conventions
-    # this causes filter_string mismatches
-    # if not raised_exception_backend:
-    #    assert (
-    #        onedal_queue.sycl_device.filter_string
-    #        in dpctl_queue.sycl_device.filter_string
-    #    )
+    if not raised_exception_backend:
+        assert (
+            onedal_queue.sycl_device.filter_string
+            in dpctl_queue.sycl_device.filter_string
+        )
 
 
 @pytest.mark.skipif(
@@ -71,8 +73,7 @@ def test_sycl_queue_conversion(queue):
     # convert back and forth to test `_get_capsule` attribute
 
     q = onedal_SyclQueue(queue)
-    # get_device_id must be modified to follow dpctl conventions
-    # assert q.sycl_device.filter_string in queue.sycl_device.filter_string
+    assert q.sycl_device.filter_string in queue.sycl_device.filter_string
 
 
 @pytest.mark.skipif(
@@ -97,8 +98,7 @@ def test_sycl_device_attributes(queue):
     # check is_gpu
     assert onedal_queue.sycl_device.is_gpu == queue.sycl_device.is_gpu
     # check device number
-    # get_device_id must be modified to follow dpctl conventions
-    # assert onedal_queue.sycl_device.filter_string in queue.sycl_device.filter_string
+    assert onedal_queue.sycl_device.filter_string in queue.sycl_device.filter_string
 
 
 @pytest.mark.skipif(not _is_dpc_backend, reason="requires dpc backend")
