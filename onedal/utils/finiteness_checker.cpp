@@ -66,7 +66,7 @@ void init_compute_ops(py::module_& m) {
               using namespace finiteness_checker;
               using input_t = compute_input<Task>;
 
-              compute_ops ops(policy, input_t{ data}, params2desc{});
+              compute_ops ops(policy, input_t{ data }, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }

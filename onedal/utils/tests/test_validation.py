@@ -19,7 +19,6 @@ import time
 import numpy as np
 import numpy.random as rand
 import pytest
-from numpy.testing import assert_raises
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -88,7 +87,9 @@ def test_assert_finite_random_location(
     if check is None or (allow_nan and check == "NaN"):
         _assert_all_finite(X, allow_nan=allow_nan)
     else:
-        assert_raises(ValueError, _assert_all_finite, X, allow_nan=allow_nan)
+        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        with pytest.raises(ValueError, match=msg_err):
+            _assert_all_finite(X, allow_nan=allow_nan)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -114,4 +115,6 @@ def test_assert_finite_random_shape_and_location(
     if check is None or (allow_nan and check == "NaN"):
         _assert_all_finite(X, allow_nan=allow_nan)
     else:
-        assert_raises(ValueError, _assert_all_finite, X, allow_nan=allow_nan)
+        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        with pytest.raises(ValueError, match=msg_err):
+            _assert_all_finite(X, allow_nan=allow_nan)
