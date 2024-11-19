@@ -18,6 +18,11 @@
 
 #include "oneapi/dal/algo/covariance.hpp"
 
+#define NO_IMPORT_ARRAY // import_array called in table.cpp
+#define PYBIND11_DETAILED_ERROR_MESSAGES
+#include "onedal/datatypes/data_conversion.hpp"
+
+
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
 
@@ -137,7 +142,25 @@ inline void init_partial_compute_result(pybind11::module_& m) {
         .def(pybind11::init())
         .def_property("partial_n_rows", &result_t::get_partial_n_rows, &result_t::set_partial_n_rows)
         .def_property("partial_crossproduct", &result_t::get_partial_crossproduct, &result_t::set_partial_crossproduct)
-        .def_property("partial_sums", &result_t::get_partial_sum, &result_t::set_partial_sum);
+        .def_property("partial_sums", &result_t::get_partial_sum, &result_t::set_partial_sum)
+        .def(py::pickle(
+            [](const result_t& res) {
+                return py::make_tuple(
+                    convert_to_pyobject(res.get_partial_n_rows()),
+                    convert_to_pyobject(res.get_partial_crossproduct()),
+                    convert_to_pyobject(res.get_partial_sum())
+                );
+            },
+            [](py::tuple t) {
+                if (t.size() != 3)
+                    throw std::runtime_error("Invalid state!");
+                result_t res;
+                res.set_partial_n_rows(convert_to_table(t[0].ptr()));
+                res.set_partial_crossproduct(convert_to_table(t[1].ptr()));
+                res.set_partial_sum(convert_to_table(t[2].ptr()));
+                return res;
+            }
+        ));
 }
 
 #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240000
