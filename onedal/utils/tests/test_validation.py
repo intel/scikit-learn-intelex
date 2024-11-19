@@ -19,6 +19,7 @@ import time
 import numpy as np
 import numpy.random as rand
 import pytest
+import scipy.sparse as sp
 
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -118,3 +119,31 @@ def test_assert_finite_random_shape_and_location(
         msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
         with pytest.raises(ValueError, match=msg_err):
             _assert_all_finite(X, allow_nan=allow_nan)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("allow_nan", [False, True])
+@pytest.mark.parametrize("check", ["inf", "NaN", None])
+@pytest.mark.parametrize("seed", [0, int(time.time())])
+def test_assert_finite_sparse(dtype, allow_nan, check, seed):
+    lb, ub = 2, 1048576  # lb is a patching condition, ub 2^20
+    rand.seed(seed)
+    X = sp.random(
+        rand.randint(lb, ub),
+        rand.randint(lb, ub),
+        format="csr",
+        dtype=dtype,
+        random_state=rand.default_rng(seed),
+    )
+
+    if check:
+        locx = rand.randint(0, X.shape[0] - 1)
+        locy = rand.randint(0, X.shape[1] - 1)
+        X[locx, locy] = float(check)
+
+    if check is None or (allow_nan and check == "NaN"):
+        assert_all_finite(X, allow_nan=allow_nan)
+    else:
+        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        with pytest.raises(ValueError, match=msg_err):
+            assert_all_finite(X, allow_nan=allow_nan)
