@@ -32,7 +32,7 @@ if "%PYTHON%"=="python" (
 
 %PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
-set PYTEST_ARGS=
+set "PYTEST_ARGS= "
 
 IF DEFINED COVERAGE_RCFILE (set PYTEST_ARGS=--cov=onedal --cov=sklearnex --cov-config="%COVERAGE_RCFILE%" --cov-append --cov-report= %PYTEST_ARGS%)
 
