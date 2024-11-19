@@ -99,7 +99,7 @@ fi
 
 if [[ "$*" == *"--json-report"* ]] && ! [ -f .pytest_reports/legacy_report.json ]; then
     echo "Error: JSON report files failed to be produced."
-    exit 1
+    return_code=$(($return_code + 1))
 fi
 
 exit $return_code
