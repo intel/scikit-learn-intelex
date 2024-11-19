@@ -24,7 +24,7 @@ from sklearn.utils import check_array, gen_batches
 from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal.linear_model import (
     IncrementalLinearRegression as onedal_IncrementalLinearRegression,
 )
