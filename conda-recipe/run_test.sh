@@ -97,4 +97,9 @@ if [[ ! $NO_DIST ]]; then
     return_code=$(($return_code + $?))
 fi
 
+if [[ "$*" == *"--json-report"* ]] && ! [ -f .pytest_reports/legacy_report.json]; then
+    echo "Error: JSON report files failed to be produced."
+    exit 1
+fi
+
 exit $return_code
