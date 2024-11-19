@@ -223,12 +223,12 @@ class IncrementalLinearRegression(
 
     if daal_check_version((2025, "P", 1)):
 
-        def _onedal_validate_underdetermined():
+        def _onedal_validate_underdetermined(self):
             pass
 
     else:
 
-        def _onedal_validate_underdetermined():
+        def _onedal_validate_underdetermined(self):
             is_underdetermined = self.n_samples_seen_ < self.n_features_in_ + int(
                 self.fit_intercept
             )
