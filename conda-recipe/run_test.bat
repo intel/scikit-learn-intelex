@@ -32,17 +32,17 @@ if "%PYTHON%"=="python" (
 
 %PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
+set PYTEST_ARGS=
+
+IF DEFINED COVERAGE_RCFILE (set PYTEST_ARGS=--cov=onedal --cov=sklearnex --cov-config="%COVERAGE_RCFILE%" --cov-append --cov-report= %PYTEST_ARGS%)
+
 rem Note: execute with argument --json-report as second argument
 rem in order to produce a JSON report under folder '.pytest_reports'.
-set PYTEST_ARGS=
 if "%~2"=="--json-report" (
-    set PYTEST_ARGS=%PYTEST_ARGS% --json-report -json-report-file=.pytest_reports\FILENAME.json
+    set PYTEST_ARGS=--json-report -json-report-file=.pytest_reports\FILENAME.json %PYTEST_ARGS%
     mkdir .pytest_reports
     del /q .pytest_reports\*.json
 )
-
-
-IF DEFINED COVERAGE_RCFILE (set PYTEST_ARGS=%PYTEST_ARGS% --cov=onedal --cov=sklearnex --cov-config="%COVERAGE_RCFILE%" --cov-append --cov-report=)
 
 echo "NO_DIST=%NO_DIST%"
 setlocal enabledelayedexpansion
@@ -63,9 +63,10 @@ if NOT "%NO_DIST%"=="1" (
         set exitcode=1
     )
 )
-if NOT EXIST .pytest_reports\legacy_report.json (
-    echo "Error: JSON report files failed to be produced."
-    set exitcode=1
+if "%~2"=="--json-report" (
+    if NOT EXIST .pytest_reports\legacy_report.json (
+        echo "Error: JSON report files failed to be produced."
+        set exitcode=1
+    )
 )
-
 EXIT /B %exitcode%
