@@ -34,23 +34,24 @@ if "%PYTHON%"=="python" (
 
 set "PYTEST_ARGS= "
 
-IF DEFINED COVERAGE_RCFILE (set PYTEST_ARGS=--cov=onedal --cov=sklearnex --cov-config="%COVERAGE_RCFILE%" --cov-append --cov-report= %PYTEST_ARGS%)
+IF DEFINED COVERAGE_RCFILE (set "PYTEST_ARGS=--cov=onedal --cov=sklearnex --cov-config=%COVERAGE_RCFILE% --cov-append --cov-report= %PYTEST_ARGS%")
 
 rem Note: execute with argument --json-report as second argument
 rem in order to produce a JSON report under folder '.pytest_reports'.
 if "%~2"=="--json-report" (
-    set PYTEST_ARGS=--json-report --json-report-file=.pytest_reports\FILENAME.json %PYTEST_ARGS%
+    set "PYTEST_ARGS=--json-report --json-report-file=.pytest_reports\FILENAME.json %PYTEST_ARGS%"
+    echo %PYTEST_ARGS%
     mkdir .pytest_reports
     del /q .pytest_reports\*.json
 )
 
 echo "NO_DIST=%NO_DIST%"
 setlocal enabledelayedexpansion
-pytest --verbose -s "%1tests" %PYTEST_ARGS:FILENAME=legacy_report%|| set exitcode=1
-pytest --verbose --pyargs daal4py %PYTEST_ARGS:FILENAME=daal4py_report%|| set exitcode=1
-pytest --verbose --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_report%|| set exitcode=1
-pytest --verbose --pyargs onedal %PYTEST_ARGS:FILENAME=onedal_report%|| set exitcode=1
-pytest --verbose "%1.ci\scripts\test_global_patch.py" %PYTEST_ARGS:FILENAME=global_patching_report%|| set exitcode=1
+pytest --verbose -s "%1tests" %PYTEST_ARGS:FILENAME=legacy_report% || set exitcode=1
+pytest --verbose --pyargs daal4py %PYTEST_ARGS:FILENAME=daal4py_report% || set exitcode=1
+pytest --verbose --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_report% || set exitcode=1
+pytest --verbose --pyargs onedal %PYTEST_ARGS:FILENAME=onedal_report% || set exitcode=1
+pytest --verbose "%1.ci\scripts\test_global_patch.py" %PYTEST_ARGS:FILENAME=global_patching_report% || set exitcode=1
 if NOT "%NO_DIST%"=="1" (
     %PYTHON% "%1tests\helper_mpi_tests.py"^
         pytest -k spmd --with-mpi --verbose -s --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_spmd%
