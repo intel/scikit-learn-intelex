@@ -161,16 +161,19 @@ The build-process (using setup.py) happens in 4 stages:
 * [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
   * You can use the pre-built `dal-devel` conda package from conda-forge channel
 * MPI (optional, needed for distributed mode)
-  * You can use the pre-built `impi-devel` conda package from conda-forge channel
+  * You can use the pre-built `impi_rt` and `impi-devel` conda packages from conda-forge channel
 * A DPC++ compiler (optional, needed for DPC++ interfaces)
 
 ### Configure the Build with Environment Variables
 * ``SKLEARNEX_VERSION``: sets the package version
 * ``DALROOT``: sets the oneAPI Data Analytics Library path
+* ``MPIROOT``: sets the path to the MPI library that will be used for distributed mode support. Not used when using `NO_DIST=1`
 * ``NO_DIST``: set to '1', 'yes' or alike to build without support for distributed mode
 * ``NO_STREAM``: set to '1', 'yes' or alike to build without support for streaming mode
 * ``NO_DPC``: set to '1', 'yes' or alike to build without support of oneDAL DPC++ interfaces
 * ``OFF_ONEDAL_IFACE``: set to '1' to build without the support of oneDAL interfaces
+
+**Note:** in order to use distributed mode, `mpi4py` is also required, and needs to be built with the same MPI backend as scikit-learn-intelex.
 
 ### Build Intel(R) Extension for Scikit-learn
 
