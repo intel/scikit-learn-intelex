@@ -126,7 +126,7 @@ def test_assert_finite_random_shape_and_location(
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 def test_assert_finite_sparse(dtype, allow_nan, check, seed):
-    lb, ub = 2, 256
+    lb, ub = 2, 2056
     rand.seed(seed)
     X = sp.random(
         rand.randint(lb, ub),
