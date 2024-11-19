@@ -39,7 +39,7 @@ IF DEFINED COVERAGE_RCFILE (set PYTEST_ARGS=--cov=onedal --cov=sklearnex --cov-c
 rem Note: execute with argument --json-report as second argument
 rem in order to produce a JSON report under folder '.pytest_reports'.
 if "%~2"=="--json-report" (
-    set PYTEST_ARGS=--json-report -json-report-file=.pytest_reports\FILENAME.json %PYTEST_ARGS%
+    set PYTEST_ARGS=--json-report --json-report-file=.pytest_reports\FILENAME.json %PYTEST_ARGS%
     mkdir .pytest_reports
     del /q .pytest_reports\*.json
 )
