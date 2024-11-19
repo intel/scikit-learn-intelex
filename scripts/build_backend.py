@@ -43,7 +43,12 @@ elif sys.platform in ["win32", "cygwin"]:
 
 
 def custom_build_cmake_clib(
-    iface, cxx=None, onedal_major_binary_version=1, no_dist=True, use_parameters_lib=True
+    iface,
+    cxx=None,
+    onedal_major_binary_version=1,
+    no_dist=True,
+    use_parameters_lib=True,
+    is_dev_version=False,
 ):
     import pybind11
 
@@ -121,6 +126,9 @@ def custom_build_cmake_clib(
             "-DMPI_LIBRARY_DIR=" + MPI_LIBDIRS,
             "-DMPI_LIBS=" + MPI_LIBS,
         ]
+
+    if is_dev_version:
+        cmake_args += ["-DADD_ONEDAL_RPATH=ON"]
 
     cpu_count = multiprocessing.cpu_count()
     # limit parallel cmake jobs if memory size is insufficient

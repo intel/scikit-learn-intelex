@@ -41,6 +41,13 @@ import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
 from scripts.version import get_onedal_shared_libs, get_onedal_version
 
+IS_DEV_VERSION = False
+dev_args = ["dev", "-dev", "--dev"]
+for dev_arg in dev_args:
+    if dev_arg in sys.argv:
+        IS_DEV_VERSION = True
+sys.argv = [arg for arg in sys.argv if arg not in dev_args]
+
 IS_WIN = False
 IS_MAC = False
 IS_LIN = False
@@ -298,7 +305,9 @@ def get_build_options():
         ela.append("-s")
     if IS_LIN:
         ela.append("-fPIC")
-        ela.append(f"-Wl,-rpath,$ORIGIN/../../../:{daal_lib_dir}")
+        ela.append(
+            f"-Wl,-rpath,{(daal_lib_dir + ':') if IS_DEV_VERSION else ''}$ORIGIN/../../../"
+        )
     return eca, ela, include_dir_plat
 
 
@@ -416,6 +425,7 @@ class custom_build:
                 onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                 no_dist=no_dist,
                 use_parameters_lib=use_parameters_lib,
+                is_dev_version=IS_DEV_VERSION,
             )
         if dpcpp:
             if is_onedal_iface:
@@ -424,6 +434,7 @@ class custom_build:
                     onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
+                    is_dev_version=IS_DEV_VERSION,
                 )
                 if build_distribute:
                     build_backend.custom_build_cmake_clib(
@@ -431,6 +442,7 @@ class custom_build:
                         onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                         no_dist=no_dist,
                         use_parameters_lib=use_parameters_lib,
+                        is_dev_version=IS_DEV_VERSION,
                     )
 
     def post_build(self):
