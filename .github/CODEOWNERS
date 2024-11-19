@@ -4,9 +4,9 @@
 .circleci/                    @napetrov @Alexsandruss @homksei @ahuber21 @ethanglaser
 
 # Docs
-*.md                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss @samir-nasibli @icfaust
-doc/                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss @samir-nasibli @icfaust
-requirements-doc.txt          @emmwalsh @Alexsandruss
+*.md                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss @samir-nasibli @icfaust @david-cortes-intel
+doc/                          @maria-Petrova @napetrov @emmwalsh @Alexsandruss @samir-nasibli @icfaust @david-cortes-intel
+requirements-doc.txt          @emmwalsh @Alexsandruss @samir-nasibli @icfaust @david-cortes-intel
 
 # DPC++
 onedal/                       @Alexsandruss @samir-nasibli @icfaust
