@@ -146,9 +146,9 @@ inline void init_partial_compute_result(pybind11::module_& m) {
         .def(py::pickle(
             [](const result_t& res) {
                 return py::make_tuple(
-                    py::object(convert_to_pyobject(res.get_partial_n_rows())),
-                    py::object(convert_to_pyobject(res.get_partial_crossproduct())),
-                    py::object(convert_to_pyobject(res.get_partial_sum()))
+                    py::cast<py::object>(convert_to_pyobject(res.get_partial_n_rows())),
+                    py::cast<py::object>(convert_to_pyobject(res.get_partial_crossproduct())),
+                    py::cast<py::object>(convert_to_pyobject(res.get_partial_sum()))
                 );
             },
             [](py::tuple t) {
