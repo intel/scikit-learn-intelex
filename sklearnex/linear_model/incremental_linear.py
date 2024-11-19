@@ -222,15 +222,15 @@ class IncrementalLinearRegression(
         self._need_to_finalize = True
 
     if daal_check_version((2025, "P", 1)):
-        def _onedal_validate_shape():
+        def _onedal_validate_underdetermined():
             pass
     else:
-        def _onedal_validate_shape():
+        def _onedal_validate_underdetermined():
             is_underdetermined = self.n_samples_seen_ < self.n_features_in_ + int(
                 self.fit_intercept
             )
             if is_underdetermined:
-                raise ValueError("Not enough samples to finalize")
+                raise ValueError("Not enough samples for oneDAL")
 
     def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
@@ -267,9 +267,7 @@ class IncrementalLinearRegression(
 
         n_samples, n_features = X.shape
 
-        is_underdetermined = n_samples < n_features + int(self.fit_intercept)
-        if is_underdetermined:
-            raise ValueError("Not enough samples to run oneDAL backend")
+        self._onedal_validate_underdetermined()
 
         if self.batch_size is None:
             self.batch_size_ = 5 * n_features
