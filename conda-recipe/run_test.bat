@@ -46,11 +46,11 @@ if "%~2"=="--json-report" (
 
 echo "NO_DIST=%NO_DIST%"
 setlocal enabledelayedexpansion
-pytest --verbose -s "%1tests" %PYTEST_ARGS:FILENAME=legacy_report% || set exitcode=1
-pytest --verbose --pyargs daal4py %PYTEST_ARGS:FILENAME=daal4py_report% || set exitcode=1
-pytest --verbose --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_report% || set exitcode=1
-pytest --verbose --pyargs onedal %PYTEST_ARGS:FILENAME=onedal_report% || set exitcode=1
-pytest --verbose "%1.ci\scripts\test_global_patch.py" %PYTEST_ARGS:FILENAME=global_patching_report% || set exitcode=1
+pytest --verbose -s "%1tests" %PYTEST_ARGS:FILENAME=legacy_report%|| set exitcode=1
+pytest --verbose --pyargs daal4py %PYTEST_ARGS:FILENAME=daal4py_report%|| set exitcode=1
+pytest --verbose --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_report%|| set exitcode=1
+pytest --verbose --pyargs onedal %PYTEST_ARGS:FILENAME=onedal_report%|| set exitcode=1
+pytest --verbose "%1.ci\scripts\test_global_patch.py" %PYTEST_ARGS:FILENAME=global_patching_report%|| set exitcode=1
 if NOT "%NO_DIST%"=="1" (
     %PYTHON% "%1tests\helper_mpi_tests.py"^
         pytest -k spmd --with-mpi --verbose -s --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_spmd%
