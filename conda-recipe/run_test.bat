@@ -28,56 +28,44 @@ if "%PYTHON%"=="python" (
     set NO_DIST=1
 )
 
-IF DEFINED COVERAGE_RCFILE (set COV_ARGS=--cov=onedal --cov=sklearnex --cov-config="%COVERAGE_RCFILE%" --cov-append --cov-report=) else (set COV_ARGS=)
+
 
 %PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
 
 rem Note: execute with argument --json-report as second argument
 rem in order to produce a JSON report under folder '.pytest_reports'.
-set with_json_report=0
+set PYTEST_ARGS=
 if "%~2"=="--json-report" (
-    set with_json_report=1
+    set PYTEST_ARGS=%PYTEST_ARGS% --json-report -json-report-file=.pytest_reports\FILENAME.json
     mkdir .pytest_reports
     del /q .pytest_reports\*.json
 )
 
+
+IF DEFINED COVERAGE_RCFILE (set PYTEST_ARGS=%PYTEST_ARGS% --cov=onedal --cov=sklearnex --cov-config="%COVERAGE_RCFILE%" --cov-append --cov-report=)
+
 echo "NO_DIST=%NO_DIST%"
-echo "with_json_report=%with_json_report%"
 setlocal enabledelayedexpansion
-if "%with_json_report%"=="1" (
-    pytest --verbose -s "%1tests" --json-report --json-report-file=.pytest_reports\legacy_report.json %COV_ARGS% || set exitcode=1
-    pytest --verbose --pyargs daal4py --json-report --json-report-file=.pytest_reports\daal4py_report.json %COV_ARGS% || set exitcode=1
-    pytest --verbose --pyargs sklearnex --json-report --json-report-file=.pytest_reports\sklearnex_report.json %COV_ARGS% || set exitcode=1
-    pytest --verbose --pyargs onedal --json-report --json-report-file=.pytest_reports\onedal_report.json %COV_ARGS% || set exitcode=1
-    pytest --verbose "%1.ci\scripts\test_global_patch.py" --json-report --json-report-file=.pytest_reports\global_patching_report.json %COV_ARGS% || set exitcode=1
-    if NOT "%NO_DIST%"=="1" (
-        %PYTHON% "%1tests\helper_mpi_tests.py"^
-            pytest -k spmd --with-mpi --verbose -s --pyargs sklearnex^
-            --json-report --json-report-file=.pytest_reports\sklearnex_spmd.json
-        if !errorlevel! NEQ 0 (
-            set exitcode=1
-        )
-        %PYTHON% "%1tests\helper_mpi_tests.py"^
-            pytest --with-mpi --verbose -s "%1tests\test_daal4py_spmd_examples.py"^
-            --json-report --json-report-file=.pytest_reports\mpi_legacy.json
-        if !errorlevel! NEQ 0 (
-            set exitcode=1
-        )
-    )
-    if NOT EXIST .pytest_reports\legacy_report.json (
-        echo "Error: JSON report files failed to be produced."
+pytest --verbose -s "%1tests" %PYTEST_ARGS:FILENAME=legacy_report% || set exitcode=1
+pytest --verbose --pyargs daal4py %PYTEST_ARGS:FILENAME=daal4py_report% || set exitcode=1
+pytest --verbose --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_report% || set exitcode=1
+pytest --verbose --pyargs onedal %PYTEST_ARGS:FILENAME=onedal_report% || set exitcode=1
+pytest --verbose "%1.ci\scripts\test_global_patch.py" %PYTEST_ARGS:FILENAME=global_patching_report% || set exitcode=1
+if NOT "%NO_DIST%"=="1" (
+    %PYTHON% "%1tests\helper_mpi_tests.py"^
+        pytest -k spmd --with-mpi --verbose -s --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_spmd%
+    if !errorlevel! NEQ 0 (
         set exitcode=1
     )
-) else (
-    pytest --verbose -s "%1tests" %COV_ARGS% || set exitcode=1
-    pytest --verbose --pyargs daal4py %COV_ARGS% || set exitcode=1
-    pytest --verbose --pyargs sklearnex %COV_ARGS% || set exitcode=1
-    pytest --verbose --pyargs onedal %COV_ARGS% || set exitcode=1
-    pytest --verbose "%1.ci\scripts\test_global_patch.py" %COV_ARGS% || set exitcode=1
-    if NOT "%NO_DIST%"=="1" (
-        %PYTHON% -m pytest -k spmd --with-mpi --verbose --pyargs sklearnex || set exitcode=1
-        %PYTHON% -m pytest --verbose -s "%1tests\test_daal4py_spmd_examples.py" || set exitcode=1
+    %PYTHON% "%1tests\helper_mpi_tests.py"^
+        pytest --with-mpi --verbose -s "%1tests\test_daal4py_spmd_examples.py" %PYTEST_ARGS:FILENAME=mpi_legacy%
+    if !errorlevel! NEQ 0 (
+        set exitcode=1
     )
+)
+if NOT EXIST .pytest_reports\legacy_report.json (
+    echo "Error: JSON report files failed to be produced."
+    set exitcode=1
 )
 
 EXIT /B %exitcode%
