@@ -222,9 +222,12 @@ class IncrementalLinearRegression(
         self._need_to_finalize = True
 
     if daal_check_version((2025, "P", 1)):
+
         def _onedal_validate_underdetermined():
             pass
+
     else:
+
         def _onedal_validate_underdetermined():
             is_underdetermined = self.n_samples_seen_ < self.n_features_in_ + int(
                 self.fit_intercept
