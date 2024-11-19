@@ -234,7 +234,7 @@ class IncrementalLinearRegression(
 
     def _onedal_finalize_fit(self, queue=None):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_validate_shape()
+        self._onedal_validate_underdetermined()
         self._onedal_estimator.finalize_fit(queue=queue)
         self._need_to_finalize = False
 
