@@ -21,6 +21,8 @@ import numpy.random as rand
 import pytest
 from numpy.testing import assert_raises
 
+from onedal.tests.utils._dataframes_support import get_dataframes_and_queues
+from sklearnex.tests.utils import DummyEstimator, gen_dataset
 from sklearnex.utils import assert_all_finite
 
 
@@ -39,7 +41,7 @@ from sklearnex.utils import assert_all_finite
 def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
     X = np.array(shape, dtype=dtype)
     X.fill(np.finfo(dtype).max)
-    _assert_all_finite(X, allow_nan=allow_nan)
+    assert_all_finite(X, allow_nan=allow_nan)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -67,7 +69,7 @@ def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
     if check is None or (allow_nan and check == "NaN"):
         assert_all_finite(X, allow_nan=allow_nan)
     else:
-        assert_raises(ValueError, _assert_all_finite, X, allow_nan=allow_nan)
+        assert_raises(ValueError, assert_all_finite, X, allow_nan=allow_nan)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -87,3 +89,13 @@ def test_assert_finite_random_shape_and_location(dtype, allow_nan, check, seed):
         assert_all_finite(X, allow_nan=allow_nan)
     else:
         assert_raises(ValueError, assert_all_finite, X, allow_nan=allow_nan)
+
+
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_validate_data(dtype, dataframe, queue):
+    est = DummyEstimator()
+    X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
+    est.fit(X, y)
+    output = est.predict(X)
+    assert type(X) == type(output)
