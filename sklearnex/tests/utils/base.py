@@ -396,7 +396,7 @@ class DummyEstimator(BaseEstimator):
         else:
             self.x_attr = from_table(X_table)
             self.y_attr = from_table(y_table)
-
+        assert type(X_array) == type(X)
         assert type(self.x_attr) == type(X)
 
         return self
@@ -414,7 +414,7 @@ class DummyEstimator(BaseEstimator):
             )
         else:
             returned_X = from_table(X_table)
-
+        assert type(X_array) == type(X)
         assert type(returned_X) == type(X)
 
         return returned_X
