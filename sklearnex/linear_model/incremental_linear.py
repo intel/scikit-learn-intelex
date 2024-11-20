@@ -229,9 +229,7 @@ class IncrementalLinearRegression(
     else:
 
         def _onedal_validate_underdetermined(self, n_samples, n_features):
-            is_underdetermined = n_samples < n_features + int(
-                self.fit_intercept
-            )
+            is_underdetermined = n_samples < n_features + int(self.fit_intercept)
             if is_underdetermined:
                 raise ValueError("Not enough samples for oneDAL")
 
