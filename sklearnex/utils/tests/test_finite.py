@@ -21,7 +21,7 @@ import numpy.random as rand
 import pytest
 from numpy.testing import assert_raises
 
-from sklearnex.utils import _assert_all_finite
+from sklearnex.utils import assert_all_finite
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
