@@ -75,30 +75,9 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         """
         self.finalize_fit()
         data = self.__dict__.copy()
-
-        # tables_to_save = ["partial_n_rows", "partial_crossproduct", "partial_sums"]
-        # partial_result_data = {
-        #     table_name: from_table(getattr(data["_partial_result"], table_name))
-        #     for table_name in tables_to_save
-        # }
-        # data["_partial_result"] = partial_result_data
         data.pop("_queue", None)
 
         return data
-
-    # def __setstate__(self, data):
-    #     """
-    #     Restores estimator from serializable data.
-    #     """
-    #     partial_result = self._get_backend("covariance", None, "partial_compute_result")
-    #     saved_tables = data["_partial_result"]
-    #     for table_name, table_data in saved_tables.items():
-    #         if table_data.size > 0:
-    #             setattr(partial_result, table_name, to_table(table_data))
-
-    #     data["_partial_result"] = partial_result
-
-    #     self.__dict__ = data
 
     def partial_fit(self, X, y=None, queue=None):
         """
