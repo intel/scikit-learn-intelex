@@ -141,16 +141,15 @@ def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
         X_array = validate_data(est, X, reset=False)
         X_out = est.predict(X)
 
-    if dataframe != "pandas" and not (
+    if dataframe == "pandas" or (
         dataframe == "array_api"
-        and not sklearn_check_version("1.2")
-        and not array_api_dispatch
+        and not (sklearn_check_version("1.2") and array_api_dispatch)
     ):
+        # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
+        assert isinstance(X_array, np.ndarray)
+        assert isinstance(X_out, np.ndarray)
+    else:
         assert type(X) == type(
             X_array
         ), f"validate_data converted {type(X)} to {type(X_array)}"
         assert type(X) == type(X_out), f"from_array converted {type(X)} to {type(X_out)}"
-    else:
-        # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
-        assert isinstance(X_array, np.ndarray)
-        assert isinstance(X_out, np.ndarray)
