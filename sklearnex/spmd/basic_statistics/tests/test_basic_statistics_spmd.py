@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.basic_statistics.tests.test_basic_statistics import options_and_tests
+from onedal.basic_statistics.tests.utils import options_and_tests
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -65,7 +65,7 @@ def test_basic_stats_spmd_gold(dataframe, queue):
     spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
     batch_result = BasicStatistics_Batch().fit(data)
 
-    for option in (opt[0] for opt in options_and_tests):
+    for option in options_and_tests:
         assert_allclose(getattr(spmd_result, option), getattr(batch_result, option))
 
 
@@ -98,7 +98,7 @@ def test_basic_stats_spmd_synthetic(n_samples, n_features, dataframe, queue, dty
     batch_result = BasicStatistics_Batch().fit(data)
 
     tol = 1e-5 if dtype == np.float32 else 1e-7
-    for option in (opt[0] for opt in options_and_tests):
+    for option in options_and_tests:
         assert_allclose(
             getattr(spmd_result, option),
             getattr(batch_result, option),
