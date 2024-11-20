@@ -385,12 +385,19 @@ class DummyEstimator(BaseEstimator):
         # The presence of the fitted attributes (ending with a trailing
         # underscore) is required for the correct check. The cleanup of
         # the memory will occur at the estimator instance deletion.
-        self.x_attr_ = from_table(
-            X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
-        )
-        self.y_attr_ = from_table(
-            y_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
-        )
+        if sua_iface:
+            self.x_attr_ = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+            )
+            self.y_attr_ = from_table(
+                y_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+            )
+        else:
+            self.x_attr = from_table(X_table)
+            self.y_attr = from_table(y_table)
+
+        assert type(self.x_attr) == type(X)
+
         return self
 
     def predict(self, X):
@@ -400,7 +407,13 @@ class DummyEstimator(BaseEstimator):
         X_array = validate_data(self, X, reset=False)
         sua_iface, xp, _ = _get_sycl_namespace(X_array)
         X_table = to_table(X_array)
-        returned_X = from_table(
-            X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
-        )
+        if sua_iface:
+            returned_X = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+            )
+        else:
+            returned_X = from_table(X_table)
+
+        assert type(returned_X) == type(X)
+
         return returned_X
