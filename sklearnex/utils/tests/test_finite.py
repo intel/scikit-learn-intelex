@@ -27,7 +27,7 @@ from onedal.tests.utils._dataframes_support import (
 )
 from sklearnex import config_context
 from sklearnex.tests.utils import DummyEstimator, gen_dataset
-from sklearnex.utils import validate_data
+from sklearnex.utils.validation import validate_data
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
