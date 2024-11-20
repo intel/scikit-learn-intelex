@@ -48,7 +48,7 @@ def custom_build_cmake_clib(
     onedal_major_binary_version=1,
     no_dist=True,
     use_parameters_lib=True,
-    is_dev_version=False,
+    use_abs_rpath=False,
 ):
     import pybind11
 
@@ -127,7 +127,7 @@ def custom_build_cmake_clib(
             "-DMPI_LIBS=" + MPI_LIBS,
         ]
 
-    if is_dev_version:
+    if use_abs_rpath:
         cmake_args += ["-DADD_ONEDAL_RPATH=ON"]
 
     cpu_count = multiprocessing.cpu_count()

@@ -41,12 +41,12 @@ import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
 from scripts.version import get_onedal_shared_libs, get_onedal_version
 
-IS_DEV_VERSION = False
-dev_args = ["dev", "-dev", "--dev"]
-for dev_arg in dev_args:
-    if dev_arg in sys.argv:
-        IS_DEV_VERSION = True
-sys.argv = [arg for arg in sys.argv if arg not in dev_args]
+USE_ABS_RPATH = False
+abs_rpath_args = ["abs-rpath", "-abs-rpath", "--abs-rpath"]
+for abs_rpath_arg in abs_rpath_args:
+    if abs_rpath_arg in sys.argv:
+        USE_ABS_RPATH = True
+sys.argv = [arg for arg in sys.argv if arg not in abs_rpath_args]
 
 IS_WIN = False
 IS_MAC = False
@@ -306,7 +306,7 @@ def get_build_options():
     if IS_LIN:
         ela.append("-fPIC")
         ela.append(
-            f"-Wl,-rpath,{(daal_lib_dir + ':') if IS_DEV_VERSION else ''}$ORIGIN/../../../"
+            f"-Wl,-rpath,{(daal_lib_dir + ':') if USE_ABS_RPATH else ''}$ORIGIN/../../../"
         )
     return eca, ela, include_dir_plat
 
@@ -425,7 +425,7 @@ class custom_build:
                 onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                 no_dist=no_dist,
                 use_parameters_lib=use_parameters_lib,
-                is_dev_version=IS_DEV_VERSION,
+                use_abs_rpath=USE_ABS_RPATH,
             )
         if dpcpp:
             if is_onedal_iface:
@@ -434,7 +434,7 @@ class custom_build:
                     onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
-                    is_dev_version=IS_DEV_VERSION,
+                    use_abs_rpath=USE_ABS_RPATH,
                 )
                 if build_distribute:
                     build_backend.custom_build_cmake_clib(
@@ -442,7 +442,7 @@ class custom_build:
                         onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                         no_dist=no_dist,
                         use_parameters_lib=use_parameters_lib,
-                        is_dev_version=IS_DEV_VERSION,
+                        use_abs_rpath=USE_ABS_RPATH,
                     )
 
     def post_build(self):
