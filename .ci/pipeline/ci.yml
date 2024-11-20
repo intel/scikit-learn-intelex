@@ -70,9 +70,6 @@ jobs:
       Python3.12:
         PYTHON_VERSION: '3.12'
         NUMPY_VERSION: '2.1'
-      Python3.13:
-        PYTHON_VERSION: '3.13'
-        NUMPY_VERSION: '2.1'
   pool:
     vmImage: 'ubuntu-22.04'
   steps:
@@ -96,9 +93,6 @@ jobs:
     matrix:
       Python3.12:
         PYTHON_VERSION: '3.12'
-        NUMPY_VERSION: '2.1'
-      Python3.13:
-        PYTHON_VERSION: '3.13'
         NUMPY_VERSION: '2.1'
   pool:
     vmImage: 'windows-2022'
