@@ -65,7 +65,7 @@ def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
         X.reshape((-1,))[loc] = float(check)
 
     if check is None or (allow_nan and check == "NaN"):
-        _assert_all_finite(X, allow_nan=allow_nan)
+        assert_all_finite(X, allow_nan=allow_nan)
     else:
         assert_raises(ValueError, _assert_all_finite, X, allow_nan=allow_nan)
 
@@ -84,6 +84,6 @@ def test_assert_finite_random_shape_and_location(dtype, allow_nan, check, seed):
         X[loc] = float(check)
 
     if check is None or (allow_nan and check == "NaN"):
-        _assert_all_finite(X, allow_nan=allow_nan)
+        assert_all_finite(X, allow_nan=allow_nan)
     else:
-        assert_raises(ValueError, _assert_all_finite, X, allow_nan=allow_nan)
+        assert_raises(ValueError, assert_all_finite, X, allow_nan=allow_nan)
