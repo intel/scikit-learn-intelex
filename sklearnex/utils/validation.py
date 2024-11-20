@@ -1,4 +1,4 @@
-the# ===============================================================================
+# ===============================================================================
 # Copyright 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,7 @@ def _is_contiguous(X):
     return False
 
 
-def _assert_all_finite_core(X, xp, allow_nan, *, input_name=""):
+def _assert_all_finite_core(X, xp, *, allow_nan=False, input_name=""):
     # This is a reproduction of code from sklearn.utils.validation
     # necessary for older sklearn versions (<1.2) and for dpnp inputs
     # which do not conform to the array_api standard, and cannot be
@@ -74,7 +74,7 @@ if sklearn_check_version("1.2"):
         elif "float" not in xp.dtype.name or "complex" not in xp.dtype.name:
             return
         # handle dpnp inputs
-        _assert_all_finite_core(X, xp, allow_nan, input_name=input_name)
+        _assert_all_finite_core(X, xp, allow_nan=allow_nan, input_name=input_name)
 
 else:
 
