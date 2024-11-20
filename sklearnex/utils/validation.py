@@ -67,7 +67,7 @@ def _assert_all_finite_core(X, *, xp, allow_nan, input_name=""):
 if sklearn_check_version("1.2"):
 
     def _array_api_assert_all_finite(
-        X, *, xp, is_array_api_compliant, allow_nan=False, input_name=""
+        X, xp, is_array_api_compliant, *, allow_nan=False, input_name=""
     ):
         if _is_numpy_namespace(xp) or is_array_api_compliant:
             _sklearn_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
@@ -137,26 +137,18 @@ def validate_data(
     /,
     X="no_validation",
     y="no_validation",
-    reset=True,
-    validate_separately=False,
-    skip_check_array=False,
-    **check_params,
+    **kwargs,
 ):
     # force finite check to not occur in sklearn, default is True
     # `ensure_all_finite` is the most up-to-date keyword name in sklearn
     # _finite_keyword provides backward compatability for `force_all_finite`
-    force_all_finite = (
-        "ensure_all_finite" not in check_params or check_params["ensure_all_finite"]
-    )
-    check_params[_finite_keyword] = False
+    force_all_finite = "ensure_all_finite" not in kwargs or kwargs["ensure_all_finite"]
+    kwargs[_finite_keyword] = False
     out = _sklearn_validate_data(
         _estimator,
         X=X,
         y=y,
-        reset=reset,
-        validate_separate=validate_separately,
-        skip_check_array=skip_check_array,
-        **check_params,
+        **kwargs,
     )
     if force_all_finite:
         # run local finite check
