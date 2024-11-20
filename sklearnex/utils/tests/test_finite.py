@@ -19,11 +19,15 @@ import time
 import numpy as np
 import numpy.random as rand
 import pytest
-from numpy.testing import assert_raises
 
-from onedal.tests.utils._dataframes_support import get_dataframes_and_queues
+from daal4py.sklearn._utils import sklearn_check_version
+from onedal.tests.utils._dataframes_support import (
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
+from sklearnex import config_context
 from sklearnex.tests.utils import DummyEstimator, gen_dataset
-from sklearnex.utils import assert_all_finite
+from sklearnex.utils import validate_data
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -39,9 +43,11 @@ from sklearnex.utils import assert_all_finite
 )
 @pytest.mark.parametrize("allow_nan", [False, True])
 def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
+    est = DummyEstimator()
     X = np.array(shape, dtype=dtype)
     X.fill(np.finfo(dtype).max)
-    assert_all_finite(X, allow_nan=allow_nan)
+    X_array = validate_data(est, X, allow_nan=allow_nan)
+    assert type(X_array) == type(X)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -58,7 +64,11 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
 @pytest.mark.parametrize("allow_nan", [False, True])
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
-def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+def test_validate_data_random_location(
+    dataframe, queue, dtype, shape, allow_nan, check, seed
+):
+    est = DummyEstimator()
     rand.seed(seed)
     X = rand.uniform(high=np.finfo(dtype).max, size=shape).astype(dtype)
 
@@ -66,17 +76,29 @@ def test_assert_finite_random_location(dtype, shape, allow_nan, check, seed):
         loc = rand.randint(0, X.size - 1)
         X.reshape((-1,))[loc] = float(check)
 
+    X = _convert_to_dataframe(
+        X,
+        target_df=dataframe,
+        sycl_queue=queue,
+    )
+
     if check is None or (allow_nan and check == "NaN"):
-        assert_all_finite(X, allow_nan=allow_nan)
+        validate_data(est, X, allow_nan=allow_nan)
     else:
-        assert_raises(ValueError, assert_all_finite, X, allow_nan=allow_nan)
+        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        with pytest.raises(ValueError, match=msg_err):
+            validate_data(est, X, allow_nan=allow_nan)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("allow_nan", [False, True])
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
-def test_assert_finite_random_shape_and_location(dtype, allow_nan, check, seed):
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+def test_validate_data_random_shape_and_location(
+    dataframe, queue, dtype, allow_nan, check, seed
+):
+    est = DummyEstimator()
     lb, ub = 32768, 1048576  # lb is a patching condition, ub 2^20
     rand.seed(seed)
     X = rand.uniform(high=np.finfo(dtype).max, size=rand.randint(lb, ub)).astype(dtype)
@@ -85,17 +107,48 @@ def test_assert_finite_random_shape_and_location(dtype, allow_nan, check, seed):
         loc = rand.randint(0, X.size - 1)
         X[loc] = float(check)
 
+    X = _convert_to_dataframe(
+        X,
+        target_df=dataframe,
+        sycl_queue=queue,
+    )
+
     if check is None or (allow_nan and check == "NaN"):
-        assert_all_finite(X, allow_nan=allow_nan)
+        validate_data(est, X)
     else:
-        assert_raises(ValueError, assert_all_finite, X, allow_nan=allow_nan)
+        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        with pytest.raises(ValueError, match=msg_err):
+            validate_data(est, X, allow_nan=allow_nan)
 
 
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_validate_data(dtype, dataframe, queue):
+@pytest.mark.parametrize("array_api_dispatch", [True, False])
+@pytest.mark.parametrize(
+    "dataframe, queue", get_dataframes_and_queues("numpy,dpctl,dpnp")
+)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
     est = DummyEstimator()
     X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
-    est.fit(X, y)
-    output = est.predict(X)
-    assert type(X) == type(output)
+
+    dispatch = {}
+    if sklearn_check_version("1.2"):
+        dispatch["array_api_dispatch"] = array_api_dispatch
+
+    with config_context(**dispatch):
+        validate_data(est, X, y)
+        est.fit(X, y)
+        X_array = validate_data(est, X, reset=False)
+        X_out = est.predict(X)
+
+    if (
+        sklearn_check_version("1.2") or dataframe != "array_api"
+    ) and dataframe != "pandas":
+        assert type(X) == type(
+            X_array
+        ), f"validate_data converted {type(X)} to {type(X_array)}"
+        assert type(X) == type(X_out), f"from_array converted {type(X)} to {type(X_out)}"
+    else:
+        # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
+        assert isinstance(X_array, np.ndarray)
+        assert isinstance(X_out, np.ndarray)

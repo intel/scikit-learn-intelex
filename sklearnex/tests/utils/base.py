@@ -378,26 +378,24 @@ def _get_processor_info():
 class DummyEstimator(BaseEstimator):
 
     def fit(self, X, y=None):
-        X_array, y_array = validate_data(self, X, y)
+        X, y = validate_data(self, X, y)
 
-        sua_iface, xp, _ = _get_sycl_namespace(X_array)
-        X_table = to_table(X_array)
-        y_table = to_table(y_array)
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        X_table = to_table(X)
+        y_table = to_table(y)
         # The presence of the fitted attributes (ending with a trailing
         # underscore) is required for the correct check. The cleanup of
         # the memory will occur at the estimator instance deletion.
         if sua_iface:
             self.x_attr_ = from_table(
-                X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
             )
             self.y_attr_ = from_table(
-                y_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+                y_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
             )
         else:
             self.x_attr = from_table(X_table)
             self.y_attr = from_table(y_table)
-        assert type(X_array) == type(X)
-        assert type(self.x_attr) == type(X)
 
         return self
 
@@ -405,16 +403,13 @@ class DummyEstimator(BaseEstimator):
         # Checks if the estimator is fitted by verifying the presence of
         # fitted attributes (ending with a trailing underscore).
         check_is_fitted(self)
-        X_array = validate_data(self, X, reset=False)
-        sua_iface, xp, _ = _get_sycl_namespace(X_array)
-        X_table = to_table(X_array)
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        X_table = to_table(X)
         if sua_iface:
             returned_X = from_table(
-                X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
             )
         else:
             returned_X = from_table(X_table)
-        assert type(X_array) == type(X)
-        assert type(returned_X) == type(X)
 
         return returned_X
