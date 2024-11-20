@@ -142,7 +142,9 @@ def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
         X_out = est.predict(X)
 
     if dataframe != "pandas" and not (
-        dataframe == "array_api" and sklearn_check_version("1.2") and array_api_dispatch
+        dataframe == "array_api"
+        and not sklearn_check_version("1.2")
+        and not array_api_dispatch
     ):
         assert type(X) == type(
             X_array
