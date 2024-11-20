@@ -42,11 +42,10 @@ from scripts.package_helpers import get_packages_with_tests
 from scripts.version import get_onedal_shared_libs, get_onedal_version
 
 USE_ABS_RPATH = False
-abs_rpath_args = ["abs-rpath", "-abs-rpath", "--abs-rpath"]
-for abs_rpath_arg in abs_rpath_args:
-    if abs_rpath_arg in sys.argv:
-        USE_ABS_RPATH = True
-sys.argv = [arg for arg in sys.argv if arg not in abs_rpath_args]
+ARG_ABS_RPATH = "--abs-rpath"
+if ARG_ABS_RPATH in sys.argv:
+    USE_ABS_RPATH = True
+    sys.argv = [arg for arg in sys.argv if arg != ARG_ABS_RPATH]
 
 IS_WIN = False
 IS_MAC = False
