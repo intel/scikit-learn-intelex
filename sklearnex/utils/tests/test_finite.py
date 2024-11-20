@@ -123,10 +123,7 @@ def test_validate_data_random_shape_and_location(
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("array_api_dispatch", [True, False])
-@pytest.mark.parametrize(
-    "dataframe, queue", get_dataframes_and_queues("numpy,dpctl,dpnp")
-)
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
     est = DummyEstimator()
     X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
