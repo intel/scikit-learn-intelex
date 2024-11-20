@@ -32,7 +32,9 @@ from sklearn.base import (
 )
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
+from sklearn.utils.validation import check_is_fitted
 
+from onedal.datatypes import from_table, to_table
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
 from sklearnex import get_patch_map, patch_sklearn, sklearn_is_patched, unpatch_sklearn
 from sklearnex.basic_statistics import BasicStatistics, IncrementalBasicStatistics
@@ -44,6 +46,7 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC, NuSVC
+from sklearnex.utils.validation import validate_data
 
 
 def _load_all_models(with_sklearnex=True, estimator=True):
@@ -369,3 +372,35 @@ def _get_processor_info():
         )
 
     return proc
+
+
+class DummyEstimator(BaseEstimator):
+
+    def fit(self, X, y=None):
+        X_array, y_array = validate_data(self, X, y)
+
+        sua_iface, xp, _ = _get_sycl_namespace(X_array)
+        X_table = to_table(X_array)
+        y_table = to_table(y_array)
+        # The presence of the fitted attributes (ending with a trailing
+        # underscore) is required for the correct check. The cleanup of
+        # the memory will occur at the estimator instance deletion.
+        self.x_attr_ = from_table(
+            X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+        )
+        self.y_attr_ = from_table(
+            y_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+        )
+        return self
+
+    def predict(self, X):
+        # Checks if the estimator is fitted by verifying the presence of
+        # fitted attributes (ending with a trailing underscore).
+        check_is_fitted(self)
+        X_array = validate_data(self, X, reset=False)
+        sua_iface, xp, _ = _get_sycl_namespace(X_array)
+        X_table = to_table(X_array)
+        returned_X = from_table(
+            X_table, sua_iface=sua_iface, sycl_queue=X_array.sycl_queue, xp=xp
+        )
+        return returned_X
