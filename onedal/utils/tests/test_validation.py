@@ -34,7 +34,7 @@ from onedal.utils.validation import _assert_all_finite, assert_all_finite
     [
         [16, 2048],
         [
-            2**16 + 3,
+            65539, # 2**16 + 3,
         ],
         [1000, 1000],
         [
