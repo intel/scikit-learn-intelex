@@ -142,7 +142,9 @@ def validate_data(
     # force finite check to not occur in sklearn, default is True
     # `ensure_all_finite` is the most up-to-date keyword name in sklearn
     # _finite_keyword provides backward compatability for `force_all_finite`
-    force_all_finite = "ensure_all_finite" not in kwargs or kwargs["ensure_all_finite"]
+    ensure_all_finite = "ensure_all_finite" not in kwargs or kwargs.pop(
+        "ensure_all_finite"
+    )
     kwargs[_finite_keyword] = False
     out = _sklearn_validate_data(
         _estimator,
@@ -150,11 +152,12 @@ def validate_data(
         y=y,
         **kwargs,
     )
-    if force_all_finite:
+    if ensure_all_finite:
         # run local finite check
+        allow_nan = ensure_all_finite == "allow-nan"
         arg = iter(out)
         if not isinstance(X, str) or X != "no_validation":
-            assert_all_finite(next(arg), input_name="X")
+            assert_all_finite(next(arg), allow_nan=allow_nan, input_name="X")
         if y is not None or not isinstance(y, str) or y != "no_validation":
-            assert_all_finite(next(arg), input_name="y")
+            assert_all_finite(next(arg), allow_nan=allow_nan, input_name="y")
     return out

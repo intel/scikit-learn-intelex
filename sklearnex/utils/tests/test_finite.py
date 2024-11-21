@@ -41,12 +41,12 @@ from sklearnex.utils.validation import validate_data
         [1000, 1000],
     ],
 )
-@pytest.mark.parametrize("allow_nan", [False, True])
-def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
+@pytest.mark.parametrize("ensure_all_finite", [False, True])
+def test_sum_infinite_actually_finite(dtype, shape, ensure_all_finite):
     est = DummyEstimator()
     X = np.array(shape, dtype=dtype)
     X.fill(np.finfo(dtype).max)
-    X_array = validate_data(est, X, allow_nan=allow_nan)
+    X_array = validate_data(est, X, ensure_all_finite=ensure_all_finite)
     assert type(X_array) == type(X)
 
 
@@ -61,12 +61,12 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
         [1000, 1000],
     ],
 )
-@pytest.mark.parametrize("allow_nan", [False, True])
+@pytest.mark.parametrize("ensure_all_finite", [False, True])
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 def test_validate_data_random_location(
-    dataframe, queue, dtype, shape, allow_nan, check, seed
+    dataframe, queue, dtype, shape, ensure_all_finite, check, seed
 ):
     est = DummyEstimator()
     rand.seed(seed)
@@ -82,21 +82,25 @@ def test_validate_data_random_location(
         sycl_queue=queue,
     )
 
-    if check is None or (allow_nan and check == "NaN"):
-        validate_data(est, X, allow_nan=allow_nan)
+    if check is None or (ensure_all_finite and check == "NaN"):
+        validate_data(est, X, ensure_all_finite=ensure_all_finite)
     else:
-        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        msg_err = (
+            "Input contains "
+            + ("infinity" if ensure_all_finite else "NaN, infinity")
+            + "."
+        )
         with pytest.raises(ValueError, match=msg_err):
-            validate_data(est, X, allow_nan=allow_nan)
+            validate_data(est, X, ensure_all_finite=ensure_all_finite)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-@pytest.mark.parametrize("allow_nan", [False, True])
+@pytest.mark.parametrize("ensure_all_finite", [False, True])
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 def test_validate_data_random_shape_and_location(
-    dataframe, queue, dtype, allow_nan, check, seed
+    dataframe, queue, dtype, ensure_all_finite, check, seed
 ):
     est = DummyEstimator()
     lb, ub = 32768, 1048576  # lb is a patching condition, ub 2^20
@@ -113,12 +117,16 @@ def test_validate_data_random_shape_and_location(
         sycl_queue=queue,
     )
 
-    if check is None or (allow_nan and check == "NaN"):
+    if check is None or (ensure_all_finite and check == "NaN"):
         validate_data(est, X)
     else:
-        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        msg_err = (
+            "Input contains "
+            + ("infinity" if ensure_all_finite else "NaN, infinity")
+            + "."
+        )
         with pytest.raises(ValueError, match=msg_err):
-            validate_data(est, X, allow_nan=allow_nan)
+            validate_data(est, X, ensure_all_finite=ensure_all_finite)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
