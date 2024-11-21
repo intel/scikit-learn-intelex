@@ -41,7 +41,7 @@ def _is_contiguous(X):
     # can then be inspected for strides and this must be updated. _is_contiguous is
     # therefore conservative in verifying attributes and does not support array_api.
     # This will block onedal_assert_all_finite from being used for array_api inputs.
-    if hasattr(X, "flags") and X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]:
+    if hasattr(X, "flags") and (X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]):
         return True
     return False
 
@@ -150,7 +150,7 @@ def validate_data(
     if ensure_all_finite:
         # run local finite check
         allow_nan = ensure_all_finite == "allow-nan"
-        arg = iter(out)
+        arg = iter(out if isinstance(out, tuple) else (out,))
         if not isinstance(X, str) or X != "no_validation":
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="X")
         if not (y is None or isinstance(y, str) and y == "no_validation"):
