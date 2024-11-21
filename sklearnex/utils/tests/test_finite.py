@@ -48,7 +48,7 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
     [
         [16, 2048],
         [
-            65539, # 2**16 + 3,
+            65539,  # 2**16 + 3,
         ],
         [1000, 1000],
     ],

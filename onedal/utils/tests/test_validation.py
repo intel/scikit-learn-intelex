@@ -47,7 +47,7 @@ from onedal.utils.validation import _assert_all_finite, assert_all_finite
     "dataframe, queue", get_dataframes_and_queues("numpy,dpnp,dpctl")
 )
 def test_sum_infinite_actually_finite(dtype, shape, allow_nan, dataframe, queue):
-    X = np.array(shape, dtype=dtype)
+    X = np.empty(shape, dtype=dtype)
     X.fill(np.finfo(dtype).max)
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     _assert_all_finite(X, allow_nan=allow_nan)
@@ -59,7 +59,7 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan, dataframe, queue)
     [
         [16, 2048],
         [
-            2**16 + 3,
+            65539,  # 2**16 + 3,
         ],
         [1000, 1000],
         [
@@ -103,7 +103,7 @@ def test_assert_finite_random_location(
 def test_assert_finite_random_shape_and_location(
     dtype, allow_nan, check, seed, dataframe, queue
 ):
-    lb, ub = 2, 1048576  # lb is a patching condition, ub 2^20
+    lb, ub = 2, 1048576  # ub is 2^20
     rand.seed(seed)
     X = rand.uniform(high=np.finfo(dtype).max, size=rand.randint(lb, ub)).astype(dtype)
 
