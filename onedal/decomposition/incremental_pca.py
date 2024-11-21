@@ -117,31 +117,9 @@ class IncrementalPCA(BasePCA):
         """
         self.finalize_fit()
         data = self.__dict__.copy()
-        tables_to_save = ["partial_n_rows", "partial_crossproduct", "partial_sum"]
-        partial_result_data = {
-            table_name: from_table(getattr(data["_partial_result"], table_name))
-            for table_name in tables_to_save
-        }
-        data["_partial_result"] = partial_result_data
-        data.pop("_policy", None)
+        data.pop("_queue", None)
 
         return data
-
-    def __setstate__(self, data):
-        """
-        Restores estimator from serializable data.
-        """
-        partial_result = self._get_backend(
-            "decomposition", "dim_reduction", "partial_train_result"
-        )
-        saved_tables = data["_partial_result"]
-        for table_name, table_data in saved_tables.items():
-            if table_data.size > 0:
-                setattr(partial_result, table_name, to_table(table_data))
-
-        data["_partial_result"] = partial_result
-
-        self.__dict__ = data
 
     def partial_fit(self, X, queue):
         """Incremental fit with X. All of X is processed as a single batch.
@@ -218,9 +196,11 @@ class IncrementalPCA(BasePCA):
         """
         if self._need_to_finalize:
             module = self._get_backend("decomposition", "dim_reduction")
-            result = module.finalize_train(
-                self._policy, self._params, self._partial_result
-            )
+            if queue is not None:
+                policy = self._get_policy(queue)
+            else:
+                policy = self._get_policy(self._queue)
+            result = module.finalize_train(policy, self._params, self._partial_result)
             self.mean_ = from_table(result.means).ravel()
             self.var_ = from_table(result.variances).ravel()
             self.components_ = from_table(result.eigenvectors)

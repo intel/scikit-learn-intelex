@@ -15,6 +15,8 @@
 *******************************************************************************/
 #include "oneapi/dal/algo/pca.hpp"
 #include "onedal/common.hpp"
+#define NO_IMPORT_ARRAY // import_array called in table.cpp
+#include "onedal/datatypes/data_conversion.hpp"
 
 namespace py = pybind11;
 
@@ -123,7 +125,37 @@ void init_partial_train_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(partial_n_rows, result_t)
         .DEF_ONEDAL_PY_PROPERTY(partial_crossproduct, result_t)
         .DEF_ONEDAL_PY_PROPERTY(partial_sum, result_t)
-        .DEF_ONEDAL_PY_PROPERTY(auxiliary_table, result_t);
+        .DEF_ONEDAL_PY_PROPERTY(auxiliary_table, result_t)
+        .def(py::pickle(
+            [](const result_t& res) {
+                py::list auxiliary;
+                int auxiliary_size = res.get_auxiliary_table_count();
+                for (int i = 0; i < auxiliary_size; i++) {
+                    auto aux_table = res.get_auxiliary_table(i);
+                    auxiliary.append(py::cast<py::object>(convert_to_pyobject(aux_table)));
+                }
+                return py::make_tuple(
+                    py::cast<py::object>(convert_to_pyobject(res.get_partial_n_rows())),
+                    py::cast<py::object>(convert_to_pyobject(res.get_partial_crossproduct())),
+                    py::cast<py::object>(convert_to_pyobject(res.get_partial_sum())),
+                    auxiliary
+                );
+            },
+            [](py::tuple t) {
+                if (t.size() != 4)
+                    throw std::runtime_error("Invalid state!");
+                result_t res;
+                if (py::cast<int>(t[0].attr("size")) != 0) res.set_partial_n_rows(convert_to_table(t[0].ptr()));
+                if (py::cast<int>(t[1].attr("size")) != 0) res.set_partial_crossproduct(convert_to_table(t[1].ptr()));
+                if (py::cast<int>(t[2].attr("size")) != 0) res.set_partial_sum(convert_to_table(t[2].ptr()));
+                py::list aux_list = t[3].cast<py::list>();
+                for (int i = 0; i < aux_list.size(); i++) {
+                    res.set_auxiliary_table(convert_to_table(aux_list[i].ptr()));
+                }
+                return res;
+            }
+
+        ));
 }
 
 template <typename Task>
