@@ -37,20 +37,20 @@ else:
 
 def _is_contiguous(X):
     # array_api does not have a `strides` or `flags` attribute for testing memory
-    # order. When dlpack support is brought in for oneDAL, the dlpack object can
-    # then be inspected and this must be updated. _is_contiguous is therefore
-    # conservative in verifying attributes and does not support array_api. This
-    # will block onedal_assert_all_finite from being used for array api inputs.
+    # order. When dlpack support is brought in for oneDAL, the dlpack python capsule
+    # can then be inspected for strides and this must be updated. _is_contiguous is
+    # therefore conservative in verifying attributes and does not support array_api.
+    # This will block onedal_assert_all_finite from being used for array_api inputs.
     if hasattr(X, "flags") and X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]:
         return True
     return False
 
 
-def _assert_all_finite_core(X, xp, *, allow_nan=False, input_name=""):
-    # This is a reproduction of code from sklearn.utils.validation
-    # necessary for older sklearn versions (<1.2) and for dpnp inputs
-    # which do not conform to the array_api standard, and cannot be
-    # checked in sklearn.
+def _sycl_usm_assert_all_finite(X, xp, *, allow_nan=False, input_name=""):
+    # This is a reproduction of code from sklearn.utils.validation necessary for
+    # non-contiguous or non-fp32/fp64 dpctl inputs when sklearn version is <1.2 or
+    # for non-contiguous or non-fp32/fp64 dpnp inputs, as these cannot be checked
+    # for finiteness in sklearn nor onedal while preserving their object type.
     first_pass_isfinite = xp.isfinite(xp.sum(X))
     if first_pass_isfinite:
         return
@@ -66,7 +66,7 @@ def _assert_all_finite_core(X, xp, *, allow_nan=False, input_name=""):
 
 if sklearn_check_version("1.2"):
 
-    def _array_api_assert_all_finite(
+    def _general_assert_all_finite(
         X, xp, is_array_api_compliant, *, allow_nan=False, input_name=""
     ):
         if _is_numpy_namespace(xp) or is_array_api_compliant:
@@ -74,11 +74,11 @@ if sklearn_check_version("1.2"):
         elif "float" not in xp.dtype.name or "complex" not in xp.dtype.name:
             return
         # handle dpnp inputs
-        _assert_all_finite_core(X, xp, allow_nan=allow_nan, input_name=input_name)
+        _sycl_usm_assert_all_finite(X, xp, allow_nan=allow_nan, input_name=input_name)
 
 else:
 
-    def _array_api_assert_all_finite(
+    def _general_assert_all_finite(
         X, xp, is_array_api_compliant, *, allow_nan=False, input_name=""
     ):
 
@@ -90,9 +90,8 @@ else:
             return
         elif "float" not in xp.dtype.name or "complex" not in xp.dtype.name:
             return
-
-        # handle array_api and dpnp inputs
-        _assert_all_finite_core(X, xp, allow_nan, input_name=input_name)
+        # handle dpctl and dpnp inputs
+        _sycl_usm_assert_all_finite(X, xp, allow_nan, input_name=input_name)
 
 
 def _assert_all_finite(
@@ -101,18 +100,22 @@ def _assert_all_finite(
     allow_nan=False,
     input_name="",
 ):
-    # array_api compliance in sklearn varies betweeen the support sklearn versions
-    # therefore a separate check matching sklearn's assert_all_finite is necessary
-    # when the data is not float32 or float64 but of a float type. The onedal
-    # assert_all_finite is only for float32 and float64 contiguous arrays.
+    # unlike sklearnex, sklearn does not support sycl_usm_ndarrays by default
+    # therefore a separate finite check implementation matching sklearn's
+    # `_assert_all_finite` is necessary when the data is not float32 or float64 or
+    # non-contiguous. The onedal assert_all_finite is only for float32 and float64
+    # contiguous arrays.
 
-    # initial match to daal4py, can be optimized later
+    # size check is an initial match to daal4py for performance reasons, can be
+    # optimized later
     xp, is_array_api_compliant = get_namespace(X)
     if X.size < 32768 or X.dtype not in [xp.float32, xp.float64] or not _is_contiguous(X):
 
-        # all non-numpy arrays for sklearn 1.0 and dpnp for sklearn are not handeled properly
-        # separate function for import-time sklearn version check
-        _array_api_assert_all_finite(
+        # all sycl_usm_ndarrays for sklearn < 1.2 and dpnp for sklearn > 1.2 are not
+        # handled properly, it calls a separate function for an import-time sklearn
+        # version check before possible hand-off to sklearn's _assert_all_finite or to
+        # _assert_all_finite_core.
+        _general_assert_all_finite(
             X, xp, is_array_api_compliant, allow_nan=allow_nan, input_name=input_name
         )
     else:
@@ -142,8 +145,8 @@ def validate_data(
     # force finite check to not occur in sklearn, default is True
     # `ensure_all_finite` is the most up-to-date keyword name in sklearn
     # _finite_keyword provides backward compatability for `force_all_finite`
-    ensure_all_finite = True if "ensure_all_finite" not in kwargs else kwargs.pop(
-        "ensure_all_finite"
+    ensure_all_finite = (
+        True if "ensure_all_finite" not in kwargs else kwargs.pop("ensure_all_finite")
     )
     kwargs[_finite_keyword] = False
     out = _sklearn_validate_data(
