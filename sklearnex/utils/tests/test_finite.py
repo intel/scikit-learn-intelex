@@ -87,7 +87,9 @@ def test_validate_data_random_location(
     if check is None or (allow_nan and check == "NaN"):
         validate_data(est, X, ensure_all_finite=ensure_all_finite)
     else:
-        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        msg_err = (
+            "Input X contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        )
         with pytest.raises(ValueError, match=msg_err):
             validate_data(est, X, ensure_all_finite=ensure_all_finite)
 
@@ -119,7 +121,8 @@ def test_validate_data_random_shape_and_location(
     if check is None or (allow_nan and check == "NaN"):
         validate_data(est, X)
     else:
-        msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
+        type_err = "infinity" if allow_nan else "NaN, infinity"
+        msg_err = f"Input X contains {type_err}."
         with pytest.raises(ValueError, match=msg_err):
             validate_data(est, X, ensure_all_finite=ensure_all_finite)
 

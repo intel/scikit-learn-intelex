@@ -153,8 +153,8 @@ def validate_data(
         # run local finite check
         allow_nan = ensure_all_finite == "allow-nan"
         arg = iter(out)
-        if not isinstance(X, str) or X != "no_validation":
+        if X != "no_validation":
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="X")
-        if y is not None or not isinstance(y, str) or y != "no_validation":
+        if y is not None and y != "no_validation":
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="y")
     return out
