@@ -48,28 +48,34 @@ if [[ "$*" == *"--json-report"* ]]; then
         rm .pytest_reports/*.json
     fi
 fi
-function json_report_name {
+
+function generate_pytest_args {
+    declare -a ARGS=()
     if [[ "${with_json_report}" == "1" ]]; then
-        printf -- "--json-report-file=.pytest_reports/$1_report.json"
+        ARGS+=("--json-report-file=.pytest_reports/$1_report.json")
     fi
+    if [ -n "${COVERAGE_RCFILE}" ]; then
+        ARGS+=(--cov=onedal --cov=sklearnex --cov-config="${COVERAGE_RCFILE}" --cov-append --cov-report=)
+    fi
+    printf -- "${ARGS[*]}"
 }
 
 ${PYTHON} -c "from sklearnex import patch_sklearn; patch_sklearn()"
 return_code=$(($return_code + $?))
 
-pytest --verbose -s "${sklex_root}/tests" $@ $(json_report_name legacy)
+pytest --verbose -s "${sklex_root}/tests" $@ $(generate_pytest_args legacy)
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs daal4py $@ $(json_report_name daal4py)
+pytest --verbose --pyargs daal4py $@ $(generate_pytest_args daal4py)
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs sklearnex $@ $(json_report_name sklearnex)
+pytest --verbose --pyargs sklearnex $@ $(generate_pytest_args sklearnex)
 return_code=$(($return_code + $?))
 
-pytest --verbose --pyargs onedal $@ $(json_report_name onedal)
+pytest --verbose --pyargs onedal $@ $(generate_pytest_args onedal)
 return_code=$(($return_code + $?))
 
-pytest --verbose -s "${sklex_root}/.ci/scripts/test_global_patch.py" $@ $(json_report_name global_patching)
+pytest --verbose -s "${sklex_root}/.ci/scripts/test_global_patch.py" $@ $(generate_pytest_args global_patching)
 return_code=$(($return_code + $?))
 
 echo "NO_DIST=$NO_DIST"
@@ -84,11 +90,16 @@ if [[ ! $NO_DIST ]]; then
         export EXTRA_MPI_ARGS="-n 4"
     fi
     mpirun ${EXTRA_MPI_ARGS} python "${sklex_root}/tests/helper_mpi_tests.py" \
-        pytest -k spmd --with-mpi --verbose --pyargs sklearnex $@ $(json_report_name sklearnex_spmd)
+        pytest -k spmd --with-mpi --verbose --pyargs sklearnex $@ $(generate_pytest_args sklearnex_spmd)
     return_code=$(($return_code + $?))
     mpirun ${EXTRA_MPI_ARGS} python "${sklex_root}/tests/helper_mpi_tests.py" \
-        pytest --verbose -s "${sklex_root}/tests/test_daal4py_spmd_examples.py" $@ $(json_report_name mpi_legacy)
+        pytest --verbose -s "${sklex_root}/tests/test_daal4py_spmd_examples.py" $@ $(generate_pytest_args mpi_legacy)
     return_code=$(($return_code + $?))
+fi
+
+if [[ "$*" == *"--json-report"* ]] && ! [ -f .pytest_reports/legacy_report.json ]; then
+    echo "Error: JSON report files failed to be produced."
+    return_code=$(($return_code + 1))
 fi
 
 exit $return_code
