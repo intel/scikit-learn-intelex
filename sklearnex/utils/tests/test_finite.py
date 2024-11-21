@@ -77,8 +77,8 @@ def test_validate_data_random_location(
         loc = rand.randint(0, X.size - 1)
         X.reshape((-1,))[loc] = float(check)
 
-    # column heavy pandas inputs are very slow in sklearn's check_array
-    # transpose inputs to guarantee fast processing in tests
+    # column heavy pandas inputs are very slow in sklearn's check_array even without
+    # the finite check, just transpose inputs to guarantee fast processing in tests
     X = _convert_to_dataframe(
         np.atleast_2d(X).T,
         target_df=dataframe,
