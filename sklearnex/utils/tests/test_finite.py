@@ -139,10 +139,8 @@ def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
 
     dispatch = {}
     if array_api_dispatch:
-        pytest.skip(
-            dataframe == "pandas",
-            "pandas inputs do not work with sklearn's array_api_dispatch",
-        )
+        if dataframe == "pandas":
+            pytest.skip("pandas inputs do not work with sklearn's array_api_dispatch")
         dispatch["array_api_dispatch"] = array_api_dispatch
 
     with config_context(**dispatch):
