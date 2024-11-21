@@ -77,11 +77,12 @@ def test_validate_data_random_location(
         loc = rand.randint(0, X.size - 1)
         X.reshape((-1,))[loc] = float(check)
 
-    X = _convert_to_dataframe(
+    _ = _convert_to_dataframe(
         np.atleast_2d(X),
         target_df=dataframe,
         sycl_queue=queue,
-    )
+    ) #test to see if convert_to_dataframe is causing problems
+    X = np.atleast_2d(X)
 
     allow_nan = ensure_all_finite == "allow-nan"
     if check is None or (allow_nan and check == "NaN"):
@@ -110,11 +111,12 @@ def test_validate_data_random_shape_and_location(
         loc = rand.randint(0, X.size - 1)
         X[loc] = float(check)
 
-    X = _convert_to_dataframe(
+    _ = _convert_to_dataframe(
         np.atleast_2d(X),
         target_df=dataframe,
         sycl_queue=queue,
-    )
+    ) #test to see if convert_to_dataframe is causing problems
+    X = np.atleast_2d(X)
 
     allow_nan = ensure_all_finite == "allow-nan"
     if check is None or (allow_nan and check == "NaN"):
