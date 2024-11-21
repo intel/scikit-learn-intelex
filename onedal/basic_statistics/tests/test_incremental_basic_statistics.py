@@ -189,3 +189,60 @@ def test_all_option_on_random_data(
             gtr = function(data)
         tol = fp32tol if res.dtype == np.float32 else fp64tol
         assert_allclose(gtr, res, atol=tol)
+
+
+@pytest.mark.parametrize("queue", get_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_incremental_estimator_pickle(queue, dtype):
+    import pickle
+
+    from onedal.basic_statistics import IncrementalBasicStatistics
+
+    incbs = IncrementalBasicStatistics()
+
+    # Check that estimator can be serialized without any data.
+    dump = pickle.dumps(incbs)
+    incbs_loaded = pickle.loads(dump)
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=(10, 10))
+    X = X.astype(dtype)
+    X_split = np.array_split(X, 2)
+    incbs.partial_fit(X_split[0], queue=queue)
+    incbs_loaded.partial_fit(X_split[0], queue=queue)
+
+    assert incbs._need_to_finalize == True
+    assert incbs_loaded._need_to_finalize == True
+
+    # Check that estmator can be serialized after partial_fit call.
+    dump = pickle.dumps(incbs_loaded)
+    incbs_loaded = pickle.loads(dump)
+    assert incbs._need_to_finalize == True
+    # Finalize is called during serialization to make sure partial results are finalized correctly.
+    assert incbs_loaded._need_to_finalize == False
+
+    incbs.partial_fit(X_split[1], queue=queue)
+    incbs_loaded.partial_fit(X_split[1], queue=queue)
+    assert incbs._need_to_finalize == True
+    assert incbs_loaded._need_to_finalize == True
+
+    dump = pickle.dumps(incbs_loaded)
+    incbs_loaded = pickle.loads(dump)
+
+    assert incbs._need_to_finalize == True
+    assert incbs_loaded._need_to_finalize == False
+
+    incbs.finalize_fit()
+    incbs_loaded.finalize_fit()
+
+    # Check that finalized estimator can be serialized.
+    dump = pickle.dumps(incbs_loaded)
+    incbs_loaded = pickle.loads(dump)
+
+    for result_option in options_and_tests:
+        _, tols = options_and_tests[result_option]
+        fp32tol, fp64tol = tols
+        res = getattr(incbs, result_option)
+        res_loaded = getattr(incbs_loaded, result_option)
+        tol = fp32tol if res.dtype == np.float32 else fp64tol
+        assert_allclose(res, res_loaded, atol=tol)

@@ -70,9 +70,26 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self._reset()
 
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = self._get_backend(
             "basic_statistics", None, "partial_compute_result"
         )
+
+    def __getstate__(self):
+        """
+        Converts estimator's data to serializable format.
+        All tables contained in partial result are converted to np.arrays.
+        Notes
+        -----
+        Since finalize_fit can't be dispatched without directly provided queue
+        and the dispatching policy can't be serialized, the computation is finalized
+        here and the policy is not saved in serialized data.
+        """
+        self.finalize_fit()
+        data = self.__dict__.copy()
+        data.pop("_queue", None)
+
+        return data
 
     def partial_fit(self, X, weights=None, queue=None):
         """
@@ -124,6 +141,9 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             weights_table,
         )
 
+        self._need_to_finalize = True
+        return self
+
     def finalize_fit(self, queue=None):
         """
         Finalizes basic statistics computation and obtains result
@@ -139,22 +159,24 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
+        if self._need_to_finalize:
+            if queue is not None:
+                policy = self._get_policy(queue)
+            else:
+                policy = self._get_policy(self._queue)
 
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
+            result = self._get_backend(
+                "basic_statistics",
+                None,
+                "finalize_compute",
+                policy,
+                self._onedal_params,
+                self._partial_result,
+            )
+            options = self._get_result_options(self.options).split("|")
+            for opt in options:
+                setattr(self, opt, from_table(getattr(result, opt)).ravel())
 
-        result = self._get_backend(
-            "basic_statistics",
-            None,
-            "finalize_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-        )
-        options = self._get_result_options(self.options).split("|")
-        for opt in options:
-            setattr(self, opt, from_table(getattr(result, opt)).ravel())
+            self._need_to_finalize = False
 
         return self
