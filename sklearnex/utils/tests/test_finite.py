@@ -81,7 +81,7 @@ def test_validate_data_random_location(
         np.atleast_2d(X),
         target_df=dataframe,
         sycl_queue=queue,
-    ) #test to see if convert_to_dataframe is causing problems
+    )  # test to see if convert_to_dataframe is causing problems
     X = np.atleast_2d(X)
 
     allow_nan = ensure_all_finite == "allow-nan"
@@ -115,7 +115,7 @@ def test_validate_data_random_shape_and_location(
         np.atleast_2d(X),
         target_df=dataframe,
         sycl_queue=queue,
-    ) #test to see if convert_to_dataframe is causing problems
+    )  # test to see if convert_to_dataframe is causing problems
     X = np.atleast_2d(X)
 
     allow_nan = ensure_all_finite == "allow-nan"
@@ -129,7 +129,9 @@ def test_validate_data_random_shape_and_location(
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-@pytest.mark.parametrize("array_api_dispatch", [True, False] if sklearn_check_version("1.2") else [False])
+@pytest.mark.parametrize(
+    "array_api_dispatch", [True, False] if sklearn_check_version("1.2") else [False]
+)
 @pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
 def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
     est = DummyEstimator()
@@ -137,7 +139,10 @@ def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
 
     dispatch = {}
     if array_api_dispatch:
-        pytest.skip(dataframe == "pandas", "pandas inputs do not work with sklearn's array_api_dispatch")
+        pytest.skip(
+            dataframe == "pandas",
+            "pandas inputs do not work with sklearn's array_api_dispatch",
+        )
         dispatch["array_api_dispatch"] = array_api_dispatch
 
     with config_context(**dispatch):
@@ -145,9 +150,7 @@ def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
         # check sklearn validate_data operations work underneath
         X_array = validate_data(est, X, reset=False)
 
-    if dataframe == "pandas" or (
-        dataframe == "array_api"
-        and not array_api_dispatch):
+    if dataframe == "pandas" or (dataframe == "array_api" and not array_api_dispatch):
         # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
         assert isinstance(X_array, np.ndarray)
         assert isinstance(X_out, np.ndarray)
