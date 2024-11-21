@@ -46,7 +46,7 @@ def _is_contiguous(X):
     return False
 
 
-def _sycl_usm_assert_all_finite(X, xp, *, allow_nan=False, input_name=""):
+def _assert_all_finite(X, xp, *, allow_nan=False, input_name=""):
     # This is a reproduction of code from sklearn.utils.validation necessary for
     # non-contiguous or non-fp32/fp64 dpctl inputs when sklearn version is <1.2 or
     # for non-contiguous or non-fp32/fp64 dpnp inputs, as these cannot be checked
@@ -74,7 +74,7 @@ if sklearn_check_version("1.2"):
         elif "float" not in xp.dtype.name or "complex" not in xp.dtype.name:
             return
         # handle dpnp inputs
-        _sycl_usm_assert_all_finite(X, xp, allow_nan=allow_nan, input_name=input_name)
+        _assert_all_finite(X, xp, allow_nan=allow_nan, input_name=input_name)
 
 else:
 
@@ -91,7 +91,7 @@ else:
         elif "float" not in xp.dtype.name or "complex" not in xp.dtype.name:
             return
         # handle dpctl and dpnp inputs
-        _sycl_usm_assert_all_finite(X, xp, allow_nan, input_name=input_name)
+        _assert_all_finite(X, xp, allow_nan, input_name=input_name)
 
 
 def _sklearnex_assert_all_finite(

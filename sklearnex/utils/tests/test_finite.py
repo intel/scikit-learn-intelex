@@ -83,7 +83,7 @@ def test_validate_data_random_location(
         sycl_queue=queue,
     )
 
-    allow_nan = ensure_all_finite == "allow_nan"
+    allow_nan = ensure_all_finite == "allow-nan"
     if check is None or (allow_nan and check == "NaN"):
         validate_data(est, X, ensure_all_finite=ensure_all_finite)
     else:
@@ -116,7 +116,7 @@ def test_validate_data_random_shape_and_location(
         sycl_queue=queue,
     )
 
-    allow_nan = ensure_all_finite == "allow_nan"
+    allow_nan = ensure_all_finite == "allow-nan"
     if check is None or (allow_nan and check == "NaN"):
         validate_data(est, X)
     else:
