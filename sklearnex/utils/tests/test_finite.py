@@ -77,7 +77,7 @@ def test_validate_data_random_location(
         loc = rand.randint(0, X.size - 1)
         X.reshape((-1,))[loc] = float(check)
 
-    _ = _convert_to_dataframe(
+    X = _convert_to_dataframe(
         np.atleast_2d(X),
         target_df=dataframe,
         sycl_queue=queue,
@@ -111,7 +111,7 @@ def test_validate_data_random_shape_and_location(
         loc = rand.randint(0, X.size - 1)
         X[loc] = float(check)
 
-    _ = _convert_to_dataframe(
+    X = _convert_to_dataframe(
         np.atleast_2d(X),
         target_df=dataframe,
         sycl_queue=queue,
