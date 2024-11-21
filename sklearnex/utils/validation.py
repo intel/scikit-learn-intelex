@@ -94,7 +94,7 @@ else:
         _sycl_usm_assert_all_finite(X, xp, allow_nan, input_name=input_name)
 
 
-def _assert_all_finite(
+def _sklearnex_assert_all_finite(
     X,
     *,
     allow_nan=False,
@@ -122,7 +122,7 @@ def assert_all_finite(
     allow_nan=False,
     input_name="",
 ):
-    _assert_all_finite(
+    _sklearnex_assert_all_finite(
         X.data if sp.issparse(X) else X,
         allow_nan=allow_nan,
         input_name=input_name,
@@ -139,9 +139,7 @@ def validate_data(
     # force finite check to not occur in sklearn, default is True
     # `ensure_all_finite` is the most up-to-date keyword name in sklearn
     # _finite_keyword provides backward compatability for `force_all_finite`
-    ensure_all_finite = (
-        True if "ensure_all_finite" not in kwargs else kwargs.pop("ensure_all_finite")
-    )
+    ensure_all_finite = kwargs.pop("ensure_all_finite", True)
     kwargs[_finite_keyword] = False
     out = _sklearn_validate_data(
         _estimator,
@@ -153,8 +151,8 @@ def validate_data(
         # run local finite check
         allow_nan = ensure_all_finite == "allow-nan"
         arg = iter(out)
-        if X != "no_validation":
+        if not isinstance(X, str) or X != "no_validation":
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="X")
-        if y is not None and y != "no_validation":
+        if not (y is None or isinstance(y, str) and y == "no_validation"):
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="y")
     return out
