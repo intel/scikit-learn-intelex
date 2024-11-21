@@ -142,7 +142,7 @@ def validate_data(
     # force finite check to not occur in sklearn, default is True
     # `ensure_all_finite` is the most up-to-date keyword name in sklearn
     # _finite_keyword provides backward compatability for `force_all_finite`
-    ensure_all_finite = "ensure_all_finite" not in kwargs or kwargs.pop(
+    ensure_all_finite = True if "ensure_all_finite" not in kwargs else kwargs.pop(
         "ensure_all_finite"
     )
     kwargs[_finite_keyword] = False
