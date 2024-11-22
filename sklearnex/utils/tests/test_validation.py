@@ -130,9 +130,6 @@ def test_validate_data_random_shape_and_location(
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
-@pytest.mark.parametrize(
-    "array_api_dispatch", [True, False] if sklearn_check_version("1.2") else [False]
-)
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 @pytest.mark.parametrize(
     "dataframe, queue",
@@ -141,7 +138,7 @@ def test_validate_data_random_shape_and_location(
     ),
 )
 def test__check_sample_weight_random_shape_and_location(
-    dataframe, queue, dtype, array_api_dispatch, check, seed
+    dataframe, queue, dtype, check, seed
 ):
     # This testing assumes that array api inputs to validate_data will only occur
     # with sklearn array_api support which began in sklearn 1.2. This would assume
@@ -170,21 +167,17 @@ def test__check_sample_weight_random_shape_and_location(
     )
 
     dispatch = {}
-    if array_api_dispatch:
-        if dataframe == "pandas":
-            pytest.skip("pandas inputs do not work with sklearn's array_api_dispatch")
-        dispatch["array_api_dispatch"] = array_api_dispatch
+    if dataframe in ["array_api", "dpctl"]:
+        dispatch["array_api_dispatch"] = True
 
     with config_context(**dispatch):
 
         if check is None:
             X_out = _check_sample_weight(X, sample_weight)
-            if dataframe == "pandas" or (
-                dataframe == "array_api" and not array_api_dispatch
-            ):
-                assert isinstance(X, np.ndarray)
-            else:
+            if dispatch:
                 assert type(X_out) == type(X)
+            else:
+                assert isinstance(X, np.ndarray)
         else:
             msg_err = "Input sample_weight contains NaN, infinity."
             with pytest.raises(ValueError, match=msg_err):
@@ -193,15 +186,12 @@ def test__check_sample_weight_random_shape_and_location(
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
-    "array_api_dispatch", [True, False] if sklearn_check_version("1.2") else [False]
-)
-@pytest.mark.parametrize(
     "dataframe, queue",
     get_dataframes_and_queues(
         "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
     ),
 )
-def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
+def test_validate_data_output(dtype, dataframe, queue):
     # This testing assumes that array api inputs to validate_data will only occur
     # with sklearn array_api support which began in sklearn 1.2. This would assume
     # that somewhere upstream of the validate_data call, a data conversion of dpnp,
@@ -210,22 +200,20 @@ def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
     X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
 
     dispatch = {}
-    if array_api_dispatch:
-        if dataframe == "pandas":
-            pytest.skip("pandas inputs do not work with sklearn's array_api_dispatch")
-        dispatch["array_api_dispatch"] = array_api_dispatch
+    if dataframe in ["array_api", "dpctl"]:
+        dispatch["array_api_dispatch"] = True
 
     with config_context(**dispatch):
         X_out, y_out = validate_data(est, X, y)
         # check sklearn validate_data operations work underneath
         X_array = validate_data(est, X, reset=False)
 
-    if dataframe == "pandas" or (dataframe == "array_api" and not array_api_dispatch):
-        # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
-        assert isinstance(X_array, np.ndarray)
-        assert isinstance(X_out, np.ndarray)
-    else:
+    if dispatch:
         assert type(X) == type(
             X_array
         ), f"validate_data converted {type(X)} to {type(X_array)}"
         assert type(X) == type(X_out), f"from_array converted {type(X)} to {type(X_out)}"
+    else:
+        # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
+        assert isinstance(X_array, np.ndarray)
+        assert isinstance(X_out, np.ndarray)
