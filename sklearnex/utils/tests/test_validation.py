@@ -140,7 +140,7 @@ def test_validate_data_random_shape_and_location(
         "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
     ),
 )
-def test__check_sample_weights_random_shape_and_location(
+def test__check_sample_weight_random_shape_and_location(
     dataframe, queue, dtype, array_api_dispatch, check, seed
 ):
     # This testing assumes that array api inputs to validate_data will only occur
