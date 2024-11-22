@@ -14,11 +14,16 @@
 # limitations under the License.
 # ===============================================================================
 
+import numbers
+import warnings
+
+import numpy as np
 import scipy.sparse as sp
 from sklearn.utils.validation import _assert_all_finite as _sklearn_assert_all_finite
+from sklearn.utils.validation import _num_samples, check_array, check_non_negative
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal.utils._array_api import _is_numpy_namespace
+from onedal.utils._array_api import _get_sycl_namespace, _is_numpy_namespace
 from onedal.utils.validation import _assert_all_finite as _onedal_assert_all_finite
 
 from ._array_api import get_namespace
@@ -41,57 +46,7 @@ def _is_contiguous(X):
     # can then be inspected for strides and this must be updated. _is_contiguous is
     # therefore conservative in verifying attributes and does not support array_api.
     # This will block onedal_assert_all_finite from being used for array_api inputs.
-    if hasattr(X, "flags") and (X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"]):
-        return True
-    return False
-
-
-def _assert_all_finite(X, xp, *, allow_nan=False, input_name=""):
-    # This is a reproduction of code from sklearn.utils.validation necessary for
-    # non-contiguous or non-fp32/fp64 dpctl inputs when sklearn version is <1.2 or
-    # for non-contiguous or non-fp32/fp64 dpnp inputs, as these cannot be checked
-    # for finiteness in onedal or by sklearn (while preserving their object type).
-    first_pass_isfinite = xp.isfinite(xp.sum(X))
-    if first_pass_isfinite:
-        return
-
-    has_inf = xp.any(xp.isinf(X))
-    has_nan_error = False if allow_nan else xp.any(xp.isnan(X))
-    if has_inf or has_nan_error:
-        type_err = "infinity" if allow_nan else "NaN, infinity"
-        padded_input_name = input_name + " " if input_name else ""
-        msg_err = f"Input {padded_input_name}contains {type_err}."
-        raise ValueError(msg_err)
-
-
-if sklearn_check_version("1.2"):
-
-    def _general_assert_all_finite(
-        X, xp, is_array_api_compliant, *, allow_nan=False, input_name=""
-    ):
-        if _is_numpy_namespace(xp) or is_array_api_compliant:
-            _sklearn_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
-        elif "float" not in xp.dtype.name or "complex" not in xp.dtype.name:
-            return
-        # handle dpnp inputs
-        _assert_all_finite(X, xp, allow_nan=allow_nan, input_name=input_name)
-
-else:
-
-    def _general_assert_all_finite(
-        X, xp, is_array_api_compliant, *, allow_nan=False, input_name=""
-    ):
-
-        if _is_numpy_namespace(xp):
-            _sklearn_assert_all_finite(X, allow_nan, input_name=input_name)
-        elif is_array_api_compliant and not xp.isdtype(
-            X, ("real floating", "complex floating")
-        ):
-            return
-        elif "float" not in xp.dtype.name or "complex" not in xp.dtype.name:
-            return
-        # handle dpctl and dpnp inputs
-        _assert_all_finite(X, xp, allow_nan, input_name=input_name)
+    return hasattr(X, "flags") and (X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"])
 
 
 def _sklearnex_assert_all_finite(
@@ -102,16 +57,9 @@ def _sklearnex_assert_all_finite(
 ):
     # size check is an initial match to daal4py for performance reasons, can be
     # optimized later
-    xp, is_array_api_compliant = get_namespace(X)
+    xp, _ = get_namespace(X)
     if X.size < 32768 or X.dtype not in [xp.float32, xp.float64] or not _is_contiguous(X):
-
-        # all sycl_usm_ndarrays for sklearn < 1.2 and dpnp for sklearn > 1.2 are not
-        # handled properly, it calls a separate function for an import-time sklearn
-        # version check before possible hand-off to sklearn's _assert_all_finite or to
-        # _sycl_usm_assert_all_finite.
-        _general_assert_all_finite(
-            X, xp, is_array_api_compliant, allow_nan=allow_nan, input_name=input_name
-        )
+        _sklearn_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
     else:
         _onedal_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
 
@@ -141,6 +89,7 @@ def validate_data(
     # _finite_keyword provides backward compatability for `force_all_finite`
     ensure_all_finite = kwargs.pop("ensure_all_finite", True)
     kwargs[_finite_keyword] = False
+
     out = _sklearn_validate_data(
         _estimator,
         X=X,
@@ -156,3 +105,52 @@ def validate_data(
         if not (y is None or isinstance(y, str) and y == "no_validation"):
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="y")
     return out
+
+
+def _check_sample_weight(
+    sample_weight, X, dtype=None, copy=False, only_non_negative=False
+):
+
+    n_samples = _num_samples(X)
+    xp, _ = get_namespace(X)
+
+    if dtype is not None and dtype not in [xp.float32, xp.float64]:
+        dtype = xp.float64
+
+    if sample_weight is None:
+        sample_weight = xp.ones(n_samples, dtype=dtype)
+    elif isinstance(sample_weight, numbers.Number):
+        sample_weight = xp.full(n_samples, sample_weight, dtype=dtype)
+    else:
+        if dtype is None:
+            dtype = [xp.float64, xp.float32]
+
+        # create param dict such that the variable finite_keyword can
+        # be added to it without direct sklearn_check_version maintenance
+        params = {
+            "accept_sparse": False,
+            "ensure_2d": False,
+            "dtype": dtype,
+            "order": "C",
+            "copy": copy,
+            "input_name": "sample_weight",
+            _finite_keyword: False,
+        }
+
+        sample_weight = check_array(sample_weight, **params)
+        assert_all_finite(sample_weight, input_name="sample_weight")
+
+        if sample_weight.ndim != 1:
+            raise ValueError("Sample weights must be 1D array or scalar")
+
+        if sample_weight.shape != (n_samples,):
+            raise ValueError(
+                "sample_weight.shape == {}, expected {}!".format(
+                    sample_weight.shape, (n_samples,)
+                )
+            )
+
+    if only_non_negative:
+        check_non_negative(sample_weight, "`sample_weight`")
+
+    return sample_weight
