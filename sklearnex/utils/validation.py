@@ -125,7 +125,7 @@ def _check_sample_weight(
         if dtype is None:
             dtype = [xp.float64, xp.float32]
 
-        # create param dict such that the variable finite_keyword can
+        # create param dict such that the variable _finite_keyword can
         # be added to it without direct sklearn_check_version maintenance
         params = {
             "accept_sparse": False,

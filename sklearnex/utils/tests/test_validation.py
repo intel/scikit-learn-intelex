@@ -27,7 +27,7 @@ from onedal.tests.utils._dataframes_support import (
 )
 from sklearnex import config_context
 from sklearnex.tests.utils import DummyEstimator, gen_dataset
-from sklearnex.utils.validation import validate_data
+from sklearnex.utils.validation import _check_sample_weight, validate_data
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -129,11 +129,83 @@ def test_validate_data_random_shape_and_location(
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize(
     "array_api_dispatch", [True, False] if sklearn_check_version("1.2") else [False]
 )
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("seed", [0, int(time.time())])
+@pytest.mark.parametrize(
+    "dataframe, queue",
+    get_dataframes_and_queues(
+        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
+    ),
+)
+def test__check_sample_weights_random_shape_and_location(
+    dataframe, queue, dtype, array_api_dispatch, check, seed
+):
+    # This testing assumes that array api inputs to validate_data will only occur
+    # with sklearn array_api support which began in sklearn 1.2. This would assume
+    # that somewhere upstream of the validate_data call, a data conversion of dpnp,
+    # dpctl, or array_api inputs to numpy inputs would have occurred.
+
+    lb, ub = 32768, 1048576  # lb is a patching condition, ub 2^20
+    rand.seed(seed)
+    shape = (rand.randint(lb, ub), 2)
+    X = rand.uniform(high=np.finfo(dtype).max, size=shape).astype(dtype)
+    sample_weight = rand.uniform(high=np.finfo(dtype).max, size=shape[0]).astype(dtype)
+
+    if check:
+        loc = rand.randint(0, shape[0] - 1)
+        sample_weight[loc] = float(check)
+
+    X = _convert_to_dataframe(
+        X,
+        target_df=dataframe,
+        sycl_queue=queue,
+    )
+    sample_weight = _convert_to_dataframe(
+        sample_weight,
+        target_df=dataframe,
+        sycl_queue=queue,
+    )
+
+    dispatch = {}
+    if array_api_dispatch:
+        if dataframe == "pandas":
+            pytest.skip("pandas inputs do not work with sklearn's array_api_dispatch")
+        dispatch["array_api_dispatch"] = array_api_dispatch
+
+    with config_context(**dispatch):
+
+        if check is None:
+            X_out = _check_sample_weight(X, sample_weight)
+            if dataframe == "pandas" or (
+                dataframe == "array_api" and not array_api_dispatch
+            ):
+                assert isinstance(X, np.ndarray)
+            else:
+                assert type(X_out) == type(X)
+        else:
+            msg_err = "Input sample_weight contains NaN, infinity."
+            with pytest.raises(ValueError, match=msg_err):
+                X_out = _check_sample_weight(X, sample_weight)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize(
+    "array_api_dispatch", [True, False] if sklearn_check_version("1.2") else [False]
+)
+@pytest.mark.parametrize(
+    "dataframe, queue",
+    get_dataframes_and_queues(
+        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
+    ),
+)
 def test_validate_data_output(array_api_dispatch, dtype, dataframe, queue):
+    # This testing assumes that array api inputs to validate_data will only occur
+    # with sklearn array_api support which began in sklearn 1.2. This would assume
+    # that somewhere upstream of the validate_data call, a data conversion of dpnp,
+    # dpctl, or array_api inputs to numpy inputs would have occurred.
     est = DummyEstimator()
     X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
 
