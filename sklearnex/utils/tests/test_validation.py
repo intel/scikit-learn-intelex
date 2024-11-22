@@ -65,7 +65,12 @@ def test_sum_infinite_actually_finite(dtype, shape, ensure_all_finite):
 @pytest.mark.parametrize("ensure_all_finite", ["allow-nan", True])
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize(
+    "dataframe, queue",
+    get_dataframes_and_queues(
+        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
+    ),
+)
 def test_validate_data_random_location(
     dataframe, queue, dtype, shape, ensure_all_finite, check, seed
 ):
@@ -99,7 +104,12 @@ def test_validate_data_random_location(
 @pytest.mark.parametrize("ensure_all_finite", ["allow-nan", True])
 @pytest.mark.parametrize("check", ["inf", "NaN", None])
 @pytest.mark.parametrize("seed", [0, int(time.time())])
-@pytest.mark.parametrize("dataframe, queue", get_dataframes_and_queues())
+@pytest.mark.parametrize(
+    "dataframe, queue",
+    get_dataframes_and_queues(
+        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
+    ),
+)
 def test_validate_data_random_shape_and_location(
     dataframe, queue, dtype, ensure_all_finite, check, seed
 ):
