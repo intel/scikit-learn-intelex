@@ -15,15 +15,12 @@
 # ===============================================================================
 
 import numbers
-import warnings
 
-import numpy as np
 import scipy.sparse as sp
 from sklearn.utils.validation import _assert_all_finite as _sklearn_assert_all_finite
 from sklearn.utils.validation import _num_samples, check_array, check_non_negative
 
 from daal4py.sklearn._utils import sklearn_check_version
-from onedal.utils._array_api import _get_sycl_namespace, _is_numpy_namespace
 from onedal.utils.validation import _assert_all_finite as _onedal_assert_all_finite
 
 from ._array_api import get_namespace
