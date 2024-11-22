@@ -198,6 +198,9 @@ class LinearRegression(BaseLinearRegression):
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
 
+        policy = self._get_policy(queue, X, y)
+        X, y = _convert_to_supported(policy, X, y)
+
         dtype = get_dtype(X)
         if dtype not in [np.float32, np.float64]:
             dtype = np.float64
@@ -207,11 +210,8 @@ class LinearRegression(BaseLinearRegression):
 
         X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
 
-        policy = self._get_policy(queue, X, y)
-
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
-        X, y = _convert_to_supported(policy, X, y)
         params = self._get_onedal_params(get_dtype(X))
         X_table, y_table = to_table(X, y)
 
