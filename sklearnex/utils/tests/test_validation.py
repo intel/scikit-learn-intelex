@@ -90,14 +90,20 @@ def test_validate_data_random_location(
         sycl_queue=queue,
     )
 
-    allow_nan = ensure_all_finite == "allow-nan"
-    if check is None or (allow_nan and check == "NaN"):
-        validate_data(est, X, ensure_all_finite=ensure_all_finite)
-    else:
-        type_err = "infinity" if allow_nan else "NaN, infinity"
-        msg_err = f"Input X contains {type_err}."
-        with pytest.raises(ValueError, match=msg_err):
+    dispatch = {}
+    if sklearn_check_version("1.2") and dataframe != "pandas":
+        dispatch["array_api_dispatch"] = True
+
+    with config_context(**dispatch):
+
+        allow_nan = ensure_all_finite == "allow-nan"
+        if check is None or (allow_nan and check == "NaN"):
             validate_data(est, X, ensure_all_finite=ensure_all_finite)
+        else:
+            type_err = "infinity" if allow_nan else "NaN, infinity"
+            msg_err = f"Input X contains {type_err}."
+            with pytest.raises(ValueError, match=msg_err):
+                validate_data(est, X, ensure_all_finite=ensure_all_finite)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -128,14 +134,20 @@ def test_validate_data_random_shape_and_location(
         sycl_queue=queue,
     )
 
-    allow_nan = ensure_all_finite == "allow-nan"
-    if check is None or (allow_nan and check == "NaN"):
-        validate_data(est, X, ensure_all_finite=ensure_all_finite)
-    else:
-        type_err = "infinity" if allow_nan else "NaN, infinity"
-        msg_err = f"Input X contains {type_err}."
-        with pytest.raises(ValueError, match=msg_err):
+    dispatch = {}
+    if sklearn_check_version("1.2") and dataframe != "pandas":
+        dispatch["array_api_dispatch"] = True
+
+    with config_context(**dispatch):
+
+        allow_nan = ensure_all_finite == "allow-nan"
+        if check is None or (allow_nan and check == "NaN"):
             validate_data(est, X, ensure_all_finite=ensure_all_finite)
+        else:
+            type_err = "infinity" if allow_nan else "NaN, infinity"
+            msg_err = f"Input X contains {type_err}."
+            with pytest.raises(ValueError, match=msg_err):
+                validate_data(est, X, ensure_all_finite=ensure_all_finite)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -177,7 +189,7 @@ def test__check_sample_weight_random_shape_and_location(
     )
 
     dispatch = {}
-    if dataframe in ["array_api", "dpctl"]:
+    if sklearn_check_version("1.2") and dataframe != "pandas":
         dispatch["array_api_dispatch"] = True
 
     with config_context(**dispatch):
@@ -210,7 +222,7 @@ def test_validate_data_output(dtype, dataframe, queue):
     X, y = gen_dataset(est, queue=queue, target_df=dataframe, dtype=dtype)[0]
 
     dispatch = {}
-    if dataframe in ["array_api", "dpctl"]:
+    if sklearn_check_version("1.2") and dataframe != "pandas":
         dispatch["array_api_dispatch"] = True
 
     with config_context(**dispatch):
