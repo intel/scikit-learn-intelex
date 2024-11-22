@@ -25,12 +25,11 @@ if daal_check_version((2024, "P", 600)):
     from scipy.sparse import issparse
     from sklearn.linear_model import Ridge as _sklearn_Ridge
     from sklearn.metrics import r2_score
-    from sklearn.utils.validation import check_is_fitted, check_X_y
+    from sklearn.utils.validation import check_is_fitted
 
     from daal4py.sklearn._n_jobs_support import control_n_jobs
-    from daal4py.sklearn.linear_model._ridge import _fit_ridge as daal4py_fit_ridge
 
-    if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+    if not sklearn_check_version("1.2"):
         from sklearn.linear_model._base import _deprecate_normalize
     if sklearn_check_version("1.1") and not sklearn_check_version("1.2"):
         from sklearn.utils import check_scalar
@@ -45,18 +44,6 @@ if daal_check_version((2024, "P", 600)):
         from sklearn.utils.validation import validate_data
     else:
         validate_data = _sklearn_Ridge._validate_data
-
-    def _is_numeric_scalar(value):
-        """
-        Determines if the provided value is a numeric scalar.
-
-        Args:
-        value: The value to be checked.
-
-        Returns:
-        bool: True if the value is a numeric scalar, False otherwise.
-        """
-        return isinstance(value, numbers.Real)
 
     @control_n_jobs(decorated_methods=["fit", "predict", "score"])
     class Ridge(_sklearn_Ridge):
@@ -87,7 +74,7 @@ if daal_check_version((2024, "P", 600)):
                     random_state=random_state,
                 )
 
-        elif sklearn_check_version("1.0"):
+        else:
 
             def __init__(
                 self,
@@ -110,30 +97,6 @@ if daal_check_version((2024, "P", 600)):
                     solver=solver,
                     tol=tol,
                     positive=positive,
-                    random_state=random_state,
-                )
-
-        else:
-
-            def __init__(
-                self,
-                alpha=1.0,
-                fit_intercept=True,
-                normalize=False,
-                copy_X=True,
-                max_iter=None,
-                tol=1e-3,
-                solver="auto",
-                random_state=None,
-            ):
-                super().__init__(
-                    alpha=alpha,
-                    fit_intercept=fit_intercept,
-                    normalize=normalize,
-                    copy_X=copy_X,
-                    max_iter=max_iter,
-                    tol=tol,
-                    solver=solver,
                     random_state=random_state,
                 )
 
@@ -235,6 +198,10 @@ if daal_check_version((2024, "P", 600)):
                         not is_multi_output or supports_all_variants,
                         "Multi-output regression is not supported.",
                     ),
+                    (
+                        isinstance(self.alpha, numbers.Real),
+                        "Non-scalar alpha is not supported yet.",
+                    ),
                 ]
             )
 
@@ -275,10 +242,6 @@ if daal_check_version((2024, "P", 600)):
                 patching_status.and_conditions(
                     [
                         (
-                            _is_numeric_scalar(self.alpha),
-                            "Non-scalar alpha is not supported for GPU.",
-                        ),
-                        (
                             not is_underdetermined,
                             "The shape of X (fitting) does not satisfy oneDAL requirements:"
                             "Number of features + 1 >= number of samples.",
@@ -318,12 +281,6 @@ if daal_check_version((2024, "P", 600)):
             }
             self._onedal_estimator = onedal_Ridge(**onedal_params)
 
-        def _daal_fit(self, X, y, sample_weight=None):
-            daal4py_fit_ridge(self, X, y, sample_weight)
-            self._onedal_estimator.n_features_in_ = _num_features(X, fallback_1d=True)
-            self._onedal_estimator.coef_ = self.coef_
-            self._onedal_estimator.intercept_ = self.intercept_
-
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             # `Sample weight` is not supported. Expected to be None value.
             assert sample_weight is None
@@ -349,21 +306,17 @@ if daal_check_version((2024, "P", 600)):
                         include_boundaries="left",
                     )
 
-            supports_multi_output = daal_check_version((2025, "P", 1))
             check_params = {
                 "X": X,
                 "y": y,
                 "dtype": [np.float64, np.float32],
                 "accept_sparse": ["csr", "csc", "coo"],
                 "y_numeric": True,
-                "multi_output": supports_multi_output,
+                "multi_output": True,
             }
-            if sklearn_check_version("1.0"):
-                X, y = validate_data(self, **check_params)
-            else:
-                X, y = check_X_y(**check_params)
+            X, y = validate_data(self, **check_params)
 
-            if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
+            if not sklearn_check_version("1.2"):
                 self._normalize = _deprecate_normalize(
                     self.normalize,
                     default=False,
@@ -371,21 +324,11 @@ if daal_check_version((2024, "P", 600)):
                 )
 
             self._initialize_onedal_estimator()
-
-            # Falling back to daal4py if the device is CPU and alpha is array-like
-            # since onedal does not yet support non-scalars for alpha, thus
-            # should only be used for GPU/CPU with scalar alpha to not limit the functionality
-            cpu_device = queue is None or queue.sycl_device.is_cpu
-            if cpu_device and not _is_numeric_scalar(self.alpha):
-                self._daal_fit(X, y)
-            else:
-                self._onedal_estimator.fit(X, y, queue=queue)
-
+            self._onedal_estimator.fit(X, y, queue=queue)
             self._save_attributes()
 
         def _onedal_predict(self, X, queue=None):
-            if sklearn_check_version("1.0"):
-                X = validate_data(self, X, accept_sparse=False, reset=False)
+            X = validate_data(self, X, accept_sparse=False, reset=False)
 
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
