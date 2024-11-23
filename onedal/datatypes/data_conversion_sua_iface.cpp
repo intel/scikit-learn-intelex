@@ -68,7 +68,7 @@ dal::table convert_to_homogen_impl(py::object obj) {
 
     if (layout == dal::data_layout::unknown){
         py::object copy = obj.attr("copy")(); // get a contiguous copy
-        res = convert_to_homogen_impl(copy);
+        res = convert_to_homogen_impl<Type>(copy);
         copy.dec_ref();
         return res;
     }
