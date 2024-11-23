@@ -153,11 +153,6 @@ def _check_array(
 
     if sp.issparse(array):
         return array
-
-    # TODO: Convert this kind of arrays to a table like in daal4py
-    if not array.flags.aligned and not array.flags.writeable:
-        array = np.array(array.tolist())
-
     return array
 
 
