@@ -155,9 +155,13 @@ dal::table convert_to_table(PyObject *obj) {
     }
     if (is_array(obj)) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
-        if (!array_is_behaved_C(ary) && !array_is_behaved_F(ary)) {
+        if (!PyArray_ISCARRAY_RO(ary) && !PyArray_ISFARRAY_RO(ary)) {
             // NOTE: this will make a C-contiguous deep copy of the data
+            // this is expected to be a special case
             ary = PyArray_GETCONTIGUOUS(ary);
+            res = convert_to_table(ary);
+            Py_DECREF(ary);
+            return res;
         }
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ary);
         SET_NPY_FEATURE(array_type(ary),
