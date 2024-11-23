@@ -42,6 +42,8 @@ namespace oneapi::dal::python {
 // of `__sycl_usm_array_interface__` protocol.
 template <typename Type>
 dal::table convert_to_homogen_impl(py::object obj) {
+    dal::table res{};
+    
     // Get `__sycl_usm_array_interface__` dictionary representing USM allocations.
     auto sua_iface_dict = get_sua_interface(obj);
 
@@ -64,6 +66,13 @@ dal::table convert_to_homogen_impl(py::object obj) {
     // Get oneDAL Homogen DataLayout enumeration from input object shape and strides.
     const auto layout = get_sua_iface_layout(sua_iface_dict, r_count, c_count);
 
+    if (layout == dal::data_layout::unknown){
+        py::object copy = obj.attr("copy")() // get a contiguous copy
+        res = convert_to_homogen_impl(copy);
+        copy.dec_ref();
+        return res;
+    }
+
     // Get `__sycl_usm_array_interface__['data'][0]`, the first element of data entry,
     // which is a Python integer encoding USM pointer value.
     const auto* const ptr = reinterpret_cast<const Type*>(get_sua_ptr(sua_iface_dict));
@@ -78,8 +87,6 @@ dal::table convert_to_homogen_impl(py::object obj) {
 
     // Use read-only accessor for onedal table.
     bool is_readonly = is_sua_readonly(sua_iface_dict);
-
-    dal::table res{};
 
     if (is_readonly) {
         res = dal::homogen_table(queue,
