@@ -130,7 +130,7 @@ class NeighborsCommonBase(BaseEstimator, metaclass=ABCMeta):
         else:
             p = self.p
         return {
-            "fptype": "float" if X.dtype == np.float32 else "double",
+            "fptype": X.dtype,
             "vote_weights": "uniform" if weights == "uniform" else "distance",
             "method": self._fit_method,
             "radius": self.radius,
