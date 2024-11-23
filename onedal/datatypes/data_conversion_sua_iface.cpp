@@ -67,7 +67,8 @@ dal::table convert_to_homogen_impl(py::object obj) {
     const auto layout = get_sua_iface_layout(sua_iface_dict, r_count, c_count);
 
     if (layout == dal::data_layout::unknown){
-        py::object copy = obj.attr("copy")(); // get a contiguous copy
+        const auto shape = get_sua_shape(sua_iface_dict);
+        py::object copy = obj.attr("reshape")(shape, true); // get a contiguous copy
         res = convert_to_homogen_impl<Type>(copy);
         copy.dec_ref();
         return res;
