@@ -68,8 +68,17 @@ dal::table convert_to_homogen_impl(py::object obj) {
     const auto layout = get_sua_iface_layout(sua_iface_dict, r_count, c_count);
 
     if (layout == dal::data_layout::unknown){
-        const auto shape = get_sua_shape(sua_iface_dict);
-        py::object copy = obj.attr("reshape")(shape, "copy"_a = true); // get a contiguous copy
+        py::object copy;
+        if (py::hasattr(obj, "copy")){
+            copy = obj.attr("copy")();
+        }
+        else if (py::hasattr(obj, "__array_namespace__")){
+            const auto space = obj.attr("__array_namespace__");
+            copy = space.attr("asarray")(obj, "copy"_a = true);
+        }
+        else {
+            throw std::runtime_error("Wrong strides");
+        }
         res = convert_to_homogen_impl<Type>(copy);
         copy.dec_ref();
         return res;
