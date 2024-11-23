@@ -73,7 +73,7 @@ dal::table convert_to_homogen_impl(py::object obj) {
             copy = obj.attr("copy")();
         }
         else if (py::hasattr(obj, "__array_namespace__")){
-            const auto space = obj.attr("__array_namespace__");
+            const auto space = obj.attr("__array_namespace__")();
             copy = space.attr("asarray")(obj, "copy"_a = true);
         }
         else {
