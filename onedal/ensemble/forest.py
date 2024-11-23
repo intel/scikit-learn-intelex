@@ -373,7 +373,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         y = from_table(result.responses)
         return y
 
-    def _predict_proba(self, X, module, queue, hparams=None):
+    def _predict_proba(self, X, queue, hparams=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
@@ -482,7 +482,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
     def predict_proba(self, X, queue=None):
         hparams = get_hyperparameters("decision_forest", "infer")
 
-        return self._predict_proba(X, queue, hparams)
+        return super()._predict_proba(X, queue, hparams)
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -653,7 +653,7 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
-        return self._predict_proba(
+        return super()._predict_proba(
             X,
             queue,
         )
