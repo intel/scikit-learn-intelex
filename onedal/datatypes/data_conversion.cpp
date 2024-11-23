@@ -159,7 +159,7 @@ dal::table convert_to_table(PyObject *obj) {
             // NOTE: this will make a C-contiguous deep copy of the data
             // this is expected to be a special case
             ary = PyArray_GETCONTIGUOUS(ary);
-            res = convert_to_table(ary);
+            res = convert_to_table(reinterpret_cast<PyObject *>(ary));
             Py_DECREF(ary);
             return res;
         }
