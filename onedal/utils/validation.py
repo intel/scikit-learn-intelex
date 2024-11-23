@@ -158,10 +158,6 @@ def _check_array(
     if not array.flags.aligned and not array.flags.writeable:
         array = np.array(array.tolist())
 
-    # TODO: If data is not contiguous copy to contiguous
-    # Need implemeted numpy table in oneDAL
-    if not array.flags.c_contiguous and not array.flags.f_contiguous:
-        array = np.ascontiguousarray(array, array.dtype)
     return array
 
 
