@@ -34,6 +34,7 @@
 
 namespace oneapi::dal::python {
 
+using namespace pybind11::literals;
 // Please follow <https://intelpython.github.io/dpctl/latest/
 // api_reference/dpctl/sycl_usm_array_interface.html#sycl-usm-array-interface-attribute>
 // for the description of `__sycl_usm_array_interface__` protocol.
