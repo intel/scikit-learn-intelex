@@ -195,7 +195,7 @@ def test__check_sample_weight_random_shape_and_location(
     with config_context(**dispatch):
 
         if check is None:
-            X_out = _check_sample_weight(X, sample_weight)
+            X_out = _check_sample_weight(sample_weight, X)
             if dispatch:
                 assert type(X_out) == type(X)
             else:
@@ -203,7 +203,7 @@ def test__check_sample_weight_random_shape_and_location(
         else:
             msg_err = "Input sample_weight contains NaN, infinity."
             with pytest.raises(ValueError, match=msg_err):
-                X_out = _check_sample_weight(X, sample_weight)
+                X_out = _check_sample_weight(sample_weight, X)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
