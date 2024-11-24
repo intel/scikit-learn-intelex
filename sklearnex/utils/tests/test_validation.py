@@ -199,7 +199,7 @@ def test__check_sample_weight_random_shape_and_location(
             if dispatch:
                 assert type(X_out) == type(X)
             else:
-                assert isinstance(X, np.ndarray)
+                assert isinstance(X_out, np.ndarray)
         else:
             msg_err = "Input sample_weight contains NaN, infinity."
             with pytest.raises(ValueError, match=msg_err):
