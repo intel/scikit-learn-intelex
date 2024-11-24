@@ -384,7 +384,7 @@ def test_to_table_non_contiguous_input(dataframe, queue):
     # X expected to be non-contiguous.
     assert not X.flags.c_contiguous and not X.flags.f_contiguous
     X_t = to_table(X)
-    assert X_t and X_t.shape and X_t[1,1]
+    assert X_t and X_t.shape and X_t.has_data
 
 
 @pytest.mark.skipif(
