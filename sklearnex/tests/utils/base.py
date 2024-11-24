@@ -47,7 +47,6 @@ from sklearnex.neighbors import (
     NearestNeighbors,
 )
 from sklearnex.svm import SVC, NuSVC
-from sklearnex.utils.validation import validate_data
 
 
 def _load_all_models(with_sklearnex=True, estimator=True):
@@ -378,8 +377,6 @@ def _get_processor_info():
 class DummyEstimator(BaseEstimator):
 
     def fit(self, X, y=None):
-        X, y = validate_data(self, X, y)
-
         sua_iface, xp, _ = _get_sycl_namespace(X)
         X_table = to_table(X)
         y_table = to_table(y)
