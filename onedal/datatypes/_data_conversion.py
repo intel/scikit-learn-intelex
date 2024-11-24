@@ -35,12 +35,12 @@ def _convert_one_to_table(arg):
 def to_table(*args):
     """Create oneDAL tables from scalars and/or arrays.
 
-    Note: this implementation can be used with contiguous scipy.sparse, numpy
-    ndarrays, DPCTL/DPNP usm_ndarrays and scalars. Tables will use pointers to the
-    original array data. Scalars will be copies. Arrays may be modified in-
-    place by oneDAL during computation. This works for data located on CPU and
-    SYCL-enabled Intel GPUs. Each array may only be of a single datatype (i.e.
-    each must be homogeneous).
+    Note: this implementation can be used with scipy.sparse, numpy ndarrays,
+    DPCTL/DPNP usm_ndarrays and scalars. Tables will use pointers to the
+    original array data. Scalars and non-contiguous arrays will be copies. 
+    Arrays may be modified in-place by oneDAL during computation. This works
+    for data located on CPU and SYCL-enabled Intel GPUs. Each array may only
+    be of a single datatype (i.e. each must be homogeneous).
 
     Parameters
     ----------
