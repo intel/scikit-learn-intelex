@@ -383,17 +383,8 @@ def test_to_table_non_contiguous_input(dataframe, queue):
     sua_iface, _, _ = _get_sycl_namespace(X)
     # X expected to be non-contiguous.
     assert not X.flags.c_contiguous and not X.flags.f_contiguous
-
-    # TODO:
-    # consistent error message.
-    if dataframe in "dpnp,dpctl":
-        expected_err_msg = (
-            "Unable to convert from SUA interface: only 1D & 2D tensors are allowed"
-        )
-        with pytest.raises(ValueError, match=expected_err_msg):
-            to_table(X)
-    else:
-        to_table(X)
+    X_t = to_table(X)
+    assert X_t and X_t.shape and X_t[1,1]
 
 
 @pytest.mark.skipif(
