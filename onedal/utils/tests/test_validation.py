@@ -137,9 +137,8 @@ def test_assert_finite_sparse(dtype, allow_nan, check, seed):
     )
 
     if check:
-        locx = rand.randint(0, X.shape[0] - 1)
-        locy = rand.randint(0, X.shape[1] - 1)
-        X[locx, locy] = float(check)
+        locx = rand.randint(0, X.data.shape[0] - 1)
+        X.data[locx] = float(check)
 
     if check is None or (allow_nan and check == "NaN"):
         assert_all_finite(X, allow_nan=allow_nan)
