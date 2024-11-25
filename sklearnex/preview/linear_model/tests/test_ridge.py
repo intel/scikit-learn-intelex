@@ -14,7 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy
+import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from sklearn.exceptions import NotFittedError
@@ -30,8 +30,8 @@ from onedal.tests.utils._dataframes_support import (
 def test_sklearnex_import_ridge(dataframe, queue):
     from sklearnex.preview.linear_model import Ridge
 
-    X = numpy.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = numpy.dot(X, numpy.array([1, 2])) + 3
+    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
+    y = np.dot(X, np.array([1, 2])) + 3
     X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     ridge_reg = Ridge(alpha=0.5).fit(X_c, y_c)
@@ -52,18 +52,18 @@ def test_sklearnex_import_ridge(dataframe, queue):
 def test_ridge_coefficients(dataframe, queue, sample_size, feature_size, alpha):
     from sklearnex.preview.linear_model import Ridge
 
-    X = numpy.random.rand(sample_size, feature_size)
-    y = numpy.random.rand(sample_size)
+    X = np.random.rand(sample_size, feature_size)
+    y = np.random.rand(sample_size)
     X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     ridge_reg = Ridge(fit_intercept=False, alpha=alpha).fit(X_c, y_c)
 
     # computing the coefficients manually
     # using the normal equation formula: (X^T * X + lambda * I)^-1 * X^T * y
-    lambda_identity = alpha * numpy.eye(X.shape[1])
-    inverse_term = numpy.linalg.inv(numpy.dot(X.T, X) + lambda_identity)
-    xt_y = numpy.dot(X.T, y)
-    coefficients_manual = numpy.dot(inverse_term, xt_y)
+    lambda_identity = alpha * np.eye(X.shape[1])
+    inverse_term = np.linalg.inv(np.dot(X.T, X) + lambda_identity)
+    xt_y = np.dot(X.T, y)
+    coefficients_manual = np.dot(inverse_term, xt_y)
         
     tol = 1e-5 if ridge_reg.coef_.dtype == np.float32 else 1e-6
 
@@ -80,7 +80,7 @@ if daal_check_version((2024, "P", 600)):
 
         model = Ridge(fit_intercept=True, alpha=0.5)
 
-        X, y = numpy.random.rand(sample_count, feature_count), numpy.random.rand(
+        X, y = np.random.rand(sample_count, feature_count), np.random.rand(
             sample_count
         )
         X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
@@ -97,7 +97,7 @@ if daal_check_version((2024, "P", 600)):
 
         model = Ridge(fit_intercept=True, alpha=0.5)
 
-        X = numpy.random.rand(sample_count, feature_count)
+        X = np.random.rand(sample_count, feature_count)
         X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
 
         with pytest.raises(NotFittedError):
