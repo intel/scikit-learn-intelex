@@ -21,6 +21,7 @@ src/oneapi/oneapi.cpp
 
 # IDE properties
 .vscode
+*.code-workspace
 
 # sklearnex files
 scikit_learn_intelex.egg-info

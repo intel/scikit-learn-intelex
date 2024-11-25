@@ -364,7 +364,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         y = from_table(result.responses)
         return y
 
-    def _predict_proba(self, X, module, queue):
+    def _predict_proba(self, X, module, queue, hparams=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
@@ -376,7 +376,11 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         params["infer_mode"] = "class_probabilities"
 
         model = self._onedal_model
-        result = module.infer(policy, params, model, to_table(X))
+        if hparams is not None and not hparams.is_default:
+            result = module.infer(policy, params, hparams.backend, model, to_table(X))
+        else:
+            result = module.infer(policy, params, model, to_table(X))
+
         y = from_table(result.probabilities)
         return y
 
@@ -472,8 +476,13 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
+        hparams = get_hyperparameters("decision_forest", "infer")
+
         return super()._predict_proba(
-            X, self._get_backend("decision_forest", "classification", None), queue
+            X,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
+            hparams,
         )
 
 
