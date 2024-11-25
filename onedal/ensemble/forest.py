@@ -96,14 +96,11 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.variable_importance_mode = variable_importance_mode
         self.algorithm = algorithm
 
-    @bind_default_backend("decision_forest")
-    def _get_policy(self, queue, *data): ...
+    @abstractmethod
+    def train(self, *args, queue=None, **kwargs): ...
 
     @abstractmethod
-    def train(self, *args, **kwargs): ...
-
-    @abstractmethod
-    def infer(self, *args, **kwargs): ...
+    def infer(self, *args, queue=None, **kwargs): ...
 
     def _to_absolute_max_features(self, n_features):
         if self.max_features is None:
@@ -314,10 +311,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             data = (X, y, sample_weight)
         else:
             data = (X, y)
-        policy = self._get_policy(queue, *data)
-        data = _convert_to_supported(policy, *data)
+        data = _convert_to_supported(*data)
         params = self._get_onedal_params(data[0])
-        train_result = self.train(policy, params, *to_table(*data))
+        train_result = self.train(params, *to_table(*data), queue=queue)
 
         self._onedal_model = train_result.model
 
@@ -360,15 +356,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
         )
         _check_n_features(self, X, False)
-        policy = self._get_policy(queue, X)
 
         model = self._onedal_model
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
         params = self._get_onedal_params(X)
         if hparams is not None and not hparams.is_default:
-            result = self.infer(policy, params, hparams.backend, model, to_table(X))
+            result = self.infer(params, hparams.backend, model, to_table(X), queue=queue)
         else:
-            result = self.infer(policy, params, model, to_table(X))
+            result = self.infer(params, model, to_table(X), queue=queue)
 
         y = from_table(result.responses)
         return y
@@ -379,16 +374,15 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
         )
         _check_n_features(self, X, False)
-        policy = self._get_policy(queue, X)
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
         params = self._get_onedal_params(X)
         params["infer_mode"] = "class_probabilities"
 
         model = self._onedal_model
         if hparams is not None and not hparams.is_default:
-            result = self.infer(policy, params, hparams.backend, model, to_table(X))
+            result = self.infer(params, hparams.backend, model, to_table(X), queue=queue)
         else:
-            result = self.infer(policy, params, model, to_table(X))
+            result = self.infer(params, model, to_table(X), queue=queue)
 
         y = from_table(result.probabilities)
         return y
@@ -453,10 +447,10 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.classification")
-    def train(self, *args, **kwargs): ...
+    def train(self, *args, queue=None, **kwargs): ...
 
     @bind_default_backend("decision_forest.classification")
-    def infer(self, *args, **kwargs): ...
+    def infer(self, *args, queue=None, **kwargs): ...
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -544,10 +538,10 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.regression")
-    def train(self, *args, **kwargs): ...
+    def train(self, *args, queue=None, **kwargs): ...
 
     @bind_default_backend("decision_forest.regression")
-    def infer(self, *args, **kwargs): ...
+    def infer(self, *args, queue=None, **kwargs): ...
 
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
@@ -619,10 +613,10 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.classification")
-    def train(self, *args, **kwargs): ...
+    def train(self, *args, queue=None, **kwargs): ...
 
     @bind_default_backend("decision_forest.classification")
-    def infer(self, *args, **kwargs): ...
+    def infer(self, *args, queue=None, **kwargs): ...
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -718,10 +712,10 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.regression")
-    def train(self, *args, **kwargs): ...
+    def train(self, *args, queue=None, **kwargs): ...
 
     @bind_default_backend("decision_forest.regression")
-    def infer(self, *args, **kwargs): ...
+    def infer(self, *args, queue=None, **kwargs): ...
 
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:

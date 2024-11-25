@@ -102,10 +102,10 @@ class IncrementalPCA(BasePCA):
         self._reset()
 
     @bind_default_backend("decomposition.dim_reduction")
-    def finalize_train(self, policy, params, partial_result): ...
+    def finalize_train(self, params, partial_result, queue=None): ...
 
     @bind_default_backend("decomposition.dim_reduction")
-    def partial_train(self, policy, params, partial_result, X_table): ...
+    def partial_train(self, params, partial_result, X_table, queue=None): ...
 
     @bind_default_backend("decomposition.dim_reduction")
     def partial_train_result(self): ...
@@ -151,10 +151,7 @@ class IncrementalPCA(BasePCA):
         else:
             self.n_components_ = self.n_components
 
-        self._queue = queue
-
-        policy = self._get_policy(queue, X)
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
@@ -162,7 +159,7 @@ class IncrementalPCA(BasePCA):
 
         X_table = to_table(X)
         self._partial_result = self.partial_train(
-            policy, self._params, self._partial_result, X_table
+            self._params, self._partial_result, X_table, queue=queue
         )
         return self
 
@@ -181,15 +178,7 @@ class IncrementalPCA(BasePCA):
         self : object
             Returns the instance itself.
         """
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
-        result = self.finalize_train(
-            policy,
-            self._params,
-            self._partial_result,
-        )
+        result = self.finalize_train(self._params, self._partial_result, queue=queue)
         self.mean_ = from_table(result.means).ravel()
         self.var_ = from_table(result.variances).ravel()
         self.components_ = from_table(result.eigenvectors)

@@ -45,14 +45,11 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         self.max_iter = max_iter
         self.algorithm = algorithm
 
-    @bind_default_backend("logistic_regression")
-    def _get_policy(self, queue, *data): ...
+    @abstractmethod
+    def train(self, params, X, y, queue=None): ...
 
     @abstractmethod
-    def train(self, policy, params, X, y): ...
-
-    @abstractmethod
-    def infer(self, policy, params, X): ...
+    def infer(self, params, X, queue=None): ...
 
     # direct access to the backend model constructor
     @abstractmethod
@@ -95,12 +92,11 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         self.classes_, y = np.unique(y, return_inverse=True)
         y = y.astype(dtype=np.int32)
 
-        policy = self._get_policy(queue, X, y)
-        X, y = _convert_to_supported(policy, X, y)
+        X, y = _convert_to_supported(X, y)
         params = self._get_onedal_params(is_csr, get_dtype(X))
         X_table, y_table = to_table(X, y)
 
-        result = self.train(policy, params, X_table, y_table)
+        result = self.train(params, X_table, y_table, queue=queue)
 
         self._onedal_model = result.model
         self.n_iter_ = np.array([result.iterations_count])
@@ -114,7 +110,7 @@ class BaseLogisticRegression(metaclass=ABCMeta):
 
         return self
 
-    def _create_model(self, policy):
+    def _create_model(self):
         m = self.model()
 
         coefficients = self.coef_
@@ -157,7 +153,7 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         if self.fit_intercept:
             packed_coefficients[:, 0][:, np.newaxis] = intercept
 
-        packed_coefficients = _convert_to_supported(policy, packed_coefficients)
+        packed_coefficients = _convert_to_supported(packed_coefficients)
 
         m.packed_coefficients = to_table(packed_coefficients)
 
@@ -181,18 +177,17 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         _check_n_features(self, X, False)
 
         X = make2d(X)
-        policy = self._get_policy(queue, X)
 
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
-            model = self._create_model(policy)
+            model = self._create_model()
 
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
         params = self._get_onedal_params(is_csr, get_dtype(X))
 
         X_table = to_table(X)
-        result = self.infer(policy, params, model, X_table)
+        result = self.infer(params, model, X_table, queue=queue)
         return result
 
     def _predict(self, X, queue):
@@ -239,10 +234,10 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
         )
 
     @bind_default_backend("logistic_regression.classification")
-    def train(self, policy, params, X, y): ...
+    def train(self, params, X, y, queue=None): ...
 
     @bind_default_backend("logistic_regression.classification")
-    def infer(self, policy, params, X, model): ...
+    def infer(self, params, X, model, queue=None): ...
 
     @bind_default_backend("logistic_regression.classification")
     def model(self): ...

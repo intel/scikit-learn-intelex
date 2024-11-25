@@ -63,16 +63,13 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
         self.n_local_trials = n_local_trials
 
     @bind_default_backend("kmeans_common")
-    def _get_policy(self, queue, X): ...
-
-    @bind_default_backend("kmeans_common")
-    def _is_same_clustering(self, labels, best_labels, n_clusters): ...
+    def _is_same_clustering(self, labels, best_labels, n_clusters, queue=None): ...
 
     @bind_default_backend("kmeans.clustering")
-    def train(self, policy, params, X_table, centroids_table): ...
+    def train(self, params, X_table, centroids_table, queue=None): ...
 
     @bind_default_backend("kmeans.clustering")
-    def infer(self, policy, params, model, centroids_table): ...
+    def infer(self, params, model, centroids_table, queue=None): ...
 
     def _validate_center_shape(self, X, centers):
         """Check if centers is compatible with X and n_clusters."""
@@ -94,7 +91,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
     def _get_basic_statistics_backend(self, result_options):
         return BasicStatistics(result_options)
 
-    def _tolerance(self, X_table, rtol, is_csr, policy, dtype):
+    def _tolerance(self, X_table, rtol, is_csr, dtype, queue=None):
         """Compute absolute tolerance from the relative tolerance"""
         if rtol == 0.0:
             return rtol
@@ -102,13 +99,13 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
 
         bs = self._get_basic_statistics_backend("variance")
 
-        res = bs._compute_raw(X_table, dummy, policy, dtype, is_csr)
+        res = bs._compute_raw(X_table, dummy, dtype, is_csr, queue=queue)
         mean_var = from_table(res["variance"]).mean()
 
         return mean_var * rtol
 
     def _check_params_vs_input(
-        self, X_table, is_csr, policy, default_n_init=10, dtype=np.float32
+        self, X_table, is_csr, default_n_init=10, dtype=np.float32, queue=None
     ):
         # n_clusters
         if X_table.shape[0] < self.n_clusters:
@@ -117,7 +114,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
             )
 
         # tol
-        self._tol = self._tolerance(X_table, self.tol, is_csr, policy, dtype)
+        self._tol = self._tolerance(X_table, self.tol, is_csr, dtype, queue=queue)
 
         # n-init
         # TODO(1.4): Remove
@@ -173,42 +170,25 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
         X_table,
         init,
         random_seed,
-        policy,
         is_csr,
         dtype=np.float32,
         n_centroids=None,
+        queue=None,
     ):
         n_clusters = self.n_clusters if n_centroids is None else n_centroids
-        # Use host policy for KMeans init, only for csr data
-        # as oneDAL KMeansInit for CSR data is not implemented on GPU
-        if is_csr:
-            init_policy = self._get_policy(None, None)
-            logging.getLogger("sklearnex").info("Running Sparse KMeansInit on CPU")
-        else:
-            init_policy = policy
 
         if isinstance(init, str) and init == "k-means++":
-            if not is_csr:
-                alg = self._get_kmeans_init(
-                    cluster_count=n_clusters,
-                    seed=random_seed,
-                    algorithm="plus_plus_dense",
-                )
-            else:
-                alg = self._get_kmeans_init(
-                    cluster_count=n_clusters, seed=random_seed, algorithm="plus_plus_csr"
-                )
-            centers_table = alg.compute_raw(X_table, init_policy, dtype)
+            algorithm = "plus_plus_dense" if not is_csr else "plus_plus_csr"
+            alg = self._get_kmeans_init(
+                cluster_count=n_clusters, seed=random_seed, algorithm=algorithm
+            )
+            centers_table = alg.compute_raw(X_table, dtype, queue=queue)
         elif isinstance(init, str) and init == "random":
-            if not is_csr:
-                alg = self._get_kmeans_init(
-                    cluster_count=n_clusters, seed=random_seed, algorithm="random_dense"
-                )
-            else:
-                alg = self._get_kmeans_init(
-                    cluster_count=n_clusters, seed=random_seed, algorithm="random_csr"
-                )
-            centers_table = alg.compute_raw(X_table, init_policy, dtype)
+            algorithm = "random_dense" if not is_csr else "random_csr"
+            alg = self._get_kmeans_init(
+                cluster_count=n_clusters, seed=random_seed, algorithm=algorithm
+            )
+            centers_table = alg.compute_raw(X_table, dtype, queue=queue)
         elif _is_arraylike_not_scalar(init):
             if _is_csr(init):
                 # oneDAL KMeans only supports Dense Centroids
@@ -217,16 +197,14 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
                 centers = np.asarray(init)
             assert centers.shape[0] == n_clusters
             assert centers.shape[1] == X_table.column_count
-            # KMeans is implemented on both CPU and GPU for Dense and CSR data
-            # The original policy can be used here
-            centers = _convert_to_supported(policy, centers)
+            centers = _convert_to_supported(centers)
             centers_table = to_table(centers)
         else:
             raise TypeError("Unsupported type of the `init` value")
 
         return centers_table
 
-    def _init_centroids_sklearn(self, X, init, random_state, policy, dtype=np.float32):
+    def _init_centroids_sklearn(self, X, init, random_state, dtype=np.float32):
         # For oneDAL versions < 2023.2 or callable init,
         # using the scikit-learn implementation
         logging.getLogger("sklearnex").info("Computing KMeansInit with Stock sklearn")
@@ -254,18 +232,18 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
                 f"callable, got '{ init }' instead."
             )
 
-        centers = _convert_to_supported(policy, centers)
+        centers = _convert_to_supported(centers)
         return to_table(centers)
 
     def _fit_backend(
-        self, X_table, centroids_table, policy, dtype=np.float32, is_csr=False
+        self, X_table, centroids_table, dtype=np.float32, is_csr=False, queue=None
     ):
         params = self._get_onedal_params(is_csr, dtype)
 
         meta = _default_backend.get_table_metadata(X_table)
         assert meta.get_npy_dtype(0) == dtype
 
-        result = self.train(policy, params, X_table, centroids_table)
+        result = self.train(params, X_table, centroids_table, queue=queue)
 
         return (
             result.responses,
@@ -275,16 +253,15 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
         )
 
     def _fit(self, X, queue=None):
-        policy = self._get_policy(queue, X)
         is_csr = _is_csr(X)
         X = _check_array(
             X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
         )
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
         dtype = get_dtype(X)
         X_table = to_table(X)
 
-        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
+        self._check_params_vs_input(X_table, is_csr, dtype=dtype, queue=queue)
 
         self.n_features_in_ = X_table.column_count
 
@@ -316,18 +293,18 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
             if use_onedal_init:
                 random_seed = random_state.randint(np.iinfo("i").max)
                 centroids_table = self._init_centroids_onedal(
-                    X_table, init, random_seed, policy, is_csr, dtype=dtype
+                    X_table, init, random_seed, is_csr, dtype=dtype, queue=queue
                 )
             else:
                 centroids_table = self._init_centroids_sklearn(
-                    X, init, random_state, policy, dtype=dtype
+                    X, init, random_state, dtype=dtype
                 )
 
             if self.verbose:
                 print("Initialization complete")
 
             labels, inertia, model, n_iter = self._fit_backend(
-                X_table, centroids_table, policy, dtype, is_csr
+                X_table, centroids_table, dtype, is_csr, queue=queue
             )
 
             if self.verbose:
@@ -389,12 +366,11 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
     def _predict(self, X, queue=None, result_options=None):
         is_csr = _is_csr(X)
 
-        policy = self._get_policy(queue, X)
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
         X_table = to_table(X)
-        params = self._get_onedal_params(is_csr, X_table.dtype, result_options)
+        params = self._get_onedal_params(is_csr, X.dtype, result_options)
 
-        result = self.infer(policy, params, self.model_, X_table)
+        result = self.infer(params, self.model_, X_table, queue=queue)
 
         if result_options == "compute_exact_objective_function":
             # This is only set for score function

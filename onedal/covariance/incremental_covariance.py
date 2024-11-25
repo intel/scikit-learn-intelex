@@ -60,13 +60,13 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self._reset()
 
     @bind_default_backend("covariance")
-    def partial_compute(self, policy, params, partial_result, X_table): ...
+    def partial_compute(self, params, partial_result, X_table, queue=None): ...
 
     @bind_default_backend("covariance")
     def partial_compute_result(self): ...
 
     @bind_default_backend("covariance")
-    def finalize_compute(self, policy, params, partial_result): ...
+    def finalize_compute(self, params, partial_result, queue=None): ...
 
     def _reset(self):
         self._partial_result = self.partial_compute_result()
@@ -95,11 +95,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         """
         X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
 
-        self._queue = queue
-
-        policy = self._get_policy(queue, X)
-
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
@@ -107,7 +103,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         params = self._get_onedal_params(self._dtype)
         table_X = to_table(X)
         self._partial_result = self.partial_compute(
-            policy, params, self._partial_result, table_X
+            params, self._partial_result, table_X, queue=queue
         )
 
     def finalize_fit(self, queue=None):
@@ -126,16 +122,8 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             Returns the instance itself.
         """
         params = self._get_onedal_params(self._dtype)
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
 
-        result = self.finalize_compute(
-            policy,
-            params,
-            self._partial_result,
-        )
+        result = self.finalize_compute(params, self._partial_result, queue=queue)
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

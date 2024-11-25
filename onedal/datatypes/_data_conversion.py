@@ -19,6 +19,7 @@ import warnings
 import numpy as np
 
 from onedal import _default_backend as backend
+from onedal._device_offload import SyclQueueManager
 
 
 def _apply_and_pass(func, *args, **kwargs):
@@ -79,16 +80,9 @@ if backend.is_dpc:
         def _table_to_array(table, xp=None):
             return xp.asarray(table)
 
-    def _convert_to_supported(policy, *data):
-        def func(x):
+    def _convert_to_supported(*data):
+        def identity(x):
             return x
-
-        if not policy.is_dpc:
-            # CPUs support FP64 by default
-            return _apply_and_pass(func, *data)
-
-        # It can be either SPMD or DPCPP policy
-        device = policy._queue.sycl_device
 
         def convert_or_pass(x):
             if (x is not None) and (x.dtype == np.float64):
@@ -101,10 +95,14 @@ if backend.is_dpc:
             else:
                 return x
 
-        if not device.has_aspect_fp64:
-            func = convert_or_pass
+        # find the device we're running on
+        queue = SyclQueueManager.from_data(data)
+        device = queue.sycl_device if queue else None
 
-        return _apply_and_pass(func, *data)
+        if device and not device.has_aspect_fp64:
+            return _apply_and_pass(convert_or_pass, *data)
+        else:
+            return _apply_and_pass(identity, *data)
 
     def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to
@@ -130,11 +128,11 @@ if backend.is_dpc:
 
 else:
 
-    def _convert_to_supported(policy, *data):
-        def func(x):
+    def _convert_to_supported(*data):
+        def identity(x):
             return x
 
-        return _apply_and_pass(func, *data)
+        return _apply_and_pass(identity, *data)
 
     def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to

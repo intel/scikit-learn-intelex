@@ -37,7 +37,7 @@ def _check_inputs(X, Y):
 
 def _compute_kernel(params, submodule, X, Y, queue):
     policy = policy_manager.get_policy(queue, X, Y)
-    X, Y = _convert_to_supported(policy, X, Y)
+    X, Y = _convert_to_supported(X, Y)
     params["fptype"] = X.dtype
     X, Y = to_table(X, Y)
     result = submodule.compute(policy, params, X, Y)

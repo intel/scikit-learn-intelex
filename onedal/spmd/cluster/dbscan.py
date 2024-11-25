@@ -19,8 +19,5 @@ from ...common._backend import bind_spmd_backend
 
 
 class DBSCAN(DBSCAN_Batch):
-    @bind_spmd_backend("dbscan")
-    def _get_policy(self, queue, *data): ...
-
     @bind_spmd_backend("dbscan.clustering")
-    def compute(self, policy, params, data_table, weights_table): ...
+    def compute(self, params, data_table, weights_table, queue=None): ...

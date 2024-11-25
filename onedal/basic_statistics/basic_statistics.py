@@ -31,10 +31,7 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         self.algorithm = algorithm
 
     @bind_default_backend("basic_statistics")
-    def _get_policy(self, queue, *data): ...
-
-    @bind_default_backend("basic_statistics")
-    def compute(self, policy, params, data_table, weights_table): ...
+    def compute(self, params, data_table, weights_table, queue=None): ...
 
     @staticmethod
     def get_all_result_options():
@@ -77,8 +74,6 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def fit(self, data, sample_weight=None, queue=None):
-        policy = self._get_policy(queue, data, sample_weight)
-
         is_csr = _is_csr(data)
 
         if data is not None and not is_csr:
@@ -86,12 +81,14 @@ class BasicStatistics(BaseBasicStatistics):
         if sample_weight is not None:
             sample_weight = _check_array(sample_weight, ensure_2d=False)
 
-        data, sample_weight = _convert_to_supported(policy, data, sample_weight)
+        data, sample_weight = _convert_to_supported(data, sample_weight)
         is_single_dim = data.ndim == 1
         data_table, weights_table = to_table(data, sample_weight)
 
         dtype = data.dtype
-        raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
+        raw_result = self._compute_raw(
+            data_table, weights_table, dtype, is_csr, queue=queue
+        )
         for opt, raw_value in raw_result.items():
             value = from_table(raw_value).ravel()
             if is_single_dim:
@@ -102,10 +99,10 @@ class BasicStatistics(BaseBasicStatistics):
         return self
 
     def _compute_raw(
-        self, data_table, weights_table, policy, dtype=np.float32, is_csr=False
+        self, data_table, weights_table, dtype=np.float32, is_csr=False, queue=None
     ):
         params = self._get_onedal_params(is_csr, dtype)
-        result = self.compute(policy, params, data_table, weights_table)
+        result = self.compute(params, data_table, weights_table, queue=queue)
         options = self._get_result_options(self.options).split("|")
 
         return {opt: getattr(result, opt) for opt in options}

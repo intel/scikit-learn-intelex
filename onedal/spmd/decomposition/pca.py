@@ -20,14 +20,12 @@ from ...decomposition.pca import PCA as PCABatch
 
 
 class PCA(PCABatch):
-    @bind_spmd_backend("decomposition.dim_reduction")
-    def _get_policy(self, queue, *data): ...
 
     @bind_spmd_backend("decomposition.dim_reduction")
-    def train(self, policy, params, X): ...
+    def train(self, params, X, queue=None): ...
 
     @bind_spmd_backend("decomposition.dim_reduction")
-    def finalize_train(self, *args, **kwargs): ...
+    def finalize_train(self, *args, queue=None, **kwargs): ...
 
     @support_input_format()
     def fit(self, X, y=None, queue=None):

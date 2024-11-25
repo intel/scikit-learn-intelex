@@ -14,7 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from ...common._backend import DefaultPolicyOverride, bind_spmd_backend
+from onedal.common._backend import bind_spmd_backend
+
 from ...decomposition import IncrementalPCA as base_IncrementalPCA
 
 
@@ -26,18 +27,5 @@ class IncrementalPCA(base_IncrementalPCA):
     API is the same as for `onedal.decomposition.IncrementalPCA`
     """
 
-    @bind_spmd_backend("decomposition")
-    def _get_policy(self, queue, *data): ...
-
     @bind_spmd_backend("decomposition.dim_reduction")
-    def finalize_train(self, policy, params, partial_result): ...
-
-    def partial_fit(self, X, queue):
-        # partial fit performed by parent backend, therefore default policy required
-        with DefaultPolicyOverride(self):
-            return super().partial_fit(X, queue)
-
-    def infer(self, policy, params, X, model):
-        # infer runs in parent backend, therefore default policy required
-        with DefaultPolicyOverride(self):
-            return super().infer(policy, params, X, model)
+    def finalize_train(self, params, partial_result, queue=None): ...

@@ -14,20 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from ...common._backend import DefaultPolicyOverride, bind_spmd_backend
+from ...common._backend import bind_spmd_backend
 from ...covariance import (
     IncrementalEmpiricalCovariance as base_IncrementalEmpiricalCovariance,
 )
 
 
 class IncrementalEmpiricalCovariance(base_IncrementalEmpiricalCovariance):
-    @bind_spmd_backend("covariance")
-    def _get_policy(self, queue, *data): ...
 
     @bind_spmd_backend("covariance")
-    def finalize_compute(self, policy, params, partial_result): ...
-
-    def partial_fit(self, X, y=None, queue=None):
-        # partial fit performed by parent backend, therefore default policy required
-        with DefaultPolicyOverride(self):
-            return super().partial_fit(X, y, queue)
+    def finalize_compute(self, params, partial_result, queue=None): ...

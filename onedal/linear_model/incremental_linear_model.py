@@ -53,10 +53,10 @@ class IncrementalLinearRegression(BaseLinearRegression):
     def partial_train_result(self): ...
 
     @bind_default_backend("linear_model.regression")
-    def partial_train(self, *args, **kwargs): ...
+    def partial_train(self, *args, queue=None, **kwargs): ...
 
     @bind_default_backend("linear_model.regression")
-    def finalize_train(self, *args, **kwargs): ...
+    def finalize_train(self, *args, queue=None, **kwargs): ...
 
     def _reset(self):
         # Get the pointer to partial_result from backend
@@ -83,10 +83,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        self._queue = queue
-        policy = self._get_policy(queue, X)
-
-        X, y = _convert_to_supported(policy, X, y)
+        X, y = _convert_to_supported(X, y)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
@@ -103,16 +100,16 @@ class IncrementalLinearRegression(BaseLinearRegression):
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             self._partial_result = self.partial_train(
-                policy,
                 self._params,
                 hparams.backend,
                 self._partial_result,
                 X_table,
                 y_table,
+                queue=queue,
             )
         else:
             self._partial_result = self.partial_train(
-                policy, self._params, self._partial_result, X_table, y_table
+                self._params, self._partial_result, X_table, y_table, queue=queue
             )
 
     def finalize_fit(self, queue=None):
@@ -131,18 +128,13 @@ class IncrementalLinearRegression(BaseLinearRegression):
             Returns the instance itself.
         """
 
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
-
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             result = self.finalize_train(
-                policy, self._params, hparams.backend, self._partial_result
+                self._params, hparams.backend, self._partial_result, queue=queue
             )
         else:
-            result = self.finalize_train(policy, self._params, self._partial_result)
+            result = self.finalize_train(self._params, self._partial_result, queue=queue)
 
         self._onedal_model = result.model
 
@@ -191,10 +183,10 @@ class IncrementalRidge(BaseLinearRegression):
     def partial_train_result(self): ...
 
     @bind_default_backend("linear_model.regression")
-    def partial_train(self, *args, **kwargs): ...
+    def partial_train(self, *args, queue=None, **kwargs): ...
 
     @bind_default_backend("linear_model.regression")
-    def finalize_train(self, *args, **kwargs): ...
+    def finalize_train(self, *args, queue=None, **kwargs): ...
 
     def partial_fit(self, X, y, queue=None):
         """
@@ -217,10 +209,7 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        self._queue = queue
-        policy = self._get_policy(queue, X)
-
-        X, y = _convert_to_supported(policy, X, y)
+        X, y = _convert_to_supported(X, y)
 
         if not hasattr(self, "_dtype"):
             self._dtype = get_dtype(X)
@@ -237,16 +226,16 @@ class IncrementalRidge(BaseLinearRegression):
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             self._partial_result = self.partial_train(
-                policy,
                 self._params,
                 hparams.backend,
                 self._partial_result,
                 X_table,
                 y_table,
+                queue=queue,
             )
         else:
             self._partial_result = self.partial_train(
-                policy, self._params, self._partial_result, X_table, y_table
+                self._params, self._partial_result, X_table, y_table, queue=queue
             )
 
     def finalize_fit(self, queue=None):
@@ -264,11 +253,7 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
-        result = self.finalize_train(policy, self._params, self._partial_result)
+        result = self.finalize_train(self._params, self._partial_result, queue=queue)
 
         self._onedal_model = result.model
 

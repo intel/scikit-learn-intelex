@@ -32,6 +32,9 @@ class Backend:
     def __getattr__(self, name):
         return getattr(self.backend, name)
 
+    def __repr__(self) -> str:
+        return f"Backend({self.backend}, is_dpc={self.is_dpc}, is_spmd={self.is_spmd})"
+
 
 if "Windows" in platform.system():
     import os

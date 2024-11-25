@@ -20,14 +20,12 @@ from ...covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
 
 
 class EmpiricalCovariance(EmpiricalCovariance_Batch):
-    @bind_spmd_backend("covariance")
-    def _get_policy(self, queue, *data): ...
 
     @bind_spmd_backend("covariance")
-    def compute(self, *args, **kwargs): ...
+    def compute(self, *args, queue=None, **kwargs): ...
 
     @bind_spmd_backend("covariance")
-    def finalize_compute(self, policy, params, partial_result): ...
+    def finalize_compute(self, params, partial_result, queue=None): ...
 
     @support_input_format()
     def fit(self, X, y=None, queue=None):

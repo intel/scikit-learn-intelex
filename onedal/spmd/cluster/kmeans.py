@@ -26,11 +26,8 @@ class KMeansInit(KMeansInit_Batch):
     KMeansInit oneDAL implementation for SPMD iface.
     """
 
-    @bind_spmd_backend("kmeans_init")
-    def _get_policy(self, queue, *data): ...
-
     @bind_spmd_backend("kmeans_init.init", lookup_name="compute")
-    def backend_compute(self, policy, params, data): ...
+    def backend_compute(self, params, data, queue=None): ...
 
 
 class KMeans(KMeans_Batch):
@@ -40,14 +37,11 @@ class KMeans(KMeans_Batch):
     def _get_kmeans_init(self, cluster_count, seed, algorithm):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
-    @bind_spmd_backend("kmeans")
-    def _get_policy(self, queue, X): ...
+    @bind_spmd_backend("kmeans.clustering")
+    def train(self, params, X_table, centroids_table, queue=None): ...
 
     @bind_spmd_backend("kmeans.clustering")
-    def train(self, policy, params, X_table, centroids_table): ...
-
-    @bind_spmd_backend("kmeans.clustering")
-    def infer(self, policy, params, model, centroids_table): ...
+    def infer(self, params, model, centroids_table, queue=None): ...
 
     @support_input_format()
     def fit(self, X, y=None, queue=None):

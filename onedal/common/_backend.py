@@ -20,6 +20,7 @@ from types import MethodType
 from typing import Any, Callable, Literal, Optional
 
 from onedal import Backend, _default_backend, _spmd_backend
+from onedal._device_offload import SyclQueueManager
 from onedal.common.policy_manager import PolicyManager
 
 from .backend_manager import BackendManager
@@ -41,41 +42,44 @@ logging.basicConfig(
 class BackendFunction:
     """Wrapper around backend function to allow setting auxiliary information"""
 
-    def __init__(self, method: Callable[..., Any], backend_type: BackendType, name: str):
+    def __init__(
+        self,
+        method: Callable[..., Any],
+        backend: Backend,
+        name: str,
+    ):
         self.method = method
-        self.backend_type = backend_type
         self.name = name
+        self.backend = backend
 
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return self.method(*args, **kwargs)
+    def __call__(self, *args: Any, queue=None, **kwargs: Any) -> Any:
+        """Dispatch to backend function with the appropriate policy which is determined from the provided or global queue"""
+        if not args:
+            # immediate dispatching without args, i.e. without data
+            return self.method(**kwargs)
+
+        if queue is None:
+            # use globally configured queue (from `target_offload` configuration or provided data)
+            queue = SyclQueueManager.get_global_queue()
+
+        if queue is not None and not (self.backend.is_dpc or self.backend.is_spmd):
+            raise RuntimeError("Operations using queues require the DPC/SPMD backend")
+
+        # craft the correct policy including the device queue
+        if queue is None:
+            policy = self.backend.host_policy()
+        elif self.backend.is_spmd:
+            policy = self.backend.spmd_data_parallel_policy(queue)
+        elif self.backend.is_dpc:
+            policy = self.backend.data_parallel_policy(queue)
+        else:
+            policy = self.backend.host_policy()
+
+        # dispatch to backend function
+        return self.method(policy, *args, **kwargs)
 
     def __repr__(self) -> str:
-        return f"BackendFunction(<{self.backend_type}_backend>.{self.name})"
-
-
-def inject_policy_manager(backend: Backend) -> Callable[..., Any]:
-    def _get_policy(self, queue: Any, *data: Any) -> Any:
-        policy_manager = PolicyManager(backend)
-        return policy_manager.get_policy(queue, *data)
-
-    return _get_policy
-
-
-@contextmanager
-def DefaultPolicyOverride(instance: Any):
-    original_method = getattr(instance, "_get_policy", None)
-    try:
-        # Inject the new _get_policy method from _default_backend
-        new_policy_method = inject_policy_manager(_default_backend)
-        bound_method = MethodType(new_policy_method, instance)
-        setattr(instance, "_get_policy", bound_method)
-        yield
-    finally:
-        # Restore the original _get_policy method
-        if original_method is not None:
-            setattr(instance, "_get_policy", original_method)
-        else:
-            delattr(instance, "_get_policy")
+        return f"BackendFunction({self.backend}.{self.name})"
 
 
 def bind_default_backend(module_name: str, lookup_name: Optional[str] = None):
@@ -92,13 +96,10 @@ def bind_default_backend(module_name: str, lookup_name: Optional[str] = None):
             )
             return method
 
-        if lookup_name == "_get_policy":
-            return inject_policy_manager(_default_backend)
-
         backend_method = default_manager.get_backend_component(module_name, lookup_name)
         wrapped_method = BackendFunction(
             backend_method,
-            backend_type="dpc" if _default_backend.is_dpc else "host",
+            _default_backend,
             name=f"{module_name}.{method.__name__}",
         )
 
@@ -126,12 +127,11 @@ def bind_spmd_backend(module_name: str, lookup_name: Optional[str] = None):
             )
             return method
 
-        if lookup_name == "_get_policy":
-            return inject_policy_manager(_spmd_backend)
-
         backend_method = spmd_manager.get_backend_component(module_name, lookup_name)
         wrapped_method = BackendFunction(
-            backend_method, backend_type="spmd", name=f"{module_name}.{method.__name__}"
+            backend_method,
+            _spmd_backend,
+            name=f"{module_name}.{method.__name__}",
         )
 
         logger.debug(

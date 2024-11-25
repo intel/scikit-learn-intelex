@@ -43,18 +43,15 @@ class BasePCA(metaclass=ABCMeta):
         self.is_deterministic = is_deterministic
         self.whiten = whiten
 
-    @bind_default_backend("decomposition.dim_reduction")
-    def _get_policy(self, queue, *data): ...
-
     # provides direct access to the backend model constructor
     @bind_default_backend("decomposition.dim_reduction")
     def model(self): ...
 
     @bind_default_backend("decomposition.dim_reduction")
-    def train(self, policy, params, X): ...
+    def train(self, params, X, queue=None): ...
 
     @bind_default_backend("decomposition.dim_reduction")
-    def infer(self, policy, params, X, model): ...
+    def infer(self, params, X, model, queue=None): ...
 
     def _get_onedal_params(self, data, stage=None):
         if stage is None:
@@ -142,12 +139,11 @@ class BasePCA(metaclass=ABCMeta):
         return m
 
     def predict(self, X, queue=None):
-        policy = self._get_policy(queue, X)
         model = self._create_model()
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
         params = self._get_onedal_params(X, stage="predict")
 
-        result = self.infer(policy, params, model, to_table(X))
+        result = self.infer(params, model, to_table(X), queue=queue)
         return from_table(result.transformed_data)
 
 
@@ -158,15 +154,14 @@ class PCA(BasePCA):
         n_sf_min = min(n_samples, n_features)
         self._validate_n_components(self.n_components, n_samples, n_features)
 
-        policy = self._get_policy(queue, X)
         # TODO: investigate why np.ndarray with OWNDATA=FALSE flag
         # fails to be converted to oneDAL table
         if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
             X = X.copy()
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
 
         params = self._get_onedal_params(X)
-        result = self.train(policy, params, to_table(X))
+        result = self.train(params, to_table(X), queue=queue)
 
         self.mean_ = from_table(result.means).ravel()
         self.variances_ = from_table(result.variances)

@@ -21,9 +21,6 @@ from ...common._backend import bind_spmd_backend
 
 class BasicStatistics(BasicStatistics_Batch):
     @bind_spmd_backend("basic_statistics")
-    def _get_policy(self, queue, *data): ...
-
-    @bind_spmd_backend("basic_statistics")
     def compute(self, data, weights=None, queue=None): ...
 
     @support_input_format()

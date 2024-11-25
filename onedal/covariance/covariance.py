@@ -32,10 +32,7 @@ class BaseEmpiricalCovariance(metaclass=ABCMeta):
         self.assume_centered = assume_centered
 
     @bind_default_backend("covariance")
-    def _get_policy(self, queue, *data): ...
-
-    @bind_default_backend("covariance")
-    def compute(self, *args, **kwargs): ...
+    def compute(self, *args, queue=None, **kwargs): ...
 
     def _get_onedal_params(self, dtype=np.float32):
         params = {
@@ -99,21 +96,20 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         self : object
             Returns the instance itself.
         """
-        policy = self._get_policy(queue, X)
         X = _check_array(X, dtype=[np.float64, np.float32])
-        X = _convert_to_supported(policy, X)
+        X = _convert_to_supported(X)
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
             result = self.compute(
-                policy,
                 params,
                 hparams.backend,
                 to_table(X),
+                queue=queue,
             )
         else:
-            result = self.compute(policy, params, to_table(X))
+            result = self.compute(params, to_table(X), queue=queue)
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

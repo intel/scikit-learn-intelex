@@ -16,7 +16,7 @@
 
 from functools import wraps
 
-from onedal._device_offload import _copy_to_usm, _get_global_queue, _transfer_to_host
+from onedal._device_offload import _copy_to_usm, _transfer_to_host
 from onedal.utils._array_api import _asarray
 from onedal.utils._dpep_helpers import dpnp_available
 

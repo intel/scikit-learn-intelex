@@ -15,7 +15,8 @@
 # ==============================================================================
 
 
-from ...common._backend import DefaultPolicyOverride, bind_spmd_backend
+from onedal.common._backend import bind_spmd_backend
+
 from ...linear_model import (
     IncrementalLinearRegression as base_IncrementalLinearRegression,
 )
@@ -28,13 +29,5 @@ class IncrementalLinearRegression(base_IncrementalLinearRegression):
     API is the same as for `onedal.linear_model.IncrementalLinearRegression`.
     """
 
-    @bind_spmd_backend("linear_model")
-    def _get_policy(self): ...
-
     @bind_spmd_backend("linear_model.regression")
-    def finalize_train(self, *args, **kwargs): ...
-
-    def partial_fit(self, X, y, queue):
-        # partial fit performed by parent backend, therefore default policy required
-        with DefaultPolicyOverride(self):
-            return super().partial_fit(X, y, queue)
+    def finalize_train(self, *args, queue=None, **kwargs): ...

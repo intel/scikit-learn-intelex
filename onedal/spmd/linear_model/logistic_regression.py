@@ -20,14 +20,12 @@ from ...linear_model import LogisticRegression as LogisticRegression_Batch
 
 
 class LogisticRegression(LogisticRegression_Batch):
-    @bind_spmd_backend("logistic_regression")
-    def _get_policy(self): ...
 
     @bind_spmd_backend("logistic_regression.classification")
-    def train(self, policy, params, X, y): ...
+    def train(self, params, X, y, queue=None): ...
 
     @bind_spmd_backend("logistic_regression.classification")
-    def infer(self, policy, params, X, model): ...
+    def infer(self, params, X, model, queue=None): ...
 
     @support_input_format()
     def fit(self, X, y, queue=None):
