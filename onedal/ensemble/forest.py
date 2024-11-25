@@ -158,7 +158,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         seed = rs.randint(0, np.iinfo("i").max)
 
         onedal_params = {
-            "fptype": "float" if data.dtype == np.float32 else "double",
+            "fptype": data.dtype,
             "method": self.algorithm,
             "infer_mode": self.infer_mode,
             "voting_mode": self.voting_mode,
