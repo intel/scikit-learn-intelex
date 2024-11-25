@@ -47,22 +47,21 @@ def test_kmeans_spmd_gold(dataframe, queue):
 
     X_train = np.array(
         [
-            [1, 2],
-            [2, 2],
-            [2, 3],
-            [8, 7],
-            [8, 8],
-            [25, 80],
-            [5, 65],
-            [2, 8],
-            [1, 3],
-            [2, 2],
-            [1, 3],
-            [2, 2],
+            [1., 2.],
+            [2., 2.],
+            [2., 3.],
+            [8., 7.],
+            [8., 8.],
+            [25., 80.],
+            [5., 65.],
+            [2., 8.],
+            [1., 3.],
+            [2., 2.],
+            [1., 3.],
+            [2., 2.],
         ],
-        dtype=np.float64,
     )
-    X_test = np.array([[0, 0], [12, 3], [2, 2], [7, 8]], dtype=np.float64)
+    X_test = np.array([[0., 0.], [12., 3.], [2., 2.], [7., 8.]])
 
     local_dpt_X_train = _convert_to_dataframe(
         _get_local_tensor(X_train), sycl_queue=queue, target_df=dataframe
