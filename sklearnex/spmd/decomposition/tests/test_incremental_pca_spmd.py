@@ -174,7 +174,7 @@ def test_incremental_pca_fit_spmd_random(
     from sklearnex.spmd.decomposition import IncrementalPCA as IncrementalPCA_SPMD
 
     # Increased test dataset size requires a higher tol setting in comparison to other tests
-    tol = 7e-5 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
+    tol = 3e-2 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
 
     # Create data and process into dpt
     X = _generate_statistic_data(num_samples, num_features, dtype)

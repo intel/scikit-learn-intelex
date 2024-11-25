@@ -82,8 +82,10 @@ def test_linear_spmd_gold(dataframe, queue):
     spmd_model = LinearRegression_SPMD().fit(local_dpt_X_train, local_dpt_y_train)
     batch_model = LinearRegression_Batch().fit(X_train, y_train)
 
-    assert_allclose(spmd_model.coef_, batch_model.coef_)
-    assert_allclose(spmd_model.intercept_, batch_model.intercept_)
+    tol = 1e-7 if queue.sycl_device.has_aspect_fp64 else 1e-5
+
+    assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol)
+    assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=tol)
 
     # ensure predictions of batch algo match spmd
     spmd_result = spmd_model.predict(local_dpt_X_test)

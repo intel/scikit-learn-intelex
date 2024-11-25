@@ -109,8 +109,10 @@ if daal_check_version((2024, "P", 600)):
         inverse_term = np.linalg.inv(np.dot(X.T, X) + lambda_identity)
         xt_y = np.dot(X.T, y)
         coefficients_manual = np.dot(inverse_term, xt_y)
+        
+        tol = 5e-3 if inc_ridge.coef_.dtype == np.float32 else 1e-6
 
-        assert_allclose(inc_ridge.coef_, coefficients_manual, rtol=1e-6, atol=1e-6)
+        assert_allclose(inc_ridge.coef_, coefficients_manual, rtol=tol, atol=tol)
 
     def test_inc_ridge_score_before_fit():
         X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])

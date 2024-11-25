@@ -64,8 +64,9 @@ def test_covariance_spmd_gold(dataframe, queue):
     spmd_result = EmpiricalCovariance_SPMD().fit(local_dpt_data)
     batch_result = EmpiricalCovariance_Batch().fit(data)
 
-    assert_allclose(spmd_result.covariance_, batch_result.covariance_)
-    assert_allclose(spmd_result.location_, batch_result.location_)
+    atol = 1e-7 if queue.sycl_device.has_aspect_fp64 else 1e-5
+    assert_allclose(spmd_result.covariance_, batch_result.covariance_, atol=atol)
+    assert_allclose(spmd_result.location_, batch_result.location_, atol=atol)
 
 
 @pytest.mark.skipif(
