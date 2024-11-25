@@ -145,7 +145,7 @@ def test_kmeans_spmd_synthetic(
         n_clusters=n_clusters, init=spmd_model_init.cluster_centers_, random_state=0
     ).fit(X_train)
 
-    atol = 1e-5 if dtype == np.float32 else 1e-7
+    atol = 1e-5 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
     _assert_unordered_allclose(
         spmd_model.cluster_centers_, batch_model.cluster_centers_, atol=atol
     )

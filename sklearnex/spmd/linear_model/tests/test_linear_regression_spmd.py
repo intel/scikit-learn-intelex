@@ -134,7 +134,7 @@ def test_linear_spmd_synthetic(n_samples, n_features, dataframe, queue, dtype):
     spmd_model = LinearRegression_SPMD().fit(local_dpt_X_train, local_dpt_y_train)
     batch_model = LinearRegression_Batch().fit(X_train, y_train)
 
-    tol = 1e-3 if dtype == np.float32 else 1e-7
+    tol = 1e-3 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
     assert_allclose(spmd_model.coef_, batch_model.coef_, rtol=tol, atol=tol)
     assert_allclose(spmd_model.intercept_, batch_model.intercept_, rtol=tol, atol=tol)
 

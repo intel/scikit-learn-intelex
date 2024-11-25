@@ -76,10 +76,13 @@ if daal_check_version((2024, "P", 600)):
         coefficients_manual, intercept_manual = _compute_ridge_coefficients(
             X, y, alpha, fit_intercept
         )
-        if fit_intercept:
-            assert_allclose(inc_ridge.intercept_, intercept_manual, rtol=1e-6, atol=1e-6)
+        
+        tol = 2e-4 if inc_ridge.coef_.dtype == np.float32 else 1e-6
 
-        assert_allclose(inc_ridge.coef_, coefficients_manual, rtol=1e-6, atol=1e-6)
+        if fit_intercept:
+            assert_allclose(inc_ridge.intercept_, intercept_manual, rtol=tol, atol=tol)
+
+        assert_allclose(inc_ridge.coef_, coefficients_manual, rtol=tol, atol=tol)
 
     @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
     @pytest.mark.parametrize("batch_size", [2, 5])
@@ -149,5 +152,7 @@ if daal_check_version((2024, "P", 600)):
         y_pred_manual = np.dot(X, coefficients_manual)
         if fit_intercept:
             y_pred_manual += intercept_manual
+        
+        tol = 1e-5 if inc_ridge.coef_.dtype == np.float32 else 1e-6
 
-        assert_allclose(_as_numpy(y_pred), y_pred_manual, rtol=1e-6, atol=1e-6)
+        assert_allclose(_as_numpy(y_pred), y_pred_manual, rtol=tol, atol=tol)

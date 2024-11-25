@@ -64,8 +64,10 @@ def test_ridge_coefficients(dataframe, queue, sample_size, feature_size, alpha):
     inverse_term = numpy.linalg.inv(numpy.dot(X.T, X) + lambda_identity)
     xt_y = numpy.dot(X.T, y)
     coefficients_manual = numpy.dot(inverse_term, xt_y)
+        
+    tol = 1e-5 if ridge_reg.coef_.dtype == np.float32 else 1e-6
 
-    assert_allclose(ridge_reg.coef_, coefficients_manual, rtol=1e-6, atol=1e-6)
+    assert_allclose(ridge_reg.coef_, coefficients_manual, rtol=tol, atol=tol)
 
 
 if daal_check_version((2024, "P", 600)):
