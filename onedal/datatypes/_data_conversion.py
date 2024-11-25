@@ -37,7 +37,7 @@ def to_table(*args):
 
     Note: this implementation can be used with scipy.sparse, numpy ndarrays,
     DPCTL/DPNP usm_ndarrays and scalars. Tables will use pointers to the
-    original array data. Scalars and non-contiguous arrays will be copies. 
+    original array data. Scalars and non-contiguous arrays will be copies.
     Arrays may be modified in-place by oneDAL during computation. This works
     for data located on CPU and SYCL-enabled Intel GPUs. Each array may only
     be of a single datatype (i.e. each must be homogeneous).
