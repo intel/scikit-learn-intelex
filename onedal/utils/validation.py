@@ -449,7 +449,7 @@ def _assert_all_finite(X, allow_nan=False, input_name=""):
     policy = _get_policy(None, X)
     X_t = to_table(_convert_to_supported(policy, X))
     params = {
-        "fptype": "float" if X_t.dtype == np.float32 else "double",
+        "fptype": X_t.dtype,
         "method": "dense",
         "allow_nan": allow_nan,
     }
