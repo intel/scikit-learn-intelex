@@ -29,6 +29,13 @@ from sklearnex import config_context
 from sklearnex.tests.utils import DummyEstimator, gen_dataset
 from sklearnex.utils.validation import _check_sample_weight, validate_data
 
+# array_api support starts in sklearn 1.2, and array_api_strict conformance starts in sklearn 1.3
+_dataframes_supported = (
+    "numpy,pandas"
+    + (",dpctl" if sklearn_check_version("1.2") else "")
+    + (",array_api" if sklearn_check_version("1.3") else "")
+)
+
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
@@ -67,9 +74,7 @@ def test_sum_infinite_actually_finite(dtype, shape, ensure_all_finite):
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 @pytest.mark.parametrize(
     "dataframe, queue",
-    get_dataframes_and_queues(
-        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
-    ),
+    get_dataframes_and_queues(_dataframes_supported),
 )
 def test_validate_data_random_location(
     dataframe, queue, dtype, shape, ensure_all_finite, check, seed
@@ -112,9 +117,7 @@ def test_validate_data_random_location(
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 @pytest.mark.parametrize(
     "dataframe, queue",
-    get_dataframes_and_queues(
-        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
-    ),
+    get_dataframes_and_queues(_dataframes_supported),
 )
 def test_validate_data_random_shape_and_location(
     dataframe, queue, dtype, ensure_all_finite, check, seed
@@ -155,9 +158,7 @@ def test_validate_data_random_shape_and_location(
 @pytest.mark.parametrize("seed", [0, int(time.time())])
 @pytest.mark.parametrize(
     "dataframe, queue",
-    get_dataframes_and_queues(
-        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
-    ),
+    get_dataframes_and_queues(_dataframes_supported),
 )
 def test__check_sample_weight_random_shape_and_location(
     dataframe, queue, dtype, check, seed
@@ -209,9 +210,7 @@ def test__check_sample_weight_random_shape_and_location(
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize(
     "dataframe, queue",
-    get_dataframes_and_queues(
-        "numpy,pandas" + ("dpctl,array_api" if sklearn_check_version("1.2") else "")
-    ),
+    get_dataframes_and_queues(_dataframes_supported),
 )
 def test_validate_data_output(dtype, dataframe, queue):
     # This testing assumes that array api inputs to validate_data will only occur
