@@ -146,7 +146,7 @@ class NeighborsCommonBase(BaseEstimator, metaclass=ABCMeta):
         class_count = 0 if self.classes_ is None else len(self.classes_)
         weights = getattr(self, "weights", "uniform")
         params = {
-            "fptype": data.dtype,
+            "fptype": "float" if data.dtype == np.float32 else "double",
             "method": "defaultDense",
             "k": self.n_neighbors if n_neighbors is None else n_neighbors,
             "voteWeights": "voteUniform" if weights == "uniform" else "voteDistance",
