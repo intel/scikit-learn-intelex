@@ -100,8 +100,8 @@ def test_validate_data_random_location(
         if check is None or (allow_nan and check == "NaN"):
             validate_data(est, X, ensure_all_finite=ensure_all_finite)
         else:
-            type_err = "infinity" if allow_nan else "NaN, infinity"
-            msg_err = f"Input X contains {type_err}."
+            type_err = "infinity" if allow_nan else "[NaN|infinity]"
+            msg_err = f"Input X contains {type_err}"
             with pytest.raises(ValueError, match=msg_err):
                 validate_data(est, X, ensure_all_finite=ensure_all_finite)
 
@@ -144,7 +144,7 @@ def test_validate_data_random_shape_and_location(
         if check is None or (allow_nan and check == "NaN"):
             validate_data(est, X, ensure_all_finite=ensure_all_finite)
         else:
-            type_err = "infinity" if allow_nan else "NaN, infinity"
+            type_err = "infinity" if allow_nan else "[NaN|infinity]"
             msg_err = f"Input X contains {type_err}."
             with pytest.raises(ValueError, match=msg_err):
                 validate_data(est, X, ensure_all_finite=ensure_all_finite)
@@ -201,7 +201,7 @@ def test__check_sample_weight_random_shape_and_location(
             else:
                 assert isinstance(X_out, np.ndarray)
         else:
-            msg_err = "Input sample_weight contains NaN, infinity."
+            msg_err = "Input sample_weight contains [NaN|infinity]"
             with pytest.raises(ValueError, match=msg_err):
                 X_out = _check_sample_weight(sample_weight, X)
 
