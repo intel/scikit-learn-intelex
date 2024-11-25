@@ -56,7 +56,10 @@ def _sklearnex_assert_all_finite(
     # optimized later
     xp, _ = get_namespace(X)
     if X.size < 32768 or X.dtype not in [xp.float32, xp.float64] or not _is_contiguous(X):
-        _sklearn_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
+        if sklearn_check_version("1.1"):
+            _sklearn_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
+        else:
+            _sklearn_assert_all_finite(X, allow_nan=allow_nan)
     else:
         _onedal_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
 
@@ -122,17 +125,16 @@ def _check_sample_weight(
         if dtype is None:
             dtype = [xp.float64, xp.float32]
 
-        # create param dict such that the variable _finite_keyword can
-        # be added to it without direct sklearn_check_version maintenance
         params = {
             "accept_sparse": False,
             "ensure_2d": False,
             "dtype": dtype,
             "order": "C",
             "copy": copy,
-            "input_name": "sample_weight",
             _finite_keyword: False,
         }
+        if sklearn_check_version("1.1"):
+            params["input_name"] = "sample_weight"
 
         sample_weight = check_array(sample_weight, **params)
         assert_all_finite(sample_weight, input_name="sample_weight")
