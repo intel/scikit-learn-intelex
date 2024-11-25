@@ -68,6 +68,8 @@ dal::table convert_to_homogen_impl(py::object obj) {
     const auto layout = get_sua_iface_layout(sua_iface_dict, r_count, c_count);
 
     if (layout == dal::data_layout::unknown){
+        // NOTE: this will make a C-contiguous deep copy of the data
+        // if possible, this is expected to be a special case
         py::object copy;
         if (py::hasattr(obj, "copy")){
             copy = obj.attr("copy")();
