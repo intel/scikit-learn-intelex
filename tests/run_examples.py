@@ -79,7 +79,14 @@ ex_log_dirs = [
 available_devices = ["cpu"]
 
 gpu_available = False
+import dpctl
+import dpctl.tensor as dpt
 print("dpctl available: {}".format(dpctl_available))
+print("dpctl had gpu devices: {}".format(dpctl.has_gpu_devices()))
+
+if dpctl.has_gpu_devices():
+    gpu_available = True
+    available_devices.append("gpu")
 if dpctl_available:
     import dpctl
     print("dpctl had gpu devices: {}".format(dpctl.has_gpu_devices()))
