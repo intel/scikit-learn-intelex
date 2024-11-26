@@ -130,7 +130,7 @@ class NeighborsCommonBase(BaseEstimator, metaclass=ABCMeta):
         else:
             p = self.p
         return {
-            "fptype": "float" if X.dtype == np.float32 else "double",
+            "fptype": X.dtype,
             "vote_weights": "uniform" if weights == "uniform" else "distance",
             "method": self._fit_method,
             "radius": self.radius,
@@ -451,7 +451,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             )
         if "responses" not in params["result_option"]:
             params["result_option"] += "|responses"
-        params["fptype"] = "float" if X.dtype == np.float32 else "double"
+        params["fptype"] = X.dtype
         result = self._get_backend(
             "neighbors", "classification", "infer", policy, params, model, to_table(X)
         )
@@ -615,7 +615,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             model = self._create_model(backend)
         if "responses" not in params["result_option"] and gpu_device:
             params["result_option"] += "|responses"
-        params["fptype"] = "float" if X.dtype == np.float32 else "double"
+        params["fptype"] = X.dtype
         result = backend.infer(policy, params, model, to_table(X))
 
         return result
@@ -753,7 +753,7 @@ class NearestNeighbors(NeighborsBase):
         else:
             model = self._create_model(self._get_backend("neighbors", "search", None))
 
-        params["fptype"] = "float" if X.dtype == np.float32 else "double"
+        params["fptype"] = X.dtype
         result = self._get_backend(
             "neighbors", "search", "infer", policy, params, model, to_table(X)
         )

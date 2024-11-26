@@ -57,7 +57,7 @@ class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
     def _get_onedal_params(self, is_csr, dtype=np.float32):
         options = self._get_result_options(self.options)
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "sparse" if is_csr else self.algorithm,
             "result_option": options,
         }
