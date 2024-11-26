@@ -1,6 +1,5 @@
-#!/bin/bash
 #===============================================================================
-# Copyright 2023 Intel Corporation
+# Copyright 2024 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,12 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #===============================================================================
-
-wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-sudo add-apt-repository -y "deb https://apt.repos.intel.com/oneapi all main"
-sudo apt-get update
-sudo apt-get install -y intel-dpcpp-cpp-compiler-2025.0
-sudo bash -c 'echo libintelocl.so > /etc/OpenCL/vendors/intel-cpu.icd'
+[run]
+branch = True
+source = 
+    sklearnex
+    onedal
+parallel = True
+omit =
+    */onedal/tests/*
+    */onedal/basic_statistics/tests/utils.py
+    */sklearnex/conftest.py
+    */sklearnex/tests/*
+    */sklearnex/preview/*
+    */sklearnex/spmd/*
+[paths]
+sklearnex =
+    sklearnex/
+    */sklearnex
+onedal =
+    onedal/
+    */onedal
+#Uncomment lines below for report generation when an Intel GPU is unavailable
+#[report]
+#exclude_also =
+#    def _onedal_gpu.*
+#    coverage: gpu_start(?s:.)*coverage: gpu_stop
