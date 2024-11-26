@@ -18,12 +18,10 @@ import numpy as np
 
 from onedal import _default_backend, _dpc_backend
 
-from ..common.policy_manager import PolicyManager
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
 
 backend = _dpc_backend or _default_backend
-policy_manager = PolicyManager(backend)
 
 
 def _check_inputs(X, Y):

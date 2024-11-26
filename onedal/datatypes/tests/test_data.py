@@ -19,7 +19,6 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal import _default_backend, _dpc_backend
-from onedal.common.policy_manager import PolicyManager
 from onedal.datatypes import from_table, to_table
 from onedal.utils._dpep_helpers import dpctl_available
 
@@ -63,8 +62,6 @@ if backend.is_dpc:
 
         def fit(self, X, y=None):
             sua_iface, xp, _ = _get_sycl_namespace(X)
-            policy_manager = PolicyManager(_dpc_backend)
-            policy = policy_manager.get_policy(X.sycl_queue, None)
             dbscan = DBSCAN()
             types = [xp.float32, xp.float64]
             if get_dtype(X) not in types:
@@ -75,7 +72,7 @@ if backend.is_dpc:
             # TODO:
             # check other candidates for the dummy base oneDAL func.
             # oneDAL backend func is needed to check result table checks.
-            result = dbscan.compute(policy, params, X_table, to_table(None))
+            result = dbscan.compute(params, X_table, to_table(None))
             result_responses_table = result.responses
             result_responses_df = from_table(
                 result_responses_table,
