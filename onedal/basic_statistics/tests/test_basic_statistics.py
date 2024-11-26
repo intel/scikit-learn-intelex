@@ -54,7 +54,7 @@ def test_single_option_on_random_data(
 
     basicstat = BasicStatistics(result_options=result_option)
 
-    result = basicstat.fit(data, sample_weight=weights, queue=queue)
+    result = basicstat.fit(data, sample_weight=weights)
 
     res = getattr(result, result_option)
     if weighted:
@@ -86,7 +86,7 @@ def test_multiple_options_on_random_data(queue, row_count, column_count, weighte
 
     basicstat = BasicStatistics(result_options=["mean", "max", "sum"])
 
-    result = basicstat.fit(data, sample_weight=weights, queue=queue)
+    result = basicstat.fit(data, sample_weight=weights)
 
     res_mean, res_max, res_sum = result.mean, result.max, result.sum
     if weighted:
@@ -127,7 +127,7 @@ def test_all_option_on_random_data(queue, row_count, column_count, weighted, dty
 
     basicstat = BasicStatistics(result_options="all")
 
-    result = basicstat.fit(data, sample_weight=weights, queue=queue)
+    result = basicstat.fit(data, sample_weight=weights)
 
     if weighted:
         weighted_data = np.diag(weights) @ data
@@ -165,7 +165,7 @@ def test_1d_input_on_random_data(queue, result_option, data_size, weighted, dtyp
 
     basicstat = BasicStatistics(result_options=result_option)
 
-    result = basicstat.fit(data, sample_weight=weights, queue=queue)
+    result = basicstat.fit(data, sample_weight=weights)
 
     res = getattr(result, result_option)
     if weighted:
@@ -196,7 +196,7 @@ def test_basic_csr(queue, dtype):
     )
 
     basicstat = BasicStatistics(result_options="mean")
-    result = basicstat.fit(data, queue=queue)
+    result = basicstat.fit(data)
 
     res_mean = result.mean
     gtr_mean = data.mean(axis=0)
@@ -229,7 +229,7 @@ def test_options_csr(queue, option, dtype):
     )
 
     basicstat = BasicStatistics(result_options=result_option)
-    result = basicstat.fit(data, queue=queue)
+    result = basicstat.fit(data)
 
     res = getattr(result, result_option)
     func = getattr(data, function)

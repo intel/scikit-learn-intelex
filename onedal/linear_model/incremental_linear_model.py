@@ -19,6 +19,7 @@ from abc import abstractmethod
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..common.hyperparameters import get_hyperparameters
@@ -53,15 +54,16 @@ class IncrementalLinearRegression(BaseLinearRegression):
     def partial_train_result(self): ...
 
     @bind_default_backend("linear_model.regression")
-    def partial_train(self, *args, queue=None, **kwargs): ...
+    def partial_train(self, *args, **kwargs): ...
 
     @bind_default_backend("linear_model.regression")
-    def finalize_train(self, *args, queue=None, **kwargs): ...
+    def finalize_train(self, *args, **kwargs): ...
 
     def _reset(self):
         # Get the pointer to partial_result from backend
         self._partial_result = self.partial_train_result()
 
+    @supports_queue
     def partial_fit(self, X, y, queue=None):
         """
         Computes partial data for linear regression
@@ -100,18 +102,14 @@ class IncrementalLinearRegression(BaseLinearRegression):
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             self._partial_result = self.partial_train(
-                self._params,
-                hparams.backend,
-                self._partial_result,
-                X_table,
-                y_table,
-                queue=queue,
+                self._params, hparams.backend, self._partial_result, X_table, y_table
             )
         else:
             self._partial_result = self.partial_train(
-                self._params, self._partial_result, X_table, y_table, queue=queue
+                self._params, self._partial_result, X_table, y_table
             )
 
+    @supports_queue
     def finalize_fit(self, queue=None):
         """
         Finalizes linear regression computation and obtains coefficients
@@ -131,10 +129,10 @@ class IncrementalLinearRegression(BaseLinearRegression):
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             result = self.finalize_train(
-                self._params, hparams.backend, self._partial_result, queue=queue
+                self._params, hparams.backend, self._partial_result
             )
         else:
-            result = self.finalize_train(self._params, self._partial_result, queue=queue)
+            result = self.finalize_train(self._params, self._partial_result)
 
         self._onedal_model = result.model
 
@@ -183,11 +181,12 @@ class IncrementalRidge(BaseLinearRegression):
     def partial_train_result(self): ...
 
     @bind_default_backend("linear_model.regression")
-    def partial_train(self, *args, queue=None, **kwargs): ...
+    def partial_train(self, *args, **kwargs): ...
 
     @bind_default_backend("linear_model.regression")
-    def finalize_train(self, *args, queue=None, **kwargs): ...
+    def finalize_train(self, *args, **kwargs): ...
 
+    @supports_queue
     def partial_fit(self, X, y, queue=None):
         """
         Computes partial data for ridge regression
@@ -226,18 +225,14 @@ class IncrementalRidge(BaseLinearRegression):
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
             self._partial_result = self.partial_train(
-                self._params,
-                hparams.backend,
-                self._partial_result,
-                X_table,
-                y_table,
-                queue=queue,
+                self._params, hparams.backend, self._partial_result, X_table, y_table
             )
         else:
             self._partial_result = self.partial_train(
-                self._params, self._partial_result, X_table, y_table, queue=queue
+                self._params, self._partial_result, X_table, y_table
             )
 
+    @supports_queue
     def finalize_fit(self, queue=None):
         """
         Finalizes ridge regression computation and obtains coefficients
@@ -253,7 +248,7 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        result = self.finalize_train(self._params, self._partial_result, queue=queue)
+        result = self.finalize_train(self._params, self._partial_result)
 
         self._onedal_model = result.model
 

@@ -14,10 +14,23 @@
 # limitations under the License.
 # ==============================================================================
 
+from typing import Literal
+
+BackendType = Literal["none", "host", "dpc", "spmd"]
+
 
 class BackendManager:
     def __init__(self, backend_module):
         self.backend = backend_module
+
+    def get_backend_type(self) -> BackendType:
+        if self.backend is None:
+            return "none"
+        if self.backend.is_spmd:
+            return "spmd"
+        if self.backend.is_dpc:
+            return "dpc"
+        return "host"
 
     def get_backend_component(self, module_name: str, component_name: str):
         """Get a component of the backend module.

@@ -18,6 +18,7 @@ from abc import ABCMeta
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 from onedal.utils import _check_array
 
@@ -32,7 +33,7 @@ class BaseEmpiricalCovariance(metaclass=ABCMeta):
         self.assume_centered = assume_centered
 
     @bind_default_backend("covariance")
-    def compute(self, *args, queue=None, **kwargs): ...
+    def compute(self, *args, **kwargs): ...
 
     def _get_onedal_params(self, dtype=np.float32):
         params = {
@@ -76,6 +77,7 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         Estimated covariance matrix
     """
 
+    @supports_queue
     def fit(self, X, y=None, queue=None):
         """Fit the sample covariance matrix of X.
 
@@ -102,14 +104,9 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         params = self._get_onedal_params(dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = self.compute(
-                params,
-                hparams.backend,
-                to_table(X),
-                queue=queue,
-            )
+            result = self.compute(params, hparams.backend, to_table(X))
         else:
-            result = self.compute(params, to_table(X), queue=queue)
+            result = self.compute(params, to_table(X))
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

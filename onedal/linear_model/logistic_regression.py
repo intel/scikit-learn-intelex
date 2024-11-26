@@ -20,6 +20,7 @@ from numbers import Number
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..common._estimator_checks import _check_is_fitted
@@ -46,10 +47,10 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         self.algorithm = algorithm
 
     @abstractmethod
-    def train(self, params, X, y, queue=None): ...
+    def train(self, params, X, y): ...
 
     @abstractmethod
-    def infer(self, params, X, queue=None): ...
+    def infer(self, params, X): ...
 
     # direct access to the backend model constructor
     @abstractmethod
@@ -72,7 +73,7 @@ class BaseLogisticRegression(metaclass=ABCMeta):
             ),
         }
 
-    def _fit(self, X, y, queue):
+    def _fit(self, X, y):
         sparsity_enabled = daal_check_version((2024, "P", 700))
         X, y = _check_X_y(
             X,
@@ -96,7 +97,7 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         params = self._get_onedal_params(is_csr, get_dtype(X))
         X_table, y_table = to_table(X, y)
 
-        result = self.train(params, X_table, y_table, queue=queue)
+        result = self.train(params, X_table, y_table)
 
         self._onedal_model = result.model
         self.n_iter_ = np.array([result.iterations_count])
@@ -161,7 +162,7 @@ class BaseLogisticRegression(metaclass=ABCMeta):
 
         return m
 
-    def _infer(self, X, queue):
+    def _infer(self, X):
         _check_is_fitted(self)
         sparsity_enabled = daal_check_version((2024, "P", 700))
 
@@ -187,24 +188,24 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         params = self._get_onedal_params(is_csr, get_dtype(X))
 
         X_table = to_table(X)
-        result = self.infer(params, model, X_table, queue=queue)
+        result = self.infer(params, model, X_table)
         return result
 
-    def _predict(self, X, queue):
-        result = self._infer(X, queue)
+    def _predict(self, X):
+        result = self._infer(X)
         y = from_table(result.responses)
         y = np.take(self.classes_, y.ravel(), axis=0)
         return y
 
-    def _predict_proba(self, X, queue):
-        result = self._infer(X, queue)
+    def _predict_proba(self, X):
+        result = self._infer(X)
 
         y = from_table(result.probabilities)
         y = y.reshape(-1, 1)
         return np.hstack([1 - y, y])
 
-    def _predict_log_proba(self, X, queue):
-        y_proba = self._predict_proba(X, queue)
+    def _predict_log_proba(self, X):
+        y_proba = self._predict_proba(X)
         return np.log(y_proba)
 
 
@@ -242,17 +243,18 @@ class LogisticRegression(ClassifierMixin, BaseLogisticRegression):
     @bind_default_backend("logistic_regression.classification")
     def model(self): ...
 
+    @supports_queue
     def fit(self, X, y, queue=None):
-        return self._fit(X, y, queue)
+        return self._fit(X, y)
 
+    @supports_queue
     def predict(self, X, queue=None):
-        y = self._predict(X, queue)
-        return y
+        return self._predict(X)
 
+    @supports_queue
     def predict_proba(self, X, queue=None):
-        y = self._predict_proba(X, queue)
-        return y
+        return self._predict_proba(X)
 
+    @supports_queue
     def predict_log_proba(self, X, queue=None):
-        y = self._predict_log_proba(X, queue)
-        return y
+        return self._predict_log_proba(X)

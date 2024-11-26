@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from ..._device_offload import support_input_format
+from ..._device_offload import support_input_format, supports_queue
 from ...common._backend import bind_spmd_backend
 from ...neighbors import KNeighborsClassifier as KNeighborsClassifier_Batch
 from ...neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
@@ -23,10 +23,10 @@ from ...neighbors import KNeighborsRegressor as KNeighborsRegressor_Batch
 class KNeighborsClassifier(KNeighborsClassifier_Batch):
 
     @bind_spmd_backend("neighbors.classification")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_spmd_backend("neighbors.classification")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     @support_input_format()
     def fit(self, X, y, queue=None):
@@ -48,21 +48,22 @@ class KNeighborsClassifier(KNeighborsClassifier_Batch):
 class KNeighborsRegressor(KNeighborsRegressor_Batch):
 
     @bind_spmd_backend("neighbors.search", lookup_name="train")
-    def train_search(self, *args, queue=None, **kwargs): ...
+    def train_search(self, *args, **kwargs): ...
 
     @bind_spmd_backend("neighbors.search", lookup_name="infer")
-    def infer_search(self, *args, queue=None, **kwargs): ...
+    def infer_search(self, *args, **kwargs): ...
 
     @bind_spmd_backend("neighbors.regression")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_spmd_backend("neighbors.regression")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     @support_input_format()
+    @supports_queue
     def fit(self, X, y, queue=None):
         if queue is not None and queue.sycl_device.is_gpu:
-            return self._fit(X, y, queue=queue)
+            return self._fit(X, y)
         else:
             raise ValueError(
                 "SPMD version of kNN is not implemented for "
@@ -74,8 +75,9 @@ class KNeighborsRegressor(KNeighborsRegressor_Batch):
         return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
     @support_input_format()
+    @supports_queue
     def predict(self, X, queue=None):
-        return self._predict_gpu(X, queue=queue)
+        return self._predict_gpu(X)
 
     def _get_onedal_params(self, X, y=None):
         params = super()._get_onedal_params(X, y)

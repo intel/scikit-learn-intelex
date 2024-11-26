@@ -37,9 +37,12 @@ else:
 
 class SyclQueue:
     def __init__(self, target=None):
-        if target and SyclQueueImplementation is not None:
+        if target and isinstance(target, SyclQueueImplementation):
+            self.implementation = target
+        elif target and SyclQueueImplementation is not None:
             self.implementation = SyclQueueImplementation(target)
-        self.implementation = object()
+        else:
+            self.implementation = None
 
     @property
     def sycl_device(self):
@@ -55,26 +58,31 @@ class SyclQueueManager:
     @staticmethod
     def get_global_queue() -> Optional[SyclQueue]:
         """Get the global queue. Retrieve it from the config if not set."""
-        if SyclQueueManager.__global_queue is not None:
-            return SyclQueueManager.__global_queue
+        if (queue := SyclQueueManager.__global_queue) is not None:
+            if not isinstance(queue, SyclQueue):
+                raise ValueError("Global queue is not a SyclQueue object.")
+            return queue
 
         target = _get_config()["target_offload"]
 
         if target == "auto":
             # queue will be created from the provided data to each function call
-            return None
+            return SyclQueue(None)
 
         if isinstance(target, (str, int)):
             q = SyclQueue(target)
         else:
             q = target
 
-        SyclQueueManager.__global_queue = q
+        SyclQueueManager.update_global_queue(q)
         return q
 
     @staticmethod
     def update_global_queue(queue):
         """Update the global queue."""
+        if not isinstance(queue, SyclQueue):
+            # could be a device ID or selector string
+            queue = SyclQueue(queue)
         SyclQueueManager.__global_queue = queue
 
     @staticmethod
@@ -100,14 +108,37 @@ class SyclQueueManager:
                 SyclQueueManager.update_global_queue(data_queue)
                 global_queue = data_queue
 
-            # global queue must coincide with data queue
-            if global_queue.sycl_device != data_queue.sycl_device:
+            # if the data item is on device, assert it's compatible with global queue
+            if (
+                data_queue.sycl_device is not None
+                and data_queue.sycl_device != global_queue.sycl_device
+            ):
                 raise ValueError(
                     "Data objects are located on different target devices or not on selected device."
                 )
 
-        # after we went through the data, global queue is updated and verified
+        # after we went through the data, global queue is updated and verified (if any queue found)
         return SyclQueueManager.get_global_queue()
+
+
+def supports_queue(func):
+    """
+    Decorator that updates the global queue based on provided queue and global configuration.
+    If a `queue` keyword argument is provided in the decorated function, its value will be used globally.
+    If no queue is provided, the global queue will be updated from the provided data.
+    In either case, all data objects are verified to be on the same device (or on host).
+    """
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if (queue := kwargs.get("queue", None)) is not None:
+            # update the global queue with what is provided
+            SyclQueueManager.update_global_queue(queue)
+        # find the queues in data using SyclQueueManager to verify that all data objects are on the same device
+        kwargs["queue"] = SyclQueueManager.from_data(*args)
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 if dpnp_available:

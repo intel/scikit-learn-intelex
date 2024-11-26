@@ -24,6 +24,7 @@ from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
 
 from daal4py.sklearn._utils import daal_check_version
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 from sklearnex import get_hyperparameters
 
@@ -97,10 +98,10 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         self.algorithm = algorithm
 
     @abstractmethod
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @abstractmethod
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     def _to_absolute_max_features(self, n_features):
         if self.max_features is None:
@@ -294,7 +295,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         return sample_weight
 
-    def _fit(self, X, y, sample_weight, queue):
+    def _fit(self, X, y, sample_weight):
         X, y = _check_X_y(
             X,
             y,
@@ -313,7 +314,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             data = (X, y)
         data = _convert_to_supported(*data)
         params = self._get_onedal_params(data[0])
-        train_result = self.train(params, *to_table(*data), queue=queue)
+        train_result = self.train(params, *to_table(*data))
 
         self._onedal_model = train_result.model
 
@@ -350,7 +351,7 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         # upate error msg.
         raise NotImplementedError("Creating model is not supported.")
 
-    def _predict(self, X, queue, hparams=None):
+    def _predict(self, X, hparams=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
@@ -361,14 +362,14 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         X = _convert_to_supported(X)
         params = self._get_onedal_params(X)
         if hparams is not None and not hparams.is_default:
-            result = self.infer(params, hparams.backend, model, to_table(X), queue=queue)
+            result = self.infer(params, hparams.backend, model, to_table(X))
         else:
-            result = self.infer(params, model, to_table(X), queue=queue)
+            result = self.infer(params, model, to_table(X))
 
         y = from_table(result.responses)
         return y
 
-    def _predict_proba(self, X, queue, hparams=None):
+    def _predict_proba(self, X, hparams=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
@@ -380,9 +381,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
 
         model = self._onedal_model
         if hparams is not None and not hparams.is_default:
-            result = self.infer(params, hparams.backend, model, to_table(X), queue=queue)
+            result = self.infer(params, hparams.backend, model, to_table(X))
         else:
-            result = self.infer(params, model, to_table(X), queue=queue)
+            result = self.infer(params, model, to_table(X))
 
         y = from_table(result.probabilities)
         return y
@@ -447,10 +448,10 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.classification")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("decision_forest.classification")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -464,19 +465,22 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         #    self.n_classes_ = self.classes_
         return y
 
+    @supports_queue
     def fit(self, X, y, sample_weight=None, queue=None):
-        return self._fit(X, y, sample_weight, queue)
+        return self._fit(X, y, sample_weight)
 
+    @supports_queue
     def predict(self, X, queue=None):
         hparams = get_hyperparameters("decision_forest", "infer")
-        pred = self._predict(X, queue, hparams)
+        pred = self._predict(X, hparams)
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
+    @supports_queue
     def predict_proba(self, X, queue=None):
         hparams = get_hyperparameters("decision_forest", "infer")
 
-        return super()._predict_proba(X, queue, hparams)
+        return super()._predict_proba(X, hparams)
 
 
 class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -538,18 +542,20 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.regression")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("decision_forest.regression")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
+    @supports_queue
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
             if hasattr(sample_weight, "__array__"):
                 sample_weight[sample_weight == 0.0] = 1.0
             sample_weight = [sample_weight]
-        return self._fit(X, y, sample_weight, queue)
+        return self._fit(X, y, sample_weight)
 
+    @supports_queue
     def predict(self, X, queue=None):
         return self._predict(X, queue).ravel()
 
@@ -613,10 +619,10 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.classification")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("decision_forest.classification")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -630,27 +636,19 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         #    self.n_classes_ = self.classes_
         return y
 
+    @supports_queue
     def fit(self, X, y, sample_weight=None, queue=None):
-        return self._fit(
-            X,
-            y,
-            sample_weight,
-            queue,
-        )
+        return self._fit(X, y, sample_weight)
 
+    @supports_queue
     def predict(self, X, queue=None):
-        pred = self._predict(
-            X,
-            queue,
-        )
+        pred = self._predict(X)
 
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
+    @supports_queue
     def predict_proba(self, X, queue=None):
-        return super()._predict_proba(
-            X,
-            queue,
-        )
+        return super()._predict_proba(X)
 
 
 class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
@@ -712,25 +710,19 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         )
 
     @bind_default_backend("decision_forest.regression")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("decision_forest.regression")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
+    @supports_queue
     def fit(self, X, y, sample_weight=None, queue=None):
         if sample_weight is not None:
             if hasattr(sample_weight, "__array__"):
                 sample_weight[sample_weight == 0.0] = 1.0
             sample_weight = [sample_weight]
-        return self._fit(
-            X,
-            y,
-            sample_weight,
-            queue,
-        )
+        return self._fit(X, y, sample_weight)
 
+    @supports_queue
     def predict(self, X, queue=None):
-        return self._predict(
-            X,
-            queue,
-        ).ravel()
+        return self._predict(X).ravel()

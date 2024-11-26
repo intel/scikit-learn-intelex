@@ -18,6 +18,8 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
+from onedal._device_offload import supports_queue
+
 from ..common._backend import bind_default_backend
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
@@ -31,7 +33,7 @@ class BaseBasicStatistics(metaclass=ABCMeta):
         self.algorithm = algorithm
 
     @bind_default_backend("basic_statistics")
-    def compute(self, params, data_table, weights_table, queue=None): ...
+    def compute(self, params, data_table, weights_table): ...
 
     @staticmethod
     def get_all_result_options():
@@ -73,6 +75,7 @@ class BasicStatistics(BaseBasicStatistics):
     def __init__(self, result_options="all", algorithm="by_default"):
         super().__init__(result_options, algorithm)
 
+    @supports_queue
     def fit(self, data, sample_weight=None, queue=None):
         is_csr = _is_csr(data)
 
@@ -86,9 +89,7 @@ class BasicStatistics(BaseBasicStatistics):
         data_table, weights_table = to_table(data, sample_weight)
 
         dtype = data.dtype
-        raw_result = self._compute_raw(
-            data_table, weights_table, dtype, is_csr, queue=queue
-        )
+        raw_result = self._compute_raw(data_table, weights_table, dtype, is_csr)
         for opt, raw_value in raw_result.items():
             value = from_table(raw_value).ravel()
             if is_single_dim:
@@ -98,11 +99,9 @@ class BasicStatistics(BaseBasicStatistics):
 
         return self
 
-    def _compute_raw(
-        self, data_table, weights_table, dtype=np.float32, is_csr=False, queue=None
-    ):
+    def _compute_raw(self, data_table, weights_table, dtype=np.float32, is_csr=False):
         params = self._get_onedal_params(is_csr, dtype)
-        result = self.compute(params, data_table, weights_table, queue=queue)
+        result = self.compute(params, data_table, weights_table)
         options = self._get_result_options(self.options).split("|")
 
         return {opt: getattr(result, opt) for opt in options}

@@ -184,7 +184,7 @@ class BaseSVM(metaclass=ABCMeta):
 
         X = _convert_to_supported(X)
         params = self._get_onedal_params(X)
-        result = self.train(params, *to_table(*data), queue=queue)
+        result = self.train(params, *to_table(*data))
 
         if self._sparse:
             self.dual_coef_ = sp.csr_matrix(from_table(result.coeffs).T)
@@ -267,7 +267,7 @@ class BaseSVM(metaclass=ABCMeta):
                 model = self._onedal_model
             else:
                 model = self._create_model()
-            result = self.infer(params, model, to_table(X), queue=queue)
+            result = self.infer(params, model, to_table(X))
             y = from_table(result.responses)
         return y
 
@@ -323,7 +323,7 @@ class BaseSVM(metaclass=ABCMeta):
             model = self._onedal_model
         else:
             model = self._create_model()
-        result = self.infer(params, model, to_table(X), queue=queue)
+        result = self.infer(params, model, to_table(X))
         decision_function = from_table(result.decision_function)
 
         if len(self.classes_) == 2:
@@ -379,10 +379,10 @@ class SVR(RegressorMixin, BaseSVM):
         self.svm_type = SVMtype.epsilon_svr
 
     @bind_default_backend("svm.regression")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.regression")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.regression")
     def model(self): ...
@@ -440,10 +440,10 @@ class SVC(ClassifierMixin, BaseSVM):
         self.svm_type = SVMtype.c_svc
 
     @bind_default_backend("svm.classification")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.classification")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.classification")
     def model(self): ...
@@ -510,10 +510,10 @@ class NuSVR(RegressorMixin, BaseSVM):
         self.svm_type = SVMtype.nu_svr
 
     @bind_default_backend("svm.nu_regression")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.nu_regression")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.nu_regression")
     def model(self): ...
@@ -570,10 +570,10 @@ class NuSVC(ClassifierMixin, BaseSVM):
         self.svm_type = SVMtype.nu_svc
 
     @bind_default_backend("svm.nu_classification")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.nu_classification")
-    def infer(self, *args, queue=None, **kwargs): ...
+    def infer(self, *args, **kwargs): ...
 
     @bind_default_backend("svm.nu_classification")
     def model(self): ...

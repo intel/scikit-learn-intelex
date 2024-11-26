@@ -19,6 +19,7 @@ from abc import abstractmethod
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype, make2d
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..common._mixin import ClusterMixin
@@ -49,7 +50,7 @@ class DBSCAN(ClusterMixin):
         self.n_jobs = n_jobs
 
     @bind_default_backend("dbscan.clustering")
-    def compute(self, params, data_table, weights_table, queue=None): ...
+    def compute(self, params, data_table, weights_table): ...
 
     def _get_onedal_params(self, dtype=np.float32):
         return {
@@ -61,6 +62,7 @@ class DBSCAN(ClusterMixin):
             "result_options": "core_observation_indices|responses",
         }
 
+    @supports_queue
     def fit(self, X, y=None, sample_weight=None, queue=None):
         X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         sample_weight = make2d(sample_weight) if sample_weight is not None else None
@@ -72,7 +74,7 @@ class DBSCAN(ClusterMixin):
         X = _convert_to_supported(X)
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
-        result = self.compute(params, to_table(X), to_table(sample_weight), queue=queue)
+        result = self.compute(params, to_table(X), to_table(sample_weight))
 
         self.labels_ = from_table(result.responses).ravel()
         if result.core_observation_indices is not None:

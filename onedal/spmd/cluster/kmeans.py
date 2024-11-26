@@ -27,7 +27,7 @@ class KMeansInit(KMeansInit_Batch):
     """
 
     @bind_spmd_backend("kmeans_init.init", lookup_name="compute")
-    def backend_compute(self, params, data, queue=None): ...
+    def backend_compute(self, params, data): ...
 
 
 class KMeans(KMeans_Batch):
@@ -38,10 +38,10 @@ class KMeans(KMeans_Batch):
         return KMeansInit(cluster_count=cluster_count, seed=seed, algorithm=algorithm)
 
     @bind_spmd_backend("kmeans.clustering")
-    def train(self, params, X_table, centroids_table, queue=None): ...
+    def train(self, params, X_table, centroids_table): ...
 
     @bind_spmd_backend("kmeans.clustering")
-    def infer(self, params, model, centroids_table, queue=None): ...
+    def infer(self, params, model, centroids_table): ...
 
     @support_input_format()
     def fit(self, X, y=None, queue=None):

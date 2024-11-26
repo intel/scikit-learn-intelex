@@ -21,6 +21,7 @@ import numpy as np
 from sklearn.decomposition._pca import _infer_dimension
 from sklearn.utils.extmath import stable_cumsum
 
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -48,10 +49,10 @@ class BasePCA(metaclass=ABCMeta):
     def model(self): ...
 
     @bind_default_backend("decomposition.dim_reduction")
-    def train(self, params, X, queue=None): ...
+    def train(self, params, X): ...
 
     @bind_default_backend("decomposition.dim_reduction")
-    def infer(self, params, X, model, queue=None): ...
+    def infer(self, params, X, model): ...
 
     def _get_onedal_params(self, data, stage=None):
         if stage is None:
@@ -138,17 +139,19 @@ class BasePCA(metaclass=ABCMeta):
         self._onedal_model = m
         return m
 
+    @supports_queue
     def predict(self, X, queue=None):
         model = self._create_model()
         X = _convert_to_supported(X)
         params = self._get_onedal_params(X, stage="predict")
 
-        result = self.infer(params, model, to_table(X), queue=queue)
+        result = self.infer(params, model, to_table(X))
         return from_table(result.transformed_data)
 
 
 class PCA(BasePCA):
 
+    @supports_queue
     def fit(self, X, y=None, queue=None):
         n_samples, n_features = X.shape
         n_sf_min = min(n_samples, n_features)
@@ -161,7 +164,7 @@ class PCA(BasePCA):
         X = _convert_to_supported(X)
 
         params = self._get_onedal_params(X)
-        result = self.train(params, to_table(X), queue=queue)
+        result = self.train(params, to_table(X))
 
         self.mean_ = from_table(result.means).ravel()
         self.variances_ = from_table(result.variances)

@@ -19,6 +19,7 @@ from abc import abstractmethod
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -76,15 +77,16 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
     def partial_compute_result(self): ...
 
     @bind_default_backend("basic_statistics")
-    def partial_compute(self, *args, queue=None, **kwargs): ...
+    def partial_compute(self, *args, **kwargs): ...
 
     @bind_default_backend("basic_statistics")
-    def finalize_compute(self, *args, queue=None, **kwargs): ...
+    def finalize_compute(self, *args, **kwargs): ...
 
     def _reset(self):
         # get the _partial_result pointer from backend
         self._partial_result = self.partial_compute_result()
 
+    @supports_queue
     def partial_fit(self, X, weights=None, queue=None):
         """
         Computes partial data for basic statistics
@@ -123,9 +125,10 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
         X_table, weights_table = to_table(X, weights)
         self._partial_result = self.partial_compute(
-            self._onedal_params, self._partial_result, X_table, weights_table, queue=queue
+            self._onedal_params, self._partial_result, X_table, weights_table
         )
 
+    @supports_queue
     def finalize_fit(self, queue=None):
         """
         Finalizes basic statistics computation and obtains result
@@ -141,9 +144,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
-        result = self.finalize_compute(
-            self._onedal_params, self._partial_result, queue=queue
-        )
+        result = self.finalize_compute(self._onedal_params, self._partial_result)
 
         options = self._get_result_options(self.options).split("|")
         for opt in options:

@@ -20,6 +20,7 @@ from numbers import Number
 import numpy as np
 
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
+from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..common._estimator_checks import _check_is_fitted
@@ -41,10 +42,10 @@ class BaseLinearRegression(metaclass=ABCMeta):
         self.algorithm = algorithm
 
     @bind_default_backend("linear_model.regression")
-    def train(self, *args, queue=None, **kwargs): ...
+    def train(self, *args, **kwargs): ...
 
     @bind_default_backend("linear_model.regression")
-    def infer(self, params, model, X, queue=None): ...
+    def infer(self, params, model, X): ...
 
     # direct access to the backend model class
     @bind_default_backend("linear_model.regression")
@@ -108,6 +109,7 @@ class BaseLinearRegression(metaclass=ABCMeta):
 
         return model
 
+    @supports_queue
     def predict(self, X, queue=None):
         """
         Predict using the linear model.
@@ -142,7 +144,7 @@ class BaseLinearRegression(metaclass=ABCMeta):
         params = self._get_onedal_params(get_dtype(X))
 
         X_table = to_table(X)
-        result = self.infer(params, model, X_table, queue=queue)
+        result = self.infer(params, model, X_table)
         y = from_table(result.responses)
 
         if y.shape[1] == 1 and self.coef_.ndim == 1:
@@ -179,6 +181,7 @@ class LinearRegression(BaseLinearRegression):
     ):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
 
+    @supports_queue
     def fit(self, X, y, queue=None):
         """
         Fit linear model.
@@ -220,9 +223,9 @@ class LinearRegression(BaseLinearRegression):
 
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
-            result = self.train(params, hparams.backend, X_table, y_table, queue=queue)
+            result = self.train(params, hparams.backend, X_table, y_table)
         else:
-            result = self.train(params, X_table, y_table, queue=queue)
+            result = self.train(params, X_table, y_table)
 
         self._onedal_model = result.model
 
@@ -275,6 +278,7 @@ class Ridge(BaseLinearRegression):
             fit_intercept=fit_intercept, alpha=alpha, copy_X=copy_X, algorithm=algorithm
         )
 
+    @supports_queue
     def fit(self, X, y, queue=None):
         """
         Fit linear model.
@@ -312,7 +316,7 @@ class Ridge(BaseLinearRegression):
         params = self._get_onedal_params(get_dtype(X))
         X_table, y_table = to_table(X, y)
 
-        result = self.train(params, X_table, y_table, queue=queue)
+        result = self.train(params, X_table, y_table)
         self._onedal_model = result.model
 
         packed_coefficients = from_table(result.model.packed_coefficients)

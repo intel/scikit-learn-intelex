@@ -38,9 +38,9 @@ def test_multiple_options_on_gold_data(queue, weighted, dtype):
     incbs = IncrementalBasicStatistics()
     for i in range(2):
         if weighted:
-            incbs.partial_fit(X_split[i], weights_split[i], queue=queue)
+            incbs.partial_fit(X_split[i], weights_split[i])
         else:
-            incbs.partial_fit(X_split[i], queue=queue)
+            incbs.partial_fit(X_split[i])
 
     result = incbs.finalize_fit()
 
@@ -85,9 +85,9 @@ def test_single_option_on_random_data(
 
     for i in range(num_batches):
         if weighted:
-            incbs.partial_fit(data_split[i], weights_split[i], queue=queue)
+            incbs.partial_fit(data_split[i], weights_split[i])
         else:
-            incbs.partial_fit(data_split[i], queue=queue)
+            incbs.partial_fit(data_split[i])
     result = incbs.finalize_fit()
 
     res = getattr(result, result_option)
@@ -123,9 +123,9 @@ def test_multiple_options_on_random_data(
 
     for i in range(num_batches):
         if weighted:
-            incbs.partial_fit(data_split[i], weights_split[i], queue=queue)
+            incbs.partial_fit(data_split[i], weights_split[i])
         else:
-            incbs.partial_fit(data_split[i], queue=queue)
+            incbs.partial_fit(data_split[i])
     result = incbs.finalize_fit()
 
     res_mean, res_max, res_sum = result.mean, result.max, result.sum
@@ -171,9 +171,9 @@ def test_all_option_on_random_data(
 
     for i in range(num_batches):
         if weighted:
-            incbs.partial_fit(data_split[i], weights_split[i], queue=queue)
+            incbs.partial_fit(data_split[i], weights_split[i])
         else:
-            incbs.partial_fit(data_split[i], queue=queue)
+            incbs.partial_fit(data_split[i])
     result = incbs.finalize_fit()
 
     if weighted:
