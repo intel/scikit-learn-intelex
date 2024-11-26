@@ -132,9 +132,9 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
 def test_dense_vs_sparse(queue, init, algorithm, dims):
     from sklearnex.cluster import KMeans
 
-    if False:
-        if daal_check_version((2025, "P", 200)):
-            pytest.fail("Re-verify failure of k-means++ in 2025.2 oneDAL")
+    if init == "random" or (not _IS_INTEL and init == "k-means++"):
+        if daal_check_version((2025, "P", 600)):
+            pytest.fail("Re-verify failure of k-means++ in 2025.6 oneDAL")
         pytest.skip(f"{init} initialization for sparse K-means is non-conformant.")
 
     # For higher level of sparsity (smaller density) the test may fail
