@@ -159,9 +159,15 @@ dal::table convert_to_table(PyObject *obj) {
             // NOTE: this will make a C-contiguous deep copy of the data
             // this is expected to be a special case
             ary = PyArray_GETCONTIGUOUS(ary);
-            res = convert_to_table(reinterpret_cast<PyObject *>(ary));
-            Py_DECREF(ary);
-            return res;
+            if (ary) {
+                res = convert_to_table(reinterpret_cast<PyObject *>(ary));
+                Py_DECREF(ary);
+                return res;
+            } 
+            else {
+                throw std::invalid_argument(
+                "[convert_to_table] Numpy input could not be converted into onedal table.");
+            }
         }
 #define MAKE_HOMOGEN_TABLE(CType) res = convert_to_homogen_impl<CType>(ary);
         SET_NPY_FEATURE(array_type(ary),
