@@ -170,7 +170,6 @@ if daal_check_version((2024, "P", 600)):
             # Check if equations are well defined, see LinReg for further explanation
             is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
             supports_all_variants = daal_check_version((2025, "P", 1))
-            is_multi_output = _num_features(data[1], fallback_1d=True) > 1
 
             patching_status.and_conditions(
                 [
@@ -193,10 +192,6 @@ if daal_check_version((2024, "P", 600)):
                     (
                         not positive_is_set,
                         "Forced positive coefficients are not supported.",
-                    ),
-                    (
-                        not is_multi_output or supports_all_variants,
-                        "Multi-output regression is not supported.",
                     ),
                     (
                         isinstance(self.alpha, numbers.Real),
@@ -236,18 +231,21 @@ if daal_check_version((2024, "P", 600)):
             )
 
             if method_name == "fit":
-                n_samples = _num_samples(data[0])
-                n_features = _num_features(data[0], fallback_1d=True)
-                is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
-                patching_status.and_conditions(
-                    [
-                        (
-                            not is_underdetermined,
-                            "The shape of X (fitting) does not satisfy oneDAL requirements:"
-                            "Number of features + 1 >= number of samples.",
-                        ),
-                    ]
-                )
+                if isinstance(self.alpha, numbers.Real) and np.isclose(self.alpha, 0):
+                    n_samples = _num_samples(data[0])
+                    n_features = _num_features(data[0], fallback_1d=True)
+                    is_underdetermined = n_samples < (
+                        n_features + int(self.fit_intercept)
+                    )
+                    patching_status.and_conditions(
+                        [
+                            (
+                                not is_underdetermined,
+                                "The shape of X (fitting) does not satisfy oneDAL requirements:"
+                                "Number of features + 1 >= number of samples.",
+                            ),
+                        ]
+                    )
 
                 return self._onedal_fit_supported(patching_status, method_name, *data)
 
