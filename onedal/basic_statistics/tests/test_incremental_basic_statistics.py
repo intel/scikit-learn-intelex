@@ -20,6 +20,7 @@ from numpy.testing import assert_allclose
 
 from onedal.basic_statistics import IncrementalBasicStatistics
 from onedal.basic_statistics.tests.utils import options_and_tests
+from onedal.datatypes import from_table
 from onedal.tests.utils._device_selection import get_queues
 
 
@@ -214,12 +215,42 @@ def test_incremental_estimator_pickle(queue, dtype):
     assert incbs._need_to_finalize == True
     assert incbs_loaded._need_to_finalize == True
 
-    # Check that estmator can be serialized after partial_fit call.
-    dump = pickle.dumps(incbs_loaded)
+    # Check that estimator can be serialized after partial_fit call.
+    dump = pickle.dumps(incbs)
     incbs_loaded = pickle.loads(dump)
-    assert incbs._need_to_finalize == True
+    assert incbs._need_to_finalize == False
     # Finalize is called during serialization to make sure partial results are finalized correctly.
     assert incbs_loaded._need_to_finalize == False
+
+    partial_n_rows = from_table(incbs._partial_result.partial_n_rows)
+    partial_n_rows_loaded = from_table(incbs_loaded._partial_result.partial_n_rows)
+    assert_allclose(partial_n_rows, partial_n_rows_loaded)
+
+    partial_min = from_table(incbs._partial_result.partial_min)
+    partial_min_loaded = from_table(incbs_loaded._partial_result.partial_min)
+    assert_allclose(partial_min, partial_min_loaded)
+
+    partial_max = from_table(incbs._partial_result.partial_max)
+    partial_max_loaded = from_table(incbs_loaded._partial_result.partial_max)
+    assert_allclose(partial_max, partial_max_loaded)
+
+    partial_sum = from_table(incbs._partial_result.partial_sum)
+    partial_sum_loaded = from_table(incbs_loaded._partial_result.partial_sum)
+    assert_allclose(partial_sum, partial_sum_loaded)
+
+    partial_sum_squares = from_table(incbs._partial_result.partial_sum_squares)
+    partial_sum_squares_loaded = from_table(
+        incbs_loaded._partial_result.partial_sum_squares
+    )
+    assert_allclose(partial_sum_squares, partial_sum_squares_loaded)
+
+    partial_sum_squares_centered = from_table(
+        incbs._partial_result.partial_sum_squares_centered
+    )
+    partial_sum_squares_centered_loaded = from_table(
+        incbs_loaded._partial_result.partial_sum_squares_centered
+    )
+    assert_allclose(partial_sum_squares_centered, partial_sum_squares_centered_loaded)
 
     incbs.partial_fit(X_split[1], queue=queue)
     incbs_loaded.partial_fit(X_split[1], queue=queue)

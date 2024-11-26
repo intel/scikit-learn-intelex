@@ -420,7 +420,7 @@ def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     incbs.partial_fit(X_split_df)
     incbs_loaded.partial_fit(X_split_df)
 
-    # Check that estmator can be serialized after partial_fit call.
+    # Check that estimator can be serialized after partial_fit call.
     dump = pickle.dumps(incbs_loaded)
     incbs_loaded = pickle.loads(dump)
 
@@ -429,6 +429,11 @@ def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     incbs_loaded.partial_fit(X_split_df)
     dump = pickle.dumps(incbs)
     incbs_loaded = pickle.loads(dump)
+    assert incbs.batch_size == incbs_loaded.batch_size
+    assert incbs.n_features_in_ == incbs_loaded.n_features_in_
+    assert incbs.n_samples_seen_ == incbs_loaded.n_samples_seen_
+    assert incbs._parameter_constraints == incbs_loaded._parameter_constraints
+    assert incbs.n_jobs == incbs_loaded.n_jobs
     for result_option in options_and_tests:
         _, tols = options_and_tests[result_option]
         fp32tol, fp64tol = tols

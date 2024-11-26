@@ -76,15 +76,9 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         )
 
     def __getstate__(self):
-        """
-        Converts estimator's data to serializable format.
-        All tables contained in partial result are converted to np.arrays.
-        Notes
-        -----
-        Since finalize_fit can't be dispatched without directly provided queue
-        and the dispatching policy can't be serialized, the computation is finalized
-        here and the policy is not saved in serialized data.
-        """
+        # Since finalize_fit can't be dispatched without directly provided queue
+        # and the dispatching policy can't be serialized, the computation is finalized
+        # here and the policy is not saved in serialized data.
         self.finalize_fit()
         data = self.__dict__.copy()
         data.pop("_queue", None)
