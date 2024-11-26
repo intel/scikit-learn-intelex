@@ -79,11 +79,18 @@ ex_log_dirs = [
 available_devices = ["cpu"]
 
 gpu_available = False
+import site
+path_to_env = site.getsitepackages()[0]
+path_to_libs = os.path.join(path_to_env, "Library", "bin")
+try:
+    os.add_dll_directory(path_to_libs)
+except FileNotFoundError:
+    print("FILENOTFOUNDERROR sklearnex")
+
 import dpctl
 import dpctl.tensor as dpt
 print("dpctl available: {}".format(dpctl_available))
 print("dpctl had gpu devices: {}".format(dpctl.has_gpu_devices()))
-
 if dpctl.has_gpu_devices():
     gpu_available = True
     available_devices.append("gpu")
