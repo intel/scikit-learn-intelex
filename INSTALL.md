@@ -208,7 +208,7 @@ Where:
 * The `develop` mode does not install the package but creates a `.egg-link` in the deployment directory
 back to the project source-code directory. That way, you can edit the source code and see the changes
 without reinstalling the package after a small change.
-* `--single-version-externally-managed` is an option for Python packages instructing the setup tools module to create a package the host's package manager can easily manage.
+* `--single-version-externally-managed` is an option for Python packages instructing the setuptools module to create a package that the host's package manager can easily manage.
 
 - To build the python module without installing it:
 
