@@ -15,6 +15,7 @@
 *******************************************************************************/
 
 #include <type_traits>
+#include <iostream>
 #include "oneapi/dal/algo/louvain.hpp"
 
 #include "oneapi/dal/graph/undirected_adjacency_vector_graph.hpp"
@@ -34,6 +35,7 @@ using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Fl
 
 template <typename Type>
 inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) {
+    std::cout << "start_table_check\n";
     if (input.get_kind() == dal::homogen_table::kind()){
         const auto &homogen_input = static_cast<const dal::homogen_table &>(input);
         // verify matching datatype
@@ -92,6 +94,7 @@ graph_t<Float> tables_to_undirected_graph(const table& data, const table& indice
     // the data to verify that nothing along the diagonal is stored in the csr format.
     // This closely resembles scipy.sparse
     std::int64_t N = col_count < vertex_count ? col_count : vertex_count;
+    std::cout << "access_problems\n";
 
     for(std::int64_t u=0; u < N; ++u) {
         std::int64_t row_begin = rows[u];
@@ -114,6 +117,7 @@ graph_t<Float> tables_to_undirected_graph(const table& data, const table& indice
 
     graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
     graph_impl.set_edge_values(edge_ptr, col_count/2);
+    std::cout << "graph_generated\n";
     
     return res;
 }
@@ -163,8 +167,9 @@ void init_vertex_partitioning_ops(py::module_& m) {
               // create graphs from oneDAL tables
               graph_t<double> graph;
               // only int and double topologies are currently exported to the oneDAL shared object
+              
               graph = tables_to_undirected_graph<double>(data, indices, indptr);
-
+              std::cout << "running ops\n";
               vertex_partitioning_ops ops(input_t{ graph, initial_partition}, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
@@ -178,7 +183,7 @@ void init_vertex_partitioning_ops(py::module_& m) {
               graph_t<double> graph;
               // only int and double topologies are currently exported to the oneDAL shared object
               graph = tables_to_undirected_graph<double>(data, indices, indptr);
-
+              std::cout << "running ops\n";
               vertex_partitioning_ops ops(input_t{ graph }, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
