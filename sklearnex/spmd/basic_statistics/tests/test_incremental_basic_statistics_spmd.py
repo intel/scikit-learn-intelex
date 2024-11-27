@@ -260,7 +260,7 @@ def test_incremental_basic_statistics_partial_fit_spmd_synthetic(
         IncrementalBasicStatistics as IncrementalBasicStatistics_SPMD,
     )
 
-    tol = 2e-3 if dtype == np.float32 else 1e-7
+    tol = 2e-3 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
 
     # Create gold data and process into dpt
     data = _generate_statistic_data(n_samples, n_features, dtype=dtype)

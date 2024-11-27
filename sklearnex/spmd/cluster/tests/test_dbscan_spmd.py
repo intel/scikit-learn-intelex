@@ -43,7 +43,7 @@ def test_dbscan_spmd_gold(dataframe, queue):
     from sklearnex.cluster import DBSCAN as DBSCAN_Batch
     from sklearnex.spmd.cluster import DBSCAN as DBSCAN_SPMD
 
-    data = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
+    data = np.array([[1., 2.], [2., 2.], [2., 3.], [8., 7.], [8., 8.], [25., 80.]])
 
     local_dpt_data = _convert_to_dataframe(
         _get_local_tensor(data), sycl_queue=queue, target_df=dataframe

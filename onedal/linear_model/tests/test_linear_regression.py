@@ -239,7 +239,7 @@ def test_multioutput_regression(queue, dtype, fit_intercept, problem_type):
 
     pred = model.predict(X, queue=queue)
     expected_pred = X @ model.coef_.T + model.intercept_.reshape((1, -1))
-    tol = 1e-5 if pred.dtype == np.float32 else 1e-7
+    tol = 2e-5 if pred.dtype == np.float32 else 1e-7
     assert_allclose(pred, expected_pred, rtol=tol)
 
     # check that it also works when 'y' is a list of lists

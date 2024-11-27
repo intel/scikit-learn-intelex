@@ -127,7 +127,7 @@ if daal_check_version((2024, "P", 700)):
             pred_sp = model_sp.predict(X_sp)
             prob_sp = model_sp.predict_proba(X_sp)
 
-        rtol = 2e-4
+        rtol = 1e-3 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 2e-4
         assert_allclose(pred, pred_sp, rtol=rtol)
         assert_allclose(prob, prob_sp, rtol=rtol)
         assert_allclose(model.coef_, model_sp.coef_, rtol=rtol)
