@@ -36,8 +36,10 @@ inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) 
     if (input.get_kind() == dal::homogen_table::kind()){
         const auto &homogen_input = static_cast<const dal::homogen_table &>(input);
         // verify matching datatype
+#define CHECK_DTYPE(CType) if (!std::is_same<Type, CType>::value) std::invalid_argument("Incorrect dtype");
+
         SET_CTYPE_FROM_DAL_TYPE(homogen_input.get_metadata().get_data_type(0),
-                                [](auto CTYPE){if (!std::is_same<Type, CTYPE>::value) std::invalid_argument("Incorrect dtype");},
+                                CHECK_DTYPE,
                                 std::invalid_argument("Unknown table dtype"))
 
         
