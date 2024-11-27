@@ -202,6 +202,14 @@ The build-process (using setup.py) happens in 4 stages:
    python setup.py develop --no-deps
    ```
 
+Where: 
+
+* Keys `--single-version-externally-managed` and `--no-deps` are required to not download daal4py after the installation of Intel(R) Extension for Scikit-learn. 
+* The `develop` mode does not install the package but creates a `.egg-link` in the deployment directory
+back to the project source-code directory. That way, you can edit the source code and see the changes
+without reinstalling the package after a small change.
+* `--single-version-externally-managed` is an option for Python packages instructing the setup tools module to create a package the host's package manager can easily manage.
+
 - To build the python module without installing it:
 
    ```bash
@@ -217,13 +225,7 @@ python setup.py build_ext --inplace --force --abs-rpath
 python setup.py build --abs-rpath
 ```
 
-Where: 
-
-* Keys `--single-version-externally-managed` and `--no-deps` are required to not download daal4py after the installation of Intel(R) Extension for Scikit-learn. 
-* The `develop` mode does not install the package but creates a `.egg-link` in the deployment directory
-back to the project source-code directory. That way, you can edit the source code and see the changes
-without reinstalling the package after a small change.
-* `--single-version-externally-managed` is an option for Python packages instructing the setup tools module to create a package the host's package manager can easily manage.
+**Note:** if building `scikit-learn-intelex` from source with this option, it will use the oneDAL library with which it was compiled. oneDAL has dependencies on other libraries such as TBB, which is also distributed as a python package through `pip` and as a `conda` package. By default, a conda environment will first try to load TBB from its own packages if it is installed in the environment, which might cause issues if oneDAL was compiled with a system TBB instead of a conda one. In such cases, one might want to either uninstall TBB from pip/conda (it will be loaded from the oneDAL library which links to it), or modify the order of search paths in environment variables like `${LD_LIBRARY_PATH}`.
 
 ## Build from Sources with `conda-build`
 
