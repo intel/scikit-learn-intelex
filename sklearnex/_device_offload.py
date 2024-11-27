@@ -29,8 +29,8 @@ from ._config import get_config
 
 def _get_backend(obj, method_name, *data):
     queue = SyclQueueManager.get_global_queue()
-    cpu_device = queue is None or queue.sycl_device.is_cpu
-    gpu_device = queue is not None and queue.sycl_device.is_gpu
+    cpu_device = queue is None or getattr(queue.sycl_device, "is_cpu", True)
+    gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
 
     if cpu_device:
         patching_status = obj._onedal_cpu_supported(method_name, *data)
