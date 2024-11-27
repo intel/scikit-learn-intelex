@@ -42,9 +42,7 @@ _dataframes_supported = (
     "shape",
     [
         [16, 2048],
-        [
-            2**16 + 3,
-        ],
+        [2**16 + 3],
         [1000, 1000],
     ],
 )
@@ -63,9 +61,7 @@ def test_sum_infinite_actually_finite(dtype, shape, ensure_all_finite):
     "shape",
     [
         [16, 2048],
-        [
-            2**16 + 3,
-        ],
+        [2**16 + 3],
         [1000, 1000],
     ],
 )
