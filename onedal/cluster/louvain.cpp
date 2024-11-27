@@ -52,7 +52,7 @@ inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) 
         length = static_cast<std::int64_t>(homogen_input.get_row_count());
 
         // get pointer
-        auto bytes_array = dal::detail::get_original_data(homogen_data);
+        auto bytes_array = dal::detail::get_original_data(homogen_input);
         const bool is_mutable = bytes_array.has_mutable_data();
 
         ptr = is_mutable ? static_cast<Type *>(bytes_array.get_mutable_data())
@@ -63,7 +63,6 @@ inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) 
     }
 
 }
-
 
 template <typename Float>
 graph_t<Float> tables_to_undirected_graph(const table& data, const table& indices, const table& indptr){
