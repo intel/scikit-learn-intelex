@@ -25,9 +25,6 @@ def _apply_and_pass(func, *args, **kwargs):
     if len(args) == 1:
         return func(args[0], **kwargs)
     return tuple(map(lambda arg: func(arg, **kwargs), args))
-
-
-to_graph = _backend.to_graph
  
 
 def _convert_one_to_table(arg):

@@ -51,7 +51,6 @@ namespace oneapi::dal::python {
     ONEDAL_PY_INIT_MODULE(policy);
     /* datatypes*/
     ONEDAL_PY_INIT_MODULE(table);
-    ONEDAL_PY_INIT_MODULE(graph);
 
     ONEDAL_PY_INIT_MODULE(table_metadata);
 
@@ -117,7 +116,6 @@ namespace oneapi::dal::python {
         init_policy(m);
         init_table(m);
         init_table_metadata(m);
-        init_graph(m);
 
         init_linear_kernel(m);
         init_rbf_kernel(m);

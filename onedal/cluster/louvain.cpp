@@ -19,6 +19,7 @@
 
 #include "oneapi/dal/graph/undirected_adjacency_vector_graph.hpp"
 #include "oneapi/dal/graph/common.hpp"
+#include "oneapi/dal/detail/memory.hpp"
 
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
@@ -56,12 +57,11 @@ inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) 
         const bool is_mutable = bytes_array.has_mutable_data();
 
         ptr = is_mutable ? reinterpret_cast<Type *>(bytes_array.get_mutable_data())
-                         : reinterpret_cast<Type *>(bytes_array.get_data());
+                         : const_cast<Type *>(reinterpret_cast<const Type *>(bytes_array.get_data()));
 
     } else {
         throw std::invalid_argument("Non-homogen table input.");
     }
-
 }
 
 template <typename Float>
