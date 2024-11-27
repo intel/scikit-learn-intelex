@@ -33,9 +33,7 @@ from onedal.utils.validation import _assert_all_finite, assert_all_finite
     "shape",
     [
         [16, 2048],
-        [
-            65539,  # 2**16 + 3,
-        ],
+        [65539],  # 2**16 + 3,
         [1000, 1000],
         [
             3,
@@ -58,9 +56,7 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan, dataframe, queue)
     "shape",
     [
         [16, 2048],
-        [
-            65539,  # 2**16 + 3,
-        ],
+        [65539],  # 2**16 + 3,
         [1000, 1000],
         [
             3,
