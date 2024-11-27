@@ -164,13 +164,6 @@ if daal_check_version((2024, "P", 600)):
             )
             positive_is_set = hasattr(self, "positive") and self.positive
 
-            n_samples = _num_samples(X)
-            n_features = _num_features(X, fallback_1d=True)
-
-            # Check if equations are well defined, see LinReg for further explanation
-            is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
-            supports_all_variants = daal_check_version((2025, "P", 1))
-
             patching_status.and_conditions(
                 [
                     (
@@ -181,11 +174,6 @@ if daal_check_version((2024, "P", 600)):
                     (
                         not issparse(X) and not issparse(y),
                         "Sparse input is not supported.",
-                    ),
-                    (
-                        not is_underdetermined or supports_all_variants,
-                        "The shape of X (fitting) does not satisfy oneDAL requirements:"
-                        "Number of features + 1 >= number of samples.",
                     ),
                     (sample_weight is None, "Sample weight is not supported."),
                     (not normalize_is_set, "Normalization is not supported."),
@@ -231,20 +219,20 @@ if daal_check_version((2024, "P", 600)):
             )
 
             if method_name == "fit":
-                if isinstance(self.alpha, numbers.Real) and np.isclose(self.alpha, 0):
+                if not daal_check_version((2025, "P", 200)):
                     n_samples = _num_samples(data[0])
                     n_features = _num_features(data[0], fallback_1d=True)
                     is_underdetermined = n_samples < (
                         n_features + int(self.fit_intercept)
                     )
-                    patching_status.and_conditions(
-                        [
-                            (
-                                not is_underdetermined,
-                                "The shape of X (fitting) does not satisfy oneDAL requirements:"
-                                "Number of features + 1 >= number of samples.",
-                            ),
-                        ]
+                    is_zero_alpha = isinstance(self.alpha, numbers.Real) and np.isclose(
+                        self.alpha, 0, atol=1e-5
+                    )
+
+                    patching_status.and_condition(
+                        not is_underdetermined or not is_zero_alpha,
+                        "The shape of X (fitting) does not satisfy oneDAL requirements:"
+                        "Number of features + 1 >= number of samples and alpha = 0.",
                     )
 
                 return self._onedal_fit_supported(patching_status, method_name, *data)
@@ -262,6 +250,21 @@ if daal_check_version((2024, "P", 600)):
             )
 
             if method_name == "fit":
+                if not daal_check_version((2025, "P", 100)):
+                    n_samples = _num_samples(data[0])
+                    n_features = _num_features(data[0], fallback_1d=True)
+                    is_underdetermined = n_samples < (
+                        n_features + int(self.fit_intercept)
+                    )
+                    is_zero_alpha = isinstance(self.alpha, numbers.Real) and np.isclose(
+                        self.alpha, 0, atol=1e-5
+                    )
+
+                    patching_status.and_condition(
+                        not is_underdetermined or not is_zero_alpha,
+                        "The shape of X (fitting) does not satisfy oneDAL requirements:"
+                        "Number of features + 1 >= number of samples and alpha = 0.",
+                    )
                 return self._onedal_fit_supported(patching_status, method_name, *data)
 
             if method_name in ["predict", "score"]:
