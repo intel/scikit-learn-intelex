@@ -55,8 +55,8 @@ inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) 
         auto bytes_array = dal::detail::get_original_data(homogen_input);
         const bool is_mutable = bytes_array.has_mutable_data();
 
-        ptr = is_mutable ? static_cast<Type *>(bytes_array.get_mutable_data())
-                         : static_cast<Type *>(bytes_array.get_data());
+        ptr = is_mutable ? reinterpret_cast<Type *>(bytes_array.get_mutable_data())
+                         : reinterpret_cast<Type *>(bytes_array.get_data());
 
     } else {
         throw std::invalid_argument("Non-homogen table input.");
