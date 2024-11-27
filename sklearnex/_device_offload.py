@@ -60,6 +60,7 @@ def _get_backend(obj, method_name, *data):
 
 
 def dispatch(obj, method_name, branches, *args, **kwargs):
+    queue = getattr(SyclQueueManager.get_global_queue(), "implementation", None)
     has_usm_data_for_args, hostargs = _transfer_to_host(*args)
     has_usm_data_for_kwargs, hostvalues = _transfer_to_host(*kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
@@ -69,8 +70,8 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     if backend == "onedal":
         # Host args only used before onedal backend call.
         # Device will be offloaded when onedal backend will be called.
-        patching_status.write_log(queue=q, transferred_to_host=False)
-        return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
+        patching_status.write_log(queue=queue, transferred_to_host=False)
+        return branches[backend](obj, *hostargs, **hostkwargs, queue=queue)
     if backend == "sklearn":
         if (
             "array_api_dispatch" in get_config()
