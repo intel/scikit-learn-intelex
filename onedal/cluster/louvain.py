@@ -22,7 +22,7 @@ from daal4py.sklearn._utils import get_dtype
 
 from ..common._base import BaseEstimator
 from ..common._mixin import ClusterMixin
-from ..datatypes import from_table, to_graph, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import _check_array, _check_X_y, _is_csr
 
 
@@ -35,7 +35,7 @@ class Louvain(BaseEstimator, ClusterMixin):
 
     def _get_onedal_params(self, dtype=np.float64):
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "by_default",
             "resolution": float(self.resolution),
             "accuracy_threshold": float(self.tol),
@@ -47,22 +47,20 @@ class Louvain(BaseEstimator, ClusterMixin):
         if queue is not None:
             warnings.warn("Louvain is implemented only for CPU")
         assert _is_csr(X), "input must be CSR sparse"
-        assert np.sum(X.diagonal()) == 0.0
-        if y is None:
-            X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
-        else:
-            X, y = _check_X_y(X, y, accept_sparse="csr", dtype=[np.float64, np.float32])
-            y = y.astype(np.int64)  # restriction by oneDAL initial partition
-
         # limitations in oneDAL's shared object force the topology to double type
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
-        X = X.astype(np.float64)
+        if y is None:
+            X = _check_array(X, accept_sparse="csr", dtype=np.float64)
+        else:
+            X, y = _check_X_y(X, y, accept_sparse="csr", dtype=np.float64)
+            y = y.astype(np.int64)  # restriction by oneDAL initial partition
 
         module = self._get_backend("louvain", "vertex_partitioning", None)
 
-        data = (params, to_graph(X)) if y is None else (params, to_graph(X), to_table(y))
-        result = module.vertex_partitioning(*data)
+        # conversion of a scipy csr to dal csr_table will have incorrect dtypes and indices
+        # must be done via three tables with types double, int32, int64 for oneDAL graph type
+        data = to_table(X.data, X.indices, X.indptr) if y is None else to_table(X.data, X.indices, X.indptr, y)
+        params = self._get_onedal_params(data[0].dtype)
+        result = module.vertex_partitioning(params, *data)
         self.labels_ = from_table(result.labels).ravel()
         self.modularity_ = float(result.modularity)
         self.community_count_ = int(result.community_count)

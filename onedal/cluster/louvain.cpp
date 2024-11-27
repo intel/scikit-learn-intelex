@@ -14,15 +14,108 @@
 * limitations under the License.
 *******************************************************************************/
 
+#include <type_traits>
 #include "oneapi/dal/algo/louvain.hpp"
+
 #include "oneapi/dal/graph/undirected_adjacency_vector_graph.hpp"
+#include "oneapi/dal/graph/common.hpp"
 
 #include "onedal/common.hpp"
 #include "onedal/version.hpp"
+#include "onedal/datatypes/utils/dtype_conversions.hpp"
 
 namespace py = pybind11;
 
 namespace oneapi::dal::python {
+
+template <typename Float>
+using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
+
+template <typename Type>
+inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) {
+    if (data.get_kind() == dal::homogen_table::kind()){
+        const auto &homogen_input = static_cast<const dal::homogen_table &>(input);
+        // verify matching datatype
+        SET_CTYPE_FROM_DAL_TYPE(homogen_data.get_metadata().get_data_type(0),
+                                [](auto CTYPE){if (!std::is_same<Type, CTYPE>::value) std::invalid_argument("Incorrect dtype");},
+                                std::invalid_argument("Unknown table dtype"))
+
+        
+        // verify only one column
+        if (homogen_input.get_column_count() != 1){
+            throw std::invalid_argument("Incorrect dimensions.");
+        }
+
+        // get length
+        length = static_cast<std::int64_t>(homogen_input.get_row_count());
+
+        // get pointer
+        auto bytes_data = dal::detail::get_original_data(homogen_data);
+        const bool is_mutable = bytes_array.has_mutable_data();
+
+        ptr = is_mutable ? static_cast<Type *>(bytes_array.get_mutable_data())
+                         : static_cast<Type *>(bytes_array.get_data());
+
+    } else {
+        throw std::invalid_argument("Non-homogen table input.");
+    }
+
+}
+
+
+template <typename Float>
+graph_t<Float> tables_to_undirected_graph(const table& data, const table& indices, const table& indptr){
+// because oneDAL graphs do not allow have the ability to call python capsule destructors
+// graphs cannot be directly created from numpy array types. Conversion from oneDAL
+// tables makes a simple and consitent interface which matches other estimators. The
+// csr table cannot be used because of the data type of the indicies and indptr which
+// are hardcoded to int64 and because they are 1 indexed.
+    graph_t<Float> res;
+
+    Float *data_ptr;
+    std::int32_t *cols;
+    std::int64_t *rows, data_count, col_count, vertex_count;
+
+    _table_checks<Float>(data, data_ptr, data_count);
+    _table_checks<std::int32_t>(indices, cols, col_count);
+    _table_checks<std::int64_t>(indptr, rows, vertex_count);
+    
+    // verify data and indices are same lengths
+    if (data_count != col_count){
+        throw std::invalid_argument("Got invalid csr object.");
+    }
+    // -1 needed to match oneDAL graph inputs
+    vertex_count--;
+    
+    // Undirected graphs in oneDAL do not check for self-loops.  This will iterate through
+    // the data to verify that nothing along the diagonal is stored in the csr format.
+    // This closely resembles scipy.sparse
+    std::int64_t N = col_count < vertex_count ? col_count : vertex_count;
+
+    for(std::int64_t u=0; u < N; ++u) {
+        std::int64_t row_begin = rows[u];
+        std::int64_t row_end = rows[u + 1];
+        for(std::int64_t j = row_begin; j < row_end; ++j){
+            if (cols[j] == u) {
+                throw std::invalid_argument(
+                    "Self-loops are not allowed.\n");
+            }
+        }
+    }
+    
+    auto& graph_impl = dal::detail::get_impl(res);  
+    using vertex_set_t = typename dal::preview::graph_traits<graph_t<Float>>::vertex_set;
+    dal::preview::detail::rebinded_allocator ra(graph_impl._vertex_allocator);
+    auto [degrees_array, degrees] = ra.template allocate_array<vertex_set_t>(vertex_count);
+    for (std::int64_t u = 0; u < vertex_count; u++) {
+        degrees[u] = rows[u + 1] - rows[u];
+    }
+
+    graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
+    graph_impl.set_edge_values(edge_pointer, col_count/2);
+    
+    return res;
+}
 
 template <typename Task, typename Ops>
 struct method2t {
@@ -56,24 +149,36 @@ struct params2desc {
     }
 };
 
-template <typename Task, typename Graph>
+template <typename Task>
 void init_vertex_partitioning_ops(py::module_& m) {
     m.def("vertex_partitioning",
           [](const py::dict& params,
-             const Graph& data,
+             const table& data,
+             const table& indices,
+             const table& indptr,
              const table& initial_partition) {
               using namespace preview::louvain;
-              using input_t = vertex_partitioning_input<Graph, Task>;
-              vertex_partitioning_ops ops(input_t{ data, initial_partition}, params2desc{});
+              using input_t = vertex_partitioning_input<graph_t<double>, Task>;
+              // create graphs from oneDAL tables
+              graph_t<double> graph;
+              // only int and double topologies are currently exported to the oneDAL shared object
+              graph = tables_to_undirected_graph<double>(data, indices, indptr);
+
+              vertex_partitioning_ops ops(input_t{ graph, initial_partition}, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
     m.def("vertex_partitioning",
           [](const py::dict& params,
-             const Graph& data) {
+             const table& data,
+             const table& indices,
+             const table& indptr) {
               using namespace preview::louvain;
-              using input_t = vertex_partitioning_input<Graph, Task>;
+              using input_t = vertex_partitioning_input<graph_t<double>, Task>;
+              graph_t<double> graph;
+              // only int and double topologies are currently exported to the oneDAL shared object
+              graph = tables_to_undirected_graph<double>(data, indices, indptr);
 
-              vertex_partitioning_ops ops(input_t{ data}, params2desc{});
+              vertex_partitioning_ops ops(input_t{ graph }, params2desc{});
               return fptype2t{ method2t{ Task{}, ops } }(params);
           });
 }
@@ -90,12 +195,6 @@ void init_vertex_partitioning_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(community_count, result_t);
 }
 
-template <typename Float>
-using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Float>;
-
-// float topologies are currently not exported to the oneDAL shared object
-//ONEDAL_PY_TYPE2STR(graph_t<float>, "");
-ONEDAL_PY_TYPE2STR(graph_t<double>, "");
 ONEDAL_PY_TYPE2STR(preview::louvain::task::vertex_partitioning, "vertex_partitioning");
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_vertex_partitioning_ops);
@@ -106,10 +205,9 @@ ONEDAL_PY_INIT_MODULE(louvain) {
     using namespace dal::preview::louvain;
 
     using task_list = types<task::vertex_partitioning>;
-    using graph_list = types<graph_t<double>>;
     auto sub = m.def_submodule("louvain");
 
-    ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_ops, sub, task_list, graph_list);
+    ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_ops, sub, task_list);
     ONEDAL_PY_INSTANTIATE(init_vertex_partitioning_result, sub, task_list);
 }
 
