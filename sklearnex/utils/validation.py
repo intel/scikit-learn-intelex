@@ -36,7 +36,7 @@ else:
     _finite_keyword = "force_all_finite"
 
 
-if daal_check_version(2024, "P", 700):
+if daal_check_version((2024, "P", 700)):
     from onedal.utils.validation import _assert_all_finite as _onedal_assert_all_finite
 
     def _onedal_supported_format(X, xp=None):
