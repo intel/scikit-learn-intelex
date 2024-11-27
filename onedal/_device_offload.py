@@ -16,7 +16,7 @@
 
 from collections.abc import Iterable
 from functools import wraps
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
 from sklearn import get_config
@@ -78,18 +78,17 @@ class SyclQueueManager:
         return q
 
     @staticmethod
+    def remove_global_queue():
+        """Remove the global queue."""
+        SyclQueueManager.__global_queue = None
+
+    @staticmethod
     def update_global_queue(queue):
         """Update the global queue."""
-        if not isinstance(queue, SyclQueue):
+        if queue is not None and not isinstance(queue, SyclQueue):
             # could be a device ID or selector string
             queue = SyclQueue(queue)
         SyclQueueManager.__global_queue = queue
-
-    @staticmethod
-    def update_global_queue_from_data(*data):
-        """Extract the queue from the provided data and update the global queue."""
-        queue = SyclQueueManager.from_data(*data)
-        SyclQueueManager.update_global_queue(queue)  # redundant, but explicit
 
     @staticmethod
     def from_data(*data) -> Optional[SyclQueue]:
@@ -108,11 +107,10 @@ class SyclQueueManager:
                 SyclQueueManager.update_global_queue(data_queue)
                 global_queue = data_queue
 
-            # if the data item is on device, assert it's compatible with global queue
-            if (
-                data_queue.sycl_device is not None
-                and data_queue.sycl_device != global_queue.sycl_device
-            ):
+            # if the data item is on device, assert it's compatible with device in global queue
+            data_device = data_queue.sycl_device
+            global_device = global_queue.sycl_device
+            if data_device is not None and data_device != global_device:
                 raise ValueError(
                     "Data objects are located on different target devices or not on selected device."
                 )
@@ -131,9 +129,9 @@ def supports_queue(func):
 
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        if (queue := kwargs.get("queue", None)) is not None:
-            # update the global queue with what is provided
-            SyclQueueManager.update_global_queue(queue)
+        queue = kwargs.get("queue", None)
+        # update the global queue with what is provided, it can be None, then we will get it from provided data
+        SyclQueueManager.update_global_queue(queue)
         # find the queues in data using SyclQueueManager to verify that all data objects are on the same device
         kwargs["queue"] = SyclQueueManager.from_data(*args)
         return func(self, *args, **kwargs)
@@ -252,7 +250,7 @@ def support_input_format(freefunc=False, queue_param=True):
 
             hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
             data = (*args, *kwargs.values())
-            data_queue = SyclQueue.from_data(*data)
+            data_queue = SyclQueueManager.from_data(*data)
             if queue_param and hostkwargs.get("queue") is None:
                 hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)

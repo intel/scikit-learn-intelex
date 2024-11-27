@@ -557,7 +557,7 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
 
     @supports_queue
     def predict(self, X, queue=None):
-        return self._predict(X, queue).ravel()
+        return self._predict(X).ravel()
 
 
 class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):

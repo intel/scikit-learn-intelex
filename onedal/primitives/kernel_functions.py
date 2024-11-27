@@ -16,12 +16,12 @@
 
 import numpy as np
 
-from onedal import _default_backend, _dpc_backend
+from onedal import _default_backend as backend
+from onedal._device_offload import supports_queue
+from onedal.common._backend import BackendFunction
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
-
-backend = _dpc_backend or _default_backend
 
 
 def _check_inputs(X, Y):
@@ -33,15 +33,18 @@ def _check_inputs(X, Y):
     return X, Y
 
 
-def _compute_kernel(params, submodule, X, Y, queue):
-    policy = policy_manager.get_policy(queue, X, Y)
+def _compute_kernel(params, submodule, X, Y):
+    # get policy for direct backend calls
+
     X, Y = _convert_to_supported(X, Y)
     params["fptype"] = X.dtype
     X, Y = to_table(X, Y)
-    result = submodule.compute(policy, params, X, Y)
+    compute_method = BackendFunction(submodule.compute, backend, "compute")
+    result = compute_method(params, X, Y)
     return from_table(result.values)
 
 
+@supports_queue
 def linear_kernel(X, Y=None, scale=1.0, shift=0.0, queue=None):
     """
     Compute the linear kernel between X and Y:
@@ -61,14 +64,11 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0, queue=None):
     """
     X, Y = _check_inputs(X, Y)
     return _compute_kernel(
-        {"method": "dense", "scale": scale, "shift": shift},
-        backend.linear_kernel,
-        X,
-        Y,
-        queue,
+        {"method": "dense", "scale": scale, "shift": shift}, backend.linear_kernel, X, Y
     )
 
 
+@supports_queue
 def rbf_kernel(X, Y=None, gamma=None, queue=None):
     """
     Compute the rbf (gaussian) kernel between X and Y:
@@ -92,11 +92,10 @@ def rbf_kernel(X, Y=None, gamma=None, queue=None):
     gamma = 1.0 / X.shape[1] if gamma is None else gamma
     sigma = np.sqrt(0.5 / gamma)
 
-    return _compute_kernel(
-        {"method": "dense", "sigma": sigma}, backend.rbf_kernel, X, Y, queue
-    )
+    return _compute_kernel({"method": "dense", "sigma": sigma}, backend.rbf_kernel, X, Y)
 
 
+@supports_queue
 def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3, queue=None):
     """
     Compute the poly kernel between X and Y:
@@ -122,10 +121,10 @@ def poly_kernel(X, Y=None, gamma=1.0, coef0=0.0, degree=3, queue=None):
         backend.polynomial_kernel,
         X,
         Y,
-        queue,
     )
 
 
+@supports_queue
 def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0, queue=None):
     """
     Compute the sigmoid kernel between X and Y:
@@ -146,9 +145,5 @@ def sigmoid_kernel(X, Y=None, gamma=1.0, coef0=0.0, queue=None):
 
     X, Y = _check_inputs(X, Y)
     return _compute_kernel(
-        {"method": "dense", "scale": gamma, "shift": coef0},
-        backend.sigmoid_kernel,
-        X,
-        Y,
-        queue,
+        {"method": "dense", "scale": gamma, "shift": coef0}, backend.sigmoid_kernel, X, Y
     )

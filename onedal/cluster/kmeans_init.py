@@ -75,11 +75,10 @@ if daal_check_version((2023, "P", 200)):
             params = self._get_onedal_params(dtype)
             return (params, to_table(X), dtype)
 
-        @supports_queue
         def compute(self, X, queue=None):
             _, X_table, dtype = self._get_params_and_input(X)
 
-            centroids = self.compute_raw(X_table, dtype)
+            centroids = self.compute_raw(X_table, dtype, queue=queue)
 
             return from_table(centroids)
 
@@ -102,6 +101,6 @@ if daal_check_version((2023, "P", 200)):
         return (
             KMeansInit(
                 n_clusters, seed=random_seed, local_trials_count=n_local_trials
-            ).compute(X, queue),
+            ).compute(X, queue=queue),
             np.full(n_clusters, -1),
         )

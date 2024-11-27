@@ -175,8 +175,7 @@ class BaseSVM(metaclass=ABCMeta):
                     _gamma = 1.0 / X.shape[1]
                 else:
                     raise ValueError(
-                        "When 'gamma' is a string, it should be either 'scale' or "
-                        "'auto'. Got '{}' instead.".format(self.gamma)
+                        f"When 'gamma' is a string, it should be either 'scale' or 'auto'. Got '{self.gamma}' instead."
                     )
             else:
                 _gamma = self.gamma

@@ -72,12 +72,7 @@ class BackendFunction:
             policy = self.backend.host_policy()
 
         # dispatch to backend function
-        try:
-            return self.method(policy, *args, **kwargs)
-        except:
-            raise RuntimeError(
-                f"Error in dispatching to backend function for device {policy.get_device_id()} ({policy.get_device_name()})"
-            )
+        return self.method(policy, *args, **kwargs)
 
     def __repr__(self) -> str:
         return f"BackendFunction({self.backend}.{self.name})"
