@@ -34,6 +34,7 @@
 
 namespace oneapi::dal::python {
 
+using namespace pybind11::literals;
 // Please follow <https://intelpython.github.io/dpctl/latest/
 // api_reference/dpctl/sycl_usm_array_interface.html#sycl-usm-array-interface-attribute>
 // for the description of `__sycl_usm_array_interface__` protocol.
@@ -42,6 +43,8 @@ namespace oneapi::dal::python {
 // of `__sycl_usm_array_interface__` protocol.
 template <typename Type>
 dal::table convert_to_homogen_impl(py::object obj) {
+    dal::table res{};
+    
     // Get `__sycl_usm_array_interface__` dictionary representing USM allocations.
     auto sua_iface_dict = get_sua_interface(obj);
 
@@ -64,6 +67,25 @@ dal::table convert_to_homogen_impl(py::object obj) {
     // Get oneDAL Homogen DataLayout enumeration from input object shape and strides.
     const auto layout = get_sua_iface_layout(sua_iface_dict, r_count, c_count);
 
+    if (layout == dal::data_layout::unknown){
+        // NOTE: this will make a C-contiguous deep copy of the data
+        // if possible, this is expected to be a special case
+        py::object copy;
+        if (py::hasattr(obj, "copy")){
+            copy = obj.attr("copy")();
+        }
+        else if (py::hasattr(obj, "__array_namespace__")){
+            const auto space = obj.attr("__array_namespace__")();
+            copy = space.attr("asarray")(obj, "copy"_a = true);
+        }
+        else {
+            throw std::runtime_error("Wrong strides");
+        }
+        res = convert_to_homogen_impl<Type>(copy);
+        copy.dec_ref();
+        return res;
+    }
+
     // Get `__sycl_usm_array_interface__['data'][0]`, the first element of data entry,
     // which is a Python integer encoding USM pointer value.
     const auto* const ptr = reinterpret_cast<const Type*>(get_sua_ptr(sua_iface_dict));
@@ -78,8 +100,6 @@ dal::table convert_to_homogen_impl(py::object obj) {
 
     // Use read-only accessor for onedal table.
     bool is_readonly = is_sua_readonly(sua_iface_dict);
-
-    dal::table res{};
 
     if (is_readonly) {
         res = dal::homogen_table(queue,
