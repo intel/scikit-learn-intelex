@@ -377,23 +377,14 @@ def test_sua_iface_interop_unsupported_dtypes(dataframe, queue, dtype):
 def test_to_table_non_contiguous_input(dataframe, queue):
     if dataframe in "dpnp,dpctl" and not _is_dpc_backend:
         pytest.skip("__sycl_usm_array_interface__ support requires DPC backend.")
-    X = np.mgrid[:10, :10]
+    X, _ = np.mgrid[:10, :10]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     X = X[:, :3]
     sua_iface, _, _ = _get_sycl_namespace(X)
     # X expected to be non-contiguous.
     assert not X.flags.c_contiguous and not X.flags.f_contiguous
-
-    # TODO:
-    # consistent error message.
-    if dataframe in "dpnp,dpctl":
-        expected_err_msg = (
-            "Unable to convert from SUA interface: only 1D & 2D tensors are allowed"
-        )
-    else:
-        expected_err_msg = "Numpy input Could not convert Python object to onedal table."
-    with pytest.raises(ValueError, match=expected_err_msg):
-        to_table(X)
+    X_t = to_table(X)
+    assert X_t and X_t.shape == (10, 3) and X_t.has_data
 
 
 @pytest.mark.skipif(
