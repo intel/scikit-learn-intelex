@@ -44,10 +44,12 @@ def get_patch_map_core(preview=False):
         mapping = get_patch_map_core().copy()
 
         if _is_new_patching_available():
+            import sklearn.cluster as cluster_module
             import sklearn.covariance as covariance_module
             import sklearn.decomposition as decomposition_module
 
             # Preview classes for patching
+            from .preview.cluster import Louvain as Louvain_sklearnex
             from .preview.covariance import (
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
@@ -89,6 +91,18 @@ def get_patch_map_core(preview=False):
             mapping.pop("ridge")
             mapping["ridge"] = [
                 [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
+            ]
+
+            # Louvain
+            mapping["louvain"] = [
+                [
+                    (
+                        cluster_module,
+                        "Louvain",
+                        Louvain_sklearnex,
+                    ),
+                    None,
+                ]
             ]
 
         return mapping

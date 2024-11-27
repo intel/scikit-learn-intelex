@@ -25,7 +25,7 @@ def _apply_and_pass(func, *args, **kwargs):
     if len(args) == 1:
         return func(args[0], **kwargs)
     return tuple(map(lambda arg: func(arg, **kwargs), args))
-
+ 
 
 def _convert_one_to_table(arg):
     # All inputs for table conversion must be array-like or sparse, not scalars
@@ -137,6 +137,7 @@ else:
             return x
 
         return _apply_and_pass(func, *data)
+
 
     def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to
