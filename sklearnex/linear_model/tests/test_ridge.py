@@ -82,6 +82,8 @@ def _compute_ridge_coefficients(X, y, alpha, fit_intercept):
     if n_targets == 1:
         coeffs = coeffs.flatten()
         intercept = intercept[0]
+    else:
+        coeffs = coeffs.T
 
     return coeffs, intercept
 
@@ -221,7 +223,7 @@ def test_multivariate_ridge_scalar_alpha(dataframe, queue, fit_intercept, alpha)
 
     from sklearnex.linear_model import Ridge
 
-    X, y = make_regression(n_samples=10, n_features=3, n_targets=1, random_state=0)
+    X, y = make_regression(n_samples=10, n_features=3, n_targets=3, random_state=0)
     X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     ridge = Ridge(alpha=alpha, fit_intercept=fit_intercept)
@@ -232,5 +234,23 @@ def test_multivariate_ridge_scalar_alpha(dataframe, queue, fit_intercept, alpha)
     assert_allclose(ridge.intercept_, intercept, rtol=1e-6, atol=1e-6)
 
     predictions = _as_numpy(ridge.predict(X_c))
-    predictions_manual = X @ coef_manual + intercept
+    predictions_manual = X @ coef_manual.T + intercept
     assert_allclose(predictions, predictions_manual, rtol=1e-6, atol=1e-6)
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+def test_underdetermined_positive_alpha_ridge(dataframe, queue):
+    from sklearn.datasets import make_regression
+
+    from sklearnex.linear_model import Ridge
+
+    X, y = make_regression(n_samples=5, n_features=6, n_targets=1, random_state=0)
+    alpha = 1.0
+    X_c = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_c = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    ridge = Ridge(alpha=alpha, fit_intercept=True).fit(X_c, y_c)
+
+    coef_manual, intercept = _compute_ridge_coefficients(X, y, alpha, fit_intercept=True)
+
+    assert_allclose(ridge.coef_, coef_manual, rtol=1e-6, atol=1e-6)
+    assert_allclose(ridge.intercept_, intercept, rtol=1e-6, atol=1e-6)
