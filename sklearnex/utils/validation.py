@@ -130,9 +130,17 @@ def _check_sample_weight(
         dtype = xp.float64
 
     if sample_weight is None:
-        sample_weight = xp.ones(n_samples, dtype=dtype)
+        if hasattr(X, "device"):
+            sample_weight = xp.ones(n_samples, dtype=dtype, device=X.device)
+        else:
+            sample_weight = xp.ones(n_samples, dtype=dtype)
     elif isinstance(sample_weight, numbers.Number):
-        sample_weight = xp.full(n_samples, sample_weight, dtype=dtype)
+        if hasattr(X, "device"):
+            sample_weight = xp.full(
+                n_samples, sample_weight, dtype=dtype, device=X.device
+            )
+        else:
+            sample_weight = xp.full(n_samples, sample_weight, dtype=dtype)
     else:
         if dtype is None:
             dtype = [xp.float64, xp.float32]
