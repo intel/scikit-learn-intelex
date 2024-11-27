@@ -20,8 +20,7 @@ import scipy.sparse as sp
 from sklearn.utils.validation import _assert_all_finite as _sklearn_assert_all_finite
 from sklearn.utils.validation import _num_samples, check_array, check_non_negative
 
-from daal4py.sklearn._utils import sklearn_check_version
-from onedal.utils.validation import _assert_all_finite as _onedal_assert_all_finite
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
 from ._array_api import get_namespace
 
@@ -37,13 +36,26 @@ else:
     _finite_keyword = "force_all_finite"
 
 
-def _is_contiguous(X):
-    # array_api does not have a `strides` or `flags` attribute for testing memory
-    # order. When dlpack support is brought in for oneDAL, the dlpack python capsule
-    # can then be inspected for strides and this must be updated. _is_contiguous is
-    # therefore conservative in verifying attributes and does not support array_api.
-    # This will block onedal_assert_all_finite from being used for array_api inputs.
-    return hasattr(X, "flags") and (X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"])
+if daal_check_version(2024, "P", 700):
+    from onedal.utils.validation import _assert_all_finite as _onedal_assert_all_finite
+    
+    def _onedal_supported_format(X, xp=None):
+        # array_api does not have a `strides` or `flags` attribute for testing memory
+        # order. When dlpack support is brought in for oneDAL, general support for
+        # array_api can be enabled and the hasattr check can be removed.
+        # _onedal_supported_format is therefore conservative in verifying attributes and
+        # does not support array_api. This will block onedal_assert_all_finite from being
+        # used for array_api inputs but will allow dpnp ndarrays and dpctl tensors.
+        return X.dtype in [xp.float32, xp.float64] and hasattr(X, "flags")
+
+else:
+    from daal4py.utils.validation import _assert_all_finite as _onedal_assert_all_finite
+    from onedal.utils._array_api import _is_numpy_namespace
+    
+    def _onedal_supported_format(X, xp=None):
+        # daal4py _assert_all_finite only supports numpy namespaces, use internally-
+        # defined check to validate inputs, otherwise offload to sklearn
+        return X.dtype in [xp.float32, xp.float64] and _is_numpy_namespace(xp)
 
 
 def _sklearnex_assert_all_finite(
@@ -55,7 +67,7 @@ def _sklearnex_assert_all_finite(
     # size check is an initial match to daal4py for performance reasons, can be
     # optimized later
     xp, _ = get_namespace(X)
-    if X.size < 32768 or X.dtype not in [xp.float32, xp.float64] or not _is_contiguous(X):
+    if X.size < 32768 or not _onedal_supported_format(X, xp):
         if sklearn_check_version("1.1"):
             _sklearn_assert_all_finite(X, allow_nan=allow_nan, input_name=input_name)
         else:
