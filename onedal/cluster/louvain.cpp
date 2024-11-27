@@ -33,10 +33,10 @@ using graph_t = dal::preview::undirected_adjacency_vector_graph<std::int32_t, Fl
 
 template <typename Type>
 inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) {
-    if (data.get_kind() == dal::homogen_table::kind()){
+    if (input.get_kind() == dal::homogen_table::kind()){
         const auto &homogen_input = static_cast<const dal::homogen_table &>(input);
         // verify matching datatype
-        SET_CTYPE_FROM_DAL_TYPE(homogen_data.get_metadata().get_data_type(0),
+        SET_CTYPE_FROM_DAL_TYPE(homogen_input.get_metadata().get_data_type(0),
                                 [](auto CTYPE){if (!std::is_same<Type, CTYPE>::value) std::invalid_argument("Incorrect dtype");},
                                 std::invalid_argument("Unknown table dtype"))
 
@@ -50,7 +50,7 @@ inline void _table_checks(const table& input, Type* &ptr, std::int64_t &length) 
         length = static_cast<std::int64_t>(homogen_input.get_row_count());
 
         // get pointer
-        auto bytes_data = dal::detail::get_original_data(homogen_data);
+        auto bytes_array = dal::detail::get_original_data(homogen_data);
         const bool is_mutable = bytes_array.has_mutable_data();
 
         ptr = is_mutable ? static_cast<Type *>(bytes_array.get_mutable_data())
@@ -72,11 +72,11 @@ graph_t<Float> tables_to_undirected_graph(const table& data, const table& indice
 // are hardcoded to int64 and because they are 1 indexed.
     graph_t<Float> res;
 
-    Float *data_ptr;
+    Float *edge_ptr;
     std::int32_t *cols;
     std::int64_t *rows, data_count, col_count, vertex_count;
 
-    _table_checks<Float>(data, data_ptr, data_count);
+    _table_checks<Float>(data, edge_ptr, data_count);
     _table_checks<std::int32_t>(indices, cols, col_count);
     _table_checks<std::int64_t>(indptr, rows, vertex_count);
     
@@ -112,7 +112,7 @@ graph_t<Float> tables_to_undirected_graph(const table& data, const table& indice
     }
 
     graph_impl.set_topology(vertex_count, col_count/2, rows, cols, col_count, degrees);
-    graph_impl.set_edge_values(edge_pointer, col_count/2);
+    graph_impl.set_edge_values(edge_ptr, col_count/2);
     
     return res;
 }
