@@ -38,7 +38,7 @@ else:
 
 if daal_check_version(2024, "P", 700):
     from onedal.utils.validation import _assert_all_finite as _onedal_assert_all_finite
-    
+
     def _onedal_supported_format(X, xp=None):
         # array_api does not have a `strides` or `flags` attribute for testing memory
         # order. When dlpack support is brought in for oneDAL, general support for
@@ -51,7 +51,7 @@ if daal_check_version(2024, "P", 700):
 else:
     from daal4py.utils.validation import _assert_all_finite as _onedal_assert_all_finite
     from onedal.utils._array_api import _is_numpy_namespace
-    
+
     def _onedal_supported_format(X, xp=None):
         # daal4py _assert_all_finite only supports numpy namespaces, use internally-
         # defined check to validate inputs, otherwise offload to sklearn
