@@ -287,6 +287,11 @@ def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     incpca_loaded.partial_fit(X_split_df)
     dump = pickle.dumps(incpca_loaded)
     incpca_loaded = pickle.loads(dump)
+    assert incpca.batch_size == incpca_loaded.batch_size
+    assert incpca.n_features_in_ == incpca_loaded.n_features_in_
+    assert incpca.n_samples_seen_ == incpca_loaded.n_samples_seen_
+    assert incpca._parameter_constraints == incpca_loaded._parameter_constraints
+    assert incpca.n_jobs == incpca_loaded.n_jobs
     X_split_df = _convert_to_dataframe(X_split[1], sycl_queue=queue, target_df=dataframe)
     incpca.partial_fit(X_split_df)
     incpca_loaded.partial_fit(X_split_df)

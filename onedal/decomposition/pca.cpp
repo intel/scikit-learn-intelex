@@ -126,6 +126,7 @@ void init_partial_train_result(py::module_& m) {
         .DEF_ONEDAL_PY_PROPERTY(partial_crossproduct, result_t)
         .DEF_ONEDAL_PY_PROPERTY(partial_sum, result_t)
         .DEF_ONEDAL_PY_PROPERTY(auxiliary_table, result_t)
+        .def_property_readonly("auxiliary_table_count", &result_t::get_auxiliary_table_count)   
         .def(py::pickle(
             [](const result_t& res) {
                 py::list auxiliary;
@@ -154,7 +155,6 @@ void init_partial_train_result(py::module_& m) {
                 }
                 return res;
             }
-
         ));
 }
 

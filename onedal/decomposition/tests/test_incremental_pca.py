@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
+from onedal.datatypes import from_table
 from onedal.decomposition import IncrementalPCA
 from onedal.tests.utils._device_selection import get_queues
 
@@ -221,11 +222,34 @@ def test_incremental_estimator_pickle(queue, dtype):
     assert incpca_loaded._need_to_finalize == True
 
     # Check that estmator can be serialized after partial_fit call.
-    dump = pickle.dumps(incpca_loaded)
+    dump = pickle.dumps(incpca)
     incpca_loaded = pickle.loads(dump)
-    assert incpca._need_to_finalize == True
+    assert incpca._need_to_finalize == False
     # Finalize is called during serialization to make sure partial results are finalized correctly.
     assert incpca_loaded._need_to_finalize == False
+
+    partial_n_rows = from_table(incpca._partial_result.partial_n_rows)
+    partial_n_rows_loaded = from_table(incpca_loaded._partial_result.partial_n_rows)
+    assert_allclose(partial_n_rows, partial_n_rows_loaded)
+
+    partial_crossproduct = from_table(incpca._partial_result.partial_crossproduct)
+    partial_crossproduct_loaded = from_table(
+        incpca_loaded._partial_result.partial_crossproduct
+    )
+    assert_allclose(partial_crossproduct, partial_crossproduct_loaded)
+
+    partial_sum = from_table(incpca._partial_result.partial_sum)
+    partial_sum_loaded = from_table(incpca_loaded._partial_result.partial_sum)
+    assert_allclose(partial_sum, partial_sum_loaded)
+
+    auxiliary_table_count = incpca._partial_result.auxiliary_table_count
+    auxiliary_table_count_loaded = incpca_loaded._partial_result.auxiliary_table_count
+    assert_allclose(auxiliary_table_count, auxiliary_table_count_loaded)
+
+    for i in range(auxiliary_table_count):
+        aux_table = incpca._partial_result.get_auxiliary_table(i)
+        aux_table_loaded = incpca_loaded._partial_result.get_auxiliary_table(i)
+        assert_allclose(from_table(aux_table), from_table(aux_table_loaded))
 
     incpca.partial_fit(X_split[1], queue=queue)
     incpca_loaded.partial_fit(X_split[1], queue=queue)
