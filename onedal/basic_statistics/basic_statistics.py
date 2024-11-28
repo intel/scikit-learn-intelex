@@ -76,9 +76,7 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
             *_convert_to_supported(policy, data, sample_weight)
         )
 
-        module = self._get_backend("basic_statistics")
-        params = self._get_onedal_params(is_csr, data.dtype)
-        result = module.compute(policy, params, data, sample_weight)
+        result = self._compute_raw(data, sample_weight, policy, data.dtype, is_csr)
 
         for opt in self.options:
             value = from_table(getattr(result, opt))[0]  # two-dimensional table [1, n]
@@ -88,3 +86,13 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
                 setattr(self, opt, value)
 
         return self
+
+    def _compute_raw(
+        self, data_table, weights_table, policy, dtype=None, is_csr=False
+    ):
+        # This function is maintained for internal use by KMeans tolerance
+        # calculations, but is otherwise considered legacy code and is not
+        # to be used externally in any circumstance
+        module = self._get_backend("basic_statistics")
+        params = self._get_onedal_params(is_csr, dtype)
+        return module.compute(policy, params, data_table, weights_table)
