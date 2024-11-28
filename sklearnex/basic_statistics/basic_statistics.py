@@ -130,7 +130,11 @@ class BasicStatistics(IntelEstimator, BaseEstimator):
             setattr(self, option + "_", getattr(self._onedal_estimator, option))
 
     def __getattr__(self, attr):
-        is_deprecated_attr = attr in self._onedal_estimator.options
+        is_deprecated_attr = (
+            attr in self._onedal_estimator.options
+            if hasattr(self, "_onedal_estimator")
+            else False
+        )
         if is_deprecated_attr:
             warnings.warn(
                 "Result attributes without a trailing underscore were deprecated in version 2025.1 and will be removed in 2026.0"
