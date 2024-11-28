@@ -29,7 +29,6 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
     Basic Statistics oneDAL implementation.
     """
 
-    @abstractmethod
     def __init__(self, result_options="all", algorithm="by_default"):
         self.options = result_options
         self.algorithm = algorithm
