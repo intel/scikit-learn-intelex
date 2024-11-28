@@ -246,7 +246,7 @@ class IncrementalBasicStatistics(IntelEstimator, BaseEstimator):
         sattr = attr.removesuffix("_")
         is_statistic_attr = (
             sattr in self._onedal_estimator.options
-            if hasattr(self, "_onedal_estimator")
+            if "_onedal_estimator" in self.__dict__
             else False
         )
         if is_statistic_attr:

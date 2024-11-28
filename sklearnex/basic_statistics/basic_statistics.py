@@ -131,7 +131,7 @@ class BasicStatistics(IntelEstimator, BaseEstimator):
     def __getattr__(self, attr):
         is_deprecated_attr = (
             attr in self._onedal_estimator.options
-            if hasattr(self, "_onedal_estimator")
+            if "_onedal_estimator" in self.__dict__
             else False
         )
         if is_deprecated_attr:
