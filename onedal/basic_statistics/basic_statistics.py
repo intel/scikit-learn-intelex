@@ -71,14 +71,14 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
 
         is_csr = _is_csr(data)
 
-        data, sample_weight = _convert_to_supported(policy, data, sample_weight)
         is_single_dim = data.ndim == 1
-        data_table, weights_table = to_table(data, sample_weight)
+        data, sample_weight = to_table(
+            *_convert_to_supported(policy, data, sample_weight)
+        )
 
-        dtype = data_table.dtype
         module = self._get_backend("basic_statistics")
-        params = self._get_onedal_params(is_csr, data_table.dtype)
-        result = module.compute(policy, params, data_table, weights_table)
+        params = self._get_onedal_params(is_csr, data.dtype)
+        result = module.compute(policy, params, data, sample_weight)
 
         for opt in self.options:
             value = from_table(getattr(result, opt))[:, 0]  # two-dimensional table [n, 1]

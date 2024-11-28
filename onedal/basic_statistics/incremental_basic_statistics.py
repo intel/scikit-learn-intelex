@@ -92,7 +92,7 @@ class IncrementalBasicStatistics(BasicStatistics):
         """
         self._queue = queue
         policy = self._get_policy(queue, X)
-        X, sample_weight = to_table(_convert_to_supported(policy, X, sample_weight))
+        X, sample_weight = to_table(*_convert_to_supported(policy, X, sample_weight))
 
         if not hasattr(self, "_onedal_params"):
             self._onedal_params = self._get_onedal_params(False, dtype=X.dtype)
