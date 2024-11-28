@@ -19,6 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from onedal.tests.utils._device_selection import get_queues
+from onedal.datatypes import from_table
 
 
 @pytest.mark.parametrize("queue", get_queues())
@@ -145,13 +146,25 @@ def test_incremental_estimator_pickle(queue, dtype):
     assert inccov._need_to_finalize == True
     assert inccov_loaded._need_to_finalize == True
 
-    # Check that estmator can be serialized after partial_fit call.
-    dump = pickle.dumps(inccov_loaded)
+    # Check that estimator can be serialized after partial_fit call.
+    dump = pickle.dumps(inccov)
     inccov_loaded = pickle.loads(dump)
 
-    assert inccov._need_to_finalize == True
+    assert inccov._need_to_finalize == False
     # Finalize is called during serialization to make sure partial results are finalized correctly.
     assert inccov_loaded._need_to_finalize == False
+
+    partial_n_rows = from_table(inccov._partial_result.partial_n_rows)
+    partial_n_rows_loaded = from_table(inccov_loaded._partial_result.partial_n_rows)
+    assert_allclose(partial_n_rows, partial_n_rows_loaded)
+
+    partial_crossproduct = from_table(inccov._partial_result.partial_crossproduct)
+    partial_crossproduct_loaded = from_table(inccov_loaded._partial_result.partial_crossproduct)
+    assert_allclose(partial_crossproduct, partial_crossproduct_loaded)
+
+    partial_sums = from_table(inccov._partial_result.partial_sums)
+    partial_sums_loaded = from_table(inccov_loaded._partial_result.partial_sums)
+    assert_allclose(partial_sums, partial_sums_loaded)
 
     inccov.partial_fit(X_split[1], queue=queue)
     inccov_loaded.partial_fit(X_split[1], queue=queue)

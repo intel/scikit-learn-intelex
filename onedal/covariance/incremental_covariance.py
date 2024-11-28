@@ -63,16 +63,10 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         )
 
     def __getstate__(self):
-        """
-        Converts estimator's data to serializable format.
-        All tables contained in partial result are converted to np.arrays.
+        # Since finalize_fit can't be dispatched without directly provided queue
+        # and the dispatching policy can't be serialized, the computation is finalized
+        # here and the policy is not saved in serialized data.
 
-        Notes
-        -----
-        Since finalize_fit can't be dispatched without directly provided queue
-        and the dispatching policy can't be serialized, the computation is finalized
-        here and the policy is not saved in serialized data.
-        """
         self.finalize_fit()
         data = self.__dict__.copy()
         data.pop("_queue", None)
