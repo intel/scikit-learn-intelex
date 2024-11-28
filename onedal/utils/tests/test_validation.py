@@ -25,7 +25,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from onedal.utils.validation import _assert_all_finite, assert_all_finite
+from onedal.utils.validation import assert_all_finite
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -48,7 +48,7 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan, dataframe, queue)
     X = np.empty(shape, dtype=dtype)
     X.fill(np.finfo(dtype).max)
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    _assert_all_finite(X, allow_nan=allow_nan)
+    assert_all_finite(X, allow_nan=allow_nan)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -82,11 +82,11 @@ def test_assert_finite_random_location(
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
 
     if check is None or (allow_nan and check == "NaN"):
-        _assert_all_finite(X, allow_nan=allow_nan)
+        assert_all_finite(X, allow_nan=allow_nan)
     else:
         msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
         with pytest.raises(ValueError, match=msg_err):
-            _assert_all_finite(X, allow_nan=allow_nan)
+            assert_all_finite(X, allow_nan=allow_nan)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
@@ -110,11 +110,11 @@ def test_assert_finite_random_shape_and_location(
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
 
     if check is None or (allow_nan and check == "NaN"):
-        _assert_all_finite(X, allow_nan=allow_nan)
+        assert_all_finite(X, allow_nan=allow_nan)
     else:
         msg_err = "Input contains " + ("infinity" if allow_nan else "NaN, infinity") + "."
         with pytest.raises(ValueError, match=msg_err):
-            _assert_all_finite(X, allow_nan=allow_nan)
+            assert_all_finite(X, allow_nan=allow_nan)
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
