@@ -159,7 +159,9 @@ def test_incremental_estimator_pickle(queue, dtype):
     assert_allclose(partial_n_rows, partial_n_rows_loaded)
 
     partial_crossproduct = from_table(inccov._partial_result.partial_crossproduct)
-    partial_crossproduct_loaded = from_table(inccov_loaded._partial_result.partial_crossproduct)
+    partial_crossproduct_loaded = from_table(
+        inccov_loaded._partial_result.partial_crossproduct
+    )
     assert_allclose(partial_crossproduct, partial_crossproduct_loaded)
 
     partial_sums = from_table(inccov._partial_result.partial_sums)
