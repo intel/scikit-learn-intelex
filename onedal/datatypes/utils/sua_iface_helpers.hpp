@@ -26,7 +26,7 @@
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
-#include "onedal/common/policy_common.hpp"
+#include "onedal/common/sycl_interfaces.hpp"
 #include "onedal/datatypes/data_conversion_sua_iface.hpp"
 #include "onedal/datatypes/utils/dtype_conversions.hpp"
 #include "onedal/datatypes/utils/dtype_dispatcher.hpp"
@@ -61,8 +61,6 @@ void report_problem_to_sua_iface(const char* clarification);
 py::tuple get_npy_strides(const dal::data_layout& data_layout,
                           npy_intp row_count,
                           npy_intp column_count);
-
-py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue);
 
 } // namespace oneapi::dal::python
 

@@ -96,7 +96,7 @@ class BaseSVM(metaclass=ABCMeta):
         self.n_iter_ = 1 if max_iter < 1 else max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
         return {
-            "fptype": "float" if data.dtype == np.float32 else "double",
+            "fptype": data.dtype,
             "method": self.algorithm,
             "kernel": self.kernel,
             "c": self.C,

@@ -43,7 +43,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
         params = {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": self.algorithm,
             "intercept": self.fit_intercept,
             "result_option": (intercept + "coefficients"),

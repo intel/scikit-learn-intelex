@@ -57,7 +57,7 @@ def test_sklearnex_import_linear(
 
     linreg = LinearRegression()
     if daal_check_version((2024, "P", 0)) and macro_block is not None:
-        hparams = linreg.get_hyperparameters("fit")
+        hparams = LinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 
