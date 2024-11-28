@@ -167,7 +167,9 @@ class BasicStatistics(IntelEstimator, BaseEstimator):
             X = check_array(X, dtype=[xp.float64, xp.float32])
 
         if sample_weight is not None:
-            sample_weight = _check_sample_weight(sample_weight, X)
+            sample_weight = _check_sample_weight(
+                sample_weight, X, dtype=[xp.float64, xp.float32]
+            )
 
         onedal_params = {
             "result_options": self.result_options,

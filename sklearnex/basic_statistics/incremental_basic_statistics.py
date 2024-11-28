@@ -186,8 +186,10 @@ class IncrementalBasicStatistics(IntelEstimator, BaseEstimator):
                     dtype=[np.float64, np.float32],
                 )
 
-        if sample_weight is not None:
-            sample_weight = _check_sample_weight(sample_weight, X)
+            if sample_weight is not None:
+                sample_weight = _check_sample_weight(
+                    sample_weight, X, dtype=[np.float64, np.float32]
+                )
 
         if first_pass:
             self.n_samples_seen_ = X.shape[0]
