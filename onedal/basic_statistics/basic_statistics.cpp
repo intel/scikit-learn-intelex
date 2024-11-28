@@ -233,7 +233,6 @@ void init_partial_compute_result(py::module_& m) {
                 return res;
             }
         ));
-
 }
 
 ONEDAL_PY_DECLARE_INSTANTIATOR(init_compute_result);
