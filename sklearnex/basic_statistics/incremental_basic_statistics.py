@@ -14,7 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils import check_array, gen_batches
 
@@ -177,18 +176,18 @@ class IncrementalBasicStatistics(IntelEstimator, BaseEstimator):
                 X = validate_data(
                     self,
                     X,
-                    dtype=[np.float64, np.float32],
+                    dtype=[xp.float64, xp.float32],
                     reset=first_pass,
                 )
             else:
                 X = check_array(
                     X,
-                    dtype=[np.float64, np.float32],
+                    dtype=[xp.float64, xp.float32],
                 )
 
             if sample_weight is not None:
                 sample_weight = _check_sample_weight(
-                    sample_weight, X, dtype=[np.float64, np.float32]
+                    sample_weight, X, dtype=[xp.float64, xp.float32]
                 )
 
         if first_pass:
