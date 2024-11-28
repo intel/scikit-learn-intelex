@@ -25,4 +25,4 @@ class BasicStatistics(BasicStatistics_Batch):
 
     @support_input_format()
     def fit(self, data, sample_weight=None, queue=None):
-        return super().fit(data, sample_weight, queue)
+        return super().fit(data, sample_weight, queue=queue)
