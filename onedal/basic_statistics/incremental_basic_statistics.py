@@ -139,6 +139,6 @@ class IncrementalBasicStatistics(BasicStatistics):
         )
 
         for opt in self.options:
-            setattr(self, opt, from_table(getattr(result, opt))[:, 0])
+            setattr(self, opt, from_table(getattr(result, opt))[0])
 
         return self

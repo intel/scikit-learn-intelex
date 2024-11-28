@@ -81,7 +81,7 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
         result = module.compute(policy, params, data, sample_weight)
 
         for opt in self.options:
-            value = from_table(getattr(result, opt))[:, 0]  # two-dimensional table [n, 1]
+            value = from_table(getattr(result, opt))[0]  # two-dimensional table [1, n]
             if is_single_dim:
                 setattr(self, opt, value[0])
             else:
