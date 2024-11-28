@@ -23,10 +23,10 @@
 
 #include "oneapi/dal/table/common.hpp"
 
-namespace oneapi::dal::python {
+namespace oneapi::dal::python::numpy {
 
 PyObject *convert_to_pyobject(const dal::table &input);
 dal::table convert_to_table(PyObject *obj);
 
-} // namespace oneapi::dal::python
+} // namespace oneapi::dal::python::numpy
 
