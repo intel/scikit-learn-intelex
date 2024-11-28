@@ -17,8 +17,6 @@
 import warnings
 from abc import ABCMeta, abstractmethod
 
-import numpy as np
-
 from ..common._base import BaseEstimator
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _is_csr
@@ -50,16 +48,16 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
 
     @property
     def options(self):
-        if self._options == "all":
+        if self._options[0] == "all":
             return self.get_all_result_options()
         return self._options
 
     @options.setter
-    def options(self, options):
+    def options(self, opts):
         # options always to be an iterable
-        self._options = options.split("|") if isinstance(options, str) else options
+        self._options = opts.split("|") if isinstance(opts, str) else opts
 
-    def _get_onedal_params(self, is_csr, dtype=np.float32):
+    def _get_onedal_params(self, is_csr, dtype=None):
         return {
             "fptype": dtype,
             "method": "sparse" if is_csr else self.algorithm,

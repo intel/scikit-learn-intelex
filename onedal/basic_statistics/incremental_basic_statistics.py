@@ -14,8 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import numpy as np
-
 from ..datatypes import _convert_to_supported, from_table, to_table
 from .basic_statistics import BasicStatistics
 
