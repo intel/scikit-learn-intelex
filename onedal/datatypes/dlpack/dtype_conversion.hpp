@@ -14,17 +14,29 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include "onedal/datatypes/dlpack/dlpack.h"
-#include "onedal/datatypes/dlpack/dlpack_helper.hpp"
-#include "onedal/datatypes/dlpack/device_conversion.hpp"
+#pragma once
 
-namespace oneapi::dal::python::dlpack {
+#include <string>
 
-void instantiate_dlpack_interop(py::module& pm) {
-    auto sub_module = pm.def_submodule("dlpack");
-    dlpack::instantiate_dlpack_helper(sub_module);
-    dlpack::instantiate_dlpack_and_table(sub_module);
-    dlpack::instantiate_convert_to_policy(sub_module);
+#include <pybind11/pybind11.h>
+
+#include "oneapi/dal/common.hpp"
+#include "oneapi/dal/detail/common.hpp"
+
+#include "onedal/dlpack/dlpack.h"
+
+namespace py = pybind11;
+
+namespace oneapi::dal::python::interop::dlpack {
+
+// DLDataType is only 64 bits in size. Not expensive
+dal::data_type convert_dlpack_to_dal_type(DLDataType dt);
+DLDataType convert_dal_to_dlpack_type(dal::data_type dt);
+
+template <typename Type>
+inline DLDataType make_data_type(Type tag = {}) {
+    constexpr auto dt = detail::make_data_type<Type>();
+    return convert_dlpack_to_dal_type(dt);
 }
 
-} // namespace oneapi::dal::python::dlpack
+} // namespace oneapi::dal::python::interop::dlpack

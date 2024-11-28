@@ -14,17 +14,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#include <optional>
-
-#ifdef ONEDAL_DATA_PARALLEL
-#include <sycl/sycl.hpp>
-#endif // ONEDAL_DATA_PARALLEL
-
-#include <pybind11/pybind11.h>
-
-#include "onedal/common/device_lookup.hpp"
-#include "onedal/datatypes/utils/dlpack.h"
-#include "onedal/datatypes/utils/device_conversion.hpp"
+#include "onedal/datatypes/dlpack/device_conversion.hpp"
 
 namespace py = pybind11;
 
