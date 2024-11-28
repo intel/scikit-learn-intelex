@@ -44,16 +44,21 @@ class BackendFunction:
         method: Callable[..., Any],
         backend: Backend,
         name: str,
+        no_policy: bool,
     ):
         self.method = method
         self.name = name
         self.backend = backend
+        self.no_policy = no_policy
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Dispatch to backend function with the appropriate policy which is determined from the global queue"""
         if not args and not kwargs:
             # immediate dispatching without any arguments, in particular no policy
             return self.method()
+
+        if self.no_policy:
+            return self.method(*args, **kwargs)
 
         # use globally configured queue (from `target_offload` configuration or provided data)
         queue = getattr(SyclQueueManager.get_global_queue(), "implementation", None)
@@ -83,6 +88,7 @@ def __decorator(
     backend_manager: BackendManager,
     module_name: str,
     lookup_name: Optional[str],
+    no_policy: bool,
 ) -> Callable[..., Any]:
     """Decorator to bind a method to the specified backend"""
     if lookup_name is None:
@@ -96,6 +102,7 @@ def __decorator(
         backend_method,
         backend_manager.backend,
         name=f"{module_name}.{method.__name__}",
+        no_policy=no_policy,
     )
 
     backend_type = backend_manager.get_backend_type()
@@ -106,7 +113,32 @@ def __decorator(
     return wrapped_method
 
 
-def bind_default_backend(module_name: str, lookup_name: Optional[str] = None):
+def bind_default_backend(
+    module_name: str, lookup_name: Optional[str] = None, no_policy=False
+):
+    """
+    Decorator to bind a method from the default backend to a class.
+
+    This decorator binds a method implementation from the default backend (host/dpc).
+    If the default backend is unavailable, the method is returned without modification.
+
+    Parameters:
+    ----------
+    module_name : str
+        The name of the module where the target function is located (e.g. `covariance`).
+    lookup_name : Optional[str], optional
+        The name of the method to look up in the backend module. If not provided,
+        the name of the decorated method is used.
+    no_policy : bool, optional
+        If True, the method will be decorated without a policy. Default is False.
+
+    Returns:
+    -------
+    Callable[..., Any]
+        The decorated method bound to the implementation in default backend, or the original
+        method if the default backend is unavailable.
+    """
+
     def decorator(method: Callable[..., Any]):
         # grab the lookup_name from outer scope
         nonlocal lookup_name
@@ -117,12 +149,37 @@ def bind_default_backend(module_name: str, lookup_name: Optional[str] = None):
             )
             return method
 
-        return __decorator(method, default_manager, module_name, lookup_name)
+        return __decorator(method, default_manager, module_name, lookup_name, no_policy)
 
     return decorator
 
 
-def bind_spmd_backend(module_name: str, lookup_name: Optional[str] = None):
+def bind_spmd_backend(
+    module_name: str, lookup_name: Optional[str] = None, no_policy=False
+):
+    """
+    Decorator to bind a method from the SPMD backend to a class.
+
+    This decorator binds a method implementation from the SPMD backend.
+    If the SPMD backend is unavailable, the method is returned without modification.
+
+    Parameters:
+    ----------
+    module_name : str
+        The name of the module where the target function is located (e.g. `covariance`).
+    lookup_name : Optional[str], optional
+        The name of the method to look up in the backend module. If not provided,
+        the name of the decorated method is used.
+    no_policy : bool, optional
+        If True, the method will be decorated without a policy. Default is False.
+
+    Returns:
+    -------
+    Callable[..., Any]
+        The decorated method bound to the implementation in SPMD backend, or the original
+        method if the SPMD backend is unavailable.
+    """
+
     def decorator(method: Callable[..., Any]):
         # grab the lookup_name from outer scope
         nonlocal lookup_name
@@ -133,6 +190,6 @@ def bind_spmd_backend(module_name: str, lookup_name: Optional[str] = None):
             )
             return method
 
-        __decorator(method, spmd_manager, module_name, lookup_name)
+        __decorator(method, spmd_manager, module_name, lookup_name, no_policy)
 
     return decorator

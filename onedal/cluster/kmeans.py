@@ -63,7 +63,7 @@ class _BaseKMeans(TransformerMixin, ClusterMixin, ABC):
         self.random_state = random_state
         self.n_local_trials = n_local_trials
 
-    @bind_default_backend("kmeans_common")
+    @bind_default_backend("kmeans_common", no_policy=True)
     def _is_same_clustering(self, labels, best_labels, n_clusters): ...
 
     @bind_default_backend("kmeans.clustering")

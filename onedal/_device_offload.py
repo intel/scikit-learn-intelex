@@ -95,7 +95,18 @@ class SyclQueueManager:
         """Extract the queue from provided data. This updates the global queue as well."""
         for item in data:
             # iterate through all data objects, extract the queue, and verify that all data objects are on the same device
-            usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
+
+            # get the `usm_interface` - the C++ implementation might throw an exception if the data type is not supported
+            try:
+                usm_iface = getattr(item, "__sycl_usm_array_interface__", None)
+            except RuntimeError as e:
+                if "SUA interface" in str(e):
+                    # ignore SUA interface errors and move on
+                    continue
+                else:
+                    # unexpected, re-raise
+                    raise e
+
             if usm_iface is None:
                 # no interface found - try next data object
                 continue
