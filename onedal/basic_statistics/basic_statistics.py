@@ -48,7 +48,7 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
 
     @property
     def options(self):
-        if self._options[0] == "all":
+        if self._options == ["all"]:
             return self.get_all_result_options()
         return self._options
 
