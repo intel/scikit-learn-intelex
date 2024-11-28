@@ -128,7 +128,7 @@ dal::table convert_to_homogen_impl(py::object obj) {
 }
 
 // Convert oneDAL table with zero-copy by use of `__sycl_usm_array_interface__` protocol.
-dal::table convert_from_sua_iface(py::object obj) {
+dal::table convert_to_table(py::object obj) {
     // Get `__sycl_usm_array_interface__` dictionary representing USM allocations.
     auto sua_iface_dict = get_sua_interface(obj);
 
