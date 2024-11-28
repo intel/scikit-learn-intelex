@@ -28,6 +28,7 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
     """
     Basic Statistics oneDAL implementation.
     """
+
     @abstractmethod
     def __init__(self, result_options="all", algorithm="by_default"):
         self.options = result_options
@@ -58,7 +59,7 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
     def options(self, options):
         # options always to be an iterable
         self._options = options.split("|") if isinstance(options, str) else options
-        
+
     def _get_onedal_params(self, is_csr, dtype=np.float32):
         return {
             "fptype": dtype,
@@ -79,13 +80,12 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
         module = self._get_backend("basic_statistics")
         params = self._get_onedal_params(is_csr, data_table.dtype)
         result = module.compute(policy, params, data_table, weights_table)
-        
+
         for opt in self.options:
-            value = from_table(getattr(result, opt)).ravel()
+            value = from_table(getattr(result, opt))[:, 0]  # two-dimensional table [n, 1]
             if is_single_dim:
-                setattr(self, getattr(raw_result, opt), value[0])
+                setattr(self, opt, value[0])
             else:
                 setattr(self, opt, value)
 
         return self
-

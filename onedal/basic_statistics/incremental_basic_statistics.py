@@ -16,14 +16,11 @@
 
 import numpy as np
 
-from daal4py.sklearn._utils import get_dtype
-
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_array
-from .basic_statistics import BaseBasicStatistics
+from .basic_statistics import BasicStatistics
 
 
-class IncrementalBasicStatistics(BaseBasicStatistics):
+class IncrementalBasicStatistics(BasicStatistics):
     """
     Incremental estimator for basic statistics based on oneDAL implementation.
     Allows to compute basic statistics if data are splitted into batches.
@@ -65,8 +62,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             Second order moment of each feature over all samples.
     """
 
-    def __init__(self, result_options="all"):
-        super().__init__(result_options, algorithm="by_default")
+    def __init__(self, result_options="all", algorithm="by_default"):
+        super().__init__(result_options, algorithm)
         self._reset()
 
     def _reset(self):
@@ -74,7 +71,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             "basic_statistics", None, "partial_compute_result"
         )
 
-    def partial_fit(self, X, weights=None, queue=None):
+    def partial_fit(self, X, sample_weight=None, queue=None):
         """
         Computes partial data for basic statistics
         from data batch X and saves it to `_partial_result`.
@@ -95,24 +92,11 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         """
         self._queue = queue
         policy = self._get_policy(queue, X)
-        X, weights = _convert_to_supported(policy, X, weights)
-
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], ensure_2d=False, force_all_finite=False
-        )
-        if weights is not None:
-            weights = _check_array(
-                weights,
-                dtype=[np.float64, np.float32],
-                ensure_2d=False,
-                force_all_finite=False,
-            )
+        X, sample_weight = to_table(_convert_to_supported(policy, X, sample_weight))
 
         if not hasattr(self, "_onedal_params"):
-            dtype = get_dtype(X)
-            self._onedal_params = self._get_onedal_params(False, dtype=dtype)
+            self._onedal_params = self._get_onedal_params(False, dtype=X.dtype)
 
-        X_table, weights_table = to_table(X, weights)
         self._partial_result = self._get_backend(
             "basic_statistics",
             None,
@@ -120,8 +104,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             policy,
             self._onedal_params,
             self._partial_result,
-            X_table,
-            weights_table,
+            X,
+            sample_weight,
         )
 
     def finalize_fit(self, queue=None):
@@ -153,8 +137,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             self._onedal_params,
             self._partial_result,
         )
-        options = self._get_result_options(self.options).split("|")
-        for opt in options:
-            setattr(self, opt, from_table(getattr(result, opt)).ravel())
+
+        for opt in self.options:
+            setattr(self, opt, from_table(getattr(result, opt))[:, 0])
 
         return self
