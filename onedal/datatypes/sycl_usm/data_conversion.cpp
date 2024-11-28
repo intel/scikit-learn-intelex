@@ -27,12 +27,12 @@
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
 #include "onedal/common/sycl_interfaces.hpp"
-#include "onedal/datatypes/data_conversion_sua_iface.hpp"
-#include "onedal/datatypes/utils/dtype_conversions.hpp"
-#include "onedal/datatypes/utils/dtype_dispatcher.hpp"
-#include "onedal/datatypes/utils/sua_iface_helpers.hpp"
+#include "onedal/datatypes/sycl_usm/data_conversion.hpp"
+#include "onedal/datatypes/sycl_usm/dtype_conversions.hpp"
+#include "onedal/datatypes/sycl_usm/dtype_dispatcher.hpp"
+#include "onedal/datatypes/sycl_usm/sua_iface_helpers.hpp"
 
-namespace oneapi::dal::python {
+namespace oneapi::dal::python::sycl_usm {
 
 using namespace pybind11::literals;
 // Please follow <https://intelpython.github.io/dpctl/latest/
@@ -236,6 +236,6 @@ void define_sycl_usm_array_property(py::class_<dal::table>& table_obj) {
     table_obj.def_property_readonly("__sycl_usm_array_interface__", &construct_sua_iface);
 }
 
-} // namespace oneapi::dal::python
+} // namespace oneapi::dal::python::sycl_usm
 
 #endif // ONEDAL_DATA_PARALLEL

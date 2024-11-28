@@ -23,7 +23,7 @@
 
 #include "oneapi/dal/table/common.hpp"
 
-namespace oneapi::dal::python {
+namespace oneapi::dal::python::sycl_usm {
 
 namespace py = pybind11;
 
@@ -37,4 +37,4 @@ py::dict construct_sua_iface(const dal::table& input);
 // USM allocations.
 void define_sycl_usm_array_property(py::class_<dal::table>& t);
 
-} // namespace oneapi::dal::python
+} // namespace oneapi::dal::python::sycl_usm

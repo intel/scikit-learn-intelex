@@ -18,10 +18,10 @@
 #include "oneapi/dal/table/homogen.hpp"
 
 #ifdef ONEDAL_DATA_PARALLEL
-#include "onedal/datatypes/data_conversion_sua_iface.hpp"
+#include "onedal/datatypes/sycl_usm/data_conversion.hpp"
 #endif // ONEDAL_DATA_PARALLEL
 
-#include "onedal/datatypes/data_conversion.hpp"
+#include "onedal/datatypes/numpy/data_conversion.hpp"
 #include "onedal/datatypes/utils/numpy_helpers.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 #include "onedal/version.hpp"
@@ -84,7 +84,7 @@ ONEDAL_PY_INIT_MODULE(table) {
     m.def("to_table", [](py::object obj) {
         #ifdef ONEDAL_DATA_PARALLEL
         if (py::hasattr(obj, "__sycl_usm_array_interface__")) {
-            return convert_from_sua_iface(obj);
+            return sycl_usm::convert_from_sua_iface(obj);
         }
         #endif // ONEDAL_DATA_PARALLEL
 
