@@ -87,9 +87,7 @@ class BasicStatistics(BaseEstimator, metaclass=ABCMeta):
 
         return self
 
-    def _compute_raw(
-        self, data_table, weights_table, policy, dtype=None, is_csr=False
-    ):
+    def _compute_raw(self, data_table, weights_table, policy, dtype=None, is_csr=False):
         # This function is maintained for internal use by KMeans tolerance
         # calculations, but is otherwise considered legacy code and is not
         # to be used externally in any circumstance
