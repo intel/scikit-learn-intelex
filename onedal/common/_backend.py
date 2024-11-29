@@ -20,20 +20,56 @@ from typing import Any, Callable, Literal, Optional
 from onedal import Backend, _default_backend, _spmd_backend
 from onedal._device_offload import SyclQueueManager
 
-from .backend_manager import BackendManager
-
 logger = logging.getLogger(__name__)
 
-default_manager = BackendManager(_default_backend)
-spmd_manager = BackendManager(_spmd_backend)
-
 # define types for backend functions: default, dpc, spmd
-BackendType = Literal["host", "dpc", "spmd"]
+BackendType = Literal["none", "host", "dpc", "spmd"]
 
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
+
+
+class BackendManager:
+    def __init__(self, backend_module):
+        self.backend = backend_module
+
+    def get_backend_type(self) -> BackendType:
+        if self.backend is None:
+            return "none"
+        if self.backend.is_spmd:
+            return "spmd"
+        if self.backend.is_dpc:
+            return "dpc"
+        return "host"
+
+    def get_backend_component(self, module_name: str, component_name: str):
+        """Get a component of the backend module.
+
+        Args:
+            module(str): The module to get the component from.
+            component: The component to get from the module.
+
+        Returns:
+            The component of the module.
+        """
+        submodules = module_name.split(".")
+        module = getattr(self.backend, submodules[0])
+        for submodule in submodules[1:]:
+            module = getattr(module, submodule)
+
+        # component can be provided like submodule.method, there can be arbitrary number of submodules
+        # and methods
+        result = module
+        for part in component_name.split("."):
+            result = getattr(result, part)
+
+        return result
+
+
+default_manager = BackendManager(_default_backend)
+spmd_manager = BackendManager(_spmd_backend)
 
 
 class BackendFunction:
