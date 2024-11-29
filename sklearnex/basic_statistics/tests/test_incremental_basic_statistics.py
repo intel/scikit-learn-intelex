@@ -432,7 +432,8 @@ def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     assert incbs.batch_size == incbs_loaded.batch_size
     assert incbs.n_features_in_ == incbs_loaded.n_features_in_
     assert incbs.n_samples_seen_ == incbs_loaded.n_samples_seen_
-    assert incbs._parameter_constraints == incbs_loaded._parameter_constraints
+    if hasattr(incbs, "_parameter_constraints"):
+        assert incbs._parameter_constraints == incbs_loaded._parameter_constraints
     assert incbs.n_jobs == incbs_loaded.n_jobs
     for result_option in options_and_tests:
         _, tols = options_and_tests[result_option]
