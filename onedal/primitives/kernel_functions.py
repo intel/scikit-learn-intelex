@@ -39,7 +39,9 @@ def _compute_kernel(params, submodule, X, Y):
     X, Y = _convert_to_supported(X, Y)
     params["fptype"] = X.dtype
     X, Y = to_table(X, Y)
-    compute_method = BackendFunction(submodule.compute, backend, "compute")
+    compute_method = BackendFunction(
+        submodule.compute, backend, "compute", no_policy=False
+    )
     result = compute_method(params, X, Y)
     return from_table(result.values)
 
