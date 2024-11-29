@@ -297,7 +297,7 @@ def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
     incpca.partial_fit(X_split_df)
     incpca_loaded.partial_fit(X_split_df)
 
-    # Check that estmator can be serialized after partial_fit call.
+    # Check that estimator can be serialized after partial_fit call.
     dump = pickle.dumps(incpca)
     incpca_loaded = pickle.loads(dump)
 

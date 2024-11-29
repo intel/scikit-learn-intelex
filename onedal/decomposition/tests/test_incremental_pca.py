@@ -221,7 +221,7 @@ def test_incremental_estimator_pickle(queue, dtype):
     assert incpca._need_to_finalize == True
     assert incpca_loaded._need_to_finalize == True
 
-    # Check that estmator can be serialized after partial_fit call.
+    # Check that estimator can be serialized after partial_fit call.
     dump = pickle.dumps(incpca)
     incpca_loaded = pickle.loads(dump)
     assert incpca._need_to_finalize == False
