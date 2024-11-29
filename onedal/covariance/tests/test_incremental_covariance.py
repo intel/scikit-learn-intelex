@@ -18,8 +18,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-from onedal.tests.utils._device_selection import get_queues
 from onedal.datatypes import from_table
+from onedal.tests.utils._device_selection import get_queues
 
 
 @pytest.mark.parametrize("queue", get_queues())
