@@ -14,9 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 
+from abc import abstractmethod
+
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
+from onedal._device_offload import supports_queue
+from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils import _check_array
@@ -69,11 +73,20 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm="by_default")
         self._reset()
 
-    def _reset(self):
-        self._partial_result = self._get_backend(
-            "basic_statistics", None, "partial_compute_result"
-        )
+    @bind_default_backend("basic_statistics")
+    def partial_compute_result(self): ...
 
+    @bind_default_backend("basic_statistics")
+    def partial_compute(self, *args, **kwargs): ...
+
+    @bind_default_backend("basic_statistics")
+    def finalize_compute(self, *args, **kwargs): ...
+
+    def _reset(self):
+        # get the _partial_result pointer from backend
+        self._partial_result = self.partial_compute_result()
+
+    @supports_queue
     def partial_fit(self, X, weights=None, queue=None):
         """
         Computes partial data for basic statistics
@@ -93,9 +106,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
-        self._queue = queue
-        policy = self._get_policy(queue, X)
-        X, weights = _convert_to_supported(policy, X, weights)
+        X, weights = _convert_to_supported(X, weights)
 
         X = _check_array(
             X, dtype=[np.float64, np.float32], ensure_2d=False, force_all_finite=False
@@ -113,17 +124,11 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             self._onedal_params = self._get_onedal_params(False, dtype=dtype)
 
         X_table, weights_table = to_table(X, weights)
-        self._partial_result = self._get_backend(
-            "basic_statistics",
-            None,
-            "partial_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-            X_table,
-            weights_table,
+        self._partial_result = self.partial_compute(
+            self._onedal_params, self._partial_result, X_table, weights_table
         )
 
+    @supports_queue
     def finalize_fit(self, queue=None):
         """
         Finalizes basic statistics computation and obtains result
@@ -139,20 +144,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
+        result = self.finalize_compute(self._onedal_params, self._partial_result)
 
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
-
-        result = self._get_backend(
-            "basic_statistics",
-            None,
-            "finalize_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-        )
         options = self._get_result_options(self.options).split("|")
         for opt in options:
             setattr(self, opt, from_table(getattr(result, opt)).ravel())
