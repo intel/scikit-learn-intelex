@@ -21,6 +21,4 @@ from .._base import BaseEstimatorSPMD
 
 
 class BasicStatistics(BaseEstimatorSPMD, BasicStatistics_Batch):
-    @support_input_format()
-    def fit(self, data, sample_weight=None, queue=None):
-        return super().fit(data, sample_weight=sample_weight, queue=queue)
+    pass
