@@ -462,8 +462,3 @@ gpu:
   # RuntimeError: Device support is not implemented, failing as result of fallback to cpu false
   - svm/tests/test_svm.py::test_unfitted
   - tests/test_common.py::test_estimators[SVC()-check_estimators_unfitted]
-
-  # Failed on the onedal's LinearRegression call.
-  # RuntimeError: oneapi::mkl::lapack::potrf: computation error: info = 2: Leading principal minor of order
-  # 2 is not positive, and the factorization could not be completed.
-  - ensemble/tests/test_stacking.py::test_stacking_prefit[StackingRegressor-DummyRegressor-predict-final_estimator1-X1-y1]

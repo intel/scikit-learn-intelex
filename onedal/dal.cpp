@@ -79,6 +79,9 @@ namespace oneapi::dal::python {
     #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
     ONEDAL_PY_INIT_MODULE(logistic_regression);
     #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
+    ONEDAL_PY_INIT_MODULE(finiteness_checker);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
@@ -138,6 +141,9 @@ namespace oneapi::dal::python {
     #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
         init_logistic_regression(m);
     #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
+        init_finiteness_checker(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
     }
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 
