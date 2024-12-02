@@ -583,7 +583,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
                 [
                     (
                         _num_features(y, fallback_1d=True) == 1,
-                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        f"Number of outputs is not 1.",
                     ),
                     (
                         y.dtype in [xp.float32, xp.float64, xp.int32, xp.int64],
@@ -946,7 +946,7 @@ class ForestRegressor(_sklearn_ForestRegressor, BaseForest):
                 [
                     (
                         _num_features(y, fallback_1d=True) == 1,
-                        f"Number of outputs ({self.n_outputs_}) is not 1.",
+                        f"Number of outputs is not 1.",
                     )
                 ]
             )
