@@ -519,7 +519,7 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         return self
 
     def _onedal_fit_ready(self, patching_status, X, y, sample_weight):
-        xp = get_namespace(X)
+        xp, _ = get_namespace(X)
         if sklearn_check_version("1.2"):
             self._validate_params()
         else:
