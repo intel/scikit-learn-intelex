@@ -112,7 +112,7 @@ def test_backend_queue():
     try:
         q = _backend.SyclQueue("cpu")
     except RuntimeError:
-        pytest.skip("openCL CPU runtime not installed")
+        pytest.skip("OpenCL CPU runtime not installed")
 
     # verify copying via a py capsule object is functional
     q2 = _backend.SyclQueue(q._get_capsule())
