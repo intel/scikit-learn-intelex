@@ -76,7 +76,6 @@ GPU_SKIP_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    "Ridge",  # does not support GPU offloading (fails silently)
     "ElasticNet",  # does not support GPU offloading (fails silently)
     "Lasso",  # does not support GPU offloading (fails silently)
     "SVR",  # does not support GPU offloading (fails silently)

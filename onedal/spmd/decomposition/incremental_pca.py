@@ -31,6 +31,7 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
     """
 
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = super(base_IncrementalPCA, self)._get_backend(
             "decomposition", "dim_reduction", "partial_train_result"
         )
@@ -92,6 +93,7 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
             self._partial_result,
             X_table,
         )
+        self._need_to_finalize = True
         return self
 
     def _create_model(self):
