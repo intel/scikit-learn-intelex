@@ -37,10 +37,15 @@ from sklearnex.tests.utils import _IS_INTEL
 def test_sklearnex_import_linear(
     dataframe, queue, dtype, macro_block, overdetermined, multi_output
 ):
-    if (not overdetermined or multi_output) and not daal_check_version((2025, "P", 1)):
-        pytest.skip()
-    if not overdetermined and queue and queue.sycl_device.is_gpu:
-        pytest.skip()
+    if (overdetermined or multi_output) and not daal_check_version((2025, "P", 1)):
+        pytest.skip("Functionality introduced in later versions")
+    if (
+        overdetermined
+        and queue
+        and queue.sycl_device.is_gpu
+        and not daal_check_version((2025, "P", 200))
+    ):
+        pytest.skip("Functionality introduced in later versions")
 
     from sklearnex.linear_model import LinearRegression
 
