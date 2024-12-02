@@ -256,12 +256,8 @@ class BaseForest(ABC):
                 "Invalid value for max_features. Allowed string "
                 f"values are {allowed_string_values}."
             )
-        dtypes = (
-            (numbers.Integral, np.integer, xp.dtypes(kind="integral"))
-            if hasattr(xp, "dtypes")
-            else (numbers.Integral, np.integer)
-        )
-        if isinstance(max_features, dtypes):
+
+        if isinstance(max_features, (numbers.Integral, np.integer)):
             return max_features
         if max_features > 0.0:
             return max(1, int(max_features * n_features))
