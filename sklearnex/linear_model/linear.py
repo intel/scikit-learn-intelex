@@ -17,7 +17,6 @@
 import logging
 from abc import ABC
 
-import numpy as np
 from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.utils.validation import check_array, check_is_fitted
@@ -28,6 +27,7 @@ from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from .._config import get_config
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
+from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
@@ -239,12 +239,12 @@ class LinearRegression(_sklearn_LinearRegression):
 
     def _onedal_fit(self, X, y, sample_weight, queue=None):
         assert sample_weight is None
-
+        xp, _ = get_namespace(X)
         supports_multi_output = daal_check_version((2025, "P", 1))
         check_params = {
             "X": X,
             "y": y,
-            "dtype": [np.float64, np.float32],
+            "dtype": [xp.float64, xp.float32],
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
             "multi_output": supports_multi_output,
