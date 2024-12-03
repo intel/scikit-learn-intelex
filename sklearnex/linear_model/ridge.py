@@ -97,6 +97,8 @@ if daal_check_version((2024, "P", 600)):
                     random_state=random_state,
                 )
 
+        _onedal_Ridge = staticmethod(onedal_Ridge)
+
         def fit(self, X, y, sample_weight=None):
             if sklearn_check_version("1.2"):
                 self._validate_params()
@@ -277,7 +279,7 @@ if daal_check_version((2024, "P", 600)):
                 "alpha": self.alpha,
                 "copy_X": self.copy_X,
             }
-            self._onedal_estimator = onedal_Ridge(**onedal_params)
+            self._onedal_estimator = self._onedal_Ridge(**onedal_params)
 
         def _onedal_fit(self, X, y, sample_weight, queue=None):
             # `Sample weight` is not supported. Expected to be None value.

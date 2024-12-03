@@ -83,6 +83,8 @@ class LinearRegression(_sklearn_LinearRegression):
                 positive=positive,
             )
 
+    _onedal_LinearRegression = staticmethod(onedal_LinearRegression)
+
     def fit(self, X, y, sample_weight=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
@@ -231,7 +233,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     def _initialize_onedal_estimator(self):
         onedal_params = {"fit_intercept": self.fit_intercept, "copy_X": self.copy_X}
-        self._onedal_estimator = onedal_LinearRegression(**onedal_params)
+        self._onedal_estimator = self._onedal_LinearRegression(**onedal_params)
 
     def _onedal_fit(self, X, y, sample_weight, queue=None):
         assert sample_weight is None
