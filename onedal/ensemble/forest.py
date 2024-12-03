@@ -17,11 +17,7 @@
 import numbers
 import warnings
 from abc import ABCMeta, abstractmethod
-from math import ceil
-
-import numpy as np
-from sklearn.ensemble import BaseEnsemble
-from sklearn.utils import check_random_state
+import math
 
 from daal4py.sklearn._utils import daal_check_version
 from sklearnex import get_hyperparameters
@@ -30,16 +26,9 @@ from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import (
-    _check_array,
-    _check_n_features,
-    _check_X_y,
-    _column_or_1d,
-    _validate_targets,
-)
 
 
-class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
+class BaseForest(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
@@ -100,8 +89,8 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         if self.max_features is None:
             return n_features
         elif isinstance(self.max_features, str):
-            return max(1, int(getattr(np, self.max_features)(n_features)))
-        elif isinstance(self.max_features, (numbers.Integral, np.integer)):
+            return max(1, int(getattr(math, self.max_features)(n_features)))
+        elif isinstance(self.max_features, numbers.Integral):
             return self.max_features
         elif self.max_features > 0.0:
             return max(1, int(self.max_features * n_features))
@@ -132,30 +121,17 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         self.observations_per_tree_fraction = (
             self.observations_per_tree_fraction if bool(self.bootstrap) else 1.0
         )
-
-        if not self.bootstrap and self.max_samples is not None:
-            raise ValueError(
-                "`max_sample` cannot be set if `bootstrap=False`. "
-                "Either switch to `bootstrap=True` or set "
-                "`max_sample=None`."
-            )
-        if not self.bootstrap and self.oob_score:
-            raise ValueError("Out of bag estimation only available" " if bootstrap=True")
-
         min_observations_in_leaf_node = (
             self.min_samples_leaf
             if isinstance(self.min_samples_leaf, numbers.Integral)
-            else int(ceil(self.min_samples_leaf * n_samples))
+            else int(math.ceil(self.min_samples_leaf * n_samples))
         )
 
         min_observations_in_split_node = (
             self.min_samples_split
             if isinstance(self.min_samples_split, numbers.Integral)
-            else int(ceil(self.min_samples_split * n_samples))
+            else int(math.ceil(self.min_samples_split * n_samples))
         )
-
-        rs = check_random_state(self.random_state)
-        seed = rs.randint(0, np.iinfo("i").max)
 
         onedal_params = {
             "fptype": data.dtype,
@@ -176,7 +152,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             "max_leaf_nodes": (0 if self.max_leaf_nodes is None else self.max_leaf_nodes),
             "max_bins": self.max_bins,
             "min_bin_size": self.min_bin_size,
-            "seed": seed,
+            "seed": self.random_state,
             "memory_saving_mode": False,
             "bootstrap": bool(self.bootstrap),
             "error_metric_mode": self.error_metric_mode,
@@ -190,125 +166,12 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
             onedal_params["splitter_mode"] = self.splitter_mode
         return onedal_params
 
-    def _check_parameters(self):
-        if isinstance(self.min_samples_leaf, numbers.Integral):
-            if not 1 <= self.min_samples_leaf:
-                raise ValueError(
-                    "min_samples_leaf must be at least 1 "
-                    "or in (0, 0.5], got %s" % self.min_samples_leaf
-                )
-        else:  # float
-            if not 0.0 < self.min_samples_leaf <= 0.5:
-                raise ValueError(
-                    "min_samples_leaf must be at least 1 "
-                    "or in (0, 0.5], got %s" % self.min_samples_leaf
-                )
-        if isinstance(self.min_samples_split, numbers.Integral):
-            if not 2 <= self.min_samples_split:
-                raise ValueError(
-                    "min_samples_split must be an integer "
-                    "greater than 1 or a float in (0.0, 1.0]; "
-                    "got the integer %s" % self.min_samples_split
-                )
-        else:  # float
-            if not 0.0 < self.min_samples_split <= 1.0:
-                raise ValueError(
-                    "min_samples_split must be an integer "
-                    "greater than 1 or a float in (0.0, 1.0]; "
-                    "got the float %s" % self.min_samples_split
-                )
-        if not 0 <= self.min_weight_fraction_leaf <= 0.5:
-            raise ValueError("min_weight_fraction_leaf must in [0, 0.5]")
-        if self.min_impurity_split is not None:
-            warnings.warn(
-                "The min_impurity_split parameter is deprecated. "
-                "Its default value has changed from 1e-7 to 0 in "
-                "version 0.23, and it will be removed in 0.25. "
-                "Use the min_impurity_decrease parameter instead.",
-                FutureWarning,
-            )
-
-            if self.min_impurity_split < 0.0:
-                raise ValueError(
-                    "min_impurity_split must be greater than " "or equal to 0"
-                )
-        if self.min_impurity_decrease < 0.0:
-            raise ValueError(
-                "min_impurity_decrease must be greater than " "or equal to 0"
-            )
-        if self.max_leaf_nodes is not None:
-            if not isinstance(self.max_leaf_nodes, numbers.Integral):
-                raise ValueError(
-                    "max_leaf_nodes must be integral number but was "
-                    "%r" % self.max_leaf_nodes
-                )
-            if self.max_leaf_nodes < 2:
-                raise ValueError(
-                    ("max_leaf_nodes {0} must be either None " "or larger than 1").format(
-                        self.max_leaf_nodes
-                    )
-                )
-        if isinstance(self.max_bins, numbers.Integral):
-            if not 2 <= self.max_bins:
-                raise ValueError("max_bins must be at least 2, got %s" % self.max_bins)
-        else:
-            raise ValueError(
-                "max_bins must be integral number but was " "%r" % self.max_bins
-            )
-        if isinstance(self.min_bin_size, numbers.Integral):
-            if not 1 <= self.min_bin_size:
-                raise ValueError(
-                    "min_bin_size must be at least 1, got %s" % self.min_bin_size
-                )
-        else:
-            raise ValueError(
-                "min_bin_size must be integral number but was " "%r" % self.min_bin_size
-            )
-
-    def _validate_targets(self, y, dtype):
-        self.class_weight_ = None
-        self.classes_ = None
-        return _column_or_1d(y, warn=True).astype(dtype, copy=False)
-
-    def _get_sample_weight(self, sample_weight, X):
-        sample_weight = np.asarray(sample_weight, dtype=X.dtype).ravel()
-
-        sample_weight = _check_array(
-            sample_weight, accept_sparse=False, ensure_2d=False, dtype=X.dtype, order="C"
-        )
-
-        if sample_weight.size != X.shape[0]:
-            raise ValueError(
-                "sample_weight and X have incompatible shapes: "
-                "%r vs %r\n"
-                "Note: Sparse matrices cannot be indexed w/"
-                "boolean masks (use `indices=True` in CV)."
-                % (sample_weight.shape, X.shape)
-            )
-
-        return sample_weight
-
     def _fit(self, X, y, sample_weight, module, queue):
-        X, y = _check_X_y(
-            X,
-            y,
-            dtype=[np.float64, np.float32],
-            force_all_finite=True,
-            accept_sparse="csr",
-        )
-        y = self._validate_targets(y, X.dtype)
-
-        self.n_features_in_ = X.shape[1]
-
-        if sample_weight is not None and len(sample_weight) > 0:
-            sample_weight = self._get_sample_weight(sample_weight, X)
-            data = (X, y, sample_weight)
-        else:
-            data = (X, y)
+        data = (X, y, sample_weight) if sample_weight else (X, y)
         policy = self._get_policy(queue, *data)
-        data = _convert_to_supported(policy, *data)
+        data = to_table(*_convert_to_supported(policy, *data))
         params = self._get_onedal_params(data[0])
-        train_result = module.train(policy, params, *to_table(*data))
+        train_result = module.train(policy, params, *data)
 
         self._onedal_model = train_result.model
 
@@ -318,25 +181,10 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
                 self.oob_decision_function_ = from_table(
                     train_result.oob_err_decision_function
                 )
-                if np.any(self.oob_decision_function_ == 0):
-                    warnings.warn(
-                        "Some inputs do not have OOB scores. This probably means "
-                        "too few trees were used to compute any reliable OOB "
-                        "estimates.",
-                        UserWarning,
-                    )
+
             else:
                 self.oob_score_ = from_table(train_result.oob_err_r2).item()
-                self.oob_prediction_ = from_table(
-                    train_result.oob_err_prediction
-                ).reshape(-1)
-                if np.any(self.oob_prediction_ == 0):
-                    warnings.warn(
-                        "Some inputs do not have OOB scores. This probably means "
-                        "too few trees were used to compute any reliable OOB "
-                        "estimates.",
-                        UserWarning,
-                    )
+                self.oob_prediction_ = from_table(train_result.oob_err_prediction)
 
         return self
 
@@ -347,42 +195,32 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
 
     def _predict(self, X, module, queue, hparams=None):
         _check_is_fitted(self)
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
-        )
-        _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
 
         model = self._onedal_model
-        X = _convert_to_supported(policy, X)
+        X = to_table(_convert_to_supported(policy, X))
         params = self._get_onedal_params(X)
         if hparams is not None and not hparams.is_default:
-            result = module.infer(policy, params, hparams.backend, model, to_table(X))
+            result = module.infer(policy, params, hparams.backend, model, X)
         else:
-            result = module.infer(policy, params, model, to_table(X))
+            result = module.infer(policy, params, model, X)
 
-        y = from_table(result.responses)
-        return y
+        return from_table(result.responses)
 
     def _predict_proba(self, X, module, queue, hparams=None):
         _check_is_fitted(self)
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
-        )
-        _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
-        X = _convert_to_supported(policy, X)
+        X = to_table(_convert_to_supported(policy, X))
         params = self._get_onedal_params(X)
         params["infer_mode"] = "class_probabilities"
 
         model = self._onedal_model
         if hparams is not None and not hparams.is_default:
-            result = module.infer(policy, params, hparams.backend, model, to_table(X))
+            result = module.infer(policy, params, hparams.backend, model, X)
         else:
-            result = module.infer(policy, params, model, to_table(X))
+            result = module.infer(policy, params, model, X)
 
-        y = from_table(result.probabilities)
-        return y
+        return from_table(result.probabilities)
 
 
 class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
@@ -443,18 +281,6 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             algorithm=algorithm,
         )
 
-    def _validate_targets(self, y, dtype):
-        y, self.class_weight_, self.classes_ = _validate_targets(
-            y, self.class_weight, dtype
-        )
-
-        # Decapsulate classes_ attributes
-        # TODO:
-        # align with `n_classes_` and `classes_` attr with daal4py implementations.
-        # if hasattr(self, "classes_"):
-        #    self.n_classes_ = self.classes_
-        return y
-
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
             X,
@@ -466,14 +292,12 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
 
     def predict(self, X, queue=None):
         hparams = get_hyperparameters("decision_forest", "infer")
-        pred = super()._predict(
+        return super()._predict(
             X,
             self._get_backend("decision_forest", "classification", None),
             queue,
             hparams,
         )
-
-        return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
         hparams = get_hyperparameters("decision_forest", "infer")
@@ -514,7 +338,6 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         error_metric_mode="none",
         variable_importance_mode="none",
         algorithm="hist",
-        **kwargs,
     ):
         super().__init__(
             n_estimators=n_estimators,
@@ -558,10 +381,8 @@ class RandomForestRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         )
 
     def predict(self, X, queue=None):
-        return (
-            super()
-            ._predict(X, self._get_backend("decision_forest", "regression", None), queue)
-            .ravel()
+        return super()._predict(
+            X, self._get_backend("decision_forest", "regression", None), queue
         )
 
 
@@ -593,7 +414,6 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         error_metric_mode="none",
         variable_importance_mode="none",
         algorithm="hist",
-        **kwargs,
     ):
         super().__init__(
             n_estimators=n_estimators,
@@ -623,18 +443,6 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             algorithm=algorithm,
         )
 
-    def _validate_targets(self, y, dtype):
-        y, self.class_weight_, self.classes_ = _validate_targets(
-            y, self.class_weight, dtype
-        )
-
-        # Decapsulate classes_ attributes
-        # TODO:
-        # align with `n_classes_` and `classes_` attr with daal4py implementations.
-        # if hasattr(self, "classes_"):
-        #    self.n_classes_ = self.classes_
-        return y
-
     def fit(self, X, y, sample_weight=None, queue=None):
         return self._fit(
             X,
@@ -645,11 +453,9 @@ class ExtraTreesClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         )
 
     def predict(self, X, queue=None):
-        pred = super()._predict(
+        return super()._predict(
             X, self._get_backend("decision_forest", "classification", None), queue
         )
-
-        return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
         return super()._predict_proba(
@@ -685,7 +491,6 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         error_metric_mode="none",
         variable_importance_mode="none",
         algorithm="hist",
-        **kwargs,
     ):
         super().__init__(
             n_estimators=n_estimators,
@@ -729,8 +534,6 @@ class ExtraTreesRegressor(RegressorMixin, BaseForest, metaclass=ABCMeta):
         )
 
     def predict(self, X, queue=None):
-        return (
-            super()
-            ._predict(X, self._get_backend("decision_forest", "regression", None), queue)
-            .ravel()
+        return super()._predict(
+            X, self._get_backend("decision_forest", "regression", None), queue
         )
