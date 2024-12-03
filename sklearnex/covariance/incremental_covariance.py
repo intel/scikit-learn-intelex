@@ -38,6 +38,9 @@ from ..metrics import pairwise_distances
 from ..utils._array_api import get_namespace
 from ..utils.validation import validate_data
 
+if sklearn_check_version("1.2"):
+    from sklearn.utils._param_validation import Interval
+
 
 @control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
 class IncrementalEmpiricalCovariance(IntelEstimator, BaseEstimator):
