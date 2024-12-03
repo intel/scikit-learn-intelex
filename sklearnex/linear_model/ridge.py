@@ -308,7 +308,6 @@ if daal_check_version((2024, "P", 600)):
                         include_boundaries="left",
                     )
 
-            check_params = {}
             X, y = validate_data(
                 self,
                 X=X,
