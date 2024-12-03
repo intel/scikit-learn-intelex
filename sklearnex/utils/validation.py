@@ -101,7 +101,6 @@ def validate_data(
     # _finite_keyword provides backward compatability for `force_all_finite`
     ensure_all_finite = kwargs.pop("ensure_all_finite", True)
     kwargs[_finite_keyword] = False
-    kwargs["validate_separately"] = True
 
     out = _sklearn_validate_data(
         _estimator,
@@ -109,14 +108,36 @@ def validate_data(
         y=y,
         **kwargs,
     )
+
+    check_x = not isinstance(X, str) or X != "no_validation"
+    check_y = not (y is None or isinstance(y, str) and y == "no_validation")
+
     if ensure_all_finite:
         # run local finite check
         allow_nan = ensure_all_finite == "allow-nan"
         arg = iter(out if isinstance(out, tuple) else (out,))
-        if not isinstance(X, str) or X != "no_validation":
+        if check_x:
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="X")
-        if not (y is None or isinstance(y, str) and y == "no_validation"):
+        if check_y:
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="y")
+
+    if check_y and "dtype" in kwargs:
+        # validate_data does not do full dtype conversions, as it uses check_X_y
+        # oneDAL can make tables from [int32, int64, float32, float64], requiring
+        # a dtype check and conversion. This will query the array_namespace and
+        # convert y as necessary. This is done after assert_all_finite, because
+        # int y arrays do not need to finite check, and this will lead to a speedup
+        # in comparison to sklearn
+        dtype = kwargs["dtype"]
+        if not isinstance(dtype, (tuple, list)):
+            dtype = tuple(dtype)
+
+        outx, outy = out if check_x else (None, out)
+        if outy.dtype not in dtype:
+            yp, _ = get_namespace(outy)
+            outy = yp.astype(outy, dtype=dtype[0])
+            out = (outx, outy) if check_x else outy
+
     return out
 
 
