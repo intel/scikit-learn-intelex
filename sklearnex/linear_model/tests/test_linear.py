@@ -50,7 +50,7 @@ def test_sklearnex_import_linear(
     from sklearnex.linear_model import LinearRegression
 
     rng = np.random.default_rng(seed=123)
-    X = rng.standard_normal(size=(10, 20) if not overdetermined else (20, 5))
+    X = rng.standard_normal(size=(10, 20) if overdetermined else (20, 5))
     y = rng.standard_normal(size=(X.shape[0], 3) if multi_output else X.shape[0])
 
     Xi = np.c_[X, np.ones((X.shape[0], 1))]
