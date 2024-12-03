@@ -28,6 +28,7 @@ from .._config import get_config
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
 from ..utils._array_api import get_namespace
+from ..utils.validation import validate_data
 
 if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
@@ -38,11 +39,6 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
 from onedal.utils import _num_features, _num_samples
-
-if sklearn_check_version("1.6"):
-    from sklearn.utils.validation import validate_data
-else:
-    validate_data = _sklearn_LinearRegression._validate_data
 
 
 @register_hyperparameters({"fit": get_hyperparameters("linear_regression", "train")})
