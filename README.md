@@ -5,12 +5,12 @@
 
 <h3> Speed up your scikit-learn applications for Intel(R) CPUs and GPUs across single- and multi-node configurations
 
-[Releases](https://github.com/intel/scikit-learn-intelex/releases)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://uxlfoundation.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support]()&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;[License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE)&nbsp;&nbsp;&nbsp;
+[Releases](https://github.com/uxlfoundation/scikit-learn-intelex/releases)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://uxlfoundation.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/uxlfoundation/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support]()&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;[License](https://github.com/uxlfoundation/scikit-learn-intelex/blob/master/LICENSE)&nbsp;&nbsp;&nbsp;
 
 
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=main)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=main)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/21716/badge.svg)](https://scan.coverity.com/projects/daal4py)
-[![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/intel/scikit-learn-intelex/discussions)
+[![Join the community on GitHub Discussions](https://badgen.net/badge/join%20the%20discussion/on%20github/black?icon=github)](https://github.com/uxlfoundation/scikit-learn-intelex/discussions)
 [![PyPI Version](https://img.shields.io/pypi/v/scikit-learn-intelex)](https://pypi.org/project/scikit-learn-intelex/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-learn-intelex)](https://anaconda.org/conda-forge/scikit-learn-intelex)
 [![python version](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)
@@ -74,7 +74,7 @@ Intel(R) Extension for Scikit-learn is also a part of [Intel(R) AI Tools](https:
     with config_context(target_offload="gpu:0"):
         clustering = DBSCAN(eps=3, min_samples=2).fit(X)
     ```
-:eyes: Check out available [notebooks](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
+:eyes: Check out available [notebooks](https://github.com/uxlfoundation/scikit-learn-intelex/tree/master/examples/notebooks) for more examples.
 
 ## Installation
 
@@ -112,26 +112,26 @@ To patch scikit-learn, you can:
 
 * [Quick Start](https://uxlfoundation.github.io/scikit-learn-intelex/latest/quick-start.html)
 * [Documentation and Tutorials](https://uxlfoundation.github.io/scikit-learn-intelex/latest/index.html)
-* [Release Notes](https://github.com/intel/scikit-learn-intelex/releases)
+* [Release Notes](https://github.com/uxlfoundation/scikit-learn-intelex/releases)
 * [Medium Blogs](https://uxlfoundation.github.io/scikit-learn-intelex/latest/blogs.html)
-* [Code of Conduct](https://github.com/intel/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
+* [Code of Conduct](https://github.com/uxlfoundation/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
 
 ### daal4py and oneDAL
 
 The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
 - [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
-- [About daal4py](https://github.com/intel/scikit-learn-intelex/tree/main/daal4py)
+- [About daal4py](https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/daal4py)
 
 ## Samples & Examples
 
-* [Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)
+* [Examples](https://github.com/uxlfoundation/scikit-learn-intelex/tree/master/examples/notebooks)
 * [Samples](https://uxlfoundation.github.io/scikit-learn-intelex/latest/samples.html)
 * [Kaggle Kernels](https://uxlfoundation.github.io/scikit-learn-intelex/latest/kaggle.html)
 
 
 ## How to Contribute
 
-We welcome community contributions, check our [Contributing Guidelines](https://github.com/intel/scikit-learn-intelex/blob/master/CONTRIBUTING.md) to learn more.
+We welcome community contributions, check our [Contributing Guidelines](https://github.com/uxlfoundation/scikit-learn-intelex/blob/master/CONTRIBUTING.md) to learn more.
 
 ------------------------------------------------------------------------
 \* The Intel logo, and other Intel marks are trademarks of Intel Corporation or its subsidiaries. Other names and brands may be claimed as the property of others. 

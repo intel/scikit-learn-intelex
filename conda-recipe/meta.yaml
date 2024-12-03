@@ -28,7 +28,7 @@ package:
 
 # Reminder: source should point to path for repo or github archive for feedstock
 # source:
-#   url: https://github.com/intel/scikit-learn-intelex/archive/{{ version }}.tar.gz
+#   url: https://github.com/uxlfoundation/scikit-learn-intelex/archive/{{ version }}.tar.gz
 #   sha256: ...
 source:
   path: ..
@@ -114,7 +114,7 @@ about:
     <br/><br/>
     EULA: <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">Apache-2.0</a>
     <br/><br/>
-  dev_url: https://github.com/intel/scikit-learn-intelex
+  dev_url: https://github.com/uxlfoundation/scikit-learn-intelex
   doc_url: https://uxlfoundation.github.io/scikit-learn-intelex
 
 extra:

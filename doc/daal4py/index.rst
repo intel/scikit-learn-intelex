@@ -146,7 +146,7 @@ daal4py is available at the `Python Package Index <https://pypi.org/project/daal
 on Anaconda Cloud in `Conda Forge channel <https://anaconda.org/conda-forge/daal4py>`_
 and in `Intel channel <https://anaconda.org/intel/daal4py>`_.
 Sources and build instructions are available in
-`daal4py repository <https://github.com/intel/scikit-learn-intelex/tree/main/daal4py>`_.
+`daal4py repository <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/daal4py>`_.
 
 The daal4py package is available via same distribution channels and platforms as scikit-learn-intelex.
 See

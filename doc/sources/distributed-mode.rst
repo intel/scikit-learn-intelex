@@ -25,7 +25,7 @@ also provide distributed, multi-GPU computing capabilities via integration with 
 match those of GPU computing, along with an MPI backend of your choice (`Intel MPI recommended 
 <https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html#gs.dcan6r>`_, available 
 via ``impi-devel`` python package) and the ``mpi4py`` python package. If using |intelex| 
-`installed from sources <https://github.com/intel/scikit-learn-intelex/blob/main/INSTALL.md#build-from-sources>`_,
+`installed from sources <https://github.com/uxlfoundation/scikit-learn-intelex/blob/main/INSTALL.md#build-from-sources>`_,
 ensure that the spmd_backend is built.
 
 Note that |intelex| now supports GPU offloading to speed up MPI operations. This is supported automatically with 
@@ -39,7 +39,7 @@ data on device without this may lead to a runtime error):
 Estimators can be imported from the ``sklearnex.spmd`` module. Data should be distributed across multiple nodes as 
 desired, and should be transfered to a dpctl or dpnp array before being passed to the estimator. View a full 
 example of this process in the |intelex| repository, where many examples of our SPMD-supported estimators are 
-available: https://github.com/intel/scikit-learn-intelex/blob/main/examples/sklearnex/. To run:
+available: https://github.com/uxlfoundation/scikit-learn-intelex/blob/main/examples/sklearnex/. To run:
 
 ::
 
