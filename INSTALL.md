@@ -158,7 +158,7 @@ The build-process (using setup.py) happens in 4 stages:
 * cmake and pybind11
 * A C++ compiler with C++11 support
 * Clang-Format
-* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
+* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/uxlfoundation/oneDAL) version 2021.1 or later
   * You can use the pre-built `dal-devel` conda package from conda-forge channel
 * MPI (optional, needed for distributed mode)
   * You can use the pre-built `impi_rt` and `impi-devel` conda packages from conda-forge channel

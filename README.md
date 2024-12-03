@@ -119,7 +119,7 @@ To patch scikit-learn, you can:
 ### daal4py and oneDAL
 
 The acceleration is achieved through the use of the Intel(R) oneAPI Data Analytics Library (oneDAL). Learn more:
-- [About Intel(R) oneAPI Data Analytics Library](https://github.com/oneapi-src/oneDAL)
+- [About Intel(R) oneAPI Data Analytics Library](https://github.com/uxlfoundation/oneDAL)
 - [About daal4py](https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/daal4py)
 
 ## Samples & Examples

@@ -942,190 +942,190 @@ Trees
 .. Link replacements
 
 .. |onedal-dg-bernoulli-distribution| replace:: Intel(R) oneAPI Data Analytics Library Bernoulli Distribution
-.. _onedal-dg-bernoulli-distribution: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/bernoulli.html
+.. _onedal-dg-bernoulli-distribution: https://uxlfoundation.github.io/oneDAL/daal/algorithms/distributions/bernoulli.html
 
 .. |onedal-dg-svd| replace:: Intel(R) oneAPI Data Analytics Library SVD
-.. _onedal-dg-svd: https://oneapi-src.github.io/oneDAL/daal/algorithms/svd/singular-value-decomposition.html
+.. _onedal-dg-svd: https://uxlfoundation.github.io/oneDAL/daal/algorithms/svd/singular-value-decomposition.html
 
 .. |onedal-dg-regression| replace:: Intel(R) oneAPI Data Analytics Library Regression
-.. _onedal-dg-regression: https://oneapi-src.github.io/oneDAL/daal/usage/training-and-prediction/regression.html
+.. _onedal-dg-regression: https://uxlfoundation.github.io/oneDAL/daal/usage/training-and-prediction/regression.html
 
 .. |onedal-dg-k-means-clustering| replace:: Intel(R) oneAPI Data Analytics Library K-Means Clustering
-.. _onedal-dg-k-means-clustering: https://oneapi-src.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html
+.. _onedal-dg-k-means-clustering: https://uxlfoundation.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html
 
 .. |onedal-dg-lbfgs| replace:: Intel(R) oneAPI Data Analytics Library LBFGS
-.. _onedal-dg-lbfgs: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/limited-memory-broyden-fletcher-goldfarb-shanno-algorithm.html
+.. _onedal-dg-lbfgs: https://uxlfoundation.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/limited-memory-broyden-fletcher-goldfarb-shanno-algorithm.html
 
 .. |onedal-dg-naive-bayes| replace:: Intel(R) oneAPI Data Analytics Library Naive Bayes
-.. _onedal-dg-naive-bayes: https://oneapi-src.github.io/oneDAL/daal/algorithms/naive_bayes/naive-bayes-classifier.html
+.. _onedal-dg-naive-bayes: https://uxlfoundation.github.io/oneDAL/daal/algorithms/naive_bayes/naive-bayes-classifier.html
 
 .. |onedal-dg-expectation-maximization| replace:: Intel(R) oneAPI Data Analytics Library Expectation-Maximization
-.. _onedal-dg-expectation-maximization: https://oneapi-src.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html
+.. _onedal-dg-expectation-maximization: https://uxlfoundation.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html
 
 .. |onedal-dg-mcg59| replace:: Intel(R) oneAPI Data Analytics Library mcg59
-.. _onedal-dg-mcg59: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mcg59.html
+.. _onedal-dg-mcg59: https://uxlfoundation.github.io/oneDAL/daal/algorithms/engines/mcg59.html
 
 .. |onedal-dg-least-absolute-shrinkage-and-selection-operator| replace:: Intel(R) oneAPI Data Analytics Library Least Absolute Shrinkage and Selection Operator
-.. _onedal-dg-least-absolute-shrinkage-and-selection-operator: https://oneapi-src.github.io/oneDAL/daal/algorithms/lasso_elastic_net/lasso.html
+.. _onedal-dg-least-absolute-shrinkage-and-selection-operator: https://uxlfoundation.github.io/oneDAL/daal/algorithms/lasso_elastic_net/lasso.html
 
 .. |onedal-dg-sorting| replace:: Intel(R) oneAPI Data Analytics Library Sorting
-.. _onedal-dg-sorting: https://oneapi-src.github.io/oneDAL/daal/algorithms/sorting/index.html
+.. _onedal-dg-sorting: https://uxlfoundation.github.io/oneDAL/daal/algorithms/sorting/index.html
 
 .. |onedal-dg-expectation-maximization-for-the-gaussian-mixture-model| replace:: Intel(R) oneAPI Data Analytics Library Expectation-Maximization for the Gaussian Mixture Model
-.. _onedal-dg-expectation-maximization-for-the-gaussian-mixture-model: https://oneapi-src.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html#em-algorithm-for-the-gaussian-mixture-model
+.. _onedal-dg-expectation-maximization-for-the-gaussian-mixture-model: https://uxlfoundation.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html#em-algorithm-for-the-gaussian-mixture-model
 
 .. |onedal-dg-multivariate-outlier-detection| replace:: Intel(R) oneAPI Data Analytics Library Multivariate Outlier Detection
-.. _onedal-dg-multivariate-outlier-detection: https://oneapi-src.github.io/oneDAL/daal/algorithms/outlier_detection/multivariate.html
+.. _onedal-dg-multivariate-outlier-detection: https://uxlfoundation.github.io/oneDAL/daal/algorithms/outlier_detection/multivariate.html
 
 .. |onedal-dg-expectation-maximization-initialization| replace:: Intel(R) oneAPI Data Analytics Library Expectation-Maximization Initialization
-.. _onedal-dg-expectation-maximization-initialization: https://oneapi-src.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html#initialization
+.. _onedal-dg-expectation-maximization-initialization: https://uxlfoundation.github.io/oneDAL/daal/algorithms/em/expectation-maximization.html#initialization
 
 .. |onedal-dg-pivoted-qr-decomposition| replace:: Intel(R) oneAPI Data Analytics Library Pivoted QR Decomposition
-.. _onedal-dg-pivoted-qr-decomposition: https://oneapi-src.github.io/oneDAL/daal/algorithms/qr/qr-pivoted.html
+.. _onedal-dg-pivoted-qr-decomposition: https://uxlfoundation.github.io/oneDAL/daal/algorithms/qr/qr-pivoted.html
 
 .. |onedal-dg-regression-decision-tree| replace:: Intel(R) oneAPI Data Analytics Library Regression Decision Tree
-.. _onedal-dg-regression-decision-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_tree/decision-tree-regression.html
+.. _onedal-dg-regression-decision-tree: https://uxlfoundation.github.io/oneDAL/daal/algorithms/decision_tree/decision-tree-regression.html
 
 .. |onedal-dg-k-nearest-neighbors-knn| replace:: Intel(R) oneAPI Data Analytics Library k-Nearest Neighbors (kNN)
-.. _onedal-dg-k-nearest-neighbors-knn: https://oneapi-src.github.io/oneDAL/daal/algorithms/k_nearest_neighbors/k-nearest-neighbors-knn-classifier.html
+.. _onedal-dg-k-nearest-neighbors-knn: https://uxlfoundation.github.io/oneDAL/daal/algorithms/k_nearest_neighbors/k-nearest-neighbors-knn-classifier.html
 
 .. |onedal-dg-pca| replace:: Intel(R) oneAPI Data Analytics Library PCA
-.. _onedal-dg-pca: https://oneapi-src.github.io/oneDAL/daal/algorithms/pca/principal-component-analysis.html
+.. _onedal-dg-pca: https://uxlfoundation.github.io/oneDAL/daal/algorithms/pca/principal-component-analysis.html
 
 .. |onedal-dg-sgd| replace:: Intel(R) oneAPI Data Analytics Library SGD
-.. _onedal-dg-sgd: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/stochastic-gradient-descent-algorithm.html
+.. _onedal-dg-sgd: https://uxlfoundation.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/stochastic-gradient-descent-algorithm.html
 
 .. |onedal-dg-uniform-distribution| replace:: Intel(R) oneAPI Data Analytics Library Uniform Distribution
-.. _onedal-dg-uniform-distribution: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/uniform.html
+.. _onedal-dg-uniform-distribution: https://uxlfoundation.github.io/oneDAL/daal/algorithms/distributions/uniform.html
 
 .. |onedal-dg-cross-entropy-loss| replace:: Intel(R) oneAPI Data Analytics Library Cross Entropy Loss
-.. _onedal-dg-cross-entropy-loss: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/cross-entropy.html
+.. _onedal-dg-cross-entropy-loss: https://uxlfoundation.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/cross-entropy.html
 
 .. |onedal-dg-classification| replace:: Intel(R) oneAPI Data Analytics Library Classification
-.. _onedal-dg-classification: https://oneapi-src.github.io/oneDAL/daal/usage/training-and-prediction/classification.html
+.. _onedal-dg-classification: https://uxlfoundation.github.io/oneDAL/daal/usage/training-and-prediction/classification.html
 
 .. |onedal-dg-cosine-distance| replace:: Intel(R) oneAPI Data Analytics Library Cosine Distance
-.. _onedal-dg-cosine-distance: https://oneapi-src.github.io/oneDAL/daal/algorithms/distance/cosine.html
+.. _onedal-dg-cosine-distance: https://uxlfoundation.github.io/oneDAL/daal/algorithms/distance/cosine.html
 
 .. |onedal-dg-regression-stump| replace:: Intel(R) oneAPI Data Analytics Library Regression Stump
-.. _onedal-dg-regression-stump: https://oneapi-src.github.io/oneDAL/daal/algorithms/stump/regression.html
+.. _onedal-dg-regression-stump: https://uxlfoundation.github.io/oneDAL/daal/algorithms/stump/regression.html
 
 .. |onedal-dg-multivariate-bacon-outlier-detection| replace:: Intel(R) oneAPI Data Analytics Library Multivariate Bacon Outlier Detection
-.. _onedal-dg-multivariate-bacon-outlier-detection: https://oneapi-src.github.io/oneDAL/daal/algorithms/outlier_detection/multivariate-bacon.html
+.. _onedal-dg-multivariate-bacon-outlier-detection: https://uxlfoundation.github.io/oneDAL/daal/algorithms/outlier_detection/multivariate-bacon.html
 
 .. |onedal-dg-logistic-regression| replace:: Intel(R) oneAPI Data Analytics Library Logistic Regression
-.. _onedal-dg-logistic-regression: https://oneapi-src.github.io/oneDAL/daal/algorithms/logistic_regression/logistic-regression.html
+.. _onedal-dg-logistic-regression: https://uxlfoundation.github.io/oneDAL/daal/algorithms/logistic_regression/logistic-regression.html
 
 .. |onedal-dg-quantiles| replace:: Intel(R) oneAPI Data Analytics Library Quantiles
-.. _onedal-dg-quantiles: https://oneapi-src.github.io/oneDAL/daal/algorithms/quantiles/index.html
+.. _onedal-dg-quantiles: https://uxlfoundation.github.io/oneDAL/daal/algorithms/quantiles/index.html
 
 .. |onedal-dg-pca-transform| replace:: Intel(R) oneAPI Data Analytics Library PCA Transform
-.. _onedal-dg-pca-transform: https://oneapi-src.github.io/oneDAL/daal/algorithms/pca/transform.html
+.. _onedal-dg-pca-transform: https://uxlfoundation.github.io/oneDAL/daal/algorithms/pca/transform.html
 
 .. |onedal-dg-correlation-distance| replace:: Intel(R) oneAPI Data Analytics Library Correlation Distance
-.. _onedal-dg-correlation-distance: https://oneapi-src.github.io/oneDAL/daal/algorithms/distance/correlation.html
+.. _onedal-dg-correlation-distance: https://uxlfoundation.github.io/oneDAL/daal/algorithms/distance/correlation.html
 
 .. |onedal-dg-association-rules| replace:: Intel(R) oneAPI Data Analytics Library Association Rules
-.. _onedal-dg-association-rules: https://oneapi-src.github.io/oneDAL/daal/algorithms/association_rules/association-rules.html
+.. _onedal-dg-association-rules: https://uxlfoundation.github.io/oneDAL/daal/algorithms/association_rules/association-rules.html
 
 .. |onedal-dg-univariate-outlier-detection| replace:: Intel(R) oneAPI Data Analytics Library Univariate Outlier Detection
-.. _onedal-dg-univariate-outlier-detection: https://oneapi-src.github.io/oneDAL/daal/algorithms/outlier_detection/univariate.html
+.. _onedal-dg-univariate-outlier-detection: https://uxlfoundation.github.io/oneDAL/daal/algorithms/outlier_detection/univariate.html
 
 .. |onedal-dg-classification-gradient-boosted-tree| replace:: Intel(R) oneAPI Data Analytics Library Classification Gradient Boosted Tree
-.. _onedal-dg-classification-gradient-boosted-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/gradient_boosted_trees/gradient-boosted-trees-classification.html
+.. _onedal-dg-classification-gradient-boosted-tree: https://uxlfoundation.github.io/oneDAL/daal/algorithms/gradient_boosted_trees/gradient-boosted-trees-classification.html
 
 .. |onedal-dg-classification-brownboost| replace:: Intel(R) oneAPI Data Analytics Library Classification BrownBoost
-.. _onedal-dg-classification-brownboost: https://oneapi-src.github.io/oneDAL/daal/algorithms/boosting/brownboost.html
+.. _onedal-dg-classification-brownboost: https://uxlfoundation.github.io/oneDAL/daal/algorithms/boosting/brownboost.html
 
 .. |onedal-dg-regression-decision-forest| replace:: Intel(R) oneAPI Data Analytics Library Regression Decision Forest
-.. _onedal-dg-regression-decision-forest: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_forest/decision-forest-regression.html
+.. _onedal-dg-regression-decision-forest: https://uxlfoundation.github.io/oneDAL/daal/algorithms/decision_forest/decision-forest-regression.html
 
 .. |onedal-dg-z-score| replace:: Intel(R) oneAPI Data Analytics Library Z-Score
-.. _onedal-dg-z-score: https://oneapi-src.github.io/oneDAL/daal/algorithms/normalization/z-score.html
+.. _onedal-dg-z-score: https://uxlfoundation.github.io/oneDAL/daal/algorithms/normalization/z-score.html
 
 .. |onedal-dg-classification-weak-learner-stump| replace:: Intel(R) oneAPI Data Analytics Library Classification Weak Learner Stump
-.. _onedal-dg-classification-weak-learner-stump: https://oneapi-src.github.io/oneDAL/daal/algorithms/stump/classification.html
+.. _onedal-dg-classification-weak-learner-stump: https://uxlfoundation.github.io/oneDAL/daal/algorithms/stump/classification.html
 
 .. |onedal-dg-svm| replace:: Intel(R) oneAPI Data Analytics Library SVM
-.. _onedal-dg-svm: https://oneapi-src.github.io/oneDAL/daal/algorithms/svm/support-vector-machine-classifier.html
+.. _onedal-dg-svm: https://uxlfoundation.github.io/oneDAL/daal/algorithms/svm/support-vector-machine-classifier.html
 
 .. |onedal-dg-regression-gradient-boosted-tree| replace:: Intel(R) oneAPI Data Analytics Library Regression Gradient Boosted Tree
-.. _onedal-dg-regression-gradient-boosted-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/gradient_boosted_trees/gradient-boosted-trees-regression.html
+.. _onedal-dg-regression-gradient-boosted-tree: https://uxlfoundation.github.io/oneDAL/daal/algorithms/gradient_boosted_trees/gradient-boosted-trees-regression.html
 
 .. |onedal-dg-logistic-loss| replace:: Intel(R) oneAPI Data Analytics Library Logistic Loss
-.. _onedal-dg-logistic-loss: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/logistic-loss.html
+.. _onedal-dg-logistic-loss: https://uxlfoundation.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/logistic-loss.html
 
 .. |onedal-dg-adagrad| replace:: Intel(R) oneAPI Data Analytics Library AdaGrad
-.. _onedal-dg-adagrad: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/adaptive-subgradient-method.html
+.. _onedal-dg-adagrad: https://uxlfoundation.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/adaptive-subgradient-method.html
 
 .. |onedal-dg-qr-decomposition| replace:: Intel(R) oneAPI Data Analytics Library QR Decomposition
-.. _onedal-dg-qr-decomposition: https://oneapi-src.github.io/oneDAL/daal/algorithms/qr/qr-decomposition.html
+.. _onedal-dg-qr-decomposition: https://uxlfoundation.github.io/oneDAL/daal/algorithms/qr/qr-decomposition.html
 
 .. |onedal-dg-mt19937| replace:: Intel(R) oneAPI Data Analytics Library mt19937
-.. _onedal-dg-mt19937: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt19937.html
+.. _onedal-dg-mt19937: https://uxlfoundation.github.io/oneDAL/daal/algorithms/engines/mt19937.html
 
 .. |onedal-dg-implicit-alternating-least-squares| replace:: Intel(R) oneAPI Data Analytics Library Implicit Alternating Least Squares
-.. _onedal-dg-implicit-alternating-least-squares: https://oneapi-src.github.io/oneDAL/daal/algorithms/implicit_als/implicit-alternating-least-squares.html
+.. _onedal-dg-implicit-alternating-least-squares: https://uxlfoundation.github.io/oneDAL/daal/algorithms/implicit_als/implicit-alternating-least-squares.html
 
 .. |onedal-dg-linear-regression| replace:: Intel(R) oneAPI Data Analytics Library Linear Regression
-.. _onedal-dg-linear-regression: https://oneapi-src.github.io/oneDAL/daal/algorithms/linear_ridge_regression/linear-regression.html
+.. _onedal-dg-linear-regression: https://uxlfoundation.github.io/oneDAL/daal/algorithms/linear_ridge_regression/linear-regression.html
 
 .. |onedal-dg-classification-adaboost| replace:: Intel(R) oneAPI Data Analytics Library Classification AdaBoost
-.. _onedal-dg-classification-adaboost: https://oneapi-src.github.io/oneDAL/daal/algorithms/boosting/adaboost.html
+.. _onedal-dg-classification-adaboost: https://uxlfoundation.github.io/oneDAL/daal/algorithms/boosting/adaboost.html
 
 .. |onedal-dg-distributions| replace:: Intel(R) oneAPI Data Analytics Library Distributions
-.. _onedal-dg-distributions: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/index.html
+.. _onedal-dg-distributions: https://uxlfoundation.github.io/oneDAL/daal/algorithms/distributions/index.html
 
 .. |onedal-dg-correlation-and-variance-covariance-matrices| replace:: Intel(R) oneAPI Data Analytics Library Correlation and Variance-Covariance Matrices
-.. _onedal-dg-correlation-and-variance-covariance-matrices: https://oneapi-src.github.io/oneDAL/daal/algorithms/covariance/correlation-and-variance-covariance-matrices.html
+.. _onedal-dg-correlation-and-variance-covariance-matrices: https://uxlfoundation.github.io/oneDAL/daal/algorithms/covariance/correlation-and-variance-covariance-matrices.html
 
 .. |onedal-dg-classification-decision-tree| replace:: Intel(R) oneAPI Data Analytics Library Classification Decision Tree
-.. _onedal-dg-classification-decision-tree: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_tree/decision-tree-classification.html
+.. _onedal-dg-classification-decision-tree: https://uxlfoundation.github.io/oneDAL/daal/algorithms/decision_tree/decision-tree-classification.html
 
 .. |onedal-dg-ridge-regression| replace:: Intel(R) oneAPI Data Analytics Library Ridge Regression
-.. _onedal-dg-ridge-regression: https://oneapi-src.github.io/oneDAL/daal/algorithms/linear_ridge_regression/ridge-regression.html
+.. _onedal-dg-ridge-regression: https://uxlfoundation.github.io/oneDAL/daal/algorithms/linear_ridge_regression/ridge-regression.html
 
 .. |onedal-dg-classification-logitboost| replace:: Intel(R) oneAPI Data Analytics Library Classification LogitBoost
-.. _onedal-dg-classification-logitboost: https://oneapi-src.github.io/oneDAL/daal/algorithms/boosting/logitboost.html
+.. _onedal-dg-classification-logitboost: https://uxlfoundation.github.io/oneDAL/daal/algorithms/boosting/logitboost.html
 
 .. |onedal-dg-k-means-initialization| replace:: Intel(R) oneAPI Data Analytics Library K-Means Initialization
-.. _onedal-dg-k-means-initialization: https://oneapi-src.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html#initialization
+.. _onedal-dg-k-means-initialization: https://uxlfoundation.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html#initialization
 
 .. |onedal-dg-qr-decomposition-without-pivoting| replace:: Intel(R) oneAPI Data Analytics Library QR Decomposition without pivoting
-.. _onedal-dg-qr-decomposition-without-pivoting: https://oneapi-src.github.io/oneDAL/daal/algorithms/qr/qr-without-pivoting.html
+.. _onedal-dg-qr-decomposition-without-pivoting: https://uxlfoundation.github.io/oneDAL/daal/algorithms/qr/qr-without-pivoting.html
 
 .. |onedal-dg-mse| replace:: Intel(R) oneAPI Data Analytics Library MSE
-.. _onedal-dg-mse: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/mse.html
+.. _onedal-dg-mse: https://uxlfoundation.github.io/oneDAL/daal/algorithms/optimization-solvers/objective-functions/mse.html
 
 .. |onedal-dg-stochastic-average-gradient-descent-saga| replace:: Intel(R) oneAPI Data Analytics Library Stochastic Average Gradient Descent SAGA
-.. _onedal-dg-stochastic-average-gradient-descent-saga: https://oneapi-src.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/stochastic-average-gradient-accelerated-method.html
+.. _onedal-dg-stochastic-average-gradient-descent-saga: https://uxlfoundation.github.io/oneDAL/daal/algorithms/optimization-solvers/solvers/stochastic-average-gradient-accelerated-method.html
 
 .. |onedal-dg-engines| replace:: Intel(R) oneAPI Data Analytics Library Engines
-.. _onedal-dg-engines: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/index.html
+.. _onedal-dg-engines: https://uxlfoundation.github.io/oneDAL/daal/algorithms/engines/index.html
 
 .. |onedal-dg-cholesky-decomposition| replace:: Intel(R) oneAPI Data Analytics Library Cholesky Decomposition
-.. _onedal-dg-cholesky-decomposition: https://oneapi-src.github.io/oneDAL/daal/algorithms/cholesky/cholesky.html
+.. _onedal-dg-cholesky-decomposition: https://uxlfoundation.github.io/oneDAL/daal/algorithms/cholesky/cholesky.html
 
 .. |onedal-dg-classification-decision-forest| replace:: Intel(R) oneAPI Data Analytics Library Classification Decision Forest
-.. _onedal-dg-classification-decision-forest: https://oneapi-src.github.io/oneDAL/daal/algorithms/decision_forest/decision-forest-classification.html
+.. _onedal-dg-classification-decision-forest: https://uxlfoundation.github.io/oneDAL/daal/algorithms/decision_forest/decision-forest-classification.html
 
 .. |onedal-dg-normalization| replace:: Intel(R) oneAPI Data Analytics Library Normalization
-.. _onedal-dg-normalization: https://oneapi-src.github.io/oneDAL/daal/algorithms/normalization/index.html
+.. _onedal-dg-normalization: https://uxlfoundation.github.io/oneDAL/daal/algorithms/normalization/index.html
 
 .. |onedal-dg-density-based-spatial-clustering-of-applications-with-noise| replace:: Intel(R) oneAPI Data Analytics Library Density-Based Spatial Clustering of Applications with Noise
-.. _onedal-dg-density-based-spatial-clustering-of-applications-with-noise: https://oneapi-src.github.io/oneDAL/daal/algorithms/dbscan/index.html
+.. _onedal-dg-density-based-spatial-clustering-of-applications-with-noise: https://uxlfoundation.github.io/oneDAL/daal/algorithms/dbscan/index.html
 
 .. |onedal-dg-moments-of-low-order| replace:: Intel(R) oneAPI Data Analytics Library Moments of Low Order
-.. _onedal-dg-moments-of-low-order: https://oneapi-src.github.io/oneDAL/daal/algorithms/moments/moments-of-low-order.html
+.. _onedal-dg-moments-of-low-order: https://uxlfoundation.github.io/oneDAL/daal/algorithms/moments/moments-of-low-order.html
 
 .. |onedal-dg-mt2203| replace:: Intel(R) oneAPI Data Analytics Library mt2203
-.. _onedal-dg-mt2203: https://oneapi-src.github.io/oneDAL/daal/algorithms/engines/mt2203.html
+.. _onedal-dg-mt2203: https://uxlfoundation.github.io/oneDAL/daal/algorithms/engines/mt2203.html
 
 .. |onedal-dg-normal-distribution| replace:: Intel(R) oneAPI Data Analytics Library Normal Distribution
-.. _onedal-dg-normal-distribution: https://oneapi-src.github.io/oneDAL/daal/algorithms/distributions/normal.html
+.. _onedal-dg-normal-distribution: https://uxlfoundation.github.io/oneDAL/daal/algorithms/distributions/normal.html
 
 .. |onedal-dg-k-means-computation| replace:: Intel(R) oneAPI Data Analytics Library K-Means Computation
-.. _onedal-dg-k-means-computation: https://oneapi-src.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html#computation
+.. _onedal-dg-k-means-computation: https://uxlfoundation.github.io/oneDAL/daal/algorithms/kmeans/k-means-clustering.html#computation
 
 .. |onedal-dg-min-max| replace:: Intel(R) oneAPI Data Analytics Library Min-Max
-.. _onedal-dg-min-max: https://oneapi-src.github.io/oneDAL/daal/algorithms/normalization/min-max.html
+.. _onedal-dg-min-max: https://uxlfoundation.github.io/oneDAL/daal/algorithms/normalization/min-max.html
