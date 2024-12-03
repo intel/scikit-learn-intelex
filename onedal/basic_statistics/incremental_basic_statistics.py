@@ -65,9 +65,20 @@ class IncrementalBasicStatistics(BasicStatistics):
         self._reset()
 
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = self._get_backend(
             "basic_statistics", None, "partial_compute_result"
         )
+
+    def __getstate__(self):
+        # Since finalize_fit can't be dispatched without directly provided queue
+        # and the dispatching policy can't be serialized, the computation is finalized
+        # here and the policy is not saved in serialized data.
+        self.finalize_fit()
+        data = self.__dict__.copy()
+        data.pop("_queue", None)
+
+        return data
 
     def partial_fit(self, X, sample_weight=None, queue=None):
         """
@@ -106,6 +117,9 @@ class IncrementalBasicStatistics(BasicStatistics):
             sample_weight,
         )
 
+        self._need_to_finalize = True
+        return self
+
     def finalize_fit(self, queue=None):
         """
         Finalizes basic statistics computation and obtains result
@@ -121,22 +135,23 @@ class IncrementalBasicStatistics(BasicStatistics):
         self : object
             Returns the instance itself.
         """
+        if self._need_to_finalize:
+            if queue is not None:
+                policy = self._get_policy(queue)
+            else:
+                policy = self._get_policy(self._queue)
 
-        if queue is not None:
-            policy = self._get_policy(queue)
-        else:
-            policy = self._get_policy(self._queue)
+            result = self._get_backend(
+                "basic_statistics",
+                None,
+                "finalize_compute",
+                policy,
+                self._onedal_params,
+                self._partial_result,
+            )
+            for opt in self.options:
+                setattr(self, opt, from_table(getattr(result, opt))[0])
 
-        result = self._get_backend(
-            "basic_statistics",
-            None,
-            "finalize_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-        )
-
-        for opt in self.options:
-            setattr(self, opt, from_table(getattr(result, opt))[0])
+            self._need_to_finalize = False
 
         return self
