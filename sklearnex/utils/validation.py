@@ -101,6 +101,7 @@ def validate_data(
     # _finite_keyword provides backward compatability for `force_all_finite`
     ensure_all_finite = kwargs.pop("ensure_all_finite", True)
     kwargs[_finite_keyword] = False
+    kwargs["validate_separately"] = True
 
     out = _sklearn_validate_data(
         _estimator,

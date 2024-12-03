@@ -159,7 +159,7 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
                     multi_output=True,
                 )
             else:
-                check_X_y(
+                X, y = check_X_y(
                     X,
                     y,
                     dtype=[xp.float64, xp.float32],
@@ -209,7 +209,7 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
                 ensure_2d=True,
             )
         else:
-            check_X_y(
+            X, y = check_X_y(
                 X, y, dtype=[xp.float64, xp.float32], multi_output=True, y_numeric=True
             )
 
