@@ -66,7 +66,7 @@ If you want to run them locally, refer to `these instructions
    :maxdepth: 1
 
    Intel® Extension for Scikit-Learn* Getting Started Sample <https://github.com/oneapi-src/oneAPI-samples/tree/master/AI-and-Analytics/Getting-Started-Samples/Intel_Extension_For_SKLearn_GettingStarted>
-   Intel® Extension for Scikit-Learn*: SVC for Adult dataset Performance Sample <https://github.com/uxlfoundation/oneAPI-samples/tree/master/AI-and-Analytics/Features-and-Functionality/Intel_Extension_For_SKLearn_Performance_SVC_Adult>
+   Intel® Extension for Scikit-Learn*: SVC for Adult dataset Performance Sample <https://github.com/oneapi-src/oneAPI-samples/tree/master/AI-and-Analytics/Features-and-Functionality/Intel_Extension_For_SKLearn_Performance_SVC_Adult>
 
 .. seealso::
 
