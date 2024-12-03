@@ -31,7 +31,6 @@ from onedal.covariance import (
     IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
 )
 from onedal.utils._array_api import _is_numpy_namespace
-from sklearnex import config_context
 
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import IntelEstimator, PatchingConditionsChain, register_hyperparameters

@@ -24,6 +24,7 @@ from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
+from onedal.utils._array_api import _is_numpy_namespace
 from sklearnex import config_context
 from sklearnex.metrics import pairwise_distances
 
