@@ -306,15 +306,15 @@ if daal_check_version((2024, "P", 600)):
                         include_boundaries="left",
                     )
 
-                    X, y = validate_data(
-                        self,
-                        X=X,
-                        y=y,
-                        dtype=[xp.float64, xp.float32],
-                        accept_sparse=["csr", "csc", "coo"],
-                        y_numeric=True,
-                        multi_output=True,
-                    )
+            X, y = validate_data(
+                self,
+                X=X,
+                y=y,
+                dtype=[xp.float64, xp.float32],
+                accept_sparse=["csr", "csc", "coo"],
+                y_numeric=True,
+                multi_output=True,
+            )
 
             if not sklearn_check_version("1.2"):
                 self._normalize = _deprecate_normalize(
