@@ -5,7 +5,7 @@
 
 <h3> Speed up your scikit-learn applications for Intel(R) CPUs and GPUs across single- and multi-node configurations
 
-[Releases](https://github.com/intel/scikit-learn-intelex/releases)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://intel.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support]()&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;[License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE)&nbsp;&nbsp;&nbsp;
+[Releases](https://github.com/intel/scikit-learn-intelex/releases)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Documentation](https://uxlfoundation.github.io/scikit-learn-intelex/)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;[Support]()&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;[License](https://github.com/intel/scikit-learn-intelex/blob/master/LICENSE)&nbsp;&nbsp;&nbsp;
 
 
 [![Build Status](https://dev.azure.com/daal/daal4py/_apis/build/status/CI?branchName=main)](https://dev.azure.com/daal/daal4py/_build/latest?definitionId=9&branchName=main)
@@ -84,16 +84,16 @@ To install Intel(R) Extension for Scikit-learn, run:
 pip install scikit-learn-intelex
 ```
 
-See all installation instructions in the [Installation Guide](https://intel.github.io/scikit-learn-intelex/latest/installation.html).
+See all installation instructions in the [Installation Guide](https://uxlfoundation.github.io/scikit-learn-intelex/latest/installation.html).
 
 ## Integration
 
 The software acceleration is achieved through patching. It means, replacing the stock scikit-learn algorithms with their optimized versions provided by the extension.
 
-The patching only affects [supported algorithms and their parameters](https://intel.github.io/scikit-learn-intelex/latest/algorithms.html).
+The patching only affects [supported algorithms and their parameters](https://uxlfoundation.github.io/scikit-learn-intelex/latest/algorithms.html).
 You can still use not supported ones in your code, the package simply fallbacks into the stock version of scikit-learn. 
 
-> **_TIP:_** Enable [verbose mode](https://intel.github.io/scikit-learn-intelex/latest/verbose.html) to see which implementation of the algorithm is currently used.
+> **_TIP:_** Enable [verbose mode](https://uxlfoundation.github.io/scikit-learn-intelex/latest/verbose.html) to see which implementation of the algorithm is currently used.
 
 To patch scikit-learn, you can:
 * Use the following command-line flag:
@@ -106,14 +106,14 @@ To patch scikit-learn, you can:
   patch_sklearn()
   ```
 
-:eyes: Read about [other ways to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/index.html#usage). 
+:eyes: Read about [other ways to patch scikit-learn](https://uxlfoundation.github.io/scikit-learn-intelex/index.html#usage). 
 
 ## Documentation
 
-* [Quick Start](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
-* [Documentation and Tutorials](https://intel.github.io/scikit-learn-intelex/latest/index.html)
+* [Quick Start](https://uxlfoundation.github.io/scikit-learn-intelex/latest/quick-start.html)
+* [Documentation and Tutorials](https://uxlfoundation.github.io/scikit-learn-intelex/latest/index.html)
 * [Release Notes](https://github.com/intel/scikit-learn-intelex/releases)
-* [Medium Blogs](https://intel.github.io/scikit-learn-intelex/latest/blogs.html)
+* [Medium Blogs](https://uxlfoundation.github.io/scikit-learn-intelex/latest/blogs.html)
 * [Code of Conduct](https://github.com/intel/scikit-learn-intelex/blob/master/CODE_OF_CONDUCT.md)
 
 ### daal4py and oneDAL
@@ -125,8 +125,8 @@ The acceleration is achieved through the use of the Intel(R) oneAPI Data Analyti
 ## Samples & Examples
 
 * [Examples](https://github.com/intel/scikit-learn-intelex/tree/master/examples/notebooks)
-* [Samples](https://intel.github.io/scikit-learn-intelex/latest/samples.html)
-* [Kaggle Kernels](https://intel.github.io/scikit-learn-intelex/latest/kaggle.html)
+* [Samples](https://uxlfoundation.github.io/scikit-learn-intelex/latest/samples.html)
+* [Kaggle Kernels](https://uxlfoundation.github.io/scikit-learn-intelex/latest/kaggle.html)
 
 
 ## How to Contribute

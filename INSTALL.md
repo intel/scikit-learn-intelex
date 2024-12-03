@@ -40,7 +40,7 @@ To install Intel(R) Extension for Scikit-learn*, use one of the following scenar
 
 ## Before You Begin
 
-Check [System](https://intel.github.io/scikit-learn-intelex/latest/system-requirements.html) and [Memory](https://intel.github.io/scikit-learn-intelex/latest/memory-requirements.html) Requirements.
+Check [System](https://uxlfoundation.github.io/scikit-learn-intelex/latest/system-requirements.html) and [Memory](https://uxlfoundation.github.io/scikit-learn-intelex/latest/memory-requirements.html) Requirements.
 
 ## Supported Configurations
 
@@ -253,5 +253,5 @@ conda build .
 
 ## Next Steps
 
-- [Learn what patching is and how to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/latest/what-is-patching.html)
-- [Start using scikit-learn-intelex](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
+- [Learn what patching is and how to patch scikit-learn](https://uxlfoundation.github.io/scikit-learn-intelex/latest/what-is-patching.html)
+- [Start using scikit-learn-intelex](https://uxlfoundation.github.io/scikit-learn-intelex/latest/quick-start.html)

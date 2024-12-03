@@ -20,7 +20,7 @@ Distributed Mode
 ================
 
 |intelex| offers Single Program, Multiple Data (SPMD) supported interfaces for distributed computing.
-Several `GPU-supported algorithms <https://intel.github.io/scikit-learn-intelex/latest/oneapi-gpu.html#>`_ 
+Several `GPU-supported algorithms <https://uxlfoundation.github.io/scikit-learn-intelex/latest/oneapi-gpu.html#>`_ 
 also provide distributed, multi-GPU computing capabilities via integration with ``mpi4py``. The prerequisites 
 match those of GPU computing, along with an MPI backend of your choice (`Intel MPI recommended 
 <https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html#gs.dcan6r>`_, available 
@@ -46,7 +46,7 @@ available: https://github.com/intel/scikit-learn-intelex/blob/main/examples/skle
   mpirun -n 4 python linear_regression_spmd.py
 
 Note that additional mpirun arguments can be added as desired. SPMD-supported estimators are listed in the 
-`algorithms support documentation <https://intel.github.io/scikit-learn-intelex/latest/algorithms.html#spmd-support>`_.
+`algorithms support documentation <https://uxlfoundation.github.io/scikit-learn-intelex/latest/algorithms.html#spmd-support>`_.
 
 Additionally, daal4py offers some distributed functionality, see 
 `documentation <https://intelpython.github.io/daal4py/scaling.html>`_ for further details.
