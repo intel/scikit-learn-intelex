@@ -180,7 +180,7 @@ class IncrementalLinearRegression(
             self._validate_params()
 
         if check_input:
-            xp, _ = get_namespace(xp)
+            xp, _ = get_namespace(X)
             if sklearn_check_version("1.0"):
                 X, y = validate_data(
                     self,
