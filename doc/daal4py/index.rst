@@ -195,6 +195,7 @@ Scikit-Learn API and patching
 .. tip::
     We recommend using
     the 'scikit-learn-intelex package patching <https://intel.github.io/scikit-learn-intelex/latest/what-is-patching.html>' _ for the scikit-learn patching.
+
 daal4py exposes some oneDAL solvers using a scikit-learn compatible API.
 
 daal4py can furthermore monkey-patch the ``sklearn`` package to use the DAAL
