@@ -59,12 +59,12 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
 
         # force dtype and shape for all supported estimators to numpy
         if np.isscalar(self.coef_):
-            coefs = np.asarray(self.coef_).reshape(1, 1)
+            coef = np.asarray(self.coef_).reshape(1, 1)
         else:
             # generalized atleast_2d for numpy and array_api inputs
             # if an empty array, will fail for a multitude of reasons
-            coefs = from_table(
-                to_table(self.coefs_[None] if self.coefs_.ndim == 1 else self.coef_)
+            coef = from_table(
+                to_table(self.coef_[None] if self.coef_.ndim == 1 else self.coef_)
             )
         if np.isscalar(self.intercept_):
             intercept = np.asarray(self.intercept_).reshape(1, 1)
@@ -72,8 +72,8 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             intercept = from_table(to_table(self.intercept_))
 
         # will do automatic dtype promotion based on the two datatypes
-        print(intercept.shape, coefs.shape)
-        packed_coefficients = np.concatenate((intercept, coefs), axis=1)
+        print(intercept.shape, coef.shape)
+        packed_coefficients = np.concatenate((intercept, coef), axis=1)
 
         packed_coefficients = _convert_to_supported(policy, packed_coefficients)
 
