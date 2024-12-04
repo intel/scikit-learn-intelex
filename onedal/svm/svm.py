@@ -22,6 +22,7 @@ from scipy import sparse as sp
 
 from onedal import _backend
 
+from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..common._policy import _get_policy
@@ -35,14 +36,7 @@ from ..utils import (
 )
 
 
-class SVMtype(Enum):
-    c_svc = 0
-    epsilon_svr = 1
-    nu_svc = 2
-    nu_svr = 3
-
-
-class BaseSVM(metaclass=ABCMeta):
+class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(
         self,
@@ -63,8 +57,6 @@ class BaseSVM(metaclass=ABCMeta):
         decision_function_shape,
         break_ties,
         algorithm,
-        svm_type=None,
-        **kwargs,
     ):
         self.C = C
         self.nu = nu
@@ -82,21 +74,20 @@ class BaseSVM(metaclass=ABCMeta):
         self.decision_function_shape = decision_function_shape
         self.break_ties = break_ties
         self.algorithm = algorithm
-        self.svm_type = svm_type
 
     def _validate_targets(self, y, dtype):
         self.class_weight_ = None
         self.classes_ = None
         return _column_or_1d(y, warn=True).astype(dtype, copy=False)
 
-    def _get_onedal_params(self, data):
+    def _get_onedal_params(self, dtype):
         max_iter = 10000 if self.max_iter == -1 else self.max_iter
         # TODO: remove this workaround
         # when oneDAL SVM starts support of 'n_iterations' result
         self.n_iter_ = 1 if max_iter < 1 else max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
         return {
-            "fptype": data.dtype,
+            "fptype": dtype,
             "method": self.algorithm,
             "kernel": self.kernel,
             "c": self.C,
@@ -174,9 +165,9 @@ class BaseSVM(metaclass=ABCMeta):
             self._scale_, self._sigma_ = _gamma, np.sqrt(0.5 / _gamma)
 
         policy = _get_policy(queue, *data)
-        X = _convert_to_supported(policy, X)
-        params = self._get_onedal_params(X)
-        result = module.train(policy, params, *to_table(*data))
+        data_t = to_table(*_convert_to_supported(policy, *data))
+        params = self._get_onedal_params(data_t[0].dtype)
+        result = module.train(policy, params, *data_t)
 
         if self._sparse:
             self.dual_coef_ = sp.csr_matrix(from_table(result.coeffs).T)
@@ -206,9 +197,6 @@ class BaseSVM(metaclass=ABCMeta):
         m.support_vectors = to_table(self.support_vectors_)
         m.coeffs = to_table(self.dual_coef_.T)
         m.biases = to_table(self.intercept_)
-
-        if self.svm_type is SVMtype.c_svc or self.svm_type is SVMtype.nu_svc:
-            m.first_class_response, m.second_class_response = 0, 1
         return m
 
     def _predict(self, X, module, queue):
@@ -370,7 +358,6 @@ class SVR(RegressorMixin, BaseSVM):
             break_ties=False,
             algorithm=algorithm,
         )
-        self.svm_type = SVMtype.epsilon_svr
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return super()._fit(X, y, sample_weight, _backend.svm.regression, queue)
@@ -422,7 +409,11 @@ class SVC(ClassifierMixin, BaseSVM):
             break_ties=break_ties,
             algorithm=algorithm,
         )
-        self.svm_type = SVMtype.c_svc
+
+    def _create_model(self, module):
+        m = super()._create_model(module)
+        m.first_class_response, m.second_class_response = 0, 1
+        return m
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
@@ -483,7 +474,6 @@ class NuSVR(RegressorMixin, BaseSVM):
             break_ties=False,
             algorithm=algorithm,
         )
-        self.svm_type = SVMtype.nu_svr
 
     def fit(self, X, y, sample_weight=None, queue=None):
         return super()._fit(X, y, sample_weight, _backend.svm.nu_regression, queue)
@@ -535,7 +525,11 @@ class NuSVC(ClassifierMixin, BaseSVM):
             break_ties=break_ties,
             algorithm=algorithm,
         )
-        self.svm_type = SVMtype.nu_svc
+
+    def _create_model(self, module):
+        m = super()._create_model(module)
+        m.first_class_response, m.second_class_response = 0, 1
+        return m
 
     def _validate_targets(self, y, dtype):
         y, self.class_weight_, self.classes_ = _validate_targets(
