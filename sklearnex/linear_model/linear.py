@@ -280,10 +280,11 @@ class LinearRegression(_sklearn_LinearRegression):
             self._save_attributes()
 
     def _onedal_predict(self, X, queue=None):
+        xp, _ = get_namespace(X)
         if sklearn_check_version("1.0"):
-            X = validate_data(self, X, accept_sparse=False, reset=False)
+            X = validate_data(self, X, accept_sparse=False, dtype=[xp.float64, xp.float32], reset=False)
         else:
-            X = check_array(X, accept_sparse=False)
+            X = check_array(X, dtype=[xp.float64, xp.float32], accept_sparse=False)
 
         if not hasattr(self, "_onedal_estimator"):
             self._initialize_onedal_estimator()
