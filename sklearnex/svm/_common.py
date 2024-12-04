@@ -574,7 +574,7 @@ class BaseSVR(BaseSVM, _sklearn_BaseLibSVM, RegressorMixin):
             "score",
             {
                 "onedal": self.__class__._onedal_score,
-                "sklearn": _sklearn_BaseLibSVM.score,
+                "sklearn": RegressorMixin.score,
             },
             X,
             y,
@@ -607,4 +607,4 @@ class BaseSVR(BaseSVM, _sklearn_BaseLibSVM, RegressorMixin):
         )
 
     predict.__doc__ = _sklearn_BaseLibSVM.predict.__doc__
-    score.__doc__ = _sklearn_BaseLibSVM.score.__doc__
+    score.__doc__ = RegressorMixin.score.__doc__
