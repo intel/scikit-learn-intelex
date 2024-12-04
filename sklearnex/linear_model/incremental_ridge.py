@@ -126,9 +126,8 @@ class IncrementalRidge(MultiOutputMixin, RegressorMixin, BaseEstimator):
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.2"):
             self._validate_params()
-
-        if sklearn_check_version("1.0"):
-            X = validate_data(self, X, accept_sparse=False, reset=False)
+        xp, _ = get_namespace(X)
+        X = validate_data(self, X, accept_sparse=False, dtype=[xp.float64, xp.float32], reset=False)
 
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
