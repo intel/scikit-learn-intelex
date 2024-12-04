@@ -552,7 +552,7 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
     score.__doc__ = _sklearn_BaseSVC.score.__doc__
 
 
-class BaseSVR(BaseSVM, _sklearn_BaseLibSVM, RegressorMixin):
+class BaseSVR(BaseSVM, _sklearn_BaseLibSVM):
     @wrap_output_data
     def predict(self, X):
         check_is_fitted(self)
