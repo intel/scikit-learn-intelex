@@ -85,7 +85,7 @@ def test_decision_function(queue):
 
     rbfs = rbf_kernel(X, clf.support_vectors_, gamma=clf.gamma)
     dec = np.dot(rbfs, clf.dual_coef_.T) + clf.intercept_
-    assert_array_almost_equal(dec.ravel(), clf.decision_function(X, queue=queue))
+    assert_array_almost_equal(dec.ravel(), clf.decision_function(X, queue=queue).ravel())
 
 
 @pass_if_not_implemented_for_gpu(reason="nusvc is not implemented")

@@ -538,7 +538,7 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
             )
         xp, _ = get_namespace(X)
         if sklearn_check_version("1.0"):
-            validate_data(
+            X = validate_data(
                 self,
                 X,
                 dtype=[xp.float64, xp.float32],

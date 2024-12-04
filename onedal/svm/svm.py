@@ -15,7 +15,6 @@
 # ==============================================================================
 
 from abc import ABCMeta, abstractmethod
-from enum import Enum
 
 import numpy as np
 from scipy import sparse as sp
