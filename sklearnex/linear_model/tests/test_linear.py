@@ -180,7 +180,11 @@ def test_multioutput_regression(dataframe, queue, dtype, fit_intercept, problem_
         Xi = np.c_[X, np.ones((X.shape[0], 1))]
         A = Xi.T @ Xi
         b = Xi.T @ y
-        x = _convert_to_dataframe(np.r_[model.coef_.T, model.intercept_.reshape((1, -1))], sycl_queue=queue, target_df=dataframe)
+        x = _convert_to_dataframe(
+            np.r_[model.coef_.T, model.intercept_.reshape((1, -1))],
+            sycl_queue=queue,
+            target_df=dataframe,
+        )
 
     residual = A @ x - b
     assert np.all(np.abs(residual) < 1e-5)
