@@ -170,7 +170,7 @@ def test_multioutput_regression(dataframe, queue, dtype, fit_intercept, problem_
 
     X = _convert_to_dataframe(X_0, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y_0, sycl_queue=queue, target_df=dataframe)
-    
+
     model = LinearRegression(fit_intercept=fit_intercept).fit(X, y)
     if not fit_intercept:
         A = X.T @ X
