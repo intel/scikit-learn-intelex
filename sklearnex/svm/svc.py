@@ -49,6 +49,7 @@ else:
 )
 class SVC(_sklearn_SVC, BaseSVC):
     __doc__ = _sklearn_SVC.__doc__
+    _onedal_factory = onedal_SVC
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**_sklearn_SVC._parameter_constraints}
@@ -322,7 +323,7 @@ class SVC(_sklearn_SVC, BaseSVC):
             "decision_function_shape": self.decision_function_shape,
         }
 
-        self._onedal_estimator = onedal_SVC(**onedal_params)
+        self._onedal_estimator = self._onedal_factory(**onedal_params)
         self._onedal_estimator.fit(X, y, weights, queue=queue)
 
         if self.probability:
@@ -348,25 +349,6 @@ class SVC(_sklearn_SVC, BaseSVC):
         cfg["target_offload"] = queue
         with config_context(**cfg):
             return self.clf_prob.predict_proba(X)
-
-    def _onedal_decision_function(self, X, queue=None):
-        if sklearn_check_version("1.0"):
-            X = validate_data(
-                self,
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-                reset=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-            )
-        return self._onedal_estimator.decision_function(X, queue=queue)
 
     fit.__doc__ = _sklearn_SVC.fit.__doc__
     predict.__doc__ = _sklearn_SVC.predict.__doc__

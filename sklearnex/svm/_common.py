@@ -20,10 +20,12 @@ from numbers import Number, Real
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import accuracy_score, r2_score
 from sklearn.preprocessing import LabelEncoder
+from sklearn.svm._base import BaseLibSVM as _sklearn_BaseLibSVM
+from sklearn.svm._base import BaseSVC as _sklearn_BaseSVC
 from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._utils import sklearn_check_version
@@ -39,7 +41,9 @@ else:
     validate_data = BaseEstimator._validate_data
 
 
-class BaseSVM(BaseEstimator, ABC):
+class BaseSVM(_sklearn_BaseLibSVM):
+
+    _onedal_factory = None
 
     @property
     def _dual_coef_(self):
@@ -244,11 +248,6 @@ class BaseSVM(BaseEstimator, ABC):
         if xp is None:
             xp, _ = get_namespace(X)
 
-        if self.break_ties and self.decision_function_shape == "ovo":
-            raise ValueError(
-                "break_ties must be False when " "decision_function_shape is 'ovo'"
-            )
-
         if sklearn_check_version("1.0"):
             X = validate_data(
                 self,
@@ -264,19 +263,10 @@ class BaseSVM(BaseEstimator, ABC):
                 accept_sparse="csr",
             )
 
-        if (
-            self.break_ties
-            and self.decision_function_shape == "ovr"
-            and len(self.classes_) > 2
-        ):
-            return xp.argmax(
-                self._onedal_estimator.decision_function(X, queue=queue), axis=1
-            )
-
         return xp.squeeze(self._onedal_estimator.predict(X, queue=queue))
 
 
-class BaseSVC(BaseSVM):
+class BaseSVC(BaseSVM, _sklearn_BaseSVC):
     def _compute_balanced_class_weight(self, y):
         y_ = _column_or_1d(y)
         classes, _ = np.unique(y_, return_inverse=True)
@@ -354,11 +344,45 @@ class BaseSVC(BaseSVM):
             raise ValueError(
                 "The internal representation " f"of {self.__class__.__name__} was altered"
             )
+
+        if self.break_ties and self.decision_function_shape == "ovo":
+            raise ValueError(
+                "break_ties must be False when " "decision_function_shape is 'ovo'"
+            )
+
+        if (
+            self.break_ties
+            and self.decision_function_shape == "ovr"
+            and len(self.classes_) > 2
+        ):
+            return xp.argmax(self._onedal_decision_function(X, queue=queue), axis=1)
+
         xp, _ = get_namespace(X)
         res = super()._onedal_predict(X, queue=queue, xp=xp)
         if len(self.classes_) != 2:
             res = xp.take(self.classes_, xp.asarray(res, dtype=xp.int32))
         return res
+
+    def _onedal_decision_function(self, X, queue=None):
+        xp, _ = get_namespace(X)
+        if sklearn_check_version("1.0"):
+            validate_data(
+                self,
+                X,
+                dtype=[xp.float64, xp.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[xp.float64, xp.float32],
+                force_all_finite=False,
+                accept_sparse="csr",
+            )
+
+        return self._onedal_estimator.decision_function(X, queue=queue)
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return accuracy_score(
@@ -366,7 +390,7 @@ class BaseSVC(BaseSVM):
         )
 
 
-class BaseSVR(BaseSVM):
+class BaseSVR(BaseSVM, RegressorMixin):
     def _save_attributes(self):
         self.support_vectors_ = self._onedal_estimator.support_vectors_
         self.n_features_in_ = self._onedal_estimator.n_features_in_

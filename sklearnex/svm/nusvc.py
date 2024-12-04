@@ -46,6 +46,7 @@ else:
 )
 class NuSVC(_sklearn_NuSVC, BaseSVC):
     __doc__ = _sklearn_NuSVC.__doc__
+    _onedal_factory = onedal_NuSVC
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**_sklearn_NuSVC._parameter_constraints}
@@ -291,7 +292,7 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
             "decision_function_shape": self.decision_function_shape,
         }
 
-        self._onedal_estimator = onedal_NuSVC(**onedal_params)
+        self._onedal_estimator = self._onedal_factory(**onedal_params)
         self._onedal_estimator.fit(X, y, weights, queue=queue)
 
         if self.probability:

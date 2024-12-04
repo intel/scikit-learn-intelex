@@ -34,6 +34,7 @@ else:
 @control_n_jobs(decorated_methods=["fit", "predict", "score"])
 class SVR(_sklearn_SVR, BaseSVR):
     __doc__ = _sklearn_SVR.__doc__
+    _onedal_factory = onedal_SVR
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**_sklearn_SVR._parameter_constraints}
@@ -139,7 +140,7 @@ class SVR(_sklearn_SVR, BaseSVR):
             "max_iter": self.max_iter,
         }
 
-        self._onedal_estimator = onedal_SVR(**onedal_params)
+        self._onedal_estimator = self._onedal_factory(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
         self._save_attributes()
 

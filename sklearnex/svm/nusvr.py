@@ -38,6 +38,7 @@ else:
 @control_n_jobs(decorated_methods=["fit", "predict", "score"])
 class NuSVR(_sklearn_NuSVR, BaseSVR):
     __doc__ = _sklearn_NuSVR.__doc__
+    _onedal_factory = onedal_NuSVR
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**_sklearn_NuSVR._parameter_constraints}
@@ -142,7 +143,7 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
             "max_iter": self.max_iter,
         }
 
-        self._onedal_estimator = onedal_NuSVR(**onedal_params)
+        self._onedal_estimator = self._onedal_factory(**onedal_params)
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
