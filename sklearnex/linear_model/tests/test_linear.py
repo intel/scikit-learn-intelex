@@ -158,6 +158,8 @@ def test_multioutput_regression(dataframe, queue, dtype, fit_intercept, problem_
         and not daal_check_version((2025, "P", 200))
     ):
         pytest.skip("Functionality introduced in later versions")
+    from sklearnex.linear_model import LinearRegression
+
     gen = np.random.default_rng(seed=123)
     if problem_type == "regular":
         X_0 = gen.standard_normal(size=(20, 5))
