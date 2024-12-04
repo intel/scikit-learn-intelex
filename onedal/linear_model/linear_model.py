@@ -68,6 +68,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
             intercept = from_table(to_table(self.intercept_))
 
         # will do automatic dtype promotion based on the two datatypes
+        print(intercept.shape, coefs.shape)
         packed_coefficients = np.concatenate((intercept, coefs), axis=1)
 
         packed_coefficients = _convert_to_supported(policy, packed_coefficients)
