@@ -35,7 +35,6 @@ from ..utils import (
     _validate_targets,
 )
 
-
 class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(
@@ -241,14 +240,14 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 )
 
             policy = _get_policy(queue, X)
-            X = _convert_to_supported(policy, X)
-            params = self._get_onedal_params(X)
+            X = to_table(_convert_to_supported(policy, X))
+            params = self._get_onedal_params(X.dtype)
 
             if hasattr(self, "_onedal_model"):
                 model = self._onedal_model
             else:
                 model = self._create_model(module)
-            result = module.infer(policy, params, model, to_table(X))
+            result = module.infer(policy, params, model, X)
             y = from_table(result.responses)
         return y
 
@@ -278,12 +277,12 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         )
         _check_n_features(self, X, False)
 
-        if self._sparse and not sp.isspmatrix(X):
-            X = sp.csr_matrix(X)
         if self._sparse:
-            X.sort_indices()
-
-        if sp.issparse(X) and not self._sparse and not callable(self.kernel):
+            if not sp.isspmatrix(X):
+                X = sp.csr_matrix(X)
+            else:
+                X.sort_indices()
+        elif sp.issparse(X) and not callable(self.kernel):
             raise ValueError(
                 "cannot use sparse input in %r trained on dense data"
                 % type(self).__name__
@@ -298,14 +297,14 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 )
 
         policy = _get_policy(queue, X)
-        X = _convert_to_supported(policy, X)
-        params = self._get_onedal_params(X)
+        X = to_table(_convert_to_supported(policy, X))
+        params = self._get_onedal_params(X.dtype)
 
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
             model = self._create_model(module)
-        result = module.infer(policy, params, model, to_table(X))
+        result = module.infer(policy, params, model, X)
         decision_function = from_table(result.decision_function)
 
         if len(self.classes_) == 2:
