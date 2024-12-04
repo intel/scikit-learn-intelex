@@ -391,14 +391,14 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
             xp, _ = get_namespace(X)
             return xp.log(self.predict_proba(X))
 
-        predict_proba.__doc__ = _sklearn_NuSVC.predict_proba.__doc__
+        predict_proba.__doc__ = _sklearn_BaseSVC.predict_proba.__doc__
 
     @wrap_output_data
     def _predict_proba(self, X):
         sklearn_pred_proba = (
-            _sklearn_NuSVC.predict_proba
+            _sklearn_BaseSVC.predict_proba
             if sklearn_check_version("1.0")
-            else _sklearn_NuSVC._predict_proba
+            else _sklearn_BaseSVC._predict_proba
         )
 
         return dispatch(
