@@ -70,7 +70,7 @@ def test_class_weight(queue):
 
     clf = SVC(class_weight={0: 0.1})
     clf.fit(X, y, queue=queue)
-    assert_array_almost_equal(clf.predict(X, queue=queue), [1] * 6)
+    assert_array_almost_equal(clf.predict(X, queue=queue).ravel(), [1] * 6)
 
 
 @pytest.mark.parametrize("queue", get_queues())

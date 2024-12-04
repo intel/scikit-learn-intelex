@@ -60,7 +60,7 @@ def test_class_weight(queue):
 
     clf = NuSVC(class_weight={0: 0.1})
     clf.fit(X, y, queue=queue)
-    assert_array_almost_equal(clf.predict(X, queue=queue), [1] * 6)
+    assert_array_almost_equal(clf.predict(X, queue=queue).ravel(), [1] * 6)
 
 
 @pass_if_not_implemented_for_gpu(reason="nusvc is not implemented")
