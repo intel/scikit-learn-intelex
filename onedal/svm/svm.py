@@ -225,7 +225,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
     def _predict(self, X, module, queue):
         return from_table(self._infer(X, module, queue).responses)
-    
+
     def _decision_function(self, X, module, queue):
         return from_table(self._infer(X, module, queue).decision_function)
 

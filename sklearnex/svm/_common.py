@@ -507,8 +507,7 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
         if len(self.classes_) != 2:
             res = xp.take(self.classes_, xp.asarray(res, dtype=xp.int32))
         return res
-    
-    
+
     def _onedal_ovr_decision_function(self, predictions, confidences, n_classes):
         # This function is legacy from the original implementation and needs
         # to be refactored.
@@ -561,9 +560,8 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
             decision_function = self._onedal_ovr_decision_function(
                 decision_function < 0, -decision_function, len(self.classes_)
             )
-        
-        return decision_function
 
+        return decision_function
 
     def _onedal_predict_proba(self, X, queue=None):
         if getattr(self, "clf_prob", None) is None:
