@@ -32,7 +32,7 @@ else:
 
 
 @control_n_jobs(decorated_methods=["fit", "predict", "score"])
-class SVR(_sklearn_SVR, BaseSVR):
+class SVR(BaseSVR, _sklearn_SVR):
     __doc__ = _sklearn_SVR.__doc__
     _onedal_factory = onedal_SVR
 
@@ -97,34 +97,6 @@ class SVR(_sklearn_SVR, BaseSVR):
 
         return self
 
-    @wrap_output_data
-    def predict(self, X):
-        check_is_fitted(self)
-        return dispatch(
-            self,
-            "predict",
-            {
-                "onedal": self.__class__._onedal_predict,
-                "sklearn": _sklearn_SVR.predict,
-            },
-            X,
-        )
-
-    @wrap_output_data
-    def score(self, X, y, sample_weight=None):
-        check_is_fitted(self)
-        return dispatch(
-            self,
-            "score",
-            {
-                "onedal": self.__class__._onedal_score,
-                "sklearn": _sklearn_SVR.score,
-            },
-            X,
-            y,
-            sample_weight=sample_weight,
-        )
-
     def _onedal_fit(self, X, y, sample_weight=None, queue=None):
         X, _, sample_weight = self._onedal_fit_checks(X, y, sample_weight)
         onedal_params = {
@@ -145,5 +117,3 @@ class SVR(_sklearn_SVR, BaseSVR):
         self._save_attributes()
 
     fit.__doc__ = _sklearn_SVR.fit.__doc__
-    predict.__doc__ = _sklearn_SVR.predict.__doc__
-    score.__doc__ = _sklearn_SVR.score.__doc__
