@@ -199,56 +199,8 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         m.biases = to_table(self.intercept_)
         return m
 
-    def _predict(self, X, module, queue):
+    def _infer(self, X, module, queue):
         _check_is_fitted(self)
-
-        if self._sparse and not sp.isspmatrix(X):
-            X = sp.csr_matrix(X)
-        if self._sparse:
-            X.sort_indices()
-
-        if sp.issparse(X) and not self._sparse and not callable(self.kernel):
-            raise ValueError(
-                "cannot use sparse input in %r trained on dense data"
-                % type(self).__name__
-            )
-
-        policy = _get_policy(queue, X)
-        X = to_table(_convert_to_supported(policy, X))
-        params = self._get_onedal_params(X.dtype)
-
-        if hasattr(self, "_onedal_model"):
-            model = self._onedal_model
-        else:
-            model = self._create_model(module)
-        result = module.infer(policy, params, model, X)
-        return from_table(result.responses)
-
-    def _ovr_decision_function(self, predictions, confidences, n_classes):
-        n_samples = predictions.shape[0]
-        votes = np.zeros((n_samples, n_classes))
-        sum_of_confidences = np.zeros((n_samples, n_classes))
-
-        k = 0
-        for i in range(n_classes):
-            for j in range(i + 1, n_classes):
-                sum_of_confidences[:, i] -= confidences[:, k]
-                sum_of_confidences[:, j] += confidences[:, k]
-                votes[predictions[:, k] == 0, i] += 1
-                votes[predictions[:, k] == 1, j] += 1
-                k += 1
-
-        transformed_confidences = sum_of_confidences / (
-            3 * (np.abs(sum_of_confidences) + 1)
-        )
-        return votes + transformed_confidences
-
-    def _decision_function(self, X, module, queue):
-        _check_is_fitted(self)
-        X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse="csr"
-        )
-        _check_n_features(self, X, False)
 
         if self._sparse:
             if not sp.isspmatrix(X):
@@ -261,14 +213,6 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
                 % type(self).__name__
             )
 
-        if module in [_backend.svm.classification, _backend.svm.nu_classification]:
-            sv = self.support_vectors_
-            if not self._sparse and sv.size > 0 and self._n_support.sum() != sv.shape[0]:
-                raise ValueError(
-                    "The internal representation "
-                    f"of {self.__class__.__name__} was altered"
-                )
-
         policy = _get_policy(queue, X)
         X = to_table(_convert_to_supported(policy, X))
         params = self._get_onedal_params(X.dtype)
@@ -277,17 +221,13 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             model = self._onedal_model
         else:
             model = self._create_model(module)
-        result = module.infer(policy, params, model, X)
-        decision_function = from_table(result.decision_function)
+        return module.infer(policy, params, model, X)
 
-        if len(self.classes_) == 2:
-            decision_function = decision_function.ravel()
-
-        if self.decision_function_shape == "ovr" and len(self.classes_) > 2:
-            decision_function = self._ovr_decision_function(
-                decision_function < 0, -decision_function, len(self.classes_)
-            )
-        return decision_function
+    def _predict(self, X, module, queue):
+        return from_table(self._infer(X, module, queue).responses)
+    
+    def _decision_function(self, X, module, queue):
+        return from_table(self._infer(X, module, queue).decision_function)
 
 
 class SVR(RegressorMixin, BaseSVM):

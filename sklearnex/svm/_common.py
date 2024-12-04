@@ -489,6 +489,8 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
                 "The internal representation " f"of {self.__class__.__name__} was altered"
             )
 
+        xp, _ = get_namespace(X)
+
         if self.break_ties and self.decision_function_shape == "ovo":
             raise ValueError(
                 "break_ties must be False when " "decision_function_shape is 'ovo'"
@@ -501,20 +503,46 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
         ):
             return xp.argmax(self._onedal_decision_function(X, queue=queue), axis=1)
 
-        xp, _ = get_namespace(X)
         res = super()._onedal_predict(X, queue=queue, xp=xp)
         if len(self.classes_) != 2:
             res = xp.take(self.classes_, xp.asarray(res, dtype=xp.int32))
         return res
+    
+    
+    def _onedal_ovr_decision_function(self, predictions, confidences, n_classes):
+        # This function is legacy from the original implementation and needs
+        # to be refactored.
+        xp, _ = get_namespace(predictions)
+        n_samples = predictions.shape[0]
+        votes = xp.zeros((n_samples, n_classes))
+        sum_of_confidences = xp.zeros((n_samples, n_classes))
+
+        k = 0
+        for i in range(n_classes):
+            for j in range(i + 1, n_classes):
+                sum_of_confidences[:, i] -= confidences[:, k]
+                sum_of_confidences[:, j] += confidences[:, k]
+                votes[predictions[:, k] == 0, i] += 1
+                votes[predictions[:, k] == 1, j] += 1
+                k += 1
+
+        transformed_confidences = sum_of_confidences / (
+            3 * (xp.abs(sum_of_confidences) + 1)
+        )
+        return votes + transformed_confidences
 
     def _onedal_decision_function(self, X, queue=None):
+        sv = self.support_vectors_
+        if not self._sparse and sv.size > 0 and self._n_support.sum() != sv.shape[0]:
+            raise ValueError(
+                "The internal representation " f"of {self.__class__.__name__} was altered"
+            )
         xp, _ = get_namespace(X)
         if sklearn_check_version("1.0"):
             validate_data(
                 self,
                 X,
                 dtype=[xp.float64, xp.float32],
-                force_all_finite=False,
                 accept_sparse="csr",
                 reset=False,
             )
@@ -522,11 +550,20 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
             X = check_array(
                 X,
                 dtype=[xp.float64, xp.float32],
-                force_all_finite=False,
                 accept_sparse="csr",
             )
 
-        return self._onedal_estimator.decision_function(X, queue=queue)
+        decision_function = self._onedal_estimator.decision_function(X, queue=queue)
+
+        if len(self.classes_) == 2:
+            decision_function = decision_function.ravel()
+        elif len(self.classes_) > 2 and self.decision_function_shape == "ovr":
+            decision_function = self._onedal_ovr_decision_function(
+                decision_function < 0, -decision_function, len(self.classes_)
+            )
+        
+        return decision_function
+
 
     def _onedal_predict_proba(self, X, queue=None):
         if getattr(self, "clf_prob", None) is None:
