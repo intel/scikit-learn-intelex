@@ -328,7 +328,8 @@ if daal_check_version((2024, "P", 600)):
             self._save_attributes()
 
         def _onedal_predict(self, X, queue=None):
-            X = validate_data(self, X, accept_sparse=False, reset=False)
+            xp, _ = get_namespace(X)
+            X = validate_data(self, X, accept_sparse=False, dtype=[xp.float64, xp.float32], reset=False)
 
             if not hasattr(self, "_onedal_estimator"):
                 self._initialize_onedal_estimator()
