@@ -32,7 +32,7 @@ from onedal.tests.utils._device_selection import (
 
 def _test_libsvm_parameters(queue, array_constr, dtype):
     X = array_constr([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]], dtype=dtype)
-    y = array_constr([1, 1, 1, 2, 2, 2], dtype=dtype)
+    y = array_constr([0, 0, 0, 1, 1, 1], dtype=dtype)
 
     clf = NuSVC(kernel="linear").fit(X, y, queue=queue)
     assert_array_almost_equal(
@@ -41,7 +41,7 @@ def _test_libsvm_parameters(queue, array_constr, dtype):
     assert_array_equal(clf.support_, [0, 1, 3, 4])
     assert_array_equal(clf.support_vectors_, X[clf.support_])
     assert_array_equal(clf.intercept_, [0.0])
-    assert_array_equal(clf.predict(X, queue=queue), y)
+    assert_array_equal(clf.predict(X, queue=queue).ravel(), y)
 
 
 @pass_if_not_implemented_for_gpu(reason="nusvc is not implemented")
@@ -55,12 +55,12 @@ def test_libsvm_parameters(queue, array_constr, dtype):
 @pass_if_not_implemented_for_gpu(reason="nusvc is not implemented")
 @pytest.mark.parametrize("queue", get_queues())
 def test_class_weight(queue):
-    X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
-    y = np.array([1, 1, 1, 2, 2, 2])
+    X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]], dtype=np.float64)
+    y = np.array([0, 0, 0, 1, 1, 1], dtype=np.float64)
 
-    clf = NuSVC(class_weight={1: 0.1})
+    clf = NuSVC(class_weight={0: 0.1})
     clf.fit(X, y, queue=queue)
-    assert_array_almost_equal(clf.predict(X, queue=queue), [2] * 6)
+    assert_array_almost_equal(clf.predict(X, queue=queue), [1] * 6)
 
 
 @pass_if_not_implemented_for_gpu(reason="nusvc is not implemented")

@@ -61,11 +61,11 @@ def check_svm_model_equal(
 
 
 def _test_simple_dataset(queue, kernel):
-    X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
+    X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]], dtype=np.float64)
     sparse_X = sp.lil_matrix(X)
-    Y = [1, 1, 1, 2, 2, 2]
+    Y = np.array([1, 1, 1, 2, 2, 2], dtype=np.float64)
 
-    X2 = np.array([[-1, -1], [2, 2], [3, 2]])
+    X2 = np.array([[-1, -1], [2, 2], [3, 2]], dtype=np.float64)
     sparse_X2 = sp.dok_matrix(X2)
 
     dataset = sparse_X, Y, sparse_X2
