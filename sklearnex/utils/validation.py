@@ -135,7 +135,8 @@ def validate_data(
         outx, outy = out if check_x else (None, out)
         if outy.dtype not in dtype:
             yp, _ = get_namespace(outy)
-            outy = yp.astype(outy, dtype=dtype[0])
+            # use asarray rather than astype because of numpy support
+            outy = yp.asarray(outy, dtype=dtype[0])
             out = (outx, outy) if check_x else outy
 
     return out
