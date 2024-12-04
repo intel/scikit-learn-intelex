@@ -407,7 +407,7 @@ class SVC(ClassifierMixin, BaseSVM):
         super().__init__(
             C=C,
             nu=0.0,
-            epsilon=0.0, #  unused in BaseSVC
+            epsilon=0.0,  #  unused in BaseSVC
             kernel=kernel,
             degree=degree,
             gamma=gamma,
@@ -520,7 +520,7 @@ class NuSVC(ClassifierMixin, BaseSVM):
         super().__init__(
             C=0.0,
             nu=nu,
-            epsilon=0.0, #  unused in libSVM
+            epsilon=0.0,  #  unused in libSVM
             kernel=kernel,
             degree=degree,
             gamma=gamma,
