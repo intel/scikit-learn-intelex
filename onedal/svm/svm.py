@@ -35,6 +35,7 @@ from ..utils import (
     _validate_targets,
 )
 
+
 class BaseSVM(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def __init__(
@@ -200,56 +201,28 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
 
     def _predict(self, X, module, queue):
         _check_is_fitted(self)
-        if self.break_ties and self.decision_function_shape == "ovo":
+
+        if self._sparse and not sp.isspmatrix(X):
+            X = sp.csr_matrix(X)
+        if self._sparse:
+            X.sort_indices()
+
+        if sp.issparse(X) and not self._sparse and not callable(self.kernel):
             raise ValueError(
-                "break_ties must be False when " "decision_function_shape is 'ovo'"
+                "cannot use sparse input in %r trained on dense data"
+                % type(self).__name__
             )
 
-        if module in [_backend.svm.classification, _backend.svm.nu_classification]:
-            sv = self.support_vectors_
-            if not self._sparse and sv.size > 0 and self._n_support.sum() != sv.shape[0]:
-                raise ValueError(
-                    "The internal representation "
-                    f"of {self.__class__.__name__} was altered"
-                )
+        policy = _get_policy(queue, X)
+        X = to_table(_convert_to_supported(policy, X))
+        params = self._get_onedal_params(X.dtype)
 
-        if (
-            self.break_ties
-            and self.decision_function_shape == "ovr"
-            and len(self.classes_) > 2
-        ):
-            y = np.argmax(self.decision_function(X), axis=1)
+        if hasattr(self, "_onedal_model"):
+            model = self._onedal_model
         else:
-            X = _check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=True,
-                accept_sparse="csr",
-            )
-            _check_n_features(self, X, False)
-
-            if self._sparse and not sp.isspmatrix(X):
-                X = sp.csr_matrix(X)
-            if self._sparse:
-                X.sort_indices()
-
-            if sp.issparse(X) and not self._sparse and not callable(self.kernel):
-                raise ValueError(
-                    "cannot use sparse input in %r trained on dense data"
-                    % type(self).__name__
-                )
-
-            policy = _get_policy(queue, X)
-            X = to_table(_convert_to_supported(policy, X))
-            params = self._get_onedal_params(X.dtype)
-
-            if hasattr(self, "_onedal_model"):
-                model = self._onedal_model
-            else:
-                model = self._create_model(module)
-            result = module.infer(policy, params, model, X)
-            y = from_table(result.responses)
-        return y
+            model = self._create_model(module)
+        result = module.infer(policy, params, model, X)
+        return from_table(result.responses)
 
     def _ovr_decision_function(self, predictions, confidences, n_classes):
         n_samples = predictions.shape[0]
@@ -337,7 +310,6 @@ class SVR(RegressorMixin, BaseSVM):
         max_iter=-1,
         tau=1e-12,
         algorithm="thunder",
-        **kwargs,
     ):
         super().__init__(
             C=C,
@@ -388,7 +360,6 @@ class SVC(ClassifierMixin, BaseSVM):
         decision_function_shape="ovr",
         break_ties=False,
         algorithm="thunder",
-        **kwargs,
     ):
         super().__init__(
             C=C,
@@ -453,7 +424,6 @@ class NuSVR(RegressorMixin, BaseSVM):
         max_iter=-1,
         tau=1e-12,
         algorithm="thunder",
-        **kwargs,
     ):
         super().__init__(
             C=C,
@@ -504,7 +474,6 @@ class NuSVC(ClassifierMixin, BaseSVM):
         decision_function_shape="ovr",
         break_ties=False,
         algorithm="thunder",
-        **kwargs,
     ):
         super().__init__(
             C=1.0,

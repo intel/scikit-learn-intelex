@@ -146,25 +146,6 @@ class NuSVR(_sklearn_NuSVR, BaseSVR):
         self._onedal_estimator.fit(X, y, sample_weight, queue=queue)
         self._save_attributes()
 
-    def _onedal_predict(self, X, queue=None):
-        if sklearn_check_version("1.0"):
-            X = validate_data(
-                self,
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-                reset=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-            )
-        return self._onedal_estimator.predict(X, queue=queue)
-
     fit.__doc__ = _sklearn_NuSVR.fit.__doc__
     predict.__doc__ = _sklearn_NuSVR.predict.__doc__
     score.__doc__ = _sklearn_NuSVR.score.__doc__

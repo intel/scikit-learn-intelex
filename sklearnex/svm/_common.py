@@ -22,14 +22,16 @@ import numpy as np
 from scipy import sparse as sp
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.metrics import r2_score
+from sklearn.metrics import accuracy_score, r2_score
 from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.validation import check_array
 
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.utils import _check_array, _check_X_y, _column_or_1d
 
 from .._config import config_context, get_config
 from .._utils import PatchingConditionsChain
+from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
@@ -238,6 +240,40 @@ class BaseSVM(BaseEstimator, ABC):
 
         return sample_weight
 
+    def _onedal_predict(self, X, queue=None):
+        xp, _ = get_namespace(X)
+
+        if self.break_ties and self.decision_function_shape == "ovo":
+            raise ValueError(
+                "break_ties must be False when " "decision_function_shape is 'ovo'"
+            )
+
+        if sklearn_check_version("1.0"):
+            X = validate_data(
+                self,
+                X,
+                dtype=[xp.float64, xp.float32],
+                accept_sparse="csr",
+                reset=False,
+            )
+        else:
+            X = check_array(
+                X,
+                dtype=[xp.float64, xp.float32],
+                accept_sparse="csr",
+            )
+
+        if (
+            self.break_ties
+            and self.decision_function_shape == "ovr"
+            and len(self.classes_) > 2
+        ):
+            return xp.argmax(
+                self._onedal_estimator.decision_function(X, queue=queue), axis=1
+            )
+
+        return self._onedal_estimator.predict(X, queue=queue)
+
 
 class BaseSVC(BaseSVM):
     def _compute_balanced_class_weight(self, y):
@@ -310,6 +346,19 @@ class BaseSVC(BaseSVM):
         if sklearn_check_version("1.1"):
             length = int(len(self.classes_) * (len(self.classes_) - 1) / 2)
             self.n_iter_ = np.full((length,), self._onedal_estimator.n_iter_)
+
+    def _onedal_predict(self, X, queue=None):
+        sv = self.support_vectors_
+        if not self._sparse and sv.size > 0 and self._n_support.sum() != sv.shape[0]:
+            raise ValueError(
+                "The internal representation " f"of {self.__class__.__name__} was altered"
+            )
+        return super()._onedal_predict(X, queue=queue)
+
+    def _onedal_score(self, X, y, sample_weight=None, queue=None):
+        return accuracy_score(
+            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
+        )
 
 
 class BaseSVR(BaseSVM):
