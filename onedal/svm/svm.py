@@ -334,8 +334,7 @@ class SVR(RegressorMixin, BaseSVM):
         return super()._fit(X, y, sample_weight, _backend.svm.regression, queue)
 
     def predict(self, X, queue=None):
-        y = super()._predict(X, _backend.svm.regression, queue)
-        return y.ravel()
+        return super()._predict(X, _backend.svm.regression, queue)
 
 
 class SVC(ClassifierMixin, BaseSVM):
@@ -395,10 +394,7 @@ class SVC(ClassifierMixin, BaseSVM):
         return super()._fit(X, y, sample_weight, _backend.svm.classification, queue)
 
     def predict(self, X, queue=None):
-        y = super()._predict(X, _backend.svm.classification, queue)
-        if len(self.classes_) == 2:
-            y = y.ravel()
-        return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
+        return super()._predict(X, _backend.svm.classification, queue)
 
     def decision_function(self, X, queue=None):
         return super()._decision_function(X, _backend.svm.classification, queue)
@@ -448,8 +444,7 @@ class NuSVR(RegressorMixin, BaseSVM):
         return super()._fit(X, y, sample_weight, _backend.svm.nu_regression, queue)
 
     def predict(self, X, queue=None):
-        y = super()._predict(X, _backend.svm.nu_regression, queue)
-        return y.ravel()
+        return super()._predict(X, _backend.svm.nu_regression, queue)
 
 
 class NuSVC(ClassifierMixin, BaseSVM):
@@ -509,10 +504,7 @@ class NuSVC(ClassifierMixin, BaseSVM):
         return super()._fit(X, y, sample_weight, _backend.svm.nu_classification, queue)
 
     def predict(self, X, queue=None):
-        y = super()._predict(X, _backend.svm.nu_classification, queue)
-        if len(self.classes_) == 2:
-            y = y.ravel()
-        return self.classes_.take(np.asarray(y, dtype=np.intp)).ravel()
+        return super()._predict(X, _backend.svm.nu_classification, queue)
 
     def decision_function(self, X, queue=None):
         return super()._decision_function(X, _backend.svm.nu_classification, queue)

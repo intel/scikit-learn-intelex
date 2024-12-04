@@ -304,7 +304,6 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
 
         self._save_attributes()
 
-
     def _onedal_predict_proba(self, X, queue=None):
         if getattr(self, "clf_prob", None) is None:
             raise NotFittedError(

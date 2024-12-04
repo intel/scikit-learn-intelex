@@ -240,8 +240,9 @@ class BaseSVM(BaseEstimator, ABC):
 
         return sample_weight
 
-    def _onedal_predict(self, X, queue=None):
-        xp, _ = get_namespace(X)
+    def _onedal_predict(self, X, queue=None, xp=None):
+        if xp is None:
+            xp, _ = get_namespace(X)
 
         if self.break_ties and self.decision_function_shape == "ovo":
             raise ValueError(
@@ -272,7 +273,7 @@ class BaseSVM(BaseEstimator, ABC):
                 self._onedal_estimator.decision_function(X, queue=queue), axis=1
             )
 
-        return self._onedal_estimator.predict(X, queue=queue)
+        return xp.squeeze(self._onedal_estimator.predict(X, queue=queue))
 
 
 class BaseSVC(BaseSVM):
@@ -353,7 +354,11 @@ class BaseSVC(BaseSVM):
             raise ValueError(
                 "The internal representation " f"of {self.__class__.__name__} was altered"
             )
-        return super()._onedal_predict(X, queue=queue)
+        xp, _ = get_namespace(X)
+        res = super()._onedal_predict(X, queue=queue, xp=xp)
+        if len(self.classes_) != 2:
+            res = xp.take(self.classes_, xp.asarray(res, dtype=xp.int32))
+        return res
 
     def _onedal_score(self, X, y, sample_weight=None, queue=None):
         return accuracy_score(
