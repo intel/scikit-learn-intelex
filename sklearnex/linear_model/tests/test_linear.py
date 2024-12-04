@@ -166,7 +166,7 @@ def test_multioutput_regression(dataframe, queue, dtype, fit_intercept, problem_
         X_0[:, 3] = X_0[:, 2]
     else:
         X_0 = gen.standard_normal(size=(10, 20))
-    y_0 = gen.standard_normal(size=(X.shape[0], 3), dtype=dtype)
+    y_0 = gen.standard_normal(size=(X_0.shape[0], 3), dtype=dtype)
 
     X = _convert_to_dataframe(X_0, sycl_queue=queue, target_df=dataframe)
     y = _convert_to_dataframe(y_0, sycl_queue=queue, target_df=dataframe)
@@ -175,12 +175,13 @@ def test_multioutput_regression(dataframe, queue, dtype, fit_intercept, problem_
     if not fit_intercept:
         A = X.T @ X
         b = X.T @ y
-        x = model.coef_.T
+        x = _convert_to_dataframe(model.coef_.T, sycl_queue=queue, target_df=dataframe)
     else:
         Xi = np.c_[X, np.ones((X.shape[0], 1))]
         A = Xi.T @ Xi
         b = Xi.T @ y
-        x = np.r_[model.coef_.T, model.intercept_.reshape((1, -1))]
+        x = _convert_to_dataframe(np.r_[model.coef_.T, model.intercept_.reshape((1, -1))], sycl_queue=queue, target_df=dataframe)
+
     residual = A @ x - b
     assert np.all(np.abs(residual) < 1e-5)
 
