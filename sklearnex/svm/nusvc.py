@@ -16,7 +16,6 @@
 
 import numpy as np
 from sklearn.exceptions import NotFittedError
-from sklearn.metrics import accuracy_score
 from sklearn.svm import NuSVC as _sklearn_NuSVC
 from sklearn.utils.validation import (
     _deprecate_positional_args,
@@ -305,26 +304,6 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
 
         self._save_attributes()
 
-    def _onedal_predict(self, X, queue=None):
-        if sklearn_check_version("1.0"):
-            validate_data(
-                self,
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                ensure_2d=False,
-                accept_sparse="csr",
-                reset=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-            )
-
-        return self._onedal_estimator.predict(X, queue=queue)
 
     def _onedal_predict_proba(self, X, queue=None):
         if getattr(self, "clf_prob", None) is None:
@@ -359,11 +338,6 @@ class NuSVC(_sklearn_NuSVC, BaseSVC):
             )
 
         return self._onedal_estimator.decision_function(X, queue=queue)
-
-    def _onedal_score(self, X, y, sample_weight=None, queue=None):
-        return accuracy_score(
-            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
-        )
 
     fit.__doc__ = _sklearn_NuSVC.fit.__doc__
     predict.__doc__ = _sklearn_NuSVC.predict.__doc__
