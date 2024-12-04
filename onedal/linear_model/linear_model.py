@@ -61,10 +61,11 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         if np.isscalar(self.coef_):
             coefs = np.asarray(self.coef_).reshape(1, 1)
         else:
-            ndim = self.coef_.ndim
             # generalized atleast_2d for numpy and array_api inputs
-            coefs = self.coef_[*((2 - ndim) * [None])] if ndim < 2 else self.coef_
-            coefs = from_table(to_table(coefs))
+            # if an empty array, will fail for a multitude of reasons
+            coefs = from_table(
+                to_table(self.coefs_[None] if self.coefs_.ndim == 1 else self.coef_)
+            )
         if np.isscalar(self.intercept_):
             intercept = np.asarray(self.intercept_).reshape(1, 1)
         else:
