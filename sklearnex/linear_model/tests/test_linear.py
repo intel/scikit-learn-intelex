@@ -162,44 +162,40 @@ def test_multioutput_regression(dataframe, queue, dtype, fit_intercept, problem_
 
     gen = np.random.default_rng(seed=123)
     if problem_type == "regular":
-        X_0 = gen.standard_normal(size=(20, 5))
+        X = gen.standard_normal(size=(20, 5))
     elif problem_type == "singular":
-        X_0 = gen.standard_normal(size=(20, 4))
-        X_0[:, 3] = X_0[:, 2]
+        X = gen.standard_normal(size=(20, 4))
+        X[:, 3] = X[:, 2]
     else:
-        X_0 = gen.standard_normal(size=(10, 20))
-    y_0 = gen.standard_normal(size=(X_0.shape[0], 3), dtype=dtype)
+        X = gen.standard_normal(size=(10, 20))
+    y = gen.standard_normal(size=(X.shape[0], 3), dtype=dtype)
 
-    X = _convert_to_dataframe(X_0, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y_0, sycl_queue=queue, target_df=dataframe)
+    X_in = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y_in = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
 
-    model = LinearRegression(fit_intercept=fit_intercept).fit(X, y)
+    model = LinearRegression(fit_intercept=fit_intercept).fit(X_in, y_in)
     if not fit_intercept:
         A = X.T @ X
         b = X.T @ y
-        x = _convert_to_dataframe(model.coef_.T, sycl_queue=queue, target_df=dataframe)
+        x = model.coef_.T
     else:
         Xi = np.c_[X, np.ones((X.shape[0], 1))]
         A = Xi.T @ Xi
         b = Xi.T @ y
-        x = _convert_to_dataframe(
-            np.r_[model.coef_.T, model.intercept_.reshape((1, -1))],
-            sycl_queue=queue,
-            target_df=dataframe,
-        )
+        x = np.r_[model.coef_.T, model.intercept_.reshape((1, -1))]
 
     residual = A @ x - b
     assert np.all(np.abs(residual) < 1e-5)
 
-    pred = model.predict(X)
+    pred = model.predict(X_in)
     expected_pred = X @ model.coef_.T + model.intercept_.reshape((1, -1))
     tol = 1e-5 if pred.dtype == np.float32 else 1e-7
     assert_allclose(pred, expected_pred, rtol=tol)
 
     # check that it also works when 'y' is a list of lists
     if dataframe == "numpy":
-        y_lists = y_0.tolist()
-        model_lists = LinearRegression(fit_intercept=fit_intercept).fit(X_0, y_lists)
+        y_lists = y.tolist()
+        model_lists = LinearRegression(fit_intercept=fit_intercept).fit(X, y_lists)
         assert_allclose(model.coef_, model_lists.coef_)
         if fit_intercept:
             assert_allclose(model.intercept_, model_lists.intercept_)
