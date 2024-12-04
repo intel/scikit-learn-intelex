@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from onedal.spmd.covariance import onedal_EmpiricalCovariance
+from onedal.spmd.covariance import EmpiricalCovariance as onedal_EmpiricalCovariance
 
 from ...preview.covariance import EmpiricalCovariance as EmpiricalCovariance_Batch
 
