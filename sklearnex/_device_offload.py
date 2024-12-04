@@ -73,13 +73,17 @@ def dispatch(
     is_array_api_dispatch = get_config()["array_api_dispatch"]
     q = _get_global_queue()
     if is_array_api_dispatch:
-        backend, q, patching_status = _get_backend(obj, q, method_name, *args)
+        backend, q, patching_status = _get_backend(
+            obj, q, method_name, sua_iface, xp, *args
+        )
     else:
         has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
         has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(q, *kwargs.values())
         hostkwargs = dict(zip(kwargs.keys(), hostvalues))
 
-        backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
+        backend, q, patching_status = _get_backend(
+            obj, q, method_name, sua_iface, xp, *hostargs, **hostkwargs
+        )
         has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
         if backend == "onedal":
             # Host args only used before onedal backend call.

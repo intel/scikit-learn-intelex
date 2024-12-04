@@ -144,7 +144,11 @@ class DBSCAN(_sklearn_DBSCAN, BaseDBSCAN):
         return self._onedal_supported(method_name, *data)
 
     def fit(self, X, y=None, sample_weight=None):
-        sua_iface, xp, is_array_api_compliant = get_namespace(X)
+        # sua_iface, xp, is_array_api_compliant = get_namespace(X)
+        xp, is_array_api_compliant = get_namespace(X)
+        # TODO:
+        # just work around, will be changed.
+        sua_iface = True
         if sklearn_check_version("1.2"):
             self._validate_params()
         elif sklearn_check_version("1.1"):
