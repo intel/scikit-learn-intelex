@@ -36,4 +36,3 @@ __all__ = [
     "csr_read_csv",
     "read_next",
 ]
-
