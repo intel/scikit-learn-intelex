@@ -105,7 +105,7 @@ class BaseSVM(BaseEstimator):
             return patching_status
         inference_methods = (
             ["predict", "score"]
-            if class_name.endswith("R")
+            if isinstance(self, RegressorMixin)
             else ["predict", "predict_proba", "decision_function", "score"]
         )
         if method_name in inference_methods:
@@ -268,7 +268,7 @@ class BaseSVM(BaseEstimator):
                 accept_sparse="csr",
             )
 
-        return xp.squeeze(self._onedal_estimator.predict(X, queue=queue))
+        return self._onedal_estimator.predict(X, queue=queue)
 
 
 class BaseSVC(BaseSVM, _sklearn_BaseSVC):
@@ -501,15 +501,17 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
             and self.decision_function_shape == "ovr"
             and len(self.classes_) > 2
         ):
-            return xp.argmax(self._onedal_decision_function(X, queue=queue), axis=1)
+            res = xp.argmax(self._onedal_decision_function(X, queue=queue), axis=1)
+        else:
+            res = super()._onedal_predict(X, queue=queue, xp=xp)
 
-        res = super()._onedal_predict(X, queue=queue, xp=xp)
-        return xp.take(
-            self.classes_,
-            xp.asarray(
-                res if len(self.classes_) != 2 else xp.reshape(res, (-1,)), dtype=xp.int32
-            ),
-        )
+        # the extensive reshaping here comes from the previous implementation, and
+        # should be sorted out, as this is inefficient and likely can be reduced
+        res = xp.asarray(res, dtype=xp.int32)
+        if len(self.classes_) == 2:
+            res = xp.reshape(res, (-1,))
+
+        return xp.reshape(xp.take(xp.asarray(self.classes_), res), (-1,))
 
     def _onedal_ovr_decision_function(self, predictions, confidences, n_classes):
         # This function is legacy from the original implementation and needs
@@ -564,7 +566,7 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
                 decision_function < 0, -decision_function, len(self.classes_)
             )
 
-        return decision_function
+        return xp.asarray(decision_function)
 
     def _onedal_predict_proba(self, X, queue=None):
         if getattr(self, "clf_prob", None) is None:
