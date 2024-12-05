@@ -77,8 +77,8 @@ def test_sample_weight(queue):
 @pass_if_not_implemented_for_gpu(reason="nusvc is not implemented")
 @pytest.mark.parametrize("queue", get_queues())
 def test_decision_function(queue):
-    X = [[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]]
-    Y = [1, 1, 1, 2, 2, 2]
+    X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]], dtype=np.float32)
+    Y = np.array([1, 1, 1, 2, 2, 2], dtype=np.float32)
 
     clf = NuSVC(kernel="rbf", gamma=1, decision_function_shape="ovo")
     clf.fit(X, Y, queue=queue)
