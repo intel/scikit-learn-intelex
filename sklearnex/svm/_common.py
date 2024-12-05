@@ -46,7 +46,7 @@ else:
     validate_data = BaseEstimator._validate_data
 
 
-class BaseSVM(BaseEstimator):
+class BaseSVM(object):
 
     _onedal_factory = None
 
@@ -271,7 +271,7 @@ class BaseSVM(BaseEstimator):
         return self._onedal_estimator.predict(X, queue=queue)
 
 
-class BaseSVC(BaseSVM, _sklearn_BaseSVC):
+class BaseSVC(BaseSVM):
 
     @wrap_output_data
     def predict(self, X):
@@ -592,7 +592,7 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
     score.__doc__ = _sklearn_BaseSVC.score.__doc__
 
 
-class BaseSVR(BaseSVM, _sklearn_BaseLibSVM):
+class BaseSVR(BaseSVM):
     @wrap_output_data
     def predict(self, X):
         check_is_fitted(self)
