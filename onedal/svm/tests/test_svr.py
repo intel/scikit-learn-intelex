@@ -231,7 +231,7 @@ def test_sided_sample_weight(queue):
 @pytest.mark.parametrize("queue", get_queues())
 def test_pickle(queue):
     diabetes = datasets.load_diabetes()
-    clf = SVR(kernel="rbf", C=10.0)
+    clf = SVR(kernel="linear", C=10.0)
     clf.fit(diabetes.data, diabetes.target, queue=queue)
     expected = clf.predict(diabetes.data, queue=queue)
 
