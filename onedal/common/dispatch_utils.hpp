@@ -17,6 +17,7 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 #include "onedal/version.hpp"
 
@@ -44,9 +45,10 @@ struct fptype2t {
     fptype2t(const Ops& ops) : ops(ops) {}
 
     auto operator()(const pybind11::dict& params) {
-        const auto fptype = params["fptype"].cast<std::string>();
-        ONEDAL_PARAM_DISPATCH_VALUE(fptype, "float", ops, float);
-        ONEDAL_PARAM_DISPATCH_VALUE(fptype, "double", ops, double);
+        // fptype needs to be a numpy dtype, which uses pybind11-native dtype checking
+        const auto fptype = params["fptype"].cast<pybind11::dtype>().num();
+        ONEDAL_PARAM_DISPATCH_VALUE(fptype, pybind11::detail::npy_api::NPY_FLOAT_, ops, float);
+        ONEDAL_PARAM_DISPATCH_VALUE(fptype, pybind11::detail::npy_api::NPY_DOUBLE_, ops, double);
         ONEDAL_PARAM_DISPATCH_THROW_INVALID_VALUE(fptype);
     }
 

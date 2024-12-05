@@ -26,7 +26,7 @@
 #include "oneapi/dal/table/homogen.hpp"
 #include "oneapi/dal/table/detail/homogen_utils.hpp"
 
-#include "onedal/common/policy_common.hpp"
+#include "onedal/common/sycl_interfaces.hpp"
 #include "onedal/datatypes/data_conversion_sua_iface.hpp"
 #include "onedal/datatypes/utils/dtype_conversions.hpp"
 #include "onedal/datatypes/utils/dtype_dispatcher.hpp"
@@ -163,7 +163,7 @@ dal::data_layout get_sua_iface_layout(const py::dict& sua_dict,
             return dal::data_layout::column_major;
         }
         else {
-            throw std::runtime_error("Wrong strides");
+            return dal::data_layout::unknown;
         }
     }
     else {
@@ -195,27 +195,6 @@ py::tuple get_npy_strides(const dal::data_layout& data_layout,
         strides = py::make_tuple(1l, row_count);
     }
     return strides;
-}
-
-// Create `SyclQueueRef` PyCapsule that represents an opaque value of
-// sycl::queue.
-py::capsule pack_queue(const std::shared_ptr<sycl::queue>& queue) {
-    static const char queue_capsule_name[] = "SyclQueueRef";
-    if (queue.get() == nullptr) {
-        throw std::runtime_error("Empty queue");
-    }
-    else {
-        void (*deleter)(void*) = [](void* const queue) -> void {
-            delete reinterpret_cast<sycl::queue* const>(queue);
-        };
-
-        sycl::queue* ptr = new sycl::queue{ *queue };
-        void* const raw = reinterpret_cast<void*>(ptr);
-
-        py::capsule capsule(raw, deleter);
-        capsule.set_name(queue_capsule_name);
-        return capsule;
-    }
 }
 
 } // namespace oneapi::dal::python
