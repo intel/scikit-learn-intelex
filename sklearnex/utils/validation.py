@@ -121,6 +121,11 @@ def validate_data(
     if ensure_all_finite:
         # run local finite check
         allow_nan = ensure_all_finite == "allow-nan"
+        # the return object from validate_data can (annoyingly) be a single 
+        # element (either x or y) or both (as a tuple). An iterator along with
+        # check_x and check_y can go through the output properly without
+        # stacking layers of if statements to make sure the proper input_name
+        # is used
         arg = iter(out if isinstance(out, tuple) else (out,))
         if check_x:
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="X")
@@ -131,9 +136,7 @@ def validate_data(
         # validate_data does not do full dtype conversions, as it uses check_X_y
         # oneDAL can make tables from [int32, float32, float64], requiring
         # a dtype check and conversion. This will query the array_namespace and
-        # convert y as necessary. This is done after assert_all_finite, because
-        # int y arrays do not need to finite check, and this will lead to a speedup
-        # in comparison to sklearn
+        # convert y as necessary. This is important especially for regressors.
         dtype = kwargs["dtype"]
         if not isinstance(dtype, (tuple, list)):
             dtype = tuple(dtype)
