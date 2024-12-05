@@ -388,7 +388,10 @@ class DummyEstimator(BaseEstimator):
                 X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
             )
             self.y_attr_ = from_table(
-                y_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+                y_table,
+                sua_iface=sua_iface,
+                sycl_queue=y.sycl_queue if y else X.sycl_queue,
+                xp=xp,
             )
         else:
             self.x_attr = from_table(X_table)

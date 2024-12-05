@@ -225,12 +225,16 @@ def test_validate_data_output(dtype, dataframe, queue):
         # check sklearn validate_data operations work underneath
         X_array = validate_data(est, X, reset=False)
 
-    if dispatch:
-        assert type(X) == type(
-            X_array
-        ), f"validate_data converted {type(X)} to {type(X_array)}"
-        assert type(X) == type(X_out), f"from_array converted {type(X)} to {type(X_out)}"
-    else:
-        # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
-        assert isinstance(X_array, np.ndarray)
-        assert isinstance(X_out, np.ndarray)
+    for orig, first, second in ((X, X_out, X_array), (y, y_out, None)):
+        if dispatch:
+            assert type(orig) == type(
+                first
+            ), f"validate_data converted {type(orig)} to {type(first)}"
+            if second:
+                assert type(orig) == type(
+                    second
+                ), f"from_array converted {type(orig)} to {type(second)}"
+        else:
+            # array_api_strict from sklearn < 1.2 and pandas will convert to numpy arrays
+            assert isinstance(first, np.ndarray)
+            assert second is None or isinstance(second, np.ndarray)
