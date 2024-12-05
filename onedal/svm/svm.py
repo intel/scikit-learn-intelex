@@ -119,6 +119,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             force_all_finite=True,
             accept_sparse="csr",
         )
+        # hard work remains on moving validate targets away from onedal
         y = self._validate_targets(y, X.dtype)
         if sample_weight is not None and len(sample_weight) > 0:
             sample_weight = _check_array(
@@ -144,24 +145,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
             self._scale_, self._sigma_ = 1.0, 1.0
             self.coef0 = 0.0
         else:
-            if isinstance(self.gamma, str):
-                if self.gamma == "scale":
-                    if sp.issparse(X):
-                        # var = E[X^2] - E[X]^2
-                        X_sc = (X.multiply(X)).mean() - (X.mean()) ** 2
-                    else:
-                        X_sc = X.var()
-                    _gamma = 1.0 / (X.shape[1] * X_sc) if X_sc != 0 else 1.0
-                elif self.gamma == "auto":
-                    _gamma = 1.0 / X.shape[1]
-                else:
-                    raise ValueError(
-                        "When 'gamma' is a string, it should be either 'scale' or "
-                        "'auto'. Got '{}' instead.".format(self.gamma)
-                    )
-            else:
-                _gamma = self.gamma
-            self._scale_, self._sigma_ = _gamma, np.sqrt(0.5 / _gamma)
+            self._scale_, self._sigma_ = self.gamma, np.sqrt(0.5 / self.gamma)
 
         policy = _get_policy(queue, *data)
         data_t = to_table(*_convert_to_supported(policy, *data))
@@ -180,6 +164,7 @@ class BaseSVM(BaseEstimator, metaclass=ABCMeta):
         self.n_features_in_ = X.shape[1]
         self.shape_fit_ = X.shape
 
+        # _n_support not used in this object, will be moved to sklearnex
         if getattr(self, "classes_", None) is not None:
             indices = y.take(self.support_, axis=0)
             self._n_support = np.array(
