@@ -16,7 +16,7 @@ idna==3.10
 imagesize==1.4.1
 importlib-metadata==8.5.0
 importlib-resources==6.4.5
-ipython==8.29.0
+ipython==8.30.0
 ipython-genutils==0.2.0
 jedi==0.19.2
 Jinja2==3.1.4
@@ -26,7 +26,7 @@ jupyter-core==5.7.2
 jupyterlab-pygments==0.3.0
 MarkupSafe==3.0.2
 mistune==3.0.2
-nbclient==0.10.0
+nbclient==0.10.1
 nbconvert==7.16.4
 nbformat==5.10.4
 nbsphinx==0.9.5
@@ -65,7 +65,7 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 testpath==0.6.0
-tornado==6.4.1
+tornado==6.4.2
 traitlets==5.14.3
 typing-extensions==4.12.2
 urllib3==2.2.3

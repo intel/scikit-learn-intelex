@@ -37,7 +37,7 @@ from sklearnex.utils import _assert_all_finite
 )
 @pytest.mark.parametrize("allow_nan", [False, True])
 def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
-    X = np.array(shape, dtype=dtype)
+    X = np.empty(shape, dtype=dtype)
     X.fill(np.finfo(dtype).max)
     _assert_all_finite(X, allow_nan=allow_nan)
 
@@ -48,7 +48,7 @@ def test_sum_infinite_actually_finite(dtype, shape, allow_nan):
     [
         [16, 2048],
         [
-            2**16 + 3,
+            65539,  # 2**16 + 3,
         ],
         [1000, 1000],
     ],

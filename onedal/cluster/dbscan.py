@@ -56,6 +56,8 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         self.n_jobs = n_jobs
 
     def _get_onedal_params(self, xp, dtype):
+        # TODO:
+        # change "fptype": dtype,
         return {
             "fptype": "float" if dtype == xp.float32 else "double",
             "method": "by_default",
