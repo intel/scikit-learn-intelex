@@ -230,7 +230,7 @@ def test_validate_data_output(dtype, dataframe, queue):
             assert type(orig) == type(
                 first
             ), f"validate_data converted {type(orig)} to {type(first)}"
-            if second:
+            if second is not None:
                 assert type(orig) == type(
                     second
                 ), f"from_array converted {type(orig)} to {type(second)}"
