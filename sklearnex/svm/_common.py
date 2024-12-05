@@ -504,7 +504,12 @@ class BaseSVC(BaseSVM, _sklearn_BaseSVC):
             return xp.argmax(self._onedal_decision_function(X, queue=queue), axis=1)
 
         res = super()._onedal_predict(X, queue=queue, xp=xp)
-        return xp.take(self.classes_, xp.asarray(res, dtype=xp.int32))
+        return xp.take(
+            self.classes_,
+            xp.asarray(
+                res if len(self.classes_) != 2 else xp.reshape(res, (-1,)), dtype=xp.int32
+            ),
+        )
 
     def _onedal_ovr_decision_function(self, predictions, confidences, n_classes):
         # This function is legacy from the original implementation and needs
