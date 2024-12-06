@@ -39,7 +39,7 @@ from onedal.svm import NuSVC as onedal_NuSVC
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = BaseSVC._validate_data
+    validate_data = _sklearn_NuSVC._validate_data
 
 
 @control_n_jobs(
