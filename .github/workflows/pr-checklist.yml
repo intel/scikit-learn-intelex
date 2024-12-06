@@ -20,8 +20,7 @@ on:
   pull_request:
     types: [opened, edited, synchronize, ready_for_review, converted_to_draft]
 
-permissions:
-  contents: read
+permissions: read-all
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}

@@ -74,7 +74,6 @@ GPU_SKIP_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    "Ridge",  # does not support GPU offloading (fails silently)
     "ElasticNet",  # does not support GPU offloading (fails silently)
     "Lasso",  # does not support GPU offloading (fails silently)
     "SVR",  # does not support GPU offloading (fails silently)
@@ -144,8 +143,8 @@ if _is_dpc_backend:
 
         def fit(self, X, y=None):
             sua_iface, xp, _ = _get_sycl_namespace(X)
-            X_table = to_table(X, sua_iface=sua_iface)
-            y_table = to_table(y, sua_iface=sua_iface)
+            X_table = to_table(X)
+            y_table = to_table(y)
             # The presence of the fitted attributes (ending with a trailing
             # underscore) is required for the correct check. The cleanup of
             # the memory will occur at the estimator instance deletion.
@@ -162,7 +161,7 @@ if _is_dpc_backend:
             # fitted attributes (ending with a trailing underscore).
             check_is_fitted(self)
             sua_iface, xp, _ = _get_sycl_namespace(X)
-            X_table = to_table(X, sua_iface=sua_iface)
+            X_table = to_table(X)
             returned_X = from_table(
                 X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
             )

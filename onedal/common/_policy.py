@@ -48,12 +48,8 @@ class _HostInteropPolicy(_backend.host_policy):
 
 
 if _is_dpc_backend:
-    from onedal._device_offload import DummySyclQueue
 
     class _DataParallelInteropPolicy(_backend.data_parallel_policy):
         def __init__(self, queue):
             self._queue = queue
-            if isinstance(queue, DummySyclQueue):
-                super().__init__(self._queue.sycl_device.get_filter_string())
-                return
             super().__init__(self._queue)
