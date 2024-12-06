@@ -30,6 +30,7 @@ from onedal.utils import _check_array, _check_X_y, _column_or_1d
 
 from .._config import config_context, get_config
 from .._utils import PatchingConditionsChain
+from ..base import IntelEstimator
 from ..utils import get_tags
 
 if sklearn_check_version("1.6"):
@@ -38,7 +39,7 @@ else:
     validate_data = BaseEstimator._validate_data
 
 
-class BaseSVM(BaseEstimator, ABC):
+class BaseSVM(IntelEstimator):
 
     @property
     def _dual_coef_(self):
