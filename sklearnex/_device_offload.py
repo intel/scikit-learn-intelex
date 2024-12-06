@@ -65,43 +65,41 @@ def dispatch(obj, method_name, branches, *args, **kwargs):
     array_api_offload = (
         "array_api_dispatch" in get_config() and get_config()["array_api_dispatch"]
     )
-    # we only guarantee onedal_cpu_supported and onedal_gpu_supported are generalized to non-numpy inputs
-    # for zero copy estimators. this will eventually be deprecated when all estimators are zero-copy generalized
+
     onedal_array_api = array_api_offload and get_tags(obj)["onedal_array_api"]
+    sklearn_array_api = array_api_offload and get_tags(obj)["array_api_support"]
 
     # We need to avoid a copy to host here if zero_copy supported
+    backend = ""
     if onedal_array_api:
         backend, q, patching_status = _get_backend(obj, q, method_name, *args)
-    else:
-        has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
-        has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(q, *kwargs.values())
-        hostkwargs = dict(zip(kwargs.keys(), hostvalues))
-        backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
-        has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
-
-    if backend == "onedal":
-        if onedal_array_api:
-            # Host args only used before onedal backend call.
-            # Device will be offloaded when onedal backend will be called.
+        if backend == "onedal":
             patching_status.write_log(queue=q, transferred_to_host=False)
             return branches[backend](obj, *args, **kwargs, queue=q)
-        else:
-            patching_status.write_log(queue=q, transferred_to_host=False)
-            return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
+        if sklearn_array_api and backend == "sklearn":
+            patching_status.write_log(transferred_to_host=False)
+            return branches[backend](obj, *args, **kwargs)
+
+    # move to host because it is necessary for checking
+    # we only guarantee onedal_cpu_supported and onedal_gpu_supported are generalized to non-numpy inputs
+    # for zero copy estimators. this will eventually be deprecated when all estimators are zero-copy generalized
+    has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
+    has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(q, *kwargs.values())
+    hostkwargs = dict(zip(kwargs.keys(), hostvalues))
+    has_usm_data = has_usm_data_for_args or has_usm_data_for_kwargs
+
+    if not backend:
+        backend, q, patching_status = _get_backend(obj, q, method_name, *hostargs)
+
+    if backend == "onedal":
+        patching_status.write_log(queue=q, transferred_to_host=False)
+        return branches[backend](obj, *hostargs, **hostkwargs, queue=q)
     if backend == "sklearn":
-        if array_api_offload and get_tags(obj)["array_api_support"]:
+        if sklearn_array_api and not has_usm_data:
             # dpnp fallback is not handled properly yet.
             patching_status.write_log(transferred_to_host=False)
             return branches[backend](obj, *args, **kwargs)
         else:
-            # This is ugly logic, but I need to get this off the ground
-            if onedal_array_api:
-                has_usm_data_for_args, q, hostargs = _transfer_to_host(q, *args)
-                has_usm_data_for_kwargs, q, hostvalues = _transfer_to_host(
-                    q, *kwargs.values()
-                )
-                hostkwargs = dict(zip(kwargs.keys(), hostvalues))
-
             patching_status.write_log()
             return branches[backend](obj, *hostargs, **hostkwargs)
     raise RuntimeError(
