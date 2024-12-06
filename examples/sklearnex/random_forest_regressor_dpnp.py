@@ -18,13 +18,23 @@
 #    python ./random_forest_regressor_dpnp_batch.py
 
 import dpnp
-import numpy as np
 from sklearn.datasets import make_regression
 from sklearn.model_selection import train_test_split
 
+# Just directly import estimator from sklearnex
 from sklearnex.ensemble import RandomForestRegressor
 
-sycl_device = "gpu:0"
+## Or import estimator via sklearnex's patch mechanism from sklearn
+# from sklearnex import patch_sklearn, sklearn_is_patched
+# patch_sklearn()
+## Function that can validate current state of patching
+# sklearn_is_patched()
+## Import estimator
+# from sklearn.ensemble import RandomForestRegressor
+
+# We create GPU SyclQueue and then put data to dpctl tensor using
+# the queue. It allows us to do computation on GPU.
+queue = dpctl.SyclQueue("gpu")
 
 X, y = make_regression(
     n_samples=1000, n_features=4, n_informative=2, random_state=0, shuffle=False
