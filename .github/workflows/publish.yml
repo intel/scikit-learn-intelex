@@ -2,7 +2,7 @@ name: publish
 'on':
   push:
     branches:
-      docs-ci
+      ktp-docs-ci
 
 jobs:
   build:
