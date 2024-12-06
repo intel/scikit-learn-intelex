@@ -23,8 +23,6 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
-bench_test = False
-
 # -- Path setup --------------------------------------------------------------
 
 import json
@@ -158,8 +156,6 @@ html_theme_options = {
 }
 
 switcher_url = "/scikit-learn-intelex/versions.json"
-if bench_test:
-    switcher_url = "/versions.json"
 
 html_context = {"current_version": version,
                 "project_name": "scikit-learn-intelex",
