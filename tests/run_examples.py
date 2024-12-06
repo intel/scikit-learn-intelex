@@ -207,7 +207,9 @@ def get_exe_cmd(ex, args):
             return None
         if not check_version(req_version[os.path.basename(ex)], get_daal_version()):
             return None
-        if not check_library(req_library[os.path.basename(ex)]):
+        if not check_library(
+            list(filter(lambda x: x != "dpctl", req_library[os.path.basename(ex)]))
+        ):
             return None
 
     if os.path.dirname(ex).endswith("sklearnex"):
