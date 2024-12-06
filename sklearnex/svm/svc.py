@@ -16,7 +16,6 @@
 
 import numpy as np
 from scipy import sparse as sp
-from sklearn.exceptions import NotFittedError
 from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC as _sklearn_SVC
 from sklearn.utils.validation import (
@@ -41,14 +40,15 @@ from onedal.svm import SVC as onedal_SVC
 if sklearn_check_version("1.6"):
     from sklearn.utils.validation import validate_data
 else:
-    validate_data = BaseSVC._validate_data
+    validate_data = _sklearn_SVC._validate_data
 
 
 @control_n_jobs(
     decorated_methods=["fit", "predict", "_predict_proba", "decision_function", "score"]
 )
-class SVC(_sklearn_SVC, BaseSVC):
+class SVC(BaseSVC, _sklearn_SVC):
     __doc__ = _sklearn_SVC.__doc__
+    _onedal_factory = onedal_SVC
 
     if sklearn_check_version("1.2"):
         _parameter_constraints: dict = {**_sklearn_SVC._parameter_constraints}
@@ -119,146 +119,6 @@ class SVC(_sklearn_SVC, BaseSVC):
 
         return self
 
-    @wrap_output_data
-    def predict(self, X):
-        check_is_fitted(self)
-        return dispatch(
-            self,
-            "predict",
-            {
-                "onedal": self.__class__._onedal_predict,
-                "sklearn": _sklearn_SVC.predict,
-            },
-            X,
-        )
-
-    @wrap_output_data
-    def score(self, X, y, sample_weight=None):
-        check_is_fitted(self)
-        return dispatch(
-            self,
-            "score",
-            {
-                "onedal": self.__class__._onedal_score,
-                "sklearn": _sklearn_SVC.score,
-            },
-            X,
-            y,
-            sample_weight=sample_weight,
-        )
-
-    if sklearn_check_version("1.0"):
-
-        @available_if(_sklearn_SVC._check_proba)
-        def predict_proba(self, X):
-            """
-            Compute probabilities of possible outcomes for samples in X.
-
-            The model need to have probability information computed at training
-            time: fit with attribute `probability` set to True.
-
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features)
-                For kernel="precomputed", the expected shape of X is
-                (n_samples_test, n_samples_train).
-
-            Returns
-            -------
-            T : ndarray of shape (n_samples, n_classes)
-                Returns the probability of the sample for each class in
-                the model. The columns correspond to the classes in sorted
-                order, as they appear in the attribute :term:`classes_`.
-
-            Notes
-            -----
-            The probability model is created using cross validation, so
-            the results can be slightly different than those obtained by
-            predict. Also, it will produce meaningless results on very small
-            datasets.
-            """
-            check_is_fitted(self)
-            return self._predict_proba(X)
-
-        @available_if(_sklearn_SVC._check_proba)
-        def predict_log_proba(self, X):
-            """Compute log probabilities of possible outcomes for samples in X.
-
-            The model need to have probability information computed at training
-            time: fit with attribute `probability` set to True.
-
-            Parameters
-            ----------
-            X : array-like of shape (n_samples, n_features) or \
-                    (n_samples_test, n_samples_train)
-                For kernel="precomputed", the expected shape of X is
-                (n_samples_test, n_samples_train).
-
-            Returns
-            -------
-            T : ndarray of shape (n_samples, n_classes)
-                Returns the log-probabilities of the sample for each class in
-                the model. The columns correspond to the classes in sorted
-                order, as they appear in the attribute :term:`classes_`.
-
-            Notes
-            -----
-            The probability model is created using cross validation, so
-            the results can be slightly different than those obtained by
-            predict. Also, it will produce meaningless results on very small
-            datasets.
-            """
-            xp, _ = get_namespace(X)
-
-            return xp.log(self.predict_proba(X))
-
-    else:
-
-        @property
-        def predict_proba(self):
-            self._check_proba()
-            check_is_fitted(self)
-            return self._predict_proba
-
-        def _predict_log_proba(self, X):
-            xp, _ = get_namespace(X)
-            return xp.log(self.predict_proba(X))
-
-        predict_proba.__doc__ = _sklearn_SVC.predict_proba.__doc__
-
-    @wrap_output_data
-    def _predict_proba(self, X):
-        sklearn_pred_proba = (
-            _sklearn_SVC.predict_proba
-            if sklearn_check_version("1.0")
-            else _sklearn_SVC._predict_proba
-        )
-
-        return dispatch(
-            self,
-            "predict_proba",
-            {
-                "onedal": self.__class__._onedal_predict_proba,
-                "sklearn": sklearn_pred_proba,
-            },
-            X,
-        )
-
-    @wrap_output_data
-    def decision_function(self, X):
-        check_is_fitted(self)
-        return dispatch(
-            self,
-            "decision_function",
-            {
-                "onedal": self.__class__._onedal_decision_function,
-                "sklearn": _sklearn_SVC.decision_function,
-            },
-            X,
-        )
-
-    decision_function.__doc__ = _sklearn_SVC.decision_function.__doc__
-
     def _onedal_gpu_supported(self, method_name, *data):
         class_name = self.__class__.__name__
         patching_status = PatchingConditionsChain(
@@ -322,7 +182,7 @@ class SVC(_sklearn_SVC, BaseSVC):
             "decision_function_shape": self.decision_function_shape,
         }
 
-        self._onedal_estimator = onedal_SVC(**onedal_params)
+        self._onedal_estimator = self._onedal_factory(**onedal_params)
         self._onedal_estimator.fit(X, y, weights, queue=queue)
 
         if self.probability:
@@ -335,65 +195,4 @@ class SVC(_sklearn_SVC, BaseSVC):
 
         self._save_attributes()
 
-    def _onedal_predict(self, X, queue=None):
-        if sklearn_check_version("1.0"):
-            X = validate_data(
-                self,
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                ensure_2d=False,
-                accept_sparse="csr",
-                reset=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-            )
-        return self._onedal_estimator.predict(X, queue=queue)
-
-    def _onedal_predict_proba(self, X, queue=None):
-        if getattr(self, "clf_prob", None) is None:
-            raise NotFittedError(
-                "predict_proba is not available when fitted with probability=False"
-            )
-        from .._config import config_context, get_config
-
-        # We use stock metaestimators below, so the only way
-        # to pass a queue is using config_context.
-        cfg = get_config()
-        cfg["target_offload"] = queue
-        with config_context(**cfg):
-            return self.clf_prob.predict_proba(X)
-
-    def _onedal_decision_function(self, X, queue=None):
-        if sklearn_check_version("1.0"):
-            X = validate_data(
-                self,
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-                reset=False,
-            )
-        else:
-            X = check_array(
-                X,
-                dtype=[np.float64, np.float32],
-                force_all_finite=False,
-                accept_sparse="csr",
-            )
-        return self._onedal_estimator.decision_function(X, queue=queue)
-
-    def _onedal_score(self, X, y, sample_weight=None, queue=None):
-        return accuracy_score(
-            y, self._onedal_predict(X, queue=queue), sample_weight=sample_weight
-        )
-
     fit.__doc__ = _sklearn_SVC.fit.__doc__
-    predict.__doc__ = _sklearn_SVC.predict.__doc__
-    decision_function.__doc__ = _sklearn_SVC.decision_function.__doc__
-    score.__doc__ = _sklearn_SVC.score.__doc__
