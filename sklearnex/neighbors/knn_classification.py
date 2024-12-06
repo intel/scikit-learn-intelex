@@ -185,7 +185,7 @@ class KNeighborsClassifier(KNeighborsDispatchingBase, _sklearn_KNeighborsClassif
         }
 
         try:
-            requires_y = self.get_tags()["requires_y"]
+            requires_y = get_tags(self)["requires_y"]
         except KeyError:
             requires_y = False
 
