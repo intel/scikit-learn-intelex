@@ -14,9 +14,9 @@
 # limitations under the License.
 # ===============================================================================
 
-from .validation import _assert_all_finite
-
 from daal4py.sklearn._utils import sklearn_check_version
+
+from .validation import _assert_all_finite
 
 # Not an ideal solution, but this converts the outputs of newer sklearnex tags
 # into dicts to match how tags had been used. Someone more clever than me will
