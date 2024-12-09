@@ -152,7 +152,7 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
     dal::table res;
     #ifdef ONEDAL_DATA_PARALLEL
     if (!queue.is(py::none()) && !queue.attr("sycl_device").attr("has_aspect_fp64").cast<bool>()){
-        // If the queue exists and doesn't have the fp64 aspect, and the data is float64
+        // If the queue exists, doesn't have the fp64 aspect, and the data is float64
         // then cast it to float32
         int type = reinterpret_cast<PyArray_Descr *>(inp_obj.attr("dtype").ptr())->type_num;
         if(type == NPY_DOUBLE || type == NPY_DOUBLELTR){
