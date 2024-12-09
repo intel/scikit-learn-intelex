@@ -180,7 +180,7 @@ dal::table convert_to_table(py::object inp_obj, py::object queue = py:none) {
                 }
             }
         }
-        #endif ONEDAL_DATA_PARALLEL
+        #endif // ONEDAL_DATA_PARALLEL
 
         if (!PyArray_ISCARRAY_RO(ary) && !PyArray_ISFARRAY_RO(ary)) {
             // NOTE: this will make a C-contiguous deep copy of the data
