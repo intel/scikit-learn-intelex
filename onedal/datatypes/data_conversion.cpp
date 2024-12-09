@@ -155,13 +155,12 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
         // then cast it to float32
         if(inp_obj.attr("dtype") == py::dtype("float64")){
             PyErr_WarnEx(PyExc_RuntimeWarning,
-                            "Data will be converted into float32 from float64 because device does not support it",
-                            1);
-            //PyArray_Cast returns a PyObject* of an array of desired type
+                         "Data will be converted into float32 from float64 because device does not support it",
+                         1);
             obj = obj.attr("astype")(py::dtype("float32"));
             if (obj) {
                 res = convert_to_table(obj, queue);
-                Py_DECREF(obj);
+                obj.dec_ref(); // table is only reference to obj, destroy obj when table destroyed
                 return res;
             } 
             else {
