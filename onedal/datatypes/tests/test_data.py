@@ -14,6 +14,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import gc
+import tracemalloc
+
 import numpy as np
 import pytest
 import scipy.sparse as sp
@@ -420,6 +423,9 @@ def test_low_precision_gpu_conversion(dtype, sparse):
     else:
         X = np.random.rand(100, 100).astype(dtype)
 
+    tracemalloc.start()
+
+    mem_before = tracemalloc.get_traced_memory()[0]
     if dtype == np.float64:
         with pytest.warns(
             RuntimeWarning,
@@ -432,3 +438,10 @@ def test_low_precision_gpu_conversion(dtype, sparse):
     assert X_table.dtype == np.float32
     if dtype == np.float32 and not sparse:
         assert_allclose(X, from_table(X_table))
+
+    del X_table
+    gc.collect()
+    mem_after = tracemalloc.get_traced_memory()[0]
+    tracemalloc.stop()
+    mem_diff = mem_after - mem_before
+    assert mem_diff == 0

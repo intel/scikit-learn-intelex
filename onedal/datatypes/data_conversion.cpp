@@ -162,10 +162,7 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
             // use astype instead of PyArray_Cast in order to support scipy sparse inputs
             inp_obj = inp_obj.attr("astype")(py::dtype::of<float>());
             res = convert_to_table(inp_obj); // queue will be set to none, as this check is no longer necessary
-            if(py::isinstance<py::array>(inp_obj)){
-                inp_obj.dec_ref();
-            }
-            else {
+            if(!py::isinstance<py::array>(inp_obj)){
                 py::cast<py::object>(inp_obj.attr("data")).dec_ref();
             }
             return res;
