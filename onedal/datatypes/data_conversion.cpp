@@ -148,7 +148,7 @@ inline csr_table_t convert_to_csr_impl(PyObject* py_data,
     return res_table;
 }
 
-dal::table convert_to_table(py::object inp_obj, py::object queue = py:none) {
+dal::table convert_to_table(py::object inp_obj, py::object queue) {
     PyObject* obj = inp_obj.ptr();
 
     dal::table res;
