@@ -228,7 +228,7 @@ void init_partial_compute_result(py::module_& m) {
                 if (py::cast<int>(t[2].attr("size")) != 0) res.set_partial_max(convert_to_table(t[2]));
                 if (py::cast<int>(t[2].attr("size")) != 0) res.set_partial_sum(convert_to_table(t[3]));
                 if (py::cast<int>(t[2].attr("size")) != 0) res.set_partial_sum_squares(convert_to_table(t[4]));
-                if (py::cast<int>(t[2].attr("size")) != 0) res.set_partial_sum_squares_centered(convert_to_table(t[5]);
+                if (py::cast<int>(t[2].attr("size")) != 0) res.set_partial_sum_squares_centered(convert_to_table(t[5]));
                 
                 return res;
             }
