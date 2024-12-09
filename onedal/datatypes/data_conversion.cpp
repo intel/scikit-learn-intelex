@@ -149,6 +149,7 @@ inline csr_table_t convert_to_csr_impl(PyObject* py_data,
 }
 
 dal::table convert_to_table(py::object inp_obj, py::object queue) {
+    dal::table res;
     #ifdef ONEDAL_DATA_PARALLEL
     if (!queue.is(py::none()) && !queue.attr("sycl_device").attr("has_aspect_fp64").cast<bool>()){
         // If the queue exists and doesn't have the fp64 aspect, and the data is float64
@@ -170,7 +171,6 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
 
     PyObject* obj = inp_obj.ptr();
 
-    dal::table res;
     if (obj == nullptr || obj == Py_None) {
         return res;
     }
