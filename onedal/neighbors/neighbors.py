@@ -427,10 +427,10 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
             return train_alg(**params).compute(X, y).model
 
         policy = self._get_policy(queue, X, y)
-        X, y = to_table(X, y, queue=queue)
-        params = self._get_onedal_params(X, y)
+        X_table, y_table = to_table(X, y, queue=queue)
+        params = self._get_onedal_params(X_table, y)
         train_alg = self._get_backend(
-            "neighbors", "classification", "train", policy, params, X, y
+            "neighbors", "classification", "train", policy, params, X_table, y_table
         )
 
         return train_alg.model
@@ -581,14 +581,14 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             return train_alg(**params).compute(X, y).model
 
         policy = self._get_policy(queue, X, y)
-        X, y = to_table(X, y, queue=queue)
-        params = self._get_onedal_params(X, y)
+        X_table, y_table = to_table(X, y, queue=queue)
+        params = self._get_onedal_params(X_table, y)
         train_alg_regr = self._get_backend("neighbors", "regression", None)
         train_alg_srch = self._get_backend("neighbors", "search", None)
 
         if gpu_device:
-            return train_alg_regr.train(policy, params, X, y).model
-        return train_alg_srch.train(policy, params, X).model
+            return train_alg_regr.train(policy, params, X_table, y_table).model
+        return train_alg_srch.train(policy, params, X_table).model
 
     def _onedal_predict(self, model, X, params, queue):
         if type(model) is kdtree_knn_classification_model:
@@ -728,9 +728,11 @@ class NearestNeighbors(NeighborsBase):
             return train_alg(**params).compute(X, y).model
 
         policy = self._get_policy(queue, X, y)
-        X, y = to_table(X, y, queue=queue)
-        params = self._get_onedal_params(X, y)
-        train_alg = self._get_backend("neighbors", "search", "train", policy, params, X)
+        X_table = to_table(X, queue=queue)
+        params = self._get_onedal_params(X_table, y)
+        train_alg = self._get_backend(
+            "neighbors", "search", "train", policy, params, X_table
+        )
 
         return train_alg.model
 
