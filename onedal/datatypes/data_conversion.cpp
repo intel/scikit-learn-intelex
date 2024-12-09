@@ -148,7 +148,7 @@ inline csr_table_t convert_to_csr_impl(PyObject* py_data,
     return res_table;
 }
 
-dal::table convert_to_table(py::object inp_obj, py::object queue = py::none) {
+dal::table convert_to_table(py::object inp_obj, py::object queue) {
     PyObject* obj = inp_obj.ptr();
 
     dal::table res;
@@ -170,7 +170,7 @@ dal::table convert_to_table(py::object inp_obj, py::object queue = py::none) {
                 //PyArray_Cast returns a PyObject* of an array of desired type
                 obj = PyArray_Cast(ary, NPY_FLOAT);
                 if (obj) {
-                    res = convert_to_table(py::object(obj), queue);
+                    res = convert_to_table(py::cast<py::object>(obj), queue);
                     Py_DECREF(obj);
                     return res;
                 } 
@@ -187,7 +187,7 @@ dal::table convert_to_table(py::object inp_obj, py::object queue = py::none) {
             // this is expected to be a special case
             obj = reinterpret_cast<PyObject *>(PyArray_GETCONTIGUOUS(ary));
             if (obj) {
-                res = convert_to_table(py::object(obj), queue);
+                res = convert_to_table(py::cast<py::object>(obj), queue);
                 Py_DECREF(obj);
                 return res;
             } 

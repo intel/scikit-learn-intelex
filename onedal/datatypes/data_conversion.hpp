@@ -29,8 +29,7 @@ namespace oneapi::dal::python {
 namespace py = pybind11;
 
 PyObject *convert_to_pyobject(const dal::table &input);
-dal::table convert_to_table(py::object inp_obj);
-dal::table convert_to_table(py::object inp_obj, py::object queue);
+dal::table convert_to_table(py::object inp_obj, py::object queue = py::none);
 
 } // namespace oneapi::dal::python
 
