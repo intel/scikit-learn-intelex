@@ -422,7 +422,7 @@ def test_low_precision_gpu_conversion(dtype, sparse):
 
     if dtype == np.float64:
         with pytest.warns(
-            "RuntimeWarning",
+            RuntimeWarning,
             match="Data will be converted into float32 from float64 because device does not support it",
         ):
             X_table = to_table(X, queue=queue)
