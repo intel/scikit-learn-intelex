@@ -20,7 +20,7 @@ from daal4py.sklearn._utils import get_dtype, make2d
 
 from ..common._base import BaseEstimator
 from ..common._mixin import ClusterMixin
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils import _check_array
 
 
@@ -65,10 +65,9 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         types = [np.float32, np.float64]
         if get_dtype(X) not in types:
             X = X.astype(np.float64)
-        X = _convert_to_supported(policy, X)
         dtype = get_dtype(X)
         params = self._get_onedal_params(dtype)
-        result = module.compute(policy, params, to_table(X), to_table(sample_weight))
+        result = module.compute(policy, params, *to_table(X, sample_weight, queue=queue))
 
         self.labels_ = from_table(result.responses).ravel()
         if result.core_observation_indices is not None:
