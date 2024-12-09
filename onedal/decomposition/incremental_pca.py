@@ -155,13 +155,12 @@ class IncrementalPCA(BasePCA):
         self._queue = queue
 
         policy = self._get_policy(queue, X)
-        X = _convert_to_supported(policy, X)
+        X_table = to_table(X, queue=queue)
 
         if not hasattr(self, "_dtype"):
-            self._dtype = get_dtype(X)
-            self._params = self._get_onedal_params(X)
+            self._dtype = X_table.dtype
+            self._params = self._get_onedal_params(X_table)
 
-        X_table = to_table(X, queue=queue)
         self._partial_result = self._get_backend(
             "decomposition",
             "dim_reduction",

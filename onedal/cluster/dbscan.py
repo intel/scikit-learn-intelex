@@ -60,14 +60,10 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
         policy = self._get_policy(queue, X)
         X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
         sample_weight = make2d(sample_weight) if sample_weight is not None else None
-        X = make2d(X)
+        X, sample_weight = to_table(X, sample_weight, queue=queue)
 
-        types = [np.float32, np.float64]
-        if get_dtype(X) not in types:
-            X = X.astype(np.float64)
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
-        result = module.compute(policy, params, *to_table(X, sample_weight, queue=queue))
+        params = self._get_onedal_params(X.dtype)
+        result = module.compute(policy, params, X, sample_weight)
 
         self.labels_ = from_table(result.responses).ravel()
         if result.core_observation_indices is not None:

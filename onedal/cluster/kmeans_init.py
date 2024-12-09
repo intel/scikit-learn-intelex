@@ -64,10 +64,9 @@ if daal_check_version((2023, "P", 200)):
                 accept_sparse="csr",
                 force_all_finite=False,
             )
-
-            dtype = get_dtype(X)
-            params = self._get_onedal_params(dtype)
-            return (params, to_table(X, queue=queue), dtype)
+            X = to_table(X, queue=queue)
+            params = self._get_onedal_params(X.dtype)
+            return (params, X, X.dtype)
 
         def _compute_raw(self, X_table, module, policy, dtype=np.float32):
             params = self._get_onedal_params(dtype)

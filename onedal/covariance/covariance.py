@@ -95,8 +95,8 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         """
         policy = self._get_policy(queue, X)
         X = _check_array(X, dtype=[np.float64, np.float32])
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
+        X = to_table(X, queue=queue)
+        params = self._get_onedal_params(X.dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
             result = self._get_backend(
@@ -106,11 +106,11 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
                 policy,
                 params,
                 hparams.backend,
-                to_table(X, queue=queue),
+                X,
             )
         else:
             result = self._get_backend(
-                "covariance", None, "compute", policy, params, to_table(X, queue=queue)
+                "covariance", None, "compute", policy, params, X
             )
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)

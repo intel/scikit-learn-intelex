@@ -130,10 +130,11 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
     def predict(self, X, queue=None):
         policy = self._get_policy(queue, X)
         model = self._create_model()
-        params = self._get_onedal_params(X, stage="predict")
+        X_table = to_table(X, queue=queue)
+        params = self._get_onedal_params(X_table, stage="predict")
 
         result = self._get_backend(
-            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X, queue=queue)
+            "decomposition", "dim_reduction", "infer", policy, params, model, X_table
         )
         return from_table(result.transformed_data)
 
@@ -151,9 +152,10 @@ class PCA(BasePCA):
         if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
             X = X.copy()
 
+        X = to_table(X, queue=queue)
         params = self._get_onedal_params(X)
         result = self._get_backend(
-            "decomposition", "dim_reduction", "train", policy, params, to_table(X, queue=queue)
+            "decomposition", "dim_reduction", "train", policy, params, X
         )
 
         self.mean_ = from_table(result.means).ravel()
