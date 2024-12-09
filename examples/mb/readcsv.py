@@ -14,12 +14,16 @@
 # limitations under the License.
 # ==============================================================================
 
-from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 utils_path = Path(__file__).parent.parent / "utils"
+module_name = "readcsv"
+module_path = str(utils_path / "readcsv.py")
 
-readcsv = SourceFileLoader("readcsv", str(utils_path / "readcsv.py")).load_module()
+spec = spec_from_file_location(module_name, module_path)
+readcsv = module_from_spec(spec)
+spec.loader.exec_module(readcsv)
 
 np_read_csv = readcsv.np_read_csv
 pd_read_csv = readcsv.pd_read_csv
