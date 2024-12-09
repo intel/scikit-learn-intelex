@@ -52,20 +52,22 @@ def test_sklearnex_import_knn_regression(dataframe, queue):
     assert_allclose(pred, 0.5)
 
 
+@pytest.mark.parametrize("algorithm", ["auto", "brute"])
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize(
     "estimator",
     [LocalOutlierFactor, NearestNeighbors],
 )
-def test_sklearnex_kneighbors(estimator, dataframe, queue):
+def test_sklearnex_kneighbors(algorithm, estimator, dataframe, queue):
     X = [[0, 0, 2], [1, 0, 0], [0, 0, 1]]
     X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
     test = _convert_to_dataframe([[0, 0, 1.3]], sycl_queue=queue, target_df=dataframe)
-    neigh = estimator(n_neighbors=2).fit(X)
+    neigh = estimator(n_neighbors=2, algorithm=algorithm).fit(X)
     result = neigh.kneighbors(test, 2, return_distance=False)
     result = _as_numpy(result)
     assert "sklearnex" in neigh.__module__
     assert_allclose(result, [[2, 0]])
+    result = neigh.kneighbors()
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())

@@ -145,7 +145,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _get_onedal_params(self, is_csr=False, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "lloyd_csr" if is_csr else "by_default",
             "seed": -1,
             "max_iteration_count": self.max_iter,
@@ -382,8 +382,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
-        X_table, dtype = to_table(X), X.dtype
-        params = self._get_onedal_params(is_csr, dtype, result_options)
+        X_table = to_table(X)
+        params = self._get_onedal_params(is_csr, X_table.dtype, result_options)
 
         result = module.infer(policy, params, self.model_, X_table)
 

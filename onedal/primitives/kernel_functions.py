@@ -35,7 +35,7 @@ def _check_inputs(X, Y):
 def _compute_kernel(params, submodule, X, Y, queue):
     policy = _get_policy(queue, X, Y)
     X, Y = _convert_to_supported(policy, X, Y)
-    params["fptype"] = "float" if X.dtype == np.float32 else "double"
+    params["fptype"] = X.dtype
     X, Y = to_table(X, Y)
     result = submodule.compute(policy, params, X, Y)
     return from_table(result.values)

@@ -27,7 +27,7 @@ from time import gmtime, strftime
 
 from daal4py import __has_dist__
 from daal4py.sklearn._utils import get_daal_version
-from onedal._device_offload import dpctl_available
+from onedal.utils._dpep_helpers import dpctl_available
 
 print("Starting examples validation")
 # First item is major version - 2021,
@@ -165,6 +165,7 @@ req_library = defaultdict(lambda: [])
 req_library["basic_statistics_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["dbscan_spmd.py"] = ["dpctl", "mpi4py"]
+req_library["dbscan_array_api.py"] = ["array_api_strict"]
 req_library["incremental_basic_statistics_dpctl.py"] = ["dpctl"]
 req_library["incremental_covariance_spmd.py"] = ["dpctl", "mpi4py"]
 req_library["incremental_linear_regression_dpctl.py"] = ["dpctl"]

@@ -28,7 +28,7 @@ package:
 
 # Reminder: source should point to path for repo or github archive for feedstock
 # source:
-#   url: https://github.com/intel/scikit-learn-intelex/archive/{{ version }}.tar.gz
+#   url: https://github.com/uxlfoundation/scikit-learn-intelex/archive/{{ version }}.tar.gz
 #   sha256: ...
 source:
   path: ..
@@ -41,6 +41,9 @@ build:
   - DPCPPROOT
   - DALROOT
   - NO_DIST=1  # [win]
+  ignore_run_exports:
+  - dpcpp_linux-64  # [linux64]
+  # - dpcpp_win-64  # [win]
 
 requirements:
   build:
@@ -58,15 +61,15 @@ requirements:
     - cython
     - jinja2
     - pybind11
-    - numpy {{ numpy }}
+    - numpy
     - impi-devel  # [not win]
     # dal-devel pinning depends on the recipe location (repo or feedstock)
     - dal-devel
     # - dal-devel =={{ version }}
   run:
     - python
-    - {{ pin_compatible('numpy') }}
-    - dpcpp-cpp-rt  # [linux64]
+    - numpy
+    - scikit-learn
     # dal pinning depends on the recipe location (repo or feedstock)
     - dal
     # - dal =={{ version }}
@@ -75,12 +78,13 @@ test:
   requires:
     - pyyaml
     - impi_rt  # [not win]
+    # DPC part of sklearnex is optional
+    - dpcpp-cpp-rt  # [linux64]
     # TODO: enable data parallel frameworks when they are available on conda-forge
     # - dpctl
     # - dpnp
     # next deps are synced with requirements-test.txt
     - pytest
-    - scikit-learn
     - pandas
     - xgboost
     - lightgbm
@@ -95,7 +99,7 @@ test:
     - tests
 
 about:
-  home: https://intel.github.io/scikit-learn-intelex
+  home: https://uxlfoundation.github.io/scikit-learn-intelex
   license: Apache-2.0
   license_file:
     - LICENSE
@@ -110,8 +114,8 @@ about:
     <br/><br/>
     EULA: <a href="https://opensource.org/licenses/Apache-2.0" target="_blank">Apache-2.0</a>
     <br/><br/>
-  dev_url: https://github.com/intel/scikit-learn-intelex
-  doc_url: https://intel.github.io/scikit-learn-intelex
+  dev_url: https://github.com/uxlfoundation/scikit-learn-intelex
+  doc_url: https://uxlfoundation.github.io/scikit-learn-intelex
 
 extra:
   recipe-maintainers:

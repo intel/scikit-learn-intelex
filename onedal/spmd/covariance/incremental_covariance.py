@@ -30,6 +30,7 @@ class IncrementalEmpiricalCovariance(
     BaseEstimatorSPMD, base_IncrementalEmpiricalCovariance
 ):
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = super(
             base_IncrementalEmpiricalCovariance, self
         )._get_backend("covariance", None, "partial_compute_result")
@@ -80,3 +81,4 @@ class IncrementalEmpiricalCovariance(
             self._partial_result,
             table_X,
         )
+        self._need_to_finalize = True

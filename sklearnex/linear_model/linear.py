@@ -18,14 +18,14 @@ import logging
 from abc import ABC
 
 import numpy as np
-from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression as _sklearn_LinearRegression
 from sklearn.metrics import r2_score
-from sklearn.utils.validation import check_array
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import sklearn_check_version
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
 
+from .._config import get_config
 from .._device_offload import dispatch, wrap_output_data
 from .._utils import PatchingConditionsChain, get_patch_message, register_hyperparameters
 
@@ -33,7 +33,7 @@ if sklearn_check_version("1.0") and not sklearn_check_version("1.2"):
     from sklearn.linear_model._base import _deprecate_normalize
 
 from scipy.sparse import issparse
-from sklearn.utils.validation import check_X_y
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from onedal.common.hyperparameters import get_hyperparameters
 from onedal.linear_model import LinearRegression as onedal_LinearRegression
@@ -111,14 +111,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     @wrap_output_data
     def predict(self, X):
-
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' with "
-                "appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -131,6 +124,7 @@ class LinearRegression(_sklearn_LinearRegression):
 
     @wrap_output_data
     def score(self, X, y, sample_weight=None):
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",
@@ -143,15 +137,44 @@ class LinearRegression(_sklearn_LinearRegression):
             sample_weight=sample_weight,
         )
 
-    def _onedal_fit_supported(self, method_name, *data):
+    def _onedal_cpu_supported(self, method_name, *data):
+        patching_status = PatchingConditionsChain(
+            f"sklearn.linear_model.{self.__class__.__name__}.{method_name}"
+        )
+        return self._onedal_supported(patching_status, method_name, *data)
+
+    def _onedal_gpu_supported(self, method_name, *data):
+        patching_status = PatchingConditionsChain(
+            f"sklearn.linear_model.{self.__class__.__name__}.{method_name}"
+        )
+
+        if method_name == "fit" and not daal_check_version((2025, "P", 200)):
+            n_samples = _num_samples(data[0])
+            n_features = _num_features(data[0], fallback_1d=True)
+            is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+            patching_status.and_conditions(
+                [
+                    (
+                        not is_underdetermined,
+                        "The shape of X (fitting) does not satisfy oneDAL requirements:"
+                        "Number of features + 1 >= number of samples.",
+                    )
+                ]
+            )
+
+        return self._onedal_supported(patching_status, method_name, *data)
+
+    def _onedal_supported(self, patching_status, method_name, *data):
+        if method_name == "fit":
+            return self._onedal_fit_supported(patching_status, method_name, *data)
+        if method_name in ["predict", "score"]:
+            return self._onedal_predict_supported(patching_status, method_name, *data)
+        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
+
+    def _onedal_fit_supported(self, patching_status, method_name, *data):
         assert method_name == "fit"
         assert len(data) == 3
         X, y, sample_weight = data
-
-        class_name = self.__class__.__name__
-        patching_status = PatchingConditionsChain(
-            f"sklearn.linear_model.{class_name}.fit"
-        )
 
         normalize_is_set = (
             hasattr(self, "normalize")
@@ -163,8 +186,11 @@ class LinearRegression(_sklearn_LinearRegression):
         n_samples = _num_samples(X)
         n_features = _num_features(X, fallback_1d=True)
 
-        # Check if equations are well defined
+        # Note: support for some variants was either introduced in oneDAL 2025.1,
+        # or had bugs in some uncommon cases in older versions.
         is_underdetermined = n_samples < (n_features + int(self.fit_intercept))
+        supports_all_variants = daal_check_version((2025, "P", 1))
+        is_multi_output = _num_features(y, fallback_1d=True) > 1
 
         patching_status.and_conditions(
             [
@@ -179,21 +205,20 @@ class LinearRegression(_sklearn_LinearRegression):
                     "Forced positive coefficients are not supported.",
                 ),
                 (
-                    not is_underdetermined,
+                    not is_underdetermined or supports_all_variants,
                     "The shape of X (fitting) does not satisfy oneDAL requirements:"
                     "Number of features + 1 >= number of samples.",
+                ),
+                (
+                    not is_multi_output or supports_all_variants,
+                    "Multi-output regression is not supported.",
                 ),
             ]
         )
 
         return patching_status
 
-    def _onedal_predict_supported(self, method_name, *data):
-        class_name = self.__class__.__name__
-        patching_status = PatchingConditionsChain(
-            f"sklearn.linear_model.{class_name}.predict"
-        )
-
+    def _onedal_predict_supported(self, patching_status, method_name, *data):
         n_samples = _num_samples(data[0])
         model_is_sparse = issparse(self.coef_) or (
             self.fit_intercept and issparse(self.intercept_)
@@ -208,16 +233,6 @@ class LinearRegression(_sklearn_LinearRegression):
 
         return patching_status
 
-    def _onedal_supported(self, method_name, *data):
-        if method_name == "fit":
-            return self._onedal_fit_supported(method_name, *data)
-        if method_name in ["predict", "score"]:
-            return self._onedal_predict_supported(method_name, *data)
-        raise RuntimeError(f"Unknown method {method_name} in {self.__class__.__name__}")
-
-    _onedal_gpu_supported = _onedal_supported
-    _onedal_cpu_supported = _onedal_supported
-
     def _initialize_onedal_estimator(self):
         onedal_params = {"fit_intercept": self.fit_intercept, "copy_X": self.copy_X}
         self._onedal_estimator = onedal_LinearRegression(**onedal_params)
@@ -225,13 +240,14 @@ class LinearRegression(_sklearn_LinearRegression):
     def _onedal_fit(self, X, y, sample_weight, queue=None):
         assert sample_weight is None
 
+        supports_multi_output = daal_check_version((2025, "P", 1))
         check_params = {
             "X": X,
             "y": y,
             "dtype": [np.float64, np.float32],
             "accept_sparse": ["csr", "csc", "coo"],
             "y_numeric": True,
-            "multi_output": True,
+            "multi_output": supports_multi_output,
         }
         if sklearn_check_version("1.0"):
             X, y = validate_data(self, **check_params)
@@ -246,18 +262,24 @@ class LinearRegression(_sklearn_LinearRegression):
             )
 
         self._initialize_onedal_estimator()
-        try:
+        # TODO:
+        # impl wrapper/primitive for this case.
+        if get_config()["allow_sklearn_after_onedal"]:
+            try:
+                self._onedal_estimator.fit(X, y, queue=queue)
+                self._save_attributes()
+
+            except RuntimeError:
+                logging.getLogger("sklearnex").info(
+                    f"{self.__class__.__name__}.fit "
+                    + get_patch_message("sklearn_after_onedal")
+                )
+
+                del self._onedal_estimator
+                super().fit(X, y)
+        else:
             self._onedal_estimator.fit(X, y, queue=queue)
             self._save_attributes()
-
-        except RuntimeError:
-            logging.getLogger("sklearnex").info(
-                f"{self.__class__.__name__}.fit "
-                + get_patch_message("sklearn_after_onedal")
-            )
-
-            del self._onedal_estimator
-            super().fit(X, y)
 
     def _onedal_predict(self, X, queue=None):
         if sklearn_check_version("1.0"):
