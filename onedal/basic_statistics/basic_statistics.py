@@ -84,7 +84,7 @@ class BasicStatistics(BaseBasicStatistics):
         is_single_dim = data.ndim == 1
         data_table, weights_table = to_table(data, sample_weight, queue=queue)
 
-        dtype = data.dtype
+        dtype = data_table.dtype
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
         for opt, raw_value in raw_result.items():
             value = from_table(raw_value).ravel()

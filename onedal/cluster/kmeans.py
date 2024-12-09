@@ -264,12 +264,11 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         X = _check_array(
             X, dtype=[np.float64, np.float32], accept_sparse="csr", force_all_finite=False
         )
-        dtype = get_dtype(X)
         X_table = to_table(X, queue=queue)
 
-        self._check_params_vs_input(X_table, is_csr, policy, dtype=dtype)
+        self._check_params_vs_input(X_table, is_csr, policy, dtype=X_table.dtype)
 
-        params = self._get_onedal_params(is_csr, dtype)
+        params = self._get_onedal_params(is_csr, X_table.dtype)
 
         self.n_features_in_ = X_table.column_count
 
