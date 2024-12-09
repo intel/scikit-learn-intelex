@@ -164,6 +164,7 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
             res = convert_to_table(inp_obj); // queue will be set to none, as this check is no longer necessary
             if(!py::isinstance<py::array>(inp_obj)){
                 py::cast<py::object>(inp_obj.attr("data")).dec_ref();
+                py::cast<py::object>(inp_obj.attr("data")).dec_ref();
             }
             return res;
         }
