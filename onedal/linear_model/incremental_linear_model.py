@@ -87,7 +87,8 @@ class IncrementalLinearRegression(BaseLinearRegression):
         X_table, y_table = to_table(X, y, queue=queue)
 
         if not hasattr(self, "_dtype"):
-            self._params = self._get_onedal_params(X_table.dtype)
+            self._dtype = X_table.dtype
+            self._params = self._get_onedal_params(self._dtype)
 
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
@@ -213,6 +214,10 @@ class IncrementalRidge(BaseLinearRegression):
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
         X_table, y_table = to_table(X, y, queue=queue)
+
+        if not hasattr(self, "_dtype"):
+            self._dtype = X_table.dtype
+            self._params = self._get_onedal_params(self._dtype)
 
         self._partial_result = module.partial_train(
             policy, self._params, self._partial_result, X_table, y_table
