@@ -16,9 +16,9 @@
 
 .. _model-builders:
 
-###############################################
+###################################################
 Model Builders for the Gradient Boosting Frameworks
-###############################################
+###################################################
 
 .. include:: note.rst
 
@@ -92,6 +92,7 @@ The returned prediction has the shape:
 
    * ``(n_rows, n_features + 1)``  for SHAP contributions 
    * ``(n_rows, n_features + 1, n_features + 1)`` for SHAP interactions
+
 Here, ``n_rows`` is the number of rows (i.e., observations) in
 ``test_data``, and ``n_features`` is the number of features in the dataset.
 
