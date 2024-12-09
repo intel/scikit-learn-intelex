@@ -205,7 +205,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
             assert centers.shape[1] == X_table.column_count
             # KMeans is implemented on both CPU and GPU for Dense and CSR data
             # The original policy can be used here
-            centers_table = to_table(centers, queue=policy._queue)
+            centers_table = to_table(centers, queue=getattr(policy, "_queue", None))
         else:
             raise TypeError("Unsupported type of the `init` value")
 
@@ -239,7 +239,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 f"callable, got '{ init }' instead."
             )
 
-        return to_table(centers, queue=policy._queue)
+        return to_table(centers, queue=getattr(policy, "_queue", None))
 
     def _fit_backend(
         self, X_table, centroids_table, module, policy, dtype=np.float32, is_csr=False

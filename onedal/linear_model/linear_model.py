@@ -91,7 +91,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         if self.fit_intercept:
             packed_coefficients[:, 0][:, np.newaxis] = intercept
 
-        model.packed_coefficients = to_table(packed_coefficients, policy._queue)
+        model.packed_coefficients = to_table(
+            packed_coefficients, queue=getattr(policy, "_queue", None)
+        )
 
         self._onedal_model = model
 
