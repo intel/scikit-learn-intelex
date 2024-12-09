@@ -109,9 +109,7 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
                 X,
             )
         else:
-            result = self._get_backend(
-                "covariance", None, "compute", policy, params, X
-            )
+            result = self._get_backend("covariance", None, "compute", policy, params, X)
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

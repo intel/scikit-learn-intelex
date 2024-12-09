@@ -730,9 +730,7 @@ class NearestNeighbors(NeighborsBase):
         policy = self._get_policy(queue, X, y)
         X, y = to_table(X, y, queue=queue)
         params = self._get_onedal_params(X, y)
-        train_alg = self._get_backend(
-            "neighbors", "search", "train", policy, params, X
-        )
+        train_alg = self._get_backend("neighbors", "search", "train", policy, params, X)
 
         return train_alg.model
 
