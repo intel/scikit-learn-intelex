@@ -148,20 +148,41 @@ inline csr_table_t convert_to_csr_impl(PyObject* py_data,
     return res_table;
 }
 
-dal::table convert_to_table(PyObject *obj) {
+dal::table convert_to_table(py::object inp_obj, py::object queue) {
+    PyObject* obj = inp_obj.ptr();
+
     dal::table res;
     if (obj == nullptr || obj == Py_None) {
         return res;
     }
     if (is_array(obj)) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
+        if (queue && queue != py::none && !queue.attr("sycl_device").attr("has_aspect_fp64").cast<bool>()){
+            // If the queue exists and doesn't have the fp64 aspect, and the data is fp64
+            // then cast it to fp32
+            auto type = array_type(ary);
+            if(type == NPY_DOUBLE || type == NPY_DOUBLELTR){
+                //PyArray_Cast returns a PyObject* of an array of desired type
+                obj = PyArray_Cast(ary, NPY_FLOAT);
+                if (obj) {
+                    res = convert_to_table(py::object(obj), queue);
+                    Py_DECREF(obj);
+                    return res;
+                } 
+                else {
+                    throw std::invalid_argument(
+                    "[convert_to_table] Numpy input could not be converted into onedal table.");
+                }
+            }
+        }
+
         if (!PyArray_ISCARRAY_RO(ary) && !PyArray_ISFARRAY_RO(ary)) {
             // NOTE: this will make a C-contiguous deep copy of the data
             // this is expected to be a special case
-            ary = PyArray_GETCONTIGUOUS(ary);
-            if (ary) {
-                res = convert_to_table(reinterpret_cast<PyObject *>(ary));
-                Py_DECREF(ary);
+            obj = reinterpret_cast<PyObject *>(PyArray_GETCONTIGUOUS(ary));
+            if (obj) {
+                res = convert_to_table(py::object(obj)), queue);
+                Py_DECREF(obj);
                 return res;
             } 
             else {
