@@ -149,6 +149,30 @@ inline csr_table_t convert_to_csr_impl(PyObject* py_data,
 }
 
 dal::table convert_to_table(py::object inp_obj, py::object queue) {
+
+    #ifdef ONEDAL_DATA_PARALLEL
+    if (queue != py::none && !queue.attr("sycl_device").attr("has_aspect_fp64").cast<bool>()){
+        // If the queue exists and doesn't have the fp64 aspect, and the data is float64
+        // then cast it to float32
+        if(inp_obj.attr("dtype") == py::dtype("float64")){
+            PyErr_WarnEx(PyExc_RuntimeWarning,
+                            "Data will be converted into float32 from float64 because device does not support it",
+                            1);
+            //PyArray_Cast returns a PyObject* of an array of desired type
+            obj = obj.attr("astype")(py::dtype("float32"));
+            if (obj) {
+                res = convert_to_table(obj, queue);
+                Py_DECREF(obj);
+                return res;
+            } 
+            else {
+                throw std::invalid_argument(
+                "[convert_to_table] Numpy input could not be converted into onedal table.");
+            }
+        }
+    }
+    #endif // ONEDAL_DATA_PARALLEL
+
     PyObject* obj = inp_obj.ptr();
 
     dal::table res;
@@ -157,30 +181,6 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
     }
     if (is_array(obj)) {
         PyArrayObject *ary = reinterpret_cast<PyArrayObject *>(obj);
-
-        #ifdef ONEDAL_DATA_PARALLEL
-        if (queue != py::none && !queue.attr("sycl_device").attr("has_aspect_fp64").cast<bool>()){
-            // If the queue exists and doesn't have the fp64 aspect, and the data is float64
-            // then cast it to float32
-            auto type = array_type(ary);
-            if(type == NPY_DOUBLE || type == NPY_DOUBLELTR){
-                PyErr_WarnEx(PyExc_RuntimeWarning,
-                             "Data will be converted into float32 from float64 because device does not support it",
-                             1);
-                //PyArray_Cast returns a PyObject* of an array of desired type
-                obj = PyArray_Cast(ary, NPY_FLOAT);
-                if (obj) {
-                    res = convert_to_table(py::cast<py::object>(obj), queue);
-                    Py_DECREF(obj);
-                    return res;
-                } 
-                else {
-                    throw std::invalid_argument(
-                    "[convert_to_table] Numpy input could not be converted into onedal table.");
-                }
-            }
-        }
-        #endif // ONEDAL_DATA_PARALLEL
 
         if (!PyArray_ISCARRAY_RO(ary) && !PyArray_ISFARRAY_RO(ary)) {
             // NOTE: this will make a C-contiguous deep copy of the data
