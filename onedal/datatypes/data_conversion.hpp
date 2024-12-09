@@ -18,6 +18,7 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
 
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <Python.h>
 #include <numpy/arrayobject.h>
