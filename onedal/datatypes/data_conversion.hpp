@@ -18,6 +18,7 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL ONEDAL_PY_ARRAY_API
 
+#include <pybind11/pybind11.h>
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
@@ -25,8 +26,10 @@
 
 namespace oneapi::dal::python {
 
+namespace py = pybind11;
+
 PyObject *convert_to_pyobject(const dal::table &input);
-dal::table convert_to_table(PyObject *obj);
+dal::table convert_to_table(py::object inp_obj, py::object queue);
 
 } // namespace oneapi::dal::python
 
