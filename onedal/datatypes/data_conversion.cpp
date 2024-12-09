@@ -162,7 +162,6 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
             // use astype instead of PyArray_Cast in order to support scipy sparse inputs
             inp_obj = inp_obj.attr("astype")(py::dtype::of<float>());
             res = convert_to_table(inp_obj); // queue will be set to none, as this check is no longer necessary
-            //inp_obj.dec_ref(); // table is only reference to obj, destroy obj when table destroyed
             return res;
         }
     }

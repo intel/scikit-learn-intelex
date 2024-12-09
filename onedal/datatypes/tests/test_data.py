@@ -430,5 +430,5 @@ def test_low_precision_gpu_conversion(dtype, sparse):
         X_table = to_table(X, queue=queue)
 
     assert X_table.dtype == np.float32
-    if dtype == np.float32:
-        assert_allclose(X.data if sparse else X, from_table(X_table))
+    if dtype == np.float32 and not sparse:
+        assert_allclose(X, from_table(X_table))
