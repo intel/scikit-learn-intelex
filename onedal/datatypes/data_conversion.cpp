@@ -154,10 +154,12 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
     if (!queue.is(py::none()) && !queue.attr("sycl_device").attr("has_aspect_fp64").cast<bool>()){
         // If the queue exists and doesn't have the fp64 aspect, and the data is float64
         // then cast it to float32
-        if(inp_obj.attr("dtype").cast<py::dtype>().is(py::dtype::of<double>)){
+        int type = reinterpret_cast<PyArray_Descr *>(inp_obj.attr("dtype").ptr())->type_num;
+        if(type == NPY_DOUBLE || type == NPY_DOUBLELTR){
             PyErr_WarnEx(PyExc_RuntimeWarning,
                          "Data will be converted into float32 from float64 because device does not support it",
                          1);
+            // use astype instead of PyArray_Cast in order to support scipy sparse inputs
             inp_obj = inp_obj.attr("astype")(py::dtype::of<float>);
             res = convert_to_table(inp_obj); // queue will be set to none, as this check is no longer necessary
             inp_obj.dec_ref(); // table is only reference to obj, destroy obj when table destroyed
