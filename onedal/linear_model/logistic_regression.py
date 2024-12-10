@@ -48,7 +48,7 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
     def _get_onedal_params(self, is_csr, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "sparse" if is_csr else self.algorithm,
             "intercept": self.fit_intercept,
             "tol": self.tol,

@@ -48,7 +48,7 @@ if daal_check_version((2024, "P", 1)):
     _sparsity_enabled = daal_check_version((2024, "P", 700))
 
     class BaseLogisticRegression(ABC):
-        def _save_attributes(self):
+        def _onedal_gpu_save_attributes(self):
             assert hasattr(self, "_onedal_estimator")
             self.classes_ = self._onedal_estimator.classes_
             self.coef_ = self._onedal_estimator.coef_
@@ -275,7 +275,7 @@ if daal_check_version((2024, "P", 1)):
 
             return patching_status
 
-        def _initialize_onedal_estimator(self):
+        def _onedal_gpu_initialize_estimator(self):
             onedal_params = {
                 "tol": self.tol,
                 "C": self.C,
@@ -309,12 +309,13 @@ if daal_check_version((2024, "P", 1)):
                     dtype=[np.float64, np.float32],
                 )
 
-            self._initialize_onedal_estimator()
-            if get_config()["allow_sklearn_after_onedal"]:
-                try:
-                    self._onedal_estimator.fit(X, y, queue=queue)
-                    self._save_attributes()
-                except RuntimeError:
+            self._onedal_gpu_initialize_estimator()
+            try:
+                self._onedal_estimator.fit(X, y, queue=queue)
+                self._onedal_gpu_save_attributes()
+            except RuntimeError as err:
+                if get_config()["allow_sklearn_after_onedal"]:
+
                     logging.getLogger("sklearnex").info(
                         f"{self.__class__.__name__}.fit "
                         + get_patch_message("sklearn_after_onedal")
@@ -322,9 +323,8 @@ if daal_check_version((2024, "P", 1)):
 
                     del self._onedal_estimator
                     super().fit(X, y)
-            else:
-                self._onedal_estimator.fit(X, y, queue=queue)
-                self._save_attributes()
+                else:
+                    raise err
 
         def _onedal_predict(self, X, queue=None):
             if queue is None or queue.sycl_device.is_cpu:

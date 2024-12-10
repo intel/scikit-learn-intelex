@@ -48,7 +48,7 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
 
     def _get_onedal_params(self, dtype=np.float32):
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "by_default",
             "min_observations": int(self.min_samples),
             "epsilon": float(self.eps),
