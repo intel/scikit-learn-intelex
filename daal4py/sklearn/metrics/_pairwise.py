@@ -153,40 +153,20 @@ if sklearn_check_version("1.3"):
         "Y": ["array-like", "sparse matrix", None],
         "metric": [StrOptions(set(_VALID_METRICS) | {"precomputed"}), callable],
         "n_jobs": [Integral, None],
-    }
-    if sklearn_check_version("1.6"):
-        pairwise_distances_parameters["ensure_all_finite"] = [
+        "force_all_finite": [
+            "boolean",
+            StrOptions({"allow-nan"}),
+            Hidden(StrOptions({"deprecated"})),
+        ],
+        "ensure_all_finite": [
             "boolean",
             StrOptions({"allow-nan"}),
             Hidden(None),
-        ]
-        if not sklearn_check_version("1.8"):
-            from sklearn.utils.deprecation import _deprecate_force_all_finite
-
-            pairwise_distances_parameters["force_all_finite"] = [
-                "boolean",
-                StrOptions({"allow-nan"}),
-                Hidden(StrOptions({"deprecated"})),
-            ]
-
-            def pairwise_distances(
-                X,
-                Y=None,
-                metric="euclidean",
-                *,
-                n_jobs=None,
-                force_all_finite="deprecated",
-                ensure_all_finite=None,
-                **kwds,
-            ):
-                force_all_finite = _deprecate_force_all_finite(
-                    force_all_finite, ensure_all_finite
-                )
-                return _pairwise_distances(
-                    X, Y, metric, n_jobs=n_jobs, force_all_finite=force_all_finite, **kwds
-                )
-
-        else:
+        ],
+    }
+    if sklearn_check_version("1.6"):
+        if sklearn_check_version("1.8"):
+            del pairwise_distances_parameters["force_all_finite"]
 
             def pairwise_distances(
                 X,
@@ -206,7 +186,28 @@ if sklearn_check_version("1.3"):
                     **kwds,
                 )
 
+        else:
+            from sklearn.utils.deprecation import _deprecate_force_all_finite
+
+            def pairwise_distances(
+                X,
+                Y=None,
+                metric="euclidean",
+                *,
+                n_jobs=None,
+                force_all_finite="deprecated",
+                ensure_all_finite=None,
+                **kwds,
+            ):
+                force_all_finite = _deprecate_force_all_finite(
+                    force_all_finite, ensure_all_finite
+                )
+                return _pairwise_distances(
+                    X, Y, metric, n_jobs=n_jobs, force_all_finite=force_all_finite, **kwds
+                )
+
     else:
+        del pairwise_distances_parameters["ensure_all_finite"]
         pairwise_distances = _pairwise_distances
 
     pairwise_distances = validate_params(
