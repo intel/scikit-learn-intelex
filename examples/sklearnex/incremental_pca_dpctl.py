@@ -14,22 +14,25 @@
 # limitations under the License.
 # ==============================================================================
 
-# sklearnex IncrementalPCA example for GPU offloading with dpctl.tensor:
+# sklearnex IncrementalPCA example for GPU offloading with DPCtl usm ndarray:
 #    SKLEARNEX_PREVIEW=YES python ./incremental_pca_dpctl.py
 
 import dpctl
 import dpctl.tensor as dpt
 
-# Just directly import estimator from sklearnex
-from sklearnex.preview.decomposition import IncrementalPCA
+# Import estimator via sklearnex's patch mechanism from sklearn
+from sklearnex import patch_sklearn, sklearn_is_patched
 
-## Or import estimator via sklearnex's patch mechanism from sklearn
-# from sklearnex import patch_sklearn, sklearn_is_patched
-# patch_sklearn()
-## Function that can validate current state of patching
-# sklearn_is_patched()
-## Import estimator
-# from sklearn.decomposition import IncrementalPCA
+patch_sklearn()
+
+# Function that can validate current state of patching
+sklearn_is_patched()
+
+# Import estimator from the patched sklearn namespace.
+from sklearn.decomposition import IncrementalPCA
+
+# Or just directly import estimator from sklearnex namespace.
+# from sklearnex.preview.decomposition import IncrementalPCA
 
 # We create GPU SyclQueue and then put data to dpctl tensor using
 # the queue. It allows us to do computation on GPU.
