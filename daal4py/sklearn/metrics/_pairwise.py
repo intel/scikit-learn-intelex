@@ -207,17 +207,12 @@ if sklearn_check_version("1.3"):
                 )
 
     else:
-
-        def pairwise_distances(
-            X, Y=None, metric="euclidean", *, n_jobs=None, force_all_finite=True, **kwds
-        ):
-            return _pairwise_distances(
-                X, Y, metric, n_jobs=n_jobs, force_all_finite=force_all_finite, **kwds
-            )
+        pairwise_distances = _pairwise_distances
 
     pairwise_distances = validate_params(
         pairwise_distances_parameters,
         prefer_skip_nested_validation=True,
     )(pairwise_distances)
-
+else:
+    pairwise_distances = _pairwise_distances
 pairwise_distances.__doc__ = pairwise_distances_original.__doc__
