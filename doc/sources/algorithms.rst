@@ -304,7 +304,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features` and there should be no linearly dependent features in the data.
+     - Only dense data is supported.
 
 Clustering
 **********
@@ -456,7 +456,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features` and there should be no linearly dependent features in the data.
+     - Only dense data is supported.
 
 Clustering
 **********
@@ -540,4 +540,4 @@ Scikit-learn Tests
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
-<https://github.com/intel/scikit-learn-intelex/blob/main/deselected_tests.yaml>`__.
+<https://github.com/uxlfoundation/scikit-learn-intelex/blob/main/deselected_tests.yaml>`__.

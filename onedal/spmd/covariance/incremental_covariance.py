@@ -21,6 +21,5 @@ from ...covariance import (
 
 
 class IncrementalEmpiricalCovariance(base_IncrementalEmpiricalCovariance):
-
     @bind_spmd_backend("covariance")
     def finalize_compute(self, params, partial_result): ...

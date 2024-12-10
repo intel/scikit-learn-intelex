@@ -305,8 +305,15 @@ class Ridge(BaseLinearRegression):
             ensure_2d=False,
             copy=self.copy_X,
         )
+        if not isinstance(X, np.ndarray):
+            X = np.asarray(X)
 
-        y = np.asarray(y).astype(dtype=get_dtype(X))
+        dtype = get_dtype(X)
+        if dtype not in [np.float32, np.float64]:
+            dtype = np.float64
+            X = X.astype(dtype, copy=self.copy_X)
+
+        y = np.asarray(y).astype(dtype=dtype)
 
         X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
 

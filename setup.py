@@ -90,13 +90,14 @@ sklearnex_version = (
 
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
+no_dpc = True if "NO_DPC" in os.environ and os.environ["NO_DPC"] in trues else False
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
 debug_build = os.getenv("DEBUG_BUILD") == "1"
 mpi_root = None if no_dist else os.environ["MPIROOT"]
 dpcpp = (
     shutil.which("icpx") is not None
     and "onedal_dpc" in get_onedal_shared_libs(dal_root)
-    and os.environ.get("NO_DPC", None) is None
+    and not no_dpc
     and not (IS_WIN and debug_build)
 )
 
@@ -482,9 +483,9 @@ class build(orig_build.build, custom_build):
 
 
 project_urls = {
-    "Bug Tracker": "https://github.com/intel/scikit-learn-intelex",
+    "Bug Tracker": "https://github.com/uxlfoundation/scikit-learn-intelex",
     "Documentation": "https://intelpython.github.io/daal4py/",
-    "Source Code": "https://github.com/intel/scikit-learn-intelex/daal4py",
+    "Source Code": "https://github.com/uxlfoundation/scikit-learn-intelex/daal4py",
 }
 
 with open("README.md", "r", encoding="utf8") as f:
@@ -530,7 +531,6 @@ packages_with_tests = [
     "sklearnex.preview",
     "sklearnex.preview.covariance",
     "sklearnex.preview.decomposition",
-    "sklearnex.preview.linear_model",
     "sklearnex.svm",
     "sklearnex.utils",
 ]
@@ -573,7 +573,7 @@ setup(
     license="Apache-2.0",
     author="Intel Corporation",
     version=sklearnex_version,
-    url="https://github.com/intel/scikit-learn-intelex",
+    url="https://github.com/uxlfoundation/scikit-learn-intelex",
     author_email="onedal.maintainers@intel.com",
     maintainer_email="onedal.maintainers@intel.com",
     project_urls=project_urls,

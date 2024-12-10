@@ -83,10 +83,20 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
     def finalize_compute(self, *args, **kwargs): ...
 
     def _reset(self):
+        self._need_to_finalize = False
         # get the _partial_result pointer from backend
         self._partial_result = self.partial_compute_result()
 
-    @supports_queue
+    def __getstate__(self):
+        # Since finalize_fit can't be dispatched without directly provided queue
+        # and the dispatching policy can't be serialized, the computation is finalized
+        # here and the policy is not saved in serialized data.
+        self.finalize_fit()
+        data = self.__dict__.copy()
+        data.pop("_queue", None)
+
+        return data
+
     def partial_fit(self, X, weights=None, queue=None):
         """
         Computes partial data for basic statistics
@@ -144,10 +154,13 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
-        result = self.finalize_compute(self._onedal_params, self._partial_result)
+        if self._need_to_finalize:
+            result = self.finalize_compute(self._onedal_params, self._partial_result)
 
-        options = self._get_result_options(self.options).split("|")
-        for opt in options:
-            setattr(self, opt, from_table(getattr(result, opt)).ravel())
+            options = self._get_result_options(self.options).split("|")
+            for opt in options:
+                setattr(self, opt, from_table(getattr(result, opt)).ravel())
+
+            self._need_to_finalize = False
 
         return self

@@ -14,8 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from abc import abstractmethod
-
 import numpy as np
 
 from daal4py.sklearn._utils import get_dtype
@@ -112,9 +110,22 @@ class IncrementalPCA(BasePCA):
     def partial_train_result(self): ...
 
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = self.partial_train_result()
         if hasattr(self, "components_"):
             del self.components_
+        self._partial_result = module.partial_train_result()
+
+    def __getstate__(self):
+        # Since finalize_fit can't be dispatched without directly provided queue
+        # and the dispatching policy can't be serialized, the computation is finalized
+        # here and the policy is not saved in serialized data.
+
+        self.finalize_fit()
+        data = self.__dict__.copy()
+        data.pop("_queue", None)
+
+        return data
 
     @supports_queue
     def partial_fit(self, X, queue=None):
@@ -163,6 +174,7 @@ class IncrementalPCA(BasePCA):
         self._partial_result = self.partial_train(
             self._params, self._partial_result, X_table
         )
+        self._need_to_finalize = True
         return self
 
     @supports_queue
@@ -181,17 +193,23 @@ class IncrementalPCA(BasePCA):
         self : object
             Returns the instance itself.
         """
-        result = self.finalize_train(self._params, self._partial_result)
-        self.mean_ = from_table(result.means).ravel()
-        self.var_ = from_table(result.variances).ravel()
-        self.components_ = from_table(result.eigenvectors)
-        self.singular_values_ = np.nan_to_num(from_table(result.singular_values).ravel())
-        self.explained_variance_ = np.maximum(from_table(result.eigenvalues).ravel(), 0)
-        self.explained_variance_ratio_ = from_table(
-            result.explained_variances_ratio
-        ).ravel()
-        self.noise_variance_ = self._compute_noise_variance(
-            self.n_components_, min(self.n_samples_seen_, self.n_features_in_)
-        )
+        if self._need_to_finalize:
+            result = self.finalize_train(self._params, self._partial_result)
+            self.mean_ = from_table(result.means).ravel()
+            self.var_ = from_table(result.variances).ravel()
+            self.components_ = from_table(result.eigenvectors)
+            self.singular_values_ = np.nan_to_num(
+                from_table(result.singular_values).ravel()
+            )
+            self.explained_variance_ = np.maximum(
+                from_table(result.eigenvalues).ravel(), 0
+            )
+            self.explained_variance_ratio_ = from_table(
+                result.explained_variances_ratio
+            ).ravel()
+            self.noise_variance_ = self._compute_noise_variance(
+                self.n_components_, min(self.n_samples_seen_, self.n_features_in_)
+            )
+            self._need_to_finalize = False
 
         return self
