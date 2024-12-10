@@ -21,7 +21,7 @@ from onedal._device_offload import supports_queue
 from onedal.common._backend import BackendFunction
 
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_array
+from ..utils.validation import _check_array
 
 
 def _check_inputs(X, Y):

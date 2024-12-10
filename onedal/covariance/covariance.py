@@ -20,7 +20,7 @@ import numpy as np
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
-from onedal.utils import _check_array
+from onedal.utils.validation import _check_array
 
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table

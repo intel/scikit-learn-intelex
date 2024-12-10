@@ -22,7 +22,7 @@ from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_array
+from ..utils.validation import _check_array
 from .covariance import BaseEmpiricalCovariance
 
 

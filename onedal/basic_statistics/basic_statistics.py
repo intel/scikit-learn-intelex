@@ -22,8 +22,7 @@ from onedal._device_offload import supports_queue
 
 from ..common._backend import bind_default_backend
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _is_csr
-from ..utils.validation import _check_array
+from ..utils.validation import _check_array, _is_csr
 
 
 class BaseBasicStatistics(metaclass=ABCMeta):

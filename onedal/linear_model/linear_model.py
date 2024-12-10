@@ -26,7 +26,7 @@ from onedal.common._backend import bind_default_backend
 from ..common._estimator_checks import _check_is_fitted
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
+from ..utils.validation import _check_array, _check_n_features, _check_X_y, _num_features
 
 
 class BaseLinearRegression(metaclass=ABCMeta):
