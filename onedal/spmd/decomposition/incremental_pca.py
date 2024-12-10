@@ -109,10 +109,15 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
     def predict(self, X, queue=None):
         policy = super(base_IncrementalPCA, self)._get_policy(queue, X)
         model = self._create_model()
-        X = _convert_to_supported(policy, X)
+        X = to_table(X, queue=queue)
         params = self._get_onedal_params(X, stage="predict")
 
         result = super(base_IncrementalPCA, self)._get_backend(
-            "decomposition", "dim_reduction", "infer", policy, params, model, to_table(X)
+            "decomposition",
+            "dim_reduction",
+            "infer",
+            policy,
+            params,
+            model,
         )
         return from_table(result.transformed_data)
