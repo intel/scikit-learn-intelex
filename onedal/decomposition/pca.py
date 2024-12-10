@@ -48,7 +48,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         elif stage == "predict":
             n_components = self.n_components_
         return {
-            "fptype": "float" if data.dtype == np.float32 else "double",
+            "fptype": data.dtype,
             "method": self.method,
             "n_components": n_components,
             "is_deterministic": self.is_deterministic,

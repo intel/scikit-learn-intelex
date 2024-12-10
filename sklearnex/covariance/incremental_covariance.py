@@ -20,10 +20,10 @@ import warnings
 import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator, clone
-from sklearn.covariance import EmpiricalCovariance as sklearn_EmpiricalCovariance
+from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
-from sklearn.utils.validation import _num_features
+from sklearn.utils.validation import _num_features, check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
@@ -33,20 +33,25 @@ from onedal.covariance import (
 from sklearnex import config_context
 
 from .._device_offload import dispatch, wrap_output_data
-from .._utils import PatchingConditionsChain, register_hyperparameters
+from .._utils import IntelEstimator, PatchingConditionsChain, register_hyperparameters
 from ..metrics import pairwise_distances
 from ..utils._array_api import get_namespace
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
 
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
+
 
 @control_n_jobs(decorated_methods=["partial_fit", "fit", "_onedal_finalize_fit"])
-class IncrementalEmpiricalCovariance(BaseEstimator):
+class IncrementalEmpiricalCovariance(IntelEstimator, BaseEstimator):
     """
-    Incremental estimator for covariance.
-    Allows to compute empirical covariance estimated by maximum
-    likelihood method if data are splitted into batches.
+    Maximum likelihood covariance estimator that allows for the estimation when the data are split into
+    batches. The user can use the ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
+    the entire dataset.
 
     Parameters
     ----------
@@ -79,13 +84,38 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
     n_samples_seen_ : int
         The number of samples processed by the estimator. Will be reset on
-        new calls to fit, but increments across ``partial_fit`` calls.
+        new calls to ``fit``, but increments across ``partial_fit`` calls.
 
     batch_size_ : int
         Inferred batch size from ``batch_size``.
 
     n_features_in_ : int
-        Number of features seen during :term:`fit` `partial_fit`.
+        Number of features seen during ``fit`` or ``partial_fit``.
+
+    Note
+    ----
+    Serializing instances of this class will trigger a forced finalization of calculations.
+    Since finalize_fit can't be dispatched without directly provided queue
+    and the dispatching policy can't be serialized, the computation is finalized
+    during serialization and the policy is not saved in serialized data.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearnex.covariance import IncrementalEmpiricalCovariance
+    >>> inccov = IncrementalEmpiricalCovariance(batch_size=1)
+    >>> X = np.array([[1, 2], [3, 4]])
+    >>> inccov.partial_fit(X[:1])
+    >>> inccov.partial_fit(X[1:])
+    >>> inccov.covariance_
+    np.array([[1., 1.],[1., 1.]])
+    >>> inccov.location_
+    np.array([2., 3.])
+    >>> inccov.fit(X)
+    >>> inccov.covariance_
+    np.array([[1., 1.],[1., 1.]])
+    >>> inccov.location_
+    np.array([2., 3.])
     """
 
     _onedal_incremental_covariance = staticmethod(onedal_IncrementalEmpiricalCovariance)
@@ -98,8 +128,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
             "copy": ["boolean"],
         }
 
-    get_precision = sklearn_EmpiricalCovariance.get_precision
-    error_norm = wrap_output_data(sklearn_EmpiricalCovariance.error_norm)
+    get_precision = _sklearn_EmpiricalCovariance.get_precision
+    error_norm = wrap_output_data(_sklearn_EmpiricalCovariance.error_norm)
 
     def __init__(
         self, *, store_precision=False, assume_centered=False, batch_size=None, copy=True
@@ -163,7 +193,8 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
                 self._validate_params()
 
             if sklearn_check_version("1.0"):
-                X = self._validate_data(
+                X = validate_data(
+                    self,
                     X,
                     dtype=[np.float64, np.float32],
                     reset=first_pass,
@@ -202,9 +233,11 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     def score(self, X_test, y=None):
         xp, _ = get_namespace(X_test)
 
+        check_is_fitted(self)
         location = self.location_
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
+            X = validate_data(
+                self,
                 X_test,
                 dtype=[np.float64, np.float32],
                 reset=False,
@@ -306,8 +339,12 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
 
         # finite check occurs on onedal side
         if sklearn_check_version("1.0"):
-            X = self._validate_data(
-                X, dtype=[np.float64, np.float32], copy=self.copy, force_all_finite=False
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                copy=self.copy,
+                force_all_finite=False,
             )
         else:
             X = check_array(
@@ -363,6 +400,6 @@ class IncrementalEmpiricalCovariance(BaseEstimator):
     _onedal_cpu_supported = _onedal_supported
     _onedal_gpu_supported = _onedal_supported
 
-    mahalanobis.__doc__ = sklearn_EmpiricalCovariance.mahalanobis.__doc__
-    error_norm.__doc__ = sklearn_EmpiricalCovariance.error_norm.__doc__
-    score.__doc__ = sklearn_EmpiricalCovariance.score.__doc__
+    mahalanobis.__doc__ = _sklearn_EmpiricalCovariance.mahalanobis.__doc__
+    error_norm.__doc__ = _sklearn_EmpiricalCovariance.error_norm.__doc__
+    score.__doc__ = _sklearn_EmpiricalCovariance.score.__doc__

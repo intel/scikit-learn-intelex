@@ -21,6 +21,7 @@ import threading
 _default_global_config = {
     "target_offload": "auto",
     "allow_fallback_to_host": False,
+    "allow_sklearn_after_onedal": True,
 }
 
 _threadlocal = threading.local()

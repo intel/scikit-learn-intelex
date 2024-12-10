@@ -33,7 +33,7 @@ class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
 
     def _get_onedal_params(self, dtype=np.float32):
         params = {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": self.method,
         }
         if daal_check_version((2024, "P", 1)):

@@ -44,6 +44,10 @@ namespace oneapi::dal::python {
     ONEDAL_PY_INIT_MODULE(logistic_regression);
     #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
 #else // ONEDAL_DATA_PARALLEL_SPMD
+    #ifdef ONEDAL_DATA_PARALLEL
+    ONEDAL_PY_INIT_MODULE(sycl);
+    #endif // ONEDAL_DATA_PARALLEL
+
     ONEDAL_PY_INIT_MODULE(policy);
     /* datatypes*/
     ONEDAL_PY_INIT_MODULE(table);
@@ -75,6 +79,9 @@ namespace oneapi::dal::python {
     #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
     ONEDAL_PY_INIT_MODULE(logistic_regression);
     #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
+    ONEDAL_PY_INIT_MODULE(finiteness_checker);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 
 #ifdef ONEDAL_DATA_PARALLEL_SPMD
@@ -102,6 +109,7 @@ namespace oneapi::dal::python {
 #else
     #ifdef ONEDAL_DATA_PARALLEL
     PYBIND11_MODULE(_onedal_py_dpc, m) {
+        init_sycl(m);
     #else
     PYBIND11_MODULE(_onedal_py_host, m) {
     #endif
@@ -133,6 +141,9 @@ namespace oneapi::dal::python {
     #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
         init_logistic_regression(m);
     #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240001
+    #if defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
+        init_finiteness_checker(m);
+    #endif // defined(ONEDAL_VERSION) && ONEDAL_VERSION >= 20240700
     }
 #endif // ONEDAL_DATA_PARALLEL_SPMD
 

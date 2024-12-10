@@ -79,10 +79,14 @@ if __name__ == "__main__":
 
         patch_sklearn()
 
-    if args.device == "gpu":
-        from sklearnex._config import config_context
+    from sklearnex._config import config_context
 
-        with config_context(target_offload=args.device, allow_fallback_to_host=False):
+    with config_context(allow_sklearn_after_onedal=False):
+
+        if args.device == "gpu":
+            with config_context(target_offload=args.device, allow_fallback_to_host=False):
+                pytest.main(
+                    pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests
+                )
+        else:
             pytest.main(pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests)
-    else:
-        pytest.main(pytest_params + ["--pyargs", "sklearn"] + yml_deselected_tests)

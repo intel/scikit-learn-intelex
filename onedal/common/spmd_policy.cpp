@@ -19,7 +19,7 @@
 #include "oneapi/dal/detail/spmd_policy.hpp"
 #include "oneapi/dal/spmd/mpi/communicator.hpp"
 
-#include "onedal/common/policy_common.hpp"
+#include "onedal/common/policy.hpp"
 #include "onedal/common/pybind11_helpers.hpp"
 
 namespace py = pybind11;

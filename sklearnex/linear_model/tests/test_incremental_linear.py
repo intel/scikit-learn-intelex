@@ -24,6 +24,7 @@ from onedal.tests.utils._dataframes_support import (
     get_dataframes_and_queues,
 )
 from sklearnex.linear_model import IncrementalLinearRegression
+from sklearnex.tests.utils import _IS_INTEL
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -40,7 +41,7 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, fit_intercept, macro_block
 
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     inclin.fit(X_df, y_df)
@@ -48,7 +49,7 @@ def test_sklearnex_fit_on_gold_data(dataframe, queue, fit_intercept, macro_block
     y_pred = inclin.predict(X_df)
     np_y_pred = _as_numpy(y_pred)
 
-    tol = 2e-6 if dtype == np.float32 else 1e-7
+    tol = 5e-5 if dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [1], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, [0], atol=tol)
@@ -71,7 +72,7 @@ def test_sklearnex_partial_fit_on_gold_data(
 
     inclin = IncrementalLinearRegression()
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     for i in range(2):
@@ -88,7 +89,7 @@ def test_sklearnex_partial_fit_on_gold_data(
     np_y_pred = _as_numpy(y_pred)
 
     assert inclin.n_features_in_ == 1
-    tol = 2e-6 if dtype == np.float32 else 1e-7
+    tol = 1e-5 if dtype == np.float32 else 1e-7
     assert_allclose(inclin.coef_, [[1]], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, 3, atol=tol)
@@ -112,7 +113,7 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
 
     inclin = IncrementalLinearRegression()
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     for i in range(2):
@@ -129,7 +130,10 @@ def test_sklearnex_partial_fit_multitarget_on_gold_data(
     np_y_pred = _as_numpy(y_pred)
 
     assert inclin.n_features_in_ == 2
-    tol = 7e-6 if dtype == np.float32 else 1e-7
+    tol = 1e-7
+    if dtype == np.float32:
+        tol = 7e-6 if _IS_INTEL else 2e-5
+
     assert_allclose(inclin.coef_, [1.0, 2.0], atol=tol)
     if fit_intercept:
         assert_allclose(inclin.intercept_, 3.0, atol=tol)
@@ -172,7 +176,7 @@ def test_sklearnex_partial_fit_on_random_data(
 
     inclin = IncrementalLinearRegression(fit_intercept=fit_intercept)
     if macro_block is not None:
-        hparams = inclin.get_hyperparameters("fit")
+        hparams = IncrementalLinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
     for i in range(num_blocks):

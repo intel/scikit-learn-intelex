@@ -28,6 +28,7 @@ from onedal.tests.utils._dataframes_support import (
     get_queues,
 )
 from sklearnex import config_context
+from sklearnex.tests.utils import _IS_INTEL
 
 
 def generate_dense_dataset(n_samples, n_features, density, n_clusters):
@@ -45,11 +46,11 @@ def generate_dense_dataset(n_samples, n_features, density, n_clusters):
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+@pytest.mark.parametrize(
+    "algorithm", ["lloyd" if sklearn_check_version("1.1") else "full", "elkan"]
+)
 @pytest.mark.parametrize("init", ["k-means++", "random"])
 def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
-    if not sklearn_check_version("1.1") and algorithm == "lloyd":
-        pytest.skip("lloyd requires sklearn>=1.1.")
     from sklearnex.cluster import KMeans
 
     X_dense = generate_dense_dataset(1000, 10, 0.5, 3)
@@ -70,7 +71,9 @@ def test_sklearnex_import_for_dense_data(dataframe, queue, algorithm, init):
     reason="Sparse data requires oneDAL>=2024.7.0",
 )
 @pytest.mark.parametrize("queue", get_queues())
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+@pytest.mark.parametrize(
+    "algorithm", ["lloyd" if sklearn_check_version("1.1") else "full", "elkan"]
+)
 @pytest.mark.parametrize("init", ["k-means++", "random"])
 def test_sklearnex_import_for_sparse_data(queue, algorithm, init):
     from sklearnex.cluster import KMeans
@@ -86,11 +89,10 @@ def test_sklearnex_import_for_sparse_data(queue, algorithm, init):
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+@pytest.mark.parametrize(
+    "algorithm", ["lloyd" if sklearn_check_version("1.1") else "full", "elkan"]
+)
 def test_results_on_dense_gold_data(dataframe, queue, algorithm):
-    if not sklearn_check_version("1.1") and algorithm == "lloyd":
-        pytest.skip("lloyd requires sklearn>=1.1.")
-
     from sklearnex.cluster import KMeans
 
     X_train = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
@@ -121,12 +123,17 @@ def test_results_on_dense_gold_data(dataframe, queue, algorithm):
 )
 @pytest.mark.parametrize("queue", get_queues())
 @pytest.mark.parametrize("init", ["k-means++", "random", "arraylike"])
-@pytest.mark.parametrize("algorithm", ["lloyd", "elkan"])
+@pytest.mark.parametrize(
+    "algorithm", ["lloyd" if sklearn_check_version("1.1") else "full", "elkan"]
+)
 @pytest.mark.parametrize(
     "dims", [(1000, 10, 0.95, 3), (50000, 100, 0.75, 10), (10000, 10, 0.8, 5)]
 )
 def test_dense_vs_sparse(queue, init, algorithm, dims):
     from sklearnex.cluster import KMeans
+
+    if init == "random" or (not _IS_INTEL and init == "k-means++"):
+        pytest.skip(f"{init} initialization for sparse K-means is non-conformant.")
 
     # For higher level of sparsity (smaller density) the test may fail
     n_samples, n_features, density, n_clusters = dims

@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import logging
+import sys
 import threading
 from functools import wraps
 from inspect import Parameter, signature
@@ -76,7 +77,7 @@ def _run_with_n_jobs(method):
     """
 
     @wraps(method)
-    def method_wrapper(self, *args, **kwargs):
+    def n_jobs_wrapper(self, *args, **kwargs):
         # threading parallel backend branch
         if not isinstance(threading.current_thread(), threading._MainThread):
             warn(
@@ -117,7 +118,10 @@ def _run_with_n_jobs(method):
                 n_jobs = max(1, n_threads + n_jobs + 1)
         # branch with set n_jobs
         old_n_threads = get_n_threads()
-        if n_jobs != old_n_threads:
+        if n_jobs == old_n_threads:
+            return method(self, *args, **kwargs)
+
+        try:
             logger = logging.getLogger("sklearnex")
             cl = self.__class__
             logger.debug(
@@ -125,12 +129,11 @@ def _run_with_n_jobs(method):
                 f"setting {n_jobs} threads (previous - {old_n_threads})"
             )
             set_n_threads(n_jobs)
-        result = method(self, *args, **kwargs)
-        if n_jobs != old_n_threads:
+            return method(self, *args, **kwargs)
+        finally:
             set_n_threads(old_n_threads)
-        return result
 
-    return method_wrapper
+    return n_jobs_wrapper
 
 
 def control_n_jobs(decorated_methods: list = []):
@@ -149,7 +152,8 @@ def control_n_jobs(decorated_methods: list = []):
 
     Parameters
     ----------
-        decorated_methods (list): A list of method names to be executed with 'n_jobs'.
+    decorated_methods: list
+        A list of method names to be executed with 'n_jobs'.
 
     Example
     -------
@@ -209,14 +213,16 @@ def control_n_jobs(decorated_methods: list = []):
             and isinstance(original_class.__doc__, str)
             and "n_jobs : int" not in original_class.__doc__
         ):
-            parameters_doc_tail = "\n    Attributes"
-            n_jobs_doc = """
-    n_jobs : int, default=None
-        The number of jobs to use in parallel for the computation.
-        ``None`` means using all physical cores
-        unless in a :obj:`joblib.parallel_backend` context.
-        ``-1`` means using all logical cores.
-        See :term:`Glossary <n_jobs>` for more details.
+            # Python 3.13 removed extra tab in class doc string
+            tab = "    " if sys.version_info.minor < 13 else ""
+            parameters_doc_tail = f"\n{tab}Attributes"
+            n_jobs_doc = f"""
+{tab}n_jobs : int, default=None
+{tab}    The number of jobs to use in parallel for the computation.
+{tab}    ``None`` means using all physical cores
+{tab}    unless in a :obj:`joblib.parallel_backend` context.
+{tab}    ``-1`` means using all logical cores.
+{tab}    See :term:`Glossary <n_jobs>` for more details.
 """
             original_class.__doc__ = original_class.__doc__.replace(
                 parameters_doc_tail, n_jobs_doc + parameters_doc_tail

@@ -17,62 +17,74 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from scipy.linalg import lstsq
 from sklearn.datasets import make_regression
 
 from daal4py.sklearn._utils import daal_check_version
-from daal4py.sklearn.linear_model.tests.test_ridge import (
-    _test_multivariate_ridge_alpha_shape,
-    _test_multivariate_ridge_coefficients,
-)
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+from sklearnex.tests.utils import _IS_INTEL
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("macro_block", [None, 1024])
-def test_sklearnex_import_linear(dataframe, queue, dtype, macro_block):
+@pytest.mark.parametrize("overdetermined", [False, True])
+@pytest.mark.parametrize("multi_output", [False, True])
+def test_sklearnex_import_linear(
+    dataframe, queue, dtype, macro_block, overdetermined, multi_output
+):
+    if (not overdetermined or multi_output) and not daal_check_version((2025, "P", 1)):
+        pytest.skip("Functionality introduced in later versions")
+    if (
+        not overdetermined
+        and queue
+        and queue.sycl_device.is_gpu
+        and not daal_check_version((2025, "P", 200))
+    ):
+        pytest.skip("Functionality introduced in later versions")
+
     from sklearnex.linear_model import LinearRegression
 
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    X = X.astype(dtype=dtype)
-    y = y.astype(dtype=dtype)
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
+    rng = np.random.default_rng(seed=123)
+    X = rng.standard_normal(size=(10, 20) if not overdetermined else (20, 5))
+    y = rng.standard_normal(size=(X.shape[0], 3) if multi_output else X.shape[0])
+
+    Xi = np.c_[X, np.ones((X.shape[0], 1))]
+    expected_coefs = lstsq(Xi, y)[0]
+    expected_intercept = expected_coefs[-1]
+    expected_coefs = expected_coefs[: X.shape[1]]
+    if multi_output:
+        expected_coefs = expected_coefs.T
 
     linreg = LinearRegression()
     if daal_check_version((2024, "P", 0)) and macro_block is not None:
-        hparams = linreg.get_hyperparameters("fit")
+        hparams = LinearRegression.get_hyperparameters("fit")
         hparams.cpu_macro_block = macro_block
         hparams.gpu_macro_block = macro_block
 
+    X = X.astype(dtype=dtype)
+    y = y.astype(dtype=dtype)
+    y_list = y.tolist()
+    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
+    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
     linreg.fit(X, y)
 
     assert hasattr(linreg, "_onedal_estimator")
     assert "sklearnex" in linreg.__module__
-    assert linreg.n_features_in_ == 2
 
-    tol = 1e-5 if _as_numpy(linreg.coef_).dtype == np.float32 else 1e-7
-    assert_allclose(_as_numpy(linreg.intercept_), 3.0, rtol=tol)
-    assert_allclose(_as_numpy(linreg.coef_), [1.0, 2.0], rtol=tol)
+    rtol = 1e-3 if dtype == np.float32 else 1e-5
+    assert_allclose(_as_numpy(linreg.coef_), expected_coefs, rtol=rtol)
+    assert_allclose(_as_numpy(linreg.intercept_), expected_intercept, rtol=rtol)
 
-
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
-def test_sklearnex_import_ridge(dataframe, queue):
-    from sklearnex.linear_model import Ridge
-
-    X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
-    y = np.dot(X, np.array([1, 2])) + 3
-    X = _convert_to_dataframe(X, sycl_queue=queue, target_df=dataframe)
-    y = _convert_to_dataframe(y, sycl_queue=queue, target_df=dataframe)
-    ridgereg = Ridge().fit(X, y)
-    assert "daal4py" in ridgereg.__module__
-    assert_allclose(ridgereg.intercept_, 4.5)
-    assert_allclose(ridgereg.coef_, [0.8, 1.4])
+    # check that it also works with lists
+    if isinstance(X, np.ndarray):
+        linreg_list = LinearRegression().fit(X, y_list)
+        assert_allclose(linreg_list.coef_, linreg.coef_)
+        assert_allclose(linreg_list.intercept_, linreg.intercept_)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
@@ -128,15 +140,3 @@ def test_sklearnex_reconstruct_model(dataframe, queue, dtype):
 
     tol = 1e-5 if _as_numpy(y_pred).dtype == np.float32 else 1e-7
     assert_allclose(gtr, _as_numpy(y_pred), rtol=tol)
-
-
-def test_sklearnex_multivariate_ridge_coefs():
-    from sklearnex.linear_model import Ridge
-
-    _test_multivariate_ridge_coefficients(Ridge, random_state=0)
-
-
-def test_sklearnex_multivariate_ridge_alpha_shape():
-    from sklearnex.linear_model import Ridge
-
-    _test_multivariate_ridge_alpha_shape(Ridge, random_state=0)

@@ -96,7 +96,7 @@ class BaseSVM(metaclass=ABCMeta):
         self.n_iter_ = 1 if max_iter < 1 else max_iter
         class_count = 0 if self.classes_ is None else len(self.classes_)
         return {
-            "fptype": "float" if data.dtype == np.float32 else "double",
+            "fptype": data.dtype,
             "method": self.algorithm,
             "kernel": self.kernel,
             "c": self.C,
@@ -286,7 +286,7 @@ class BaseSVM(metaclass=ABCMeta):
     def _decision_function(self, X, module, queue):
         _check_is_fitted(self)
         X = _check_array(
-            X, dtype=[np.float64, np.float32], force_all_finite=False, accept_sparse="csr"
+            X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse="csr"
         )
         _check_n_features(self, X, False)
 

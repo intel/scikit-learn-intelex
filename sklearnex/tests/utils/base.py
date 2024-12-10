@@ -14,8 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+import platform
+import subprocess
 from functools import partial
-from inspect import getattr_static, isclass, signature
+from inspect import Parameter, getattr_static, isclass, signature
 
 import numpy as np
 from scipy import sparse as sp
@@ -30,9 +32,13 @@ from sklearn.base import (
 )
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.neighbors._base import KNeighborsMixin
+from sklearn.utils.validation import check_is_fitted
 
+from onedal.datatypes import from_table, to_table
 from onedal.tests.utils._dataframes_support import _convert_to_dataframe
+from onedal.utils._array_api import _get_sycl_namespace
 from sklearnex import get_patch_map, patch_sklearn, sklearn_is_patched, unpatch_sklearn
+from sklearnex.basic_statistics import BasicStatistics, IncrementalBasicStatistics
 from sklearnex.linear_model import LogisticRegression
 from sklearnex.neighbors import (
     KNeighborsClassifier,
@@ -129,12 +135,14 @@ SPECIAL_INSTANCES = sklearn_clone_dict(
             KNeighborsRegressor(algorithm="brute"),
             NearestNeighbors(algorithm="brute"),
             LogisticRegression(solver="newton-cg"),
+            BasicStatistics(),
+            IncrementalBasicStatistics(),
         ]
     }
 )
 
 
-def gen_models_info(algorithms, required_inputs=["X", "y"]):
+def gen_models_info(algorithms, required_inputs=["X", "y"], fit=False, daal4py=True):
     """Generate estimator-attribute pairs for pytest test collection.
 
     Parameters
@@ -147,6 +155,12 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
         non-BaseEstimator attributes).  Only one must be present, None
         signifies taking all non-private attribues, callable or not.
 
+    fit: bool (default False)
+        Include "fit" method as an estimator-attribute pair
+
+    daal4py: bool (default True)
+        Include daal4py estimators in estimator-attribute list
+
     Returns
     -------
     list of 2-element tuples: (estimator, string)
@@ -157,17 +171,23 @@ def gen_models_info(algorithms, required_inputs=["X", "y"]):
 
         if estimator in PATCHED_MODELS:
             est = PATCHED_MODELS[estimator]
+        elif estimator in SPECIAL_INSTANCES:
+            est = SPECIAL_INSTANCES[estimator].__class__
         elif isinstance(algorithms[estimator], BaseEstimator):
             est = algorithms[estimator].__class__
         else:
             raise KeyError(f"Unrecognized sklearnex estimator: {estimator}")
+
+        if not daal4py and est.__module__.startswith("daal4py"):
+            continue
 
         # remove BaseEstimator methods (get_params, set_params)
         candidates = set(dir(est)) - set(dir(BaseEstimator))
         # remove private methods
         candidates = set([attr for attr in candidates if not attr.startswith("_")])
         # required to enable other methods
-        candidates = candidates - {"fit"}
+        if not fit:
+            candidates = candidates - {"fit"}
 
         # allow only callable methods with any of the required inputs
         if required_inputs:
@@ -217,6 +237,13 @@ def call_method(estimator, method, X, y, **kwargs):
     return value from estimator.method
     """
     # useful for repository wide testing
+
+    func = getattr(estimator, method)
+    argdict = signature(func).parameters
+    argnum = len(
+        [i for i in argdict if argdict[i].default == Parameter.empty or i in ["X", "y"]]
+    )
+
     if method == "inverse_transform":
         # PCA's inverse_transform takes (n_samples, n_components)
         data = (
@@ -224,11 +251,10 @@ def call_method(estimator, method, X, y, **kwargs):
             if X.shape[1] != estimator.n_components_
             else (X,)
         )
-    elif method not in ["score", "partial_fit", "path"]:
-        data = (X,)
     else:
-        data = (X, y)
-    return getattr(estimator, method)(*data, **kwargs)
+        data = (X, y)[:argnum]
+
+    return func(*data, **kwargs)
 
 
 def _gen_dataset_type(est):
@@ -326,3 +352,64 @@ DTYPES = [
     np.uint32,
     np.uint64,
 ]
+
+
+def _get_processor_info():
+    proc = ""
+    if platform.system() == "Linux":
+        proc = (
+            subprocess.check_output(["/usr/bin/cat", "/proc/cpuinfo"])
+            .strip()
+            .decode("utf-8")
+        )
+    elif platform.system() == "Windows":
+        proc = platform.processor()
+    elif platform.system() == "Darwin":
+        proc = (
+            subprocess.check_output(["/usr/bin/sysctl", "-n", "machdep.cpu.brand_string"])
+            .strip()
+            .decode("utf-8")
+        )
+
+    return proc
+
+
+class DummyEstimator(BaseEstimator):
+
+    def fit(self, X, y=None):
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        X_table = to_table(X)
+        y_table = to_table(y)
+        # The presence of the fitted attributes (ending with a trailing
+        # underscore) is required for the correct check. The cleanup of
+        # the memory will occur at the estimator instance deletion.
+        if sua_iface:
+            self.x_attr_ = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
+            self.y_attr_ = from_table(
+                y_table,
+                sua_iface=sua_iface,
+                sycl_queue=X.sycl_queue if y is None else y.sycl_queue,
+                xp=xp,
+            )
+        else:
+            self.x_attr = from_table(X_table)
+            self.y_attr = from_table(y_table)
+
+        return self
+
+    def predict(self, X):
+        # Checks if the estimator is fitted by verifying the presence of
+        # fitted attributes (ending with a trailing underscore).
+        check_is_fitted(self)
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+        X_table = to_table(X)
+        if sua_iface:
+            returned_X = from_table(
+                X_table, sua_iface=sua_iface, sycl_queue=X.sycl_queue, xp=xp
+            )
+        else:
+            returned_X = from_table(X_table)
+
+        return returned_X

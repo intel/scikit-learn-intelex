@@ -25,6 +25,7 @@ from .._base import BaseEstimatorSPMD
 
 class IncrementalBasicStatistics(BaseEstimatorSPMD, base_IncrementalBasicStatistics):
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = super(base_IncrementalBasicStatistics, self)._get_backend(
             "basic_statistics", None, "partial_compute_result"
         )
@@ -67,3 +68,6 @@ class IncrementalBasicStatistics(BaseEstimatorSPMD, base_IncrementalBasicStatist
             X_table,
             weights_table,
         )
+
+        self._need_to_finalize = True
+        return self
