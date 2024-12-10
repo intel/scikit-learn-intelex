@@ -138,6 +138,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             self._onedal_params, self._partial_result, X_table, weights_table
         )
 
+        self._need_to_finalize = True
+
     @supports_queue
     def finalize_fit(self, queue=None):
         """

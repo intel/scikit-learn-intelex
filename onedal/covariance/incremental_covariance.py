@@ -71,7 +71,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
 
     def _reset(self):
         self._need_to_finalize = False
-        self.partial_compute_result()
+        self._partial_result = self.partial_compute_result()
 
     def __getstate__(self):
         # Since finalize_fit can't be dispatched without directly provided queue

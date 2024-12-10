@@ -114,7 +114,6 @@ class IncrementalPCA(BasePCA):
         self._partial_result = self.partial_train_result()
         if hasattr(self, "components_"):
             del self.components_
-        self._partial_result = module.partial_train_result()
 
     def __getstate__(self):
         # Since finalize_fit can't be dispatched without directly provided queue
