@@ -81,7 +81,7 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
 
         if not hasattr(self, "_dtype"):
             self._dtype = X_table.dtype
-            self._params = self._get_onedal_params(self._dtype)
+            self._params = self._get_onedal_params(X_table)
 
         self._partial_result = super(base_IncrementalPCA, self)._get_backend(
             "decomposition",
@@ -119,5 +119,6 @@ class IncrementalPCA(BaseEstimatorSPMD, base_IncrementalPCA):
             policy,
             params,
             model,
+            X,
         )
         return from_table(result.transformed_data)
