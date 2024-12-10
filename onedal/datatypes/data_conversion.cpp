@@ -165,6 +165,9 @@ dal::table convert_to_table(py::object inp_obj, py::object queue) {
             if(!py::isinstance<py::array>(inp_obj)){
                 py::cast<py::object>(inp_obj.attr("data")).dec_ref();
                 py::cast<py::object>(inp_obj.attr("data")).dec_ref();
+                py::cast<py::object>(inp_obj.attr("data")).dec_ref();
+                py::cast<py::object>(inp_obj.attr("data")).dec_ref();
+                py::cast<py::object>(inp_obj.attr("data")).dec_ref();
             }
             return res;
         }
