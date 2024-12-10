@@ -119,9 +119,9 @@ class SyclQueueManager:
                 global_queue = data_queue
 
             # if the data item is on device, assert it's compatible with device in global queue
-            data_device = data_queue.sycl_device
-            global_device = global_queue.sycl_device
-            if data_device is not None and data_device != global_device:
+            data_dev = data_queue.sycl_device
+            global_dev = global_queue.sycl_device
+            if (data_dev and global_dev) is not None and data_dev != global_dev:
                 raise ValueError(
                     "Data objects are located on different target devices or not on selected device."
                 )
