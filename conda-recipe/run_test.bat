@@ -1,4 +1,4 @@
-@echo off
+@echo on
 rem ============================================================================
 rem Copyright 2018 Intel Corporation
 rem
@@ -15,34 +15,59 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 rem ============================================================================
 
-rem %1 - scikit-learn-intelex repo root
+rem %1 - scikit-learn-intelex repo root (should end with '\', leave empty if it's %cd% / $PWD)
 
-set MPIROOT=%PREFIX%\Library
 set exitcode=0
 
-IF DEFINED DPCPPROOT (
-    echo "Sourcing DPCPPROOT"
-    call "%DPCPPROOT%\env\vars.bat" || set exitcode=1
-    set "CC=dpcpp"
-    set "CXX=dpcpp"
-    dpcpp --version
+setlocal enableextensions
+IF NOT DEFINED PYTHON (
+    set "PYTHON=python"
+    set NO_DIST=1
+)
+if "%PYTHON%"=="python" (
+    set NO_DIST=1
 )
 
-IF DEFINED DALROOT (
-    echo "Sourcing DALROOT"
-    call "%DALROOT%\env\vars.bat" || set exitcode=1
-    echo "Finish sourcing DALROOT"
+
+
+%PYTHON% -c "from sklearnex import patch_sklearn; patch_sklearn()" || set exitcode=1
+
+set "PYTEST_ARGS= "
+
+IF DEFINED COVERAGE_RCFILE (set "PYTEST_ARGS=--cov=onedal --cov=sklearnex --cov-config=%COVERAGE_RCFILE% --cov-append --cov-report= %PYTEST_ARGS%")
+
+rem Note: execute with argument --json-report as second argument
+rem in order to produce a JSON report under folder '.pytest_reports'.
+if "%~2"=="--json-report" (
+    set "PYTEST_ARGS=--json-report --json-report-file=.pytest_reports\FILENAME.json %PYTEST_ARGS%"
+    echo %PYTEST_ARGS%
+    mkdir .pytest_reports
+    del /q .pytest_reports\*.json
 )
 
-IF DEFINED TBBROOT (
-    echo "Sourcing TBBROOT"
-    call "%TBBROOT%\env\vars.bat" || set exitcode=1
+echo "NO_DIST=%NO_DIST%"
+setlocal enabledelayedexpansion
+pytest --verbose -s "%1tests" %PYTEST_ARGS:FILENAME=legacy_report% || set exitcode=1
+pytest --verbose --pyargs daal4py %PYTEST_ARGS:FILENAME=daal4py_report% || set exitcode=1
+pytest --verbose --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_report% || set exitcode=1
+pytest --verbose --pyargs onedal %PYTEST_ARGS:FILENAME=onedal_report% || set exitcode=1
+pytest --verbose "%1.ci\scripts\test_global_patch.py" %PYTEST_ARGS:FILENAME=global_patching_report% || set exitcode=1
+if NOT "%NO_DIST%"=="1" (
+    %PYTHON% "%1tests\helper_mpi_tests.py"^
+        pytest -k spmd --with-mpi --verbose -s --pyargs sklearnex %PYTEST_ARGS:FILENAME=sklearnex_spmd%
+    if !errorlevel! NEQ 0 (
+        set exitcode=1
+    )
+    %PYTHON% "%1tests\helper_mpi_tests.py"^
+        pytest --with-mpi --verbose -s "%1tests\test_daal4py_spmd_examples.py" %PYTEST_ARGS:FILENAME=mpi_legacy%
+    if !errorlevel! NEQ 0 (
+        set exitcode=1
+    )
 )
-
-%PYTHON% -m pytest --verbose -s %1\tests || set exitcode=1
-
-pytest --verbose --pyargs %1\daal4py\sklearn || set exitcode=1
-pytest --verbose --pyargs sklearnex || set exitcode=1
-pytest --verbose --pyargs %1\onedal --deselect="onedal/common/tests/test_policy.py" || set exitcode=1
-pytest --verbose %1\.ci\scripts\test_global_patch.py || set exitcode=1
+if "%~2"=="--json-report" (
+    if NOT EXIST .pytest_reports\legacy_report.json (
+        echo "Error: JSON report files failed to be produced."
+        set exitcode=1
+    )
+)
 EXIT /B %exitcode%

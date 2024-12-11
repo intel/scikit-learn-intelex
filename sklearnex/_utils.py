@@ -16,8 +16,8 @@
 
 import logging
 import os
-import sys
 import warnings
+from abc import ABC
 
 from daal4py.sklearn._utils import (
     PatchingConditionsChain as daal4py_PatchingConditionsChain,
@@ -29,10 +29,10 @@ class PatchingConditionsChain(daal4py_PatchingConditionsChain):
     def get_status(self):
         return self.patching_is_enabled
 
-    def write_log(self, queue=None):
+    def write_log(self, queue=None, transferred_to_host=True):
         if self.patching_is_enabled:
             self.logger.info(
-                f"{self.scope_name}: {get_patch_message('onedal', queue=queue)}"
+                f"{self.scope_name}: {get_patch_message('onedal', queue=queue, transferred_to_host=transferred_to_host)}"
             )
         else:
             self.logger.debug(
@@ -43,7 +43,9 @@ class PatchingConditionsChain(daal4py_PatchingConditionsChain):
                 self.logger.debug(
                     f"{self.scope_name}: patching failed with cause - {message}"
                 )
-            self.logger.info(f"{self.scope_name}: {get_patch_message('sklearn')}")
+            self.logger.info(
+                f"{self.scope_name}: {get_patch_message('sklearn', transferred_to_host=transferred_to_host)}"
+            )
 
 
 def set_sklearn_ex_verbose():
@@ -66,7 +68,7 @@ def set_sklearn_ex_verbose():
         )
 
 
-def get_patch_message(s, queue=None):
+def get_patch_message(s, queue=None, transferred_to_host=True):
     if s == "onedal":
         message = "running accelerated version on "
         if queue is not None:
@@ -87,6 +89,10 @@ def get_patch_message(s, queue=None):
             f"Invalid input - expected one of 'onedal','sklearn',"
             f" 'sklearn_after_onedal', got {s}"
         )
+    if transferred_to_host:
+        message += (
+            ". All input data transferred to host for further backend computations."
+        )
     return message
 
 
@@ -99,11 +105,39 @@ def register_hyperparameters(hyperparameters_map):
     Adds `get_hyperparameters` method to class.
     """
 
-    def wrap_class(estimator_class):
-        def get_hyperparameters(self, op):
-            return hyperparameters_map[op]
+    def decorator(cls):
+        """Add `get_hyperparameters()` static method"""
 
-        estimator_class.get_hyperparameters = get_hyperparameters
-        return estimator_class
+        class StaticHyperparametersAccessor:
+            """Like a @staticmethod, but additionally raises a Warning when called on an instance."""
 
-    return wrap_class
+            def __get__(self, instance, _):
+                if instance is not None:
+                    warnings.warn(
+                        "Hyperparameters are static variables and can not be modified per instance."
+                    )
+                return self.get_hyperparameters
+
+            def get_hyperparameters(self, op):
+                return hyperparameters_map[op]
+
+        cls.get_hyperparameters = StaticHyperparametersAccessor()
+        return cls
+
+    return decorator
+
+
+# This abstract class is meant to generate a clickable doc link for classses
+# in sklearnex that are not part of base scikit-learn. It should be inherited
+# before inheriting from a scikit-learn estimator, otherwise will get overriden
+# by the estimator's original.
+class IntelEstimator(ABC):
+    @property
+    def _doc_link_module(self) -> str:
+        return "sklearnex"
+
+    @property
+    def _doc_link_template(self) -> str:
+        module_path, _ = self.__class__.__module__.rsplit(".", 1)
+        class_name = self.__class__.__name__
+        return f"https://uxlfoundation.github.io/scikit-learn-intelex/latest/non-scikit-algorithms.html#{module_path}.{class_name}"

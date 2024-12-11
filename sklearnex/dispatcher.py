@@ -52,7 +52,6 @@ def get_patch_map_core(preview=False):
                 EmpiricalCovariance as EmpiricalCovariance_sklearnex,
             )
             from .preview.decomposition import IncrementalPCA as IncrementalPCA_sklearnex
-            from .preview.linear_model import Ridge as Ridge_sklearnex
 
             # Since the state of the lru_cache without preview cannot be
             # guaranteed to not have already enabled sklearnex algorithms
@@ -81,14 +80,6 @@ def get_patch_map_core(preview=False):
                     ),
                     None,
                 ]
-            ]
-
-            # Ridge
-            linear_model_module, _, _ = mapping["ridge"][0][0]
-            sklearn_obj = mapping["ridge"][0][1]
-            mapping.pop("ridge")
-            mapping["ridge"] = [
-                [(linear_model_module, "Ridge", Ridge_sklearnex), sklearn_obj]
             ]
 
         return mapping
@@ -492,7 +483,7 @@ def patch_sklearn(name=None, verbose=True, global_patch=False, preview=False):
     if verbose and sys.stderr is not None:
         sys.stderr.write(
             "Intel(R) Extension for Scikit-learn* enabled "
-            "(https://github.com/intel/scikit-learn-intelex)\n"
+            "(https://github.com/uxlfoundation/scikit-learn-intelex)\n"
         )
 
 

@@ -23,7 +23,6 @@ import warnings
 from inspect import isclass
 
 import numpy as np
-import pandas as pd
 import pytest
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, clone
@@ -37,9 +36,15 @@ from onedal.tests.utils._dataframes_support import (
     dpnp_available,
     get_dataframes_and_queues,
 )
-from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
+from onedal.tests.utils._device_selection import get_queues, is_dpctl_device_available
+from onedal.utils._dpep_helpers import dpctl_available, dpnp_available
 from sklearnex import config_context
-from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
+from sklearnex.tests.utils import (
+    PATCHED_FUNCTIONS,
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    DummyEstimator,
+)
 from sklearnex.utils._array_api import get_namespace
 
 if dpctl_available:
@@ -73,7 +78,6 @@ GPU_SKIP_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    "Ridge",  # does not support GPU offloading (fails silently)
     "ElasticNet",  # does not support GPU offloading (fails silently)
     "Lasso",  # does not support GPU offloading (fails silently)
     "SVR",  # does not support GPU offloading (fails silently)
@@ -133,10 +137,12 @@ N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
-def gen_clsf_data(n_samples, n_features):
+def gen_clsf_data(n_samples, n_features, dtype=None):
     data, label = make_classification(
         n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777
     )
+    if dtype:
+        data, label = data.astype(dtype), label.astype(dtype)
     return (
         data,
         label,
@@ -165,7 +171,8 @@ def take(x, index, axis=0, queue=None):
         )
     # TODO:
     # re-impl _is_numpy_namespace
-    elif array_api and not isinstance(x, np.ndarray):
+    # elif array_api and not isinstance(x, np.ndarray):
+    elif array_api:
         return xp.take(x, xp.asarray(index, device=x.device), axis=axis)
     else:
         return xp.take(x, xp.asarray(index), axis=axis)
@@ -205,11 +212,13 @@ def split_train_inference(kf, x, y, estimator, queue=None):
     return mem_tracks
 
 
-def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
+def _kfold_function_template(
+    estimator, dataframe, data_shape, queue=None, func=None, dtype=None
+):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
+    X, y, data_memory_size = gen_clsf_data(n_samples, n_features, dtype=dtype)
     kf = KFold(n_splits=N_SPLITS)
     if func:
         X = func(X)
@@ -299,7 +308,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
 
 
 @pytest.mark.skipif(
-    os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_available("gpu"),
+    os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_device_available("gpu"),
     reason="SYCL device memory leak check requires the level zero sysman",
 )
 @pytest.mark.parametrize("queue", get_queues("gpu"))
@@ -313,3 +322,31 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 
     with config_context(target_offload=queue):
         _kfold_function_template(GPU_ESTIMATORS[estimator], None, data_shape, queue, func)
+
+
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
+)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
+)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("data_shape", data_shapes)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_table_conversions_memory_leaks(dataframe, queue, order, data_shape, dtype):
+    func = ORDER_DICT[order]
+
+    if queue.sycl_device.is_gpu and (
+        os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_device_available("gpu")
+    ):
+        pytest.skip("SYCL device memory leak check requires the level zero sysman")
+
+    _kfold_function_template(
+        DummyEstimator,
+        dataframe,
+        data_shape,
+        queue,
+        func,
+        dtype,
+    )

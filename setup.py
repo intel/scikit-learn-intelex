@@ -41,6 +41,12 @@ import scripts.build_backend as build_backend
 from scripts.package_helpers import get_packages_with_tests
 from scripts.version import get_onedal_shared_libs, get_onedal_version
 
+USE_ABS_RPATH = False
+ARG_ABS_RPATH = "--abs-rpath"
+if ARG_ABS_RPATH in sys.argv:
+    USE_ABS_RPATH = True
+    sys.argv = [arg for arg in sys.argv if arg != ARG_ABS_RPATH]
+
 IS_WIN = False
 IS_MAC = False
 IS_LIN = False
@@ -84,13 +90,14 @@ sklearnex_version = (
 
 trues = ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "Yes", "yes", "YES"]
 no_dist = True if "NO_DIST" in os.environ and os.environ["NO_DIST"] in trues else False
+no_dpc = True if "NO_DPC" in os.environ and os.environ["NO_DPC"] in trues else False
 no_stream = "NO_STREAM" in os.environ and os.environ["NO_STREAM"] in trues
 debug_build = os.getenv("DEBUG_BUILD") == "1"
 mpi_root = None if no_dist else os.environ["MPIROOT"]
 dpcpp = (
     shutil.which("icpx") is not None
     and "onedal_dpc" in get_onedal_shared_libs(dal_root)
-    and os.environ.get("NO_DPC", None) is None
+    and not no_dpc
     and not (IS_WIN and debug_build)
 )
 
@@ -298,7 +305,9 @@ def get_build_options():
         ela.append("-s")
     if IS_LIN:
         ela.append("-fPIC")
-        ela.append("-Wl,-rpath,$ORIGIN/../../../")
+        ela.append(
+            f"-Wl,-rpath,{(daal_lib_dir + ':') if USE_ABS_RPATH else ''}$ORIGIN/../../../"
+        )
     return eca, ela, include_dir_plat
 
 
@@ -416,6 +425,7 @@ class custom_build:
                 onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                 no_dist=no_dist,
                 use_parameters_lib=use_parameters_lib,
+                use_abs_rpath=USE_ABS_RPATH,
             )
         if dpcpp:
             if is_onedal_iface:
@@ -424,6 +434,7 @@ class custom_build:
                     onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                     no_dist=no_dist,
                     use_parameters_lib=use_parameters_lib,
+                    use_abs_rpath=USE_ABS_RPATH,
                 )
                 if build_distribute:
                     build_backend.custom_build_cmake_clib(
@@ -431,6 +442,7 @@ class custom_build:
                         onedal_major_binary_version=ONEDAL_MAJOR_BINARY_VERSION,
                         no_dist=no_dist,
                         use_parameters_lib=use_parameters_lib,
+                        use_abs_rpath=USE_ABS_RPATH,
                     )
 
     def post_build(self):
@@ -471,9 +483,9 @@ class build(orig_build.build, custom_build):
 
 
 project_urls = {
-    "Bug Tracker": "https://github.com/intel/scikit-learn-intelex",
+    "Bug Tracker": "https://github.com/uxlfoundation/scikit-learn-intelex",
     "Documentation": "https://intelpython.github.io/daal4py/",
-    "Source Code": "https://github.com/intel/scikit-learn-intelex/daal4py",
+    "Source Code": "https://github.com/uxlfoundation/scikit-learn-intelex/daal4py",
 }
 
 with open("README.md", "r", encoding="utf8") as f:
@@ -519,7 +531,6 @@ packages_with_tests = [
     "sklearnex.preview",
     "sklearnex.preview.covariance",
     "sklearnex.preview.decomposition",
-    "sklearnex.preview.linear_model",
     "sklearnex.svm",
     "sklearnex.utils",
 ]
@@ -562,7 +573,7 @@ setup(
     license="Apache-2.0",
     author="Intel Corporation",
     version=sklearnex_version,
-    url="https://github.com/intel/scikit-learn-intelex",
+    url="https://github.com/uxlfoundation/scikit-learn-intelex",
     author_email="onedal.maintainers@intel.com",
     maintainer_email="onedal.maintainers@intel.com",
     project_urls=project_urls,

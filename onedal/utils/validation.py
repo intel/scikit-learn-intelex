@@ -31,7 +31,12 @@ else:
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import check_array
 
-from daal4py.sklearn.utils.validation import _assert_all_finite
+from daal4py.sklearn.utils.validation import (
+    _assert_all_finite as _daal4py_assert_all_finite,
+)
+from onedal import _backend
+from onedal.common._policy import _get_policy
+from onedal.datatypes import _convert_to_supported, to_table
 
 
 class DataConversionWarning(UserWarning):
@@ -135,10 +140,10 @@ def _check_array(
     if force_all_finite:
         if sp.issparse(array):
             if hasattr(array, "data"):
-                _assert_all_finite(array.data)
+                _daal4py_assert_all_finite(array.data)
                 force_all_finite = False
         else:
-            _assert_all_finite(array)
+            _daal4py_assert_all_finite(array)
             force_all_finite = False
     array = check_array(
         array=array,
@@ -153,15 +158,6 @@ def _check_array(
 
     if sp.issparse(array):
         return array
-
-    # TODO: Convert this kind of arrays to a table like in daal4py
-    if not array.flags.aligned and not array.flags.writeable:
-        array = np.array(array.tolist())
-
-    # TODO: If data is not contiguous copy to contiguous
-    # Need implemeted numpy table in oneDAL
-    if not array.flags.c_contiguous and not array.flags.f_contiguous:
-        array = np.ascontiguousarray(array, array.dtype)
     return array
 
 
@@ -200,7 +196,7 @@ def _check_X_y(
     if y_numeric and y.dtype.kind == "O":
         y = y.astype(np.float64)
     if force_all_finite:
-        _assert_all_finite(y)
+        _daal4py_assert_all_finite(y)
 
     lengths = [X.shape[0], y.shape[0]]
     uniques = np.unique(lengths)
@@ -285,7 +281,7 @@ def _type_of_target(y):
     # check float and contains non-integer float values
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
         # [.1, .2, 3] or [[.1, .2, 3]] or [[1., .2]] and not [1., 2., 3.]
-        _assert_all_finite(y)
+        _daal4py_assert_all_finite(y)
         return "continuous" + suffix
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
@@ -358,6 +354,8 @@ def _check_n_features(self, X, reset):
 
 
 def _num_features(X, fallback_1d=False):
+    if X is None:
+        raise ValueError("Expected array-like (array or non-string sequence), got None")
     type_ = type(X)
     if type_.__module__ == "builtins":
         type_name = type_.__qualname__
@@ -366,7 +364,7 @@ def _num_features(X, fallback_1d=False):
     message = "Unable to find the number of features from X of type " f"{type_name}"
     if not hasattr(X, "__len__") and not hasattr(X, "shape"):
         if not hasattr(X, "__array__"):
-            raise TypeError(message)
+            raise ValueError(message)
         # Only convert X to a numpy array if there is no cheaper, heuristic
         # option.
         X = np.asarray(X)
@@ -375,15 +373,21 @@ def _num_features(X, fallback_1d=False):
         ndim_thr = 1 if fallback_1d else 2
         if not hasattr(X.shape, "__len__") or len(X.shape) < ndim_thr:
             message += f" with shape {X.shape}"
-            raise TypeError(message)
-        return X.shape[-1]
+            raise ValueError(message)
+        if len(X.shape) <= 1:
+            return 1
+        else:
+            return X.shape[-1]
 
-    first_sample = X[0]
+    try:
+        first_sample = X[0]
+    except IndexError:
+        raise ValueError("Passed empty data.")
 
     # Do not consider an array-like of strings or dicts to be a 2D array
     if isinstance(first_sample, (str, bytes, dict)):
         message += f" where the samples are of type " f"{type(first_sample).__qualname__}"
-        raise TypeError(message)
+        raise ValueError(message)
 
     try:
         # If X is a list of lists, for instance, we assume that all nested
@@ -394,7 +398,7 @@ def _num_features(X, fallback_1d=False):
         else:
             return 1
     except Exception as err:
-        raise TypeError(message) from err
+        raise ValueError(message) from err
 
 
 def _num_samples(x):
@@ -429,4 +433,32 @@ def _is_csr(x):
     """Return True if x is scipy.sparse.csr_matrix or scipy.sparse.csr_array"""
     return isinstance(x, sp.csr_matrix) or (
         hasattr(sp, "csr_array") and isinstance(x, sp.csr_array)
+    )
+
+
+def _assert_all_finite(X, allow_nan=False, input_name=""):
+    policy = _get_policy(None, X)
+    X_t = to_table(_convert_to_supported(policy, X))
+    params = {
+        "fptype": X_t.dtype,
+        "method": "dense",
+        "allow_nan": allow_nan,
+    }
+    if not _backend.finiteness_checker.compute.compute(policy, params, X_t).finite:
+        type_err = "infinity" if allow_nan else "NaN, infinity"
+        padded_input_name = input_name + " " if input_name else ""
+        msg_err = f"Input {padded_input_name}contains {type_err}."
+        raise ValueError(msg_err)
+
+
+def assert_all_finite(
+    X,
+    *,
+    allow_nan=False,
+    input_name="",
+):
+    _assert_all_finite(
+        X.data if sp.issparse(X) else X,
+        allow_nan=allow_nan,
+        input_name=input_name,
     )

@@ -122,6 +122,7 @@ if daal_check_version((2023, "P", 200)):
                         self.algorithm in supported_algs,
                         "Only 'lloyd' algorithm is supported, 'elkan' is computed using lloyd",
                     ),
+                    (self.n_clusters != 1, "n_clusters=1 is not supported"),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
                         _acceptable_sample_weights,
@@ -230,6 +231,7 @@ if daal_check_version((2023, "P", 200)):
                         self.algorithm in supported_algs,
                         "Only 'lloyd' algorithm is supported, 'elkan' is computed using lloyd.",
                     ),
+                    (self.n_clusters != 1, "n_clusters=1 is not supported"),
                     (
                         is_data_supported,
                         "Supported data formats: Dense, CSR (oneDAL version >= 2024.7.0).",
@@ -248,7 +250,7 @@ if daal_check_version((2023, "P", 200)):
             @wrap_output_data
             def predict(self, X):
                 self._validate_params()
-
+                check_is_fitted(self)
                 return dispatch(
                     self,
                     "predict",
@@ -280,7 +282,7 @@ if daal_check_version((2023, "P", 200)):
                             "will be removed in 1.5.",
                             FutureWarning,
                         )
-
+                check_is_fitted(self)
                 return dispatch(
                     self,
                     "predict",
@@ -293,8 +295,6 @@ if daal_check_version((2023, "P", 200)):
                 )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
-            check_is_fitted(self)
-
             X = validate_data(
                 self,
                 X,
@@ -334,6 +334,7 @@ if daal_check_version((2023, "P", 200)):
 
         @wrap_output_data
         def score(self, X, y=None, sample_weight=None):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "score",
@@ -347,8 +348,6 @@ if daal_check_version((2023, "P", 200)):
             )
 
         def _onedal_score(self, X, y=None, sample_weight=None, queue=None):
-            check_is_fitted(self)
-
             X = validate_data(
                 self,
                 X,
