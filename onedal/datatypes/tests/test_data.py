@@ -413,8 +413,18 @@ def test_sua_iface_interop_if_no_dpc_backend(dataframe, queue, dtype):
 @pytest.mark.parametrize("sparse", [True, False])
 def test_low_precision_gpu_conversion(dtype, sparse):
     # Use a dummy queue as fp32 hardware is not in public testing
-    queue = DummySyclQueue("gpu")
-    assert not queue.sycl_device.has_aspect_fp64
+
+    class DummySyclQueue:
+        """This class is designed to act like dpctl.SyclQueue
+        to force dtype conversion"""
+
+        class DummySyclDevice:
+            has_aspect_fp64 = False
+
+        sycl_device = DummySyclDevice()
+
+    queue = DummySyclQueue()
+
     if sparse:
         X = sp.random(100, 100, format="csr", dtype=dtype)
     else:
