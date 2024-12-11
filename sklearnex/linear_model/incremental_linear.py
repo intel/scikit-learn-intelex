@@ -19,9 +19,9 @@ import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
-from sklearn.exceptions import NotFittedError
 from sklearn.metrics import r2_score
 from sklearn.utils import check_array, gen_batches
+from sklearn.utils.validation import check_is_fitted
 
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
@@ -40,7 +40,7 @@ else:
 from onedal.common.hyperparameters import get_hyperparameters
 
 from .._device_offload import dispatch, wrap_output_data
-from .._utils import PatchingConditionsChain, register_hyperparameters
+from .._utils import IntelEstimator, PatchingConditionsChain, register_hyperparameters
 
 
 @register_hyperparameters(
@@ -52,10 +52,13 @@ from .._utils import PatchingConditionsChain, register_hyperparameters
 @control_n_jobs(
     decorated_methods=["fit", "partial_fit", "predict", "score", "_onedal_finalize_fit"]
 )
-class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimator):
+class IncrementalLinearRegression(
+    IntelEstimator, MultiOutputMixin, RegressorMixin, BaseEstimator
+):
     """
-    Incremental estimator for linear regression.
-    Allows to train linear regression if data are splitted into batches.
+    Trains a linear regression model, allows for computation if the data are split into
+    batches. The user can use the ``partial_fit`` method to provide a single batch of data or use the ``fit`` method to provide
+    the entire dataset.
 
     Parameters
     ----------
@@ -73,8 +76,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     batch_size : int, default=None
         The number of samples to use for each batch. Only used when calling
         ``fit``. If ``batch_size`` is ``None``, then ``batch_size``
-        is inferred from the data and set to ``5 * n_features``, to provide a
-        balance between approximation accuracy and memory consumption.
+        is inferred from the data and set to ``5 * n_features``.
 
     Attributes
     ----------
@@ -88,12 +90,9 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         Independent term in the linear model. Set to 0.0 if
         `fit_intercept = False`.
 
-    n_features_in_ : int
-        Number of features seen during :term:`fit`.
-
     n_samples_seen_ : int
         The number of samples processed by the estimator. Will be reset on
-        new calls to fit, but increments across ``partial_fit`` calls.
+        new calls to ``fit``, but increments across ``partial_fit`` calls.
         It should be not less than `n_features_in_` if `fit_intercept`
         is False and not less than `n_features_in_` + 1 if `fit_intercept`
         is True to obtain regression coefficients.
@@ -102,8 +101,26 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         Inferred batch size from ``batch_size``.
 
     n_features_in_ : int
-        Number of features seen during :term:`fit` `partial_fit`.
+        Number of features seen during ``fit`` or ``partial_fit``.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearnex.linear_model import IncrementalLinearRegression
+    >>> inclr = IncrementalLinearRegression(batch_size=2)
+    >>> X = np.array([[1, 2], [3, 4], [5, 6], [7, 10]])
+    >>> y = np.array([1.5, 3.5, 5.5, 8.5])
+    >>> inclr.partial_fit(X[:2], y[:2])
+    >>> inclr.partial_fit(X[2:], y[2:])
+    >>> inclr.coef_
+    np.array([0.5., 0.5.])
+    >>> inclr.intercept_
+    np.array(0.)
+    >>> inclr.fit(X)
+    >>> inclr.coef_
+    np.array([0.5., 0.5.])
+    >>> inclr.intercept_
+    np.array(0.)
     """
 
     _onedal_incremental_linear = staticmethod(onedal_IncrementalLinearRegression)
@@ -274,7 +291,8 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         self._onedal_finalize_fit(queue=queue)
         return self
 
-    def get_intercept_(self):
+    @property
+    def intercept_(self):
         if hasattr(self, "_onedal_estimator"):
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
@@ -285,13 +303,15 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 f"'{self.__class__.__name__}' object has no attribute 'intercept_'"
             )
 
-    def set_intercept_(self, value):
+    @intercept_.setter
+    def intercept_(self, value):
         self.__dict__["intercept_"] = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.intercept_ = value
             del self._onedal_estimator._onedal_model
 
-    def get_coef_(self):
+    @property
+    def coef_(self):
         if hasattr(self, "_onedal_estimator"):
             if self._need_to_finalize:
                 self._onedal_finalize_fit()
@@ -302,14 +322,12 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
                 f"'{self.__class__.__name__}' object has no attribute 'coef_'"
             )
 
-    def set_coef_(self, value):
+    @coef_.setter
+    def coef_(self, value):
         self.__dict__["coef_"] = value
         if hasattr(self, "_onedal_estimator"):
             self._onedal_estimator.coef_ = value
             del self._onedal_estimator._onedal_model
-
-    coef_ = property(get_coef_, set_coef_)
-    intercept_ = property(get_intercept_, set_intercept_)
 
     def partial_fit(self, X, y, check_input=True):
         """
@@ -319,12 +337,12 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
+            Training data, where ``n_samples`` is the number of samples and
             `n_features` is the number of features.
 
         y : array-like of shape (n_samples,) or (n_samples, n_targets)
-            Target values, where `n_samples` is the number of samples and
-            `n_targets` is the number of targets.
+            Target values, where ``n_samples`` is the number of samples and
+            ``n_targets`` is the number of targets.
 
         Returns
         -------
@@ -347,20 +365,20 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
 
     def fit(self, X, y):
         """
-        Fit the model with X and y, using minibatches of size batch_size.
+        Fit the model with X and y, using minibatches of size ``batch_size``.
 
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples and
-            `n_features` is the number of features. It is necessary for
-            `n_samples` to be not less than `n_features` if `fit_intercept`
-            is False and not less than `n_features` + 1 if `fit_intercept`
+            Training data, where ``n_samples`` is the number of samples and
+            ``n_features`` is the number of features. It is necessary for
+            ``n_samples`` to be not less than ``n_features`` if ``fit_intercept``
+            is False and not less than ``n_features + 1`` if ``fit_intercept``
             is True
 
         y : array-like of shape (n_samples,) or (n_samples, n_targets)
-            Target values, where `n_samples` is the number of samples and
-            `n_targets` is the number of targets.
+            Target values, where ``n_samples`` is the number of samples and
+            ``n_targets`` is the number of targets.
 
         Returns
         -------
@@ -384,22 +402,21 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
     def predict(self, X, y=None):
         """
         Predict using the linear model.
+
         Parameters
         ----------
         X : array-like or sparse matrix, shape (n_samples, n_features)
             Samples.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
         Returns
         -------
         C : array, shape (n_samples, n_targets)
             Returns predicted values.
         """
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
-                "with appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "predict",
@@ -451,13 +468,7 @@ class IncrementalLinearRegression(MultiOutputMixin, RegressorMixin, BaseEstimato
         regressors (except for
         :class:`~sklearn.multioutput.MultiOutputRegressor`).
         """
-        if not hasattr(self, "coef_"):
-            msg = (
-                "This %(name)s instance is not fitted yet. Call 'fit' or 'partial_fit' "
-                "with appropriate arguments before using this estimator."
-            )
-            raise NotFittedError(msg % {"name": self.__class__.__name__})
-
+        check_is_fitted(self)
         return dispatch(
             self,
             "score",

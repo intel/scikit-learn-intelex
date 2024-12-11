@@ -42,9 +42,9 @@ copyright = "Intel"
 author = "Intel"
 
 # The short X.Y version
-version = "2024.3.0"
+version = "2025.0.0"
 # The full version, including alpha/beta/rc tags
-release = "2024.3.0"
+release = "2025.0.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -67,7 +67,23 @@ extensions = [
     "notfound.extension",
     "sphinx_design",
     "sphinx_copybutton",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.intersphinx",
 ]
+
+intersphinx_mapping = {
+    "sklearn": ("https://scikit-learn.org/stable/", None),
+    # from scikit-learn, in case some object in sklearnex points to them:
+    # https://github.com/scikit-learn/scikit-learn/blob/main/doc/conf.py
+    "python": ("https://docs.python.org/{.major}".format(sys.version_info), None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "matplotlib": ("https://matplotlib.org/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "joblib": ("https://joblib.readthedocs.io/en/latest/", None),
+    "seaborn": ("https://seaborn.pydata.org/", None),
+    "skops": ("https://skops.readthedocs.io/en/stable/", None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -127,7 +143,7 @@ html_favicon = "_static/favicons.png"
 
 html_theme_options = {
     "logo_only": False,
-    "display_version": True,
+    "version_selector": True,
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,
     "vcs_pageview_mode": "",

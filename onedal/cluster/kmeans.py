@@ -145,7 +145,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
     def _get_onedal_params(self, is_csr=False, dtype=np.float32, result_options=None):
         thr = self._tol if hasattr(self, "_tol") else self.tol
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "lloyd_csr" if is_csr else "by_default",
             "seed": -1,
             "max_iteration_count": self.max_iter,
@@ -349,7 +349,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         return self
 
-    def _get_cluster_centers(self):
+    @property
+    def cluster_centers_(self):
         if not hasattr(self, "_cluster_centers_"):
             if hasattr(self, "model_"):
                 centroids = self.model_.centroids
@@ -358,7 +359,8 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
                 raise NameError("This model have not been trained")
         return self._cluster_centers_
 
-    def _set_cluster_centers(self, cluster_centers):
+    @cluster_centers_.setter
+    def cluster_centers_(self, cluster_centers):
         self._cluster_centers_ = np.asarray(cluster_centers)
 
         self.n_iter_ = 0
@@ -371,15 +373,17 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
 
         return self
 
-    cluster_centers_ = property(_get_cluster_centers, _set_cluster_centers)
+    @cluster_centers_.deleter
+    def cluster_centers_(self):
+        del self._cluster_centers_
 
     def _predict(self, X, module, queue=None, result_options=None):
         is_csr = _is_csr(X)
 
         policy = self._get_policy(queue, X)
         X = _convert_to_supported(policy, X)
-        X_table, dtype = to_table(X), X.dtype
-        params = self._get_onedal_params(is_csr, dtype, result_options)
+        X_table = to_table(X)
+        params = self._get_onedal_params(is_csr, X_table.dtype, result_options)
 
         result = module.infer(policy, params, self.model_, X_table)
 

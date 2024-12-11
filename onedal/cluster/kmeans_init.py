@@ -50,7 +50,7 @@ if daal_check_version((2023, "P", 200)):
 
         def _get_onedal_params(self, dtype=np.float32):
             return {
-                "fptype": "float" if dtype == np.float32 else "double",
+                "fptype": dtype,
                 "local_trials_count": self.local_trials_count,
                 "method": self.algorithm,
                 "seed": self.seed,

@@ -23,7 +23,6 @@ import warnings
 from inspect import isclass
 
 import numpy as np
-import pandas as pd
 import pytest
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, clone
@@ -35,10 +34,22 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from onedal.tests.utils._device_selection import get_queues, is_dpctl_available
+from onedal.tests.utils._device_selection import get_queues, is_dpctl_device_available
+from onedal.utils._dpep_helpers import dpctl_available, dpnp_available
 from sklearnex import config_context
-from sklearnex.tests.utils import PATCHED_FUNCTIONS, PATCHED_MODELS, SPECIAL_INSTANCES
+from sklearnex.tests.utils import (
+    PATCHED_FUNCTIONS,
+    PATCHED_MODELS,
+    SPECIAL_INSTANCES,
+    DummyEstimator,
+)
 from sklearnex.utils._array_api import get_namespace
+
+if dpctl_available:
+    from dpctl.tensor import usm_ndarray
+
+if dpnp_available:
+    import dpnp
 
 if _is_dpc_backend:
     from onedal import _backend
@@ -65,7 +76,6 @@ GPU_SKIP_LIST = (
     "config_context",  # does not malloc
     "get_config",  # does not malloc
     "set_config",  # does not malloc
-    "Ridge",  # does not support GPU offloading (fails silently)
     "ElasticNet",  # does not support GPU offloading (fails silently)
     "Lasso",  # does not support GPU offloading (fails silently)
     "SVR",  # does not support GPU offloading (fails silently)
@@ -120,14 +130,17 @@ data_shapes = [
 ]
 
 EXTRA_MEMORY_THRESHOLD = 0.15
+EXTRA_MEMORY_THRESHOLD_PANDAS = 0.25
 N_SPLITS = 10
 ORDER_DICT = {"F": np.asfortranarray, "C": np.ascontiguousarray}
 
 
-def gen_clsf_data(n_samples, n_features):
+def gen_clsf_data(n_samples, n_features, dtype=None):
     data, label = make_classification(
         n_classes=2, n_samples=n_samples, n_features=n_features, random_state=777
     )
+    if dtype:
+        data, label = data.astype(dtype), label.astype(dtype)
     return (
         data,
         label,
@@ -144,8 +157,18 @@ def get_traced_memory(queue=None):
 
 def take(x, index, axis=0, queue=None):
     xp, array_api = get_namespace(x)
-    if array_api:
-        return xp.take(x, xp.asarray(index, device=queue), axis=axis)
+    if (
+        dpnp_available
+        and isinstance(x, dpnp.ndarray)
+        or dpctl_available
+        and isinstance(x, usm_ndarray)
+    ):
+        # Using the same sycl queue for dpnp.ndarray or usm_ndarray.
+        return xp.take(
+            x, xp.asarray(index, usm_type="device", sycl_queue=x.sycl_queue), axis=axis
+        )
+    elif array_api:
+        return xp.take(x, xp.asarray(index, device=x.device), axis=axis)
     else:
         return x.take(index, axis=axis)
 
@@ -184,11 +207,13 @@ def split_train_inference(kf, x, y, estimator, queue=None):
     return mem_tracks
 
 
-def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=None):
+def _kfold_function_template(
+    estimator, dataframe, data_shape, queue=None, func=None, dtype=None
+):
     tracemalloc.start()
 
     n_samples, n_features = data_shape
-    X, y, data_memory_size = gen_clsf_data(n_samples, n_features)
+    X, y, data_memory_size = gen_clsf_data(n_samples, n_features, dtype=dtype)
     kf = KFold(n_splits=N_SPLITS)
     if func:
         X = func(X)
@@ -226,15 +251,18 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     else:
         name = estimator.__name__
 
+    threshold = (
+        EXTRA_MEMORY_THRESHOLD_PANDAS if dataframe == "pandas" else EXTRA_MEMORY_THRESHOLD
+    )
     message = (
         "Size of extra allocated memory {} using garbage collector "
-        f"is greater than {EXTRA_MEMORY_THRESHOLD * 100}% of input data"
+        f"is greater than {threshold * 100}% of input data"
         f"\n\tAlgorithm: {name}"
         f"\n\tInput data size: {data_memory_size} bytes"
         "\n\tExtra allocated memory size: {} bytes"
         " / {} %"
     )
-    if mem_diff >= EXTRA_MEMORY_THRESHOLD * data_memory_size:
+    if mem_diff >= threshold * data_memory_size:
         logging.warning(
             message.format(
                 "before", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
@@ -253,7 +281,7 @@ def _kfold_function_template(estimator, dataframe, data_shape, queue=None, func=
     # as it looks like a memory leak (at least there is no way to discern a
     # leak on the first run).
     if queue is None or queue.sycl_device.is_cpu:
-        assert mem_diff < EXTRA_MEMORY_THRESHOLD * data_memory_size, message.format(
+        assert mem_diff < threshold * data_memory_size, message.format(
             "after", mem_diff, round((mem_diff) / data_memory_size * 100, 2)
         )
 
@@ -275,7 +303,7 @@ def test_memory_leaks(estimator, dataframe, queue, order, data_shape):
 
 
 @pytest.mark.skipif(
-    os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_available("gpu"),
+    os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_device_available("gpu"),
     reason="SYCL device memory leak check requires the level zero sysman",
 )
 @pytest.mark.parametrize("queue", get_queues("gpu"))
@@ -289,3 +317,31 @@ def test_gpu_memory_leaks(estimator, queue, order, data_shape):
 
     with config_context(target_offload=queue):
         _kfold_function_template(GPU_ESTIMATORS[estimator], None, data_shape, queue, func)
+
+
+@pytest.mark.skipif(
+    not _is_dpc_backend,
+    reason="__sycl_usm_array_interface__ support requires DPC backend.",
+)
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues("dpctl,dpnp", "cpu,gpu")
+)
+@pytest.mark.parametrize("order", ["F", "C"])
+@pytest.mark.parametrize("data_shape", data_shapes)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_table_conversions_memory_leaks(dataframe, queue, order, data_shape, dtype):
+    func = ORDER_DICT[order]
+
+    if queue.sycl_device.is_gpu and (
+        os.getenv("ZES_ENABLE_SYSMAN") is None or not is_dpctl_device_available("gpu")
+    ):
+        pytest.skip("SYCL device memory leak check requires the level zero sysman")
+
+    _kfold_function_template(
+        DummyEstimator,
+        dataframe,
+        data_shape,
+        queue,
+        func,
+        dtype,
+    )

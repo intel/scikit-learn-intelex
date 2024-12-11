@@ -1,18 +1,16 @@
-.. ******************************************************************************
-.. * Copyright 2020 Intel Corporation
-.. *
-.. * Licensed under the Apache License, Version 2.0 (the "License");
-.. * you may not use this file except in compliance with the License.
-.. * You may obtain a copy of the License at
-.. *
-.. *     http://www.apache.org/licenses/LICENSE-2.0
-.. *
-.. * Unless required by applicable law or agreed to in writing, software
-.. * distributed under the License is distributed on an "AS IS" BASIS,
-.. * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-.. * See the License for the specific language governing permissions and
-.. * limitations under the License.
-.. *******************************************************************************/
+.. Copyright 2020 Intel Corporation
+..
+.. Licensed under the Apache License, Version 2.0 (the "License");
+.. you may not use this file except in compliance with the License.
+.. You may obtain a copy of the License at
+..
+..     http://www.apache.org/licenses/LICENSE-2.0
+..
+.. Unless required by applicable law or agreed to in writing, software
+.. distributed under the License is distributed on an "AS IS" BASIS,
+.. WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.. See the License for the specific language governing permissions and
+.. limitations under the License.
 
 .. _sklearn_algorithms:
 
@@ -50,12 +48,12 @@ Classification
        - ``criterion`` != `'gini'`
      - Multi-output and sparse data are not supported
    * - `KNeighborsClassifier`
-     - 
+     -
        - For ``algorithm`` == `'kd_tree'`:
-       
+
          all parameters except ``metric`` != `'euclidean'` or `'minkowski'` with ``p`` != `2`
        - For ``algorithm`` == `'brute'`:
-         
+
          all parameters except ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Multi-output and sparse data are not supported
    * - `LogisticRegression`
@@ -100,7 +98,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features`.
+     - Only dense data is supported.
    * - `Ridge`
      - All parameters are supported except:
 
@@ -159,6 +157,9 @@ Dimensionality Reduction
 
        - ``svd_solver`` not in [`'full'`, `'covariance_eigh'`]
      - Sparse data is not supported
+   * - `IncrementalPCA`
+     - All parameters are supported
+     - Sparse data is not supported
    * - `TSNE`
      - All parameters are supported except:
 
@@ -179,12 +180,12 @@ Nearest Neighbors
      - Parameters
      - Data formats
    * - `NearestNeighbors`
-     - 
+     -
        - For ``algorithm`` == 'kd_tree':
-         
+
          all parameters except ``metric`` != `'euclidean'` or `'minkowski'` with ``p`` != `2`
        - For ``algorithm`` == 'brute':
-         
+
          all parameters except ``metric`` not in [`'euclidean'`, `'manhattan'`, `'minkowski'`, `'chebyshev'`, `'cosine'`]
      - Sparse data is not supported
 
@@ -210,12 +211,12 @@ Other Tasks
      - Only dense data is supported
    * - `pairwise_distance`
      - All parameters are supported except:
-     
+
        - ``metric`` not in [`'cosine'`, `'correlation'`]
      - Only dense data is supported
    * - `roc_auc_score`
      - All parameters are supported except:
-       
+
        - ``average`` != `None`
        - ``sample_weight`` != `None`
        - ``max_fpr`` != `None`
@@ -301,7 +302,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features`.
+     - Only dense data is supported.
 
 Clustering
 **********
@@ -341,7 +342,7 @@ Dimensionality Reduction
      - Data formats
    * - `PCA`
      - All parameters are supported except:
-     
+
        - ``svd_solver`` not in [`'full'`, `'covariance_eigh'`]
      - Sparse data is not supported
 
@@ -453,7 +454,7 @@ Regression
 
        - ``normalize`` != `False`
        - ``sample_weight`` != `None`
-     - Only dense data is supported, `#observations` should be >= `#features`.
+     - Only dense data is supported.
 
 Clustering
 **********
@@ -493,7 +494,7 @@ Dimensionality Reduction
      - Data formats
    * - `PCA`
      - All parameters are supported except:
-     
+
        - ``svd_solver`` not in [`'full'`, `'covariance_eigh'`]
        - ``fit`` is the only method supported
      - Sparse data is not supported
@@ -537,7 +538,4 @@ Scikit-learn Tests
 
 Monkey-patched scikit-learn classes and functions passes scikit-learn's own test
 suite, with few exceptions, specified in `deselected_tests.yaml
-<https://github.com/intel/scikit-learn-intelex/blob/main/deselected_tests.yaml>`__.
-
-The results of the entire latest scikit-learn test suite with |intelex|: `CircleCI
-<https://circleci.com/gh/intel/scikit-learn-intelex>`_.
+<https://github.com/uxlfoundation/scikit-learn-intelex/blob/main/deselected_tests.yaml>`__.

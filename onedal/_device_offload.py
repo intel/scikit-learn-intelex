@@ -23,48 +23,25 @@ from sklearn import get_config
 
 from ._config import _get_config
 from .utils._array_api import _asarray, _is_numpy_namespace
+from .utils._dpep_helpers import dpctl_available, dpnp_available
 
-try:
+if dpctl_available:
     from dpctl import SyclQueue
     from dpctl.memory import MemoryUSMDevice, as_usm_memory
     from dpctl.tensor import usm_ndarray
+else:
+    import onedal
 
-    dpctl_available = True
-except ImportError:
-    dpctl_available = False
+    # setting fallback to `object` will make if isinstance call
+    # in _get_global_queue always true for situations without the
+    # dpc backend when `device_offload` is used. Instead, it will
+    # fail at the policy check phase yielding a RuntimeError
+    SyclQueue = getattr(onedal._backend, "SyclQueue", object)
 
-try:
+if dpnp_available:
     import dpnp
 
     from .utils._array_api import _convert_to_dpnp
-
-    dpnp_available = True
-except ImportError:
-    dpnp_available = False
-
-
-class DummySyclQueue:
-    """This class is designed to act like dpctl.SyclQueue
-    to allow device dispatching in scenarios when dpctl is not available"""
-
-    class DummySyclDevice:
-        def __init__(self, filter_string):
-            self._filter_string = filter_string
-            self.is_cpu = "cpu" in filter_string
-            self.is_gpu = "gpu" in filter_string
-            self.has_aspect_fp64 = self.is_cpu
-
-            if not (self.is_cpu):
-                logging.warning(
-                    "Device support is limited. "
-                    "Please install dpctl for full experience"
-                )
-
-        def get_filter_string(self):
-            return self._filter_string
-
-    def __init__(self, filter_string):
-        self.sycl_device = self.DummySyclDevice(filter_string)
 
 
 def _copy_to_usm(queue, array):
@@ -140,25 +117,23 @@ def _transfer_to_host(queue, *data):
             raise RuntimeError("Input data shall be located on single target device")
 
         host_data.append(item)
-    return queue, host_data
+    return has_usm_data, queue, host_data
 
 
 def _get_global_queue():
     target = _get_config()["target_offload"]
 
-    QueueClass = DummySyclQueue if not dpctl_available else SyclQueue
-
     if target != "auto":
-        if isinstance(target, QueueClass):
+        if isinstance(target, SyclQueue):
             return target
-        return QueueClass(target)
+        return SyclQueue(target)
     return None
 
 
 def _get_host_inputs(*args, **kwargs):
     q = _get_global_queue()
-    q, hostargs = _transfer_to_host(q, *args)
-    q, hostvalues = _transfer_to_host(q, *kwargs.values())
+    _, q, hostargs = _transfer_to_host(q, *args)
+    _, q, hostvalues = _transfer_to_host(q, *kwargs.values())
     hostkwargs = dict(zip(kwargs.keys(), hostvalues))
     return q, hostargs, hostkwargs
 

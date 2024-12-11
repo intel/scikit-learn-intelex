@@ -1,3 +1,19 @@
+<!--
+  ~ Copyright 2020 Intel Corporation
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+-->
+
 ## Description
 
 _Add a comprehensive description of proposed changes_
@@ -10,6 +26,12 @@ _Benchmarks PR (if needed): https://github.com/IntelPython/scikit-learn_bench/pu
 
 ---
 
+PR should start as a draft, then move to ready for review state after CI is passed and all applicable checkboxes are closed.
+This approach ensures that reviewers don't spend extra time asking for regular requirements.
+
+You can remove a checkbox as not applicable only if it doesn't relate to this PR in any way.
+For example, PR with docs update doesn't require checkboxes for performance while PR with any change in actual code should have checkboxes and justify how this code change is expected to affect performance (or justification should be self-evident).
+
 Checklist to comply with **before moving PR from draft**:
 
 **PR completeness and readability**
@@ -17,7 +39,7 @@ Checklist to comply with **before moving PR from draft**:
 - [ ] I have reviewed my changes thoroughly before submitting this pull request.
 - [ ] I have commented my code, particularly in hard-to-understand areas.
 - [ ] I have updated the documentation to reflect the changes or created a separate PR with update and provided its number in the description, if necessary.
-- [ ] Git commit message contains an appropriate signed-off-by string _(see [CONTRIBUTING.md](https://github.com/intel/scikit-learn-intelex/blob/main/CONTRIBUTING.md#pull-requests) for details)_.
+- [ ] Git commit message contains an appropriate signed-off-by string _(see [CONTRIBUTING.md](https://github.com/uxlfoundation/scikit-learn-intelex/blob/main/CONTRIBUTING.md#pull-requests) for details)_.
 - [ ] I have added a respective label(s) to PR if I have a permission for that.
 - [ ] I have resolved any merge conflicts that might occur with the base branch.
 

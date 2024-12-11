@@ -25,7 +25,7 @@ if daal_check_version((2023, "P", 200)):
 
     import numpy as np
     from scipy.sparse import issparse
-    from sklearn.cluster import KMeans as sklearn_KMeans
+    from sklearn.cluster import KMeans as _sklearn_KMeans
     from sklearn.utils._openmp_helpers import _openmp_effective_n_threads
     from sklearn.utils.validation import (
         _check_sample_weight,
@@ -44,14 +44,14 @@ if daal_check_version((2023, "P", 200)):
     if sklearn_check_version("1.6"):
         from sklearn.utils.validation import validate_data
     else:
-        validate_data = sklearn_KMeans._validate_data
+        validate_data = _sklearn_KMeans._validate_data
 
     @control_n_jobs(decorated_methods=["fit", "fit_transform", "predict", "score"])
-    class KMeans(sklearn_KMeans):
-        __doc__ = sklearn_KMeans.__doc__
+    class KMeans(_sklearn_KMeans):
+        __doc__ = _sklearn_KMeans.__doc__
 
         if sklearn_check_version("1.2"):
-            _parameter_constraints: dict = {**sklearn_KMeans._parameter_constraints}
+            _parameter_constraints: dict = {**_sklearn_KMeans._parameter_constraints}
 
         def __init__(
             self,
@@ -122,6 +122,7 @@ if daal_check_version((2023, "P", 200)):
                         self.algorithm in supported_algs,
                         "Only 'lloyd' algorithm is supported, 'elkan' is computed using lloyd",
                     ),
+                    (self.n_clusters != 1, "n_clusters=1 is not supported"),
                     (correct_count, "n_clusters is smaller than number of samples"),
                     (
                         _acceptable_sample_weights,
@@ -145,7 +146,7 @@ if daal_check_version((2023, "P", 200)):
                 "fit",
                 {
                     "onedal": self.__class__._onedal_fit,
-                    "sklearn": sklearn_KMeans.fit,
+                    "sklearn": _sklearn_KMeans.fit,
                 },
                 X,
                 y,
@@ -230,6 +231,7 @@ if daal_check_version((2023, "P", 200)):
                         self.algorithm in supported_algs,
                         "Only 'lloyd' algorithm is supported, 'elkan' is computed using lloyd.",
                     ),
+                    (self.n_clusters != 1, "n_clusters=1 is not supported"),
                     (
                         is_data_supported,
                         "Supported data formats: Dense, CSR (oneDAL version >= 2024.7.0).",
@@ -248,13 +250,13 @@ if daal_check_version((2023, "P", 200)):
             @wrap_output_data
             def predict(self, X):
                 self._validate_params()
-
+                check_is_fitted(self)
                 return dispatch(
                     self,
                     "predict",
                     {
                         "onedal": self.__class__._onedal_predict,
-                        "sklearn": sklearn_KMeans.predict,
+                        "sklearn": _sklearn_KMeans.predict,
                     },
                     X,
                 )
@@ -280,21 +282,19 @@ if daal_check_version((2023, "P", 200)):
                             "will be removed in 1.5.",
                             FutureWarning,
                         )
-
+                check_is_fitted(self)
                 return dispatch(
                     self,
                     "predict",
                     {
                         "onedal": self.__class__._onedal_predict,
-                        "sklearn": sklearn_KMeans.predict,
+                        "sklearn": _sklearn_KMeans.predict,
                     },
                     X,
                     sample_weight,
                 )
 
         def _onedal_predict(self, X, sample_weight=None, queue=None):
-            check_is_fitted(self)
-
             X = validate_data(
                 self,
                 X,
@@ -334,12 +334,13 @@ if daal_check_version((2023, "P", 200)):
 
         @wrap_output_data
         def score(self, X, y=None, sample_weight=None):
+            check_is_fitted(self)
             return dispatch(
                 self,
                 "score",
                 {
                     "onedal": self.__class__._onedal_score,
-                    "sklearn": sklearn_KMeans.score,
+                    "sklearn": _sklearn_KMeans.score,
                 },
                 X,
                 y,
@@ -347,8 +348,6 @@ if daal_check_version((2023, "P", 200)):
             )
 
         def _onedal_score(self, X, y=None, sample_weight=None, queue=None):
-            check_is_fitted(self)
-
             X = validate_data(
                 self,
                 X,
@@ -384,11 +383,11 @@ if daal_check_version((2023, "P", 200)):
 
             self._n_init = self._onedal_estimator._n_init
 
-        fit.__doc__ = sklearn_KMeans.fit.__doc__
-        predict.__doc__ = sklearn_KMeans.predict.__doc__
-        transform.__doc__ = sklearn_KMeans.transform.__doc__
-        fit_transform.__doc__ = sklearn_KMeans.fit_transform.__doc__
-        score.__doc__ = sklearn_KMeans.score.__doc__
+        fit.__doc__ = _sklearn_KMeans.fit.__doc__
+        predict.__doc__ = _sklearn_KMeans.predict.__doc__
+        transform.__doc__ = _sklearn_KMeans.transform.__doc__
+        fit_transform.__doc__ = _sklearn_KMeans.fit_transform.__doc__
+        score.__doc__ = _sklearn_KMeans.score.__doc__
 
 else:
     from daal4py.sklearn.cluster import KMeans

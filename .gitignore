@@ -11,6 +11,7 @@ daal4py.egg-info
 **/.ipynb_checkpoints
 doc/_build
 doc/sources/samples/*.ipynb
+doc/daal4py/_build/
 *.obj
 *.pyd
 build_oneapi_backend
@@ -21,6 +22,7 @@ src/oneapi/oneapi.cpp
 
 # IDE properties
 .vscode
+*.code-workspace
 
 # sklearnex files
 scikit_learn_intelex.egg-info
@@ -30,3 +32,6 @@ record*
 
 # example .res files
 tests/_results*
+
+# json reports from pytest
+.pytest_reports/*
