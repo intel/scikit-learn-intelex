@@ -26,9 +26,15 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 import daal4py as d4p
+from daal4py.sklearn._utils import sklearn_check_version
 
 from .._n_jobs_support import control_n_jobs
 from .._utils import getFPType
+
+if sklearn_check_version("1.6"):
+    from sklearn.utils.validation import validate_data
+else:
+    validate_data = BaseEstimator._validate_data
 
 
 class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
@@ -128,9 +134,14 @@ class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
     def _more_tags(self):
         return {"allow_nan": self.allow_nan_}
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = self.allow_nan_
+        return tags
+
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
-class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
+class GBTDAALClassifier(ClassifierMixin, GBTDAALBase):
     def fit(self, X, y):
         # Check the algorithm parameters
         self._check_params()
@@ -196,14 +207,17 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
     def _predict(
         self, X, resultsToEvaluate, pred_contribs=False, pred_interactions=False
     ):
-        # Input validation
-        if not self.allow_nan_:
-            X = check_array(X, dtype=[np.single, np.double])
-        else:
-            X = check_array(X, dtype=[np.single, np.double], force_all_finite="allow-nan")
-
         # Check is fit had been called
         check_is_fitted(self, ["n_features_in_", "n_classes_"])
+
+        # Input validation
+        X = validate_data(
+            self,
+            X,
+            dtype=[np.single, np.double],
+            force_all_finite="allow-nan" if self.allow_nan_ else True,
+            reset=False,
+        )
 
         # Trivial case
         if self.n_classes_ == 1:
@@ -251,7 +265,7 @@ class GBTDAALClassifier(GBTDAALBase, ClassifierMixin):
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
-class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
+class GBTDAALRegressor(RegressorMixin, GBTDAALBase):
     def fit(self, X, y):
         # Check the algorithm parameters
         self._check_params()
@@ -297,14 +311,17 @@ class GBTDAALRegressor(GBTDAALBase, RegressorMixin):
         return self
 
     def predict(self, X, pred_contribs=False, pred_interactions=False):
-        # Input validation
-        if not self.allow_nan_:
-            X = check_array(X, dtype=[np.single, np.double])
-        else:
-            X = check_array(X, dtype=[np.single, np.double], force_all_finite="allow-nan")
-
         # Check is fit had been called
         check_is_fitted(self, ["n_features_in_"])
+
+        # Input validation
+        X = validate_data(
+            self,
+            X,
+            dtype=[np.single, np.double],
+            force_all_finite="allow-nan" if self.allow_nan_ else True,
+            reset=False,
+        )
 
         fptype = getFPType(X)
         return self._predict_regression(X, fptype, pred_contribs, pred_interactions)
