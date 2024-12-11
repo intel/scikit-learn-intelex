@@ -34,7 +34,7 @@ from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
-from onedal.tests.utils._device_selection import DummySyclQueue, get_queues
+from onedal.tests.utils._device_selection import get_queues
 from onedal.utils._array_api import _get_sycl_namespace
 
 data_shapes = [
