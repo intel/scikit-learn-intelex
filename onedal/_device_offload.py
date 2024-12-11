@@ -42,6 +42,21 @@ class SyclQueue(SyclQueueImplementation):
         else:
             super().__init__(target)
 
+    @staticmethod
+    def from_implementation(queue):
+        # extract the device descriptor and create a new queue
+        return SyclQueue(queue.sycl_device.filter_string)
+
+    @staticmethod
+    def from_implementation_or_device_selector(value):
+        if value is None:
+            return SyclQueue()
+        if isinstance(value, SyclQueueImplementation):
+            return SyclQueue.from_implementation(value)
+        if isinstance(value, (str, int)):
+            return SyclQueue(value)
+        raise ValueError(f"Invalid queue or device selector {value=}.")
+
     @property
     def sycl_device(self):
         return getattr(super(), "sycl_device", None)
@@ -62,16 +77,11 @@ class SyclQueueManager:
             return queue
 
         target = _get_config()["target_offload"]
-
         if target == "auto":
             # queue will be created from the provided data to each function call
             return None
 
-        if isinstance(target, (str, int)):
-            q = SyclQueue(target)
-        else:
-            q = target
-
+        q = SyclQueue.from_implementation_or_device_selector(target)
         SyclQueueManager.update_global_queue(q)
         return q
 
@@ -83,9 +93,7 @@ class SyclQueueManager:
     @staticmethod
     def update_global_queue(queue):
         """Update the global queue."""
-        if queue is not None and not isinstance(queue, SyclQueue):
-            # could be a device ID or selector string
-            queue = SyclQueue(queue)
+        queue = SyclQueue.from_implementation_or_device_selector(queue)
         SyclQueueManager.__global_queue = queue
 
     @staticmethod
