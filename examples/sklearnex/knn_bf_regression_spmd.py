@@ -21,7 +21,13 @@ import dpctl.tensor as dpt
 import numpy as np
 from mpi4py import MPI
 from numpy.testing import assert_allclose
-from sklearn.metrics import mean_squared_error
+
+from daal4py.sklearn._utils import sklearn_check_version
+
+if sklearn_check_version("1.4"):
+    from sklearn.metrics import root_mean_squared_error
+else:
+    from sklearn.metrics import mean_squared_error
 
 from sklearnex.spmd.neighbors import KNeighborsRegressor
 
@@ -80,6 +86,11 @@ print(
 )
 print(
     "RMSE for entire rank {}: {}\n".format(
-        rank, mean_squared_error(y_test, dpt.to_numpy(y_predict), squared=False)
+        rank,
+        (
+            root_mean_squared_error(y_test, dpt.to_numpy(y_predict))
+            if sklearn_check_version("1.4")
+            else mean_squared_error(y_test, dpt.to_numpy(y_predict), squared=False)
+        ),
     )
 )
