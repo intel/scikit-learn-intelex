@@ -139,14 +139,16 @@ jobs:
           export COVERAGE_FILE=$(pwd)/.coverage.sklearn
           if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU=cpu; fi
           bash .ci/scripts/run_sklearn_tests.sh $CPU
-      - name: Archive coverage data
+      - name: Create coverage report
+        run: |
+          source venv/bin/activate
+          coverage combine .coverage.sklearnex .coverage.sklearn
+          coverage xml -o coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
+      - name: Archive coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage_lnx_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
-          path: |
-             .coverage.sklearn
-             .coverage.sklearnex
-          include-hidden-files: true
+          path: coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
       - name: Sklearn testing [preview]
         run: |
           source venv/bin/activate
@@ -282,14 +284,17 @@ jobs:
           set COVERAGE_FILE=%cd%\.coverage.sklearn
           if "${{ steps.set-env.outputs.DPCFLAG }}"=="" set CPU=cpu
           bash .ci/scripts/run_sklearn_tests.sh %CPU%
-      - name: Archive coverage data
+      - name: Create coverage report
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          coverage combine .coverage.sklearnex .coverage.sklearn
+          coverage xml -o coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
+      - name: Archive coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage_win_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
-          path: |
-             .coverage.sklearn
-             .coverage.sklearnex
-          include-hidden-files: true
+          path: coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
@@ -298,17 +303,3 @@ jobs:
           if "${{ steps.set-env.outputs.DPCFLAG }}"=="" set CPU=cpu
           set SKLEARNEX_PREVIEW=YES
           bash .ci/scripts/run_sklearn_tests.sh %CPU%
-
-  upload_coverage:
-    needs: [sklearn_lnx, sklearn_win]
-    runs-on: ubuntu-24.04
-    name: Codecov
-    steps:
-    - uses: actions/download-artifact@v4
-      with:
-        path: ./coverage
-    - name: Upload coverage reports to Codecov
-      run: |
-        curl -Os https://cli.codecov.io/latest/linux/codecov
-        chmod +x codecov
-        ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -n 'service'-${{ github.run_id }} -F service -s ./coverage
