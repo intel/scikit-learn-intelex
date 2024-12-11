@@ -26,40 +26,13 @@ from .utils._array_api import _asarray, _is_numpy_namespace
 from .utils._dpep_helpers import dpctl_available, dpnp_available
 
 if dpctl_available:
-    from dpctl import SyclQueue as SyclQueueImplementation
+    from dpctl import SyclQueue
     from dpctl.memory import MemoryUSMDevice, as_usm_memory
     from dpctl.tensor import usm_ndarray
 else:
     from onedal import _dpc_backend
 
-    SyclQueueImplementation = getattr(_dpc_backend, "SyclQueue", object)
-
-
-class SyclQueue(SyclQueueImplementation):
-    def __init__(self, target=None):
-        if target is None:
-            super().__init__()
-        else:
-            super().__init__(target)
-
-    @staticmethod
-    def from_implementation(queue):
-        # extract the device descriptor and create a new queue
-        return SyclQueue(queue.sycl_device.filter_string)
-
-    @staticmethod
-    def from_implementation_or_device_selector(value):
-        if value is None:
-            return SyclQueue()
-        if isinstance(value, SyclQueueImplementation):
-            return SyclQueue.from_implementation(value)
-        if isinstance(value, (str, int)):
-            return SyclQueue(value)
-        raise ValueError(f"Invalid queue or device selector {value=}.")
-
-    @property
-    def sycl_device(self):
-        return getattr(super(), "sycl_device", None)
+    SyclQueue = getattr(_dpc_backend, "SyclQueue", None)
 
 
 class SyclQueueManager:
@@ -69,7 +42,20 @@ class SyclQueueManager:
     __global_queue = None
 
     @staticmethod
-    def get_global_queue() -> Optional[SyclQueue]:
+    def __create_sycl_queue(target):
+        if SyclQueue is None:
+            # we don't have SyclQueue support
+            return None
+        if target is None:
+            return SyclQueue()
+        if isinstance(target, SyclQueue):
+            return target
+        if isinstance(target, (str, int)):
+            return SyclQueue(target)
+        raise ValueError(f"Invalid queue or device selector {target=}.")
+
+    @staticmethod
+    def get_global_queue():
         """Get the global queue. Retrieve it from the config if not set."""
         if (queue := SyclQueueManager.__global_queue) is not None:
             if not isinstance(queue, SyclQueue):
@@ -81,7 +67,7 @@ class SyclQueueManager:
             # queue will be created from the provided data to each function call
             return None
 
-        q = SyclQueue.from_implementation_or_device_selector(target)
+        q = SyclQueueManager.__create_sycl_queue(target)
         SyclQueueManager.update_global_queue(q)
         return q
 
@@ -93,11 +79,11 @@ class SyclQueueManager:
     @staticmethod
     def update_global_queue(queue):
         """Update the global queue."""
-        queue = SyclQueue.from_implementation_or_device_selector(queue)
+        queue = SyclQueueManager.__create_sycl_queue(queue)
         SyclQueueManager.__global_queue = queue
 
     @staticmethod
-    def from_data(*data) -> Optional[SyclQueue]:
+    def from_data(*data):
         """Extract the queue from provided data. This updates the global queue as well."""
         for item in data:
             # iterate through all data objects, extract the queue, and verify that all data objects are on the same device
