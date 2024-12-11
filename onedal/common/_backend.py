@@ -226,6 +226,6 @@ def bind_spmd_backend(
             )
             return method
 
-        __decorator(method, spmd_manager, module_name, lookup_name, no_policy)
+        return __decorator(method, spmd_manager, module_name, lookup_name, no_policy)
 
     return decorator
