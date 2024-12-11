@@ -208,7 +208,24 @@ if sklearn_check_version("1.3"):
 
     else:
         del pairwise_distances_parameters["ensure_all_finite"]
-        pairwise_distances = _pairwise_distances
+
+        def pairwise_distances(
+            X,
+            Y=None,
+            metric="euclidean",
+            *,
+            n_jobs=None,
+            force_all_finite=None,
+            **kwds,
+        ):
+            return _pairwise_distances(
+                X,
+                Y,
+                metric,
+                n_jobs=n_jobs,
+                force_all_finite=force_all_finite,
+                **kwds,
+            )
 
     pairwise_distances = validate_params(
         pairwise_distances_parameters,
