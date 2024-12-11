@@ -639,7 +639,6 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         if "responses" not in params["result_option"] and gpu_device:
             params["result_option"] += "|responses"
         params["fptype"] = X.dtype
-        result = backend.infer(policy, params, model, to_table(X))
 
         if gpu_device:
             return self.infer(params, self._onedal_model, to_table(X))
