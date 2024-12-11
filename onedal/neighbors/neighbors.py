@@ -275,7 +275,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         _fit_y = None
         # global queue is set as per user configuration (`target_offload`) or from data prior to calling this internal function
-        queue = getattr(SyclQueueManager.get_global_queue(), "implementation")
+        queue = SyclQueueManager.get_global_queue()
         gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
 
         if _is_classifier(self) or (_is_regressor(self) and gpu_device):
@@ -446,7 +446,7 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
     def _onedal_fit(self, X, y):
         # global queue is set as per user configuration (`target_offload`) or from data prior to calling this internal function
-        queue = getattr(SyclQueueManager.get_global_queue(), "implementation")
+        queue = SyclQueueManager.get_global_queue()
         gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
         if self.effective_metric_ == "euclidean" and not gpu_device:
             params = self._get_daal_params(X)
@@ -604,7 +604,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
     def _onedal_fit(self, X, y):
         # global queue is set as per user configuration (`target_offload`) or from data prior to calling this internal function
-        queue = getattr(SyclQueueManager.get_global_queue(), "implementation")
+        queue = SyclQueueManager.get_global_queue()
         gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
         if self.effective_metric_ == "euclidean" and not gpu_device:
             params = self._get_daal_params(X)
@@ -632,7 +632,7 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
             return bf_knn_classification_prediction(**params).compute(X, model)
 
         # global queue is set as per user configuration (`target_offload`) or from data prior to calling this internal function
-        queue = getattr(SyclQueueManager.get_global_queue(), "implementation")
+        queue = SyclQueueManager.get_global_queue()
         gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
         X = _convert_to_supported(X)
 
@@ -754,7 +754,7 @@ class NearestNeighbors(NeighborsBase):
 
     def _onedal_fit(self, X, y):
         # global queue is set as per user configuration (`target_offload`) or from data prior to calling this internal function
-        queue = getattr(SyclQueueManager.get_global_queue(), "implementation")
+        queue = SyclQueueManager.get_global_queue()
         gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
         if self.effective_metric_ == "euclidean" and not gpu_device:
             params = self._get_daal_params(X)

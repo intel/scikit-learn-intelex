@@ -32,21 +32,19 @@ if dpctl_available:
 else:
     from onedal import _dpc_backend
 
-    SyclQueueImplementation = getattr(_dpc_backend, "SyclQueue", None)
+    SyclQueueImplementation = getattr(_dpc_backend, "SyclQueue", object)
 
 
-class SyclQueue:
+class SyclQueue(SyclQueueImplementation):
     def __init__(self, target=None):
-        if target and isinstance(target, SyclQueueImplementation):
-            self.implementation = target
-        elif target and SyclQueueImplementation is not None:
-            self.implementation = SyclQueueImplementation(target)
+        if target is None:
+            super().__init__()
         else:
-            self.implementation = None
+            super().__init__(target)
 
     @property
     def sycl_device(self):
-        return getattr(self.implementation, "sycl_device", None)
+        return getattr(super(), "sycl_device", None)
 
 
 class SyclQueueManager:
@@ -67,7 +65,7 @@ class SyclQueueManager:
 
         if target == "auto":
             # queue will be created from the provided data to each function call
-            return SyclQueue(None)
+            return None
 
         if isinstance(target, (str, int)):
             q = SyclQueue(target)
@@ -111,14 +109,19 @@ class SyclQueueManager:
                 # no interface found - try next data object
                 continue
 
-            # extract the queue, verify it aligns with the global queue
+            # extract the queue
             global_queue = SyclQueueManager.get_global_queue()
-            data_queue = SyclQueue(usm_iface["syclobj"])
+            data_queue = usm_iface["syclobj"]
+            if not data_queue:
+                # no queue, i.e. host data, no more work to do
+                continue
+
+            # update the global queue if not set
             if global_queue is None:
                 SyclQueueManager.update_global_queue(data_queue)
                 global_queue = data_queue
 
-            # if the data item is on device, assert it's compatible with device in global queue
+            # if either queue points to a device, assert it's always the same device
             data_dev = data_queue.sycl_device
             global_dev = global_queue.sycl_device
             if (data_dev and global_dev) is not None and data_dev != global_dev:
@@ -260,14 +263,20 @@ def support_input_format(freefunc=False, queue_param=True):
                 return _run_on_device(func, obj, *args, **kwargs)
 
             hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
+            if hostkwargs.get("queue") is None:
+                # no queue provided, get it from the data
+                data_queue = SyclQueueManager.from_data(*hostargs)
+                if queue_param:
+                    # if queue_param requested, add it to the hostkwargs
+                    hostkwargs["queue"] = data_queue
+            else:
+                # use the provided queue
+                data_queue = hostkwargs["queue"]
+
             data = (*args, *kwargs.values())
-            data_queue = SyclQueueManager.from_data(*data)
-            if queue_param and hostkwargs.get("queue") is None:
-                hostkwargs["queue"] = data_queue
             result = _run_on_device(func, obj, *hostargs, **hostkwargs)
 
-            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
-            if usm_iface is not None:
+            if data_queue is not None:
                 result = _copy_to_usm(data_queue, result)
                 if dpnp_available and isinstance(data[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)

@@ -97,7 +97,7 @@ class BackendFunction:
             return self.method(*args, **kwargs)
 
         # use globally configured queue (from `target_offload` configuration or provided data)
-        queue = getattr(SyclQueueManager.get_global_queue(), "implementation", None)
+        queue = SyclQueueManager.get_global_queue()
 
         if queue is not None and not (self.backend.is_dpc or self.backend.is_spmd):
             raise RuntimeError("Operations using queues require the DPC/SPMD backend")
