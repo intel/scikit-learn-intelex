@@ -20,31 +20,35 @@ on:
     types:
       - completed
   workflow_dispatch:
+
 permissions: read-all
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
   upload_coverage:
+    name: Codecov
     runs-on: ubuntu-24.04
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Codecov
+    timeout-minutes: 5
+
     steps:
-     - name: Checkout Scikit-learn-intelex
-       uses: actions/checkout@v4
-     - name: 'Download artifact'
-       uses: actions/download-artifact@v4
-       with:
+      - name: Checkout Scikit-learn-intelex
+        uses: actions/checkout@v4
+      - name: 'Download artifact'
+        uses: actions/download-artifact@v4
+        with:
           path: coverage
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
           merge-multiple: true
-     - name: Install codecov cli
-       run: |
-         curl -Os https://cli.codecov.io/latest/linux/codecov
-         chmod +x codecov
-     - name: Upload to codecov
-       run: |
-         export CODECOV_NAME=CI-${{ github.event.number }}-${{ github.sha }}
-         ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -n "${CODECOV_NAME}" -F github -s ./coverage
+      - name: Install codecov cli
+        run: |
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          chmod +x codecov
+      - name: Upload to codecov
+        run: |
+          export CODECOV_NAME=CI-${{ github.event.number }}-${{ github.sha }}
+          ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -n "${CODECOV_NAME}" -F github -s ./coverage
