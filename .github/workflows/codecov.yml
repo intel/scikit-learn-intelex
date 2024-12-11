@@ -37,14 +37,14 @@ jobs:
     steps:
       - name: Checkout Scikit-learn-intelex
         uses: actions/checkout@v4
-      - name: 'Download artifact'
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: coverage
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
           merge-multiple: true
-      - name: Install codecov cli
+      - name: Install codecov-cli
         run: |
           curl -Os https://cli.codecov.io/latest/linux/codecov
           chmod +x codecov
