@@ -19,7 +19,6 @@ on:
     workflows: [CI]
     types:
       - completed
-  workflow_dispatch:
 
 permissions: read-all
 
