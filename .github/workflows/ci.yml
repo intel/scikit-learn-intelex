@@ -298,3 +298,17 @@ jobs:
           if "${{ steps.set-env.outputs.DPCFLAG }}"=="" set CPU=cpu
           set SKLEARNEX_PREVIEW=YES
           bash .ci/scripts/run_sklearn_tests.sh %CPU%
+
+  upload_coverage:
+    needs: [sklearn_lnx, sklearn_win]
+    runs-on: ubuntu-24.04
+    name: Codecov
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        path: ./coverage
+    - name: Upload coverage reports to Codecov
+      run: |
+        curl -Os https://cli.codecov.io/latest/linux/codecov
+        chmod +x codecov
+        ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -n 'service'-${{ github.run_id }} -F service -s ./coverage
