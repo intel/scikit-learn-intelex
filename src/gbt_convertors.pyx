@@ -180,15 +180,9 @@ class Node:
             right_child = None
 
         is_leaf = "leaf_value" in tree
-        if is_leaf:
-            if "leaf_count" in tree:
-                cover=tree["leaf_count"]
-            else:
-                cover=0
-        else:
-            cover=tree["internal_count"]
-
-        value = {tree["leaf_value"] if is_leaf else tree["threshold"]}
+        # get cover and value for leaf nodes or internal nodes
+        cover = tree.get("leaf_count", 0) or tree.get("internal_count", 0)
+        value = tree.get("leaf_value", 0) or tree.get("threshold", 0)
         return Node(
             cover=cover,
             is_leaf=is_leaf,
