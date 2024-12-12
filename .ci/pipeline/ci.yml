@@ -116,9 +116,9 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.9_Sklearn1.2:
+      Python3.9_Sklearn1.0:
         PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.2'
+        SKLEARN_VERSION: '1.0'
       Python3.10_Sklearn1.3:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.3'
@@ -140,9 +140,9 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     matrix:
-      Python3.9_Sklearn1.2:
+      Python3.9_Sklearn1.0:
         PYTHON_VERSION: '3.9'
-        SKLEARN_VERSION: '1.2'
+        SKLEARN_VERSION: '1.0'
       Python3.10_Sklearn1.3:
         PYTHON_VERSION: '3.10'
         SKLEARN_VERSION: '1.3'
