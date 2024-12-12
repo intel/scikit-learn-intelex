@@ -58,6 +58,7 @@ header:
     - 'requirements*.txt'
     # Some files from .ci/.github
     - '.github/CODEOWNERS'
+    - '.github/Pull_Request_template.md'
     - '.github/renovate.json'
     # Specific files
     - 'setup.cfg'
