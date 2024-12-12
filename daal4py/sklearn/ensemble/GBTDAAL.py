@@ -135,6 +135,7 @@ class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
         return {"allow_nan": self.allow_nan_}
 
     if sklearn_check_version("1.6"):
+
         def __sklearn_tags__(self):
             tags = super().__sklearn_tags__()
             tags.input_tags.allow_nan = self.allow_nan_
