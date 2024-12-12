@@ -95,7 +95,7 @@ class AdaBoostClassifier(ClassifierMixin, BaseEstimator):
             )
 
         # Check that X and y have correct shape
-        X, y = check_X_y(X, y, y_numeric=False, dtype=[np.single, np.double])
+        X, y = check_X_y(X, y, y_numeric=False, dtype=[np.float64, np.float32])
 
         check_classification_targets(y)
 
@@ -157,7 +157,7 @@ class AdaBoostClassifier(ClassifierMixin, BaseEstimator):
         check_is_fitted(self)
 
         # Input validation
-        X = validate_data(self, X, dtype=[np.single, np.double], reset=False)
+        X = validate_data(self, X, dtype=[np.float64, np.float32], reset=False)
 
         # Trivial case
         if self.n_classes_ == 1:

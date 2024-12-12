@@ -134,10 +134,11 @@ class GBTDAALBase(BaseEstimator, d4p.mb.GBTDAALBaseModel):
     def _more_tags(self):
         return {"allow_nan": self.allow_nan_}
 
-    def __sklearn_tags__(self):
-        tags = super().__sklearn_tags__()
-        tags.input_tags.allow_nan = self.allow_nan_
-        return tags
+    if sklearn_check_version("1.6"):
+        def __sklearn_tags__(self):
+            tags = super().__sklearn_tags__()
+            tags.input_tags.allow_nan = self.allow_nan_
+            return tags
 
 
 @control_n_jobs(decorated_methods=["fit", "predict"])
@@ -147,7 +148,7 @@ class GBTDAALClassifier(ClassifierMixin, GBTDAALBase):
         self._check_params()
 
         # Check that X and y have correct shape
-        X, y = check_X_y(X, y, y_numeric=False, dtype=[np.single, np.double])
+        X, y = check_X_y(X, y, y_numeric=False, dtype=[np.float64, np.float32])
 
         check_classification_targets(y)
 
@@ -214,7 +215,7 @@ class GBTDAALClassifier(ClassifierMixin, GBTDAALBase):
         X = validate_data(
             self,
             X,
-            dtype=[np.single, np.double],
+            dtype=[np.float64, np.float32],
             force_all_finite="allow-nan" if self.allow_nan_ else True,
             reset=False,
         )
@@ -271,7 +272,7 @@ class GBTDAALRegressor(RegressorMixin, GBTDAALBase):
         self._check_params()
 
         # Check that X and y have correct shape
-        X, y = check_X_y(X, y, y_numeric=True, dtype=[np.single, np.double])
+        X, y = check_X_y(X, y, y_numeric=True, dtype=[np.float64, np.float32])
 
         # Convert to 2d array
         y_ = y.reshape((-1, 1))
@@ -318,7 +319,7 @@ class GBTDAALRegressor(RegressorMixin, GBTDAALBase):
         X = validate_data(
             self,
             X,
-            dtype=[np.single, np.double],
+            dtype=[np.float64, np.float32],
             force_all_finite="allow-nan" if self.allow_nan_ else True,
             reset=False,
         )
