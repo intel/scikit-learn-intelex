@@ -17,7 +17,6 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
-
 from onedal.basic_statistics.tests.utils import options_and_tests
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
@@ -62,7 +61,8 @@ def test_basic_stats_spmd_gold(dataframe, queue):
     )
 
     # Ensure results of batch algo match spmd
-    spmd_result = BasicStatistics_SPMD().fit(local_dpt_data)
+    spmd = BasicStatistics_SPMD()
+    spmd_result = spmd.fit(local_dpt_data)
     batch_result = BasicStatistics_Batch().fit(data)
 
     for option in options_and_tests:

@@ -22,12 +22,11 @@ if daal_check_version((2024, "P", 600)):
     import numbers
 
     import numpy as np
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
     from scipy.sparse import issparse
     from sklearn.linear_model import Ridge as _sklearn_Ridge
     from sklearn.metrics import r2_score
     from sklearn.utils.validation import check_is_fitted
-
-    from daal4py.sklearn._n_jobs_support import control_n_jobs
 
     if not sklearn_check_version("1.2"):
         from sklearn.linear_model._base import _deprecate_normalize
@@ -383,8 +382,8 @@ else:
     from daal4py.sklearn.linear_model import Ridge
     from onedal._device_offload import support_input_format
 
-    Ridge.fit = support_input_format(queue_param=False)(Ridge.fit)
-    Ridge.predict = support_input_format(queue_param=False)(Ridge.predict)
-    Ridge.score = support_input_format(queue_param=False)(Ridge.score)
+    Ridge.fit = support_input_format(Ridge.fit)
+    Ridge.predict = support_input_format(Ridge.predict)
+    Ridge.score = support_input_format(Ridge.score)
 
     logging.warning("Ridge requires oneDAL version >= 2024.6 but it was not found")

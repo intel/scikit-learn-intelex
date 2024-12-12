@@ -18,16 +18,15 @@ import numbers
 import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
-from sklearn.metrics import r2_score
-from sklearn.utils import check_array, gen_batches
-from sklearn.utils.validation import check_is_fitted
-
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.linear_model import (
     IncrementalLinearRegression as onedal_IncrementalLinearRegression,
 )
+from sklearn.base import BaseEstimator, MultiOutputMixin, RegressorMixin
+from sklearn.metrics import r2_score
+from sklearn.utils import check_array, gen_batches
+from sklearn.utils.validation import check_is_fitted
 
 if sklearn_check_version("1.2"):
     from sklearn.utils._param_validation import Interval
@@ -221,14 +220,14 @@ class IncrementalLinearRegression(
         self._onedal_estimator.partial_fit(X, y, queue=queue)
         self._need_to_finalize = True
 
-    def _onedal_finalize_fit(self, queue=None):
+    def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
         is_underdetermined = self.n_samples_seen_ < self.n_features_in_ + int(
             self.fit_intercept
         )
         if is_underdetermined:
             raise ValueError("Not enough samples to finalize")
-        self._onedal_estimator.finalize_fit(queue=queue)
+        self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
     def _onedal_fit(self, X, y, queue=None):
@@ -288,7 +287,7 @@ class IncrementalLinearRegression(
                 "Only one sample available. You may want to reshape your data array"
             )
 
-        self._onedal_finalize_fit(queue=queue)
+        self._onedal_finalize_fit()
         return self
 
     @property

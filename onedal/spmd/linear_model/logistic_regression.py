@@ -27,18 +27,18 @@ class LogisticRegression(LogisticRegression_Batch):
     @bind_spmd_backend("logistic_regression.classification")
     def infer(self, params, X, model): ...
 
-    @support_input_format()
+    @support_input_format
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def predict(self, X, queue=None):
         return super().predict(X, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def predict_proba(self, X, queue=None):
         return super().predict_proba(X, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def predict_log_proba(self, X, queue=None):
         return super().predict_log_proba(X, queue=queue)

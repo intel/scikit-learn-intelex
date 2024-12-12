@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from ..._device_offload import support_input_format, supports_queue
+from ..._device_offload import support_input_format
 from ...basic_statistics import BasicStatistics as BasicStatistics_Batch
 from ...common._backend import bind_spmd_backend
 
@@ -23,6 +23,6 @@ class BasicStatistics(BasicStatistics_Batch):
     @bind_spmd_backend("basic_statistics")
     def compute(self, data, weights=None): ...
 
-    @support_input_format()
+    @support_input_format
     def fit(self, data, sample_weight=None, queue=None):
         return super().fit(data, sample_weight, queue=queue)

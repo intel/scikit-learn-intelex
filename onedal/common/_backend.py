@@ -102,6 +102,9 @@ class BackendFunction:
         if queue is not None and not (self.backend.is_dpc or self.backend.is_spmd):
             raise RuntimeError("Operations using queues require the DPC/SPMD backend")
 
+        if self.backend.is_spmd and queue is None:
+            raise RuntimeError("Executing functions from SPMD backend requires a queue")
+
         # craft the correct policy including the device queue
         if queue is None:
             policy = self.backend.host_policy()

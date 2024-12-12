@@ -14,10 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 
+import inspect
 from collections.abc import Iterable
 from contextlib import contextmanager
 from functools import wraps
-from typing import Optional
 
 import numpy as np
 from sklearn import get_config
@@ -261,74 +261,50 @@ def _get_host_inputs(*args, **kwargs):
     return hostargs, hostkwargs
 
 
-def _run_on_device(func, obj=None, *args, **kwargs):
-    if obj is not None:
-        return func(obj, *args, **kwargs)
-    return func(*args, **kwargs)
-
-
-def support_input_format(freefunc=False, queue_param=True):
+def support_input_format(func):
     """
     Converts and moves the output arrays of the decorated function
     to match the input array type and device.
     Puts SYCLQueue from data to decorated function arguments.
-
-    Parameters
-    ----------
-    freefunc (bool) : Set to True if decorates free function.
-    queue_param (bool) : Set to False if the decorated function has no `queue` parameter
-
-    Notes
-    -----
-    Queue will not be changed if provided explicitly.
     """
 
-    def decorator(func):
-        def wrapper_impl(obj, *args, **kwargs):
-            if len(args) == 0 and len(kwargs) == 0:
-                return _run_on_device(func, obj, *args, **kwargs)
+    def invoke_func(self_or_None, *args, **kwargs):
+        if self_or_None is None:
+            return func(*args, **kwargs)
+        else:
+            return func(self_or_None, *args, **kwargs)
 
+    def wrapper_impl(*args, **kwargs):
+        # remove self from args if it is a class method
+        if inspect.isfunction(func) and "." in func.__qualname__:
+            self = args[0]
+            args = args[1:]
+        else:
+            self = None
+
+        if len(args) == 0 and len(kwargs) == 0:
+            return invoke_func(self, *args, **kwargs)
+
+        data = (*args, *kwargs.values())
+        # get and set the global queue from the kwarg or data
+        with SyclQueueManager.manage_global_queue(kwargs.get("queue"), *args) as queue:
             hostargs, hostkwargs = _get_host_inputs(*args, **kwargs)
-            if hostkwargs.get("queue") is None:
-                # no queue provided, get it from the data
-                data_queue = SyclQueueManager.from_data(*hostargs)
-                if queue_param:
-                    # if queue_param requested, add it to the hostkwargs
-                    hostkwargs["queue"] = data_queue
-            else:
-                # use the provided queue
-                data_queue = hostkwargs["queue"]
+            if "queue" in inspect.signature(func).parameters:
+                # set the queue if it's expected by func
+                hostkwargs["queue"] = queue
+            result = invoke_func(self, *hostargs, **hostkwargs)
 
-            data = (*args, *kwargs.values())
-            result = _run_on_device(func, obj, *hostargs, **hostkwargs)
-
-            if data_queue is not None:
-                result = _copy_to_usm(data_queue, result)
+            if queue is not None:
+                result = _copy_to_usm(queue, result)
                 if dpnp_available and isinstance(data[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
                 return result
 
-            if not get_config().get("transform_output"):
-                input_array_api = getattr(data[0], "__array_namespace__", lambda: None)()
-                if input_array_api:
-                    input_array_api_device = data[0].device
-                    result = _asarray(
-                        result, input_array_api, device=input_array_api_device
-                    )
-            return result
+        if not get_config().get("transform_output"):
+            input_array_api = getattr(data[0], "__array_namespace__", lambda: None)()
+            if input_array_api:
+                input_array_api_device = data[0].device
+                result = _asarray(result, input_array_api, device=input_array_api_device)
+        return result
 
-        if freefunc:
-
-            @wraps(func)
-            def wrapper_free(*args, **kwargs):
-                return wrapper_impl(None, *args, **kwargs)
-
-            return wrapper_free
-
-        @wraps(func)
-        def wrapper_with_self(self, *args, **kwargs):
-            return wrapper_impl(self, *args, **kwargs)
-
-        return wrapper_with_self
-
-    return decorator
+    return wrapper_impl

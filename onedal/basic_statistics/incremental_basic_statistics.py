@@ -17,9 +17,8 @@
 from abc import abstractmethod
 
 import numpy as np
-
 from daal4py.sklearn._utils import get_dtype
-from onedal._device_offload import supports_queue
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -72,6 +71,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
     def __init__(self, result_options="all"):
         super().__init__(result_options, algorithm="by_default")
         self._reset()
+        self._queue = None
 
     @bind_default_backend("basic_statistics")
     def partial_compute_result(self): ...
@@ -84,6 +84,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
     def _reset(self):
         self._need_to_finalize = False
+        self._queue = None
         # get the _partial_result pointer from backend
         self._partial_result = self.partial_compute_result()
 
@@ -97,6 +98,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
         return data
 
+    @supports_queue
     def partial_fit(self, X, weights=None, queue=None):
         """
         Computes partial data for basic statistics
@@ -139,9 +141,9 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         )
 
         self._need_to_finalize = True
+        self._queue = queue
 
-    @supports_queue
-    def finalize_fit(self, queue=None):
+    def finalize_fit(self):
         """
         Finalizes basic statistics computation and obtains result
         attributes from the current `_partial_result`.
@@ -157,7 +159,8 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             Returns the instance itself.
         """
         if self._need_to_finalize:
-            result = self.finalize_compute(self._onedal_params, self._partial_result)
+            with SyclQueueManager.manage_global_queue(self._queue):
+                result = self.finalize_compute(self._onedal_params, self._partial_result)
 
             options = self._get_result_options(self.options).split("|")
             for opt in options:

@@ -27,6 +27,6 @@ class EmpiricalCovariance(EmpiricalCovariance_Batch):
     @bind_spmd_backend("covariance")
     def finalize_compute(self, params, partial_result): ...
 
-    @support_input_format()
+    @support_input_format
     def fit(self, X, y=None, queue=None):
         return super().fit(X, queue=queue)

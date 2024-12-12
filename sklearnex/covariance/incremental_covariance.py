@@ -18,18 +18,17 @@ import numbers
 import warnings
 
 import numpy as np
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from onedal.covariance import (
+    IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
+)
 from scipy import linalg
 from sklearn.base import BaseEstimator, clone
 from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
 from sklearn.utils.validation import _num_features, check_is_fitted
-
-from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
-from onedal.covariance import (
-    IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
-)
 from sklearnex import config_context
 
 from .._device_offload import dispatch, wrap_output_data
@@ -145,9 +144,9 @@ class IncrementalEmpiricalCovariance(IntelEstimator, BaseEstimator):
         )
         return patching_status
 
-    def _onedal_finalize_fit(self, queue=None):
+    def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit(queue=queue)
+        self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
         if not daal_check_version((2024, "P", 400)) and self.assume_centered:
@@ -363,7 +362,7 @@ class IncrementalEmpiricalCovariance(IntelEstimator, BaseEstimator):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue, check_input=False)
 
-        self._onedal_finalize_fit(queue=queue)
+        self._onedal_finalize_fit()
 
         return self
 

@@ -30,10 +30,10 @@ class LinearRegression(LinearRegression_Batch):
     @bind_spmd_backend("linear_model.regression")
     def infer(self, params, model, X): ...
 
-    @support_input_format()
+    @support_input_format
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def predict(self, X, queue=None):
         return super().predict(X, queue=queue)

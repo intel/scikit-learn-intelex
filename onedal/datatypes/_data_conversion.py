@@ -17,7 +17,6 @@
 import warnings
 
 import numpy as np
-
 from onedal import _default_backend as backend
 from onedal._device_offload import SyclQueueManager
 
@@ -96,8 +95,8 @@ if backend.is_dpc:
                 return x
 
         # find the device we're running on
-        queue = SyclQueueManager.from_data(*data)
-        device = queue.sycl_device if queue else None
+        with SyclQueueManager.manage_global_queue(None, *data) as queue:
+            device = queue.sycl_device if queue else None
 
         if device and not device.has_aspect_fp64:
             return _apply_and_pass(convert_or_pass, *data)

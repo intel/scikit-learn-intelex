@@ -27,6 +27,6 @@ class PCA(PCABatch):
     @bind_spmd_backend("decomposition.dim_reduction")
     def finalize_train(self, *args, **kwargs): ...
 
-    @support_input_format()
+    @support_input_format
     def fit(self, X, y=None, queue=None):
         return super().fit(X, queue=queue)

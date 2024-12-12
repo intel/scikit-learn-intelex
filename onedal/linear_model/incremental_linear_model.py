@@ -17,9 +17,8 @@
 from abc import abstractmethod
 
 import numpy as np
-
 from daal4py.sklearn._utils import get_dtype
-from onedal._device_offload import supports_queue
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..common.hyperparameters import get_hyperparameters
@@ -48,6 +47,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
 
     def __init__(self, fit_intercept=True, copy_X=False, algorithm="norm_eq"):
         super().__init__(fit_intercept=fit_intercept, copy_X=copy_X, algorithm=algorithm)
+        self._queue = None
         self._reset()
 
     @bind_default_backend("linear_model.regression")
@@ -61,6 +61,7 @@ class IncrementalLinearRegression(BaseLinearRegression):
 
     def _reset(self):
         # Get the pointer to partial_result from backend
+        self._queue = None
         self._partial_result = self.partial_train_result()
 
     @supports_queue
@@ -108,9 +109,9 @@ class IncrementalLinearRegression(BaseLinearRegression):
             self._partial_result = self.partial_train(
                 self._params, self._partial_result, X_table, y_table
             )
+        self._queue = queue
 
-    @supports_queue
-    def finalize_fit(self, queue=None):
+    def finalize_fit(self):
         """
         Finalizes linear regression computation and obtains coefficients
         from the current `_partial_result`.
@@ -127,12 +128,13 @@ class IncrementalLinearRegression(BaseLinearRegression):
         """
 
         hparams = get_hyperparameters("linear_regression", "train")
-        if hparams is not None and not hparams.is_default:
-            result = self.finalize_train(
-                self._params, hparams.backend, self._partial_result
-            )
-        else:
-            result = self.finalize_train(self._params, self._partial_result)
+        with SyclQueueManager.manage_global_queue(self._queue):
+            if hparams is not None and not hparams.is_default:
+                result = self.finalize_train(
+                    self._params, hparams.backend, self._partial_result
+                )
+            else:
+                result = self.finalize_train(self._params, self._partial_result)
 
         self._onedal_model = result.model
 
@@ -141,6 +143,8 @@ class IncrementalLinearRegression(BaseLinearRegression):
             packed_coefficients[:, 1:].squeeze(),
             packed_coefficients[:, 0].squeeze(),
         )
+
+        self._queue = None
 
         return self
 
@@ -172,9 +176,11 @@ class IncrementalRidge(BaseLinearRegression):
         super().__init__(
             fit_intercept=fit_intercept, alpha=alpha, copy_X=copy_X, algorithm=algorithm
         )
+        self._queue = None
         self._reset()
 
     def _reset(self):
+        self._queue = None
         self._partial_result = self.partial_train_result()
 
     @bind_default_backend("linear_model.regression")
@@ -232,8 +238,9 @@ class IncrementalRidge(BaseLinearRegression):
                 self._params, self._partial_result, X_table, y_table
             )
 
-    @supports_queue
-    def finalize_fit(self, queue=None):
+        self._queue = queue
+
+    def finalize_fit(self):
         """
         Finalizes ridge regression computation and obtains coefficients
         from the current `_partial_result`.
@@ -248,7 +255,8 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        result = self.finalize_train(self._params, self._partial_result)
+        with SyclQueueManager.manage_global_queue(self._queue):
+            result = self.finalize_train(self._params, self._partial_result)
 
         self._onedal_model = result.model
 
@@ -257,5 +265,7 @@ class IncrementalRidge(BaseLinearRegression):
             packed_coefficients[:, 1:].squeeze(),
             packed_coefficients[:, 0].squeeze(),
         )
+
+        self._queue = None
 
         return self

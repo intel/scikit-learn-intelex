@@ -28,19 +28,19 @@ class KNeighborsClassifier(KNeighborsClassifier_Batch):
     @bind_spmd_backend("neighbors.classification")
     def infer(self, *args, **kwargs): ...
 
-    @support_input_format()
+    @support_input_format
     def fit(self, X, y, queue=None):
         return super().fit(X, y, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def predict(self, X, queue=None):
         return super().predict(X, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def predict_proba(self, X, queue=None):
         raise NotImplementedError("predict_proba not supported in distributed mode.")
 
-    @support_input_format()
+    @support_input_format
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
         return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
@@ -59,7 +59,7 @@ class KNeighborsRegressor(KNeighborsRegressor_Batch):
     @bind_spmd_backend("neighbors.regression")
     def infer(self, *args, **kwargs): ...
 
-    @support_input_format()
+    @support_input_format
     @supports_queue
     def fit(self, X, y, queue=None):
         if queue is not None and queue.sycl_device.is_gpu:
@@ -70,11 +70,11 @@ class KNeighborsRegressor(KNeighborsRegressor_Batch):
                 "CPU. Consider running on it on GPU."
             )
 
-    @support_input_format()
+    @support_input_format
     def kneighbors(self, X=None, n_neighbors=None, return_distance=True, queue=None):
         return super().kneighbors(X, n_neighbors, return_distance, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     @supports_queue
     def predict(self, X, queue=None):
         return self._predict_gpu(X)

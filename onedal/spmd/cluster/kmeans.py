@@ -17,7 +17,7 @@
 from ..._device_offload import support_input_format
 from ...cluster import KMeans as KMeans_Batch
 from ...cluster import KMeansInit as KMeansInit_Batch
-from ...common._backend import bind_default_backend, bind_spmd_backend
+from ...common._backend import bind_spmd_backend
 from ...spmd.basic_statistics import BasicStatistics
 
 
@@ -43,14 +43,14 @@ class KMeans(KMeans_Batch):
     @bind_spmd_backend("kmeans.clustering")
     def infer(self, params, model, centroids_table): ...
 
-    @support_input_format()
+    @support_input_format
     def fit(self, X, y=None, queue=None):
         return super().fit(X, y, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def predict(self, X, queue=None):
         return super().predict(X, queue=queue)
 
-    @support_input_format()
+    @support_input_format
     def fit_predict(self, X, y=None, queue=None):
         return super().fit_predict(X, queue=queue)

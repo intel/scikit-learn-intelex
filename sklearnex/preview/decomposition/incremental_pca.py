@@ -15,12 +15,11 @@
 # ===============================================================================
 
 import numpy as np
-from sklearn.decomposition import IncrementalPCA as _sklearn_IncrementalPCA
-from sklearn.utils import check_array, gen_batches
-
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.decomposition import IncrementalPCA as onedal_IncrementalPCA
+from sklearn.decomposition import IncrementalPCA as _sklearn_IncrementalPCA
+from sklearn.utils import check_array, gen_batches
 
 from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain
@@ -57,7 +56,7 @@ class IncrementalPCA(_sklearn_IncrementalPCA):
     def _onedal_transform(self, X, queue=None):
         assert hasattr(self, "_onedal_estimator")
         if self._need_to_finalize:
-            self._onedal_finalize_fit(queue)
+            self._onedal_finalize_fit()
         X = check_array(X, dtype=[np.float64, np.float32])
         return self._onedal_estimator.predict(X, queue=queue)
 
@@ -114,9 +113,9 @@ class IncrementalPCA(_sklearn_IncrementalPCA):
         self._onedal_estimator.partial_fit(X, queue=queue)
         self._need_to_finalize = True
 
-    def _onedal_finalize_fit(self, queue=None):
+    def _onedal_finalize_fit(self):
         assert hasattr(self, "_onedal_estimator")
-        self._onedal_estimator.finalize_fit(queue=queue)
+        self._onedal_estimator.finalize_fit()
         self._need_to_finalize = False
 
     def _onedal_fit(self, X, queue=None):
@@ -147,7 +146,7 @@ class IncrementalPCA(_sklearn_IncrementalPCA):
             X_batch = X[batch]
             self._onedal_partial_fit(X_batch, queue=queue)
 
-        self._onedal_finalize_fit(queue=queue)
+        self._onedal_finalize_fit()
 
         return self
 

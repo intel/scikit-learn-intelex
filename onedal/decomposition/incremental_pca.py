@@ -15,9 +15,8 @@
 # ==============================================================================
 
 import numpy as np
-
 from daal4py.sklearn._utils import get_dtype
-from onedal._device_offload import supports_queue
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..datatypes import _convert_to_supported, from_table, to_table
@@ -98,6 +97,7 @@ class IncrementalPCA(BasePCA):
         self.method = method
         self.is_deterministic = is_deterministic
         self.whiten = whiten
+        self._queue = None
         self._reset()
 
     @bind_default_backend("decomposition.dim_reduction")
@@ -111,6 +111,7 @@ class IncrementalPCA(BasePCA):
 
     def _reset(self):
         self._need_to_finalize = False
+        self._queue = None
         self._partial_result = self.partial_train_result()
         if hasattr(self, "components_"):
             del self.components_
@@ -174,10 +175,10 @@ class IncrementalPCA(BasePCA):
             self._params, self._partial_result, X_table
         )
         self._need_to_finalize = True
+        self._queue = queue
         return self
 
-    @supports_queue
-    def finalize_fit(self, queue=None):
+    def finalize_fit(self):
         """
         Finalizes principal components computation and obtains resulting
         attributes from the current `_partial_result`.
@@ -193,7 +194,8 @@ class IncrementalPCA(BasePCA):
             Returns the instance itself.
         """
         if self._need_to_finalize:
-            result = self.finalize_train(self._params, self._partial_result)
+            with SyclQueueManager.manage_global_queue(self._queue):
+                result = self.finalize_train(self._params, self._partial_result)
             self.mean_ = from_table(result.means).ravel()
             self.var_ = from_table(result.variances).ravel()
             self.components_ = from_table(result.eigenvectors)
@@ -210,5 +212,6 @@ class IncrementalPCA(BasePCA):
                 self.n_components_, min(self.n_samples_seen_, self.n_features_in_)
             )
             self._need_to_finalize = False
+            self._queue = None
 
         return self

@@ -16,8 +16,14 @@
 
 import numpy as np
 import pytest
+from daal4py.sklearn._utils import daal_check_version
 from numpy.linalg import slogdet
 from numpy.testing import assert_allclose
+from onedal.tests.utils._dataframes_support import (
+    _as_numpy,
+    _convert_to_dataframe,
+    get_dataframes_and_queues,
+)
 from scipy.linalg import pinvh
 from sklearn.covariance.tests.test_covariance import (
     test_covariance,
@@ -25,13 +31,6 @@ from sklearn.covariance.tests.test_covariance import (
 )
 from sklearn.datasets import load_diabetes
 from sklearn.decomposition import PCA
-
-from daal4py.sklearn._utils import daal_check_version
-from onedal.tests.utils._dataframes_support import (
-    _as_numpy,
-    _convert_to_dataframe,
-    get_dataframes_and_queues,
-)
 
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
