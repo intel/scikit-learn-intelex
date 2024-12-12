@@ -44,11 +44,14 @@ jobs:
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
           merge-multiple: true
-      - name: Install codecov-cli
+      - name: Install codecov cli
         run: |
           curl -Os https://cli.codecov.io/latest/linux/codecov
           chmod +x codecov
       - name: Upload to codecov
         run: |
-          export CODECOV_NAME=CI-${{ github.event.number }}-${{ github.sha }}
-          ./codecov --verbose upload-process --fail-on-error -t ${{ secrets.CODECOV_TOKEN }} -n "${CODECOV_NAME}" -F github -s ./coverage
+          export PR=${{ github.event.workflow_run.pull_requests[0].number }}
+          export CODECOV_NAME=CI-$PR-${{ github.sha }}
+          if [ -n "${PR}" ]; then export PR="-P ${PR}"; fi
+          export SHA=${{ github.event.workflow_run.head_sha }}
+          ./codecov -v upload-process -Z -t ${{ secrets.CODECOV_TOKEN }} -n $CODECOV_NAME -C $SHA -F github -s ./coverage $PR
