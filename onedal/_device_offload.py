@@ -15,6 +15,7 @@
 # ==============================================================================
 
 from collections.abc import Iterable
+from contextlib import contextmanager
 from functools import wraps
 from typing import Optional
 
@@ -47,7 +48,7 @@ class SyclQueueManager:
             # we don't have SyclQueue support
             return None
         if target is None:
-            return SyclQueue()
+            return None
         if isinstance(target, SyclQueue):
             return target
         if isinstance(target, (str, int)):
@@ -126,6 +127,38 @@ class SyclQueueManager:
         # after we went through the data, global queue is updated and verified (if any queue found)
         return SyclQueueManager.get_global_queue()
 
+    @staticmethod
+    @contextmanager
+    def manage_global_queue(queue, *args):
+        """
+        Context manager to manage the global SyclQueue.
+
+        This context manager updates the global queue with the provided queue,
+        verifies that all data objects are on the same device, and restores the
+        original queue after work is done.
+        Note: For most applications, the original queue should be `None`, but
+              if there are nested calls to `manage_global_queue()`, it is
+              important to restore the outer queue, rather than setting it to
+              `None`.
+
+        Parameters:
+        queue (SyclQueue or None): The queue to set as the global queue. If None,
+                                   the global queue will be determined from the provided data.
+        *args: Additional data objects to verify their device placement.
+
+        Yields:
+        SyclQueue: The global queue after verification.
+        """
+        original_queue = SyclQueueManager.get_global_queue()
+        try:
+            # update the global queue with what is provided, it can be None, then we will get it from provided data
+            SyclQueueManager.update_global_queue(queue)
+            # find the queues in data using SyclQueueManager to verify that all data objects are on the same device
+            yield SyclQueueManager.from_data(*args)
+        finally:
+            # restore the original queue
+            SyclQueueManager.update_global_queue(original_queue)
+
 
 def supports_queue(func):
     """
@@ -138,11 +171,10 @@ def supports_queue(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         queue = kwargs.get("queue", None)
-        # update the global queue with what is provided, it can be None, then we will get it from provided data
-        SyclQueueManager.update_global_queue(queue)
-        # find the queues in data using SyclQueueManager to verify that all data objects are on the same device
-        kwargs["queue"] = SyclQueueManager.from_data(*args)
-        return func(self, *args, **kwargs)
+        with SyclQueueManager.manage_global_queue(queue, *args) as queue:
+            kwargs["queue"] = queue
+            result = func(self, *args, **kwargs)
+        return result
 
     return wrapper
 

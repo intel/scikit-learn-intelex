@@ -96,7 +96,7 @@ if backend.is_dpc:
                 return x
 
         # find the device we're running on
-        queue = SyclQueueManager.from_data(data)
+        queue = SyclQueueManager.from_data(*data)
         device = queue.sycl_device if queue else None
 
         if device and not device.has_aspect_fp64:
