@@ -188,7 +188,7 @@ class Node:
             is_leaf=is_leaf,
             default_left=tree.get("default_left", 0),
             feature=tree.get("split_feature"),
-            value=tree["leaf_value"] if is_leaf else tree["threshold"],
+            value=value,
             n_children=n_children,
             left_child=left_child,
             right_child=right_child,
