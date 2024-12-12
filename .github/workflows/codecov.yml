@@ -54,5 +54,5 @@ jobs:
           export SHA=${{ github.event.workflow_run.head_sha }}
           export VARARGS="-n github"
           # if a PR, pass proper information to codecov about SHA and PR, otherwise use main branch info
-          if [ -n "${PR}" ] then export VARARGS="${VARARGS}-${PR}-${SHA} -P ${PR} -C ${SHA}"
+          if [ -n "${PR}" ]; then export VARARGS="${VARARGS}-${PR}-${SHA} -P ${PR} -C ${SHA}"; fi
           ./codecov -v upload-process -Z -t ${{ secrets.CODECOV_TOKEN }} $VARARGS -F github -s ./coverage
