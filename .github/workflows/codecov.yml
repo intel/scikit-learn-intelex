@@ -52,6 +52,7 @@ jobs:
         run: |
           export PR=${{ github.event.workflow_run.pull_requests[0].number }}
           export SHA=${{ github.event.workflow_run.head_sha }}
-          export CODECOV_NAME=CI-$PR-$SHA
-          if [ -n "${PR}" ]; then export PR="-P ${PR}"; fi
-          ./codecov -v upload-process -Z -t ${{ secrets.CODECOV_TOKEN }} -n $CODECOV_NAME -C $SHA -F github -s ./coverage $PR
+          export VARARGS="-n github"
+          # if a PR, pass proper information to codecov about SHA and PR, otherwise use main branch info
+          if [ -n "${PR}" ] then export VARARGS="${VARARGS}-${PR}-${SHA} -P ${PR} -C ${SHA}"
+          ./codecov -v upload-process -Z -t ${{ secrets.CODECOV_TOKEN }} $VARARGS -F github -s ./coverage
