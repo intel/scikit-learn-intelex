@@ -112,6 +112,10 @@ class BackendFunction:
         else:
             policy = self.backend.host_policy()
 
+        logger.debug(
+            f"Dispatching function '{self.name}' with policy {policy} to {self.backend}"
+        )
+
         # dispatch to backend function
         return self.method(policy, *args, **kwargs)
 

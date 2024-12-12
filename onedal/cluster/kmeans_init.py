@@ -75,20 +75,14 @@ if daal_check_version((2023, "P", 200)):
 
         def _compute_raw(self, X_table, dtype=np.float32):
             params = self._get_onedal_params(dtype)
-
             result = self.backend_compute(params, X_table)
-
             return result.centroids
 
         def _compute(self, X):
-            # oneDAL KMeans Init for sparse data does not have GPU support
             _, X_table, dtype = self._get_params_and_input(X)
-
             centroids = self._compute_raw(X_table, dtype)
-
             return from_table(centroids)
 
-        @supports_queue
         def compute_raw(self, X_table, dtype=np.float32, queue=None):
             return self._compute_raw(X_table, dtype)
 
