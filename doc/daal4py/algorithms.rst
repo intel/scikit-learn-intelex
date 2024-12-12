@@ -1,18 +1,16 @@
-.. ******************************************************************************
-.. * Copyright 2020 Intel Corporation
-.. *
-.. * Licensed under the Apache License, Version 2.0 (the "License");
-.. * you may not use this file except in compliance with the License.
-.. * You may obtain a copy of the License at
-.. *
-.. *     http://www.apache.org/licenses/LICENSE-2.0
-.. *
-.. * Unless required by applicable law or agreed to in writing, software
-.. * distributed under the License is distributed on an "AS IS" BASIS,
-.. * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-.. * See the License for the specific language governing permissions and
-.. * limitations under the License.
-.. *******************************************************************************/
+.. Copyright 2020 Intel Corporation
+..
+.. Licensed under the Apache License, Version 2.0 (the "License");
+.. you may not use this file except in compliance with the License.
+.. You may obtain a copy of the License at
+..
+..     http://www.apache.org/licenses/LICENSE-2.0
+..
+.. Unless required by applicable law or agreed to in writing, software
+.. distributed under the License is distributed on an "AS IS" BASIS,
+.. WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.. See the License for the specific language governing permissions and
+.. limitations under the License.
 
 ##########
 Algorithms
@@ -530,6 +528,7 @@ Mean Squared Error Algorithm (MSE)
 Parameters and semantics are described in |onedal-dg-mse|_.
 
 .. rubric:: Examples:
+
 - `In Adagrad <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/adagrad_mse.py>`__
 - `In LBFGS <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/lbfgs_mse.py>`__
 - `In SGD <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/sgd_mse.py>`__
@@ -544,6 +543,7 @@ Logistic Loss
 Parameters and semantics are described in |onedal-dg-logistic-loss|_.
 
 .. rubric:: Examples:
+
 - `In SGD <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/sgd_logistic_loss.py>`__
 
 .. autoclass:: daal4py.optimization_solver_logistic_loss
@@ -556,6 +556,7 @@ Cross-entropy Loss
 Parameters and semantics are described in |onedal-dg-cross-entropy-loss|_.
 
 .. rubric:: Examples:
+
 - `In LBFGS <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/lbfgs_cr_entr_loss.py>`__
 
 .. autoclass:: daal4py.optimization_solver_cross_entropy_loss
@@ -570,6 +571,7 @@ Stochastic Gradient Descent Algorithm
 Parameters and semantics are described in |onedal-dg-sgd|_.
 
 .. rubric:: Examples:
+
 - `Using Logistic Loss <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/sgd_logistic_loss.py>`__
 - `Using MSE <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/sgd_mse.py>`__
 
@@ -583,6 +585,7 @@ Limited-Memory Broyden-Fletcher-Goldfarb-Shanno Algorithm
 Parameters and semantics are described in |onedal-dg-lbfgs|_.
 
 .. rubric:: Examples:
+
 - `Using MSE <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/lbfgs_mse.py>`__
 
 .. autoclass:: daal4py.optimization_solver_lbfgs
@@ -595,6 +598,7 @@ Adaptive Subgradient Method
 Parameters and semantics are described in |onedal-dg-adagrad|_.
 
 .. rubric:: Examples:
+
 - `Using MSE <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/adagrad_mse.py>`__
 
 .. autoclass:: daal4py.optimization_solver_adagrad
@@ -607,6 +611,7 @@ Stochastic Average Gradient Descent
 Parameters and semantics are described in |onedal-dg-stochastic-average-gradient-descent-saga|_.
 
 .. rubric:: Examples:
+
 - `Single Proces saga-logistc_loss <https://github.com/uxlfoundation/scikit-learn-intelex/tree/main/examples/daal4py/saga.py>`__
 
 .. autoclass:: daal4py.optimization_solver_saga
