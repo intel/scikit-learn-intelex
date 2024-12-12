@@ -35,3 +35,7 @@ tests/_results*
 
 # json reports from pytest
 .pytest_reports/*
+
+# Configurations from file explorers
+.directory
+.DS_Store
