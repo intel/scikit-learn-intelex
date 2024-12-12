@@ -15,12 +15,10 @@
 # ==============================================================================
 
 import numpy as np
-from scipy.sparse import issparse
-from sklearn.utils import check_random_state
-
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
+from sklearn.utils import check_random_state
 
 from ..datatypes import _convert_to_supported, from_table, to_table
 from ..utils.validation import _check_array
@@ -75,18 +73,28 @@ if daal_check_version((2023, "P", 200)):
             params = self._get_onedal_params(dtype)
             return (params, to_table(X), dtype)
 
-        def compute(self, X, queue=None):
+        def _compute_raw(self, X_table, dtype=np.float32):
+            params = self._get_onedal_params(dtype)
+
+            result = self.backend_compute(params, X_table)
+
+            return result.centroids
+
+        def _compute(self, X):
+            # oneDAL KMeans Init for sparse data does not have GPU support
             _, X_table, dtype = self._get_params_and_input(X)
 
-            centroids = self.compute_raw(X_table, dtype, queue=queue)
+            centroids = self._compute_raw(X_table, dtype)
 
             return from_table(centroids)
 
         @supports_queue
         def compute_raw(self, X_table, dtype=np.float32, queue=None):
-            params = self._get_onedal_params(dtype)
-            result = self.backend_compute(params, X_table)
-            return result.centroids
+            return self._compute_raw(X_table, dtype)
+
+        @supports_queue
+        def compute(self, X, queue=None):
+            return self._compute(X)
 
     def kmeans_plusplus(
         X,
