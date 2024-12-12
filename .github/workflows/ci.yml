@@ -143,12 +143,12 @@ jobs:
         run: |
           source venv/bin/activate
           coverage combine .coverage.sklearnex .coverage.sklearn
-          coverage xml -o coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
+          coverage json -o coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
       - name: Archive coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage_lnx_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
-          path: coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
+          path: coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
       - name: Sklearn testing [preview]
         run: |
           source venv/bin/activate
@@ -289,12 +289,12 @@ jobs:
         run: |
           call .\venv\Scripts\activate.bat
           coverage combine .coverage.sklearnex .coverage.sklearn
-          coverage xml -o coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
+          coverage json -o coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
       - name: Archive coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage_win_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
-          path: coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.xml
+          path: coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
