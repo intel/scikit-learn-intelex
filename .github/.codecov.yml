@@ -18,9 +18,9 @@ coverage:
     project:
       default:
         target: 0
-        # Set thresholds very conservatively so that it will always stay green
-        # leave information such that future coverage percentage enforcement can
-        # be easily implemented by adjusting the threshold only.
+        # Set targets to zero so that it will always stay green leave information
+        # on thresholds such that future coverage percentage enforcement can
+        # be easily implemented by adjusting the threshold and setting target: auto
         # threshold: 50
     patch:
       default:
