@@ -274,6 +274,7 @@ def support_input_format(func):
         else:
             return func(self_or_None, *args, **kwargs)
 
+    @wraps(func)
     def wrapper_impl(*args, **kwargs):
         # remove self from args if it is a class method
         if inspect.isfunction(func) and "." in func.__qualname__:
