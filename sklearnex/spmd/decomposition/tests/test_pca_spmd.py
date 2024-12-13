@@ -65,16 +65,18 @@ def test_pca_spmd_gold(dataframe, queue):
     spmd_result = PCA_SPMD(n_components=2).fit(local_dpt_data)
     batch_result = PCA_Batch(n_components=2).fit(data)
 
+    tol = 1e-7 if queue.sycl_device.has_aspect_fp64 else 1e-5
+
     assert_allclose(spmd_result.mean_, batch_result.mean_)
     assert_allclose(spmd_result.components_, batch_result.components_)
-    assert_allclose(spmd_result.singular_values_, batch_result.singular_values_)
+    assert_allclose(spmd_result.singular_values_, batch_result.singular_values_, rtol=tol)
     assert_allclose(
         spmd_result.noise_variance_,
         batch_result.noise_variance_,
-        atol=1e-7,
+        atol=tol,
     )
     assert_allclose(
-        spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_
+        spmd_result.explained_variance_ratio_, batch_result.explained_variance_ratio_, rtol=tol
     )
 
 
@@ -116,7 +118,7 @@ def test_pca_spmd_synthetic(
     spmd_result = PCA_SPMD(n_components=n_components, whiten=whiten).fit(local_dpt_data)
     batch_result = PCA_Batch(n_components=n_components, whiten=whiten).fit(data)
 
-    tol = 1e-3 if dtype == np.float32 else 1e-7
+    tol = 1e-3 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
     assert_allclose(spmd_result.mean_, batch_result.mean_, atol=tol)
     assert_allclose(spmd_result.components_, batch_result.components_, atol=tol, rtol=tol)
     assert_allclose(spmd_result.singular_values_, batch_result.singular_values_, atol=tol)

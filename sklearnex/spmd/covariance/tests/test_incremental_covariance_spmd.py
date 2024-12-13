@@ -178,7 +178,7 @@ def test_incremental_covariance_partial_fit_spmd_synthetic(
 
     inccov.fit(dpt_data)
 
-    tol = 1e-7
+    tol = 1e-7 if queue.sycl_device.has_aspect_fp64 else 1e-6
 
     assert_allclose(inccov_spmd.covariance_, inccov.covariance_, atol=tol)
     assert_allclose(inccov_spmd.location_, inccov.location_, atol=tol)

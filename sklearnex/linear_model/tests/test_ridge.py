@@ -129,8 +129,10 @@ def test_ridge_coefficients(
         X, y, alpha, fit_intercept=fit_intercept
     )
 
-    assert_allclose(ridge_reg.coef_, coefficients_manual, rtol=1e-6, atol=1e-6)
-    assert_allclose(ridge_reg.intercept_, intercept_manual, rtol=1e-6, atol=1e-6)
+    tol = 1e-5 if ridge_reg.coef_.dtype == np.float32 else 1e-6
+
+    assert_allclose(ridge_reg.coef_, coefficients_manual, rtol=tol, atol=tol)
+    assert_allclose(ridge_reg.intercept_, intercept_manual, rtol=tol, atol=tol)
 
 
 @pytest.mark.skipif(

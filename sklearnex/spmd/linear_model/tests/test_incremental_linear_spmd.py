@@ -208,7 +208,7 @@ def test_incremental_linear_regression_fit_spmd_random(
         IncrementalLinearRegression as IncrementalLinearRegression_SPMD,
     )
 
-    tol = 5e-3 if dtype == np.float32 else 1e-7
+    tol = 5e-3 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
 
     # Generate random data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(
@@ -279,7 +279,7 @@ def test_incremental_linear_regression_partial_fit_spmd_random(
         IncrementalLinearRegression as IncrementalLinearRegression_SPMD,
     )
 
-    tol = 5e-3 if dtype == np.float32 else 1e-7
+    tol = 5e-3 if (dtype == np.float32 or not queue.sycl_device.has_aspect_fp64) else 1e-7
 
     # Generate random data and process into dpt
     X_train, X_test, y_train, _ = _generate_regression_data(
