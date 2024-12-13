@@ -15,12 +15,12 @@
 # ==============================================================================
 
 import numpy as np
-from daal4py.sklearn._utils import daal_check_version, get_dtype
-from onedal._device_offload import supports_queue
+from daal4py.sklearn._utils import daal_check_version
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
 from sklearn.utils import check_random_state
 
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import _check_array
 
 if daal_check_version((2023, "P", 200)):
@@ -59,19 +59,16 @@ if daal_check_version((2023, "P", 200)):
                 "cluster_count": self.cluster_count,
             }
 
-        def _get_params_and_input(self, X):
+        def _get_params_and_input(self, X, queue):
             X = _check_array(
                 X,
                 dtype=[np.float64, np.float32],
                 accept_sparse="csr",
                 force_all_finite=False,
             )
-
-            X = _convert_to_supported(X)
-
-            dtype = get_dtype(X)
-            params = self._get_onedal_params(dtype)
-            return (params, to_table(X), dtype)
+            X = to_table(X, queue=queue)
+            params = self._get_onedal_params(X.dtype)
+            return (params, X, X.dtype)
 
         def _compute_raw(self, X_table, dtype=np.float32):
             params = self._get_onedal_params(dtype)
@@ -79,7 +76,9 @@ if daal_check_version((2023, "P", 200)):
             return result.centroids
 
         def _compute(self, X):
-            _, X_table, dtype = self._get_params_and_input(X)
+            _, X_table, dtype = self._get_params_and_input(
+                X, queue=SyclQueueManager().get_global_queue()
+            )
             centroids = self._compute_raw(X_table, dtype)
             return from_table(centroids)
 

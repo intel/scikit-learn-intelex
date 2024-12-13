@@ -20,17 +20,16 @@ from abc import ABCMeta, abstractmethod
 from math import ceil
 
 import numpy as np
+from daal4py.sklearn._utils import daal_check_version
+from onedal._device_offload import SyclQueueManager, supports_queue
+from onedal.common._backend import bind_default_backend
 from sklearn.ensemble import BaseEnsemble
 from sklearn.utils import check_random_state
-
-from daal4py.sklearn._utils import daal_check_version
-from onedal._device_offload import supports_queue
-from onedal.common._backend import bind_default_backend
 from sklearnex import get_hyperparameters
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import (
     _check_array,
     _check_n_features,
@@ -312,9 +311,9 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             data = (X, y, sample_weight)
         else:
             data = (X, y)
-        data = _convert_to_supported(*data)
+        data = to_table(*data, queue=SyclQueueManager.get_global_queue())
         params = self._get_onedal_params(data[0])
-        train_result = self.train(params, *to_table(*data))
+        train_result = self.train(params, *data)
 
         self._onedal_model = train_result.model
 
@@ -359,12 +358,12 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
         _check_n_features(self, X, False)
 
         model = self._onedal_model
-        X = _convert_to_supported(X)
+        X = to_table(X, queue=SyclQueueManager.get_global_queue())
         params = self._get_onedal_params(X)
         if hparams is not None and not hparams.is_default:
-            result = self.infer(params, hparams.backend, model, to_table(X))
+            result = self.infer(params, hparams.backend, model, X)
         else:
-            result = self.infer(params, model, to_table(X))
+            result = self.infer(params, model, X)
 
         y = from_table(result.responses)
         return y
@@ -375,15 +374,15 @@ class BaseForest(BaseEnsemble, metaclass=ABCMeta):
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
         )
         _check_n_features(self, X, False)
-        X = _convert_to_supported(X)
+        X = to_table(X, queue=SyclQueueManager.get_global_queue())
         params = self._get_onedal_params(X)
         params["infer_mode"] = "class_probabilities"
 
         model = self._onedal_model
         if hparams is not None and not hparams.is_default:
-            result = self.infer(params, hparams.backend, model, to_table(X))
+            result = self.infer(params, hparams.backend, model, X)
         else:
-            result = self.infer(params, model, to_table(X))
+            result = self.infer(params, model, X)
 
         y = from_table(result.probabilities)
         return y

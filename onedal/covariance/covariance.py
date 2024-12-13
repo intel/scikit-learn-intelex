@@ -16,14 +16,13 @@
 from abc import ABCMeta
 
 import numpy as np
-
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend
 from onedal.utils.validation import _check_array
 
 from ..common.hyperparameters import get_hyperparameters
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 
 
 class BaseEmpiricalCovariance(metaclass=ABCMeta):
@@ -99,14 +98,13 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
             Returns the instance itself.
         """
         X = _check_array(X, dtype=[np.float64, np.float32])
-        X = _convert_to_supported(X)
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
+        X = to_table(X, queue=queue)
+        params = self._get_onedal_params(X.dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
-            result = self.compute(params, hparams.backend, to_table(X))
+            result = self.compute(params, hparams.backend, X)
         else:
-            result = self.compute(params, to_table(X))
+            result = self.compute(params, X)
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(result.cov_matrix)
         else:

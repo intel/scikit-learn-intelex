@@ -18,21 +18,15 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 
 import numpy as np
-from scipy import sparse as sp
-
-from onedal._device_offload import supports_queue
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
+from scipy import sparse as sp
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils.validation import (
-    _check_array,
-    _check_n_features,
-    _check_X_y,
-    _column_or_1d,
-    _validate_targets,
-)
+from ..datatypes import from_table, to_table
+from ..utils.validation import (_check_array, _check_n_features, _check_X_y,
+                                _column_or_1d, _validate_targets)
 
 
 class SVMtype(Enum):
@@ -182,9 +176,9 @@ class BaseSVM(metaclass=ABCMeta):
                 _gamma = self.gamma
             self._scale_, self._sigma_ = _gamma, np.sqrt(0.5 / _gamma)
 
-        X = _convert_to_supported(X)
-        params = self._get_onedal_params(X)
-        result = self.train(params, *to_table(*data))
+        data = to_table(*data, queue=SyclQueueManager.get_global_queue())
+        params = self._get_onedal_params(data[0])
+        result = self.train(params, *data)
 
         if self._sparse:
             self.dual_coef_ = sp.csr_matrix(from_table(result.coeffs).T)
@@ -260,14 +254,14 @@ class BaseSVM(metaclass=ABCMeta):
                     % type(self).__name__
                 )
 
-            X = _convert_to_supported(X)
+            X = to_table(X, queue=SyclQueueManager.get_global_queue())
             params = self._get_onedal_params(X)
 
             if hasattr(self, "_onedal_model"):
                 model = self._onedal_model
             else:
-                model = self._create_model()
-            result = self.infer(params, model, to_table(X))
+                model = self._create_model(module)
+            result = self.infer(params, model, X)
             y = from_table(result.responses)
         return y
 
@@ -316,14 +310,14 @@ class BaseSVM(metaclass=ABCMeta):
                     f"of {self.__class__.__name__} was altered"
                 )
 
-        X = _convert_to_supported(X)
+        X = to_table(X, queue=SyclQueueManager.get_global_queue())
         params = self._get_onedal_params(X)
 
         if hasattr(self, "_onedal_model"):
             model = self._onedal_model
         else:
-            model = self._create_model()
-        result = self.infer(params, model, to_table(X))
+            model = self._create_model(module)
+        result = self.infer(params, model, X)
         decision_function = from_table(result.decision_function)
 
         if len(self.classes_) == 2:

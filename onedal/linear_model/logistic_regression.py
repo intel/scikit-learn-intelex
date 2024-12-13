@@ -18,14 +18,13 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
-from onedal._device_offload import supports_queue
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import (
     _check_array,
     _check_n_features,
@@ -93,9 +92,8 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         self.classes_, y = np.unique(y, return_inverse=True)
         y = y.astype(dtype=np.int32)
 
-        X, y = _convert_to_supported(X, y)
-        params = self._get_onedal_params(is_csr, get_dtype(X))
-        X_table, y_table = to_table(X, y)
+        X_table, y_table = to_table(X, y, queue=SyclQueueManager.get_global_queue())
+        params = self._get_onedal_params(is_csr, X_table.dtype)
 
         result = self.train(params, X_table, y_table)
 
@@ -154,9 +152,9 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         if self.fit_intercept:
             packed_coefficients[:, 0][:, np.newaxis] = intercept
 
-        packed_coefficients = _convert_to_supported(packed_coefficients)
-
-        m.packed_coefficients = to_table(packed_coefficients)
+        m.packed_coefficients = to_table(
+            packed_coefficients, queue=SyclQueueManager.get_global_queue()
+        )
 
         self._onedal_model = m
 
@@ -184,10 +182,9 @@ class BaseLogisticRegression(metaclass=ABCMeta):
         else:
             model = self._create_model()
 
-        X = _convert_to_supported(X)
-        params = self._get_onedal_params(is_csr, get_dtype(X))
+        X_table = to_table(X, queue=SyclQueueManager.get_global_queue())
+        params = self._get_onedal_params(is_csr, X.dtype)
 
-        X_table = to_table(X)
         result = self.infer(params, model, X_table)
         return result
 

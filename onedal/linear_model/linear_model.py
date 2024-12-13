@@ -18,14 +18,13 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
-
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
-from onedal._device_offload import supports_queue
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common.hyperparameters import get_hyperparameters
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import _check_array, _check_n_features, _check_X_y, _num_features
 
 
@@ -101,9 +100,9 @@ class BaseLinearRegression(metaclass=ABCMeta):
         if self.fit_intercept:
             packed_coefficients[:, 0][:, np.newaxis] = intercept
 
-        packed_coefficients = _convert_to_supported(packed_coefficients)
-
-        model.packed_coefficients = to_table(packed_coefficients)
+        model.packed_coefficients = to_table(
+            packed_coefficients, queue=SyclQueueManager.get_global_queue()
+        )
 
         self._onedal_model = model
 
@@ -139,11 +138,9 @@ class BaseLinearRegression(metaclass=ABCMeta):
         else:
             model = self._create_model()
 
-        X = make2d(X)
-        X = _convert_to_supported(X)
-        params = self._get_onedal_params(get_dtype(X))
+        X_table = to_table(X, queue=queue)
+        params = self._get_onedal_params(X_table.dtype)
 
-        X_table = to_table(X)
         result = self.infer(params, model, X_table)
         y = from_table(result.responses)
 
@@ -217,9 +214,8 @@ class LinearRegression(BaseLinearRegression):
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
-        X, y = _convert_to_supported(X, y)
-        params = self._get_onedal_params(get_dtype(X))
-        X_table, y_table = to_table(X, y)
+        X_table, y_table = to_table(X, y, queue=queue)
+        params = self._get_onedal_params(X_table.dtype)
 
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
@@ -319,9 +315,8 @@ class Ridge(BaseLinearRegression):
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
-        X, y = _convert_to_supported(X, y)
-        params = self._get_onedal_params(get_dtype(X))
-        X_table, y_table = to_table(X, y)
+        X_table, y_table = to_table(X, y, queue=queue)
+        params = self._get_onedal_params(X.dtype)
 
         result = self.train(params, X_table, y_table)
         self._onedal_model = result.model

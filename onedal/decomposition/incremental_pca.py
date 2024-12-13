@@ -15,11 +15,10 @@
 # ==============================================================================
 
 import numpy as np
-from daal4py.sklearn._utils import get_dtype
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
 
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import _check_array
 from .pca import BasePCA
 
@@ -164,11 +163,12 @@ class IncrementalPCA(BasePCA):
         else:
             self.n_components_ = self.n_components
 
-        X = _convert_to_supported(X)
+        self._queue = queue
+        X_table = to_table(X, queue=queue)
 
         if not hasattr(self, "_dtype"):
-            self._dtype = get_dtype(X)
-            self._params = self._get_onedal_params(X)
+            self._dtype = X_table.dtype
+            self._params = self._get_onedal_params(X_table)
 
         X_table = to_table(X)
         self._partial_result = self.partial_train(

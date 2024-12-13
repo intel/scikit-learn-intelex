@@ -14,13 +14,14 @@
 # limitations under the License.
 # ===============================================================================
 
-import numpy as np
+import queue
 
+import numpy as np
 from onedal import _default_backend as backend
-from onedal._device_offload import supports_queue
+from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import BackendFunction
 
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import _check_array
 
 
@@ -36,9 +37,9 @@ def _check_inputs(X, Y):
 def _compute_kernel(params, submodule, X, Y):
     # get policy for direct backend calls
 
-    X, Y = _convert_to_supported(X, Y)
+    queue = SyclQueueManager.get_global_queue()
+    X, Y = to_table(X, Y, queue=queue)
     params["fptype"] = X.dtype
-    X, Y = to_table(X, Y)
     compute_method = BackendFunction(
         submodule.compute, backend, "compute", no_policy=False
     )
@@ -66,7 +67,10 @@ def linear_kernel(X, Y=None, scale=1.0, shift=0.0, queue=None):
     """
     X, Y = _check_inputs(X, Y)
     return _compute_kernel(
-        {"method": "dense", "scale": scale, "shift": shift}, backend.linear_kernel, X, Y
+        {"method": "dense", "scale": scale, "shift": shift},
+        backend.linear_kernel,
+        X,
+        Y,
     )
 
 

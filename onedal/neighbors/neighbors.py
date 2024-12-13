@@ -16,9 +16,9 @@
 
 from abc import ABCMeta, abstractmethod
 from numbers import Integral
+from os import X_OK, XATTR_SIZE_MAX
 
 import numpy as np
-
 from daal4py import (
     bf_knn_classification_model,
     bf_knn_classification_prediction,
@@ -32,7 +32,7 @@ from onedal.common._backend import bind_default_backend
 
 from ..common._estimator_checks import _check_is_fitted, _is_classifier, _is_regressor
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils.validation import (
     _check_array,
     _check_classification_targets,
@@ -458,9 +458,9 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
 
             return train_alg(**params).compute(X, y).model
         else:
-            X, y = _convert_to_supported(X, y)
             params = self._get_onedal_params(X, y)
-            return self.train(params, *to_table(X, y)).model
+            X_table, y_table = to_table(X, y, queue=queue)
+            return self.train(params, X_table, y_table).model
 
     def _onedal_predict(self, model, X, params):
         if type(self._onedal_model) is kdtree_knn_classification_model:
@@ -468,11 +468,11 @@ class KNeighborsClassifier(NeighborsBase, ClassifierMixin):
         elif type(self._onedal_model) is bf_knn_classification_model:
             return bf_knn_classification_prediction(**params).compute(X, model)
         else:
-            X = _convert_to_supported(X)
+            X = to_table(X, queue=SyclQueueManager.get_global_queue())
             if "responses" not in params["result_option"]:
                 params["result_option"] += "|responses"
             params["fptype"] = X.dtype
-            result = self.infer(params, model, to_table(X))
+            result = self.infer(params, model, X)
 
             return result
 
@@ -615,13 +615,13 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
             return train_alg(**params).compute(X, y).model
 
-        X, y = _convert_to_supported(X, y)
+        X, y = to_table(X, y, queue=queue)
         params = self._get_onedal_params(X, y)
 
         if gpu_device:
-            return self.train(params, *to_table(X, y)).model
+            return self.train(params, X, y).model
         else:
-            return self.train_search(params, to_table(X)).model
+            return self.train_search(params, X).model
 
     def _onedal_predict(self, model, X, params):
         assert self._onedal_model is not None, "Model is not trained"
@@ -634,16 +634,16 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
         # global queue is set as per user configuration (`target_offload`) or from data prior to calling this internal function
         queue = SyclQueueManager.get_global_queue()
         gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
-        X = _convert_to_supported(X)
+        X = to_table(X, queue=queue)
 
         if "responses" not in params["result_option"] and gpu_device:
             params["result_option"] += "|responses"
         params["fptype"] = X.dtype
 
         if gpu_device:
-            return self.infer(params, self._onedal_model, to_table(X))
+            return self.infer(params, self._onedal_model, X)
         else:
-            return self.infer_search(params, self._onedal_model, to_table(X))
+            return self.infer_search(params, self._onedal_model, X)
 
     @supports_queue
     def fit(self, X, y, queue=None):
@@ -767,9 +767,9 @@ class NearestNeighbors(NeighborsBase):
             return train_alg(**params).compute(X, y).model
 
         else:
-            X, y = _convert_to_supported(X, y)
             params = self._get_onedal_params(X, y)
-            return self.train(params, to_table(X)).model
+            X, y = to_table(X, y, queue=queue)
+            return self.train(params, X).model
 
     def _onedal_predict(self, model, X, params):
         if type(self._onedal_model) is kdtree_knn_classification_model:
@@ -777,10 +777,10 @@ class NearestNeighbors(NeighborsBase):
         elif type(self._onedal_model) is bf_knn_classification_model:
             return bf_knn_classification_prediction(**params).compute(X, model)
 
-        X = _convert_to_supported(X)
+        X = to_table(X, queue=SyclQueueManager.get_global_queue())
 
         params["fptype"] = X.dtype
-        return self.infer(params, model, to_table(X))
+        return self.infer(params, model, X)
 
     @supports_queue
     def fit(self, X, y, queue=None):

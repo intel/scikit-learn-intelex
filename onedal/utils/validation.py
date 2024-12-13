@@ -19,10 +19,9 @@ from collections.abc import Sequence
 from numbers import Integral
 
 import numpy as np
-from scipy import sparse as sp
-
 from onedal._device_offload import supports_queue
 from onedal.common._backend import BackendFunction
+from scipy import sparse as sp
 
 if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
     # numpy_version >= 2.0
@@ -31,14 +30,13 @@ else:
     # numpy_version < 2.0
     from numpy import VisibleDeprecationWarning
 
-from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.validation import check_array
-
 from daal4py.sklearn.utils.validation import (
     _assert_all_finite as _daal4py_assert_all_finite,
 )
 from onedal import _default_backend as backend
-from onedal.datatypes import _convert_to_supported, to_table
+from onedal.datatypes import to_table
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.validation import check_array
 
 
 class DataConversionWarning(UserWarning):
@@ -439,15 +437,15 @@ def _is_csr(x):
 
 
 def _assert_all_finite(X, allow_nan=False, input_name=""):
-    X_t = to_table(_convert_to_supported(X))
+    backend_method = BackendFunction(
+        backend.finiteness_checker.compute.compute, backend, "compute", no_policy=False
+    )
+    X_t = to_table(X)
     params = {
         "fptype": X_t.dtype,
         "method": "dense",
         "allow_nan": allow_nan,
     }
-    backend_method = BackendFunction(
-        backend.finiteness_checker.compute.compute, backend, "compute", no_policy=False
-    )
     if not backend_method(params, X_t).finite:
         type_err = "infinity" if allow_nan else "NaN, infinity"
         padded_input_name = input_name + " " if input_name else ""

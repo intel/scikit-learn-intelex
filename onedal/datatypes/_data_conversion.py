@@ -14,11 +14,8 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
-
 import numpy as np
 from onedal import _default_backend as backend
-from onedal._device_offload import SyclQueueManager
 
 
 def _apply_and_pass(func, *args, **kwargs):
@@ -27,12 +24,12 @@ def _apply_and_pass(func, *args, **kwargs):
     return tuple(map(lambda arg: func(arg, **kwargs), args))
 
 
-def _convert_one_to_table(arg):
+def _convert_one_to_table(arg, queue=None):
     # All inputs for table conversion must be array-like or sparse, not scalars
-    return backend.to_table(np.atleast_2d(arg) if np.isscalar(arg) else arg)
+    return backend.to_table(np.atleast_2d(arg) if np.isscalar(arg) else arg, queue)
 
 
-def to_table(*args):
+def to_table(*args, queue=None):
     """Create oneDAL tables from scalars and/or arrays.
 
     Note: this implementation can be used with scipy.sparse, numpy ndarrays,
@@ -51,7 +48,7 @@ def to_table(*args):
     -------
     tables: {oneDAL homogeneous tables}
     """
-    return _apply_and_pass(_convert_one_to_table, *args)
+    return _apply_and_pass(_convert_one_to_table, *args, queue=queue)
 
 
 if backend.is_dpc:
@@ -79,30 +76,6 @@ if backend.is_dpc:
         def _table_to_array(table, xp=None):
             return xp.asarray(table)
 
-    def _convert_to_supported(*data):
-        def identity(x):
-            return x
-
-        def convert_or_pass(x):
-            if (x is not None) and (x.dtype == np.float64):
-                warnings.warn(
-                    "Data will be converted into float32 from "
-                    "float64 because device does not support it",
-                    RuntimeWarning,
-                )
-                return x.astype(np.float32)
-            else:
-                return x
-
-        # find the device we're running on
-        with SyclQueueManager.manage_global_queue(None, *data) as queue:
-            device = queue.sycl_device if queue else None
-
-        if device and not device.has_aspect_fp64:
-            return _apply_and_pass(convert_or_pass, *data)
-        else:
-            return _apply_and_pass(identity, *data)
-
     def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to
         # convert into dpnp/dpctl tensors.
@@ -126,12 +99,6 @@ if backend.is_dpc:
         return backend.from_table(table)
 
 else:
-
-    def _convert_to_supported(*data):
-        def identity(x):
-            return x
-
-        return _apply_and_pass(identity, *data)
 
     def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to

@@ -14,13 +14,11 @@
 # limitations under the License.
 # ==============================================================================
 
-from daal4py.sklearn._utils import get_dtype
+from onedal.common._backend import bind_spmd_backend
 
 from ...basic_statistics import (
     IncrementalBasicStatistics as base_IncrementalBasicStatistics,
 )
-from ...common._backend import bind_default_backend, bind_spmd_backend
-from ...datatypes import _convert_to_supported, to_table
 
 
 class IncrementalBasicStatistics(base_IncrementalBasicStatistics):
