@@ -221,7 +221,7 @@ class IncrementalLinearRegression(
         self._onedal_estimator.partial_fit(X, y, queue=queue)
         self._need_to_finalize = True
 
-    if daal_check_version((2025, "P", 1)):
+    if daal_check_version((2025, "P", 200)):
 
         def _onedal_validate_underdetermined(self, n_samples, n_features):
             pass
