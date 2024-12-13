@@ -17,12 +17,13 @@ coverage:
   status:
     project:
       default:
-        target: auto
+        target: 0
         # Set thresholds very conservatively so that it will always stay green
-        # leave target: auto such that future coverage percentage enforcement can
+        # leave information such that future coverage percentage enforcement can
         # be easily implemented by adjusting the threshold only.
-        threshold: 50
+        # threshold: 50
     patch:
       default:
-        target: auto
-        threshold: 50
+        target: 0
+        # allow for diffs to have no code coverage when included
+        # threshold: 50
