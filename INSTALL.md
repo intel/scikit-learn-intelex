@@ -40,7 +40,7 @@ To install Intel(R) Extension for Scikit-learn*, use one of the following scenar
 
 ## Before You Begin
 
-Check [System](https://intel.github.io/scikit-learn-intelex/latest/system-requirements.html) and [Memory](https://intel.github.io/scikit-learn-intelex/latest/memory-requirements.html) Requirements.
+Check [System](https://uxlfoundation.github.io/scikit-learn-intelex/latest/system-requirements.html) and [Memory](https://uxlfoundation.github.io/scikit-learn-intelex/latest/memory-requirements.html) Requirements.
 
 ## Supported Configurations
 
@@ -158,7 +158,7 @@ The build-process (using setup.py) happens in 4 stages:
 * cmake and pybind11
 * A C++ compiler with C++11 support
 * Clang-Format
-* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/oneapi-src/oneDAL) version 2021.1 or later
+* [Intel® oneAPI Data Analytics Library (oneDAL)](https://github.com/uxlfoundation/oneDAL) version 2021.1 or later
   * You can use the pre-built `dal-devel` conda package from conda-forge channel
 * MPI (optional, needed for distributed mode)
   * You can use the pre-built `impi_rt` and `impi-devel` conda packages from conda-forge channel
@@ -202,6 +202,14 @@ The build-process (using setup.py) happens in 4 stages:
    python setup.py develop --no-deps
    ```
 
+Where: 
+
+* Keys `--single-version-externally-managed` and `--no-deps` are required to not download daal4py after the installation of Intel(R) Extension for Scikit-learn. 
+* The `develop` mode does not install the package but creates a `.egg-link` in the deployment directory
+back to the project source-code directory. That way, you can edit the source code and see the changes
+without reinstalling the package after a small change.
+* `--single-version-externally-managed` is an option for Python packages instructing the setuptools module to create a package that the host's package manager can easily manage.
+
 - To build the python module without installing it:
 
    ```bash
@@ -210,13 +218,14 @@ The build-process (using setup.py) happens in 4 stages:
    python setup.py build
    ```
 
-Where: 
+**Note:** the `setup.py` file will accept an optional argument `--abs-rpath` on linux (for all of `build`/`install`/`develop`/etc.) which will make it add the absolute path to oneDAL's shared objects (.so files) to the rpath of the scikit-learn-intelex extension's shared object files in order to load them automatically. This is not necessary when installing from pip or conda, but can be helpful for development purposes when using a from-source build of oneDAL that resides in a custom folder, as it won't assume that oneDAL's files will be found under default system paths. Example:
 
-* Keys `--single-version-externally-managed` and `--no-deps` are required to not download daal4py after the installation of Intel(R) Extension for Scikit-learn. 
-* The `develop` mode does not install the package but creates a `.egg-link` in the deployment directory
-back to the project source-code directory. That way, you can edit the source code and see the changes
-without reinstalling the package after a small change.
-* `--single-version-externally-managed` is an option for Python packages instructing the setup tools module to create a package the host's package manager can easily manage.
+```shell
+python setup.py build_ext --inplace --force --abs-rpath
+python setup.py build --abs-rpath
+```
+
+**Note:** when building `scikit-learn-intelex` from source with this option, it will use the oneDAL library with which it was compiled. oneDAL has dependencies on other libraries such as TBB, which is also distributed as a python package through `pip` and as a `conda` package. By default, a conda environment will first try to load TBB from its own packages if it is installed in the environment, which might cause issues if oneDAL was compiled with a system TBB instead of a conda one. In such cases, it is advised to either uninstall TBB from pip/conda (it will be loaded from the oneDAL library which links to it), or modify the order of search paths in environment variables like `${LD_LIBRARY_PATH}`.
 
 ## Build from Sources with `conda-build`
 
@@ -244,5 +253,5 @@ conda build .
 
 ## Next Steps
 
-- [Learn what patching is and how to patch scikit-learn](https://intel.github.io/scikit-learn-intelex/latest/what-is-patching.html)
-- [Start using scikit-learn-intelex](https://intel.github.io/scikit-learn-intelex/latest/quick-start.html)
+- [Learn what patching is and how to patch scikit-learn](https://uxlfoundation.github.io/scikit-learn-intelex/latest/what-is-patching.html)
+- [Start using scikit-learn-intelex](https://uxlfoundation.github.io/scikit-learn-intelex/latest/quick-start.html)

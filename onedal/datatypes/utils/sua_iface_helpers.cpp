@@ -163,7 +163,7 @@ dal::data_layout get_sua_iface_layout(const py::dict& sua_dict,
             return dal::data_layout::column_major;
         }
         else {
-            throw std::runtime_error("Wrong strides");
+            return dal::data_layout::unknown;
         }
     }
     else {

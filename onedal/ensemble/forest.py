@@ -29,7 +29,7 @@ from sklearnex import get_hyperparameters
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils import (
     _check_array,
     _check_n_features,
@@ -158,7 +158,7 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         seed = rs.randint(0, np.iinfo("i").max)
 
         onedal_params = {
-            "fptype": "float" if data.dtype == np.float32 else "double",
+            "fptype": data.dtype,
             "method": self.algorithm,
             "infer_mode": self.infer_mode,
             "voting_mode": self.voting_mode,
@@ -306,9 +306,9 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         else:
             data = (X, y)
         policy = self._get_policy(queue, *data)
-        data = _convert_to_supported(policy, *data)
+        data = to_table(*data, queue=queue)
         params = self._get_onedal_params(data[0])
-        train_result = module.train(policy, params, *to_table(*data))
+        train_result = module.train(policy, params, *data)
 
         self._onedal_model = train_result.model
 
@@ -354,29 +354,33 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
         policy = self._get_policy(queue, X)
 
         model = self._onedal_model
-        X = _convert_to_supported(policy, X)
+        X = to_table(X, queue=queue)
         params = self._get_onedal_params(X)
         if hparams is not None and not hparams.is_default:
-            result = module.infer(policy, params, hparams.backend, model, to_table(X))
+            result = module.infer(policy, params, hparams.backend, model, X)
         else:
-            result = module.infer(policy, params, model, to_table(X))
+            result = module.infer(policy, params, model, X)
 
         y = from_table(result.responses)
         return y
 
-    def _predict_proba(self, X, module, queue):
+    def _predict_proba(self, X, module, queue, hparams=None):
         _check_is_fitted(self)
         X = _check_array(
             X, dtype=[np.float64, np.float32], force_all_finite=True, accept_sparse=False
         )
         _check_n_features(self, X, False)
         policy = self._get_policy(queue, X)
-        X = _convert_to_supported(policy, X)
+        X = to_table(X, queue=queue)
         params = self._get_onedal_params(X)
         params["infer_mode"] = "class_probabilities"
 
         model = self._onedal_model
-        result = module.infer(policy, params, model, to_table(X))
+        if hparams is not None and not hparams.is_default:
+            result = module.infer(policy, params, hparams.backend, model, X)
+        else:
+            result = module.infer(policy, params, model, X)
+
         y = from_table(result.probabilities)
         return y
 
@@ -472,8 +476,13 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
         return np.take(self.classes_, pred.ravel().astype(np.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
+        hparams = get_hyperparameters("decision_forest", "infer")
+
         return super()._predict_proba(
-            X, self._get_backend("decision_forest", "classification", None), queue
+            X,
+            self._get_backend("decision_forest", "classification", None),
+            queue,
+            hparams,
         )
 
 
