@@ -39,20 +39,26 @@ else:
 if daal_check_version((2024, "P", 700)):
     from onedal.utils.validation import _assert_all_finite as _onedal_assert_all_finite
 
-    def _onedal_supported_format(X, xp=None):
+    def _onedal_supported_format(X, xp):
         # array_api does not have a `strides` or `flags` attribute for testing memory
         # order. When dlpack support is brought in for oneDAL, general support for
         # array_api can be enabled and the hasattr check can be removed.
         # _onedal_supported_format is therefore conservative in verifying attributes and
         # does not support array_api. This will block onedal_assert_all_finite from being
         # used for array_api inputs but will allow dpnp ndarrays and dpctl tensors.
-        return X.dtype in [xp.float32, xp.float64] and hasattr(X, "flags")
+        # only check contiguous arrays to prevent unnecessary copying of data, even if
+        # non-contiguous arrays can now be converted to oneDAL tables.
+        return (
+            X.dtype in [xp.float32, xp.float64]
+            and hasattr(X, "flags")
+            and (X.flags["C_CONTIGUOUS"] or X.flags["F_CONTIGUOUS"])
+        )
 
 else:
     from daal4py.utils.validation import _assert_all_finite as _onedal_assert_all_finite
     from onedal.utils._array_api import _is_numpy_namespace
 
-    def _onedal_supported_format(X, xp=None):
+    def _onedal_supported_format(X, xp):
         # daal4py _assert_all_finite only supports numpy namespaces, use internally-
         # defined check to validate inputs, otherwise offload to sklearn
         return X.dtype in [xp.float32, xp.float64] and _is_numpy_namespace(xp)
@@ -115,6 +121,11 @@ def validate_data(
     if ensure_all_finite:
         # run local finite check
         allow_nan = ensure_all_finite == "allow-nan"
+        # the return object from validate_data can be a single
+        # element (either x or y) or both (as a tuple). An iterator along with
+        # check_x and check_y can go through the output properly without
+        # stacking layers of if statements to make sure the proper input_name
+        # is used
         arg = iter(out if isinstance(out, tuple) else (out,))
         if check_x:
             assert_all_finite(next(arg), allow_nan=allow_nan, input_name="X")
@@ -123,11 +134,9 @@ def validate_data(
 
     if check_y and "dtype" in kwargs:
         # validate_data does not do full dtype conversions, as it uses check_X_y
-        # oneDAL can make tables from [int32, int64, float32, float64], requiring
+        # oneDAL can make tables from [int32, float32, float64], requiring
         # a dtype check and conversion. This will query the array_namespace and
-        # convert y as necessary. This is done after assert_all_finite, because
-        # int y arrays do not need to finite check, and this will lead to a speedup
-        # in comparison to sklearn
+        # convert y as necessary. This is important especially for regressors.
         dtype = kwargs["dtype"]
         if not isinstance(dtype, (tuple, list)):
             dtype = tuple(dtype)
@@ -143,7 +152,7 @@ def validate_data(
 
 
 def _check_sample_weight(
-    sample_weight, X, dtype=None, copy=False, only_non_negative=False
+    sample_weight, X, dtype=None, copy=False, ensure_non_negative=False
 ):
 
     n_samples = _num_samples(X)
@@ -192,7 +201,7 @@ def _check_sample_weight(
                 )
             )
 
-    if only_non_negative:
+    if ensure_non_negative:
         check_non_negative(sample_weight, "`sample_weight`")
 
     return sample_weight

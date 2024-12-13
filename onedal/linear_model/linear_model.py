@@ -24,8 +24,8 @@ from daal4py.sklearn._utils import daal_check_version
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common.hyperparameters import get_hyperparameters
-from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils import _check_n_features, _num_features
+from ..datatypes import from_table, to_table
+from ..utils import _check_n_features, _check_X_y, _num_features
 
 
 class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
@@ -75,9 +75,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         print(intercept.shape, coef.shape)
         packed_coefficients = np.concatenate((intercept, coef), axis=1)
 
-        packed_coefficients = _convert_to_supported(policy, packed_coefficients)
-
-        model.packed_coefficients = to_table(packed_coefficients)
+        model.packed_coefficients = to_table(
+            packed_coefficients, queue=getattr(policy, "_queue", None)
+        )
 
         self._onedal_model = model
 
@@ -160,10 +160,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         else:
             model = self._create_model(policy)
 
-        X_table = to_table(_convert_to_supported(policy, X))
+        X_table = to_table(X, queue=queue)
         params = self._get_onedal_params(X_table.dtype)
 
-        X_table = to_table(X)
         result = module.infer(policy, params, model, X_table)
         y = from_table(result.responses)
 

@@ -17,7 +17,7 @@
 import numpy as np
 
 from ..common.hyperparameters import get_hyperparameters
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils import _check_X_y, _num_features
 from .linear_model import BaseLinearRegression
 
@@ -57,10 +57,10 @@ class BaseIncrementalLinear(BaseLinearRegression):
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
-        X_table, y_table = to_table(*_convert_to_supported(policy, X, y))
+        X_table, y_table = to_table(X, y, queue=queue)
 
         if not hasattr(self, "_dtype"):
-            self._dtype = X.dtype
+            self._dtype = X_table.dtype
             self._params = self._get_onedal_params(self._dtype)
 
         hparams = get_hyperparameters("linear_regression", "train")
