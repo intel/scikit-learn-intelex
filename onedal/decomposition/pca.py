@@ -23,8 +23,7 @@ from sklearn.utils.extmath import stable_cumsum
 
 from .._config import _get_config
 from ..common._base import BaseEstimator
-from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils._array_api import _get_sycl_namespace
+from ..datatypes import from_table, to_table
 
 
 class BasePCA(BaseEstimator, metaclass=ABCMeta):
@@ -50,7 +49,7 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         elif stage == "predict":
             n_components = self.n_components_
         return {
-            "fptype": "float" if data.dtype == np.float32 else "double",
+            "fptype": data.dtype,
             "method": self.method,
             "n_components": n_components,
             "is_deterministic": self.is_deterministic,
@@ -139,16 +138,13 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
 
         policy = self._get_policy(queue, X)
         model = self._create_model()
-        X = _convert_to_supported(policy, X)
-        params = self._get_onedal_params(X, stage="predict")
+        X_table = to_table(X, queue=queue)
+        params = self._get_onedal_params(X_table, stage="predict")
 
         X_table = to_table(X, sua_iface=sua_iface)
 
-        result = self._get_backend(
+        return self._get_backend(
             "decomposition", "dim_reduction", "infer", policy, params, model, X_table
-        )
-        return from_table(
-            result.transformed_data, sua_iface=sua_iface, sycl_queue=queue, xp=xp
         )
 
 
@@ -169,12 +165,11 @@ class PCA(BasePCA):
         # fails to be converted to oneDAL table
         if isinstance(X, np.ndarray) and not X.flags["OWNDATA"]:
             X = X.copy()
-        X = _convert_to_supported(policy, X)
-        X_table = to_table(X, sua_iface=sua_iface)
 
+        X = to_table(X, queue=queue)
         params = self._get_onedal_params(X)
         result = self._get_backend(
-            "decomposition", "dim_reduction", "train", policy, params, X_table
+            "decomposition", "dim_reduction", "train", policy, params, X
         )
 
         self.mean_ = xp.reshape(

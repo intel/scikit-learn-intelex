@@ -25,7 +25,7 @@ from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..common._estimator_checks import _check_is_fitted
 from ..common.hyperparameters import get_hyperparameters
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils import _check_array, _check_n_features, _check_X_y, _num_features
 from ..utils._array_api import _get_sycl_namespace
 
@@ -45,7 +45,7 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
     def _get_onedal_params(self, dtype=np.float32):
         intercept = "intercept|" if self.fit_intercept else ""
         params = {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": self.algorithm,
             "intercept": self.fit_intercept,
             "result_option": (intercept + "coefficients"),
@@ -93,9 +93,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         if self.fit_intercept:
             packed_coefficients[:, 0][:, np.newaxis] = intercept
 
-        packed_coefficients = _convert_to_supported(policy, packed_coefficients)
-
-        model.packed_coefficients = to_table(packed_coefficients)
+        model.packed_coefficients = to_table(
+            packed_coefficients, queue=getattr(policy, "_queue", None)
+        )
 
         self._onedal_model = model
 
@@ -141,10 +141,9 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         else:
             model = self._create_model(policy)
 
-        X = _convert_to_supported(policy, X)
-        params = self._get_onedal_params(get_dtype(X))
+        X_table = to_table(X, queue=queue)
+        params = self._get_onedal_params(X_table.dtype)
 
-        X_table = to_table(X, sua_iface=sua_iface)
         result = module.infer(policy, params, model, X_table)
         y = from_table(result.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp)
 
@@ -228,9 +227,8 @@ class LinearRegression(BaseLinearRegression):
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
-        X, y = _convert_to_supported(policy, X, y)
-        params = self._get_onedal_params(get_dtype(X))
-        X_table, y_table = to_table(X, y, sua_iface=sua_iface)
+        X_table, y_table = to_table(X, y, queue=queue)
+        params = self._get_onedal_params(X_table.dtype)
 
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
@@ -312,13 +310,15 @@ class Ridge(BaseLinearRegression):
         """
         module = self._get_backend("linear_model", "regression")
 
-        sua_iface, xp, _ = _get_sycl_namespace(X)
-        if xp is None:
-            xp = np
-        use_raw_input = _get_config().get("use_raw_input") is True
-        if use_raw_input and sua_iface is not None:
-            queue = X.sycl_queue
+        if not isinstance(X, np.ndarray):
+            X = np.asarray(X)
 
+        dtype = get_dtype(X)
+        if dtype not in [np.float32, np.float64]:
+            dtype = np.float64
+            X = X.astype(dtype, copy=self.copy_X)
+
+        use_raw_input = _get_config().get("use_raw_input") is True
         if not use_raw_input:
             X = _check_array(
                 X,
@@ -327,18 +327,15 @@ class Ridge(BaseLinearRegression):
                 ensure_2d=False,
                 copy=self.copy_X,
             )
-
-            y = np.asarray(y).astype(dtype=get_dtype(X))
-
             X, y = _check_X_y(X, y, force_all_finite=False, accept_2d_y=True)
+            y = np.asarray(y).astype(dtype=get_dtype(X))
 
         policy = self._get_policy(queue, X, y)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
-        X, y = _convert_to_supported(policy, X, y)
-        params = self._get_onedal_params(get_dtype(X))
-        X_table, y_table = to_table(X, y, sua_iface=sua_iface)
+        X_table, y_table = to_table(X, y, queue=queue)
+        params = self._get_onedal_params(X.dtype)
 
         result = module.train(policy, params, X_table, y_table)
         self._onedal_model = result.model

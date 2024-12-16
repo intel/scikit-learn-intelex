@@ -21,7 +21,7 @@ from daal4py.sklearn._utils import get_dtype, make2d
 from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..common._mixin import ClusterMixin
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils import _check_array
 from ..utils._array_api import _asarray, _get_sycl_namespace
 
@@ -50,7 +50,7 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
 
     def _get_onedal_params(self, dtype=np.float32):
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "by_default",
             "min_observations": int(self.min_samples),
             "epsilon": float(self.eps),
@@ -67,25 +67,14 @@ class BaseDBSCAN(BaseEstimator, ClusterMixin):
             queue = X.sycl_queue
 
         policy = self._get_policy(queue, X)
-
         if not use_raw_input:
             X = _check_array(X, accept_sparse="csr", dtype=[np.float64, np.float32])
             sample_weight = make2d(sample_weight) if sample_weight is not None else None
             X = make2d(X)
+        X_table, sample_weight_table = to_table(X, sample_weight, queue=queue)
 
-        types = [np.float32, np.float64]
-        if get_dtype(X) not in types:
-            X = X.astype(np.float64)
-        X = _convert_to_supported(policy, X)
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
-
-        X_table = to_table(X, sua_iface=sua_iface)
-        weights_table = to_table(
-            sample_weight, sua_iface=_get_sycl_namespace(sample_weight)[0]
-        )
-
-        result = module.compute(policy, params, X_table, weights_table)
+        params = self._get_onedal_params(X_table.dtype)
+        result = module.compute(policy, params, X_table, sample_weight_table)
 
         self.labels_ = xp.reshape(
             from_table(result.responses, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1

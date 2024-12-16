@@ -20,7 +20,7 @@ import numpy as np
 
 from .._config import _get_config
 from ..common._base import BaseEstimator
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils import _is_csr
 from ..utils._array_api import _get_sycl_namespace
 from ..utils.validation import _check_array
@@ -58,7 +58,7 @@ class BaseBasicStatistics(BaseEstimator, metaclass=ABCMeta):
     def _get_onedal_params(self, is_csr, dtype=np.float32):
         options = self._get_result_options(self.options)
         return {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": "sparse" if is_csr else self.algorithm,
             "result_option": options,
         }
@@ -73,35 +73,28 @@ class BasicStatistics(BaseBasicStatistics):
         super().__init__(result_options, algorithm)
 
     def fit(self, data, sample_weight=None, queue=None):
+        policy = self._get_policy(queue, data, sample_weight)
+
         is_csr = _is_csr(data)
 
         use_raw_input = _get_config().get("use_raw_input", False) is True
-
-        # All data should use the same sycl queue
-        if use_raw_input and _get_sycl_namespace(data)[0] is not None:
-            queue = data.sycl_queue
-
         if not use_raw_input:
             if data is not None and not is_csr:
                 data = _check_array(data, ensure_2d=False)
             if sample_weight is not None:
                 sample_weight = _check_array(sample_weight, ensure_2d=False)
 
-        # TODO
-        # use xp for dtype.
-        policy = self._get_policy(queue, data, sample_weight)
-        data, sample_weight = _convert_to_supported(policy, data, sample_weight)
+        is_single_dim = data.ndim == 1
+        data_table, weights_table = to_table(data, sample_weight, queue=queue)
 
-        data_table = to_table(data, sua_iface=_get_sycl_namespace(data)[0])
-        weights_table = to_table(
-            sample_weight, sua_iface=_get_sycl_namespace(sample_weight)[0]
-        )
-
-        dtype = data.dtype
+        dtype = data_table.dtype
         raw_result = self._compute_raw(data_table, weights_table, policy, dtype, is_csr)
         for opt, raw_value in raw_result.items():
             value = from_table(raw_value).ravel()
-            setattr(self, opt, value[0]) if data.ndim == 1 else setattr(self, opt, value)
+            if is_single_dim:
+                setattr(self, opt, value[0])
+            else:
+                setattr(self, opt, value)
 
         return self
 

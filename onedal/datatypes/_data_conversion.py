@@ -18,10 +18,7 @@ import warnings
 
 import numpy as np
 
-from daal4py.sklearn._utils import make2d
 from onedal import _backend, _is_dpc_backend
-
-from ..utils import _is_csr
 
 
 def _apply_and_pass(func, *args, **kwargs):
@@ -30,44 +27,59 @@ def _apply_and_pass(func, *args, **kwargs):
     return tuple(map(lambda arg: func(arg, **kwargs), args))
 
 
+def _convert_one_to_table(arg, queue=None):
+    # All inputs for table conversion must be array-like or sparse, not scalars
+    return _backend.to_table(np.atleast_2d(arg) if np.isscalar(arg) else arg, queue)
+
+
+def to_table(*args, queue=None):
+    """Create oneDAL tables from scalars and/or arrays.
+
+    Note: this implementation can be used with scipy.sparse, numpy ndarrays,
+    DPCTL/DPNP usm_ndarrays and scalars. Tables will use pointers to the
+    original array data. Scalars and non-contiguous arrays will be copies.
+    Arrays may be modified in-place by oneDAL during computation. This works
+    for data located on CPU and SYCL-enabled Intel GPUs. Each array may only
+    be of a single datatype (i.e. each must be homogeneous).
+
+    Parameters
+    ----------
+    *args : {scalar, numpy array, sycl_usm_ndarray, csr_matrix, or csr_array}
+        arg1, arg2... The arrays should be given as arguments.
+
+    Returns
+    -------
+    tables: {oneDAL homogeneous tables}
+    """
+    return _apply_and_pass(_convert_one_to_table, *args, queue=queue)
+
+
 if _is_dpc_backend:
 
-    from ..utils._dpep_helpers import dpctl_available, dpnp_available
-
-    if dpctl_available:
-        import dpctl.tensor as dpt
-
-    if dpnp_available:
+    try:
+        # try/catch is used here instead of dpep_helpers because
+        # of circular import issues of _data_conversion.py and
+        # utils/validation.py. This is a temporary fix until the
+        # issue with dpnp is addressed, at which point this can
+        # be removed entirely.
         import dpnp
 
-    from ..common._policy import _HostInteropPolicy
-
-    def _convert_to_supported(policy, *data):
-        def func(x):
-            return x
-
-        # CPUs support FP64 by default
-        if isinstance(policy, _HostInteropPolicy):
-            return _apply_and_pass(func, *data)
-
-        # It can be either SPMD or DPCPP policy
-        device = policy._queue.sycl_device
-
-        def convert_or_pass(x):
-            if (x is not None) and (x.dtype == np.float64):
-                warnings.warn(
-                    "Data will be converted into float32 from "
-                    "float64 because device does not support it",
-                    RuntimeWarning,
-                )
-                return x.astype(np.float32)
+        def _table_to_array(table, xp=None):
+            # By default DPNP ndarray created with a copy.
+            # TODO:
+            # investigate why dpnp.array(table, copy=False) doesn't work.
+            # Work around with using dpctl.tensor.asarray.
+            if xp == dpnp:
+                return dpnp.array(dpnp.dpctl.tensor.asarray(table), copy=False)
             else:
-                return x
+                return xp.asarray(table)
 
-        if not device.has_aspect_fp64:
-            func = convert_or_pass
+    except ImportError:
 
-        return _apply_and_pass(func, *data)
+        def _table_to_array(table, xp=None):
+            return xp.asarray(table)
+
+    from ..common._policy import _HostInteropPolicy
 
     def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to
@@ -87,34 +99,11 @@ if _is_dpc_backend:
                     _backend.from_table(table), usm_type="device", sycl_queue=sycl_queue
                 )
             else:
-                xp_name = xp.__name__
-                if dpnp_available and xp_name == "dpnp":
-                    # By default DPNP ndarray created with a copy.
-                    # TODO:
-                    # investigate why dpnp.array(table, copy=False) doesn't work.
-                    # Work around with using dpctl.tensor.asarray.
-                    return dpnp.array(dpt.asarray(table), copy=False)
-                else:
-                    return xp.asarray(table)
+                return _table_to_array(table, xp=xp)
+
         return _backend.from_table(table)
 
-    def convert_one_to_table(arg, sua_iface=None):
-        # Note: currently only oneDAL homogen tables are supported and the
-        # contiuginity of the input array should be checked in advance.
-        if arg is not None and sua_iface:
-            return _backend.sua_iface_to_table(arg)
-
-        if not _is_csr(arg):
-            arg = make2d(arg)
-        return _backend.to_table(arg)
-
 else:
-
-    def _convert_to_supported(policy, *data):
-        def func(x):
-            return x
-
-        return _apply_and_pass(func, *data)
 
     def convert_one_from_table(table, sycl_queue=None, sua_iface=None, xp=None):
         # Currently only `__sycl_usm_array_interface__` protocol used to
@@ -125,22 +114,8 @@ else:
             )
         return _backend.from_table(table)
 
-    def convert_one_to_table(arg, sua_iface=None):
-        if sua_iface:
-            raise RuntimeError(
-                "SYCL usm array conversion to table requires the DPC backend"
-            )
-
-        if not _is_csr(arg):
-            arg = make2d(arg)
-        return _backend.to_table(arg)
-
 
 def from_table(*args, sycl_queue=None, sua_iface=None, xp=None):
     return _apply_and_pass(
         convert_one_from_table, *args, sycl_queue=sycl_queue, sua_iface=sua_iface, xp=xp
     )
-
-
-def to_table(*args, sua_iface=None):
-    return _apply_and_pass(convert_one_to_table, *args, sua_iface=sua_iface)

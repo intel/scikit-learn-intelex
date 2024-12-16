@@ -19,7 +19,7 @@ import numpy as np
 from daal4py.sklearn._utils import get_dtype
 
 from .._config import _get_config
-from ..datatypes import _convert_to_supported, from_table, to_table
+from ..datatypes import from_table, to_table
 from ..utils import _check_array
 from ..utils._array_api import _get_sycl_namespace
 from .basic_statistics import BaseBasicStatistics
@@ -72,9 +72,20 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self._reset()
 
     def _reset(self):
+        self._need_to_finalize = False
         self._partial_result = self._get_backend(
             "basic_statistics", None, "partial_compute_result"
         )
+
+    def __getstate__(self):
+        # Since finalize_fit can't be dispatched without directly provided queue
+        # and the dispatching policy can't be serialized, the computation is finalized
+        # here and the policy is not saved in serialized data.
+        self.finalize_fit()
+        data = self.__dict__.copy()
+        data.pop("_queue", None)
+
+        return data
 
     def partial_fit(self, X, weights=None, queue=None):
         """
@@ -108,7 +119,6 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
 
         self._queue = queue
         policy = self._get_policy(queue, X)
-        X, weights = _convert_to_supported(policy, X, weights)
 
         if not use_raw_input:
             X = _check_array(
@@ -126,8 +136,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             dtype = get_dtype(X)
             self._onedal_params = self._get_onedal_params(False, dtype=dtype)
 
-        X_table = to_table(X, sua_iface=sua_iface)
-        weights_table = to_table(weights, sua_iface=_get_sycl_namespace(weights)[0])
+        X_table, weights_table = to_table(X, weights, queue=queue)
         self._partial_result = self._get_backend(
             "basic_statistics",
             None,
@@ -138,6 +147,9 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
             X_table,
             weights_table,
         )
+
+        self._need_to_finalize = True
+        return self
 
     def finalize_fit(self, queue=None):
         """
@@ -154,28 +166,24 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self : object
             Returns the instance itself.
         """
+        if self._need_to_finalize:
+            if queue is not None:
+                policy = self._get_policy(queue)
+            else:
+                policy = self._get_policy(self._queue)
 
-        queue = queue if queue is not None else self._queue
-        policy = self._get_policy(queue)
-
-        result = self._get_backend(
-            "basic_statistics",
-            None,
-            "finalize_compute",
-            policy,
-            self._onedal_params,
-            self._partial_result,
-        )
-        options = self._get_result_options(self.options).split("|")
-        for opt in options:
-            opt_value = self._input_xp.ravel(
-                from_table(
-                    getattr(result, opt),
-                    sua_iface=self._input_sua_iface,
-                    sycl_queue=queue,
-                    xp=self._input_xp,
-                )
+            result = self._get_backend(
+                "basic_statistics",
+                None,
+                "finalize_compute",
+                policy,
+                self._onedal_params,
+                self._partial_result,
             )
-            setattr(self, opt, opt_value)
+            options = self._get_result_options(self.options).split("|")
+            for opt in options:
+                setattr(self, opt, from_table(getattr(result, opt)).ravel())
+
+            self._need_to_finalize = False
 
         return self

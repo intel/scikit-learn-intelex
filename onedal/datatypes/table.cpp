@@ -72,26 +72,29 @@ ONEDAL_PY_INIT_MODULE(table) {
         const auto column_count = t.get_column_count();
         return py::make_tuple(row_count, column_count);
     });
+    table_obj.def_property_readonly("dtype", [](const table& t){
+        // returns a numpy dtype, even if source was not from numpy
+        return py::dtype(convert_dal_to_npy_type(t.get_metadata().get_data_type(0)));
+    });
 
 #ifdef ONEDAL_DATA_PARALLEL
     define_sycl_usm_array_property(table_obj);
 #endif // ONEDAL_DATA_PARALLEL
 
-    m.def("to_table", [](py::object obj) {
-        auto* obj_ptr = obj.ptr();
-        return convert_to_table(obj_ptr);
+    m.def("to_table", [](py::object obj, py::object queue) {
+        #ifdef ONEDAL_DATA_PARALLEL
+        if (py::hasattr(obj, "__sycl_usm_array_interface__")) {
+            return convert_from_sua_iface(obj);
+        }
+        #endif // ONEDAL_DATA_PARALLEL
+
+        return convert_to_table(obj, queue);
     });
 
     m.def("from_table", [](const dal::table& t) -> py::handle {
         auto* obj_ptr = convert_to_pyobject(t);
         return obj_ptr;
     });
-
-#ifdef ONEDAL_DATA_PARALLEL
-    m.def("sua_iface_to_table", [](py::object obj) {
-        return convert_from_sua_iface(obj);
-    });
-#endif // ONEDAL_DATA_PARALLEL
 }
 
 } // namespace oneapi::dal::python

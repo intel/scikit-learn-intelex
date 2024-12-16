@@ -17,14 +17,12 @@ from abc import ABCMeta
 
 import numpy as np
 
-from daal4py.sklearn._utils import daal_check_version, get_dtype
+from daal4py.sklearn._utils import daal_check_version
 
 from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
-from ..datatypes import _convert_to_supported, from_table, to_table
-from ..utils._array_api import _get_sycl_namespace
-from ..utils.validation import _check_array
+from ..datatypes import from_table, to_table
 
 
 class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
@@ -35,7 +33,7 @@ class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
 
     def _get_onedal_params(self, dtype=np.float32):
         params = {
-            "fptype": "float" if dtype == np.float32 else "double",
+            "fptype": dtype,
             "method": self.method,
         }
         if daal_check_version((2024, "P", 1)):
@@ -101,15 +99,10 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
             queue = X.sycl_queue
 
         policy = self._get_policy(queue, X)
-
         if not use_raw_input:
             X = _check_array(X, dtype=[np.float64, np.float32])
-
-        X = _convert_to_supported(policy, X)
-        X_table = to_table(X, sua_iface=sua_iface)
-
-        dtype = get_dtype(X)
-        params = self._get_onedal_params(dtype)
+        X = to_table(X, queue=queue)
+        params = self._get_onedal_params(X.dtype)
         hparams = get_hyperparameters("covariance", "compute")
         if hparams is not None and not hparams.is_default:
             result = self._get_backend(
@@ -119,12 +112,10 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
                 policy,
                 params,
                 hparams.backend,
-                X_table,
+                X,
             )
         else:
-            result = self._get_backend(
-                "covariance", None, "compute", policy, params, X_table
-            )
+            result = self._get_backend("covariance", None, "compute", policy, params, X)
         if daal_check_version((2024, "P", 1)) or (not self.bias):
             self.covariance_ = from_table(
                 result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp

@@ -18,13 +18,16 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 project("oneDAL python interface"
     LANGUAGES CXX
-    HOMEPAGE_URL https://github.com/oneapi-src/oneDAL
+    HOMEPAGE_URL https://github.com/uxlfoundation/oneDAL
 )
 
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+option(ADD_ONEDAL_RPATH "Adds oneDAL's file paths to the RPATH here" OFF)
+message(STATUS "ADD_ONEDAL_RPATH:" ${ADD_ONEDAL_RPATH})
 
 if(WIN32)
     # hint CMake to get python from PYTHON env. variable if defined
@@ -40,7 +43,11 @@ elseif(UNIX)
         set(CMAKE_INSTALL_RPATH "@loader_path/../../../")
     else()
         set(ONEDAL_PY_LINK_OPTIONS "-Wl,-z,noexecstack,-z,relro,-z,now,-fstack-protector-strong,-fno-strict-overflow,-fno-delete-null-pointer-checks,-fwrapv")
-        set(CMAKE_INSTALL_RPATH "$ORIGIN/../../../")
+        if(ADD_ONEDAL_RPATH)
+            set(CMAKE_INSTALL_RPATH "${oneDAL_LIBRARY_DIR}:$ORIGIN/../../../")
+        else()
+            set(CMAKE_INSTALL_RPATH "$ORIGIN/../../../")
+        endif()
     endif()
     set(WARNING_FLAGS "-Winit-self")
 else()

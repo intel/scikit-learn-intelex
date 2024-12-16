@@ -80,7 +80,7 @@ class BasicStatistics(IntelEstimator, BaseEstimator):
 
     Note
     ----
-    Attributes' names without the trailing underscore are
+    Names of attributes without the trailing underscore are
     supported currently but deprecated in 2025.1 and will be removed in 2026.0
 
     Note

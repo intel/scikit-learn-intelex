@@ -23,13 +23,15 @@ on:
       - main
   workflow_dispatch:
 
+permissions: read-all
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref_name }}-${{ github.event.number || github.sha }}
   cancel-in-progress: true
 
 env:
-  DPCTL_VERSION: 0.17.0
-  DPNP_VERSION: 0.15.0
+  DPCTL_VERSION: 0.18.1
+  DPNP_VERSION: 0.16.0
   DPCTL_PY_VERSIONS: '3.9\|3.11'
 
 jobs:
@@ -45,17 +47,12 @@ jobs:
           - PYTHON_VERSION: "3.11"
             SKLEARN_VERSION: "1.3"
     name: LinuxNightly/pip Python${{ matrix.PYTHON_VERSION }}_Sklearn${{ matrix.SKLEARN_VERSION }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
 
     steps:
       - name: Checkout Scikit-learn-intelex
         uses: actions/checkout@v4
-      - name: Checkout oneDAL
-        uses: actions/checkout@v4
-        with:
-          repository: oneapi-src/oneDAL
-          path: oneDAL
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -63,9 +60,10 @@ jobs:
       - name: Get run ID of "Nightly-build" workflow
         id: get-run-id
         run: |
-          OTHER_REPO="oneapi-src/oneDAL"
+          OTHER_REPO="uxlfoundation/oneDAL"
           WF_NAME="Nightly-build"
-          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --status success --jq .[0].databaseId`
+          JQ_QUERY='map(select(.event == "workflow_dispatch" or .event == "schedule")) | .[0].databaseId'
+          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId,event --status success --jq "${JQ_QUERY}"`
           echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
           echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
         env:
@@ -75,9 +73,17 @@ jobs:
         with:
           name: __release_lnx
           github-token: ${{ github.token }}
-          repository: oneapi-src/oneDAL
+          repository: uxlfoundation/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: ./__release_lnx
+      - name: Download oneDAL environment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: oneDAL_env
+          github-token: ${{ github.token }}
+          repository: uxlfoundation/oneDAL
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: .ci/env
       - name: Set Environment Variables
         id: set-env
         run: |
@@ -87,14 +93,18 @@ jobs:
           DPCFLAG="0"
           if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
           echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
+          # enable coverage report generation
+          echo "COVERAGE_RCFILE=$(readlink -f .coveragerc)" >> "$GITHUB_ENV"
       - name: apt-get
         run: sudo apt-get update && sudo apt-get install -y clang-format
       - name: dpcpp installation
         run: |
           # This CI system yields oneAPI dependencies from the oneDAL repository
-          bash ./oneDAL/.ci/env/apt.sh dpcpp
+          bash .ci/env/apt.sh dpcpp
       - name: describe system
-        run: bash .ci/scripts/describe_system.sh
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          bash .ci/scripts/describe_system.sh
       - name: Install develop requirements
         run: |
           python -m venv venv
@@ -119,19 +129,33 @@ jobs:
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
+          export COVERAGE_FILE=$(pwd)/.coverage.sklearnex
           cd .ci
           ../conda-recipe/run_test.sh
       - name: Sklearn testing
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
-          bash .ci/scripts/run_sklearn_tests.sh
+          export COVERAGE_FILE=$(pwd)/.coverage.sklearn
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU=cpu; fi
+          bash .ci/scripts/run_sklearn_tests.sh $CPU
+      - name: Create coverage report
+        run: |
+          source venv/bin/activate
+          coverage combine .coverage.sklearnex .coverage.sklearn
+          coverage json -o coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage_lnx_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
+          path: coverage.lnx${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
       - name: Sklearn testing [preview]
         run: |
           source venv/bin/activate
           source .github/scripts/activate_components.sh
+          if [ "${{ steps.set-env.outputs.DPCFLAG }}" == "" ]; then export CPU=cpu; fi
           export SKLEARNEX_PREVIEW='YES'
-          bash .ci/scripts/run_sklearn_tests.sh
+          bash .ci/scripts/run_sklearn_tests.sh $CPU
 
   sklearn_win:
     strategy:
@@ -159,9 +183,10 @@ jobs:
         id: get-run-id
         shell: bash
         run: |
-          OTHER_REPO="oneapi-src/oneDAL"
+          OTHER_REPO="uxlfoundation/oneDAL"
           WF_NAME="Nightly-build"
-          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId --status success --jq .[0].databaseId`
+          JQ_QUERY='map(select(.event == "workflow_dispatch" or .event == "schedule")) | .[0].databaseId'
+          RUN_ID=`gh run --repo ${OTHER_REPO} list --workflow "${WF_NAME}" --json databaseId,event --status success --jq "${JQ_QUERY}"`
           echo "Detected latest run id of ${RUN_ID} for workflow ${WF_NAME}"
           echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
         env:
@@ -171,7 +196,7 @@ jobs:
         with:
           name: __release_win
           github-token: ${{ github.token }}
-          repository: oneapi-src/oneDAL
+          repository: uxlfoundation/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: ./__release_win
       - name: Download Intel BaseKit artifact
@@ -179,7 +204,7 @@ jobs:
         with:
           name: intel_oneapi_basekit
           github-token: ${{ github.token }}
-          repository: oneapi-src/oneDAL
+          repository: uxlfoundation/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
       - name: Decompress Intel BaseKit
         shell: cmd
@@ -188,22 +213,20 @@ jobs:
           echo "Unzip complete"
       - name: Set Environment Variables
         id: set-env
-        shell: bash
+        shell: cmd
         run: |
-          echo "C:\msys64\usr\bin;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\bin;" >> $GITHUB_PATH
-          # Disable SPMD testing
-          echo "NO_DIST=1" >> "$GITHUB_ENV"
-          # Determine dpctl support
-          DPCFLAG="0"
-          if [ $(echo ${{ matrix.PYTHON_VERSION }} | grep '${{ env.DPCTL_PY_VERSIONS }}') ]; then DPCFLAG=''; fi
-          echo "DPCFLAG=${DPCFLAG}" >> "$GITHUB_OUTPUT"
+          echo C:\msys64\usr\bin;>> %GITHUB_PATH%
+          echo NO_DIST=YES>> %GITHUB_ENV%
+          set DPCTL_TEMP="${{ env.DPCTL_PY_VERSIONS }}"
+          if not %DPCTL_TEMP:${{ matrix.PYTHON_VERSION }}=%==%DPCTL_TEMP% (echo DPCFLAG=>> %GITHUB_OUTPUT%) else (echo DPCFLAG="0">> %GITHUB_OUTPUT%)
+          echo COVERAGE_RCFILE=%cd%\.coveragerc>> %GITHUB_ENV%
       - name: Download Intel OpenCL CPU Runtime artifact
         if: ${{ steps.set-env.outputs.DPCFLAG == '' }}
         uses: actions/download-artifact@v4
         with:
           name: opencl_rt_installer
           github-token: ${{ github.token }}
-          repository: oneapi-src/oneDAL
+          repository: uxlfoundation/oneDAL
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: .
       - name: Install Intel OpenCL CPU Runtime
@@ -224,7 +247,6 @@ jobs:
         run: |
           call .\venv\Scripts\activate.bat
           call .\oneapi\setvars.bat
-          call .\oneapi\compiler\latest\bin\sycl-ls.exe
           bash .ci/scripts/describe_system.sh
       - name: Build daal4py/sklearnex
         shell: cmd
@@ -251,18 +273,33 @@ jobs:
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
           set PYTHON=python
+          set COVERAGE_FILE=%cd%\.coverage.sklearnex
           cd ..
-          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\ --json-report
+          call scikit-learn-intelex\conda-recipe\run_test.bat scikit-learn-intelex\
       - name: Sklearn testing
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
-          bash .ci/scripts/run_sklearn_tests.sh
+          set COVERAGE_FILE=%cd%\.coverage.sklearn
+          if "${{ steps.set-env.outputs.DPCFLAG }}"=="" set CPU=cpu
+          bash .ci/scripts/run_sklearn_tests.sh %CPU%
+      - name: Create coverage report
+        shell: cmd
+        run: |
+          call .\venv\Scripts\activate.bat
+          coverage combine .coverage.sklearnex .coverage.sklearn
+          coverage json -o coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage_win_Py${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}
+          path: coverage.win${{ matrix.PYTHON_VERSION }}_${{ matrix.SKLEARN_VERSION }}.json
       - name: Sklearn testing [preview]
         shell: cmd
         run: |
           call .\venv\Scripts\activate.bat
           call .\.github\scripts\activate_components.bat ${{ steps.set-env.outputs.DPCFLAG }}
+          if "${{ steps.set-env.outputs.DPCFLAG }}"=="" set CPU=cpu
           set SKLEARNEX_PREVIEW=YES
-          bash .ci/scripts/run_sklearn_tests.sh
+          bash .ci/scripts/run_sklearn_tests.sh %CPU%

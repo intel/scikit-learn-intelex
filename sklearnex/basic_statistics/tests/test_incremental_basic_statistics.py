@@ -19,12 +19,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from daal4py.sklearn._utils import daal_check_version
-from onedal.basic_statistics.tests.test_basic_statistics import (
-    expected_max,
-    expected_mean,
-    expected_sum,
-    options_and_tests,
-)
+from onedal.basic_statistics.tests.utils import options_and_tests
 from onedal.tests.utils._dataframes_support import (
     _convert_to_dataframe,
     get_dataframes_and_queues,
@@ -75,15 +70,15 @@ def test_partial_fit_multiple_options_on_gold_data(dataframe, queue, weighted, d
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
-@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("result_option", options_and_tests.keys())
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_partial_fit_single_option_on_random_data(
-    dataframe, queue, num_batches, option, row_count, column_count, weighted, dtype
+    dataframe, queue, num_batches, result_option, row_count, column_count, weighted, dtype
 ):
-    result_option, function, tols = option
+    function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
@@ -155,15 +150,15 @@ def test_partial_fit_multiple_options_on_random_data(
     if weighted:
         weighted_data = np.diag(weights) @ X
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(weighted_data),
-            expected_max(weighted_data),
-            expected_sum(weighted_data),
+            options_and_tests["mean"][0](weighted_data),
+            options_and_tests["max"][0](weighted_data),
+            options_and_tests["sum"][0](weighted_data),
         )
     else:
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(X),
-            expected_max(X),
-            expected_sum(X),
+            options_and_tests["mean"][0](X),
+            options_and_tests["max"][0](X),
+            options_and_tests["sum"][0](X),
         )
 
     tol = 3e-4 if res_mean.dtype == np.float32 else 1e-7
@@ -207,8 +202,8 @@ def test_partial_fit_all_option_on_random_data(
     if weighted:
         weighted_data = np.diag(weights) @ X
 
-    for option in options_and_tests:
-        result_option, function, tols = option
+    for result_option in options_and_tests:
+        function, tols = options_and_tests[result_option]
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
@@ -255,15 +250,15 @@ def test_fit_multiple_options_on_gold_data(dataframe, queue, weighted, dtype):
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("num_batches", [2, 10])
-@pytest.mark.parametrize("option", options_and_tests)
+@pytest.mark.parametrize("result_option", options_and_tests.keys())
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("weighted", [True, False])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_fit_single_option_on_random_data(
-    dataframe, queue, num_batches, option, row_count, column_count, weighted, dtype
+    dataframe, queue, num_batches, result_option, row_count, column_count, weighted, dtype
 ):
-    result_option, function, tols = option
+    function, tols = options_and_tests[result_option]
     fp32tol, fp64tol = tols
     seed = 77
     gen = np.random.default_rng(seed)
@@ -327,15 +322,15 @@ def test_fit_multiple_options_on_random_data(
     if weighted:
         weighted_data = np.diag(weights) @ X
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(weighted_data),
-            expected_max(weighted_data),
-            expected_sum(weighted_data),
+            options_and_tests["mean"][0](weighted_data),
+            options_and_tests["max"][0](weighted_data),
+            options_and_tests["sum"][0](weighted_data),
         )
     else:
         gtr_mean, gtr_max, gtr_sum = (
-            expected_mean(X),
-            expected_max(X),
-            expected_sum(X),
+            options_and_tests["mean"][0](X),
+            options_and_tests["max"][0](X),
+            options_and_tests["sum"][0](X),
         )
 
     tol = 3e-4 if res_mean.dtype == np.float32 else 1e-7
@@ -373,8 +368,8 @@ def test_fit_all_option_on_random_data(
     if weighted:
         weighted_data = np.diag(weights) @ X
 
-    for option in options_and_tests:
-        result_option, function, tols = option
+    for result_option in options_and_tests:
+        function, tols = options_and_tests[result_option]
         fp32tol, fp64tol = tols
         res = getattr(result, result_option)
         if weighted:
@@ -402,3 +397,59 @@ def test_warning():
             assert len(warn_record) == 0, i
         else:
             assert len(warn_record) == 1, i
+
+
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sklearnex_incremental_estimatior_pickle(dataframe, queue, dtype):
+    import pickle
+
+    from sklearnex.basic_statistics import IncrementalBasicStatistics
+
+    incbs = IncrementalBasicStatistics()
+
+    # Check that estimator can be serialized without any data.
+    dump = pickle.dumps(incbs)
+    incbs_loaded = pickle.loads(dump)
+    seed = 77
+    gen = np.random.default_rng(seed)
+    X = gen.uniform(low=-0.3, high=+0.7, size=(10, 10))
+    X = X.astype(dtype)
+    X_split = np.array_split(X, 2)
+    X_split_df = _convert_to_dataframe(X_split[0], sycl_queue=queue, target_df=dataframe)
+    incbs.partial_fit(X_split_df)
+    incbs_loaded.partial_fit(X_split_df)
+
+    # Check that estimator can be serialized after partial_fit call.
+    dump = pickle.dumps(incbs_loaded)
+    incbs_loaded = pickle.loads(dump)
+
+    X_split_df = _convert_to_dataframe(X_split[1], sycl_queue=queue, target_df=dataframe)
+    incbs.partial_fit(X_split_df)
+    incbs_loaded.partial_fit(X_split_df)
+    dump = pickle.dumps(incbs)
+    incbs_loaded = pickle.loads(dump)
+    assert incbs.batch_size == incbs_loaded.batch_size
+    assert incbs.n_features_in_ == incbs_loaded.n_features_in_
+    assert incbs.n_samples_seen_ == incbs_loaded.n_samples_seen_
+    if hasattr(incbs, "_parameter_constraints"):
+        assert incbs._parameter_constraints == incbs_loaded._parameter_constraints
+    assert incbs.n_jobs == incbs_loaded.n_jobs
+    for result_option in options_and_tests:
+        _, tols = options_and_tests[result_option]
+        fp32tol, fp64tol = tols
+        res = getattr(incbs, result_option)
+        res_loaded = getattr(incbs_loaded, result_option)
+        tol = fp32tol if res.dtype == np.float32 else fp64tol
+        assert_allclose(res, res_loaded, atol=tol)
+
+    # Check that finalized estimator can be serialized.
+    dump = pickle.dumps(incbs_loaded)
+    incbs_loaded = pickle.loads(dump)
+    for result_option in options_and_tests:
+        _, tols = options_and_tests[result_option]
+        fp32tol, fp64tol = tols
+        res = getattr(incbs, result_option)
+        res_loaded = getattr(incbs_loaded, result_option)
+        tol = fp32tol if res.dtype == np.float32 else fp64tol
+        assert_allclose(res, res_loaded, atol=tol)
