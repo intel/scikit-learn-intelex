@@ -122,8 +122,6 @@ class BaseLinearRegression(BaseEstimator, metaclass=ABCMeta):
         _check_is_fitted(self)
 
         sua_iface, xp, _ = _get_sycl_namespace(X)
-        if xp is None:
-            xp = np
         use_raw_input = _get_config().get("use_raw_input") is True
 
         policy = self._get_policy(queue, X)
@@ -203,8 +201,6 @@ class LinearRegression(BaseLinearRegression):
         module = self._get_backend("linear_model", "regression")
 
         sua_iface, xp, _ = _get_sycl_namespace(X)
-        if xp is None:
-            xp = np
         use_raw_input = _get_config().get("use_raw_input") is True
         if use_raw_input and sua_iface is not None:
             queue = X.sycl_queue
@@ -309,6 +305,7 @@ class Ridge(BaseLinearRegression):
             Fitted Estimator.
         """
         module = self._get_backend("linear_model", "regression")
+        _, xp, _ = _get_sycl_namespace(X)
 
         if not isinstance(X, np.ndarray):
             X = np.asarray(X)
@@ -341,7 +338,7 @@ class Ridge(BaseLinearRegression):
         self._onedal_model = result.model
 
         packed_coefficients = from_table(
-            result.model.packed_coefficients, sua_iface=sua_iface, sycl_queue=queue, xp=xp
+            result.model.packed_coefficients, sycl_queue=queue
         )
         self.coef_, self.intercept_ = (
             packed_coefficients[:, 1:],

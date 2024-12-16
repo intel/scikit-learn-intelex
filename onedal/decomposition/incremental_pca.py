@@ -224,5 +224,5 @@ class IncrementalPCA(BasePCA):
             self.noise_variance_ = self._compute_noise_variance(
                 self.n_components_, min(self.n_samples_seen_, self.n_features_in_)
             )
-        self._need_to_finalize = False
+            self._need_to_finalize = False
         return self

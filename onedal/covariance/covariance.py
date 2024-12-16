@@ -23,6 +23,8 @@ from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import from_table, to_table
+from ..utils import _check_array
+from ..utils._array_api import _get_sycl_namespace
 
 
 class BaseEmpiricalCovariance(BaseEstimator, metaclass=ABCMeta):
@@ -117,20 +119,14 @@ class EmpiricalCovariance(BaseEmpiricalCovariance):
         else:
             result = self._get_backend("covariance", None, "compute", policy, params, X)
         if daal_check_version((2024, "P", 1)) or (not self.bias):
-            self.covariance_ = from_table(
-                result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp
-            )
+            self.covariance_ = from_table(result.cov_matrix, sycl_queue=queue)
         else:
             self.covariance_ = (
-                from_table(
-                    result.cov_matrix, sua_iface=sua_iface, sycl_queue=queue, xp=xp
-                )
+                from_table(result.cov_matrix, sycl_queue=queue)
                 * (X.shape[0] - 1)
                 / X.shape[0]
             )
 
-        self.location_ = xp.reshape(
-            from_table(result.means, sua_iface=sua_iface, sycl_queue=queue, xp=xp), -1
-        )
+        self.location_ = xp.reshape(from_table(result.means, sycl_queue=queue), -1)
 
         return self

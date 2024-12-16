@@ -24,6 +24,7 @@ from sklearn.utils.extmath import stable_cumsum
 from .._config import _get_config
 from ..common._base import BaseEstimator
 from ..datatypes import from_table, to_table
+from ..utils._array_api import _get_sycl_namespace
 
 
 class BasePCA(BaseEstimator, metaclass=ABCMeta):
@@ -129,23 +130,15 @@ class BasePCA(BaseEstimator, metaclass=ABCMeta):
         return m
 
     def predict(self, X, queue=None):
-        sua_iface, xp, _ = _get_sycl_namespace(X)
-        if xp is None:
-            xp = np
-        use_raw_input = _get_config().get("use_raw_input") is True
-        if use_raw_input and sua_iface:
-            queue = X.sycl_queue
-
         policy = self._get_policy(queue, X)
         model = self._create_model()
         X_table = to_table(X, queue=queue)
         params = self._get_onedal_params(X_table, stage="predict")
 
-        X_table = to_table(X, sua_iface=sua_iface)
-
-        return self._get_backend(
+        result = self._get_backend(
             "decomposition", "dim_reduction", "infer", policy, params, model, X_table
         )
+        return from_table(result.transformed_data)
 
 
 class PCA(BasePCA):

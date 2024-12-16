@@ -202,8 +202,6 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
     def _predict(self, X, module, queue):
         use_raw_input = _get_config().get("use_raw_input") is True
         sua_iface, xp, _ = _get_sycl_namespace(X)
-        if xp is None:
-            xp = np
         if use_raw_input and sua_iface is not None:
             queue = X.sycl_queue
 
@@ -215,8 +213,6 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
     def _predict_proba(self, X, module, queue):
         use_raw_input = _get_config().get("use_raw_input") is True
         sua_iface, xp, _ = _get_sycl_namespace(X)
-        if xp is None:
-            xp = np
         if use_raw_input and sua_iface is not None:
             queue = X.sycl_queue
 
@@ -228,8 +224,6 @@ class BaseLogisticRegression(onedal_BaseEstimator, metaclass=ABCMeta):
 
     def _predict_log_proba(self, X, module, queue):
         _, xp, _ = _get_sycl_namespace(X)
-        if xp is None:
-            xp = np
         y_proba = self._predict_proba(X, module, queue)
         return xp.log(y_proba)
 

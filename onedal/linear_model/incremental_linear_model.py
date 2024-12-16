@@ -16,8 +16,6 @@
 
 import numpy as np
 
-from daal4py.sklearn._utils import get_dtype
-
 from .._config import _get_config
 from ..common.hyperparameters import get_hyperparameters
 from ..datatypes import from_table, to_table
@@ -74,11 +72,8 @@ class IncrementalLinearRegression(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
-        module = self._get_backend("linear_model", "regression")
-
-        self._sua_iface, self._xp, _ = _get_sycl_namespace(X, y)
-        if self._xp is None:
-            self._xp = np
+        if not hasattr(self, "_params"):
+            self._params = self._get_onedal_params(X.dtype)
 
         use_raw_input = _get_config().get("use_raw_input") is True
         if use_raw_input and self._sua_iface is not None:
@@ -93,16 +88,16 @@ class IncrementalLinearRegression(BaseLinearRegression):
             )
             y = np.asarray(y, dtype=X.dtype)
 
+        X_table, y_table = to_table(X, y, queue=queue)
+
+        module = self._get_backend("linear_model", "regression")
+
+        self._sua_iface, self._xp, _ = _get_sycl_namespace(X, y)
+
         self._queue = queue
         policy = self._get_policy(queue, X)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
-
-        X_table, y_table = to_table(X, y, queue=queue)
-
-        if not hasattr(self, "_dtype"):
-            self._dtype = X_table.dtype
-            self._params = self._get_onedal_params(self._dtype)
 
         hparams = get_hyperparameters("linear_regression", "train")
         if hparams is not None and not hparams.is_default:
@@ -220,6 +215,9 @@ class IncrementalRidge(BaseLinearRegression):
         self : object
             Returns the instance itself.
         """
+        if not hasattr(self, "_params"):
+            self._params = self._get_onedal_params(X.dtype)
+
         module = self._get_backend("linear_model", "regression")
 
         self._sua_iface, self._xp, _ = _get_sycl_namespace(X)
@@ -240,15 +238,11 @@ class IncrementalRidge(BaseLinearRegression):
                 accept_2d_y=True,
                 force_all_finite=False,
             )
-            y = np.asarray(y, dtype=self._dtype)
+            y = np.asarray(y, dtype=X.dtype)
 
         self.n_features_in_ = _num_features(X, fallback_1d=True)
 
         X_table, y_table = to_table(X, y, queue=queue)
-
-        if not hasattr(self, "_dtype"):
-            self._dtype = X_table.dtype
-            self._params = self._get_onedal_params(self._dtype)
 
         self._partial_result = module.partial_train(
             policy, self._params, self._partial_result, X_table, y_table

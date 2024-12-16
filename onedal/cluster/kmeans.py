@@ -261,6 +261,7 @@ class _BaseKMeans(onedal_BaseEstimator, TransformerMixin, ClusterMixin, ABC):
         )
 
     def _fit(self, X, module, queue=None):
+        policy = self._get_policy(queue, X)
         is_csr = _is_csr(X)
         use_raw_input = _get_config().get("use_raw_input") is True
         if use_raw_input and _get_sycl_namespace(X)[0] is not None:

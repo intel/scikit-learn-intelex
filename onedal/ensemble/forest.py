@@ -534,9 +534,7 @@ class RandomForestClassifier(ClassifierMixin, BaseForest, metaclass=ABCMeta):
             -1,
         )
 
-        # return xp.take(self.classes_, pred.astype(xp.int64, casting="unsafe"))
-        pred = xp.astype(pred, xp.int64)
-        return xp.take(self.classes_, pred)
+        return xp.take(self.classes_, pred.astype(xp.int64, casting="unsafe"))
 
     def predict_proba(self, X, queue=None):
         hparams = get_hyperparameters("decision_forest", "infer")
