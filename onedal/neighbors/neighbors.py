@@ -19,6 +19,7 @@ from numbers import Integral
 from os import X_OK, XATTR_SIZE_MAX
 
 import numpy as np
+
 from daal4py import (
     bf_knn_classification_model,
     bf_knn_classification_prediction,
@@ -227,7 +228,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
 
         if y is not None or self.requires_y:
             shape = getattr(y, "shape", None)
-            X, y = self._validate_data(
+            X, y = super()._validate_data(
                 X, y, dtype=[np.float64, np.float32], accept_sparse="csr"
             )
             self._shape = shape if shape is not None else y.shape
@@ -254,7 +255,7 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
             else:
                 self._y = y
         else:
-            X, _ = self._validate_data(X, dtype=[np.float64, np.float32])
+            X, _ = super()._validate_data(X, dtype=[np.float64, np.float32])
 
         self.n_samples_fit_ = X.shape[0]
         self.n_features_in_ = X.shape[1]
@@ -269,14 +270,13 @@ class NeighborsBase(NeighborsCommonBase, metaclass=ABCMeta):
                     "enter integer value" % type(self.n_neighbors)
                 )
 
-        self._fit_method = self._parse_auto_method(
+        self._fit_method = super()._parse_auto_method(
             self.algorithm, self.n_samples_fit_, self.n_features_in_
         )
 
         _fit_y = None
-        # global queue is set as per user configuration (`target_offload`) or from data prior to calling this internal function
         queue = SyclQueueManager.get_global_queue()
-        gpu_device = queue is not None and getattr(queue.sycl_device, "is_gpu", False)
+        gpu_device = queue is not None and queue.sycl_device.is_gpu
 
         if _is_classifier(self) or (_is_regressor(self) and gpu_device):
             _fit_y = self._validate_targets(self._y, X.dtype).reshape((-1, 1))
@@ -615,13 +615,13 @@ class KNeighborsRegressor(NeighborsBase, RegressorMixin):
 
             return train_alg(**params).compute(X, y).model
 
-        X, y = to_table(X, y, queue=queue)
-        params = self._get_onedal_params(X, y)
+        X_table, y_table = to_table(X, y, queue=queue)
+        params = self._get_onedal_params(X_table, y)
 
         if gpu_device:
-            return self.train(params, X, y).model
+            return self.train(params, X_table, y_table).model
         else:
-            return self.train_search(params, X).model
+            return self.train_search(params, X_table).model
 
     def _onedal_predict(self, model, X, params):
         assert self._onedal_model is not None, "Model is not trained"
