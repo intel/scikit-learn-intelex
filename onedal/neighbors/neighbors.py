@@ -16,7 +16,6 @@
 
 from abc import ABCMeta, abstractmethod
 from numbers import Integral
-from os import X_OK, XATTR_SIZE_MAX
 
 import numpy as np
 
