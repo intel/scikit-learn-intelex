@@ -20,6 +20,7 @@ from contextlib import contextmanager
 from functools import wraps
 
 import numpy as np
+from scipy import sparse as sp
 from sklearn import get_config
 
 from ._config import _get_config
@@ -194,6 +195,12 @@ def _copy_to_usm(queue, array):
         raise RuntimeError(
             "dpctl need to be installed to work " "with __sycl_usm_array_interface__"
         )
+
+    if sp.issparse(array):
+        data = _copy_to_usm(queue, array.data)
+        indices = _copy_to_usm(queue, array.indices)
+        indptr = _copy_to_usm(queue, array.indptr)
+        return array.__class__((data, indices, indptr), shape=array.shape)
 
     if hasattr(array, "__array__"):
 
