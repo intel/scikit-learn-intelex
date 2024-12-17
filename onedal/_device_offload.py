@@ -206,6 +206,7 @@ def _copy_to_usm(queue, array):
             return _copy_to_usm(queue, array.astype(np.float32))
     else:
         if isinstance(array, Iterable):
+            print(f"Array is iterable - recurse {array}")
             array = [_copy_to_usm(queue, i) for i in array]
         return array
 
