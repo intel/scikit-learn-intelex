@@ -15,11 +15,12 @@
 # ===============================================================================
 
 import numpy as np
+from sklearn.decomposition import IncrementalPCA as _sklearn_IncrementalPCA
+from sklearn.utils import check_array, gen_batches
+
 from daal4py.sklearn._n_jobs_support import control_n_jobs
 from daal4py.sklearn._utils import sklearn_check_version
 from onedal.decomposition import IncrementalPCA as onedal_IncrementalPCA
-from sklearn.decomposition import IncrementalPCA as _sklearn_IncrementalPCA
-from sklearn.utils import check_array, gen_batches
 
 from ..._device_offload import dispatch, wrap_output_data
 from ..._utils import PatchingConditionsChain

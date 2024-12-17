@@ -15,6 +15,7 @@
 # ==============================================================================
 
 import numpy as np
+
 from daal4py.sklearn._utils import get_dtype
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend

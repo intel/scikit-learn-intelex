@@ -20,11 +20,12 @@ from abc import ABCMeta, abstractmethod
 from math import ceil
 
 import numpy as np
+from sklearn.ensemble import BaseEnsemble
+from sklearn.utils import check_random_state
+
 from daal4py.sklearn._utils import daal_check_version
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
-from sklearn.ensemble import BaseEnsemble
-from sklearn.utils import check_random_state
 from sklearnex import get_hyperparameters
 
 from ..common._estimator_checks import _check_is_fitted

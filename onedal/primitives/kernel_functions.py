@@ -17,6 +17,7 @@
 import queue
 
 import numpy as np
+
 from onedal import _default_backend as backend
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import BackendFunction

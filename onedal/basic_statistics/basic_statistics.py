@@ -17,6 +17,7 @@
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
+
 from onedal._device_offload import supports_queue
 
 from ..common._backend import bind_default_backend

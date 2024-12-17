@@ -17,16 +17,17 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from onedal.svm import NuSVC
-from onedal.tests.utils._device_selection import (
-    get_queues,
-    pass_if_not_implemented_for_gpu,
-)
 from sklearn import datasets
 from sklearn.datasets import make_blobs
 from sklearn.metrics.pairwise import rbf_kernel
 from sklearn.model_selection import train_test_split
 from sklearn.svm import NuSVC as SklearnNuSVC
+
+from onedal.svm import NuSVC
+from onedal.tests.utils._device_selection import (
+    get_queues,
+    pass_if_not_implemented_for_gpu,
+)
 
 
 def _test_libsvm_parameters(queue, array_constr, dtype):

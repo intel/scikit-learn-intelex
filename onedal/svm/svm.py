@@ -18,15 +18,21 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 
 import numpy as np
+from scipy import sparse as sp
+
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
-from scipy import sparse as sp
 
 from ..common._estimator_checks import _check_is_fitted
 from ..common._mixin import ClassifierMixin, RegressorMixin
 from ..datatypes import from_table, to_table
-from ..utils.validation import (_check_array, _check_n_features, _check_X_y,
-                                _column_or_1d, _validate_targets)
+from ..utils.validation import (
+    _check_array,
+    _check_n_features,
+    _check_X_y,
+    _column_or_1d,
+    _validate_targets,
+)
 
 
 class SVMtype(Enum):

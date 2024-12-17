@@ -15,10 +15,11 @@
 # ==============================================================================
 
 import numpy as np
+from sklearn.utils import check_random_state
+
 from daal4py.sklearn._utils import daal_check_version
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend
-from sklearn.utils import check_random_state
 
 from ..datatypes import from_table, to_table
 from ..utils.validation import _check_array

@@ -18,6 +18,7 @@ from abc import ABCMeta, abstractmethod
 from numbers import Number
 
 import numpy as np
+
 from daal4py.sklearn._utils import daal_check_version, get_dtype, make2d
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.common._backend import bind_default_backend

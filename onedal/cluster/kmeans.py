@@ -19,6 +19,7 @@ import warnings
 from abc import ABC
 
 import numpy as np
+
 from daal4py.sklearn._utils import daal_check_version
 from onedal._device_offload import SyclQueueManager, supports_queue
 from onedal.basic_statistics import BasicStatistics
@@ -27,11 +28,12 @@ from onedal.common._backend import bind_default_backend
 if daal_check_version((2023, "P", 200)):
     from .kmeans_init import KMeansInit
 
-from onedal import _default_backend
 from sklearn.cluster._kmeans import _kmeans_plusplus
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.utils import check_random_state
+
+from onedal import _default_backend
 
 from ..common._mixin import ClusterMixin, TransformerMixin
 from ..datatypes import from_table, to_table

@@ -22,11 +22,12 @@ if daal_check_version((2024, "P", 600)):
     import numbers
 
     import numpy as np
-    from daal4py.sklearn._n_jobs_support import control_n_jobs
     from scipy.sparse import issparse
     from sklearn.linear_model import Ridge as _sklearn_Ridge
     from sklearn.metrics import r2_score
     from sklearn.utils.validation import check_is_fitted
+
+    from daal4py.sklearn._n_jobs_support import control_n_jobs
 
     if not sklearn_check_version("1.2"):
         from sklearn.linear_model._base import _deprecate_normalize

@@ -17,15 +17,16 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+from scipy import sparse as sp
+from sklearn import datasets
+from sklearn.datasets import make_classification
+
 from onedal.common._mixin import ClassifierMixin
 from onedal.svm import SVC, SVR
 from onedal.tests.utils._device_selection import (
     get_queues,
     pass_if_not_implemented_for_gpu,
 )
-from scipy import sparse as sp
-from sklearn import datasets
-from sklearn.datasets import make_classification
 
 
 def check_svm_model_equal(

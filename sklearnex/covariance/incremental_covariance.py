@@ -18,17 +18,18 @@ import numbers
 import warnings
 
 import numpy as np
-from daal4py.sklearn._n_jobs_support import control_n_jobs
-from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
-from onedal.covariance import (
-    IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
-)
 from scipy import linalg
 from sklearn.base import BaseEstimator, clone
 from sklearn.covariance import EmpiricalCovariance as _sklearn_EmpiricalCovariance
 from sklearn.covariance import log_likelihood
 from sklearn.utils import check_array, gen_batches
 from sklearn.utils.validation import _num_features, check_is_fitted
+
+from daal4py.sklearn._n_jobs_support import control_n_jobs
+from daal4py.sklearn._utils import daal_check_version, sklearn_check_version
+from onedal.covariance import (
+    IncrementalEmpiricalCovariance as onedal_IncrementalEmpiricalCovariance,
+)
 from sklearnex import config_context
 
 from .._device_offload import dispatch, wrap_output_data

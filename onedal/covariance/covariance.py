@@ -16,6 +16,7 @@
 from abc import ABCMeta
 
 import numpy as np
+
 from daal4py.sklearn._utils import daal_check_version, get_dtype
 from onedal._device_offload import supports_queue
 from onedal.common._backend import bind_default_backend

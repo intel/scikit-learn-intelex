@@ -17,14 +17,15 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_almost_equal, assert_array_equal
+from sklearn import datasets
+from sklearn.metrics.pairwise import rbf_kernel
+from sklearn.svm import NuSVR as SklearnNuSVR
+
 from onedal.svm import NuSVR
 from onedal.tests.utils._device_selection import (
     get_queues,
     pass_if_not_implemented_for_gpu,
 )
-from sklearn import datasets
-from sklearn.metrics.pairwise import rbf_kernel
-from sklearn.svm import NuSVR as SklearnNuSVR
 
 synth_params = {"n_samples": 500, "n_features": 100, "random_state": 42}
 

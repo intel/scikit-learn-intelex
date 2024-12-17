@@ -19,9 +19,10 @@ from collections.abc import Sequence
 from numbers import Integral
 
 import numpy as np
+from scipy import sparse as sp
+
 from onedal._device_offload import supports_queue
 from onedal.common._backend import BackendFunction
-from scipy import sparse as sp
 
 if np.lib.NumpyVersion(np.__version__) >= np.lib.NumpyVersion("2.0.0a0"):
     # numpy_version >= 2.0
@@ -30,13 +31,14 @@ else:
     # numpy_version < 2.0
     from numpy import VisibleDeprecationWarning
 
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils.validation import check_array
+
 from daal4py.sklearn.utils.validation import (
     _assert_all_finite as _daal4py_assert_all_finite,
 )
 from onedal import _default_backend as backend
 from onedal.datatypes import to_table
-from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.validation import check_array
 
 
 class DataConversionWarning(UserWarning):

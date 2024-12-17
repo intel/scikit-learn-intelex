@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 import scipy.sparse as sp
 from numpy.testing import assert_allclose
+
 from onedal import _default_backend, _dpc_backend
 from onedal.datatypes import from_table, to_table
 from onedal.utils._dpep_helpers import dpctl_available
