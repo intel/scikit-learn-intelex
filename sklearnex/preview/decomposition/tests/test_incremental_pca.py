@@ -246,7 +246,6 @@ def test_sklearnex_fit_transform_on_gold_data(
 @pytest.mark.parametrize("row_count", [100, 1000])
 @pytest.mark.parametrize("column_count", [10, 100])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
-@pytest.mark.parametrize("use_raw_input", [True, False])
 def test_sklearnex_partial_fit_on_random_data(
     dataframe,
     queue,

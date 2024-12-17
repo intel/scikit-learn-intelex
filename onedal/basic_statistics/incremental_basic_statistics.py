@@ -84,6 +84,7 @@ class IncrementalBasicStatistics(BaseBasicStatistics):
         self.finalize_fit()
         data = self.__dict__.copy()
         data.pop("_queue", None)
+        data.pop("_input_xp", None)  # module cannot be pickled
 
         return data
 

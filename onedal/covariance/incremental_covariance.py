@@ -72,6 +72,7 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
         self.finalize_fit()
         data = self.__dict__.copy()
         data.pop("_queue", None)
+        data.pop("_input_xp", None)  # module cannot be pickled
 
         return data
 
@@ -98,8 +99,8 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             Returns the instance itself.
         """
         # Saving input array namespace and sua_iface, that will be used in
-        sua_iface, xp, _ = _get_sycl_namespace(X)
         # finalize_fit.
+        sua_iface, xp, _ = _get_sycl_namespace(X)
         self._input_sua_iface = sua_iface
         self._input_xp = xp
 
@@ -110,7 +111,6 @@ class IncrementalEmpiricalCovariance(BaseEmpiricalCovariance):
             X = _check_array(X, dtype=[np.float64, np.float32], ensure_2d=True)
 
         self._queue = queue
-
         policy = self._get_policy(queue, X)
 
         X_table = to_table(X, queue=queue)
