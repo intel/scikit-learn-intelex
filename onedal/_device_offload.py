@@ -186,6 +186,10 @@ if dpnp_available:
 
 
 def _copy_to_usm(queue, array):
+    print(f"_copy_to_usm: {type(array)=}")
+    if shape := getattr(array, "shape", None):
+        print(f"_copy_to_usm: {shape=}")
+    print(f"_copy_to_usm: array=<{array}>")
     if not dpctl_available:
         raise RuntimeError(
             "dpctl need to be installed to work " "with __sycl_usm_array_interface__"
@@ -206,7 +210,6 @@ def _copy_to_usm(queue, array):
             return _copy_to_usm(queue, array.astype(np.float32))
     else:
         if isinstance(array, Iterable):
-            print(f"Array is iterable - recurse {array}")
             array = [_copy_to_usm(queue, i) for i in array]
         return array
 
@@ -296,6 +299,8 @@ def support_input_format(func):
                 hostkwargs["queue"] = queue
             result = invoke_func(self, *hostargs, **hostkwargs)
 
+            # Is this even required?
+            # wrap_output_data does copy to device with usm, so are we copying back here?
             if queue is not None:
                 result = _copy_to_usm(queue, result)
                 if dpnp_available and isinstance(data[0], dpnp.ndarray):
