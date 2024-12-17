@@ -812,42 +812,39 @@ class ForestClassifier(_sklearn_ForestClassifier, BaseForest):
         return patching_status
 
     def _onedal_predict(self, X, queue=None):
-        xp, _ = get_namespace(X)
-        use_raw_input = get_config()["use_raw_input"]
-        if not use_raw_input:
-            if sklearn_check_version("1.0"):
-                X = validate_data(
-                    self,
+        if sklearn_check_version("1.0"):
+            X = validate_data(
+                self,
+                X,
+                dtype=[np.float64, np.float32],
+                force_all_finite=False,
+                reset=False,
+                ensure_2d=True,
+            )
+        else:
+            if not get_config()["use_raw_input"]:
+                X = check_array(
                     X,
                     dtype=[np.float64, np.float32],
                     force_all_finite=False,
-                    reset=False,
-                    ensure_2d=True,
-                )
-        # sklearn version < 1.0 is not supported
-        # else:
-        #     X = check_array(
-        #         X,
-        #         dtype=[np.float64, np.float32],
-        #         force_all_finite=False,
-        #     )  # Warning, order of dtype matters
-        #     if hasattr(self, "n_features_in_"):
-        #         try:
-        #             num_features = _num_features(X)
-        #         except TypeError:
-        #             num_features = _num_samples(X)
-        #         if num_features != self.n_features_in_:
-        #             raise ValueError(
-        #                 (
-        #                     f"X has {num_features} features, "
-        #                     f"but {self.__class__.__name__} is expecting "
-        #                     f"{self.n_features_in_} features as input"
-        #                 )
-        #             )
-        #     self._check_n_features(X, reset=False)
-        res = xp.reshape(self._onedal_estimator.predict(X, queue=queue), -1)
-        res = xp.astype(res, xp.int64)
-        return xp.take(self.classes_, res)
+                )  # Warning, order of dtype matters
+            if hasattr(self, "n_features_in_"):
+                try:
+                    num_features = _num_features(X)
+                except TypeError:
+                    num_features = _num_samples(X)
+                if num_features != self.n_features_in_:
+                    raise ValueError(
+                        (
+                            f"X has {num_features} features, "
+                            f"but {self.__class__.__name__} is expecting "
+                            f"{self.n_features_in_} features as input"
+                        )
+                    )
+            self._check_n_features(X, reset=False)
+
+        res = self._onedal_estimator.predict(X, queue=queue)
+        return np.take(self.classes_, res.ravel().astype(np.int64, casting="unsafe"))
 
     def _onedal_predict_proba(self, X, queue=None):
         xp, _ = get_namespace(X)

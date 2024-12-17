@@ -330,20 +330,10 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
 
         if self.oob_score:
             if isinstance(self, ClassifierMixin):
-                # self.oob_score_ = from_table(train_result.oob_err_accuracy).item()
-                self.oob_score_ = from_table(
-                    train_result.oob_err_accuracy,
-                    sua_iface=sua_iface,
-                    sycl_queue=queue,
-                    xp=xp,
-                )[0]
-
+                self.oob_score_ = from_table(train_result.oob_err_accuracy).item()
                 self.oob_decision_function_ = from_table(
-                    train_result.oob_err_decision_function,
-                    sua_iface=sua_iface,
-                    sycl_queue=queue,
-                    xp=xp,
-                )[0]
+                    train_result.oob_err_decision_function
+                )
                 if xp.any(self.oob_decision_function_ == 0):
                     warnings.warn(
                         "Some inputs do not have OOB scores. This probably means "
@@ -352,21 +342,11 @@ class BaseForest(BaseEstimator, BaseEnsemble, metaclass=ABCMeta):
                         UserWarning,
                     )
             else:
-                # self.oob_score_ = from_table(train_result.oob_err_r2).item()
-                self.oob_score_ = from_table(
-                    train_result.oob_err_r2, sua_iface=sua_iface, sycl_queue=queue, xp=xp
-                )[0]
-                # self.oob_prediction_ = from_table(train_result.oob_err_prediction).reshape(-1)
-                self.oob_score_ = xp.reshape(
-                    from_table(
-                        train_result.oob_err_r2,
-                        sua_iface=sua_iface,
-                        sycl_queue=queue,
-                        xp=xp,
-                    ),
-                    -1,
-                )
-                if xp.any(self.oob_prediction_ == 0):
+                self.oob_score_ = from_table(train_result.oob_err_r2).item()
+                self.oob_prediction_ = from_table(
+                    train_result.oob_err_prediction
+                ).reshape(-1)
+                if np.any(self.oob_prediction_ == 0):
                     warnings.warn(
                         "Some inputs do not have OOB scores. This probably means "
                         "too few trees were used to compute any reliable OOB "
