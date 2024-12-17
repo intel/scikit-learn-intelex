@@ -187,20 +187,10 @@ if dpnp_available:
 
 
 def _copy_to_usm(queue, array):
-    print(f"_copy_to_usm: {type(array)=}")
-    if shape := getattr(array, "shape", None):
-        print(f"_copy_to_usm: {shape=}")
-    print(f"_copy_to_usm: array=<{array}>")
     if not dpctl_available:
         raise RuntimeError(
             "dpctl need to be installed to work " "with __sycl_usm_array_interface__"
         )
-
-    if sp.issparse(array):
-        data = _copy_to_usm(queue, array.data)
-        indices = _copy_to_usm(queue, array.indices)
-        indptr = _copy_to_usm(queue, array.indptr)
-        return array.__class__((data, indices, indptr), shape=array.shape)
 
     if hasattr(array, "__array__"):
 
@@ -306,9 +296,8 @@ def support_input_format(func):
                 hostkwargs["queue"] = queue
             result = invoke_func(self, *hostargs, **hostkwargs)
 
-            # Is this even required?
-            # wrap_output_data does copy to device with usm, so are we copying back here?
-            if queue is not None:
+            usm_iface = getattr(data[0], "__sycl_usm_array_interface__", None)
+            if queue is not None and usm_iface is not None:
                 result = _copy_to_usm(queue, result)
                 if dpnp_available and isinstance(data[0], dpnp.ndarray):
                     result = _convert_to_dpnp(result)
