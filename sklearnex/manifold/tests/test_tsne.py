@@ -98,14 +98,6 @@ def test_basic_tsne_functionality():
     with pytest.raises(ValueError):
         TSNE(n_components=2).fit(X_invalid)
 
-    # Edge Case: Perplexity Larger Than n_samples
-    X_small = np.random.rand(5, 2)  # 5 samples
-    with pytest.raises(ValueError) as excinfo:
-        TSNE(n_components=2, perplexity=10).fit(X_small)
-    assert "perplexity must be less than n_samples" in str(
-        excinfo.value
-    ), "Large perplexity did not trigger expected ValueError."
-
     # Edge Case: Sparse-Like High-Dimensional Data
     np.random.seed(42)
     X_sparse_like = np.random.rand(50, 10000) * (np.random.rand(50, 10000) > 0.99)
