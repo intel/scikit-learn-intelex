@@ -15,14 +15,16 @@
 # ===============================================================================
 
 import numpy as np
-from numpy.testing import assert_allclose
 import pytest
-#Note: n_componets must be 2 for now
+from numpy.testing import assert_allclose
+
+# Note: n_components must be 2 for now
 from onedal.tests.utils._dataframes_support import (
     _as_numpy,
     _convert_to_dataframe,
     get_dataframes_and_queues,
 )
+
 
 def test_sklearnex_import():
     from sklearnex.manifold import TSNE
@@ -31,7 +33,9 @@ def test_sklearnex_import():
     tsne = TSNE(n_components=2, perplexity=2.0).fit(X)
     assert "daal4py" in tsne.__module__
 
+
 from sklearnex.manifold import TSNE
+
 
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 def test_sklearnex_tsne_import(dataframe, queue):
@@ -43,13 +47,14 @@ def test_sklearnex_tsne_import(dataframe, queue):
     assert hasattr(tsne, "n_components"), "TSNE missing 'n_components' attribute."
     assert tsne.n_components == 2, "TSNE 'n_components' attribute is incorrect."
 
+
 def test_basic_tsne_functionality():
     """Test TSNE with valid data: basic functionality, random data, reproducibility, and edge cases."""
     # Test basic functionality
     X_basic = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
     tsne = TSNE(n_components=2, perplexity=2.0).fit(X_basic)
     assert tsne.embedding_.shape == (4, 2)
-    
+
     # Test with random data
     np.random.seed(42)
     X_random = np.random.rand(100, 10)
@@ -92,13 +97,14 @@ def test_basic_tsne_functionality():
     X_invalid = np.array([[0, 0], [1, np.nan], [2, np.inf]])
     with pytest.raises(ValueError):
         TSNE(n_components=2).fit(X_invalid)
-    
-     # Edge Case: Perplexity Larger Than n_samples
+
+    # Edge Case: Perplexity Larger Than n_samples
     X_small = np.random.rand(5, 2)  # 5 samples
     with pytest.raises(ValueError) as excinfo:
         TSNE(n_components=2, perplexity=10).fit(X_small)
-    assert "perplexity must be less than n_samples" in str(excinfo.value), \
-        "Large perplexity did not trigger expected ValueError."
+    assert "perplexity must be less than n_samples" in str(
+        excinfo.value
+    ), "Large perplexity did not trigger expected ValueError."
 
     # Edge Case: Sparse-Like High-Dimensional Data
     np.random.seed(42)
@@ -118,62 +124,74 @@ def test_basic_tsne_functionality():
         pytest.fail(f"TSNE failed with low perplexity: {e}")
 
 
-
 @pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_tsne_with_specific_complex_dataset(dataframe, queue, dtype):
     """Test TSNE with a specific, highly diverse dataset."""
-    complex_array = np.array([
-        [0, 0, 0, 0],                    
-        [1, 1, 1, 1],                   
-        [-1e-9, 1e-9, -1e-9, 1e-9],      
-        [-1e9, 1e9, -1e9, 1e9],          
-        [1e-3, 1e3, -1e3, -1e-3],        
-        [0, 1e9, -1e-9, 1],              
-        [1, -1, 1, -1],                  
-        [42, 42, 42, 42],                
-        [0, 0, 1, -1],                   
-        [-1e5, 0, 1e5, -1], 
-        [2e9, 2e-9, -2e9, -2e-9],        
-        [3, -3, 3e3, -3e-3],             
-        [5e-5, 5e5, -5e-5, -5e5],        
-        [1, 0, -1e8, 1e8],               
-        [9e-7, -9e7, 9e-7, -9e7],        
-        [4e-4, 4e4, -4e-4, -4e4],        
-        [6e-6, -6e6, 6e6, -6e-6],        
-        [8, -8, 8e8, -8e-8],             
-    ], dtype=dtype)
+    complex_array = np.array(
+        [
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [-1e-9, 1e-9, -1e-9, 1e-9],
+            [-1e9, 1e9, -1e9, 1e9],
+            [1e-3, 1e3, -1e3, -1e-3],
+            [0, 1e9, -1e-9, 1],
+            [1, -1, 1, -1],
+            [42, 42, 42, 42],
+            [0, 0, 1, -1],
+            [-1e5, 0, 1e5, -1],
+            [2e9, 2e-9, -2e9, -2e-9],
+            [3, -3, 3e3, -3e-3],
+            [5e-5, 5e5, -5e-5, -5e5],
+            [1, 0, -1e8, 1e8],
+            [9e-7, -9e7, 9e-7, -9e7],
+            [4e-4, 4e4, -4e-4, -4e4],
+            [6e-6, -6e6, 6e6, -6e-6],
+            [8, -8, 8e8, -8e-8],
+        ],
+        dtype=dtype,
+    )
 
-    complex_array_df = _convert_to_dataframe(complex_array, sycl_queue=queue, target_df=dataframe)
+    complex_array_df = _convert_to_dataframe(
+        complex_array, sycl_queue=queue, target_df=dataframe
+    )
 
     try:
         tsne = TSNE(n_components=2, perplexity=5.0, random_state=42)
         embedding = tsne.fit_transform(complex_array_df)
-        assert embedding.shape == (complex_array.shape[0], 2), "TSNE embedding shape is incorrect."
+        assert embedding.shape == (
+            complex_array.shape[0],
+            2,
+        ), "TSNE embedding shape is incorrect."
     except Exception as e:
         pytest.fail(f"TSNE failed on the specific complex dataset: {e}")
 
 
-@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues(device_filter_="gpu"))
+@pytest.mark.parametrize(
+    "dataframe,queue", get_dataframes_and_queues(device_filter_="gpu")
+)
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_tsne_gpu_validation(dataframe, queue, dtype):
     """
     GPU validation test for TSNE with a specific complex dataset.
     """
     # Complex dataset for testing
-    gpu_validation_array = np.array([
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-        [-1e9, 1e9, -1e9, 1e9],
-        [1e-3, 1e3, -1e3, -1e-3],
-        [1, -1, 1, -1],
-        [0, 1e9, -1e-9, 1],
-        [-7e11, 7e11, -7e-11, 7e-11],
-        [4e-4, 4e4, -4e-4, -4e4],
-        [6e-6, -6e6, 6e6, -6e-6],
-        [0, 0, 0, 0],
-        [1, 1, 1, 1],
-    ], dtype=dtype)
+    gpu_validation_array = np.array(
+        [
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [-1e9, 1e9, -1e9, 1e9],
+            [1e-3, 1e3, -1e3, -1e-3],
+            [1, -1, 1, -1],
+            [0, 1e9, -1e-9, 1],
+            [-7e11, 7e11, -7e-11, 7e-11],
+            [4e-4, 4e4, -4e-4, -4e4],
+            [6e-6, -6e6, 6e6, -6e-6],
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+        ],
+        dtype=dtype,
+    )
 
     expected_shape = (gpu_validation_array.shape[0], 2)
     gpu_array_df = _convert_to_dataframe(
@@ -182,9 +200,15 @@ def test_tsne_gpu_validation(dataframe, queue, dtype):
     try:
         tsne = TSNE(n_components=2, perplexity=3.0, random_state=42)
         embedding = tsne.fit_transform(gpu_array_df)
-        assert embedding.shape == expected_shape, f"Incorrect embedding shape on GPU: {embedding.shape}."
-        assert np.all(np.isfinite(embedding)), "Embedding contains NaN or infinite values on GPU."
-        assert np.any(embedding != 0), "GPU embedding contains only zeros, which is invalid."
+        assert (
+            embedding.shape == expected_shape
+        ), f"Incorrect embedding shape on GPU: {embedding.shape}."
+        assert np.all(
+            np.isfinite(embedding)
+        ), "Embedding contains NaN or infinite values on GPU."
+        assert np.any(
+            embedding != 0
+        ), "GPU embedding contains only zeros, which is invalid."
 
     except Exception as e:
         pytest.fail(f"TSNE failed on GPU validation test: {e}")
