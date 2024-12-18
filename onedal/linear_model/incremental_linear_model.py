@@ -146,12 +146,15 @@ class IncrementalLinearRegression(BaseLinearRegression):
 
         self._onedal_model = result.model
 
-        packed_coefficients = from_table(
-            result.model.packed_coefficients,
-            sua_iface=self._sua_iface,
-            sycl_queue=self._queue,
-            xp=self._xp,
-        )
+        if _get_config().get("use_raw_input") is True:
+            packed_coefficients = from_table(
+                result.model.packed_coefficients,
+                sua_iface=self._sua_iface,
+                sycl_queue=self._queue,
+                xp=self._xp,
+            )
+        else:
+            packed_coefficients = from_table(result.model.packed_coefficients)
         self.coef_, self.intercept_ = (
             self._xp.squeeze(packed_coefficients[:, 1:]),
             self._xp.squeeze(packed_coefficients[:, 0]),
