@@ -153,12 +153,16 @@ class IncrementalLinearRegression(BaseLinearRegression):
                 sycl_queue=self._queue,
                 xp=self._xp,
             )
+            self.coef_, self.intercept_ = (
+                self._xp.squeeze(packed_coefficients[:, 1:]),
+                self._xp.squeeze(packed_coefficients[:, 0]),
+            )
         else:
             packed_coefficients = from_table(result.model.packed_coefficients)
-        self.coef_, self.intercept_ = (
-            self._xp.squeeze(packed_coefficients[:, 1:]),
-            self._xp.squeeze(packed_coefficients[:, 0]),
-        )
+            self.coef_, self.intercept_ = (
+                packed_coefficients[:, 1:].squeeze(),
+                packed_coefficients[:, 0].squeeze(),
+            )
 
         return self
 
@@ -280,11 +284,15 @@ class IncrementalRidge(BaseLinearRegression):
                 sycl_queue=self._queue,
                 xp=self._xp,
             )
+            self.coef_, self.intercept_ = (
+                self._xp.squeeze(packed_coefficients[:, 1:]),
+                self._xp.squeeze(packed_coefficients[:, 0]),
+            )
         else:
             packed_coefficients = from_table(result.model.packed_coefficients)
-        self.coef_, self.intercept_ = (
-            self._xp.squeeze(packed_coefficients[:, 1:]),
-            self._xp.squeeze(packed_coefficients[:, 0]),
-        )
+            self.coef_, self.intercept_ = (
+                packed_coefficients[:, 1:].squeeze(),
+                packed_coefficients[:, 0].squeeze(),
+            )
 
         return self

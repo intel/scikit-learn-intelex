@@ -304,6 +304,8 @@ class Ridge(BaseLinearRegression):
         self : object
             Fitted Estimator.
         """
+        sua_iface, xp, _ = _get_sycl_namespace(X)
+
         module = self._get_backend("linear_model", "regression")
         _, xp, _ = _get_sycl_namespace(X)
 
@@ -338,7 +340,7 @@ class Ridge(BaseLinearRegression):
         self._onedal_model = result.model
 
         packed_coefficients = from_table(
-            result.model.packed_coefficients, sycl_queue=queue
+            result.model.packed_coefficients, sua_iface=sua_iface, sycl_queue=queue, xp=xp
         )
         self.coef_, self.intercept_ = (
             packed_coefficients[:, 1:],
