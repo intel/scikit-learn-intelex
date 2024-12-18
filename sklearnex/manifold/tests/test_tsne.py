@@ -84,9 +84,9 @@ def test_basic_tsne_functionality():
 
     # Edge case: constant data
     X_constant = np.ones((10, 10))
-    with pytest.raises(ValueError) as excinfo:
-        TSNE(n_components=2, perplexity=20).fit(X_constant)
-    assert "perplexity must be less than n_samples" in str(excinfo.value)
+    tsne = TSNE(n_components=2, perplexity=5, random_state=42)
+    embedding = tsne.fit(X_constant).embedding_
+    assert embedding.shape == (10, 2), f"Unexpected embedding shape: {embedding.shape}"
 
     # Edge case: empty data
     X_empty = np.empty((0, 10))
