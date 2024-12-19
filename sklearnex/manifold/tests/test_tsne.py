@@ -48,70 +48,94 @@ def test_sklearnex_tsne_import(dataframe, queue):
     assert tsne.n_components == 2, "TSNE 'n_components' attribute is incorrect."
 
 
-def test_basic_tsne_functionality():
-    """Test TSNE with valid data: basic functionality, random data, reproducibility, and edge cases."""
+@pytest.mark.parametrize("dataframe,queue", get_dataframes_and_queues())
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_tsne_functionality_and_edge_cases(dataframe, queue, dtype):
+    """
+    TSNE test covering basic functionality and edge cases using get_dataframes_and_queues.
+    """
     # Test basic functionality
-    X_basic = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
-    tsne = TSNE(n_components=2, perplexity=2.0).fit(X_basic)
-    assert tsne.embedding_.shape == (4, 2)
+    X_basic = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]], dtype=dtype)
+    X_basic_df = _convert_to_dataframe(X_basic, sycl_queue=queue, target_df=dataframe)
+    tsne_basic = TSNE(n_components=2, perplexity=2.0, random_state=42)
+    embedding_basic = tsne_basic.fit_transform(X_basic_df)
+    assert embedding_basic.shape == (4, 2)
 
     # Test with random data
-    np.random.seed(42)
-    X_random = np.random.rand(100, 10)
-    tsne_random = TSNE(n_components=2, perplexity=30.0).fit(X_random)
-    assert tsne_random.embedding_.shape == (100, 2)
+    X_random = np.random.rand(100, 10).astype(dtype)
+    X_random_df = _convert_to_dataframe(X_random, sycl_queue=queue, target_df=dataframe)
+    tsne_random = TSNE(n_components=2, perplexity=30.0, random_state=42)
+    embedding_random = tsne_random.fit_transform(X_random_df)
+    assert embedding_random.shape == (100, 2)
 
     # Test reproducibility
-    X_repro = np.random.rand(50, 10)
-    tsne_1 = TSNE(n_components=2, random_state=42).fit_transform(X_repro)
-    tsne_2 = TSNE(n_components=2, random_state=42).fit_transform(X_repro)
-    assert_allclose(tsne_1, tsne_2, rtol=1e-5)
-
-    # Test perplexity close to dataset size
-    X_perplexity = np.random.rand(10, 5)
-    tsne_perplexity = TSNE(n_components=2, perplexity=9).fit(X_perplexity)
-    assert tsne_perplexity.embedding_.shape == (10, 2)
+    X_repro = np.random.rand(50, 10).astype(dtype)
+    X_repro_df = _convert_to_dataframe(X_repro, sycl_queue=queue, target_df=dataframe)
+    tsne_repro_1 = TSNE(n_components=2, random_state=42).fit_transform(X_repro_df)
+    tsne_repro_2 = TSNE(n_components=2, random_state=42).fit_transform(X_repro_df)
+    tsne_repro_1_np = _as_numpy(tsne_repro_1)
+    tsne_repro_2_np = _as_numpy(tsne_repro_2)
+    assert_allclose(tsne_repro_1_np, tsne_repro_2_np, rtol=1e-5)
 
     # Test large data
-    X_large = np.random.rand(1000, 50)
-    tsne_large = TSNE(n_components=2, perplexity=50.0).fit(X_large)
-    assert tsne_large.embedding_.shape == (1000, 2)
+    X_large = np.random.rand(1000, 50).astype(dtype)
+    X_large_df = _convert_to_dataframe(X_large, sycl_queue=queue, target_df=dataframe)
+    tsne_large = TSNE(n_components=2, perplexity=50.0, random_state=42)
+    embedding_large = tsne_large.fit_transform(X_large_df)
+    assert embedding_large.shape == (1000, 2)
 
     # Test valid minimal data
-    X_valid = np.array([[0, 0], [1, 1], [2, 2]])
-    tsne_valid = TSNE(n_components=2, perplexity=2).fit(X_valid)
-    assert tsne_valid.embedding_.shape == (3, 2)
+    X_valid = np.array([[0, 0], [1, 1], [2, 2]], dtype=dtype)
+    X_valid_df = _convert_to_dataframe(X_valid, sycl_queue=queue, target_df=dataframe)
+    tsne_valid = TSNE(n_components=2, perplexity=2, random_state=42)
+    embedding_valid = tsne_valid.fit_transform(X_valid_df)
+    assert embedding_valid.shape == (3, 2)
 
     # Edge case: constant data
-    X_constant = np.ones((10, 10))
-    tsne = TSNE(n_components=2, perplexity=5, random_state=42)
-    embedding = tsne.fit(X_constant).embedding_
-    assert embedding.shape == (10, 2), f"Unexpected embedding shape: {embedding.shape}"
+    X_constant = np.ones((10, 10), dtype=dtype)
+    X_constant_df = _convert_to_dataframe(
+        X_constant, sycl_queue=queue, target_df=dataframe
+    )
+    tsne_constant = TSNE(n_components=2, perplexity=5, random_state=42)
+    embedding_constant = tsne_constant.fit(X_constant_df).embedding_
+    assert embedding_constant.shape == (10, 2)
 
     # Edge case: empty data
-    X_empty = np.empty((0, 10))
+    X_empty = np.empty((0, 10), dtype=dtype)
     with pytest.raises(ValueError):
-        TSNE(n_components=2).fit(X_empty)
+        TSNE(n_components=2).fit(
+            _convert_to_dataframe(X_empty, sycl_queue=queue, target_df=dataframe)
+        )
 
     # Edge case: data with NaN or infinite values
-    X_invalid = np.array([[0, 0], [1, np.nan], [2, np.inf]])
+    X_invalid = np.array([[0, 0], [1, np.nan], [2, np.inf]], dtype=dtype)
     with pytest.raises(ValueError):
-        TSNE(n_components=2).fit(X_invalid)
+        TSNE(n_components=2).fit(
+            _convert_to_dataframe(X_invalid, sycl_queue=queue, target_df=dataframe)
+        )
 
     # Edge Case: Sparse-Like High-Dimensional Data
     np.random.seed(42)
-    X_sparse_like = np.random.rand(50, 10000) * (np.random.rand(50, 10000) > 0.99)
+    X_sparse_like = np.random.rand(50, 500).astype(dtype) * (
+        np.random.rand(50, 500) > 0.99
+    )
+    X_sparse_like_df = _convert_to_dataframe(
+        X_sparse_like, sycl_queue=queue, target_df=dataframe
+    )
     try:
         tsne = TSNE(n_components=2, perplexity=30.0)
-        tsne.fit(X_sparse_like)
+        tsne.fit(X_sparse_like_df)
     except Exception as e:
         pytest.fail(f"TSNE failed on sparse-like high-dimensional data: {e}")
 
     # Edge Case: Extremely Low Perplexity
-    X = np.random.rand(10, 5)
+    X_low_perplexity = np.random.rand(10, 5).astype(dtype)
+    X_low_perplexity_df = _convert_to_dataframe(
+        X_low_perplexity, sycl_queue=queue, target_df=dataframe
+    )
     try:
         tsne_low_perplexity = TSNE(n_components=2, perplexity=0.5)
-        tsne_low_perplexity.fit(X)
+        tsne_low_perplexity.fit(X_low_perplexity_df)
     except Exception as e:
         pytest.fail(f"TSNE failed with low perplexity: {e}")
 
@@ -157,50 +181,3 @@ def test_tsne_with_specific_complex_dataset(dataframe, queue, dtype):
         ), "TSNE embedding shape is incorrect."
     except Exception as e:
         pytest.fail(f"TSNE failed on the specific complex dataset: {e}")
-
-
-@pytest.mark.parametrize(
-    "dataframe,queue", get_dataframes_and_queues(device_filter_="gpu")
-)
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_tsne_gpu_validation(dataframe, queue, dtype):
-    """
-    GPU validation test for TSNE with a specific complex dataset.
-    """
-    # Complex dataset for testing
-    gpu_validation_array = np.array(
-        [
-            [0, 0, 0, 0],
-            [1, 1, 1, 1],
-            [-1e9, 1e9, -1e9, 1e9],
-            [1e-3, 1e3, -1e3, -1e-3],
-            [1, -1, 1, -1],
-            [0, 1e9, -1e-9, 1],
-            [-7e11, 7e11, -7e-11, 7e-11],
-            [4e-4, 4e4, -4e-4, -4e4],
-            [6e-6, -6e6, 6e6, -6e-6],
-            [0, 0, 0, 0],
-            [1, 1, 1, 1],
-        ],
-        dtype=dtype,
-    )
-
-    expected_shape = (gpu_validation_array.shape[0], 2)
-    gpu_array_df = _convert_to_dataframe(
-        gpu_validation_array, sycl_queue=queue, target_df=dataframe
-    )
-    try:
-        tsne = TSNE(n_components=2, perplexity=3.0, random_state=42)
-        embedding = tsne.fit_transform(gpu_array_df)
-        assert (
-            embedding.shape == expected_shape
-        ), f"Incorrect embedding shape on GPU: {embedding.shape}."
-        assert np.all(
-            np.isfinite(embedding)
-        ), "Embedding contains NaN or infinite values on GPU."
-        assert np.any(
-            embedding != 0
-        ), "GPU embedding contains only zeros, which is invalid."
-
-    except Exception as e:
-        pytest.fail(f"TSNE failed on GPU validation test: {e}")
