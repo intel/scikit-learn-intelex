@@ -887,6 +887,12 @@ no_warn = {
     "algorithms::engines::mt2203": [
         "ParameterType",
     ],
+    "algorithms::engines::mrg32k3a": [
+        "ParameterType",
+    ],
+    "algorithms::engines::philox4x32x10": [
+        "ParameterType",
+    ],
     "algorithms::gbt": [
         "Result",
     ],
